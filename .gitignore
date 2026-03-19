@@ -1,0 +1,48 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Supabase local secrets — NEVER commit
+supabase/.branches
+supabase/.temp
+.env
+.env.local
+.env.*.local
+
+# Keys — never commit service role key or anon key for production
+# (anon key for local dev can be committed in config, not here)
+
+# Generated files
+lib/core/di/injection.config.dart
+**/*.g.dart
+**/*.freezed.dart
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+android/key.properties
+android/**/*.keystore
+android/**/*.jks
+
+# iOS
+ios/Runner/GoogleService-Info.plist
+
+# Build outputs
+*.apk
+*.aab
+*.ipa
