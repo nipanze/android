@@ -1,21 +1,11 @@
 -- ============================================
--- OpenCapital Database Schema
--- Version: 3.2 (Production-Ready)
--- PostgreSQL 14+
--- ============================================
--- Non-custodial peer-to-peer lending marketplace.
+-- NIPANZE Database Schema
+-- Version: 5.0 (Non-Custodial, Production-Ready)
+-- PostgreSQL 14+ · Flutter + Supabase
 --
--- Deploy (fresh):
---   supabase start
---   psql "postgresql://postgres:postgres@localhost:54322/postgres" -f sql/schema.sql
---   psql "postgresql://postgres:postgres@localhost:54322/postgres" -f sql/seed.sql
---
--- Reset workflow:
---   supabase db reset
---   psql "postgresql://postgres:postgres@localhost:54322/postgres" -f sql/schema.sql
---   psql "postgresql://postgres:postgres@localhost:54322/postgres" -f sql/seed.sql
---
--- All migrations are baked in — do NOT run supabase/migrations/ separately.
+-- Non-custodial peer-to-peer loan listing marketplace.
+-- Uganda-first. Anonymity by default. No fund movement on-platform.
+-- Platform NEVER holds, tracks, or processes money.
 -- ============================================
 
 
@@ -31,29 +21,32 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ENUMS
 -- ============================================
 
-CREATE TYPE user_role_enum AS ENUM (
-    'borrower', 'lender', 'both', 'admin'
-);
-
-CREATE TYPE user_status_enum AS ENUM (
-    'active', 'suspended', 'deactivated', 'pending_verification'
-);
-
-CREATE TYPE reputation_tier_enum AS ENUM (
-    'restricted', 'bronze', 'silver', 'gold', 'platinum'
+CREATE TYPE account_status_enum AS ENUM (
+    'active', 'suspended', 'pending_verification', 'deactivated'
 );
 
 CREATE TYPE kyc_status_enum AS ENUM (
-    'not_started', 'pending', 'approved', 'rejected', 'expired'
+    'not_submitted', 'pending', 'approved', 'rejected', 'expired'
+);
+
+CREATE TYPE employment_type_enum AS ENUM (
+    'employed', 'self_employed', 'business_owner', 'student', 'other'
+);
+
+CREATE TYPE subscription_plan_enum AS ENUM (
+    'watchlist', 'borrower', 'lender', 'pro'
+);
+
+CREATE TYPE subscription_status_enum AS ENUM (
+    'active', 'expired', 'cancelled', 'grace_period'
 );
 
 CREATE TYPE risk_category_enum AS ENUM (
-    'low', 'medium', 'high', 'very_high'
+    'low', 'medium', 'high'
 );
 
-CREATE TYPE loan_request_status_enum AS ENUM (
-    'draft', 'active', 'partially_funded', 'fully_funded',
-    'expired', 'cancelled', 'contracted'
+CREATE TYPE loan_status_enum AS ENUM (
+    'pending_kyc', 'active', 'contracted', 'expired', 'cancelled'
 );
 
 CREATE TYPE bid_status_enum AS ENUM (
@@ -61,32 +54,35 @@ CREATE TYPE bid_status_enum AS ENUM (
 );
 
 CREATE TYPE contract_status_enum AS ENUM (
-    'draft', 'active', 'completed', 'defaulted', 'cancelled'
+    'draft', 'in_execution', 'completed', 'defaulted', 'disputed'
 );
 
-CREATE TYPE payment_method_enum AS ENUM (
-    'mobile_money', 'bank_transfer', 'card', 'wallet'
+CREATE TYPE negotiator_status_enum AS ENUM (
+    'available', 'busy', 'inactive'
 );
 
-CREATE TYPE disbursement_status_enum AS ENUM (
-    'pending', 'processing', 'completed', 'failed', 'cancelled'
+CREATE TYPE reveal_status_enum AS ENUM (
+    'pending', 'revealed'
 );
 
-CREATE TYPE repayment_status_enum AS ENUM (
-    'pending', 'paid', 'overdue', 'partial', 'defaulted'
+CREATE TYPE notification_type_enum AS ENUM (
+    'bid_received', 'bid_accepted', 'bid_rejected', 'bid_withdrawn',
+    'negotiator_assigned', 'contract_draft_available',
+    'kyc_approved', 'kyc_rejected',
+    'closing_soon_24h', 'closing_soon_6h',
+    'watchlist_new_bid', 'watchlist_rate_change',
+    'contact_revealed', 'system'
 );
 
-CREATE TYPE transaction_status_enum AS ENUM (
-    'pending', 'processing', 'completed', 'failed', 'reversed'
-);
-
-CREATE TYPE event_category_enum AS ENUM (
-    'authentication', 'user_management', 'loan_request', 'bid',
-    'contract', 'payment', 'system', 'security'
-);
-
-CREATE TYPE event_status_enum AS ENUM (
-    'success', 'failure', 'warning'
+CREATE TYPE audit_event_type_enum AS ENUM (
+    'login', 'logout', 'register', 'password_reset',
+    'token_refresh', 'token_reuse_detected',
+    'login_failed', 'account_locked',
+    'kyc_submitted', 'kyc_approved', 'kyc_rejected',
+    'listing_created', 'listing_cancelled',
+    'bid_placed', 'bid_withdrawn', 'bid_accepted',
+    'contact_revealed', 'subscription_changed',
+    'admin_action'
 );
 
 CREATE TYPE setting_type_enum AS ENUM (
@@ -96,10 +92,11 @@ CREATE TYPE setting_type_enum AS ENUM (
 
 -- ============================================
 -- AUTH BRIDGE
--- Syncs auth.users → public.users on registration.
--- Fires BEFORE public.users table exists in this
--- file, but Postgres resolves function bodies at
--- call time, not definition time — safe.
+-- Syncs auth.users → public.profiles on registration.
+-- Also creates a free watchlist subscription automatically.
+-- NOTE: lender_token uses a temporary random value on insert.
+--       The seed script nulls and re-sets all tokens explicitly
+--       to avoid UNIQUE collisions from RANDOM().
 -- ============================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
@@ -109,17 +106,24 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    INSERT INTO public.users (
-        user_id, email, password_hash,
-        role, status, email_verified,
-        reputation_score, reputation_tier
+    INSERT INTO public.profiles (
+        id, full_name, account_status, role,
+        credit_score, reputation_tier
     )
     VALUES (
-        NEW.id, NEW.email, '',
-        'borrower', 'pending_verification', FALSE,
-        50, 'bronze'
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', SPLIT_PART(NEW.email, '@', 1)),
+        'pending_verification',
+        'user',
+        50,
+        'bronze'
     )
-    ON CONFLICT (user_id) DO NOTHING;
+    ON CONFLICT (id) DO NOTHING;
+
+    INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
+    VALUES (NEW.id, 'watchlist', 'active', 0)
+    ON CONFLICT DO NOTHING;
+
     RETURN NEW;
 END;
 $$;
@@ -130,540 +134,49 @@ CREATE TRIGGER on_auth_user_created
     EXECUTE FUNCTION public.handle_new_auth_user();
 
 COMMENT ON FUNCTION public.handle_new_auth_user IS
-'Syncs auth.users → public.users on every registration. Uses same UUID.';
+'Syncs auth.users → public.profiles on every registration and provisions a free watchlist subscription.';
 
 
 -- ============================================
--- TABLE: users
+-- TABLE: profiles  (extends auth.users 1-to-1)
 -- ============================================
 
-CREATE TABLE users (
-    user_id       UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email         VARCHAR(255) UNIQUE NOT NULL,
-    phone_number  VARCHAR(20)  UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+CREATE TABLE profiles (
+    id                  UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
 
-    role   user_role_enum   NOT NULL DEFAULT 'borrower',
-    status user_status_enum NOT NULL DEFAULT 'pending_verification',
+    full_name           TEXT,
+    phone               TEXT UNIQUE,
+    district            TEXT,
+    employment_type     employment_type_enum,
+    employer_name       TEXT,
+    monthly_income_ugx  BIGINT,
 
-    email_verified     BOOLEAN NOT NULL DEFAULT FALSE,
-    phone_verified     BOOLEAN NOT NULL DEFAULT FALSE,
-    two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-    two_factor_secret  VARCHAR(255),
+    account_status      account_status_enum NOT NULL DEFAULT 'pending_verification',
+    role                TEXT NOT NULL DEFAULT 'user'
+                            CONSTRAINT chk_role CHECK (role IN ('user', 'admin', 'negotiator')),
 
-    last_login_at         TIMESTAMP,
-    last_login_ip         VARCHAR(45),
-    failed_login_attempts INT       NOT NULL DEFAULT 0,
-    locked_until          TIMESTAMP,
+    credit_score        INT NOT NULL DEFAULT 50
+                            CONSTRAINT chk_credit_score CHECK (credit_score BETWEEN 0 AND 100),
+    reputation_tier     TEXT NOT NULL DEFAULT 'bronze'
+                            CONSTRAINT chk_reputation_tier
+                            CHECK (reputation_tier IN ('platinum', 'gold', 'silver', 'bronze', 'restricted')),
 
-    reputation_score INT                  NOT NULL DEFAULT 50
-        CONSTRAINT chk_reputation_score CHECK (reputation_score BETWEEN 0 AND 100),
-    reputation_tier  reputation_tier_enum NOT NULL DEFAULT 'bronze',
+    -- Stable anonymous token shown in the order book (e.g. L-#482). Never reveals identity.
+    -- Default uses RANDOM(); seed script explicitly sets all tokens to avoid collisions.
+    lender_token        TEXT UNIQUE NOT NULL
+                            DEFAULT 'L-#' || FLOOR(RANDOM() * 9000 + 1000)::TEXT,
 
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE  users                  IS 'Core accounts. role=both enables same account to borrow and lend.';
-COMMENT ON COLUMN users.reputation_score IS 'Behavior score 0-100. Recalculate with sp_calculate_reputation_score() after contract events.';
-COMMENT ON COLUMN users.reputation_tier  IS 'Auto-synced from reputation_score by trg_sync_reputation_tier. Never write directly.';
+COMMENT ON TABLE  profiles               IS 'Core user profile. Extends auth.users 1-to-1.';
+COMMENT ON COLUMN profiles.credit_score  IS 'Internal 0-100 score. Never exposed raw to other users — only reputation_tier is public.';
+COMMENT ON COLUMN profiles.lender_token  IS 'Stable anonymous token shown in the order book. Consistent per user, never reveals identity.';
 
 
 -- ============================================
--- TABLE: user_profiles
--- ============================================
-
-CREATE TABLE user_profiles (
-    profile_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id    UUID UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-
-    first_name    VARCHAR(100),
-    last_name     VARCHAR(100),
-    date_of_birth DATE,
-    gender        VARCHAR(20),
-
-    address_line1 VARCHAR(255),
-    address_line2 VARCHAR(255),
-    city          VARCHAR(100),
-    district      VARCHAR(100),
-    country       VARCHAR(100) NOT NULL DEFAULT 'Uganda',
-    postal_code   VARCHAR(20),
-
-    employment_status VARCHAR(50),
-    employer_name     VARCHAR(255),
-    job_title         VARCHAR(100),
-    monthly_income    DECIMAL(15, 2),
-
-    business_name                VARCHAR(255),
-    business_registration_number VARCHAR(100),
-    business_type                VARCHAR(100),
-    years_in_business            INT,
-
-    profile_completed             BOOLEAN NOT NULL DEFAULT FALSE,
-    profile_completion_percentage INT     NOT NULL DEFAULT 0,
-
-    avatar_url VARCHAR(500),
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE  user_profiles          IS 'Extended profile. Only district is exposed on public loan listings.';
-COMMENT ON COLUMN user_profiles.district IS 'Only address field shown publicly pre-contract.';
-
-
--- ============================================
--- TABLE: password_reset_tokens
--- ============================================
-
-CREATE TABLE password_reset_tokens (
-    token_id   UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id    UUID         NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    token_hash VARCHAR(255) NOT NULL,
-    expires_at TIMESTAMP    NOT NULL,
-    used       BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: email_verification_tokens
--- ============================================
-
-CREATE TABLE email_verification_tokens (
-    verification_id UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id         UUID         NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    email           VARCHAR(255) NOT NULL,
-    token_hash      VARCHAR(255) NOT NULL,
-    expires_at      TIMESTAMP    NOT NULL,
-    verified_at     TIMESTAMP,
-    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: refresh_tokens
--- ============================================
-
-CREATE TABLE refresh_tokens (
-    token_id    UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id     UUID         NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    token_hash  VARCHAR(255) UNIQUE NOT NULL,
-    user_agent  TEXT,
-    ip_address  VARCHAR(45),
-    expires_at  TIMESTAMP    NOT NULL,
-    revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
-    revoked_at  TIMESTAMP,
-    replaced_by UUID REFERENCES refresh_tokens(token_id) ON DELETE SET NULL,
-    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: kyc_verifications
--- ============================================
-
-CREATE TABLE kyc_verifications (
-    verification_id UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id         UUID            NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status          kyc_status_enum NOT NULL DEFAULT 'not_started',
-
-    id_type        VARCHAR(50),
-    id_number      VARCHAR(100),
-    id_front_url   VARCHAR(500),
-    id_back_url    VARCHAR(500),
-    id_verified    BOOLEAN   NOT NULL DEFAULT FALSE,
-    id_verified_at TIMESTAMP,
-
-    selfie_url         VARCHAR(500),
-    selfie_verified    BOOLEAN   NOT NULL DEFAULT FALSE,
-    selfie_verified_at TIMESTAMP,
-
-    proof_of_address_url         VARCHAR(500),
-    proof_of_address_verified    BOOLEAN   NOT NULL DEFAULT FALSE,
-    proof_of_address_verified_at TIMESTAMP,
-
-    business_registration_url VARCHAR(500),
-    business_license_url      VARCHAR(500),
-    tax_clearance_url         VARCHAR(500),
-
-    verified_by        UUID REFERENCES users(user_id) ON DELETE SET NULL,
-    verification_notes TEXT,
-    rejection_reason   TEXT,
-
-    submitted_at TIMESTAMP,
-    verified_at  TIMESTAMP,
-    expires_at   TIMESTAMP,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE kyc_verifications IS 'KYC records. status=approved required before loan creation (DB trigger enforced).';
-
-
--- ============================================
--- TABLE: risk_assessments
--- ============================================
-
-CREATE TABLE risk_assessments (
-    assessment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id       UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-
-    credit_score  INT               CONSTRAINT chk_credit_score CHECK (credit_score BETWEEN 300 AND 850),
-    risk_score    DECIMAL(5, 2)     CONSTRAINT chk_risk_score   CHECK (risk_score   BETWEEN 0   AND 100),
-    risk_category risk_category_enum,
-
-    income_verification_score       INT,
-    employment_stability_score      INT,
-    debt_to_income_ratio            DECIMAL(5, 2),
-    previous_loan_performance_score INT,
-
-    assessment_date  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    assessed_by      UUID REFERENCES users(user_id) ON DELETE SET NULL,
-    assessment_notes TEXT,
-
-    valid_until TIMESTAMP,
-    is_current  BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON COLUMN risk_assessments.credit_score IS '300-850. Only band (e.g. 600-649) exposed publicly.';
-
-
--- ============================================
--- TABLE: wallet_balances
--- ============================================
-
-CREATE TABLE wallet_balances (
-    wallet_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id   UUID UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-
-    lendable_balance      DECIMAL(15, 2) NOT NULL DEFAULT 0
-        CONSTRAINT chk_lendable_non_negative     CHECK (lendable_balance >= 0),
-    locked_repayment      DECIMAL(15, 2) NOT NULL DEFAULT 0
-        CONSTRAINT chk_locked_non_negative       CHECK (locked_repayment >= 0),
-    non_lendable_borrowed DECIMAL(15, 2) NOT NULL DEFAULT 0
-        CONSTRAINT chk_non_lendable_non_negative CHECK (non_lendable_borrowed >= 0),
-
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE  wallet_balances                       IS 'Fund segregation. Auto-created on user registration.';
-COMMENT ON COLUMN wallet_balances.lendable_balance      IS 'Own deposited capital. Only pool that funds bids.';
-COMMENT ON COLUMN wallet_balances.locked_repayment      IS 'Reserved for upcoming repayments. Cannot be re-lent.';
-COMMENT ON COLUMN wallet_balances.non_lendable_borrowed IS 'Received from loan disbursements. Permanently ineligible for lending.';
-
-
--- ============================================
--- TABLE: loan_requests
--- ============================================
-
-CREATE TABLE loan_requests (
-    request_id  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    borrower_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-
-    requested_amount    DECIMAL(15, 2) NOT NULL,
-    purpose             VARCHAR(255)   NOT NULL,
-    purpose_description TEXT,
-    duration_months     INT            NOT NULL,
-    max_interest_rate   DECIMAL(5, 2),
-
-    total_bid_amount   DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    number_of_bids     INT            NOT NULL DEFAULT 0,
-    funding_percentage DECIMAL(5, 2)  NOT NULL DEFAULT 0,
-
-    status     loan_request_status_enum NOT NULL DEFAULT 'draft',
-    listed_at  TIMESTAMP,
-    expires_at TIMESTAMP,
-    funded_at  TIMESTAMP,
-
-    supporting_documents JSONB,
-    views_count INT NOT NULL DEFAULT 0,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT chk_lr_amount_positive   CHECK (requested_amount > 0),
-    CONSTRAINT chk_lr_duration_positive CHECK (duration_months > 0),
-    CONSTRAINT chk_lr_max_rate          CHECK (max_interest_rate IS NULL OR max_interest_rate BETWEEN 0 AND 100),
-    CONSTRAINT chk_lr_funding_pct       CHECK (funding_percentage BETWEEN 0 AND 100)
-);
-
-COMMENT ON TABLE loan_requests IS 'Borrower funding requests. PII masked on public endpoints pre-contract.';
-
-
--- ============================================
--- TABLE: bids
--- ============================================
-
-CREATE TABLE bids (
-    bid_id     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    request_id UUID NOT NULL REFERENCES loan_requests(request_id) ON DELETE CASCADE,
-    lender_id  UUID NOT NULL REFERENCES users(user_id)            ON DELETE CASCADE,
-
-    bid_amount    DECIMAL(15, 2) NOT NULL,
-    interest_rate DECIMAL(5, 2)  NOT NULL,
-
-    status      bid_status_enum NOT NULL DEFAULT 'pending',
-    auto_accept BOOLEAN         NOT NULL DEFAULT FALSE,
-
-    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    accepted_at  TIMESTAMP,
-    withdrawn_at TIMESTAMP,
-    expires_at   TIMESTAMP,
-
-    CONSTRAINT chk_bid_amount_positive CHECK (bid_amount > 0),
-    CONSTRAINT chk_bid_rate            CHECK (interest_rate BETWEEN 0 AND 100)
-);
-
-
--- ============================================
--- TABLE: loan_contracts
--- ============================================
-
-CREATE TABLE loan_contracts (
-    contract_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    request_id  UUID NOT NULL REFERENCES loan_requests(request_id),
-    borrower_id UUID NOT NULL REFERENCES users(user_id),
-
-    total_amount           DECIMAL(15, 2) NOT NULL,
-    weighted_interest_rate DECIMAL(5, 2)  NOT NULL,
-    duration_months        INT            NOT NULL,
-
-    monthly_payment DECIMAL(15, 2) NOT NULL,
-    total_repayment DECIMAL(15, 2) NOT NULL,
-    total_interest  DECIMAL(15, 2) NOT NULL,
-
-    status contract_status_enum NOT NULL DEFAULT 'draft',
-
-    borrower_signed       BOOLEAN   NOT NULL DEFAULT FALSE,
-    borrower_signed_at    TIMESTAMP,
-    borrower_signature_ip VARCHAR(45),
-
-    all_lenders_signed    BOOLEAN   NOT NULL DEFAULT FALSE,
-    contract_activated_at TIMESTAMP,
-
-    contract_document_url VARCHAR(500),
-    contract_hash         VARCHAR(255),
-
-    disbursed        BOOLEAN        NOT NULL DEFAULT FALSE,
-    disbursed_at     TIMESTAMP,
-    disbursed_amount DECIMAL(15, 2),
-
-    total_repaid        DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    outstanding_balance DECIMAL(15, 2),
-    next_payment_date   DATE,
-    last_payment_date   DATE,
-    days_overdue        INT            NOT NULL DEFAULT 0,
-    maturity_date       DATE,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT chk_lc_amount_positive CHECK (total_amount > 0),
-    CONSTRAINT chk_lc_rate            CHECK (weighted_interest_rate BETWEEN 0 AND 100),
-    CONSTRAINT chk_lc_outstanding     CHECK (outstanding_balance IS NULL OR outstanding_balance >= 0),
-    CONSTRAINT chk_lc_total_repaid    CHECK (total_repaid >= 0)
-);
-
-
--- ============================================
--- TABLE: contract_bids
--- ============================================
-
-CREATE TABLE contract_bids (
-    contract_bid_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    contract_id     UUID NOT NULL REFERENCES loan_contracts(contract_id) ON DELETE CASCADE,
-    bid_id          UUID NOT NULL REFERENCES bids(bid_id),
-    lender_id       UUID NOT NULL REFERENCES users(user_id),
-
-    amount        DECIMAL(15, 2) NOT NULL,
-    interest_rate DECIMAL(5, 2)  NOT NULL,
-
-    lender_signed       BOOLEAN   NOT NULL DEFAULT FALSE,
-    lender_signed_at    TIMESTAMP,
-    lender_signature_ip VARCHAR(45),
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    UNIQUE (bid_id, contract_id),
-    CONSTRAINT chk_cb_amount_positive CHECK (amount > 0),
-    CONSTRAINT chk_cb_rate            CHECK (interest_rate BETWEEN 0 AND 100)
-);
-
-
--- ============================================
--- TABLE: disbursements
--- ============================================
-
-CREATE TABLE disbursements (
-    disbursement_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    contract_id     UUID NOT NULL REFERENCES loan_contracts(contract_id),
-    bid_id          UUID NOT NULL REFERENCES bids(bid_id),
-    lender_id       UUID NOT NULL REFERENCES users(user_id),
-    borrower_id     UUID NOT NULL REFERENCES users(user_id),
-
-    amount            DECIMAL(15, 2)      NOT NULL,
-    payment_method    payment_method_enum NOT NULL,
-    payment_provider  VARCHAR(100),
-    payment_reference VARCHAR(255),
-
-    status disbursement_status_enum NOT NULL DEFAULT 'pending',
-
-    initiated_at TIMESTAMP,
-    completed_at TIMESTAMP,
-    failed_at    TIMESTAMP,
-
-    transaction_id    VARCHAR(255),
-    provider_response JSONB,
-    failure_reason    TEXT,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: loan_repayments
--- ============================================
-
-CREATE TABLE loan_repayments (
-    repayment_id       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    contract_id        UUID NOT NULL REFERENCES loan_contracts(contract_id) ON DELETE CASCADE,
-
-    installment_number INT            NOT NULL,
-    due_date           DATE           NOT NULL,
-    amount_due         DECIMAL(15, 2) NOT NULL,
-    principal_due      DECIMAL(15, 2) NOT NULL,
-    interest_due       DECIMAL(15, 2) NOT NULL,
-
-    status repayment_status_enum NOT NULL DEFAULT 'pending',
-
-    amount_paid    DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    principal_paid DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    interest_paid  DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    late_fee       DECIMAL(15, 2) NOT NULL DEFAULT 0,
-
-    paid_at   TIMESTAMP,
-    days_late INT NOT NULL DEFAULT 0,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT chk_rep_amount_due    CHECK (amount_due > 0),
-    CONSTRAINT chk_rep_principal_due CHECK (principal_due > 0),
-    CONSTRAINT chk_rep_interest_due  CHECK (interest_due >= 0),
-    CONSTRAINT chk_rep_amount_paid   CHECK (amount_paid >= 0)
-);
-
-
--- ============================================
--- TABLE: repayment_transactions
--- ============================================
-
-CREATE TABLE repayment_transactions (
-    transaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    repayment_id   UUID NOT NULL REFERENCES loan_repayments(repayment_id),
-    contract_id    UUID NOT NULL REFERENCES loan_contracts(contract_id),
-    bid_id         UUID NOT NULL REFERENCES bids(bid_id),
-    borrower_id    UUID NOT NULL REFERENCES users(user_id),
-    lender_id      UUID NOT NULL REFERENCES users(user_id),
-
-    amount           DECIMAL(15, 2) NOT NULL,
-    principal_amount DECIMAL(15, 2) NOT NULL,
-    interest_amount  DECIMAL(15, 2) NOT NULL,
-
-    payment_method    payment_method_enum    NOT NULL,
-    payment_provider  VARCHAR(100),
-    payment_reference VARCHAR(255),
-
-    status transaction_status_enum NOT NULL DEFAULT 'pending',
-
-    initiated_at TIMESTAMP,
-    completed_at TIMESTAMP,
-
-    provider_transaction_id VARCHAR(255),
-    provider_response       JSONB,
-    failure_reason          TEXT,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: audit_logs
--- ============================================
-
-CREATE TABLE audit_logs (
-    log_id  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
-
-    event_type     VARCHAR(100)        NOT NULL,
-    event_category event_category_enum NOT NULL,
-    entity_type    VARCHAR(50),
-    entity_id      UUID,
-    action         VARCHAR(100)        NOT NULL,
-    description    TEXT,
-
-    ip_address     VARCHAR(45),
-    user_agent     TEXT,
-    request_url    VARCHAR(500),
-    request_method VARCHAR(10),
-
-    old_values JSONB,
-    new_values JSONB,
-
-    status        event_status_enum NOT NULL DEFAULT 'success',
-    error_message TEXT,
-    correlation_id UUID,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE audit_logs IS 'Immutable audit trail. NEVER update or delete rows.';
-
-
--- ============================================
--- TABLE: notifications
--- ============================================
-
-CREATE TABLE notifications (
-    notification_id UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id         UUID         NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    type            VARCHAR(50)  NOT NULL,
-    title           VARCHAR(255) NOT NULL,
-    message         TEXT         NOT NULL,
-    data            JSONB,
-    read            BOOLEAN      NOT NULL DEFAULT FALSE,
-    read_at         TIMESTAMP,
-    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- ============================================
--- TABLE: user_notes
--- ============================================
-
-CREATE TABLE user_notes (
-    note_id     UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id     UUID        NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    created_by  UUID        NOT NULL REFERENCES users(user_id) ON DELETE SET NULL,
-    note_type   VARCHAR(50) NOT NULL DEFAULT 'general',
-    content     TEXT        NOT NULL,
-    is_internal BOOLEAN     NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE user_notes IS 'Admin CRM notes. Never expose to subject user.';
-
-
--- ============================================
--- TABLE: system_settings
+-- TABLE: system_settings  (key-value, admin-managed)
 -- ============================================
 
 CREATE TABLE system_settings (
@@ -673,9 +186,497 @@ CREATE TABLE system_settings (
     setting_type  setting_type_enum NOT NULL DEFAULT 'string',
     category      VARCHAR(50),
     description   TEXT,
-    is_public     BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    is_public     BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE system_settings IS 'Platform configuration. All business limits read from here at runtime.';
+
+
+-- ============================================
+-- DEFAULT SYSTEM SETTINGS
+-- ============================================
+
+INSERT INTO system_settings (setting_key, setting_value, setting_type, category, description, is_public) VALUES
+    ('min_loan_amount',         '100000',   'number',  'limits',      'Minimum loan amount in UGX',                           TRUE),
+    ('max_loan_amount',         '50000000', 'number',  'limits',      'Maximum loan amount in UGX',                           TRUE),
+    ('min_interest_rate',       '5',        'number',  'limits',      'Minimum interest rate %',                              TRUE),
+    ('max_interest_rate',       '30',       'number',  'limits',      'Maximum interest rate %',                              TRUE),
+    ('min_lender_investment',   '100000',   'number',  'limits',      'Minimum bid amount per lender in UGX',                 TRUE),
+    ('max_concurrent_loans',    '3',        'number',  'limits',      'Maximum active loan listings per borrower',            TRUE),
+    ('listing_duration_days',   '7',        'number',  'marketplace', 'Days a loan request stays listed before expiry',       TRUE),
+    ('kyc_validity_months',     '12',       'number',  'compliance',  'Months until KYC expires and re-verification required',TRUE),
+    ('platform_currency',       'UGX',      'string',  'general',     'Platform operating currency',                          TRUE),
+    ('auto_logout_minutes',     '30',       'number',  'security',    'Idle session timeout in minutes',                      FALSE),
+    ('access_token_minutes',    '15',       'number',  'security',    'Access JWT TTL in minutes',                            FALSE),
+    ('refresh_token_days',      '7',        'number',  'security',    'Refresh token TTL in days',                            FALSE);
+
+
+-- ============================================
+-- TABLE: subscriptions
+-- ============================================
+
+CREATE TABLE subscriptions (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    plan        subscription_plan_enum   NOT NULL DEFAULT 'watchlist',
+    status      subscription_status_enum NOT NULL DEFAULT 'active',
+
+    started_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP,
+    amount_ugx  BIGINT NOT NULL DEFAULT 0,
+    auto_renew  BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  subscriptions IS 'One active subscription per user at any time. watchlist plan = free (amount_ugx = 0).';
+
+
+-- ============================================
+-- TABLE: kyc_verifications
+-- ============================================
+
+CREATE TABLE kyc_verifications (
+    id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id               UUID UNIQUE NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    status                kyc_status_enum NOT NULL DEFAULT 'not_submitted',
+
+    national_id_type      VARCHAR(50),
+    national_id_number    VARCHAR(100),
+    national_id_front_url VARCHAR(500),
+    national_id_back_url  VARCHAR(500),
+    selfie_url            VARCHAR(500),
+
+    id_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    selfie_verified       BOOLEAN NOT NULL DEFAULT FALSE,
+
+    verified_by           UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    rejection_reason      TEXT,
+    verification_notes    TEXT,
+
+    submitted_at          TIMESTAMP,
+    reviewed_at           TIMESTAMP,
+    expires_at            TIMESTAMP,   -- set to submitted_at + kyc_validity_months on approval
+
+    created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE kyc_verifications IS 'KYC records. status=approved required before loan creation (DB trigger enforced).';
+
+
+-- ============================================
+-- TABLE: loan_requests  (borrower listings)
+-- ============================================
+
+CREATE TABLE loan_requests (
+    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    borrower_id       UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+
+    title             TEXT NOT NULL,
+    purpose           TEXT NOT NULL,
+    requested_amount  BIGINT NOT NULL,
+    duration_months   INT NOT NULL
+                          CONSTRAINT chk_lr_duration CHECK (duration_months BETWEEN 1 AND 60),
+    max_interest_rate NUMERIC(5,2) NOT NULL
+                          CONSTRAINT chk_lr_rate CHECK (max_interest_rate BETWEEN 0 AND 100),
+
+    district          TEXT NOT NULL,
+    risk_category     risk_category_enum NOT NULL DEFAULT 'medium',
+
+    -- Band range shown publicly (e.g. 'A+'). Raw credit_score from profiles is never exposed.
+    credit_score_band TEXT NOT NULL DEFAULT 'B',
+
+    -- bid count only — no monetary aggregates (non-custodial: platform never tracks fund totals)
+    number_of_bids    INT NOT NULL DEFAULT 0,
+
+    status            loan_status_enum NOT NULL DEFAULT 'active',
+
+    listed_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at        TIMESTAMP,           -- set by trigger on insert
+    contracted_at     TIMESTAMP,
+    cancelled_at      TIMESTAMP,
+
+    supporting_documents JSONB,
+    views_count       INT NOT NULL DEFAULT 0,
+
+    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_lr_amount_positive CHECK (requested_amount > 0)
+);
+
+COMMENT ON TABLE  loan_requests             IS 'Borrower funding requests. borrower_id masked on all public views and endpoints.';
+COMMENT ON COLUMN loan_requests.borrower_id IS 'NEVER exposed in v_loan_listings or any marketplace query. Anonymity enforced at view level.';
+COMMENT ON COLUMN loan_requests.number_of_bids IS 'Count of bids only. No monetary totals stored — platform is non-custodial.';
+
+
+-- ============================================
+-- TABLE: loan_bids  (lender offers on a listing)
+-- ============================================
+
+CREATE TABLE loan_bids (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+    lender_id   UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+
+    amount        BIGINT NOT NULL
+                      CONSTRAINT chk_lb_amount_positive CHECK (amount > 0),
+    interest_rate NUMERIC(5,2) NOT NULL
+                      CONSTRAINT chk_lb_rate CHECK (interest_rate BETWEEN 0 AND 100),
+
+    status        bid_status_enum NOT NULL DEFAULT 'pending',
+    auto_accept   BOOLEAN NOT NULL DEFAULT FALSE,
+
+    placed_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    accepted_at   TIMESTAMP,
+    withdrawn_at  TIMESTAMP,
+    expires_at    TIMESTAMP,
+
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- a lender can have only one active bid per listing
+    UNIQUE (request_id, lender_id)
+);
+
+COMMENT ON COLUMN loan_bids.lender_id IS 'Internal FK. Lenders are shown as lender_token in the order book, never by lender_id.';
+COMMENT ON COLUMN loan_bids.amount IS 'Proposed loan amount stated by lender. Platform never holds or moves this money.';
+
+
+-- ============================================
+-- TABLE: watchlist
+-- ============================================
+
+CREATE TABLE watchlist (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    request_id  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+    added_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (user_id, request_id)
+);
+
+
+-- ============================================
+-- TABLE: negotiators  (vetted professionals assignable to matched deals)
+-- ============================================
+
+CREATE TABLE negotiators (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    profile_id      UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    full_name       TEXT NOT NULL,
+    phone           TEXT NOT NULL,
+    email           TEXT NOT NULL,
+    credentials     TEXT,       -- e.g. 'Licensed Attorney · KCCA No. 00123'
+    specialisation  TEXT,
+
+    status          negotiator_status_enum NOT NULL DEFAULT 'available',
+    deals_completed INT NOT NULL DEFAULT 0,
+    avg_rating      NUMERIC(3,2),
+
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: contracts
+-- Records the agreed terms between matched parties.
+-- Platform NEVER tracks balances, repayments, or fund movements.
+-- All financial settlement happens directly between parties off-platform.
+-- ============================================
+
+CREATE TABLE contracts (
+    id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id            UUID NOT NULL REFERENCES loan_requests(id) ON DELETE RESTRICT,
+    bid_id                UUID NOT NULL REFERENCES loan_bids(id) ON DELETE RESTRICT,
+    borrower_id           UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+    lender_id             UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+    negotiator_id         UUID REFERENCES negotiators(id) ON DELETE SET NULL,
+
+    status                contract_status_enum NOT NULL DEFAULT 'draft',
+
+    -- agreed terms (informational record only — no fund movement on platform)
+    amount                BIGINT NOT NULL
+                              CONSTRAINT chk_c_amount_positive CHECK (amount > 0),
+    interest_rate         NUMERIC(5,2) NOT NULL
+                              CONSTRAINT chk_c_rate CHECK (interest_rate BETWEEN 0 AND 100),
+    duration_months       INT NOT NULL,
+    purpose               TEXT NOT NULL,
+    district              TEXT NOT NULL,
+
+    -- indicative repayment schedule figures (for reference / PDF generation only)
+    indicative_monthly_payment_ugx  BIGINT,
+    indicative_total_repayment_ugx  BIGINT,
+    indicative_total_interest_ugx   BIGINT,
+
+    repayment_start_date  DATE,
+    maturity_date         DATE,
+
+    governing_law         TEXT NOT NULL DEFAULT 'Laws of Uganda',
+    pdf_url               VARCHAR(500),    -- populated by Edge Function
+
+    borrower_confirmed    BOOLEAN NOT NULL DEFAULT FALSE,
+    borrower_confirmed_at TIMESTAMP,
+    lender_confirmed      BOOLEAN NOT NULL DEFAULT FALSE,
+    lender_confirmed_at   TIMESTAMP,
+    contract_activated_at TIMESTAMP,
+
+    created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (request_id),   -- one contract per listing
+    UNIQUE (bid_id)        -- one contract per accepted bid
+);
+
+COMMENT ON TABLE  contracts IS
+'Records agreed loan terms. Informational only — platform never holds funds, tracks balances, or processes payments.
+ All financial settlement is direct between borrower and lender off-platform.';
+
+
+-- ============================================
+-- TABLE: repayment_schedules
+-- Indicative amortisation schedule for reference only.
+-- Nipanze does NOT initiate, process, verify, or track payments.
+-- ============================================
+
+CREATE TABLE repayment_schedules (
+    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id       UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+
+    instalment_number INT NOT NULL CONSTRAINT chk_rs_instalment CHECK (instalment_number >= 1),
+    due_date          DATE NOT NULL,
+
+    principal_ugx     BIGINT NOT NULL CONSTRAINT chk_rs_principal CHECK (principal_ugx > 0),
+    interest_ugx      BIGINT NOT NULL CONSTRAINT chk_rs_interest  CHECK (interest_ugx >= 0),
+    total_ugx         BIGINT GENERATED ALWAYS AS (principal_ugx + interest_ugx) STORED,
+
+    -- Participant-reported status only. Never verified or enforced by platform.
+    reported_status   TEXT NOT NULL DEFAULT 'pending'
+                          CONSTRAINT chk_rs_reported_status
+                          CHECK (reported_status IN ('pending', 'reported_paid', 'reported_late', 'disputed')),
+    reported_at       TIMESTAMP,
+    reported_by       UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (contract_id, instalment_number)
+);
+
+COMMENT ON TABLE repayment_schedules IS
+'Indicative amortisation schedule lines. Nipanze does not initiate, process, or verify payments.
+ Status is participant-reported only. Non-custodial by design.';
+
+
+-- ============================================
+-- TABLE: negotiator_assignments  (join between contract and negotiator)
+-- ============================================
+
+CREATE TABLE negotiator_assignments (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id     UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+    negotiator_id   UUID NOT NULL REFERENCES negotiators(id) ON DELETE RESTRICT,
+
+    assigned_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at    TIMESTAMP,
+    notes           TEXT,
+
+    UNIQUE (contract_id)  -- one active negotiator per contract
+);
+
+
+-- ============================================
+-- TABLE: negotiator_assessments  (feed into credit scoring)
+-- ============================================
+
+CREATE TABLE negotiator_assessments (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    assignment_id       UUID NOT NULL REFERENCES negotiator_assignments(id) ON DELETE CASCADE,
+    assessed_user_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    repayment_behaviour INT CONSTRAINT chk_na_repayment  CHECK (repayment_behaviour BETWEEN 1 AND 5),
+    contract_adherence  INT CONSTRAINT chk_na_adherence  CHECK (contract_adherence  BETWEEN 1 AND 5),
+    dispute_handling    INT CONSTRAINT chk_na_dispute    CHECK (dispute_handling    BETWEEN 1 AND 5),
+    overall_rating      INT CONSTRAINT chk_na_overall    CHECK (overall_rating      BETWEEN 1 AND 5),
+
+    notes               TEXT,
+    submitted_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE negotiator_assessments IS
+'Structured assessments from vetted negotiators. Feed directly into sp_calculate_reputation_score.
+ Never shown raw to the assessed user — score effect only.';
+
+
+-- ============================================
+-- TABLE: contact_reveals  (opt-in identity disclosure post-acceptance)
+-- ============================================
+
+CREATE TABLE contact_reveals (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id         UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+    revealed_by         UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+
+    reveals_borrower    BOOLEAN NOT NULL DEFAULT FALSE,
+    reveals_lender      BOOLEAN NOT NULL DEFAULT FALSE,
+    reveals_negotiator  BOOLEAN NOT NULL DEFAULT FALSE,
+
+    status              reveal_status_enum NOT NULL DEFAULT 'pending',
+    revealed_at         TIMESTAMP,
+
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- each party can reveal once per contract
+    UNIQUE (contract_id, revealed_by)
+);
+
+COMMENT ON TABLE contact_reveals IS
+'Opt-in identity disclosure after a bid is accepted.
+ Irreversible once revealed. Platform never discloses identity outside this flow.
+ No fee charged on-platform — non-custodial.';
+
+
+-- ============================================
+-- TABLE: credit_score_events  (audit trail for score changes)
+-- ============================================
+
+CREATE TABLE credit_score_events (
+    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id           UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    score_before      INT NOT NULL,
+    score_after       INT NOT NULL,
+    delta             INT GENERATED ALWAYS AS (score_after - score_before) STORED,
+
+    -- factor: 'participation', 'risk_accuracy', 'consistency', 'assessment'
+    factor            TEXT NOT NULL,
+    source            TEXT,   -- e.g. contract_id or assessment_id
+
+    recalculated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: notifications
+-- ============================================
+
+CREATE TABLE notifications (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    type        notification_type_enum NOT NULL,
+    title       TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    data        JSONB,
+
+    is_read     BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at     TIMESTAMP,
+
+    -- optional deep-link references
+    request_id  UUID REFERENCES loan_requests(id) ON DELETE SET NULL,
+    contract_id UUID REFERENCES contracts(id)     ON DELETE SET NULL,
+    bid_id      UUID REFERENCES loan_bids(id)     ON DELETE SET NULL,
+
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: audit_logs  (append-only; DELETE/UPDATE blocked by RLS)
+-- ============================================
+
+CREATE TABLE audit_logs (
+    id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id        UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    event_type     audit_event_type_enum NOT NULL,
+    entity_type    VARCHAR(50),
+    entity_id      UUID,
+    action         VARCHAR(100),
+    description    TEXT,
+
+    ip_address     INET,
+    user_agent     TEXT,
+
+    old_values     JSONB,
+    new_values     JSONB,
+    metadata       JSONB,
+
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE audit_logs IS 'Immutable audit trail. NEVER update or delete rows. Enforced by RLS.';
+
+
+-- ============================================
+-- TABLE: refresh_tokens  (manual rotation audit chain)
+-- ============================================
+
+CREATE TABLE refresh_tokens (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    token_hash  TEXT NOT NULL UNIQUE,   -- bcrypt hash of the actual token
+    replaced_by UUID REFERENCES refresh_tokens(id) ON DELETE SET NULL,
+    revoked     BOOLEAN NOT NULL DEFAULT FALSE,
+    revoked_at  TIMESTAMP,
+
+    issued_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP NOT NULL,
+
+    ip_address  INET,
+    user_agent  TEXT
+);
+
+COMMENT ON TABLE refresh_tokens IS
+'Rotation chain: when a token is used, replaced_by is set to the new token id.
+ If a revoked token is seen again, token_reuse_detected is logged to audit_logs.';
+
+
+-- ============================================
+-- TABLE: api_keys  (Pro plan subscribers only)
+-- ============================================
+
+CREATE TABLE api_keys (
+    id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    key_hash     TEXT NOT NULL UNIQUE,  -- bcrypt hash; raw key shown once at creation
+    label        TEXT,
+    is_active    BOOLEAN NOT NULL DEFAULT TRUE,
+    daily_limit  INT NOT NULL DEFAULT 1000,
+
+    last_used_at TIMESTAMP,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    revoked_at   TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: referrals
+-- ============================================
+
+CREATE TABLE referrals (
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    referrer_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    referred_email   TEXT NOT NULL,
+    referred_user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    code             TEXT NOT NULL UNIQUE,
+    is_activated     BOOLEAN NOT NULL DEFAULT FALSE,
+    activated_at     TIMESTAMP,
+    reward_applied   BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -683,212 +684,206 @@ CREATE TABLE system_settings (
 -- INDEXES
 -- ============================================
 
-CREATE INDEX idx_users_email         ON users(email);
-CREATE INDEX idx_users_phone         ON users(phone_number);
-CREATE INDEX idx_users_status        ON users(status);
-CREATE INDEX idx_users_role_status   ON users(role, status);
-CREATE INDEX idx_users_reputation    ON users(reputation_score DESC);
-CREATE INDEX idx_users_rep_tier      ON users(reputation_tier);
-CREATE INDEX idx_profiles_user       ON user_profiles(user_id);
-CREATE INDEX idx_prt_hash            ON password_reset_tokens(token_hash);
-CREATE INDEX idx_prt_expires         ON password_reset_tokens(expires_at);
-CREATE INDEX idx_evt_hash            ON email_verification_tokens(token_hash);
-CREATE INDEX idx_evt_expires         ON email_verification_tokens(expires_at);
-CREATE INDEX idx_rt_user             ON refresh_tokens(user_id);
-CREATE INDEX idx_rt_hash             ON refresh_tokens(token_hash);
-CREATE INDEX idx_rt_expires          ON refresh_tokens(expires_at);
-CREATE INDEX idx_rt_active           ON refresh_tokens(user_id, expires_at) WHERE revoked = FALSE;
-CREATE INDEX idx_kyc_user            ON kyc_verifications(user_id);
-CREATE INDEX idx_kyc_status          ON kyc_verifications(status);
-CREATE INDEX idx_risk_user           ON risk_assessments(user_id);
-CREATE INDEX idx_risk_category       ON risk_assessments(risk_category);
-CREATE INDEX idx_risk_current        ON risk_assessments(user_id) WHERE is_current = TRUE;
-CREATE INDEX idx_wallet_user         ON wallet_balances(user_id);
-CREATE INDEX idx_lr_borrower         ON loan_requests(borrower_id);
-CREATE INDEX idx_lr_status           ON loan_requests(status);
-CREATE INDEX idx_lr_expires          ON loan_requests(expires_at);
-CREATE INDEX idx_lr_status_expires   ON loan_requests(status, expires_at);
-CREATE INDEX idx_lr_borrower_status  ON loan_requests(borrower_id, status, created_at DESC);
-CREATE INDEX idx_lr_active           ON loan_requests(status) WHERE status IN ('active', 'partially_funded');
-CREATE INDEX idx_bids_request        ON bids(request_id);
-CREATE INDEX idx_bids_lender         ON bids(lender_id);
-CREATE INDEX idx_bids_status         ON bids(status);
-CREATE INDEX idx_bids_rate           ON bids(interest_rate);
-CREATE INDEX idx_bids_request_status ON bids(request_id, status);
-CREATE INDEX idx_bids_lender_status  ON bids(lender_id, status, created_at DESC);
-CREATE INDEX idx_lc_borrower         ON loan_contracts(borrower_id);
-CREATE INDEX idx_lc_status           ON loan_contracts(status);
-CREATE INDEX idx_lc_next_payment     ON loan_contracts(next_payment_date);
-CREATE INDEX idx_lc_borrower_status  ON loan_contracts(borrower_id, status);
-CREATE INDEX idx_lc_status_payment   ON loan_contracts(status, next_payment_date);
-CREATE INDEX idx_lc_active           ON loan_contracts(status) WHERE status = 'active';
-CREATE INDEX idx_cb_contract         ON contract_bids(contract_id);
-CREATE INDEX idx_cb_bid              ON contract_bids(bid_id);
-CREATE INDEX idx_cb_lender           ON contract_bids(lender_id);
-CREATE INDEX idx_cb_unsigned         ON contract_bids(contract_id) WHERE lender_signed = FALSE;
-CREATE INDEX idx_disb_contract       ON disbursements(contract_id);
-CREATE INDEX idx_disb_status         ON disbursements(status);
-CREATE INDEX idx_disb_borrower       ON disbursements(borrower_id);
-CREATE INDEX idx_rep_contract        ON loan_repayments(contract_id);
-CREATE INDEX idx_rep_due_date        ON loan_repayments(due_date);
-CREATE INDEX idx_rep_status          ON loan_repayments(status);
-CREATE INDEX idx_rep_due_status      ON loan_repayments(due_date, status);
-CREATE INDEX idx_rep_pending_due     ON loan_repayments(status, due_date) WHERE status = 'pending';
-CREATE INDEX idx_rpt_repayment       ON repayment_transactions(repayment_id);
-CREATE INDEX idx_rpt_status          ON repayment_transactions(status);
-CREATE INDEX idx_rpt_lender          ON repayment_transactions(lender_id);
-CREATE INDEX idx_rpt_borrower        ON repayment_transactions(borrower_id);
-CREATE INDEX idx_al_user             ON audit_logs(user_id);
-CREATE INDEX idx_al_event_type       ON audit_logs(event_type);
-CREATE INDEX idx_al_entity           ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_al_created          ON audit_logs(created_at DESC);
-CREATE INDEX idx_al_correlation      ON audit_logs(correlation_id);
-CREATE INDEX idx_notif_user_read     ON notifications(user_id, read);
-CREATE INDEX idx_notif_user_created  ON notifications(user_id, created_at DESC);
-CREATE INDEX idx_notes_user          ON user_notes(user_id, created_at DESC);
-CREATE INDEX idx_ss_key              ON system_settings(setting_key);
-CREATE INDEX idx_ss_category         ON system_settings(category);
+-- profiles
+CREATE INDEX idx_profiles_role           ON profiles (role);
+CREATE INDEX idx_profiles_account_status ON profiles (account_status);
+CREATE INDEX idx_profiles_lender_token   ON profiles (lender_token);
+CREATE INDEX idx_profiles_credit_score   ON profiles (credit_score DESC);
+CREATE INDEX idx_profiles_rep_tier       ON profiles (reputation_tier);
 
+-- subscriptions
+CREATE INDEX idx_sub_user_id    ON subscriptions (user_id);
+CREATE INDEX idx_sub_plan       ON subscriptions (plan);
+CREATE INDEX idx_sub_status     ON subscriptions (status);
+CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active';
 
--- ============================================
--- SYSTEM SETTINGS
--- ============================================
+-- kyc_verifications
+CREATE INDEX idx_kyc_user_id ON kyc_verifications (user_id);
+CREATE INDEX idx_kyc_status  ON kyc_verifications (status);
 
-INSERT INTO system_settings (setting_key, setting_value, setting_type, category, description, is_public) VALUES
-    ('platform_fee_percentage', '1.5',      'number',  'fees',        'Platform fee as % of loan amount',                     TRUE),
-    ('min_loan_amount',         '100000',   'number',  'limits',      'Minimum loan amount in UGX',                           TRUE),
-    ('max_loan_amount',         '50000000', 'number',  'limits',      'Maximum loan amount in UGX',                           TRUE),
-    ('min_loan_duration',       '1',        'number',  'limits',      'Minimum loan duration in months',                      TRUE),
-    ('max_loan_duration',       '36',       'number',  'limits',      'Maximum loan duration in months',                      TRUE),
-    ('min_interest_rate',       '5',        'number',  'limits',      'Minimum interest rate %',                              TRUE),
-    ('max_interest_rate',       '30',       'number',  'limits',      'Maximum interest rate %',                              TRUE),
-    ('listing_duration_days',   '7',        'number',  'marketplace', 'Days a loan request stays listed before expiry',       TRUE),
-    ('kyc_required',            'true',     'boolean', 'compliance',  'KYC approval required before loan creation',           TRUE),
-    ('kyc_validity_months',     '12',       'number',  'compliance',  'Months until KYC expires and re-verification required',TRUE),
-    ('auto_matching_enabled',   'true',     'boolean', 'marketplace', 'Enable automatic bid-to-loan matching',                FALSE),
-    ('late_fee_percentage',     '5',        'number',  'fees',        'Late fee as % of overdue amount',                      TRUE),
-    ('grace_period_days',       '7',        'number',  'repayments',  'Days grace before installment marked overdue',         TRUE),
-    ('default_threshold_days',  '90',       'number',  'repayments',  'Days overdue before contract marked defaulted',        FALSE),
-    ('max_concurrent_loans',    '3',        'number',  'limits',      'Maximum active borrowed contracts per borrower',       TRUE),
-    ('min_lender_investment',   '50000',    'number',  'limits',      'Minimum bid amount per lender in UGX',                 TRUE),
-    ('auto_logout_minutes',     '30',       'number',  'security',    'Idle session timeout in minutes',                      FALSE),
-    ('access_token_minutes',    '15',       'number',  'security',    'Access JWT TTL in minutes',                            FALSE),
-    ('refresh_token_days',      '7',        'number',  'security',    'Refresh token TTL in days',                            FALSE);
+-- loan_requests
+CREATE INDEX idx_lr_borrower_id   ON loan_requests (borrower_id);
+CREATE INDEX idx_lr_status        ON loan_requests (status);
+CREATE INDEX idx_lr_risk_category ON loan_requests (risk_category);
+CREATE INDEX idx_lr_expires_at    ON loan_requests (expires_at);
+CREATE INDEX idx_lr_district      ON loan_requests (district);
+CREATE INDEX idx_lr_status_exp    ON loan_requests (status, expires_at);
+CREATE INDEX idx_lr_active        ON loan_requests (status) WHERE status = 'active';
+
+-- loan_bids
+CREATE INDEX idx_lb_request_id    ON loan_bids (request_id);
+CREATE INDEX idx_lb_lender_id     ON loan_bids (lender_id);
+CREATE INDEX idx_lb_status        ON loan_bids (status);
+CREATE INDEX idx_lb_interest      ON loan_bids (interest_rate);
+CREATE INDEX idx_lb_req_status    ON loan_bids (request_id, status);
+CREATE INDEX idx_lb_lender_status ON loan_bids (lender_id, status, placed_at DESC);
+
+-- watchlist
+CREATE INDEX idx_wl_user_id    ON watchlist (user_id);
+CREATE INDEX idx_wl_request_id ON watchlist (request_id);
+
+-- contracts
+CREATE INDEX idx_c_borrower_id   ON contracts (borrower_id);
+CREATE INDEX idx_c_lender_id     ON contracts (lender_id);
+CREATE INDEX idx_c_status        ON contracts (status);
+CREATE INDEX idx_c_negotiator_id ON contracts (negotiator_id);
+CREATE INDEX idx_c_active        ON contracts (status) WHERE status = 'in_execution';
+
+-- repayment_schedules
+CREATE INDEX idx_rs_contract_id  ON repayment_schedules (contract_id);
+CREATE INDEX idx_rs_due_date     ON repayment_schedules (due_date);
+CREATE INDEX idx_rs_reported     ON repayment_schedules (reported_status);
+
+-- negotiator_assessments
+CREATE INDEX idx_na_assessed_user ON negotiator_assessments (assessed_user_id);
+
+-- credit_score_events
+CREATE INDEX idx_cse_user_id      ON credit_score_events (user_id);
+CREATE INDEX idx_cse_recalculated ON credit_score_events (recalculated_at DESC);
+
+-- notifications
+CREATE INDEX idx_notif_user_id   ON notifications (user_id);
+CREATE INDEX idx_notif_user_read ON notifications (user_id, is_read);
+CREATE INDEX idx_notif_created   ON notifications (created_at DESC);
+
+-- audit_logs
+CREATE INDEX idx_al_user_id    ON audit_logs (user_id);
+CREATE INDEX idx_al_event_type ON audit_logs (event_type);
+CREATE INDEX idx_al_entity     ON audit_logs (entity_type, entity_id);
+CREATE INDEX idx_al_created    ON audit_logs (created_at DESC);
+CREATE INDEX idx_al_ip         ON audit_logs (ip_address);
+
+-- refresh_tokens
+CREATE INDEX idx_rt_user_id ON refresh_tokens (user_id);
+CREATE INDEX idx_rt_hash    ON refresh_tokens (token_hash);
+CREATE INDEX idx_rt_expires ON refresh_tokens (expires_at);
+CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoked = FALSE;
+
+-- api_keys
+CREATE INDEX idx_ak_user_id ON api_keys (user_id);
 
 
 -- ============================================
 -- VIEWS
 -- ============================================
 
-CREATE VIEW v_active_loans AS
+-- Anonymised marketplace view — borrower_id intentionally excluded
+CREATE VIEW v_loan_listings AS
 SELECT
-    lc.contract_id, lc.borrower_id,
-    up.first_name || ' ' || up.last_name AS borrower_name,
-    lc.total_amount, lc.weighted_interest_rate, lc.duration_months,
-    lc.outstanding_balance, lc.total_repaid,
-    lc.next_payment_date, lc.days_overdue, lc.status, lc.created_at
-FROM loan_contracts lc
-JOIN user_profiles  up ON lc.borrower_id = up.user_id
-WHERE lc.status = 'active';
+    lr.id                                                               AS request_id,
+    lr.title,
+    lr.purpose,
+    lr.district,
+    lr.duration_months,
+    lr.requested_amount,
+    lr.max_interest_rate,
+    lr.risk_category,
+    lr.credit_score_band,
+    lr.status,
+    lr.listed_at,
+    lr.expires_at,
+    lr.number_of_bids,
+    -- best (lowest) rate among pending bids
+    MIN(lb.interest_rate) FILTER (WHERE lb.status = 'pending')         AS best_bid_rate,
+    -- time remaining helpers
+    GREATEST(lr.expires_at - NOW(), INTERVAL '0')                      AS time_remaining,
+    (lr.expires_at < NOW() + INTERVAL '24 hours')                      AS closing_soon_24h,
+    (lr.expires_at < NOW() + INTERVAL '6 hours')                       AS closing_soon_6h
+FROM  loan_requests lr
+LEFT  JOIN loan_bids lb ON lb.request_id = lr.id
+WHERE lr.status = 'active'
+GROUP BY lr.id;
+
+COMMENT ON VIEW v_loan_listings IS
+'Anonymised marketplace feed. borrower_id, raw credit_score, and monetary bid aggregates are never present.';
 
 
 CREATE VIEW v_user_portfolio AS
 SELECT
-    u.user_id, u.email,
-    up.first_name || ' ' || up.last_name AS full_name,
-    u.reputation_score, u.reputation_tier,
-    COUNT(DISTINCT lr.request_id)              AS total_loan_requests,
-    COUNT(DISTINCT lc_b.contract_id)           AS active_loans_as_borrower,
-    COALESCE(SUM(lc_b.outstanding_balance), 0) AS total_outstanding_debt,
-    COUNT(DISTINCT b.bid_id)                   AS total_bids_placed,
-    COUNT(DISTINCT cb.contract_id)             AS total_lent_contracts,
-    COALESCE(SUM(CASE WHEN b.status = 'accepted' THEN b.bid_amount END), 0) AS total_invested,
-    COALESCE(wb.lendable_balance, 0)           AS lendable_balance,
-    COALESCE(wb.locked_repayment, 0)           AS locked_repayment,
-    COALESCE(wb.non_lendable_borrowed, 0)      AS non_lendable_borrowed
-FROM users u
-LEFT JOIN user_profiles  up    ON u.user_id  = up.user_id
-LEFT JOIN wallet_balances wb   ON u.user_id  = wb.user_id
-LEFT JOIN loan_requests   lr   ON u.user_id  = lr.borrower_id
-LEFT JOIN loan_contracts  lc_b ON u.user_id  = lc_b.borrower_id
-LEFT JOIN bids            b    ON u.user_id  = b.lender_id
-LEFT JOIN contract_bids   cb   ON u.user_id  = cb.lender_id
-GROUP BY
-    u.user_id, u.email, up.first_name, up.last_name,
-    u.reputation_score, u.reputation_tier,
-    wb.lendable_balance, wb.locked_repayment, wb.non_lendable_borrowed;
+    p.id                                                                AS user_id,
+    p.full_name,
+    p.reputation_tier,
+    p.credit_score,
+    -- borrower side
+    COUNT(DISTINCT lr.id) FILTER (
+        WHERE lr.borrower_id = p.id AND lr.status = 'active'
+    )                                                                   AS active_listings,
+    COUNT(DISTINCT lr.id) FILTER (
+        WHERE lr.borrower_id = p.id AND lr.status = 'contracted'
+    )                                                                   AS contracted_as_borrower,
+    -- lender side
+    COUNT(DISTINCT lb.id) FILTER (
+        WHERE lb.lender_id = p.id AND lb.status = 'pending'
+    )                                                                   AS active_bids,
+    COUNT(DISTINCT lb.id) FILTER (
+        WHERE lb.lender_id = p.id AND lb.status = 'accepted'
+    )                                                                   AS contracted_as_lender,
+    -- subscription
+    s.plan                                                              AS subscription_plan,
+    s.status                                                            AS subscription_status,
+    s.expires_at                                                        AS subscription_expires_at,
+    -- kyc
+    k.status                                                            AS kyc_status,
+    k.expires_at                                                        AS kyc_expires_at
+FROM  profiles          p
+LEFT  JOIN subscriptions      s  ON s.user_id    = p.id AND s.status = 'active'
+LEFT  JOIN kyc_verifications  k  ON k.user_id    = p.id
+LEFT  JOIN loan_requests      lr ON lr.borrower_id = p.id
+LEFT  JOIN loan_bids          lb ON lb.lender_id   = p.id
+GROUP BY p.id, s.plan, s.status, s.expires_at, k.status, k.expires_at;
 
 
-CREATE VIEW v_lender_investments AS
+CREATE VIEW v_lender_bids AS
 SELECT
-    l.user_id AS lender_id,
-    up.first_name || ' ' || up.last_name AS lender_name,
-    l.reputation_score, l.reputation_tier,
-    COALESCE(wb.lendable_balance, 0)       AS lendable_balance,
-    COUNT(DISTINCT cb.contract_id)         AS total_contracts,
-    COUNT(DISTINCT cb.bid_id)              AS total_accepted_bids,
-    COALESCE(SUM(cb.amount), 0)            AS total_invested,
-    COALESCE(SUM(CASE WHEN lc.status = 'active'    THEN cb.amount END), 0) AS active_investments,
-    COALESCE(SUM(CASE WHEN lc.status = 'completed' THEN cb.amount END), 0) AS completed_investments,
-    COALESCE(SUM(CASE WHEN lc.status = 'defaulted' THEN cb.amount END), 0) AS defaulted_investments,
-    ROUND(AVG(cb.interest_rate), 2) AS avg_interest_rate
-FROM users           l
-JOIN  user_profiles  up ON l.user_id      = up.user_id
-JOIN  contract_bids  cb ON l.user_id      = cb.lender_id
-JOIN  loan_contracts lc ON cb.contract_id = lc.contract_id
-LEFT JOIN wallet_balances wb ON l.user_id = wb.user_id
-WHERE l.role IN ('lender', 'both')
-GROUP BY
-    l.user_id, up.first_name, up.last_name,
-    l.reputation_score, l.reputation_tier, wb.lendable_balance;
+    lb.lender_id,
+    lb.id                                                               AS bid_id,
+    lb.request_id,
+    lr.title                                                            AS listing_title,
+    lr.district,
+    lr.duration_months,
+    lr.risk_category,
+    lb.amount                                                           AS bid_amount,
+    lb.interest_rate                                                    AS bid_rate,
+    lb.status                                                           AS bid_status,
+    lb.placed_at,
+    lb.accepted_at,
+    c.id                                                                AS contract_id,
+    c.status                                                            AS contract_status,
+    c.repayment_start_date
+FROM  loan_bids      lb
+JOIN  loan_requests  lr ON lr.id    = lb.request_id
+LEFT  JOIN contracts c  ON c.bid_id = lb.id;
+
+COMMENT ON VIEW v_lender_bids IS
+'Lender bid history with contract linkage. No monetary balance or repayment tracking — non-custodial.';
 
 
 CREATE VIEW v_loan_performance AS
 SELECT
-    DATE_TRUNC('month', lc.created_at)       AS month,
-    COUNT(lc.contract_id)                    AS total_loans,
-    COALESCE(SUM(lc.total_amount), 0)        AS total_loan_amount,
-    ROUND(AVG(lc.weighted_interest_rate), 2) AS avg_interest_rate,
-    SUM(CASE WHEN lc.status = 'active'    THEN 1 ELSE 0 END) AS active_loans,
-    SUM(CASE WHEN lc.status = 'completed' THEN 1 ELSE 0 END) AS completed_loans,
-    SUM(CASE WHEN lc.status = 'defaulted' THEN 1 ELSE 0 END) AS defaulted_loans,
+    DATE_TRUNC('month', lr.listed_at)                                   AS month,
+    COUNT(lr.id)                                                        AS total_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'active')                   AS active_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'contracted')               AS contracted_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'expired')                  AS expired_listings,
+    ROUND(AVG(lb.interest_rate) FILTER (
+        WHERE lb.status IN ('pending', 'accepted')
+    ), 2)                                                               AS avg_market_rate,
     ROUND(
-        100.0 * SUM(CASE WHEN lc.status = 'defaulted' THEN 1 ELSE 0 END)
-              / NULLIF(COUNT(lc.contract_id), 0), 2
-    ) AS default_rate_pct
-FROM loan_contracts lc
-GROUP BY DATE_TRUNC('month', lc.created_at)
+        COUNT(DISTINCT lb.request_id) * 100.0
+        / NULLIF(COUNT(lr.id), 0), 1
+    )                                                                   AS match_rate_pct,
+    (SELECT COUNT(*) FROM subscriptions
+     WHERE status = 'active' AND plan != 'watchlist')                  AS active_paid_subscribers
+FROM  loan_requests lr
+LEFT  JOIN loan_bids lb ON lb.request_id = lr.id
+GROUP BY DATE_TRUNC('month', lr.listed_at)
 ORDER BY month DESC;
 
-
--- Anonymised marketplace view — borrower_id intentionally excluded
-CREATE VIEW public.v_loan_listings AS
-SELECT
-    lr.request_id, lr.requested_amount, lr.duration_months,
-    lr.max_interest_rate, lr.purpose, up.district,
-    ra.risk_category,
-    CASE
-        WHEN ra.credit_score IS NULL THEN NULL
-        WHEN ra.credit_score < 550   THEN '300-549'
-        WHEN ra.credit_score < 600   THEN '550-599'
-        WHEN ra.credit_score < 650   THEN '600-649'
-        WHEN ra.credit_score < 700   THEN '650-699'
-        WHEN ra.credit_score < 750   THEN '700-749'
-        WHEN ra.credit_score < 800   THEN '750-799'
-        ELSE                              '800-850'
-    END AS credit_score_band,
-    lr.funding_percentage, lr.number_of_bids, lr.listed_at, lr.status
-FROM loan_requests   lr
-JOIN user_profiles   up ON lr.borrower_id = up.user_id
-LEFT JOIN risk_assessments ra
-       ON lr.borrower_id = ra.user_id AND ra.is_current = TRUE
-WHERE lr.status IN ('active', 'partially_funded');
-
-COMMENT ON VIEW v_loan_listings IS 'Anonymised marketplace listing. borrower_id never exposed.';
+COMMENT ON VIEW v_loan_performance IS 'Admin analytics. No monetary aggregates — non-custodial.';
 
 
 -- ============================================
--- FUNCTIONS
+-- FUNCTIONS (shared utilities)
 -- ============================================
 
 CREATE OR REPLACE FUNCTION fn_set_updated_at()
@@ -901,527 +896,213 @@ $$;
 
 
 CREATE OR REPLACE FUNCTION fn_score_to_tier(p_score INT)
-RETURNS reputation_tier_enum LANGUAGE plpgsql IMMUTABLE AS $$
+RETURNS TEXT LANGUAGE plpgsql IMMUTABLE AS $$
 BEGIN
     RETURN CASE
-        WHEN p_score >= 85 THEN 'platinum'::reputation_tier_enum
-        WHEN p_score >= 70 THEN 'gold'::reputation_tier_enum
-        WHEN p_score >= 55 THEN 'silver'::reputation_tier_enum
-        WHEN p_score >= 40 THEN 'bronze'::reputation_tier_enum
-        ELSE                    'restricted'::reputation_tier_enum
+        WHEN p_score >= 85 THEN 'platinum'
+        WHEN p_score >= 70 THEN 'gold'
+        WHEN p_score >= 55 THEN 'silver'
+        WHEN p_score >= 40 THEN 'bronze'
+        ELSE                    'restricted'
     END;
 END;
 $$;
 
-COMMENT ON FUNCTION fn_score_to_tier IS 'Maps reputation_score 0-100 → reputation_tier_enum. IMMUTABLE.';
-
-
--- FIX: All column references fully qualified with table aliases
--- to avoid "column reference is ambiguous" when joining
--- loan_repayments + loan_contracts (both have a status column).
-CREATE OR REPLACE FUNCTION sp_calculate_reputation_score(p_user_id UUID)
-RETURNS INT LANGUAGE plpgsql AS $$
-DECLARE
-    v_repayment_score     NUMERIC := 50;
-    v_participation_score NUMERIC := 50;
-    v_risk_accuracy_score NUMERIC := 50;
-    v_consistency_score   NUMERIC := 50;
-    v_total_repayments    INT;
-    v_on_time_repayments  INT;
-    v_total_days_late     INT;
-    v_completed_contracts INT;
-    v_withdrawn_bids      INT;
-    v_total_bids          INT;
-BEGIN
-    -- Component 1: Repayment Performance (40%)
-    -- lr.status and lr.days_late are fully qualified to avoid ambiguity
-    -- with lc.status from the joined loan_contracts table.
-    SELECT
-        COUNT(*),
-        COUNT(*) FILTER (WHERE lr.status = 'paid' AND lr.days_late = 0),
-        COALESCE(SUM(lr.days_late), 0)
-    INTO v_total_repayments, v_on_time_repayments, v_total_days_late
-    FROM loan_repayments lr
-    JOIN loan_contracts  lc ON lr.contract_id = lc.contract_id
-    WHERE lc.borrower_id = p_user_id
-      AND lr.status IN ('paid', 'overdue', 'defaulted');
-
-    IF v_total_repayments > 0 THEN
-        v_repayment_score := LEAST(100,
-            (100.0 * v_on_time_repayments / v_total_repayments)
-            - LEAST(50, v_total_days_late * 0.5)
-        );
-    END IF;
-
-    -- Component 2: Participation History (20%)
-    -- lc.status qualified to avoid ambiguity.
-    SELECT COUNT(*) FILTER (WHERE lc.status = 'completed')
-    INTO   v_completed_contracts
-    FROM   loan_contracts lc
-    WHERE  lc.borrower_id = p_user_id
-       OR  lc.contract_id IN (
-               SELECT contract_id FROM contract_bids WHERE lender_id = p_user_id
-           );
-
-    v_participation_score := LEAST(100, v_completed_contracts * 10);
-
-    -- Component 3: Risk Accuracy (20%)
-    v_risk_accuracy_score := CASE
-        WHEN v_repayment_score >= 70 THEN 100
-        WHEN v_repayment_score >= 50 THEN  70
-        WHEN v_repayment_score >= 30 THEN  40
-        ELSE                               20
-    END;
-
-    -- Component 4: Consistency & Reliability (20%)
-    -- b.status qualified to avoid any future ambiguity.
-    SELECT
-        COUNT(*) FILTER (WHERE b.status = 'withdrawn'),
-        COUNT(*)
-    INTO v_withdrawn_bids, v_total_bids
-    FROM bids b
-    WHERE b.lender_id = p_user_id;
-
-    IF v_total_bids > 0 THEN
-        v_consistency_score := GREATEST(0,
-            100 - (100.0 * v_withdrawn_bids / v_total_bids)
-        );
-    END IF;
-
-    RETURN GREATEST(0, LEAST(100, ROUND(
-        v_repayment_score     * 0.40 +
-        v_participation_score * 0.20 +
-        v_risk_accuracy_score * 0.20 +
-        v_consistency_score   * 0.20
-    )));
-END;
-$$;
-
-COMMENT ON FUNCTION sp_calculate_reputation_score IS
-'Weighted reputation score 0-100. All column refs fully qualified to avoid ambiguity.';
-
-
-CREATE OR REPLACE FUNCTION sp_calculate_credit_score(p_user_id UUID)
-RETURNS INT LANGUAGE plpgsql AS $$
-DECLARE
-    v_base             INT     := 500;
-    v_income_score     NUMERIC := 0;
-    v_employment_score NUMERIC := 0;
-    v_payment_score    NUMERIC := 100;
-    v_debt_score       NUMERIC := 100;
-BEGIN
-    SELECT CASE
-        WHEN monthly_income >= 10000000 THEN 100
-        WHEN monthly_income >=  5000000 THEN  80
-        WHEN monthly_income >=  2000000 THEN  60
-        WHEN monthly_income >=  1000000 THEN  40
-        ELSE                                  20
-    END INTO v_income_score
-    FROM user_profiles WHERE user_id = p_user_id;
-
-    SELECT CASE
-        WHEN employment_status = 'employed' AND employer_name IS NOT NULL THEN 100
-        WHEN employment_status = 'self_employed'                          THEN  80
-        ELSE                                                                    40
-    END INTO v_employment_score
-    FROM user_profiles WHERE user_id = p_user_id;
-
-    SELECT COALESCE(
-        ROUND(100.0 * COUNT(*) FILTER (WHERE lr.status = 'paid') / NULLIF(COUNT(*), 0))
-        + GREATEST(-50, 50 - COALESCE(SUM(lr.days_late), 0) * 0.5),
-        100
-    ) INTO v_payment_score
-    FROM loan_repayments lr
-    JOIN loan_contracts  lc ON lr.contract_id = lc.contract_id
-    WHERE lc.borrower_id = p_user_id;
-
-    SELECT CASE
-        WHEN COALESCE(SUM(lc.outstanding_balance), 0) = 0                                     THEN 100
-        WHEN COALESCE(SUM(lc.outstanding_balance), 0) / NULLIF(up.monthly_income, 0) <= 0.30 THEN  80
-        WHEN COALESCE(SUM(lc.outstanding_balance), 0) / NULLIF(up.monthly_income, 0) <= 0.60 THEN  60
-        WHEN COALESCE(SUM(lc.outstanding_balance), 0) / NULLIF(up.monthly_income, 0) <= 1.00 THEN  40
-        ELSE                                                                                         20
-    END INTO v_debt_score
-    FROM loan_contracts lc
-    JOIN user_profiles  up ON lc.borrower_id = up.user_id
-    WHERE lc.borrower_id = p_user_id AND lc.status = 'active';
-
-    RETURN GREATEST(300, LEAST(850, ROUND(
-        v_base +
-        v_income_score     * 0.15 +
-        v_employment_score * 0.20 +
-        v_payment_score    * 0.40 +
-        v_debt_score       * 0.25
-    )));
-END;
-$$;
-
-
-CREATE OR REPLACE FUNCTION sp_calculate_repayment_schedule(p_contract_id UUID)
-RETURNS VOID LANGUAGE plpgsql AS $$
-DECLARE
-    v_amount        DECIMAL(15,2);
-    v_rate          DECIMAL(5,2);
-    v_months        INT;
-    v_start         DATE;
-    v_monthly_pmt   DECIMAL(15,2);
-    v_remaining     DECIMAL(15,2);
-    v_interest_pmt  DECIMAL(15,2);
-    v_principal_pmt DECIMAL(15,2);
-    v_due           DATE;
-    i               INT := 1;
-BEGIN
-    SELECT total_amount, weighted_interest_rate, duration_months,
-           COALESCE(contract_activated_at::DATE, CURRENT_DATE)
-    INTO   v_amount, v_rate, v_months, v_start
-    FROM   loan_contracts WHERE contract_id = p_contract_id;
-
-    IF v_amount IS NULL THEN
-        RAISE EXCEPTION 'Contract % not found.', p_contract_id;
-    END IF;
-
-    v_monthly_pmt := v_amount *
-        ((v_rate/100/12) * POWER(1 + v_rate/100/12, v_months)) /
-        (POWER(1 + v_rate/100/12, v_months) - 1);
-
-    v_remaining := v_amount;
-    v_due       := v_start;
-
-    WHILE i <= v_months LOOP
-        v_due           := v_due + INTERVAL '1 month';
-        v_interest_pmt  := v_remaining * v_rate / 100 / 12;
-        v_principal_pmt := v_monthly_pmt - v_interest_pmt;
-
-        IF i = v_months THEN
-            v_principal_pmt := v_remaining;
-            v_monthly_pmt   := v_principal_pmt + v_interest_pmt;
-        END IF;
-
-        INSERT INTO loan_repayments
-            (contract_id, installment_number, due_date, amount_due, principal_due, interest_due)
-        VALUES
-            (p_contract_id, i, v_due,
-             ROUND(v_monthly_pmt, 2), ROUND(v_principal_pmt, 2), ROUND(v_interest_pmt, 2));
-
-        v_remaining := v_remaining - v_principal_pmt;
-        i := i + 1;
-    END LOOP;
-END;
-$$;
-
-COMMENT ON FUNCTION sp_calculate_repayment_schedule IS
-'Generates amortization schedule. Call ONCE after contract activation.';
-
-
-CREATE OR REPLACE FUNCTION sp_generate_monthly_report(p_year INT, p_month INT)
-RETURNS TABLE (
-    total_loans       BIGINT,
-    total_principal   DECIMAL(15,2),
-    total_interest    DECIMAL(15,2),
-    total_repaid      DECIMAL(15,2),
-    default_rate_pct  DECIMAL(5,2),
-    avg_interest_rate DECIMAL(5,2)
-) LANGUAGE plpgsql AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        COUNT(*)::BIGINT,
-        COALESCE(SUM(total_amount),   0),
-        COALESCE(SUM(total_interest), 0),
-        COALESCE(SUM(total_repaid),   0),
-        ROUND(100.0 * COUNT(*) FILTER (WHERE status = 'defaulted') / NULLIF(COUNT(*), 0), 2),
-        ROUND(AVG(weighted_interest_rate), 2)
-    FROM loan_contracts
-    WHERE EXTRACT(YEAR  FROM created_at) = p_year
-      AND EXTRACT(MONTH FROM created_at) = p_month;
-END;
-$$;
-
-
--- ============================================
--- MOCK RPCs (Stage 2 — replace in Stage 4)
--- ============================================
-
-CREATE OR REPLACE FUNCTION mock_top_up(p_user_id UUID, p_amount DECIMAL)
-RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-    IF p_amount <= 0 THEN
-        RAISE EXCEPTION 'Amount must be positive. Got: %', p_amount;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM wallet_balances WHERE user_id = p_user_id) THEN
-        RAISE EXCEPTION 'Wallet not found for user %.', p_user_id;
-    END IF;
-    UPDATE wallet_balances
-    SET lendable_balance = lendable_balance + p_amount
-    WHERE user_id = p_user_id;
-    INSERT INTO audit_logs (user_id, event_type, event_category, entity_type, action, description)
-    VALUES (p_user_id, 'mock_top_up', 'payment', 'wallet', 'top_up',
-            'MVP mock top-up of ' || p_amount || ' UGX');
-END;
-$$;
-
-COMMENT ON FUNCTION mock_top_up IS 'MVP mock wallet top-up. Replace with MTN MoMo in Stage 4.';
-
-
-CREATE OR REPLACE FUNCTION accept_bid(
-    p_request_id  UUID,
-    p_bid_id      UUID,
-    p_borrower_id UUID
-)
-RETURNS UUID LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE
-    v_bid         RECORD;
-    v_contract_id UUID;
-    v_monthly_pmt DECIMAL(15,2);
-    v_total_repay DECIMAL(15,2);
-    v_total_int   DECIMAL(15,2);
-    v_duration    INT;
-    v_rate_mo     DECIMAL(20,10);
-BEGIN
-    SELECT * INTO v_bid
-    FROM bids
-    WHERE bid_id = p_bid_id AND request_id = p_request_id AND status = 'pending';
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Bid % not found or not pending on request %.', p_bid_id, p_request_id;
-    END IF;
-
-    UPDATE bids SET status = 'accepted', accepted_at = NOW() WHERE bid_id = p_bid_id;
-    UPDATE bids SET status = 'rejected', updated_at = NOW()
-    WHERE request_id = p_request_id AND bid_id <> p_bid_id AND status = 'pending';
-
-    SELECT duration_months INTO v_duration FROM loan_requests WHERE request_id = p_request_id;
-
-    v_rate_mo     := v_bid.interest_rate / 100.0 / 12.0;
-    v_monthly_pmt := ROUND(
-        v_bid.bid_amount * (v_rate_mo * POWER(1 + v_rate_mo, v_duration))
-        / (POWER(1 + v_rate_mo, v_duration) - 1), 2);
-    v_total_repay := ROUND(v_monthly_pmt * v_duration, 2);
-    v_total_int   := ROUND(v_total_repay - v_bid.bid_amount, 2);
-
-    INSERT INTO loan_contracts (
-        request_id, borrower_id, total_amount, weighted_interest_rate,
-        duration_months, monthly_payment, total_repayment, total_interest,
-        outstanding_balance, status
-    )
-    VALUES (
-        p_request_id, p_borrower_id, v_bid.bid_amount, v_bid.interest_rate,
-        v_duration, v_monthly_pmt, v_total_repay, v_total_int,
-        v_bid.bid_amount, 'draft'
-    )
-    RETURNING contract_id INTO v_contract_id;
-
-    INSERT INTO contract_bids (contract_id, bid_id, lender_id, amount, interest_rate)
-    VALUES (v_contract_id, p_bid_id, v_bid.lender_id, v_bid.bid_amount, v_bid.interest_rate);
-
-    UPDATE loan_requests SET status = 'contracted', updated_at = NOW()
-    WHERE request_id = p_request_id;
-
-    INSERT INTO audit_logs (user_id, event_type, event_category, entity_type, entity_id, action, description)
-    VALUES (p_borrower_id, 'bid_accepted', 'contract', 'loan_contract', v_contract_id, 'accept_bid',
-            'Bid ' || p_bid_id || ' accepted. Contract ' || v_contract_id || ' created.');
-
-    RETURN v_contract_id;
-END;
-$$;
-
-COMMENT ON FUNCTION accept_bid IS
-'Atomically accepts a bid, rejects others, creates contract. Returns contract_id.';
+COMMENT ON FUNCTION fn_score_to_tier IS 'Maps credit_score 0-100 → reputation_tier label. IMMUTABLE.';
 
 
 -- ============================================
 -- TRIGGER FUNCTIONS
 -- ============================================
 
+-- Sync reputation_tier whenever credit_score changes
 CREATE OR REPLACE FUNCTION trg_fn_sync_reputation_tier()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
-    IF NEW.reputation_score IS DISTINCT FROM OLD.reputation_score THEN
-        NEW.reputation_tier := fn_score_to_tier(NEW.reputation_score);
+    IF NEW.credit_score IS DISTINCT FROM OLD.credit_score THEN
+        NEW.reputation_tier := fn_score_to_tier(NEW.credit_score);
     END IF;
     RETURN NEW;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION trg_fn_auto_create_wallet()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    INSERT INTO wallet_balances (user_id) VALUES (NEW.user_id)
-    ON CONFLICT (user_id) DO NOTHING;
-    RETURN NEW;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION trg_fn_enforce_lendable_on_bid()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE v_lendable DECIMAL(15,2);
-BEGIN
-    SELECT lendable_balance INTO v_lendable FROM wallet_balances WHERE user_id = NEW.lender_id;
-    IF v_lendable IS NULL THEN
-        RAISE EXCEPTION 'Wallet not found for user %. Please deposit funds before bidding.', NEW.lender_id;
-    END IF;
-    IF v_lendable < NEW.bid_amount THEN
-        RAISE EXCEPTION 'Insufficient lendable balance. Available: % UGX, Required: % UGX.', v_lendable, NEW.bid_amount;
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION trg_fn_lock_funds_on_accept()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    IF NEW.status = 'accepted' AND OLD.status <> 'accepted' THEN
-        UPDATE wallet_balances
-        SET lendable_balance = lendable_balance - NEW.bid_amount,
-            locked_repayment = locked_repayment + NEW.bid_amount
-        WHERE user_id = NEW.lender_id;
-        IF NOT FOUND THEN
-            RAISE EXCEPTION 'Wallet not found for lender % during bid acceptance.', NEW.lender_id;
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION trg_fn_restore_funds_on_withdraw()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE v_locked DECIMAL(15,2);
-BEGIN
-    IF NEW.status = 'withdrawn' AND OLD.status = 'accepted' THEN
-        SELECT locked_repayment INTO v_locked FROM wallet_balances WHERE user_id = NEW.lender_id;
-        IF COALESCE(v_locked, 0) >= NEW.bid_amount THEN
-            UPDATE wallet_balances
-            SET locked_repayment = locked_repayment - NEW.bid_amount,
-                lendable_balance = lendable_balance + NEW.bid_amount
-            WHERE user_id = NEW.lender_id;
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION trg_fn_update_funding_progress()
+-- Set expires_at on listing insert from system_settings
+CREATE OR REPLACE FUNCTION trg_fn_set_listing_expiry()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE
-    v_total_bid DECIMAL(15,2);
-    v_requested DECIMAL(15,2);
-    v_pct       DECIMAL(5,2);
+    v_days INT;
 BEGIN
-    IF NEW.status = 'accepted' AND OLD.status <> 'accepted' THEN
-        SELECT total_bid_amount, requested_amount INTO v_total_bid, v_requested
-        FROM loan_requests WHERE request_id = NEW.request_id;
-        v_pct := ((v_total_bid + NEW.bid_amount) / v_requested) * 100;
-        UPDATE loan_requests
-        SET total_bid_amount   = total_bid_amount + NEW.bid_amount,
-            number_of_bids     = number_of_bids + 1,
-            funding_percentage = v_pct,
-            status = CASE
-                WHEN v_pct >= 100 THEN 'fully_funded'::loan_request_status_enum
-                WHEN v_pct >    0 THEN 'partially_funded'::loan_request_status_enum
-                ELSE status
-            END
-        WHERE request_id = NEW.request_id;
-    END IF;
+    SELECT setting_value::INT INTO v_days
+    FROM system_settings WHERE setting_key = 'listing_duration_days';
+    NEW.expires_at := NOW() + (v_days || ' days')::INTERVAL;
     RETURN NEW;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION trg_fn_credit_borrower_on_disbursement()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    IF NEW.status = 'completed' AND OLD.status <> 'completed' THEN
-        INSERT INTO wallet_balances (user_id, non_lendable_borrowed)
-        VALUES (NEW.borrower_id, NEW.amount)
-        ON CONFLICT (user_id) DO UPDATE
-        SET non_lendable_borrowed = wallet_balances.non_lendable_borrowed + NEW.amount;
-    END IF;
-    RETURN NEW;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION trg_fn_debit_borrower_on_repayment()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+-- Block INSERT on loan_requests unless KYC is approved and not expired
+CREATE OR REPLACE FUNCTION trg_fn_require_kyc_for_loan()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-    v_borrower_id   UUID;
-    v_non_lendable  DECIMAL(15,2);
-    v_from_borrowed DECIMAL(15,2);
-    v_from_lendable DECIMAL(15,2);
+    v_kyc_status  kyc_status_enum;
+    v_kyc_expires TIMESTAMP;
 BEGIN
-    IF NEW.status = 'paid' AND OLD.status <> 'paid' THEN
-        SELECT borrower_id INTO v_borrower_id FROM loan_contracts WHERE contract_id = NEW.contract_id;
-        SELECT non_lendable_borrowed INTO v_non_lendable FROM wallet_balances WHERE user_id = v_borrower_id;
-        v_from_borrowed := LEAST(COALESCE(v_non_lendable, 0), NEW.amount_paid);
-        v_from_lendable := GREATEST(0, NEW.amount_paid - v_from_borrowed);
-        UPDATE wallet_balances
-        SET non_lendable_borrowed = non_lendable_borrowed - v_from_borrowed,
-            lendable_balance      = lendable_balance      - v_from_lendable
-        WHERE user_id = v_borrower_id;
+    SELECT status, expires_at
+      INTO v_kyc_status, v_kyc_expires
+      FROM kyc_verifications
+     WHERE user_id = NEW.borrower_id;
+
+    IF v_kyc_status IS NULL OR v_kyc_status != 'approved' THEN
+        RAISE EXCEPTION 'NIPANZE_KYC_REQUIRED: KYC verification must be approved before listing.'
+            USING ERRCODE = 'P0001';
+    END IF;
+
+    IF v_kyc_expires IS NOT NULL AND v_kyc_expires < NOW() THEN
+        RAISE EXCEPTION 'NIPANZE_KYC_EXPIRED: Your KYC has expired. Please re-verify.'
+            USING ERRCODE = 'P0002';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+-- Block listing creation if account is not active
+CREATE OR REPLACE FUNCTION trg_fn_require_active_borrower()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM profiles WHERE id = NEW.borrower_id AND account_status != 'active'
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_ACCOUNT_INACTIVE: Your account must be active to post a listing.'
+            USING ERRCODE = 'P0003';
     END IF;
     RETURN NEW;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION trg_fn_release_lender_funds()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    IF NEW.status = 'completed' THEN
-        UPDATE wallet_balances
-        SET lendable_balance = lendable_balance + NEW.amount,
-            locked_repayment = GREATEST(0, locked_repayment - NEW.principal_amount)
-        WHERE user_id = NEW.lender_id;
-    END IF;
-    RETURN NEW;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION trg_fn_update_contract_on_repayment()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+-- Block listing if no active borrower/pro subscription
+CREATE OR REPLACE FUNCTION trg_fn_require_borrower_subscription()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-    v_contract_id UUID;
-    v_total_due   DECIMAL(15,2);
-    v_total_paid  DECIMAL(15,2);
-    v_max_late    INT;
-    v_threshold   INT;
-    v_new_status  contract_status_enum;
+    v_plan subscription_plan_enum;
 BEGIN
-    v_contract_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.contract_id ELSE NEW.contract_id END;
-    SELECT COALESCE(SUM(amount_due), 0), COALESCE(SUM(amount_paid), 0), COALESCE(MAX(days_late), 0)
-    INTO v_total_due, v_total_paid, v_max_late
-    FROM loan_repayments WHERE contract_id = v_contract_id;
-    SELECT COALESCE(setting_value::INT, 90) INTO v_threshold
-    FROM system_settings WHERE setting_key = 'default_threshold_days';
-    v_new_status := CASE
-        WHEN v_total_paid >= v_total_due THEN 'completed'::contract_status_enum
-        WHEN v_max_late   >  v_threshold THEN 'defaulted'::contract_status_enum
-        ELSE                                  'active'::contract_status_enum
-    END;
-    UPDATE loan_contracts
-    SET status              = v_new_status,
-        outstanding_balance = total_amount - v_total_paid,
-        total_repaid        = v_total_paid,
-        days_overdue        = v_max_late
-    WHERE contract_id = v_contract_id;
-    RETURN NEW;
-END;
-$$;
+    SELECT plan INTO v_plan
+      FROM subscriptions
+     WHERE user_id = NEW.borrower_id AND status = 'active';
 
-CREATE OR REPLACE FUNCTION trg_fn_check_all_lenders_signed()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE v_unsigned INT;
-BEGIN
-    IF NEW.lender_signed = TRUE AND OLD.lender_signed = FALSE THEN
-        SELECT COUNT(*) INTO v_unsigned
-        FROM contract_bids WHERE contract_id = NEW.contract_id AND lender_signed = FALSE;
-        IF v_unsigned = 0 THEN
-            UPDATE loan_contracts
-            SET all_lenders_signed = TRUE, contract_activated_at = CURRENT_TIMESTAMP
-            WHERE contract_id = NEW.contract_id;
-        END IF;
+    IF v_plan NOT IN ('borrower', 'pro') THEN
+        RAISE EXCEPTION 'NIPANZE_SUBSCRIPTION_REQUIRED: A Borrower or Pro subscription is required to post a listing.'
+            USING ERRCODE = 'P0004';
     END IF;
     RETURN NEW;
 END;
 $$;
 
+
+-- Enforce max_concurrent_loans from system_settings
+CREATE OR REPLACE FUNCTION trg_fn_max_concurrent_loans()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_active_count INT;
+    v_max          INT;
+    v_contracted   INT;
+BEGIN
+    SELECT setting_value::INT INTO v_max
+    FROM system_settings WHERE setting_key = 'max_concurrent_loans';
+
+    SELECT COUNT(*) INTO v_active_count
+      FROM loan_requests
+     WHERE borrower_id = NEW.borrower_id AND status = 'active';
+
+    IF v_active_count >= v_max THEN
+        RAISE EXCEPTION 'NIPANZE_MAX_LISTINGS: You have reached the maximum of % active listings.', v_max
+            USING ERRCODE = 'P0005';
+    END IF;
+
+    SELECT COUNT(*) INTO v_contracted
+      FROM loan_requests
+     WHERE borrower_id = NEW.borrower_id AND status = 'contracted';
+
+    IF v_contracted > 0 THEN
+        RAISE EXCEPTION 'NIPANZE_CONTRACTED_ACTIVE: You cannot post a new listing while you have a contracted position.'
+            USING ERRCODE = 'P0006';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+-- Validate a bid before insert
+CREATE OR REPLACE FUNCTION trg_fn_validate_bid()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_listing       loan_requests%ROWTYPE;
+    v_min_invest    BIGINT;
+    v_plan          subscription_plan_enum;
+BEGIN
+    SELECT * INTO v_listing FROM loan_requests WHERE id = NEW.request_id;
+
+    IF v_listing.status != 'active' THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE: This listing is no longer accepting bids.'
+            USING ERRCODE = 'P0010';
+    END IF;
+
+    IF v_listing.expires_at < NOW() THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_EXPIRED: This listing has expired.'
+            USING ERRCODE = 'P0011';
+    END IF;
+
+    IF v_listing.borrower_id = NEW.lender_id THEN
+        RAISE EXCEPTION 'NIPANZE_SELF_BID: You cannot bid on your own listing.'
+            USING ERRCODE = 'P0012';
+    END IF;
+
+    IF NEW.interest_rate > v_listing.max_interest_rate THEN
+        RAISE EXCEPTION 'NIPANZE_RATE_CEILING: Bid rate (%) cannot exceed the listing ceiling (%).',
+            NEW.interest_rate, v_listing.max_interest_rate
+            USING ERRCODE = 'P0013';
+    END IF;
+
+    SELECT setting_value::BIGINT INTO v_min_invest
+    FROM system_settings WHERE setting_key = 'min_lender_investment';
+
+    IF NEW.amount < v_min_invest THEN
+        RAISE EXCEPTION 'NIPANZE_MIN_INVESTMENT: Bid amount must be at least UGX %.', v_min_invest
+            USING ERRCODE = 'P0014';
+    END IF;
+
+    SELECT plan INTO v_plan
+      FROM subscriptions
+     WHERE user_id = NEW.lender_id AND status = 'active';
+
+    IF v_plan NOT IN ('lender', 'pro') THEN
+        RAISE EXCEPTION 'NIPANZE_LENDER_SUBSCRIPTION_REQUIRED: A Lender or Pro subscription is required to bid.'
+            USING ERRCODE = 'P0015';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+-- Once a bid is accepted, lock it from further updates
+CREATE OR REPLACE FUNCTION trg_fn_lock_accepted_bid()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.status = 'accepted' THEN
+        RAISE EXCEPTION 'NIPANZE_BID_LOCKED: An accepted bid cannot be modified.'
+            USING ERRCODE = 'P0016';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Auto-expire a bid if expires_at has passed
 CREATE OR REPLACE FUNCTION trg_fn_expire_bid()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
@@ -1432,23 +1113,15 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION trg_fn_require_kyc_for_loan()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM kyc_verifications WHERE user_id = NEW.borrower_id AND status = 'approved'
-    ) THEN
-        RAISE EXCEPTION 'KYC approval required before creating a loan request.';
-    END IF;
-    RETURN NEW;
-END;
-$$;
 
-CREATE OR REPLACE FUNCTION trg_fn_require_active_borrower()
+-- Increment bid count on loan_requests when a bid is accepted
+CREATE OR REPLACE FUNCTION trg_fn_increment_bid_count()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM users WHERE user_id = NEW.borrower_id AND status <> 'active') THEN
-        RAISE EXCEPTION 'Account must be in active status to create a loan request.';
+    IF TG_OP = 'UPDATE' AND NEW.status = 'accepted' AND OLD.status != 'accepted' THEN
+        UPDATE loan_requests
+           SET number_of_bids = number_of_bids + 1
+         WHERE id = NEW.request_id;
     END IF;
     RETURN NEW;
 END;
@@ -1459,79 +1132,645 @@ $$;
 -- TRIGGERS
 -- ============================================
 
--- users
-CREATE TRIGGER trg_auto_create_wallet
-    AFTER INSERT ON users FOR EACH ROW EXECUTE FUNCTION trg_fn_auto_create_wallet();
+-- profiles
 CREATE TRIGGER trg_sync_reputation_tier
-    BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION trg_fn_sync_reputation_tier();
-CREATE TRIGGER trg_users_updated_at
-    BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+    BEFORE UPDATE OF credit_score ON profiles
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_sync_reputation_tier();
 
--- user_profiles
-CREATE TRIGGER trg_user_profiles_updated_at
-    BEFORE UPDATE ON user_profiles FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- subscriptions
+CREATE TRIGGER trg_subscriptions_updated_at
+    BEFORE UPDATE ON subscriptions
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 -- kyc_verifications
 CREATE TRIGGER trg_kyc_updated_at
-    BEFORE UPDATE ON kyc_verifications FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
-
--- wallet_balances
-CREATE TRIGGER trg_wallet_updated_at
-    BEFORE UPDATE ON wallet_balances FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+    BEFORE UPDATE ON kyc_verifications
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 -- system_settings
 CREATE TRIGGER trg_system_settings_updated_at
-    BEFORE UPDATE ON system_settings FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+    BEFORE UPDATE ON system_settings
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 -- loan_requests
 CREATE TRIGGER trg_require_kyc_for_loan
-    BEFORE INSERT ON loan_requests FOR EACH ROW EXECUTE FUNCTION trg_fn_require_kyc_for_loan();
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_require_kyc_for_loan();
+
 CREATE TRIGGER trg_require_active_borrower
-    BEFORE INSERT ON loan_requests FOR EACH ROW EXECUTE FUNCTION trg_fn_require_active_borrower();
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_require_active_borrower();
+
+CREATE TRIGGER trg_require_borrower_subscription
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_require_borrower_subscription();
+
+CREATE TRIGGER trg_max_concurrent_loans
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_max_concurrent_loans();
+
+CREATE TRIGGER trg_set_listing_expiry
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_set_listing_expiry();
+
 CREATE TRIGGER trg_loan_requests_updated_at
-    BEFORE UPDATE ON loan_requests FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+    BEFORE UPDATE ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
--- bids
+-- loan_bids
 CREATE TRIGGER trg_expire_bid
-    BEFORE INSERT OR UPDATE ON bids FOR EACH ROW EXECUTE FUNCTION trg_fn_expire_bid();
-CREATE TRIGGER trg_enforce_lendable_on_bid
-    BEFORE INSERT ON bids FOR EACH ROW EXECUTE FUNCTION trg_fn_enforce_lendable_on_bid();
-CREATE TRIGGER trg_lock_funds_on_accept
-    AFTER UPDATE ON bids FOR EACH ROW EXECUTE FUNCTION trg_fn_lock_funds_on_accept();
-CREATE TRIGGER trg_restore_funds_on_withdraw
-    AFTER UPDATE ON bids FOR EACH ROW EXECUTE FUNCTION trg_fn_restore_funds_on_withdraw();
-CREATE TRIGGER trg_update_funding_progress
-    AFTER UPDATE ON bids FOR EACH ROW EXECUTE FUNCTION trg_fn_update_funding_progress();
-CREATE TRIGGER trg_bids_updated_at
-    BEFORE UPDATE ON bids FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+    BEFORE INSERT OR UPDATE ON loan_bids
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_expire_bid();
 
--- loan_contracts
-CREATE TRIGGER trg_loan_contracts_updated_at
-    BEFORE UPDATE ON loan_contracts FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_validate_bid
+    BEFORE INSERT ON loan_bids
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_validate_bid();
 
--- contract_bids
-CREATE TRIGGER trg_check_all_lenders_signed
-    AFTER UPDATE ON contract_bids FOR EACH ROW EXECUTE FUNCTION trg_fn_check_all_lenders_signed();
+CREATE TRIGGER trg_lock_accepted_bid
+    BEFORE UPDATE ON loan_bids
+    FOR EACH ROW
+    WHEN (OLD.status = 'accepted')
+    EXECUTE FUNCTION trg_fn_lock_accepted_bid();
 
--- disbursements
-CREATE TRIGGER trg_credit_borrower_on_disbursement
-    AFTER UPDATE ON disbursements FOR EACH ROW EXECUTE FUNCTION trg_fn_credit_borrower_on_disbursement();
-CREATE TRIGGER trg_disbursements_updated_at
-    BEFORE UPDATE ON disbursements FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_increment_bid_count
+    AFTER UPDATE ON loan_bids
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_increment_bid_count();
 
--- loan_repayments
-CREATE TRIGGER trg_update_contract_on_repayment
-    AFTER INSERT OR UPDATE OR DELETE ON loan_repayments FOR EACH ROW EXECUTE FUNCTION trg_fn_update_contract_on_repayment();
-CREATE TRIGGER trg_debit_borrower_on_repayment
-    AFTER UPDATE ON loan_repayments FOR EACH ROW EXECUTE FUNCTION trg_fn_debit_borrower_on_repayment();
-CREATE TRIGGER trg_loan_repayments_updated_at
-    BEFORE UPDATE ON loan_repayments FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_loan_bids_updated_at
+    BEFORE UPDATE ON loan_bids
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
--- repayment_transactions
-CREATE TRIGGER trg_release_lender_funds
-    AFTER INSERT OR UPDATE ON repayment_transactions FOR EACH ROW EXECUTE FUNCTION trg_fn_release_lender_funds();
-CREATE TRIGGER trg_repayment_transactions_updated_at
-    BEFORE UPDATE ON repayment_transactions FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+-- contracts
+CREATE TRIGGER trg_contracts_updated_at
+    BEFORE UPDATE ON contracts
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- repayment_schedules
+CREATE TRIGGER trg_repayment_schedules_updated_at
+    BEFORE UPDATE ON repayment_schedules
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- negotiators
+CREATE TRIGGER trg_negotiators_updated_at
+    BEFORE UPDATE ON negotiators
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+
+-- ============================================
+-- RPCs
+-- ============================================
+
+-- --------------------------------------------
+-- accept_bid
+-- Atomic: marks bid accepted, closes other bids,
+-- sets listing to contracted, creates contract,
+-- assigns negotiator, notifies both parties.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION accept_bid(
+    p_request_id  UUID,
+    p_bid_id      UUID,
+    p_borrower_id UUID
+)
+RETURNS UUID    -- returns contract_id
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_listing       loan_requests%ROWTYPE;
+    v_bid           loan_bids%ROWTYPE;
+    v_contract_id   UUID;
+    v_rate_mo       NUMERIC(20,10);
+    v_monthly_pmt   BIGINT;
+    v_total_repay   BIGINT;
+    v_total_int     BIGINT;
+BEGIN
+    SELECT * INTO v_listing FROM loan_requests WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_FOUND' USING ERRCODE = 'P0020';
+    END IF;
+    IF v_listing.borrower_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the listing owner can accept a bid.' USING ERRCODE = 'P0021';
+    END IF;
+    IF v_listing.status != 'active' THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE' USING ERRCODE = 'P0022';
+    END IF;
+
+    SELECT * INTO v_bid FROM loan_bids WHERE id = p_bid_id AND request_id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_BID_NOT_FOUND' USING ERRCODE = 'P0023';
+    END IF;
+    IF v_bid.status != 'pending' THEN
+        RAISE EXCEPTION 'NIPANZE_BID_NOT_PENDING: This bid is no longer available.' USING ERRCODE = 'P0024';
+    END IF;
+
+    -- 1. Accept the chosen bid
+    UPDATE loan_bids SET status = 'accepted', accepted_at = NOW() WHERE id = p_bid_id;
+
+    -- 2. Reject all other pending bids on this listing
+    UPDATE loan_bids SET status = 'rejected', updated_at = NOW()
+     WHERE request_id = p_request_id AND id != p_bid_id AND status = 'pending';
+
+    -- 3. Mark listing as contracted
+    UPDATE loan_requests SET status = 'contracted', contracted_at = NOW() WHERE id = p_request_id;
+
+    -- 4. Calculate indicative amortisation figures (for contract PDF reference only)
+    v_rate_mo     := v_bid.interest_rate / 100.0 / 12.0;
+    v_monthly_pmt := ROUND(
+        v_bid.amount * (v_rate_mo * POWER(1 + v_rate_mo, v_listing.duration_months))
+        / (POWER(1 + v_rate_mo, v_listing.duration_months) - 1)
+    );
+    v_total_repay := v_monthly_pmt * v_listing.duration_months;
+    v_total_int   := v_total_repay - v_bid.amount;
+
+    -- 5. Create draft contract (informational record — no fund movement)
+    INSERT INTO contracts (
+        request_id, bid_id, borrower_id, lender_id,
+        amount, interest_rate, duration_months, purpose, district,
+        indicative_monthly_payment_ugx,
+        indicative_total_repayment_ugx,
+        indicative_total_interest_ugx
+    ) VALUES (
+        p_request_id, p_bid_id, p_borrower_id, v_bid.lender_id,
+        v_bid.amount, v_bid.interest_rate, v_listing.duration_months,
+        v_listing.purpose, v_listing.district,
+        v_monthly_pmt, v_total_repay, v_total_int
+    )
+    RETURNING id INTO v_contract_id;
+
+    -- 6. Assign negotiator (non-blocking)
+    BEGIN
+        PERFORM sp_assign_negotiator(v_contract_id);
+    EXCEPTION WHEN OTHERS THEN
+        INSERT INTO audit_logs (event_type, entity_type, entity_id, action, description)
+        VALUES ('admin_action', 'contract', v_contract_id, 'negotiator_assignment_failed',
+                'Auto-assignment failed. Manual assignment required.');
+    END;
+
+    -- 7. Notify both parties
+    INSERT INTO notifications (user_id, type, title, body, request_id, contract_id, bid_id)
+    VALUES
+        (p_borrower_id, 'bid_accepted',
+         'Bid accepted', 'Your listing has been matched. A negotiator has been assigned.',
+         p_request_id, v_contract_id, p_bid_id),
+        (v_bid.lender_id, 'bid_accepted',
+         'Your bid was accepted', 'Your offer has been accepted. A negotiator will be in touch.',
+         p_request_id, v_contract_id, p_bid_id);
+
+    -- 8. Audit
+    INSERT INTO audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES (p_borrower_id, 'bid_accepted', 'contract', v_contract_id, 'accept_bid',
+            JSONB_BUILD_OBJECT(
+                'request_id',  p_request_id,
+                'bid_id',      p_bid_id,
+                'contract_id', v_contract_id,
+                'lender_id',   v_bid.lender_id
+            ));
+
+    RETURN v_contract_id;
+END;
+$$;
+
+COMMENT ON FUNCTION accept_bid IS
+'Atomically accepts a bid, rejects others, creates contract with indicative amortisation figures.
+ Returns contract_id. Platform never holds or moves funds.';
+
+
+-- --------------------------------------------
+-- sp_assign_negotiator
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION sp_assign_negotiator(p_contract_id UUID)
+RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_negotiator_id UUID;
+BEGIN
+    SELECT n.id INTO v_negotiator_id
+      FROM negotiators n
+     WHERE n.status = 'available'
+       AND n.id NOT IN (
+           SELECT na.negotiator_id
+             FROM negotiator_assignments na
+             JOIN contracts c ON c.id = na.contract_id
+            WHERE c.status IN ('draft', 'in_execution')
+       )
+     ORDER BY n.deals_completed ASC, RANDOM()
+     LIMIT 1;
+
+    IF v_negotiator_id IS NULL THEN
+        SELECT na2.negotiator_id INTO v_negotiator_id
+          FROM negotiator_assignments na2
+          JOIN contracts c2 ON c2.id = na2.contract_id
+         WHERE c2.status IN ('draft', 'in_execution')
+         GROUP BY na2.negotiator_id
+         ORDER BY COUNT(*) ASC
+         LIMIT 1;
+    END IF;
+
+    IF v_negotiator_id IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_NO_NEGOTIATOR: No negotiators are available.' USING ERRCODE = 'P0030';
+    END IF;
+
+    INSERT INTO negotiator_assignments (contract_id, negotiator_id)
+    VALUES (p_contract_id, v_negotiator_id);
+
+    UPDATE contracts SET negotiator_id = v_negotiator_id WHERE id = p_contract_id;
+
+    INSERT INTO notifications (user_id, type, title, body, contract_id)
+    SELECT c.borrower_id, 'negotiator_assigned',
+           'Negotiator assigned', 'A negotiator has been assigned to facilitate your deal.',
+           p_contract_id
+      FROM contracts c WHERE c.id = p_contract_id;
+
+    INSERT INTO notifications (user_id, type, title, body, contract_id)
+    SELECT c.lender_id, 'negotiator_assigned',
+           'Negotiator assigned', 'A negotiator has been assigned to facilitate your deal.',
+           p_contract_id
+      FROM contracts c WHERE c.id = p_contract_id;
+
+    RETURN v_negotiator_id;
+END;
+$$;
+
+
+-- --------------------------------------------
+-- sp_generate_repayment_schedule
+-- Generates indicative amortisation schedule lines.
+-- For reference / PDF use only. Not for payment tracking.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION sp_generate_repayment_schedule(p_contract_id UUID)
+RETURNS VOID LANGUAGE plpgsql AS $$
+DECLARE
+    v_amount        BIGINT;
+    v_rate          NUMERIC(5,2);
+    v_months        INT;
+    v_start         DATE;
+    v_monthly_pmt   BIGINT;
+    v_remaining     BIGINT;
+    v_interest_pmt  BIGINT;
+    v_principal_pmt BIGINT;
+    v_due           DATE;
+    i               INT := 1;
+BEGIN
+    SELECT amount, interest_rate, duration_months,
+           COALESCE(contract_activated_at::DATE, CURRENT_DATE)
+      INTO v_amount, v_rate, v_months, v_start
+      FROM contracts WHERE id = p_contract_id;
+
+    IF v_amount IS NULL THEN
+        RAISE EXCEPTION 'Contract % not found.', p_contract_id;
+    END IF;
+
+    v_monthly_pmt := ROUND(
+        v_amount * ((v_rate/100/12) * POWER(1 + v_rate/100/12, v_months))
+        / (POWER(1 + v_rate/100/12, v_months) - 1)
+    );
+
+    v_remaining := v_amount;
+    v_due       := v_start;
+
+    WHILE i <= v_months LOOP
+        v_due           := v_due + INTERVAL '1 month';
+        v_interest_pmt  := ROUND(v_remaining * v_rate / 100 / 12);
+        v_principal_pmt := v_monthly_pmt - v_interest_pmt;
+
+        IF i = v_months THEN
+            v_principal_pmt := v_remaining;
+            v_monthly_pmt   := v_principal_pmt + v_interest_pmt;
+        END IF;
+
+        INSERT INTO repayment_schedules
+            (contract_id, instalment_number, due_date, principal_ugx, interest_ugx)
+        VALUES
+            (p_contract_id, i, v_due, v_principal_pmt, v_interest_pmt);
+
+        v_remaining := v_remaining - v_principal_pmt;
+        i := i + 1;
+    END LOOP;
+END;
+$$;
+
+COMMENT ON FUNCTION sp_generate_repayment_schedule IS
+'Generates indicative amortisation schedule for reference / PDF only.
+ Call ONCE after contract activation. Platform does not track payments.';
+
+
+-- --------------------------------------------
+-- sp_calculate_reputation_score
+-- Weighted 0-100 score based on participation and negotiator assessments.
+-- Repayment component is based solely on negotiator assessment data,
+-- not platform-tracked payment events (non-custodial).
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION sp_calculate_reputation_score(p_user_id UUID)
+RETURNS INT LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    v_old_score           INT;
+    v_new_score           INT;
+    v_participation       NUMERIC := 50;
+    v_consistency         NUMERIC := 50;
+    v_assessment_score    NUMERIC := 50;
+    v_completed_contracts INT;
+    v_withdrawn_bids      INT;
+    v_total_bids          INT;
+BEGIN
+    SELECT credit_score INTO v_old_score FROM profiles WHERE id = p_user_id;
+
+    -- Component 1: Participation history (40%)
+    SELECT COUNT(*) FILTER (WHERE c.status = 'completed')
+      INTO v_completed_contracts
+      FROM contracts c
+     WHERE c.borrower_id = p_user_id
+        OR c.lender_id   = p_user_id;
+
+    v_participation := LEAST(100, v_completed_contracts * 10 + 50);
+
+    -- Component 2: Consistency — bid withdrawal rate as lender (30%)
+    SELECT COUNT(*) FILTER (WHERE lb.status = 'withdrawn'),
+           COUNT(*)
+      INTO v_withdrawn_bids, v_total_bids
+      FROM loan_bids lb
+     WHERE lb.lender_id = p_user_id;
+
+    IF v_total_bids > 0 THEN
+        v_consistency := GREATEST(0, 100 - (100.0 * v_withdrawn_bids / v_total_bids));
+    END IF;
+
+    -- Component 3: Negotiator assessments (30%)
+    SELECT COALESCE(
+        AVG((na.repayment_behaviour + na.contract_adherence + na.dispute_handling + na.overall_rating) / 4.0) * 20,
+        50
+    ) INTO v_assessment_score
+      FROM negotiator_assessments na
+     WHERE na.assessed_user_id = p_user_id;
+
+    -- Weighted total
+    v_new_score := GREATEST(0, LEAST(100, ROUND(
+        v_participation  * 0.40 +
+        v_consistency    * 0.30 +
+        v_assessment_score * 0.30
+    )::INT));
+
+    IF v_new_score != v_old_score THEN
+        INSERT INTO credit_score_events
+            (user_id, score_before, score_after, factor, source)
+        VALUES
+            (p_user_id, v_old_score, v_new_score, 'full_recalculation', 'sp_calculate_reputation_score');
+
+        UPDATE profiles SET credit_score = v_new_score WHERE id = p_user_id;
+    END IF;
+
+    RETURN v_new_score;
+END;
+$$;
+
+COMMENT ON FUNCTION sp_calculate_reputation_score IS
+'Weighted reputation score 0-100 based on participation, consistency, and negotiator assessments.
+ No repayment-tracking component — non-custodial by design.';
+
+
+-- ============================================
+-- ROW-LEVEL SECURITY
+-- ============================================
+
+ALTER TABLE system_settings        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kyc_verifications      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_requests          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_bids              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE watchlist              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contracts              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE repayment_schedules    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE negotiators            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE negotiator_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE negotiator_assessments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_reveals        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_score_events    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE refresh_tokens         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_keys               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrals              ENABLE ROW LEVEL SECURITY;
+
+
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
+    );
+$$;
+
+
+-- system_settings
+CREATE POLICY "system_settings: authenticated read"
+    ON system_settings FOR SELECT TO authenticated USING (TRUE);
+CREATE POLICY "system_settings: admin write"
+    ON system_settings FOR UPDATE TO authenticated USING (is_admin());
+
+-- profiles
+CREATE POLICY "profiles: own row"
+    ON profiles FOR SELECT TO authenticated
+    USING (id = auth.uid() OR is_admin());
+CREATE POLICY "profiles: own update"
+    ON profiles FOR UPDATE TO authenticated
+    USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+CREATE POLICY "profiles: admin all"
+    ON profiles FOR ALL TO authenticated USING (is_admin());
+
+-- subscriptions
+CREATE POLICY "subscriptions: own row"
+    ON subscriptions FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+CREATE POLICY "subscriptions: admin write"
+    ON subscriptions FOR ALL TO authenticated USING (is_admin());
+
+-- kyc_verifications
+CREATE POLICY "kyc: own row"
+    ON kyc_verifications FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+CREATE POLICY "kyc: own insert"
+    ON kyc_verifications FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "kyc: own or admin update"
+    ON kyc_verifications FOR UPDATE TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+
+-- loan_requests
+CREATE POLICY "loan_requests: marketplace select"
+    ON loan_requests FOR SELECT TO authenticated
+    USING (status = 'active' OR borrower_id = auth.uid() OR is_admin());
+CREATE POLICY "loan_requests: own insert"
+    ON loan_requests FOR INSERT TO authenticated
+    WITH CHECK (borrower_id = auth.uid());
+CREATE POLICY "loan_requests: own update"
+    ON loan_requests FOR UPDATE TO authenticated
+    USING (borrower_id = auth.uid() OR is_admin());
+CREATE POLICY "loan_requests: admin delete"
+    ON loan_requests FOR DELETE TO authenticated USING (is_admin());
+
+-- loan_bids
+CREATE POLICY "loan_bids: lender own bids"
+    ON loan_bids FOR SELECT TO authenticated
+    USING (
+        lender_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM loan_requests lr
+             WHERE lr.id = loan_bids.request_id AND lr.borrower_id = auth.uid()
+        )
+        OR is_admin()
+    );
+CREATE POLICY "loan_bids: lender insert"
+    ON loan_bids FOR INSERT TO authenticated
+    WITH CHECK (lender_id = auth.uid());
+CREATE POLICY "loan_bids: lender withdraw"
+    ON loan_bids FOR UPDATE TO authenticated
+    USING (
+        (lender_id = auth.uid() AND status = 'pending')
+        OR is_admin()
+    );
+
+-- watchlist
+CREATE POLICY "watchlist: own rows"
+    ON watchlist FOR ALL TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- contracts
+CREATE POLICY "contracts: matched parties"
+    ON contracts FOR SELECT TO authenticated
+    USING (borrower_id = auth.uid() OR lender_id = auth.uid() OR is_admin());
+CREATE POLICY "contracts: matched parties update"
+    ON contracts FOR UPDATE TO authenticated
+    USING (borrower_id = auth.uid() OR lender_id = auth.uid() OR is_admin());
+
+-- repayment_schedules
+CREATE POLICY "repayment_schedules: matched parties"
+    ON repayment_schedules FOR SELECT TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM contracts c
+             WHERE c.id = repayment_schedules.contract_id
+               AND (c.borrower_id = auth.uid() OR c.lender_id = auth.uid())
+        )
+        OR is_admin()
+    );
+CREATE POLICY "repayment_schedules: participants update"
+    ON repayment_schedules FOR UPDATE TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM contracts c
+             WHERE c.id = repayment_schedules.contract_id
+               AND (c.borrower_id = auth.uid() OR c.lender_id = auth.uid())
+        )
+        OR is_admin()
+    );
+CREATE POLICY "repayment_schedules: admin write"
+    ON repayment_schedules FOR ALL TO authenticated USING (is_admin());
+
+-- negotiators
+CREATE POLICY "negotiators: authenticated read"
+    ON negotiators FOR SELECT TO authenticated USING (TRUE);
+CREATE POLICY "negotiators: admin write"
+    ON negotiators FOR ALL TO authenticated USING (is_admin());
+
+-- negotiator_assignments
+CREATE POLICY "negotiator_assignments: matched parties"
+    ON negotiator_assignments FOR SELECT TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM contracts c
+             WHERE c.id = negotiator_assignments.contract_id
+               AND (c.borrower_id = auth.uid() OR c.lender_id = auth.uid())
+        )
+        OR is_admin()
+    );
+CREATE POLICY "negotiator_assignments: admin write"
+    ON negotiator_assignments FOR ALL TO authenticated USING (is_admin());
+
+-- negotiator_assessments
+CREATE POLICY "negotiator_assessments: own row"
+    ON negotiator_assessments FOR SELECT TO authenticated
+    USING (assessed_user_id = auth.uid() OR is_admin());
+CREATE POLICY "negotiator_assessments: admin write"
+    ON negotiator_assessments FOR ALL TO authenticated USING (is_admin());
+
+-- contact_reveals
+CREATE POLICY "contact_reveals: own rows"
+    ON contact_reveals FOR SELECT TO authenticated
+    USING (revealed_by = auth.uid() OR is_admin());
+CREATE POLICY "contact_reveals: own insert"
+    ON contact_reveals FOR INSERT TO authenticated
+    WITH CHECK (revealed_by = auth.uid());
+CREATE POLICY "contact_reveals: admin write"
+    ON contact_reveals FOR ALL TO authenticated USING (is_admin());
+
+-- credit_score_events
+CREATE POLICY "credit_score_events: own rows"
+    ON credit_score_events FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+
+-- notifications
+CREATE POLICY "notifications: own rows"
+    ON notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "notifications: own mark read"
+    ON notifications FOR UPDATE TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE POLICY "notifications: admin write"
+    ON notifications FOR ALL TO authenticated USING (is_admin());
+
+-- audit_logs
+CREATE POLICY "audit_logs: own read"
+    ON audit_logs FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+CREATE POLICY "audit_logs: insert only"
+    ON audit_logs FOR INSERT TO authenticated WITH CHECK (TRUE);
+CREATE POLICY "audit_logs: no update"
+    ON audit_logs FOR UPDATE TO authenticated USING (FALSE);
+CREATE POLICY "audit_logs: no delete"
+    ON audit_logs FOR DELETE TO authenticated USING (FALSE);
+
+-- refresh_tokens
+CREATE POLICY "refresh_tokens: own rows"
+    ON refresh_tokens FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+CREATE POLICY "refresh_tokens: own insert"
+    ON refresh_tokens FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "refresh_tokens: own update"
+    ON refresh_tokens FOR UPDATE TO authenticated USING (user_id = auth.uid());
+
+-- api_keys
+CREATE POLICY "api_keys: own rows"
+    ON api_keys FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR is_admin());
+CREATE POLICY "api_keys: own write"
+    ON api_keys FOR ALL TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- referrals
+CREATE POLICY "referrals: own rows"
+    ON referrals FOR SELECT TO authenticated
+    USING (referrer_id = auth.uid() OR is_admin());
+CREATE POLICY "referrals: own insert"
+    ON referrals FOR INSERT TO authenticated WITH CHECK (referrer_id = auth.uid());
+CREATE POLICY "referrals: admin write"
+    ON referrals FOR ALL TO authenticated USING (is_admin());
+
+
+-- ============================================
+-- REALTIME PUBLICATIONS
+-- ============================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+        CREATE PUBLICATION supabase_realtime;
+    END IF;
+END $$;
+
+ALTER PUBLICATION supabase_realtime ADD TABLE loan_requests;
+ALTER PUBLICATION supabase_realtime ADD TABLE loan_bids;
+ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE contracts;
 
 
 -- ============================================
@@ -1542,6 +1781,18 @@ DO $$
 DECLARE db TEXT;
 BEGIN
     SELECT current_database() INTO db;
-    EXECUTE format('COMMENT ON DATABASE %I IS %L', db,
-        'OpenCapital v3.2 — Non-custodial peer-to-peer lending. Uganda.');
+    EXECUTE FORMAT('COMMENT ON DATABASE %I IS %L', db,
+        'Nipanze v5.0 — Non-custodial loan listing marketplace. Uganda-first. Anonymity by default. Platform never holds or tracks funds.');
 END $$;
+
+
+-- ============================================
+-- STORAGE BUCKETS
+-- ============================================
+-- Create via Supabase CLI or dashboard:
+--   supabase storage create kyc-documents --public=false
+--   supabase storage create contracts     --public=false
+
+-- ============================================
+-- END OF SCHEMA v5.0
+-- ============================================

@@ -1,55 +1,56 @@
-// lib/main.dart
 // ignore_for_file: directives_ordering
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/bloc/app_bloc_observer.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 
-// ---------------------------------------------------------------------------
-// Global Supabase client accessor used throughout the app.
-// ---------------------------------------------------------------------------
-final supabase = Supabase.instance.client;
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Hive — UI-layer cache only (last marketplace snapshot, preferences).
-  // NOT the primary database. Supabase Postgres is the source of truth.
+  // Hive local cache init
   await Hive.initFlutter();
 
-  // Supabase initialisation.
-  // URL and anonKey come from SupabaseConfig which reads --dart-define at
-  // build time, with local dev defaults baked in.
+  // Supabase init
   await Supabase.initialize(
-    url: SupabaseConfig.url,
-    anonKey: SupabaseConfig.anonKey,
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
-    ),
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+    debug: false,
   );
 
-  // Dependency injection (injectable + get_it).
+  // Dependency injection
   configureDependencies();
 
-  runApp(const OpenCapitalApp());
+  // BLoC observer for debugging
+  Bloc.observer = AppBlocObserver();
+
+  runApp(const NipanzeApp());
 }
 
-class OpenCapitalApp extends StatelessWidget {
-  const OpenCapitalApp({super.key});
+class NipanzeApp extends StatelessWidget {
+  const NipanzeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'OpenCapital',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      routerConfig: AppRouter.router,
+    return BlocProvider<AuthBloc>(
+      create: (_) => getIt<AuthBloc>()..add(const AuthStarted()),
+      child: Builder(
+        builder: (context) => MaterialApp.router(
+          title: 'Nipanze',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.system,
+          routerConfig: AppRouter(authBloc: context.read<AuthBloc>()).router,
+        ),
+      ),
     );
   }
 }

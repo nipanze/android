@@ -1,170 +1,157 @@
-// test/features/auth/auth_bloc_test.dart
-// ignore_for_file: directives_ordering
-
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+import 'package:nipanze/core/errors/app_exception.dart';
+import 'package:nipanze/features/auth/data/auth_repository.dart';
+import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
+import 'package:nipanze/features/auth/presentation/bloc/auth_bloc.dart';
 
-import 'package:opencapital/features/auth/data/auth_repository.dart';
-import 'package:opencapital/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:opencapital/core/errors/app_errors.dart';
-
-// ---------------------------------------------------------------------------
-// Mocks
-// ---------------------------------------------------------------------------
 class MockAuthRepository extends Mock implements AuthRepository {}
-
-// AuthResponse has no public constructor — use a fake via mocktail
-class FakeAuthResponse extends Fake implements sb.AuthResponse {}
 
 void main() {
   late MockAuthRepository mockRepo;
 
-  setUpAll(() {
-    // Register fallback values for named-parameter matchers
-    registerFallbackValue(FakeAuthResponse());
-  });
+  const testUser = NipanzeUser(
+    id: 'test-uuid-123',
+    email: 'test@nipanze.ug',
+    fullName: 'Test User',
+    isEmailVerified: true,
+  );
 
   setUp(() {
     mockRepo = MockAuthRepository();
+    when(() => mockRepo.authStateChanges).thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.currentUser).thenReturn(null);
+    when(() => mockRepo.isEmailVerified).thenReturn(false);
   });
 
-  group('AuthBloc — Register', () {
+  group('AuthBloc', () {
+    test('initial state is AuthLoading', () {
+      final bloc = AuthBloc(mockRepo);
+      expect(bloc.state, isA<AuthLoading>());
+      bloc.close();
+    });
+
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthSuccess] on successful register',
+      'AuthStarted emits AuthUnauthenticated when no session',
       build: () {
-        when(() => mockRepo.register(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-              role: any(named: 'role'),
-            )).thenAnswer((_) async => FakeAuthResponse());
-        return AuthBloc(authRepository: mockRepo);
+        when(() => mockRepo.currentUser).thenReturn(null);
+        return AuthBloc(mockRepo);
       },
-      act: (b) => b.add(const AuthRegisterRequested(
-        email: 'test@example.com',
-        password: 'Test1234!',
-        role: 'borrower',
-      )),
-      expect: () => [const AuthLoading(), const AuthSuccess()],
+      act: (bloc) => bloc.add(const AuthStarted()),
+      expect: () => [isA<AuthUnauthenticated>()],
     );
 
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthError] on AuthException',
+      'AuthStarted emits AuthAuthenticated when session exists',
       build: () {
-        when(() => mockRepo.register(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-              role: any(named: 'role'),
-            )).thenThrow(const AuthException('Email already registered'));
-        return AuthBloc(authRepository: mockRepo);
+        when(() => mockRepo.currentUser).thenReturn(testUser);
+        when(() => mockRepo.isEmailVerified).thenReturn(true);
+        return AuthBloc(mockRepo);
       },
-      act: (b) => b.add(const AuthRegisterRequested(
-        email: 'existing@example.com',
+      act: (bloc) => bloc.add(const AuthStarted()),
+      expect: () => [isA<AuthAuthenticated>()],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthSignInRequested emits Loading then Authenticated on success',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.signIn(email: 'test@nipanze.ug', password: 'Test1234!'))
+            .thenAnswer((_) async => testUser);
+        when(() => mockRepo.isEmailVerified).thenReturn(true);
+      },
+      act: (bloc) => bloc.add(const AuthSignInRequested(
+        email: 'test@nipanze.ug',
         password: 'Test1234!',
-        role: 'borrower',
       )),
       expect: () => [
-        const AuthLoading(),
-        isA<AuthError>().having(
-          (e) => e.message,
-          'message',
-          contains('Email already registered'),
-        ),
+        isA<AuthLoading>(),
+        isA<AuthAuthenticated>(),
       ],
     );
-  });
-
-  group('AuthBloc — Login', () {
-    blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthSuccess] on valid credentials',
-      build: () {
-        when(() => mockRepo.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenAnswer((_) async => FakeAuthResponse());
-        return AuthBloc(authRepository: mockRepo);
-      },
-      act: (b) => b.add(const AuthLoginRequested(
-        email: 'test@example.com',
-        password: 'Test1234!',
-      )),
-      expect: () => [const AuthLoading(), const AuthSuccess()],
-    );
 
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthError] on wrong password',
-      build: () {
-        when(() => mockRepo.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(const AuthException('Invalid login credentials'));
-        return AuthBloc(authRepository: mockRepo);
+      'AuthSignInRequested emits Loading then AuthError on failure',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.signIn(email: any(named: 'email'), password: any(named: 'password')))
+            .thenThrow(const AuthException('Invalid email or password.'));
       },
-      act: (b) => b.add(const AuthLoginRequested(
-        email: 'test@example.com',
+      act: (bloc) => bloc.add(const AuthSignInRequested(
+        email: 'bad@nipanze.ug',
         password: 'wrongpassword',
       )),
       expect: () => [
-        const AuthLoading(),
-        isA<AuthError>().having(
-          (e) => e.message,
-          'message',
-          contains('Invalid login credentials'),
-        ),
+        isA<AuthLoading>(),
+        isA<AuthError>(),
       ],
     );
 
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthError] on network error',
-      build: () {
-        when(() => mockRepo.signIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            )).thenThrow(
-          const NetworkException(
-              'No internet connection. Please check your network.'),
-        );
-        return AuthBloc(authRepository: mockRepo);
+      'AuthSignUpRequested emits Loading then AuthUnauthenticated with pendingVerification',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.signUp(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          fullName: any(named: 'fullName'),
+        )).thenAnswer((_) async {});
       },
-      act: (b) => b.add(const AuthLoginRequested(
-        email: 'test@example.com',
+      act: (bloc) => bloc.add(const AuthSignUpRequested(
+        email: 'new@nipanze.ug',
         password: 'Test1234!',
+        fullName: 'New User',
       )),
       expect: () => [
-        const AuthLoading(),
-        isA<AuthError>().having(
-          (e) => e.message,
-          'message',
-          contains('internet'),
-        ),
+        isA<AuthLoading>(),
+        predicate<AuthState>((s) => s is AuthUnauthenticated && s.pendingVerification),
       ],
     );
-  });
 
-  group('AuthBloc — Password Reset', () {
     blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthPasswordResetSent] on success',
-      build: () {
-        when(() => mockRepo.sendPasswordReset(email: any(named: 'email')))
-            .thenAnswer((_) async {});
-        return AuthBloc(authRepository: mockRepo);
-      },
-      act: (b) => b.add(
-          const AuthPasswordResetRequested(email: 'test@example.com')),
-      expect: () => [const AuthLoading(), const AuthPasswordResetSent()],
-    );
-  });
-
-  group('AuthBloc — Sign Out', () {
-    blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthInitial] on sign out',
+      'AuthSignOutRequested emits AuthUnauthenticated',
       build: () {
         when(() => mockRepo.signOut()).thenAnswer((_) async {});
-        return AuthBloc(authRepository: mockRepo);
+        return AuthBloc(mockRepo);
       },
-      act: (b) => b.add(const AuthSignOutRequested()),
-      expect: () => [const AuthLoading(), const AuthInitial()],
+      act: (bloc) => bloc.add(const AuthSignOutRequested()),
+      expect: () => [isA<AuthUnauthenticated>()],
     );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthPasswordResetRequested emits AuthPasswordResetSent on success',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.resetPassword(any())).thenAnswer((_) async {});
+      },
+      act: (bloc) =>
+          bloc.add(const AuthPasswordResetRequested('test@nipanze.ug')),
+      expect: () => [
+        isA<AuthLoading>(),
+        isA<AuthPasswordResetSent>(),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthUserChanged with user emits AuthAuthenticated',
+      build: () => AuthBloc(mockRepo),
+      act: (bloc) => bloc.add(const AuthUserChanged(testUser)),
+      expect: () => [isA<AuthAuthenticated>()],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthUserChanged with null emits AuthUnauthenticated',
+      build: () => AuthBloc(mockRepo),
+      act: (bloc) => bloc.add(const AuthUserChanged(null)),
+      expect: () => [isA<AuthUnauthenticated>()],
+    );
+  });
+
+  group('parseSupabaseError', () {
+    test('unknown error returns generic DatabaseException', () {
+      final e = parseSupabaseError(Exception('unexpected error'));
+      expect(e, isA<DatabaseException>());
+    });
   });
 }

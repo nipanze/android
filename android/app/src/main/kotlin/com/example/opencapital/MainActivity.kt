@@ -1,4 +1,4 @@
-package com.example.opencapital
+package com.example.nipanze
 
 import io.flutter.embedding.android.FlutterActivity
 

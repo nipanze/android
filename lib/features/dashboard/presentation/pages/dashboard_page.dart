@@ -1,58 +1,84 @@
-// ignore_for_file: unused_import
+// ignore_for_file: deprecated_member_use, prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
-/// Dashboard — Stage 2.1. Shows v_user_portfolio aggregates.
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.push(Routes.notifications),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Portfolio Summary',
-                      style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
-                  Text('Full dashboard coming in Stage 2.',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Welcome back', style: Theme.of(context).textTheme.bodyMedium),
+                Text(user?.fullName ?? user?.email ?? 'User',
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ]),
+              const Spacer(),
+              if (user != null) RepTierBadge(user.repTier),
+            ]),
+            const SizedBox(height: 20),
+            GridView.count(crossAxisCount: 2, shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 1.6,
+              children: [
+                _QuickAction(icon: Icons.show_chart_rounded, label: 'Browse market',
+                    color: AppColors.accent, onTap: () => context.go(AppRoutes.marketplace)),
+                _QuickAction(icon: Icons.add_circle_outline, label: 'List a request',
+                    color: AppColors.success, onTap: () => context.push(AppRoutes.listingCreate)),
+                _QuickAction(icon: Icons.star_outline_rounded, label: 'Watchlist',
+                    color: AppColors.warning, onTap: () => context.go(AppRoutes.watchlist)),
+                _QuickAction(icon: Icons.verified_user_outlined, label: 'KYC status',
+                    color: AppColors.purple, onTap: () => context.push(AppRoutes.kyc)),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => context.push(Routes.loanCreate),
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Request a Loan'),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => context.go(Routes.marketplace),
-            icon: const Icon(Icons.storefront_outlined),
-            label: const Text('Browse Marketplace'),
-          ),
-        ],
+            const SizedBox(height: 20),
+            SectionHeader('Quick info'),
+            Card(child: Padding(padding: const EdgeInsets.all(14),
+              child: Column(children: [
+                _InfoRow('Subscription', user?.subscriptionPlan.name ?? '—'),
+                const Divider(height: 16),
+                _InfoRow('KYC status', user?.kycStatus.name ?? '—'),
+                const Divider(height: 16),
+                _InfoRow('Lender token', user?.lenderToken ?? '—'),
+              ]),
+            )),
+          ]),
+        ),
       ),
     );
   }
+}
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({required this.icon, required this.label, required this.color, required this.onTap});
+  final IconData icon; final String label; final Color color; final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => GestureDetector(onTap: onTap,
+    child: Container(decoration: BoxDecoration(color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withOpacity(0.25))),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(icon, color: color, size: 24), const SizedBox(height: 6),
+        Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+      ]),
+    ));
+}
+class _InfoRow extends StatelessWidget {
+  const _InfoRow(this.label, this.value);
+  final String label; final String value;
+  @override
+  Widget build(BuildContext context) => Row(children: [
+    Text(label, style: Theme.of(context).textTheme.bodyMedium), const Spacer(),
+    Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+  ]);
 }

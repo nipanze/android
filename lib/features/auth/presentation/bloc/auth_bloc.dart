@@ -1,158 +1,79 @@
-// ignore_for_file: unused_import, directives_ordering
+import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:opencapital/core/errors/app_errors.dart';
-import 'package:opencapital/features/auth/data/auth_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
+import '../../data/auth_repository.dart';
+import '../../domain/models/nipanze_user.dart';
 
-// ---------------------------------------------------------------------------
-// Events
-// ---------------------------------------------------------------------------
-abstract class AuthEvent extends Equatable {
-  const AuthEvent();
-  @override
-  List<Object?> get props => [];
-}
+part 'auth_event.dart';
+part 'auth_state.dart';
 
-class AuthRegisterRequested extends AuthEvent {
-  const AuthRegisterRequested({
-    required this.email,
-    required this.password,
-    required this.role,
-  });
-  final String email;
-  final String password;
-  final String role;
-
-  @override
-  List<Object?> get props => [email, role];
-}
-
-class AuthLoginRequested extends AuthEvent {
-  const AuthLoginRequested({required this.email, required this.password});
-  final String email;
-  final String password;
-
-  @override
-  List<Object?> get props => [email];
-}
-
-class AuthSignOutRequested extends AuthEvent {
-  const AuthSignOutRequested();
-}
-
-class AuthPasswordResetRequested extends AuthEvent {
-  const AuthPasswordResetRequested({required this.email});
-  final String email;
-
-  @override
-  List<Object?> get props => [email];
-}
-
-class AuthResendVerificationRequested extends AuthEvent {
-  const AuthResendVerificationRequested({required this.email});
-  final String email;
-
-  @override
-  List<Object?> get props => [email];
-}
-
-// ---------------------------------------------------------------------------
-// States
-// ---------------------------------------------------------------------------
-abstract class AuthState extends Equatable {
-  const AuthState();
-  @override
-  List<Object?> get props => [];
-}
-
-class AuthInitial extends AuthState {
-  const AuthInitial();
-}
-
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
-
-class AuthSuccess extends AuthState {
-  const AuthSuccess();
-}
-
-class AuthPasswordResetSent extends AuthState {
-  const AuthPasswordResetSent();
-}
-
-class AuthVerificationResent extends AuthState {
-  const AuthVerificationResent();
-}
-
-class AuthError extends AuthState {
-  const AuthError(this.message);
-  final String message;
-
-  @override
-  List<Object?> get props => [message];
-}
-
-// ---------------------------------------------------------------------------
-// BLoC
-// ---------------------------------------------------------------------------
+@injectable
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc({required this.authRepository}) : super(const AuthInitial()) {
-    on<AuthRegisterRequested>(_onRegister);
-    on<AuthLoginRequested>(_onLogin);
+  AuthBloc(this._authRepository) : super(const AuthLoading()) {
+    on<AuthStarted>(_onStarted);
+    on<AuthSignInRequested>(_onSignIn);
+    on<AuthSignUpRequested>(_onSignUp);
     on<AuthSignOutRequested>(_onSignOut);
     on<AuthPasswordResetRequested>(_onPasswordReset);
-    on<AuthResendVerificationRequested>(_onResendVerification);
+    on<AuthUserChanged>(_onUserChanged);
+
+    _subscription = _authRepository.authStateChanges.listen(
+      (user) => add(AuthUserChanged(user)),
+    );
   }
 
-  final AuthRepository authRepository;
+  final AuthRepository _authRepository;
+  late final StreamSubscription<NipanzeUser?> _subscription;
 
-  Future<void> _onRegister(
-    AuthRegisterRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    try {
-      await authRepository.register(
-        email: event.email,
-        password: event.password,
-        role: event.role,
-      );
-      emit(const AuthSuccess());
-    } on AppException catch (e) {
-      emit(AuthError(e.message));
-    } catch (e) {
-      emit(AuthError(e.toString()));
+  Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
+    final user = _authRepository.currentUser;
+    if (user != null) {
+      emit(AuthAuthenticated(
+        user: user,
+        needsEmailVerification: !_authRepository.isEmailVerified,
+      ));
+    } else {
+      emit(const AuthUnauthenticated());
     }
   }
 
-  Future<void> _onLogin(
-    AuthLoginRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignIn(AuthSignInRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
-      await authRepository.signIn(
+      final user = await _authRepository.signIn(
         email: event.email,
         password: event.password,
       );
-      emit(const AuthSuccess());
+      emit(AuthAuthenticated(
+        user: user,
+        needsEmailVerification: !_authRepository.isEmailVerified,
+      ));
     } on AppException catch (e) {
       emit(AuthError(e.message));
-    } catch (e) {
-      emit(AuthError(e.toString()));
     }
   }
 
-  Future<void> _onSignOut(
-    AuthSignOutRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignUp(AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
-    await authRepository.signOut();
-    emit(const AuthInitial());
+    try {
+      await _authRepository.signUp(
+        email: event.email,
+        password: event.password,
+        fullName: event.fullName,
+      );
+      emit(const AuthUnauthenticated(pendingVerification: true));
+    } on AppException catch (e) {
+      emit(AuthError(e.message));
+    }
+  }
+
+  Future<void> _onSignOut(AuthSignOutRequested event, Emitter<AuthState> emit) async {
+    await _authRepository.signOut();
+    emit(const AuthUnauthenticated());
   }
 
   Future<void> _onPasswordReset(
@@ -161,22 +82,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      await authRepository.sendPasswordReset(email: event.email);
+      await _authRepository.resetPassword(event.email);
       emit(const AuthPasswordResetSent());
     } on AppException catch (e) {
       emit(AuthError(e.message));
     }
   }
 
-  Future<void> _onResendVerification(
-    AuthResendVerificationRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    try {
-      await authRepository.resendVerification(email: event.email);
-      emit(const AuthVerificationResent());
-    } on AppException catch (e) {
-      emit(AuthError(e.message));
+  void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
+    final user = event.user;
+    if (user != null) {
+      emit(AuthAuthenticated(
+        user: user,
+        needsEmailVerification: !_authRepository.isEmailVerified,
+      ));
+    } else {
+      emit(const AuthUnauthenticated());
     }
+  }
+
+  @override
+  Future<void> close() {
+    _subscription.cancel();
+    return super.close();
   }
 }

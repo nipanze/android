@@ -1,168 +1,219 @@
-// ignore_for_file: duplicate_import, unused_import, avoid_relative_lib_imports, directives_ordering
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../features/auth/presentation/pages/onboarding_page.dart' show OnboardingPage;
-import '../../features/auth/presentation/pages/splash_page.dart';
-import '../../main.dart';
+import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
-import '../../features/auth/presentation/pages/forgot_password_page.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/marketplace/presentation/pages/marketplace_page.dart';
-import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
-import '../../features/loans/presentation/pages/loan_create_page.dart';
-import '../../features/loans/presentation/pages/my_loans_page.dart';
-import '../../features/loans/presentation/pages/repayment_schedule_page.dart';
-import '../../features/bids/presentation/pages/my_bids_page.dart';
-import '../../features/contracts/presentation/pages/contracts_page.dart';
 import '../../features/contracts/presentation/pages/contract_detail_page.dart';
-import '../../features/wallet/presentation/pages/wallet_page.dart';
-import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
+import '../../features/listings/presentation/pages/listing_create_page.dart';
+import '../../features/listings/presentation/pages/my_listings_page.dart';
+import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
+import '../../features/marketplace/presentation/pages/marketplace_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/analytics/presentation/pages/analytics_page.dart';
-import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/watchlist/presentation/pages/watchlist_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
-import '../../features/auth/presentation/pages/onboarding_page.dart';
-import '../../features/auth/presentation/pages/splash_page.dart';
 
-/// All route path constants. Import this instead of using raw strings.
-abstract class Routes {
-  static const splash = '/';
-  static const onboarding = '/onboarding';
+class AppRoutes {
+  static const String login = '/auth/login';
+  static const String register = '/auth/register';
+  static const String verifyEmail = '/auth/verify-email';
+  static const String resetPassword = '/auth/reset-password';
 
-  // Auth
-  static const login = '/auth/login';
-  static const register = '/auth/register';
-  static const verifyEmail = '/auth/verify-email';
-  static const forgotPassword = '/auth/forgot-password';
-
-  // Main tabs (shell route children)
-  static const dashboard = '/dashboard';
-  static const marketplace = '/marketplace';
-  static const myLoans = '/loans/my-loans';
-  static const wallet = '/wallet';
-  static const profile = '/profile';
-
-  // Sub-pages
-  static const loanDetail = '/marketplace/:requestId';
-  static const loanCreate = '/loans/create';
-  static const repaymentSchedule = '/loans/repayments/:contractId';
-  static const myBids = '/bids';
-  static const contracts = '/contracts';
-  static const contractDetail = '/contracts/:contractId';
-  static const notifications = '/notifications';
-  static const kyc = '/kyc';
-  static const analytics = '/analytics';
-  static const admin = '/admin';
-
-  /// Build /marketplace/:requestId with a real id.
-  static String loanDetailPath(String requestId) => '/marketplace/$requestId';
-  static String repaymentSchedulePath(String contractId) => '/loans/repayments/$contractId';
-  static String contractDetailPath(String contractId) => '/contracts/$contractId';
+  static const String dashboard = '/dashboard';
+  static const String marketplace = '/marketplace';
+  static const String marketplaceDetail = '/marketplace/:requestId';
+  static const String watchlist = '/watchlist';
+  static const String positions = '/positions';
+  static const String listingCreate = '/listings/create';
+  static const String myListings = '/listings/my-listings';
+  static const String contractDetail = '/contracts/:contractId';
+  static const String notifications = '/notifications';
+  static const String kyc = '/kyc';
+  static const String profile = '/profile';
+  static const String account = '/account';
+  static const String admin = '/admin';
 }
 
-abstract class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
-  static final _shellNavigatorKey = GlobalKey<NavigatorState>();
+class AppRouter {
+  AppRouter({required this.authBloc});
 
-  static GoRouter get router => GoRouter(
-        navigatorKey: _rootNavigatorKey,
-        initialLocation: Routes.splash,
-        debugLogDiagnostics: true,
+  final AuthBloc authBloc;
 
-        // ---------------------------------------------------------------------------
-        // Auth guard: runs on every navigation event.
-        // ---------------------------------------------------------------------------
-        redirect: (context, state) {
-          final session = supabase.auth.currentSession;
-          final loc = state.matchedLocation;
+  late final GoRouter router = GoRouter(
+    initialLocation: AppRoutes.marketplace,
+    debugLogDiagnostics: false,
+    redirect: _redirect,
+    refreshListenable: GoRouterRefreshStream(authBloc.stream),
+    routes: [
+      // ── Auth routes (no shell) ──────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.login,
+        name: 'login',
+        pageBuilder: (_, state) => _fade(state, const LoginPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        name: 'register',
+        pageBuilder: (_, state) => _fade(state, const RegisterPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
+        name: 'verifyEmail',
+        pageBuilder: (_, state) => _fade(state, const VerifyEmailPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        name: 'resetPassword',
+        pageBuilder: (_, state) => _fade(state, const ResetPasswordPage()),
+      ),
 
-          // Allow public routes regardless of auth state.
-          const publicRoutes = [
-            Routes.splash,
-            Routes.onboarding,
-            Routes.login,
-            Routes.register,
-            Routes.forgotPassword,
-          ];
-          if (publicRoutes.contains(loc)) return null;
-
-          // Not signed in → login
-          if (session == null) return Routes.login;
-
-          // Signed in but email not confirmed → verify
-          if (session.user.emailConfirmedAt == null && loc != Routes.verifyEmail) {
-            return Routes.verifyEmail;
-          }
-
-          return null; // proceed
-        },
-
+      // ── Shell routes (bottom nav) ───────────────────────────────────
+      ShellRoute(
+        builder: (context, state, child) => MainScaffold(child: child),
         routes: [
-          // Splash
           GoRoute(
-            path: Routes.splash,
-            builder: (_, __) => const SplashPage(),
+            path: AppRoutes.dashboard,
+            name: 'dashboard',
+            pageBuilder: (_, state) => _fade(state, const DashboardPage()),
           ),
-
-          // Onboarding
           GoRoute(
-            path: Routes.onboarding,
-            builder: (_, __) => const OnboardingPage(),
-          ),
-
-          // Auth routes (no shell)
-          GoRoute(path: Routes.login, builder: (_, __) => const LoginPage()),
-          GoRoute(path: Routes.register, builder: (_, __) => const RegisterPage()),
-          GoRoute(
-            path: Routes.verifyEmail,
-            builder: (_, state) {
-              final email = state.uri.queryParameters['email'] ?? '';
-              return VerifyEmailPage(email: email);
-            },
-          ),
-          GoRoute(path: Routes.forgotPassword, builder: (_, __) => const ForgotPasswordPage()),
-
-          // Shell route — main scaffold with bottom nav
-          ShellRoute(
-            navigatorKey: _shellNavigatorKey,
-            builder: (_, __, child) => MainScaffold(child: child),
+            path: AppRoutes.marketplace,
+            name: 'marketplace',
+            pageBuilder: (_, state) => _fade(state, const MarketplacePage()),
             routes: [
-              GoRoute(path: Routes.dashboard, builder: (_, __) => const DashboardPage()),
-              GoRoute(path: Routes.marketplace, builder: (_, __) => const MarketplacePage()),
-              GoRoute(path: Routes.myLoans, builder: (_, __) => const MyLoansPage()),
-              GoRoute(path: Routes.wallet, builder: (_, __) => const WalletPage()),
-              GoRoute(path: Routes.profile, builder: (_, __) => const ProfilePage()),
+              GoRoute(
+                path: ':requestId',
+                name: 'marketplaceDetail',
+                pageBuilder: (_, state) => _slide(
+                  state,
+                  LoanDetailPage(
+                    requestId: state.pathParameters['requestId']!,
+                  ),
+                ),
+              ),
             ],
           ),
-
-          // Sub-pages (push over shell)
           GoRoute(
-            path: Routes.loanDetail,
-            builder: (_, state) => LoanDetailPage(requestId: state.pathParameters['requestId']!),
+            path: AppRoutes.watchlist,
+            name: 'watchlist',
+            pageBuilder: (_, state) => _fade(state, const WatchlistPage()),
           ),
-          GoRoute(path: Routes.loanCreate, builder: (_, __) => const LoanCreatePage()),
           GoRoute(
-            path: Routes.repaymentSchedule,
-            builder: (_, state) =>
-                RepaymentSchedulePage(contractId: state.pathParameters['contractId']!),
+            path: AppRoutes.positions,
+            name: 'positions',
+            pageBuilder: (_, state) => _fade(state, const PositionsPage()),
           ),
-          GoRoute(path: Routes.myBids, builder: (_, __) => const MyBidsPage()),
-          GoRoute(path: Routes.contracts, builder: (_, __) => const ContractsPage()),
           GoRoute(
-            path: Routes.contractDetail,
-            builder: (_, state) =>
-                ContractDetailPage(contractId: state.pathParameters['contractId']!),
+            path: AppRoutes.account,
+            name: 'account',
+            pageBuilder: (_, state) => _fade(state, const AccountPage()),
           ),
-          GoRoute(path: Routes.notifications, builder: (_, __) => const NotificationsPage()),
-          GoRoute(path: Routes.kyc, builder: (_, __) => const KycPage()),
-          GoRoute(path: Routes.analytics, builder: (_, __) => const AnalyticsPage()),
-          GoRoute(path: Routes.admin, builder: (_, __) => const AdminDashboardPage()),
         ],
-      );
+      ),
+
+      // ── Non-shell authenticated routes ─────────────────────────────
+      GoRoute(
+        path: AppRoutes.listingCreate,
+        name: 'listingCreate',
+        pageBuilder: (_, state) => _slide(state, const ListingCreatePage()),
+      ),
+      GoRoute(
+        path: AppRoutes.myListings,
+        name: 'myListings',
+        pageBuilder: (_, state) => _slide(state, const MyListingsPage()),
+      ),
+      GoRoute(
+        path: '/contracts/:contractId',
+        name: 'contractDetail',
+        pageBuilder: (_, state) => _slide(
+          state,
+          ContractDetailPage(contractId: state.pathParameters['contractId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        name: 'notifications',
+        pageBuilder: (_, state) => _slide(state, const NotificationsPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.kyc,
+        name: 'kyc',
+        pageBuilder: (_, state) => _slide(state, const KycPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        pageBuilder: (_, state) => _slide(state, const ProfilePage()),
+      ),
+      GoRoute(
+        path: AppRoutes.admin,
+        name: 'admin',
+        pageBuilder: (_, state) => _slide(state, const AdminDashboardPage()),
+      ),
+    ],
+  );
+
+  String? _redirect(BuildContext context, GoRouterState state) {
+    final authState = authBloc.state;
+    final onAuth = state.matchedLocation.startsWith('/auth');
+
+    if (authState is AuthLoading) return null;
+
+    if (authState is AuthUnauthenticated) {
+      return onAuth ? null : AppRoutes.login;
+    }
+
+    if (authState is AuthAuthenticated) {
+      if (onAuth) return AppRoutes.marketplace;
+      if (authState.needsEmailVerification) return AppRoutes.verifyEmail;
+    }
+
+    return null;
+  }
+
+  static CustomTransitionPage<void> _fade(GoRouterState state, Widget child) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: (_, animation, __, widget) =>
+          FadeTransition(opacity: animation, child: widget),
+    );
+  }
+
+  static CustomTransitionPage<void> _slide(GoRouterState state, Widget child) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: (_, animation, __, widget) => SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+        child: widget,
+      ),
+    );
+  }
+}
+
+// Makes GoRouter listen to BLoC stream for redirects
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final dynamic _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 }

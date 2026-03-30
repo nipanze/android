@@ -1,5 +1,5 @@
 -- ============================================
--- OpenCapital Seed Data
+-- Nipanze Seed Data
 -- Version: 2.0 (Auth-First)
 -- ============================================
 --
@@ -194,7 +194,7 @@ INSERT INTO auth.users (
 (
     '10000000-0000-0000-0000-000000000015',
     '00000000-0000-0000-0000-000000000000',
-    'admin1@opencapital.ug',
+    'admin1@nipanze.ug',
     '$2b$10$IXGSfHBcvEpctfKDXu6.7OH.UTPOu.f8lCMtOQ5Rf7HM3/7Ry9biO',
     NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
     '{"provider":"email","providers":["email"]}', '{}',
@@ -203,7 +203,7 @@ INSERT INTO auth.users (
 (
     '10000000-0000-0000-0000-000000000016',
     '00000000-0000-0000-0000-000000000000',
-    'admin2@opencapital.ug',
+    'admin2@nipanze.ug',
     '$2b$10$IXGSfHBcvEpctfKDXu6.7OH.UTPOu.f8lCMtOQ5Rf7HM3/7Ry9biO',
     NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
     '{"provider":"email","providers":["email"]}', '{}',
@@ -212,7 +212,7 @@ INSERT INTO auth.users (
 (
     '10000000-0000-0000-0000-000000000017',
     '00000000-0000-0000-0000-000000000000',
-    'admin3@opencapital.ug',
+    'admin3@nipanze.ug',
     '$2b$10$IXGSfHBcvEpctfKDXu6.7OH.UTPOu.f8lCMtOQ5Rf7HM3/7Ry9biO',
     NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
     '{"provider":"email","providers":["email"]}', '{}',
@@ -422,7 +422,7 @@ UPDATE users SET
     last_login_at         = '2026-01-29 18:00:00',
     last_login_ip         = '10.0.0.1',
     created_at            = '2024-01-01 08:00:00'
-WHERE email = 'admin1@opencapital.ug';
+WHERE email = 'admin1@nipanze.ug';
 
 UPDATE users SET
     phone_number          = '+256700000002',
@@ -434,7 +434,7 @@ UPDATE users SET
     last_login_at         = '2026-01-29 17:30:00',
     last_login_ip         = '10.0.0.2',
     created_at            = '2024-01-01 08:00:00'
-WHERE email = 'admin2@opencapital.ug';
+WHERE email = 'admin2@nipanze.ug';
 
 UPDATE users SET
     phone_number          = '+256700000003',
@@ -446,7 +446,7 @@ UPDATE users SET
     last_login_at         = '2026-01-29 17:00:00',
     last_login_ip         = '10.0.0.3',
     created_at            = '2024-01-01 08:00:00'
-WHERE email = 'admin3@opencapital.ug';
+WHERE email = 'admin3@nipanze.ug';
 
 UPDATE users SET
     phone_number          = '+256799999999',
@@ -703,14 +703,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM88015KL234567',
-    'https://storage.opencapital.ug/kyc/user-001-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-001-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-001-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-001-id-back.jpg',
     TRUE, '2024-01-16 10:30:00',
-    'https://storage.opencapital.ug/kyc/user-001-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-001-selfie.jpg',
     TRUE, '2024-01-16 10:30:00',
-    'https://storage.opencapital.ug/kyc/user-001-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-001-address.pdf',
     TRUE, '2024-01-16 10:30:00',
-    (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin1@nipanze.ug'),
     '2024-01-15 09:15:00', '2024-01-16 10:30:00', '2029-01-15', '2024-01-15 09:15:00'
 FROM users u WHERE u.email = 'david.mukasa@gmail.com';
 
@@ -723,14 +723,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM92022NM345678',
-    'https://storage.opencapital.ug/kyc/user-002-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-002-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-002-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-002-id-back.jpg',
     TRUE, '2024-01-19 11:45:00',
-    'https://storage.opencapital.ug/kyc/user-002-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-002-selfie.jpg',
     TRUE, '2024-01-19 11:45:00',
-    'https://storage.opencapital.ug/kyc/user-002-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-002-address.pdf',
     TRUE, '2024-01-19 11:45:00',
-    (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin1@nipanze.ug'),
     '2024-01-18 11:00:00', '2024-01-19 11:45:00', '2029-01-18', '2024-01-18 11:00:00'
 FROM users u WHERE u.email = 'sarah.namukasa@yahoo.com';
 
@@ -743,14 +743,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM85011OK345679',
-    'https://storage.opencapital.ug/kyc/user-003-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-003-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-003-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-003-id-back.jpg',
     TRUE, '2024-01-21 09:30:00',
-    'https://storage.opencapital.ug/kyc/user-003-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-003-selfie.jpg',
     TRUE, '2024-01-21 09:30:00',
-    'https://storage.opencapital.ug/kyc/user-003-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-003-address.pdf',
     TRUE, '2024-01-21 09:30:00',
-    (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin2@nipanze.ug'),
     '2024-01-20 14:30:00', '2024-01-21 09:30:00', '2029-01-20', '2024-01-20 14:30:00'
 FROM users u WHERE u.email = 'james.okello@outlook.com';
 
@@ -763,14 +763,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM90014NK567890',
-    'https://storage.opencapital.ug/kyc/user-004-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-004-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-004-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-004-id-back.jpg',
     TRUE, '2024-01-23 14:30:00',
-    'https://storage.opencapital.ug/kyc/user-004-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-004-selfie.jpg',
     TRUE, '2024-01-23 14:30:00',
-    'https://storage.opencapital.ug/kyc/user-004-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-004-address.pdf',
     TRUE, '2024-01-23 14:30:00',
-    (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin2@nipanze.ug'),
     '2024-01-22 09:30:00', '2024-01-23 14:30:00', '2029-01-22', '2024-01-22 09:30:00'
 FROM users u WHERE u.email = 'maria.nakato@gmail.com';
 
@@ -783,14 +783,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM87030SS678901',
-    'https://storage.opencapital.ug/kyc/user-005-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-005-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-005-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-005-id-back.jpg',
     TRUE, '2024-01-25 16:00:00',
-    'https://storage.opencapital.ug/kyc/user-005-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-005-selfie.jpg',
     TRUE, '2024-01-25 16:00:00',
-    'https://storage.opencapital.ug/kyc/user-005-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-005-address.pdf',
     TRUE, '2024-01-25 16:00:00',
-    (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin1@nipanze.ug'),
     '2024-01-25 11:45:00', '2024-01-25 16:00:00', '2029-01-25', '2024-01-25 11:45:00'
 FROM users u WHERE u.email = 'robert.ssemwanga@gmail.com';
 
@@ -804,15 +804,15 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'business_registration', 'UG-BIZ-2019-045678',
-    'https://storage.opencapital.ug/kyc/user-011-license.pdf',
+    'https://storage.nipanze.ug/kyc/user-011-license.pdf',
     NULL, TRUE, '2024-02-19 10:30:00',
     NULL, FALSE, NULL,
-    'https://storage.opencapital.ug/kyc/user-011-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-011-address.pdf',
     TRUE, '2024-02-19 10:30:00',
-    'https://storage.opencapital.ug/kyc/user-011-registration.pdf',
-    'https://storage.opencapital.ug/kyc/user-011-license.pdf',
-    'https://storage.opencapital.ug/kyc/user-011-tax.pdf',
-    (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'),
+    'https://storage.nipanze.ug/kyc/user-011-registration.pdf',
+    'https://storage.nipanze.ug/kyc/user-011-license.pdf',
+    'https://storage.nipanze.ug/kyc/user-011-tax.pdf',
+    (SELECT user_id FROM users WHERE email = 'admin3@nipanze.ug'),
     '2024-02-19 09:00:00', '2024-02-19 10:30:00', '2027-02-19', '2024-02-19 09:00:00'
 FROM users u WHERE u.email = 'info@greenleafagro.co.ug';
 
@@ -825,14 +825,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM91114OM789012',
-    'https://storage.opencapital.ug/kyc/user-011-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-011-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-011-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-011-id-back.jpg',
     TRUE, '2024-03-09 14:00:00',
-    'https://storage.opencapital.ug/kyc/user-011-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-011-selfie.jpg',
     TRUE, '2024-03-09 14:00:00',
-    'https://storage.opencapital.ug/kyc/user-011-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-011-address.pdf',
     TRUE, '2024-03-09 14:00:00',
-    (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin2@nipanze.ug'),
     '2024-03-09 09:30:00', '2024-03-09 14:00:00', '2029-03-09', '2024-03-09 09:30:00'
 FROM users u WHERE u.email = 'frank.omondi@gmail.com';
 
@@ -845,14 +845,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM88047NB890123',
-    'https://storage.opencapital.ug/kyc/user-012-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-012-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-012-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-012-id-back.jpg',
     TRUE, '2024-03-11 11:00:00',
-    'https://storage.opencapital.ug/kyc/user-012-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-012-selfie.jpg',
     TRUE, '2024-03-11 11:00:00',
-    'https://storage.opencapital.ug/kyc/user-012-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-012-address.pdf',
     TRUE, '2024-03-11 11:00:00',
-    (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin3@nipanze.ug'),
     '2024-03-11 09:00:00', '2024-03-11 11:00:00', '2029-03-11', '2024-03-11 09:00:00'
 FROM users u WHERE u.email = 'lucy.nambi@yahoo.com';
 
@@ -865,14 +865,14 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'approved', 'national_id', 'CM84021MW901234',
-    'https://storage.opencapital.ug/kyc/user-013-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-013-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-013-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-013-id-back.jpg',
     TRUE, '2024-03-13 15:00:00',
-    'https://storage.opencapital.ug/kyc/user-013-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-013-selfie.jpg',
     TRUE, '2024-03-13 15:00:00',
-    'https://storage.opencapital.ug/kyc/user-013-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-013-address.pdf',
     TRUE, '2024-03-13 15:00:00',
-    (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin3@nipanze.ug'),
     '2024-03-13 12:00:00', '2024-03-13 15:00:00', '2029-03-13', '2024-03-13 12:00:00'
 FROM users u WHERE u.email = 'charles.mwesigwa@gmail.com';
 
@@ -885,12 +885,12 @@ INSERT INTO kyc_verifications (
 )
 SELECT gen_random_uuid(), u.user_id,
     'pending', 'national_id', 'CM93255NM789012',
-    'https://storage.opencapital.ug/kyc/user-026-id-front.jpg',
-    'https://storage.opencapital.ug/kyc/user-026-id-back.jpg',
+    'https://storage.nipanze.ug/kyc/user-026-id-front.jpg',
+    'https://storage.nipanze.ug/kyc/user-026-id-back.jpg',
     FALSE, NULL,
-    'https://storage.opencapital.ug/kyc/user-026-selfie.jpg',
+    'https://storage.nipanze.ug/kyc/user-026-selfie.jpg',
     FALSE, NULL,
-    'https://storage.opencapital.ug/kyc/user-026-address.pdf',
+    'https://storage.nipanze.ug/kyc/user-026-address.pdf',
     FALSE, NULL,
     NULL,
     '2026-01-25 10:30:00', NULL, NULL, '2026-01-25 10:30:00'
@@ -909,7 +909,7 @@ INSERT INTO risk_assessments (
 )
 SELECT gen_random_uuid(), u.user_id,
     750, 91.0, 'low', 95, 88, 15.2, 90,
-    (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin1@nipanze.ug'),
     '2024-01-16 11:00:00', '2026-07-15', TRUE, '2024-01-16 11:00:00'
 FROM users u WHERE u.email = 'david.mukasa@gmail.com';
 
@@ -965,7 +965,7 @@ INSERT INTO risk_assessments (
 )
 SELECT gen_random_uuid(), u.user_id,
     710, 79.0, 'low', 82, 78, 28.0, 75,
-    (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'),
+    (SELECT user_id FROM users WHERE email = 'admin3@nipanze.ug'),
     '2024-02-20 09:00:00', '2026-08-18', TRUE, '2024-02-20 09:00:00'
 FROM users u WHERE u.email = 'info@greenleafagro.co.ug';
 

@@ -1,928 +1,544 @@
-# OpenCapital — MVP Build Plan
+# BUILD_PLAN.md — Nipanze
 
-> **Stack:** Flutter + Supabase (free tier) + Supabase CLI Local Stack
-> **Database:** The production `sql/schema.sql` (19 tables + mock RPCs) is the single source of truth.
-> **Seed data:** `sql/seed.sql` v2.1 — inserts into `auth.users` with fixed UUIDs, triggers sync to `public.users`.
-> **Goal:** A fully testable end-to-end marketplace before a single external API is touched.
+> **Flutter + Supabase** · Digital loan listing marketplace for Uganda and emerging economies
+> Last updated: March 2026 · Schema v1.0 · Seed v1.0
 
 ---
 
-## Ground Rules
+## Overview
 
-1. **Schema first, always.** `sql/schema.sql` deploys on `supabase db reset`. Never simplify the schema for the app layer.
-2. **Seed data is your test fixture.** `sql/seed.sql` gives you 18 users with fixed UUIDs, 6 loan requests, 10 bids, and reconciled wallet states. Load after every reset.
-3. **Triggers and functions are already implemented.** The DB enforces KYC gates, balance checks, tier sync, repayment schedules, and contract activation.
-4. **No Edge Functions until Stage 4.** All mutations in Stages 1–3 go through Postgres RPCs defined in `schema.sql`.
-5. **Mock everything external in Stages 1–3.** `mock_top_up`, `mock_disburse`, `mock_repayment` RPCs are already in `schema.sql`.
-6. **One feature fully working before starting the next.**
-7. **Test as you build, not after.**
+This document is the authoritative build roadmap for Nipanze. Each stage builds on the last and is designed to be independently deployable. Stages 1–3 constitute the MVP. Stage 4 onward moves into growth and automation.
+
+**Guiding principle:** Ship a working, honest subset at each stage. Never ship a broken feature in the name of completeness.
 
 ---
 
-## Reset Workflow
+## Stage Map
 
-```bash
-supabase db reset
-psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/schema.sql
-psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
-```
-
----
-
-## Schema Quick Reference
-
-| Feature | Primary Tables |
-| --- | --- |
-| Auth & identity | `users`, `user_profiles`, `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens` |
-| KYC | `kyc_verifications` |
-| Risk & credit | `risk_assessments` |
-| Wallet | `wallet_balances` |
-| Loan marketplace | `loan_requests`, `bids` |
-| Contracts | `loan_contracts`, `contract_bids` |
-| Payments | `disbursements`, `loan_repayments`, `repayment_transactions` |
-| Platform | `audit_logs`, `notifications`, `user_notes`, `system_settings` |
-
-Key DB-enforced rules:
-
-- `trg_fn_require_kyc_for_loan` — blocks `loan_requests` INSERT without approved KYC
-- `trg_fn_require_active_borrower` — blocks `loan_requests` INSERT if `users.status != 'active'`
-- `trg_fn_enforce_lendable_on_bid` — blocks `bids` INSERT if `lendable_balance < bid_amount`
-- `trg_fn_lock_funds_on_accept` — on bid → `accepted`: moves `lendable_balance` → `locked_repayment`
-- `trg_fn_credit_borrower_on_disbursement` — on disbursement → `completed`: credits `non_lendable_borrowed`
-- `trg_fn_check_all_lenders_signed` — auto-activates contract when all `contract_bids.lender_signed = TRUE`
-- `fn_score_to_tier` — pure mapping; `trg_sync_reputation_tier` calls it on every `reputation_score` UPDATE
-- `handle_new_auth_user` — syncs `auth.users` → `public.users` on every signup (in `schema.sql`)
-- `accept_bid(request_id, bid_id, borrower_id)` — atomic RPC in `schema.sql`
-- `mock_top_up(user_id, amount)` — Stage 2-3 wallet top-up RPC in `schema.sql`
+| Stage | Title | Status | Target |
+|---|---|---|---|
+| 1 | Foundation | 🔄 In Progress | Auth, navigation, DB bootstrap |
+| 2 | Core Marketplace | ⬜ Next | Live feed, order book, bidding |
+| 3 | Polish & Supporting Features | ⬜ Planned | Watchlist, positions, notifications |
+| 3.5 | Cloud Migration & Auth Hardening | ⬜ Planned | Supabase Cloud, RLS audit, token rotation |
+| 4 | Negotiator Module & Contract Drafting | ⬜ Planned | Post-acceptance flow, draft contracts |
+| 5 | Admin, Compliance & Credit Score Automation | ⬜ Planned | Admin dashboard, KYC automation, reputation engine |
+| 6 | Launch & Growth | ⬜ Planned | Play Store, App Store, SMS, marketing |
 
 ---
 
-## Testing Strategy
+## Stage 1 — Foundation
 
-| Layer | Tool | When | What |
-| --- | --- | --- | --- |
-| Unit | `flutter_test` | Every stage | BLoC states, repository logic, score formulas, validators |
-| Widget | `flutter_test` | Every stage | UI renders, buttons fire events, forms validate |
-| Integration | Local stack + `integration_test` | Stages 2–4 | Full user flows against real Postgres |
-| Sandbox | Provider sandbox APIs | Stage 4 only | MTN MoMo, Africa's Talking, KYC provider |
+**Goal:** Working app skeleton. Users can register, verify email, log in, and land on a protected dashboard. All core infrastructure is in place and tested locally.
 
-```bash
-# Unit + widget
-flutter test
+### 1.1 Project Bootstrap
 
-# Integration — single file, Linux desktop only
-flutter test integration_test/integration_test.dart -d linux
+- [ ] `flutter create nipanze` with package name `ug.nipanze.app`
+- [ ] Add core dependencies: `supabase_flutter`, `flutter_bloc`, `go_router`, `injectable`, `get_it`, `freezed`, `json_serializable`, `envied`
+- [ ] Configure `--dart-define` build variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+- [ ] Set up `core/config/supabase_config.dart` — reads dart-define at build time; no hardcoded keys
+- [ ] Add `core/errors/app_exception.dart` — typed exception hierarchy; `parseSupabaseError()` utility
+- [ ] Set up `core/di/` — GetIt + Injectable; `configureDependencies()` called in `main.dart`
 
-# Coverage
-flutter test --coverage
-genhtml coverage/lcov.info -o coverage/html
-```
+### 1.2 Supabase Local Setup
 
----
+- [ ] Install Supabase CLI; `supabase init`; `supabase start`
+- [ ] Apply `sql/schema.sql` (v1.0) to local instance
+- [ ] Apply `sql/seed.sql` (v1.0) — 18 users, 41 listings, 3 contracts
+- [ ] Confirm all 19 tables, views (`v_loan_listings`, `v_user_portfolio`, `v_lender_investments`, `v_loan_performance`), triggers, and RPCs are present
+- [ ] Verify RLS enabled on all tables
+- [ ] Create storage buckets: `kyc-documents`, `contracts`
+- [ ] Confirm `trg_fn_require_kyc_for_loan` and `trg_fn_require_active_borrower` triggers fire correctly
 
-## Seed Data Test Accounts ✅
+### 1.3 Theme
 
-Password for all accounts: `Test1234!`
-All accounts inserted into `auth.users` with fixed UUIDs via `sql/seed.sql` v2.1.
-Passwords use `crypt('Test1234!', gen_salt('bf'))` — GoTrue-compatible `$2a$` format.
+- [ ] `core/theme/app_theme.dart` — light and dark variants
+- [ ] Brand colours: accent blue `#3B82F6`, success green `#10B981`, warning amber `#F59E0B`, danger red `#EF4444`, purple `#8B5CF6`
+- [ ] Typography: DM Sans (body), DM Mono (numeric/code values)
+- [ ] `ThemeMode` persisted via `SharedPreferences`
 
-| Email | UUID suffix | Role | Notes |
-| --- | --- | --- | --- |
-| `david.mukasa@gmail.com` | `...000001` | borrower | KYC approved, credit 750, loan fully funded |
-| `sarah.namukasa@yahoo.com` | `...000002` | borrower | KYC approved, loan partially funded |
-| `james.okello@outlook.com` | `...000003` | both | KYC approved, loan fully funded, lender |
-| `maria.nakato@gmail.com` | `...000004` | borrower | KYC approved, loan active no bids |
-| `robert.ssemwanga@gmail.com` | `...000005` | both | KYC approved, lender + draft loan |
-| `info@greenleafagro.co.ug` | `...000006` | lender | 1,500,000 lendable, pending bid |
-| `contact@kampalatech.ug` | `...000007` | lender | 1,000,000 lendable, pending bid |
-| `invest@pearlcapital.ug` | `...000008` | lender | 3,000,000 lendable, 7,000,000 locked |
-| `funds@victoriainvest.co.ug` | `...000009` | lender | 3,000,000 lendable, 2,000,000 locked |
-| `lending@equatorfinance.ug` | `...000010` | lender | 2,000,000 lendable, 3,000,000 locked |
-| `frank.omondi@gmail.com` | `...000011` | borrower | KYC approved, loan active no bids |
-| `lucy.nambi@yahoo.com` | `...000012` | both | KYC approved |
-| `charles.mwesigwa@gmail.com` | `...000013` | both | KYC approved, 1,200,000 lendable |
-| `alice.namuli@gmail.com` | `...000014` | borrower | KYC pending, `pending_verification` |
-| `admin1@opencapital.ug` | `...000015` | admin | Full access |
-| `admin2@opencapital.ug` | `...000016` | admin | Full access |
-| `admin3@opencapital.ug` | `...000017` | admin | Full access |
-| `test.user@gmail.com` | `...000018` | borrower | No KYC, no profile — intentionally minimal |
+### 1.4 Navigation
 
----
+- [ ] `core/router/app_router.dart` — GoRouter with named routes
+- [ ] Auth guard: unauthenticated users redirected to `/auth/login`; post-login redirect to intended route
+- [ ] Route table (all routes declared, screens may be placeholder stubs):
+  - `/auth/login`, `/auth/register`, `/auth/verify-email`, `/auth/reset-password`
+  - `/dashboard`
+  - `/marketplace`, `/marketplace/:requestId`
+  - `/watchlist`
+  - `/listings/create`, `/listings/my-listings`
+  - `/contracts/:contractId`
+  - `/positions`
+  - `/analytics`
+  - `/notifications`
+  - `/kyc`
+  - `/profile`, `/account`
+  - `/admin`
+- [ ] `MainScaffold` — bottom nav (Markets, Watchlist, Positions, Account) with GoRouter location-aware highlighting
+- [ ] `OfflineBanner` widget — shown when Supabase connectivity is lost
 
-## Stage 1 — Foundation ✅ COMPLETE
+### 1.5 Auth Feature
 
-**Outcome:** App launches, auth works completely, every screen is reachable.
+- [ ] `AuthRepository` — wraps `supabase.auth`; exposes `signIn`, `signUp`, `signOut`, `resetPassword`, `currentUser`
+- [ ] `AuthBloc` / `AuthCubit` — states: `AuthInitial`, `AuthLoading`, `AuthAuthenticated`, `AuthUnauthenticated`, `AuthError`
+- [ ] `LoginPage` — email + password; "Forgot password" link; "Register" link; error display using `parseSupabaseError()`
+- [ ] `RegisterPage` — email, password, confirm password; post-submit redirects to verify-email prompt
+- [ ] `VerifyEmailPage` — static instruction screen; "Resend email" button; auto-redirect on session detection
+- [ ] `ResetPasswordPage` — email input; confirmation message on submit
+- [ ] Session persistence — `supabase_flutter` handles JWT refresh automatically; verify token rotation via `replaced_by` chain in `audit_logs`
+- [ ] Auth state listener in `main.dart` — rebuilds router on session change
 
----
+### 1.6 Dashboard (Stub)
 
-### 1.1 — Project Scaffold ✅
+- [ ] `DashboardPage` — placeholder with "Welcome, [name]" and quick-action buttons
+- [ ] Fetches `v_user_portfolio` for borrower/lender activity counts
+- [ ] Visible only to authenticated users
 
-- [x] Folder structure: `lib/core/`, `lib/features/`, `lib/shared/`
-- [x] `get_it` + `injectable` — `injection.dart`, `injection.config.dart` generated by `build_runner`
-- [x] `AppTheme` + `AppColors` — light/dark, brand colour `#1A56DB`, Sora headings + Inter body
-- [x] `AppRouter` with GoRouter — all route paths as constants in `Routes` abstract class
-- [x] `MainScaffold` with bottom nav (5 tabs: Dashboard, Marketplace, My Loans, Wallet, Profile)
-- [x] All platform targets: web, linux, android, iOS, windows, macOS
-- [x] `./run_local.sh` (Chrome) and `./run_linux.sh` (Linux desktop) run scripts
-- [x] All 5 nav tabs reachable, no errors
+### Stage 1 Exit Criteria
 
----
-
-### 1.2 — Supabase Auth: Register ✅
-
-- [x] `handle_new_auth_user` trigger in `sql/schema.sql` — syncs `auth.users` → `public.users` on every signup, also fires `trg_auto_create_wallet`
-- [x] `RegisterPage` — email, password, confirm password, role selector
-- [x] `AuthRepository` — `register()`, `signIn()`, `signOut()`, `sendPasswordReset()`, `resendVerification()`, `markEmailVerified()`
-- [x] `AuthBloc` — `AuthInitial`, `AuthLoading`, `AuthSuccess`, `AuthError`, `AuthPasswordResetSent`, `AuthVerificationResent`
-- [x] `getIt<AuthRepository>()` typed correctly in all auth pages
-- [x] On register success → navigates to `VerifyEmailPage`
-
----
-
-### 1.3 — Auth: Email Verification ✅
-
-- [x] `VerifyEmailPage` — "Check your inbox" UI with Resend button
-- [x] Calls `supabase.auth.resend(type: OtpType.signup, email: email)`
-- [x] `markEmailVerified()` updates `users.email_verified = TRUE`
-- [x] Local dev: seed users pre-confirmed via `email_confirmed_at = NOW()` in `sql/seed.sql`
-
----
-
-### 1.4 — Auth: Login ✅
-
-- [x] `LoginPage` — email + password, Sign In button, links to Register + Forgot Password
-- [x] Checks `emailConfirmedAt` → `VerifyEmailPage` if null, `Dashboard` if confirmed
-- [x] Error snackbar on invalid credentials
-- [x] Navigates to Dashboard after successful login
-
----
-
-### 1.5 — Auth: Password Reset ✅
-
-- [x] `ForgotPasswordPage` — email input, Send Reset button
-- [x] `AuthRepository.sendPasswordReset()` → `supabase.auth.resetPasswordForEmail(email)`
-- [x] `AuthPasswordResetSent` state shown on success
-
----
-
-### 1.6 — Auth State Persistence + GoRouter Guards ✅
-
-- [x] Router `redirect`: unauthenticated → `/auth/login`, unverified → `/auth/verify-email`, verified → proceed
-- [x] `SplashPage` checks `currentSession` → routes correctly after 1s delay
-- [x] Session persists across app restarts
-
----
-
-### 1.7 — Splash + Onboarding ✅
-
-- [x] `SplashPage` — spinner, auth check, redirect
-- [x] `OnboardingPage` — 3 slides with animated dot indicators, colour-matched CTAs
-- [x] Responsive via `LayoutBuilder` + `.clamp()` — no overflow on any window size
-- [x] `withOpacity` → `withValues(alpha:)` migration across all pages
-
----
-
-### ✅ Stage 1 Completion Status — VERIFIED
-
-- [x] `flutter test test/features/auth/auth_bloc_test.dart` — **7/7 passing**
-- [x] `flutter test integration_test/integration_test.dart -d linux` — **15/15 passing**
-- [x] `sql/schema.sql` v3.2 deployed — includes all triggers, RPCs, views, mock functions
-- [x] `sql/seed.sql` v2.1 deployed — fixed UUIDs, `$2a$` passwords, all seed users sign in with `Test1234!`
-- [x] Register → login → Dashboard flow end-to-end
-- [x] Wrong password → error snackbar
-- [x] Close app → reopen → stays logged in
-- [x] All 5 nav tabs reachable
-- [x] Chrome and Linux desktop targets working
-- [x] Android desugaring fix applied (`build.gradle.kts`)
-- [x] Integration test helper fixed: `127.0.0.1`, real keys, `_initialized` guard
+- [ ] Fresh `flutter pub get` + `dart run build_runner build` completes with zero errors
+- [ ] Register → verify email → login → dashboard flow works end to end on web and Android emulator
+- [ ] Logout clears session; router redirects to login
+- [ ] All routes in route table are declared (stub screens acceptable)
+- [ ] `supabase start` + schema + seed runs cleanly with no errors
 
 ---
 
 ## Stage 2 — Core Marketplace
 
-**Outcome:** Two test users complete a full loan cycle: post → bid → accept → disburse → repay.
-**Time estimate:** 1.5–2 weeks
-
-> **Note:** `accept_bid`, `mock_top_up`, `mock_disburse`, `mock_repayment` RPCs are already
-> in `sql/schema.sql`. No migration files needed for these — just call them from Flutter.
-
----
-
-### 2.1 — User Profile (Onboarding + Edit)
-
-After first login, check if a `user_profiles` row exists. If not, prompt completion.
-
-```dart
-class UserRepository {
-  Future<void> createProfile(String userId, UserProfileModel data) async {
-    await supabase.from('user_profiles').insert({
-      'user_id': userId,
-      'first_name': data.firstName,
-      'last_name': data.lastName,
-      'district': data.district,
-      'employment_status': data.employmentStatus,
-      'monthly_income': data.monthlyIncome,
-    });
-  }
-
-  Stream<UserProfileModel?> watchProfile(String userId) {
-    return supabase
-        .from('user_profiles')
-        .stream(primaryKey: ['profile_id'])
-        .eq('user_id', userId)
-        .map((rows) => rows.isEmpty ? null : UserProfileModel.fromJson(rows.first));
-  }
-}
-```
-
-- [ ] `ProfileSetupPage` — shown after first login if no `user_profiles` row exists
-- [ ] `ProfilePage` — display + edit, profile completion percentage
-- [ ] Compute `profile_completion_percentage` client-side, UPDATE atomically
-- [ ] Privacy: never expose `address_line1/2`, `employer_name`, `business_registration_number`, `id_number`. Only `district` is safe for listing context.
-
-```dart
-test('profile completion percentage calculated correctly', () {
-  final pct = ProfileCompletion.calculate(
-    hasName: true, hasAddress: true, hasEmployment: true,
-    hasIncome: false, hasBusiness: false,
-  );
-  expect(pct, 60);
-});
-```
-
-```dart
-// integration_test
-testWidgets('creating profile sets profile_completed when all required fields filled', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('david.mukasa@gmail.com'); // UUID: ...000001
-  final uid = supabase.auth.currentUser!.id;
-  await supabase.from('user_profiles').insert({
-    'user_id': uid, 'first_name': 'Test', 'last_name': 'User',
-    'district': 'Central', 'country': 'Uganda',
-    'employment_status': 'employed', 'employer_name': 'Test Corp',
-    'monthly_income': 3000000, 'profile_completed': true,
-    'profile_completion_percentage': 100,
-  });
-  final row = await supabase.from('user_profiles').select().eq('user_id', uid).single();
-  expect(row['profile_completed'], true);
-});
-```
-
----
-
-### 2.2 — Wallet Screen
-
-Three segregated pools. Never blend or aggregate these columns.
-
-```dart
-class WalletRepository {
-  Stream<WalletModel> watchWallet(String userId) {
-    return supabase
-        .from('wallet_balances')
-        .stream(primaryKey: ['wallet_id'])
-        .eq('user_id', userId)
-        .map((rows) => WalletModel.fromJson(rows.first));
-  }
-}
-```
-
-- [ ] `WalletPage` — three distinct balance cards:
-  - 💰 **Lendable Balance** (`lendable_balance`) — "Your deposited funds. Available to lend."
-  - 🔒 **Locked for Repayment** (`locked_repayment`) — "Reserved for active loan repayments."
-  - 🚫 **Borrowed Funds** (`non_lendable_borrowed`) — "Received from loans. Cannot be lent."
-- [ ] ℹ️ tooltip per card
-- [ ] Transaction history from `disbursements` + `repayment_transactions`
-- [ ] Real-time via `wallet_balances` stream
-
-```dart
-testWidgets('WalletPage shows all three balance types', (tester) async {
-  final wallet = WalletModel(lendableBalance: 3000000, lockedRepayment: 2000000, nonLendableBorrowed: 0);
-  await tester.pumpWidget(WalletPage(wallet: wallet));
-  expect(find.text('UGX 3,000,000'), findsOneWidget);
-  expect(find.text('UGX 2,000,000'), findsOneWidget);
-  expect(find.text('UGX 0'), findsOneWidget);
-});
-```
-
----
-
-### 2.3 — Mock Top-Up
-
-> `mock_top_up(p_user_id, p_amount)` RPC already in `sql/schema.sql`. No migration needed.
-
-```dart
-Future<void> mockTopUp(String userId, double amount) async {
-  await supabase.rpc('mock_top_up', params: {'p_user_id': userId, 'p_amount': amount});
-}
-```
-
-- [ ] "Add Funds (Test)" button on Wallet screen — clearly labelled MVP mock
-- [ ] Bottom sheet: amount input → Confirm
-- [ ] On success: `lendable_balance` increases, audit log row written
-
-```dart
-testWidgets('mock top-up increments lendable_balance only', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('lucy.nambi@yahoo.com'); // UUID: ...000012, starts at 0
-  final uid = supabase.auth.currentUser!.id;
-  final before = await getLendableBalance(uid);
-  await supabase.rpc('mock_top_up', params: {'p_user_id': uid, 'p_amount': 500000});
-  expect(await getLendableBalance(uid), before + 500000);
-  expect(await getLockedRepayment(uid), 0);
-  expect(await getNonLendableBorrowed(uid), 0);
-});
-```
-
----
-
-### 2.4 — Create Loan Request
-
-DB enforces: KYC gate, active borrower gate, field constraints.
-
-```dart
-class LoanRepository {
-  Future<String> createLoanRequest(CreateLoanRequestDto dto) async {
-    final result = await supabase.from('loan_requests').insert({
-      'borrower_id': dto.borrowerId,
-      'requested_amount': dto.requestedAmount,
-      'purpose': dto.purpose,
-      'purpose_description': dto.purposeDescription,
-      'duration_months': dto.durationMonths,
-      'max_interest_rate': dto.maxInterestRate,
-      'status': 'draft',
-    }).select('request_id').single();
-    return result['request_id'] as String;
-  }
-
-  Future<void> publishLoanRequest(String requestId) async {
-    final settings = await supabase.from('system_settings')
-        .select('setting_value').eq('setting_key', 'listing_duration_days').single();
-    final days = int.parse(settings['setting_value'] as String);
-    final now = DateTime.now();
-    await supabase.from('loan_requests').update({
-      'status': 'active',
-      'listed_at': now.toIso8601String(),
-      'expires_at': now.add(Duration(days: days)).toIso8601String(),
-    }).eq('request_id', requestId);
-  }
-}
-```
-
-- [ ] Form: amount, duration, max rate, purpose, description
-- [ ] Create as `draft`; separate "Publish" transitions to `active`
-- [ ] Client-side validation mirrors DB constraints (from `system_settings`)
-- [ ] Show DB trigger error if KYC not approved
-
-```dart
-group('LoanRequestValidator', () {
-  test('rejects amount below min_loan_amount', () {
-    final r = LoanRequestValidator.validate(amount: 50000, settings: {'min_loan_amount': 100000.0});
-    expect(r.error, contains('100,000'));
-  });
-  test('rejects duration above max_loan_duration', () {
-    final r = LoanRequestValidator.validate(durationMonths: 40, settings: {'max_loan_duration': 36.0});
-    expect(r.error, contains('36'));
-  });
-});
-```
-
-```dart
-// integration_test — KYC trigger enforcement
-testWidgets('loan creation blocked for user with pending KYC', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('alice.namuli@gmail.com'); // UUID: ...000014, KYC pending
-  expect(
-    () async => await supabase.from('loan_requests').insert({
-      'borrower_id': supabase.auth.currentUser!.id,
-      'requested_amount': 500000, 'purpose': 'Test', 'duration_months': 6, 'status': 'draft',
-    }),
-    throwsA(predicate((e) => e.toString().contains('KYC approval required'))),
-  );
-});
-```
-
----
-
-### 2.5 — Loan Marketplace (Anonymised Listing)
-
-> `v_loan_listings` view already in `sql/schema.sql`. No migration needed.
-
-```dart
-class LoanRepository {
-  Stream<List<LoanListingModel>> watchMarketplace() {
-    return supabase
-        .from('v_loan_listings')
-        .stream(primaryKey: ['request_id'])
-        .map((rows) => rows.map((r) => LoanListingModel.fromJson(r)).toList());
-  }
-}
-```
-
-- [ ] `MarketplacePage` — real-time list from `v_loan_listings`
-- [ ] Filter bar: purpose, district, amount range, max rate, risk category
-- [ ] Shimmer loading, Lottie empty state
-- [ ] Confirm `borrower_id` is NEVER present in any response
-
-```dart
-// integration_test
-testWidgets('v_loan_listings does not expose borrower_id', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('invest@pearlcapital.ug'); // any authenticated user
-  final rows = await supabase.from('v_loan_listings').select();
-  for (final row in rows) {
-    expect(row.containsKey('borrower_id'), false);
-    expect(row.containsKey('credit_score_band'), true);
-    expect(row.containsKey('district'), true);
-  }
-  // Only active/partially_funded loans appear
-  for (final row in rows) {
-    expect(['active', 'partially_funded'].contains(row['status']), true);
-  }
-});
-```
-
----
-
-### 2.6 — Loan Detail
-
-- [ ] `LoanDetailPage` — anonymised pre-bid, real-time bid stream
-- [ ] Anonymised bids: amount, rate, lender reputation tier — NOT name
-- [ ] "Place Bid" button — non-borrower users only
-- [ ] "Accept Bid" button — borrower only
-- [ ] Funding progress bar, expiry countdown
-
-```dart
-testWidgets('Place Bid button hidden from loan owner', (tester) async {
-  final loan = LoanDetailModel(requestId: 'r1', borrowerId: 'current-uid');
-  await tester.pumpWidget(LoanDetailPage(loan: loan, currentUserId: 'current-uid'));
-  expect(find.text('Place Bid'), findsNothing);
-});
-```
-
----
-
-### 2.7 — Place Bid
-
-`lendable_balance` only decreases on bid **acceptance**, not placement.
-
-```dart
-class BidRepository {
-  Future<void> placeBid({
-    required String requestId, required String lenderId,
-    required double amount, required double interestRate,
-  }) async {
-    final wallet = await supabase.from('wallet_balances')
-        .select('lendable_balance').eq('user_id', lenderId).single();
-    if ((wallet['lendable_balance'] as num) < amount) {
-      throw InsufficientFundsException(available: (wallet['lendable_balance'] as num).toDouble(), required: amount);
-    }
-    await supabase.from('bids').insert({
-      'request_id': requestId, 'lender_id': lenderId,
-      'bid_amount': amount, 'interest_rate': interestRate, 'status': 'pending',
-    });
-  }
-}
-```
-
-- [ ] Bottom sheet: amount + rate inputs
-- [ ] Client-side: amount ≤ `lendable_balance`, rate ≤ `max_interest_rate`, not own loan
-- [ ] User-friendly error from Postgres trigger exception
-- [ ] Realtime wallet update on success
-
-```dart
-group('BidValidator', () {
-  test('rejects bid exceeding lendable balance', () {
-    final r = BidValidator.validate(bidAmount: 600000, lendableBalance: 500000, maxRate: 15, bidRate: 12, isBorrowerOwn: false);
-    expect(r.isValid, false);
-    expect(r.error, contains('Insufficient'));
-  });
-  test('rejects bid on own loan', () {
-    final r = BidValidator.validate(bidAmount: 100000, lendableBalance: 500000, maxRate: 15, bidRate: 12, isBorrowerOwn: true);
-    expect(r.isValid, false);
-  });
-  test('accepts valid bid', () {
-    final r = BidValidator.validate(bidAmount: 100000, lendableBalance: 500000, maxRate: 15, bidRate: 12, isBorrowerOwn: false);
-    expect(r.isValid, true);
-  });
-});
-```
-
-```dart
-// integration_test
-testWidgets('placing bid does NOT lock funds — only acceptance does', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('contact@kampalatech.ug'); // UUID: ...000007, 3M lendable
-  final lenderId = supabase.auth.currentUser!.id;
-  final lendableBefore = await getLendableBalance(lenderId);
-
-  // Frank's loan — no bids in seed
-  final loan = await supabase.from('loan_requests')
-      .select('request_id')
-      .eq('borrower_id', '10000000-0000-0000-0000-000000000011') // frank
-      .eq('status', 'active').single();
-
-  await supabase.from('bids').insert({
-    'request_id': loan['request_id'], 'lender_id': lenderId,
-    'bid_amount': 500000, 'interest_rate': 12.0, 'status': 'pending',
-  });
-
-  // lendable_balance unchanged — funds only lock on acceptance
-  expect(await getLendableBalance(lenderId), lendableBefore);
-});
-```
-
----
-
-### 2.8 — My Loans
-
-- [ ] Borrower tab: `loan_requests WHERE borrower_id = uid` — grouped by status
-- [ ] Lender tab: `bids JOIN loan_requests WHERE bids.lender_id = uid` — grouped by bid status
-- [ ] Tap → `LoanDetailPage` or bid detail sheet
-
----
-
-### 2.9 — Accept Bid + Contract Creation
-
-> `accept_bid(p_request_id, p_bid_id, p_borrower_id)` RPC already in `sql/schema.sql`.
-
-```dart
-Future<String> acceptBid({
-  required String requestId,
-  required String bidId,
-  required String borrowerId,
-}) async {
-  return await supabase.rpc('accept_bid', params: {
-    'p_request_id': requestId,
-    'p_bid_id': bidId,
-    'p_borrower_id': borrowerId,
-  }) as String;
-}
-```
-
-- [ ] "Accept Bid" button on `LoanDetailPage` (borrower only)
-- [ ] Confirmation bottom sheet showing bid terms
-- [ ] On success: navigate to `ContractPage`
-
-```dart
-// integration_test — most important test in Stage 2
-// DO NOT proceed to 2.10 until this passes completely
-testWidgets('accepting bid creates contract, locks lender funds, transitions loan status', (tester) async {
-  await setupSupabaseLocal();
-  await signInTestUser('maria.nakato@gmail.com'); // UUID: ...000004
-
-  // Maria's active loan — 1 pending bid from GreenLeaf in seed
-  final loan = await supabase.from('loan_requests')
-      .select('request_id')
-      .eq('borrower_id', '10000000-0000-0000-0000-000000000004')
-      .eq('status', 'active').single();
-  final bid = await supabase.from('bids')
-      .select('bid_id')
-      .eq('request_id', loan['request_id'])
-      .eq('status', 'pending').single();
-
-  final greenLeafId = '10000000-0000-0000-0000-000000000006';
-  final lendableBefore = await getLendableBalance(greenLeafId);
-  final lockedBefore   = await getLockedRepayment(greenLeafId);
-
-  final contractId = await supabase.rpc('accept_bid', params: {
-    'p_request_id': loan['request_id'],
-    'p_bid_id': bid['bid_id'],
-    'p_borrower_id': '10000000-0000-0000-0000-000000000004',
-  });
-  expect(contractId, isNotNull);
-
-  final updatedLoan = await supabase.from('loan_requests').select().eq('request_id', loan['request_id']).single();
-  expect(updatedLoan['status'], 'contracted');
-
-  final contract = await supabase.from('loan_contracts').select().eq('contract_id', contractId).single();
-  expect(contract['status'], 'draft');
-  expect(contract['borrower_id'], '10000000-0000-0000-0000-000000000004');
-
-  final cb = await supabase.from('contract_bids').select().eq('contract_id', contractId);
-  expect(cb.length, 1);
-
-  // trg_fn_lock_funds_on_accept fired: lendable ↓, locked ↑
-  expect(await getLendableBalance(greenLeafId), lendableBefore - 1500000);
-  expect(await getLockedRepayment(greenLeafId), lockedBefore + 1500000);
-});
-```
-
----
-
-### 2.10 — Contract View + Signing
-
-```dart
-class ContractRepository {
-  Future<void> borrowerSign(String contractId, String signerIp) async {
-    await supabase.from('loan_contracts').update({
-      'borrower_signed': true,
-      'borrower_signed_at': DateTime.now().toIso8601String(),
-      'borrower_signature_ip': signerIp,
-    }).eq('contract_id', contractId);
-  }
-
-  Future<void> lenderSign(String contractBidId, String signerIp) async {
-    await supabase.from('contract_bids').update({
-      'lender_signed': true,
-      'lender_signed_at': DateTime.now().toIso8601String(),
-      'lender_signature_ip': signerIp,
-    }).eq('contract_bid_id', contractBidId);
-    // trg_fn_check_all_lenders_signed fires → auto-activates if all signed
-  }
-
-  Future<void> generateRepaymentSchedule(String contractId) async {
-    await supabase.rpc('sp_calculate_repayment_schedule', params: {'p_contract_id': contractId});
-  }
-}
-```
-
-- [ ] `ContractPage` — terms, party statuses, Sign button
-- [ ] After both sign: call `generateRepaymentSchedule`, show "Contract Active"
-
-```dart
-testWidgets('after both parties sign contract activates and schedule generates', (tester) async {
-  // ... create contract via accept_bid, both sign, schedule generated ...
-  final installments = await supabase.from('loan_repayments').select().eq('contract_id', contractId);
-  expect(installments.length, greaterThan(0));
-});
-```
-
----
-
-### 2.11 — Mock Disbursement
-
-> `mock_disburse(p_contract_id, p_bid_id)` RPC already in `sql/schema.sql`.
-
-```dart
-Future<void> mockDisburse(String contractId, String bidId) async {
-  await supabase.rpc('mock_disburse', params: {
-    'p_contract_id': contractId,
-    'p_bid_id': bidId,
-  });
-}
-```
-
-- [ ] "Disburse (Mock)" button on ContractPage after activation
-- [ ] `trg_fn_credit_borrower_on_disbursement` fires → borrower `non_lendable_borrowed` ↑
-
-```dart
-testWidgets('disbursement credits borrower non_lendable_borrowed only', (tester) async {
-  final borrowerId = '10000000-0000-0000-0000-000000000004'; // maria
-  final nlbBefore = await getNonLendableBorrowed(borrowerId);
-  final lendableBefore = await getLendableBalance(borrowerId);
-  await supabase.rpc('mock_disburse', params: {'p_contract_id': contractId, 'p_bid_id': bidId});
-  expect(await getNonLendableBorrowed(borrowerId), nlbBefore + 1500000);
-  expect(await getLendableBalance(borrowerId), lendableBefore); // unchanged
-});
-```
-
----
-
-### 2.12 — Repayment
-
-> `mock_repayment(p_repayment_id, p_amount_paid)` RPC already in `sql/schema.sql`.
-
-```dart
-Future<void> mockRepayment(String repaymentId, double amount) async {
-  await supabase.rpc('mock_repayment', params: {
-    'p_repayment_id': repaymentId,
-    'p_amount_paid': amount,
-  });
-}
-```
-
-- [ ] `RepaymentSchedulePage` — list of installments, status indicators
-- [ ] "Mark as Paid" per installment (MVP mock)
-- [ ] `trg_fn_debit_borrower_on_repayment` fires → borrower balances ↓
-- [ ] `trg_fn_update_contract_on_repayment` fires → `outstanding_balance` updated
-
----
-
-### 2.13 — Reputation Score Recalculation
-
-> `sp_calculate_reputation_score(p_user_id)` already in `sql/schema.sql`.
-
-```dart
-class ReputationRepository {
-  Future<void> recalculate(String userId) async {
-    final newScore = await supabase.rpc(
-      'sp_calculate_reputation_score', params: {'p_user_id': userId},
-    ) as int;
-    await supabase.from('users').update({'reputation_score': newScore}).eq('user_id', userId);
-    // trg_sync_reputation_tier auto-updates reputation_tier
-  }
-}
-```
-
-Call after: repayment paid, contract completed, contract defaulted.
-
----
-
-### ✅ Stage 2 Completion Checklist
-
-- [ ] `flutter test test/` — all unit tests green
-- [ ] `flutter test integration_test/integration_test.dart -d linux` — all pass
-- [ ] Seed user creates loan → appears anonymised in marketplace
-- [ ] Lender places bid → pending, `lendable_balance` unchanged
-- [ ] Borrower accepts bid → contract created, funds locked, loan `contracted`
-- [ ] Both parties sign → contract activated, repayment schedule generated
-- [ ] Mock disburse → borrower `non_lendable_borrowed` increases
-- [ ] Mark repayment paid → both wallets update correctly
-- [ ] Reputation recalculated after contract event
-- [ ] `borrower_id` never appears in marketplace API response
+**Goal:** The primary product loop is live. Borrowers can create listings. Lenders can browse, evaluate, and bid. Borrowers can view the live order book and accept a bid. This is the full marketplace loop minus negotiator assignment and contract drafting.
+
+### 2.1 Marketplace Feed
+
+- [ ] `MarketplaceRepository` — queries `v_loan_listings`; supports filter params (risk category, closing time, yield)
+- [ ] `MarketplaceCubit` — states: `Loading`, `Loaded(listings)`, `Error`
+- [ ] `MarketplacePage` — live feed with:
+  - Filter pills: All · Low risk · High yield · Closing soon
+  - `ListingCard` widget: name, region, duration, amount (UGX, DM Mono), risk badge, bid count, best current rate, coverage progress bar, time remaining
+  - Live dot indicator (Supabase Realtime subscription on `loan_requests`)
+  - Search/filter state preserved on navigation back
+- [ ] `RiskBadge` widget — `Low` (green) / `Med` (amber) / `High` (red)
+- [ ] Supabase Realtime: subscribe to `loan_requests` inserts and updates; refresh feed on event
+
+### 2.2 Loan Detail & Order Book
+
+- [ ] `LoanDetailPage` at `/marketplace/:requestId`
+  - Amount, region, duration, ceiling rate header
+  - Stats grid: best bid rate, competing bid count, coverage %, credit band (range only — never raw score)
+  - **Live order book** — Supabase Realtime subscription on `loan_bids` for this `request_id`
+  - Order book rows: anonymous lender token (e.g. `L-#482`), amount, rate — sorted by best (lowest) rate
+  - "Save to watchlist" CTA — free, no subscription gate
+  - "Accept best bid" CTA — visible to listing owner; requires Borrower subscription; triggers `accept_bid` RPC
+  - "Place bid" CTA — requires Lender subscription; opens bid sheet
+  - Subscription gate: unsubscribed users shown plan selector modal rather than error
+- [ ] `OrderBookWidget` — real-time row list; best bid highlighted in green; animates on new bid arrival
+
+### 2.3 KYC Feature
+
+- [ ] `KycRepository` — reads/writes `kyc_verifications`; uploads docs to `kyc-documents` storage bucket
+- [ ] `KycCubit` — states: `NotSubmitted`, `Pending`, `Approved`, `Rejected(reason)`
+- [ ] `KycPage` — document upload form (National ID front/back, selfie); status display; rejection reason shown if rejected
+- [ ] `KycStatusBanner` — reusable widget shown on `ListingCreatePage` when KYC is not approved
+- [ ] DB trigger `trg_fn_require_kyc_for_loan` blocks listing creation at DB level; UI pre-checks and shows guidance
+
+### 2.4 Listing Creation
+
+- [ ] `ListingRepository` — creates records in `loan_requests`; enforces `system_settings` bounds client-side before submit
+- [ ] `ListingCreateCubit` — multi-step form state; validates each step before advancing
+- [ ] `ListingCreatePage` (Borrower subscription required)
+  - Step 1: Amount (min/max from `system_settings`), duration, purpose
+  - Step 2: Maximum acceptable interest rate (ceiling; within `system_settings` bounds)
+  - Step 3: District selection, review summary
+  - KYC gate: if KYC not approved, blocks step 3 with `KycStatusBanner`
+  - On submit: inserts into `loan_requests`; DB trigger enforces all rules
+- [ ] `MyListingsPage` — lists the current user's loan requests; status badges (Active / Expired / Contracted)
+
+### 2.5 Bidding
+
+- [ ] `BidRepository` — `placeBid(requestId, amount, rate)`, `withdrawBid(bidId)` 
+- [ ] Bid validation client-side: rate ≤ ceiling rate; amount ≥ `system_settings.min_lender_investment`
+- [ ] `PlaceBidSheet` — bottom sheet modal; amount and rate inputs; live preview of position in order book
+- [ ] Lender subscription gate on bid submission
+- [ ] Bid withdrawal: available until borrower accepts; `WithdrawBidButton` on lender's positions view
+
+### 2.6 Bid Acceptance
+
+- [ ] `accept_bid(request_id, bid_id, borrower_id)` RPC called on "Accept best bid" tap
+- [ ] Atomic operation: marks bid as accepted, listing as contracted, triggers negotiator assignment (stub in Stage 2 — assignment recorded but no notification sent yet)
+- [ ] Post-acceptance: listing status updates in real time on marketplace feed
+- [ ] Error handling: optimistic UI rollback on RPC failure
+
+### Stage 2 Exit Criteria
+
+- [ ] End-to-end: create listing → go live → receive bids → live order book updates → accept bid → listing shows as contracted
+- [ ] Subscription gates work: unsubscribed users cannot bid or create listings; watchlist is free
+- [ ] KYC gate: `alice.namuli@gmail.com` cannot create a listing
+- [ ] `admin1@nipanze.ug` can see contracted listing in admin stub
+- [ ] All RLS policies verified: borrower cannot see another borrower's identity through any query
 
 ---
 
 ## Stage 3 — Polish & Supporting Features
 
-**Outcome:** App feels complete. Notifications, KYC, PDF contracts, analytics, biometrics, offline.
-**Time estimate:** 1 week
+**Goal:** The app is complete enough for beta users. Watchlist, positions, notifications, analytics, and profile are functional. UI is polished. Error states and empty states are handled everywhere.
+
+### 3.1 Watchlist
+
+- [ ] `WatchlistRepository` — `addToWatchlist`, `removeFromWatchlist`, reads `watchlist` table
+- [ ] `WatchlistCubit` — syncs on mount; real-time update on bid activity for watched listings
+- [ ] `WatchlistPage`
+  - Saved listings with latest bid activity and timestamp
+  - Closing urgency alerts: highlight card when < 24h remaining
+  - "View & bid" and "Remove" per listing
+  - Feature summary card (no subscription prompt — watchlist is free)
+- [ ] Watchlist alerts: in-app notification when a new bid lands on a watched listing
+- [ ] Empty state: illustrated prompt to browse marketplace
+
+### 3.2 Positions
+
+- [ ] `PositionsPage` — three-tab layout:
+  - **As borrower** — open listings with bid count and coverage; contracted positions with rate, next payment status
+  - **As lender** — bids placed, current status (Pending / Accepted / Withdrawn), contracted positions
+  - **Contracts** — draft contracts available to view (links to `/contracts/:contractId`; stub in Stage 3)
+- [ ] `RepTierBadge` widget — Bronze / Silver / Gold / Platinum / Restricted with correct colours
+
+### 3.3 Notifications
+
+- [ ] `NotificationRepository` — reads `notifications` table; marks as read
+- [ ] `NotificationCubit` — unread count badge; real-time subscription
+- [ ] `NotificationsPage` — chronological list; grouped by type; tap navigates to relevant screen
+- [ ] In-app alerts for:
+  - Bid received on your listing
+  - Bid accepted / rejected
+  - Negotiator assigned (stub message in Stage 3)
+  - Contract draft available (stub in Stage 3)
+  - KYC status change
+  - Closing-soon warnings (24h and 6h)
+- [ ] Unread badge on `MainScaffold` bottom nav notification icon
+
+### 3.4 Profile & Account
+
+- [ ] `ProfilePage` — avatar (initials), name, email, location, reputation tier badge, KYC status, subscription details
+- [ ] `AccountPage`
+  - Active subscription card: plan name, renewal date, included features
+  - Plan upgrade selector: Borrower 20K / Lender 35K / Pro 150K — each shows feature list; "Upgrade" button (payment handled off-platform in Stage 3; button shows confirmation modal)
+  - Identity panel: KYC status, employment type, reputation score out of 100 (tier displayed; raw score not shown to third parties)
+
+### 3.5 Analytics
+
+- [ ] `AnalyticsPage` — charts for the authenticated user:
+  - Borrower: listing history, bid count over time, average offered rate trend
+  - Lender: bids placed, win rate, average contracted rate, portfolio by risk category
+- [ ] Uses `v_lender_investments` and `v_user_portfolio` views
+- [ ] `fl_chart` or `syncfusion_flutter_charts` for rendering
+
+### 3.6 Error States & Empty States
+
+- [ ] Every list screen has a loading skeleton, empty state illustration, and error state with retry
+- [ ] `OfflineBanner` appears and dismisses based on Supabase connectivity
+- [ ] `parseSupabaseError()` used everywhere — no raw error strings shown to users
+
+### Stage 3 Exit Criteria
+
+- [ ] All bottom nav tabs are functional with real data
+- [ ] Watchlist alerts fire in-app for watched listings with new bids
+- [ ] Positions view accurately reflects borrower + lender activity from seed data
+- [ ] Profile and account show correct subscription and KYC status for each test account
+- [ ] App is stable on Android APK (arm64), web, and Linux desktop builds
 
 ---
 
-### 3.1 — In-App Notifications
+## Stage 3.5 — Cloud Migration & Auth Hardening
 
-```dart
-class NotificationRepository {
-  Stream<List<NotificationModel>> watchNotifications(String userId) {
-    return supabase.from('notifications').stream(primaryKey: ['notification_id'])
-        .eq('user_id', userId).order('created_at', ascending: false)
-        .map((rows) => rows.map((r) => NotificationModel.fromJson(r)).toList());
-  }
+**Goal:** Move from local Supabase to the cloud project (`sjkxselmwuflmubiwrfh`). Harden auth, verify all RLS policies, and confirm all triggers fire correctly in production.
 
-  Future<void> writeNotification({required String userId, required String type,
-    required String title, required String message, Map<String, dynamic>? data}) async {
-    await supabase.from('notifications').insert({
-      'user_id': userId, 'type': type, 'title': title, 'message': message, 'data': data,
-    });
-  }
+### 3.5.1 Cloud Migration
 
-  Future<void> markRead(String notificationId) async {
-    await supabase.from('notifications')
-        .update({'read': true, 'read_at': DateTime.now().toIso8601String()})
-        .eq('notification_id', notificationId);
-  }
-}
-```
+- [ ] Apply `sql/schema.sql` (v1.0) to cloud project via SQL Editor
+- [ ] Apply `sql/seed.sql` (v1.0) to cloud project
+- [ ] Create storage buckets in cloud: `kyc-documents`, `contracts`
+- [ ] Update `run_cloud.sh` scripts with cloud credentials
+- [ ] Smoke test all 13 test accounts against cloud
 
-Write notifications when: bid placed (`bid_received`), bid accepted (`bid_accepted`),
-contract activated (`contract_active`), repayment due in 3 days (`repayment_due`).
+### 3.5.2 RLS & Security Audit
 
-- [ ] `NotificationsPage` — real-time feed, mark read, deep-link via `data` JSONB
-- [ ] Unread badge on bottom nav
+- [ ] Verify RLS on every table: no row reachable by a user who should not access it
+- [ ] Confirm `v_loan_listings` view excludes `borrower_id`, email, phone, full name, and raw `credit_score` in all query paths
+- [ ] Confirm lender tokens (e.g. `L-#482`) are consistent per-session and never reveal lender identity
+- [ ] Audit `audit_logs` — confirm append-only (no UPDATE/DELETE possible via RLS)
+- [ ] Confirm device IP logging on auth events
+- [ ] Confirm failed login threshold triggers account lock
+- [ ] Verify refresh token rotation with `replaced_by` chain
 
----
+### 3.5.3 Auth Hardening
 
-### 3.2 — KYC Document Upload
+- [ ] Email verification required before any protected route is accessible
+- [ ] Session expiry handled gracefully — user prompted to re-authenticate
+- [ ] Password reset flow tested end-to-end on cloud
+- [ ] `audit_logs` confirmed written on every login, logout, and token refresh
 
-```dart
-class KycRepository {
-  static const _columnMap = {
-    'id_front': 'id_front_url', 'id_back': 'id_back_url',
-    'selfie': 'selfie_url', 'proof_of_address': 'proof_of_address_url',
-  };
+### 3.5.4 Build Pipeline
 
-  Future<void> uploadDocument({required String userId, required File file, required String docType}) async {
-    final path = '$userId/$docType-${DateTime.now().millisecondsSinceEpoch}.jpg';
-    await supabase.storage.from('kyc-documents').upload(path, file);
-    final url = supabase.storage.from('kyc-documents').getPublicUrl(path);
-    await supabase.from('kyc_verifications').upsert({
-      'user_id': userId, 'status': 'pending',
-      _columnMap[docType]!: url, 'submitted_at': DateTime.now().toIso8601String(),
-    }, onConflict: 'user_id');
-  }
-}
-```
+- [ ] Android APK release build tested: `flutter build apk --release --split-per-abi --dart-define=...`
+- [ ] Web release build tested: `flutter build web --release`
+- [ ] Linux desktop release build tested
 
-- [ ] `KycPage` — upload UI, status chip
-- [ ] Realtime on `kyc_verifications` — chip updates within 3s of admin approval
-- [ ] Admin: Studio → `kyc_verifications` → set `status = 'approved'`, `verified_at`, `expires_at`
+### Stage 3.5 Exit Criteria
+
+- [ ] All flows from Stage 1–3 verified against cloud project
+- [ ] RLS audit complete — no data leaks found
+- [ ] Release APK installs and runs correctly on a physical Android device
 
 ---
 
-### 3.3 — Contract PDF Generation
+## Stage 4 — Negotiator Module & Contract Drafting
 
-- [ ] Generate PDF from `loan_contracts` + `contract_bids` + `user_profiles` (post-contract)
-- [ ] Upload to Supabase Storage → `loan_contracts.contract_document_url`
-- [ ] `flutter_pdfview` for in-app display
+**Goal:** Complete the post-acceptance flow. Negotiator assignment is automatic and functional. A draft contract is generated on-platform and viewable by both matched parties. The negotiator facilitates everything off-platform.
 
----
+> **Note:** This is the most complex stage. No money movement is introduced. The platform generates and displays a draft contract; all execution happens off-platform.
 
-### 3.4 — Risk Assessment Display
+### 4.1 Negotiator Assignment
 
-- [ ] `RiskProfilePage` — credit score **band** only (never raw integer), risk category, `valid_until`
-- [ ] Band helper matches `v_loan_listings` CASE logic in `sql/schema.sql`
+- [ ] `sp_assign_negotiator(contract_id)` RPC — assigns an available, vetted negotiator from `negotiators` table
+- [ ] Assignment happens atomically as part of `accept_bid` RPC
+- [ ] `NegotiatorRepository` — fetch assigned negotiator for a contract (name and contact shown only after reveal)
+- [ ] Both matched parties notified: "A negotiator has been assigned to your deal"
+- [ ] Negotiator profile: name, credentials, specialisation — viewable by admin; redacted on-platform until reveal
 
----
+### 4.2 Contact Reveal Flow
 
-### 3.5 — System Settings Read
+- [ ] Post-acceptance reveal gate: borrower and lender can unlock each other's contact details and the negotiator's details via a one-time subscription add-on
+- [ ] Reveal is recorded in `audit_logs`; irreversible
+- [ ] Revealed details blurred by default in UI; animated unblur on confirm
+- [ ] Reveal triggers push notification to the other matched party: "Your contact details have been accessed by your matched partner"
+- [ ] Neither party's contact details are shown before reveal — anonymity enforced at DB level
 
-```dart
-class SystemSettingsRepository {
-  Future<Map<String, dynamic>> getPublicSettings() async {
-    final rows = await supabase.from('system_settings')
-        .select('setting_key, setting_value, setting_type').eq('is_public', true);
-    return {for (final r in rows) r['setting_key']: _parse(r)};
-  }
-  dynamic _parse(Map row) => switch (row['setting_type']) {
-    'number' => double.parse(row['setting_value'] as String),
-    'boolean' => row['setting_value'] == 'true',
-    _ => row['setting_value'],
-  };
-}
-```
+### 4.3 Draft Contract Generation
 
-- [ ] Fetch at app startup, cache in GetIt singleton
-- [ ] Use in `LoanRequestValidator` and `BidValidator`
+- [ ] `accept_bid` RPC triggers draft contract generation — written to `contracts` table
+- [ ] Contract fields: borrower details (anonymised on-platform), lender details (anonymised on-platform), amount, rate, duration, repayment schedule, purpose, governing law clause
+- [ ] Draft contract stored as structured data (not PDF) in Stage 4; PDF export in Stage 5
+- [ ] `ContractDetailPage` at `/contracts/:contractId`:
+  - Read-only on-platform
+  - Shows all contract fields with anonymised placeholders where identity has not been revealed
+  - "Download draft" button (Stage 5)
+  - "View negotiator" section — blurred until reveal
+  - Status badge: Draft / In Execution / Completed / Defaulted
 
----
+### 4.4 Contract Status Lifecycle
 
-### 3.6 — Analytics + Dashboard
+- [ ] Contract status transitions: `draft` → `in_execution` → `completed` or `defaulted`
+- [ ] Status updated by: negotiator report, participant self-report (both required to confirm)
+- [ ] Disputed status: escalated to admin for manual resolution
+- [ ] Status changes feed into credit scoring (Stage 5 for full automation)
 
-Use existing views in `sql/schema.sql`:
-`v_loan_performance`, `v_user_portfolio`, `v_lender_investments`
+### 4.5 Negotiator Assessments
 
-- [ ] `DashboardPage` — pull `v_user_portfolio` for logged-in user (replace placeholder card)
-- [ ] `AnalyticsPage` — `fl_chart` charts from views
+- [ ] `NegotiatorAssessmentForm` — submitted by assigned negotiator via admin panel
+- [ ] Assessment fields: repayment behaviour, contract adherence, dispute handling, overall rating (1–5)
+- [ ] Assessment stored in `negotiator_assessments` table; feeds `sp_calculate_reputation_score`
+- [ ] Assessments visible to admin; never directly shown to assessed user (score effect only)
 
----
+### Stage 4 Exit Criteria
 
-### 3.7 — Audit Log Read (Admin)
-
-- [ ] `AdminDashboardPage` — read-only `audit_logs` surface
-- [ ] Write audit rows from client code on every write operation
-
----
-
-### 3.8 — Biometric Login
-
-- [ ] `local_auth` prompt on splash if biometrics enabled
-- [ ] Preference in Hive
+- [ ] `accept_bid` RPC assigns negotiator and creates draft contract atomically
+- [ ] Both matched parties see the draft contract in their Positions → Contracts tab
+- [ ] Reveal flow works: blurred → confirm → animated unblur
+- [ ] Contract status can transition through full lifecycle
+- [ ] `funds@victoriainvest.co.ug` and `lending@equatorfinance.ug` test accounts both show viewable contracts
 
 ---
 
-### 3.9 — Offline Cache (Hive)
+## Stage 5 — Admin, Compliance & Credit Score Automation
 
-- [ ] Cache: marketplace listing, own loans, wallet snapshot
-- [ ] "Last updated X ago" banner when offline
-- [ ] Block writes while offline
+**Goal:** Admin dashboard is fully operational. KYC review is in-app. Credit/reputation scoring is automated. PDF contract export works. Platform is ready for real users.
+
+### 5.1 Admin Dashboard
+
+- [ ] `AdminDashboardPage` at `/admin` (admin role only; GoRouter guard)
+- [ ] Live KPI grid (Supabase Realtime):
+  - Active listings, total bid volume (UGX), active subscribers, avg market rate, match rate, reveals this month + revenue
+- [ ] Listing activity table: all listings with name, amount, risk, bid count, best rate, coverage, status
+- [ ] User management: list all users; view KYC status; suspend / activate account
+- [ ] Audit log viewer: filterable by user, event type, date range
+- [ ] Negotiator management: list vetted negotiators; assign manually if auto-assignment fails; view assessments submitted
+
+### 5.2 KYC Review (In-App Admin)
+
+- [ ] `KycReviewPage` — admin view of pending KYC submissions
+- [ ] Document viewer: National ID front/back, selfie pulled from `kyc-documents` bucket
+- [ ] Approve / Reject with required rejection reason
+- [ ] Approval triggers: `kyc_verifications.status` updated; user notified; listing creation gate lifted
+- [ ] KYC expiry tracking: flag users whose KYC will expire within 30 days; prompt re-verification
+
+### 5.3 Credit Score Automation
+
+- [ ] `sp_calculate_reputation_score(user_id)` — weighted 0–100 score:
+  - Repayment performance: 40% (negotiator-reported + participant self-reported)
+  - Platform participation: 20% (listing and bidding activity)
+  - Risk accuracy: 20% (stated risk vs actual outcome)
+  - Consistency: 20% (behavioural patterns across deals)
+- [ ] Score recalculated on: contract status change, negotiator assessment submitted, new deal completed
+- [ ] Reputation tier assigned automatically: Platinum (85–100), Gold (70–84), Silver (55–69), Bronze (40–54), Restricted (< 40)
+- [ ] Tier displayed publicly on listings; raw score never exposed to third parties
+- [ ] `RepTierBadge` widget updated to pull live tier from DB
+
+### 5.4 PDF Contract Export
+
+- [ ] Supabase Edge Function (Deno): `generate-contract-pdf`
+- [ ] Triggered on contract status change to `in_execution`
+- [ ] PDF stored in `contracts` storage bucket; signed URL returned to matched parties
+- [ ] "Download contract PDF" button active in `ContractDetailPage` after generation
+- [ ] PDF template: Nipanze letterhead, all contract fields, repayment schedule table, signature blocks
+
+### 5.5 SMS Notifications (Stage 5 Addition)
+
+- [ ] Supabase Edge Function: `send-sms`
+- [ ] Integrated with Africa's Talking or Twilio
+- [ ] SMS triggers: bid accepted, negotiator assigned, contract draft available, closing-soon (24h), KYC status change
+- [ ] Phone number confirmed via OTP at registration (added to register flow in this stage)
+
+### 5.6 System Settings Enforcement
+
+- [ ] Admin panel section: view and edit `system_settings` values
+  - `max_concurrent_loans`, `min_loan_amount`, `max_loan_amount`
+  - `min_interest_rate`, `max_interest_rate`
+  - `listing_duration_days`, `kyc_validity_months`
+  - `min_lender_investment`
+- [ ] Changes take effect immediately (DB is source of truth; client reads at runtime)
+
+### Stage 5 Exit Criteria
+
+- [ ] Admin can approve/reject KYC submissions in-app
+- [ ] Reputation scores recalculate automatically on deal completion
+- [ ] PDF contract generated and downloadable for contracted deals
+- [ ] SMS fires on bid acceptance (tested with Africa's Talking sandbox)
+- [ ] `v_loan_performance` view drives all admin KPI metrics accurately
 
 ---
 
-### ✅ Stage 3 Completion Checklist
+## Stage 6 — Launch & Growth
 
-- [ ] Bid placed → notification on borrower device in real time
-- [ ] KYC uploaded → `status = 'pending'`; admin approves → chip updates within 3s
-- [ ] Contract PDF generated, readable, correct parties/amounts
-- [ ] Analytics charts render with live view data
-- [ ] `DashboardPage` shows live `v_user_portfolio` data
-- [ ] Biometrics prompt on launch
-- [ ] Wifi off → "Offline" banner + cached marketplace
+**Goal:** Public launch. App Store and Play Store submissions. Production monitoring. Onboarding flow. Growth tooling.
+
+### 6.1 App Store & Play Store Submission
+
+- [ ] `flutter build appbundle --release` — Play Store AAB
+- [ ] `flutter build ios --release` — App Store IPA
+- [ ] Play Store listing: screenshots (Pixel 6, tablet), description, privacy policy URL, content rating
+- [ ] App Store listing: screenshots (iPhone 15, iPad), description, App Privacy details
+- [ ] Privacy policy published at `nipanze.ug/privacy`
+- [ ] Terms of service published at `nipanze.ug/terms`
+
+### 6.2 Onboarding Flow
+
+- [ ] First-launch onboarding: 3-screen carousel explaining marketplace concept, anonymity, and subscription model
+- [ ] Role selection at registration: Borrower / Lender / Both
+- [ ] KYC prompt shown immediately after role selection with estimated completion time
+- [ ] Subscription prompt with plan comparison shown post-KYC
+
+### 6.3 Production Monitoring
+
+- [ ] Supabase dashboard alerts: DB size, auth error rate, function invocation failures
+- [ ] Crash reporting: `firebase_crashlytics` or Sentry
+- [ ] Performance monitoring: cold start time, marketplace feed load time, order book update latency
+- [ ] Uptime monitoring: external ping on `/health` endpoint
+
+### 6.4 Pro Plan — Analytics API
+
+- [ ] REST API endpoint (Supabase Edge Function) returning marketplace aggregate data
+- [ ] Authentication via API key issued to Pro subscribers
+- [ ] Rate limited to 1,000 requests/day per key
+- [ ] Documented at `nipanze.ug/developers`
+- [ ] Data available: listings feed, bid volume by category, market rate trends, credit band distribution
+
+### 6.5 Marketing & Growth
+
+- [ ] Referral programme: existing subscribers can share a referral code; successful activation credits one month free
+- [ ] SEO landing page at `nipanze.ug` — static, fast-loading, Uganda-targeted
+- [ ] Partnership outreach: SACCOs, MFIs, business associations for lender pipeline
+
+### Stage 6 Exit Criteria
+
+- [ ] App live on Play Store (Android) and App Store (iOS)
+- [ ] First 50 paying subscribers onboarded
+- [ ] Production monitoring alerting correctly
+- [ ] Pro API has at least one active external consumer
 
 ---
 
-## Stage 4 — External Integrations + Sandbox APIs
+## Test Accounts Reference
 
-**Only after Stages 1–3 complete and all tests pass.**
+All accounts use password `Test1234!`
 
-### 4.1 — Edge Functions
-
-Move RPCs to Edge Functions one at a time: `accept-bid`, `place-bid`, `process-repayment`, `calculate-risk-score`, `send-notification`, `generate-contract`.
-
-### 4.2 — MTN Mobile Money
-
-Replace `mock_top_up` / `mock_disburse` with MTN MoMo Collection and Disbursement APIs.
-
-| Sandbox test number | Behaviour |
-| --- | --- |
-| `46733123450` | Always succeeds |
-| `46733123451` | Always fails |
-| `46733123452` | Timeout |
-
-### 4.3 — Airtel Money Sandbox
-
-### 4.4 — Africa's Talking SMS
-
-### 4.5 — KYC Verification API (Smile Identity)
-
-### 4.6 — Push Notifications (FCM)
-
-### ✅ Stage 4 Completion Checklist
-
-- [ ] All Edge Functions deployed, tested with `supabase functions serve`
-- [ ] MTN MoMo sandbox: success, failure, timeout tested
-- [ ] All Stage 1–3 integration tests still pass after every switch
-- [ ] `kDebugMode` sandbox/production URL switches confirmed before go-live
+| Email | Role | Best for testing |
+|---|---|---|
+| `david.mukasa@gmail.com` | Borrower | Listing + contracted position; Bronze tier |
+| `sarah.namukasa@yahoo.com` | Borrower | Contract draft pending |
+| `james.okello@outlook.com` | Both | Borrower + lender flows |
+| `maria.nakato@gmail.com` | Borrower | Active listing with 1 pending bid |
+| `robert.ssemwanga@gmail.com` | Both | Bid submitted on two listings |
+| `invest@pearlcapital.ug` | Lender | Multiple active bids |
+| `funds@victoriainvest.co.ug` | Lender | Bid accepted — contract viewable |
+| `lending@equatorfinance.ug` | Lender | Bid accepted — contract viewable |
+| `info@greenleafagro.co.ug` | Lender | Pending bid |
+| `contact@kampalatech.ug` | Lender | Pending bid |
+| `alice.namuli@gmail.com` | Borrower | KYC pending — test listing gate |
+| `admin1@nipanze.ug` | Admin | Full admin dashboard access |
+| `test.user@gmail.com` | Borrower | No KYC, no profile — test onboarding gates |
 
 ---
 
-## Summary
+## Key Flows to Test at Each Stage
 
-| Stage | What you build | External deps | Cost |
-| --- | --- | --- | --- |
-| 1 ✅ | Auth, routing, scaffold | None | Free |
-| 2 | Full marketplace (real schema, mock payments) | None | Free |
-| 3 | KYC, PDF, notifications, analytics, biometrics | None | Free |
-| 4 | Real payments, Edge Functions, push, KYC API | MTN, Airtel, AT, Smile ID | API costs only |
+| Flow | Stage | Account |
+|---|---|---|
+| Register → verify email → login | 1 | New account |
+| KYC gate blocks listing creation | 2 | `alice.namuli@gmail.com` |
+| Browse marketplace (free, no bid) | 2 | `test.user@gmail.com` |
+| View live order book | 2 | Any authenticated account |
+| Place a bid (lender subscription) | 2 | `invest@pearlcapital.ug` |
+| Accept a bid (borrower subscription) | 2 | `david.mukasa@gmail.com` |
+| Watchlist alerts on new bid | 3 | Any account — watch "Business expansion" |
+| Positions — borrower + contracts tabs | 3 | `david.mukasa@gmail.com` |
+| Lender bid tracking | 3 | `invest@pearlcapital.ug` |
+| Negotiator assignment post-acceptance | 4 | `david.mukasa@gmail.com` |
+| Contact reveal flow | 4 | `funds@victoriainvest.co.ug` |
+| Draft contract viewable | 4 | `lending@equatorfinance.ug` |
+| Admin KYC approve/reject | 5 | `admin1@nipanze.ug` |
+| Reputation score recalculation | 5 | Admin triggers on deal completion |
+| PDF contract download | 5 | Any contracted pair |
 
-You can build and fully test a complete lending marketplace through Stage 3 without spending anything, without touching a single external API, and with every flow verified against the production schema.
+---
+
+## Architecture Constraints (Carry Through All Stages)
+
+These constraints are non-negotiable and apply to every feature built:
+
+1. **No fund movement** — Nipanze never initiates, processes, or records financial transactions. Mock RPCs (`mock_top_up`, `mock_disburse`, `mock_repayment`) exist in seed for testing state flows only; they are removed before Stage 6 launch.
+2. **Anonymity by default** — `borrower_id` is never exposed in marketplace queries. Lenders appear as tokens. Identity is revealed only through the opt-in reveal flow (Stage 4).
+3. **DB is the gate** — all rules enforced at DB level via triggers and RLS. Client-side validation is UX convenience only.
+4. **Friendly errors** — `parseSupabaseError()` is used everywhere. Raw exception strings, internal URLs, and `errno` codes never reach the user.
+5. **One account per person** — duplicate email and phone enforcement via DB unique constraints; flagged in `audit_logs`.
+6. **Append-only audit log** — `audit_logs` must never be writable via UPDATE or DELETE by any role.
+
+---
+
+## Dependencies
+
+| Dependency | Purpose | Stage introduced |
+|---|---|---|
+| `supabase_flutter` | Auth, DB, Realtime, Storage | 1 |
+| `flutter_bloc` | State management | 1 |
+| `go_router` | Navigation + auth guards | 1 |
+| `injectable` + `get_it` | Dependency injection | 1 |
+| `freezed` + `json_serializable` | Code generation | 1 |
+| `envied` | Compile-time secrets | 1 |
+| `fl_chart` or `syncfusion_flutter_charts` | Analytics charts | 3 |
+| `firebase_crashlytics` or Sentry | Crash reporting | 6 |
+| Africa's Talking or Twilio SDK | SMS | 5 |
+
+---
+
+*Nipanze Platforms Limited · contact@nipanze.ug · nipanze.ug*
+*Made with ❤️ for financial inclusion in Uganda*

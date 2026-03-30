@@ -1,4 +1,4 @@
-# Makefile — OpenCapital development shortcuts
+# Makefile — Nipanze development shortcuts
 # Usage: make <target>
 
 .PHONY: help setup start stop reset test test-unit test-integration \

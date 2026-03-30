@@ -1,209 +1,205 @@
 import 'package:flutter/material.dart';
 
-/// OpenCapital design tokens.
-///
-/// Brand colour: #1A56DB (primary blue)
-/// Typography:   Sora (headings) + Inter (body)
-abstract class AppColors {
+/// Nipanze brand colours and typography.
+/// Brand: DM Sans (body) · DM Mono (numeric/code values)
+class AppColors {
+  AppColors._();
+
   // Brand
-  static const primary = Color(0xFF1A56DB);
-  static const primaryDark = Color(0xFF1141A8);
-  static const primaryLight = Color(0xFF4B7EE8);
-  static const accent = Color(0xFF00C9A7);
+  static const Color accent = Color(0xFF3B82F6);       // blue
+  static const Color accentDark = Color(0xFF2563EB);
+  static const Color success = Color(0xFF10B981);      // green
+  static const Color warning = Color(0xFFF59E0B);      // amber
+  static const Color danger = Color(0xFFEF4444);       // red
+  static const Color purple = Color(0xFF8B5CF6);
 
-  // Status
-  static const success = Color(0xFF0E9F6E);
-  static const warning = Color(0xFFE3A008);
-  static const error = Color(0xFFF05252);
-  static const info = Color(0xFF3F83F8);
+  // Dark theme surfaces
+  static const Color bgDark = Color(0xFF0A0C10);
+  static const Color bg2Dark = Color(0xFF111318);
+  static const Color bg3Dark = Color(0xFF181B22);
+  static const Color borderDark = Color(0xFF1E222C);
+  static const Color textDark = Color(0xFFE8EAF0);
+  static const Color text2Dark = Color(0xFF8892A4);
+  static const Color text3Dark = Color(0xFF4A5265);
 
-  // Wallet pools
-  static const lendable = Color(0xFF0E9F6E); // green — own money
-  static const locked = Color(0xFFE3A008); // amber — reserved
-  static const borrowed = Color(0xFFF05252); // red — non-lendable
-
-  // Reputation tiers
-  static const tierPlatinum = Color(0xFF6366F1);
-  static const tierGold = Color(0xFFD97706);
-  static const tierSilver = Color(0xFF6B7280);
-  static const tierBronze = Color(0xFF92400E);
-  static const tierRestricted = Color(0xFFEF4444);
-
-  // Neutrals — light
-  static const surfaceLight = Color(0xFFF9FAFB);
-  static const cardLight = Color(0xFFFFFFFF);
-  static const borderLight = Color(0xFFE5E7EB);
-  static const textPrimaryLight = Color(0xFF111827);
-  static const textSecondaryLight = Color(0xFF6B7280);
-
-  // Neutrals — dark
-  static const surfaceDark = Color(0xFF111827);
-  static const cardDark = Color(0xFF1F2937);
-  static const borderDark = Color(0xFF374151);
-  static const textPrimaryDark = Color(0xFFF9FAFB);
-  static const textSecondaryDark = Color(0xFF9CA3AF);
+  // Light theme surfaces
+  static const Color bgLight = Color(0xFFF8F9FC);
+  static const Color bg2Light = Color(0xFFFFFFFF);
+  static const Color bg3Light = Color(0xFFF0F2F7);
+  static const Color borderLight = Color(0xFFE2E6EF);
+  static const Color textLight = Color(0xFF0F1623);
+  static const Color text2Light = Color(0xFF5A657A);
+  static const Color text3Light = Color(0xFF9BA6B8);
 }
 
-abstract class AppTheme {
-  static ThemeData get light => _build(Brightness.light);
-  static ThemeData get dark => _build(Brightness.dark);
+class AppTheme {
+  AppTheme._();
 
-  static ThemeData _build(Brightness brightness) {
+  static ThemeData get darkTheme => _buildTheme(Brightness.dark);
+  static ThemeData get lightTheme => _buildTheme(Brightness.light);
+
+  static ThemeData _buildTheme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
 
     final colorScheme = ColorScheme(
       brightness: brightness,
-      primary: AppColors.primary,
+      primary: AppColors.accent,
       onPrimary: Colors.white,
-      primaryContainer: AppColors.primaryLight,
-      onPrimaryContainer: Colors.white,
-      secondary: AppColors.accent,
+      secondary: AppColors.success,
       onSecondary: Colors.white,
-      surface: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-      onSurface: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-      error: AppColors.error,
+      error: AppColors.danger,
       onError: Colors.white,
+      surface: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+      onSurface: isDark ? AppColors.textDark : AppColors.textLight,
+      surfaceContainerHighest: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
     );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-
-      // Typography — Sora headings, Inter body
-      fontFamily: 'Inter',
-      textTheme: TextTheme(
-        displayLarge: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w700, fontSize: 32),
-        displayMedium: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w700, fontSize: 28),
-        displaySmall: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, fontSize: 24),
-        headlineLarge: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, fontSize: 22),
-        headlineMedium: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, fontSize: 20),
-        headlineSmall: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, fontSize: 18),
-        titleLarge: const TextStyle(fontFamily: 'Sora', fontWeight: FontWeight.w600, fontSize: 16),
-        titleMedium: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 14),
-        titleSmall: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 12),
-        bodyLarge: TextStyle(fontFamily: 'Inter', fontSize: 16, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
-        bodyMedium: TextStyle(fontFamily: 'Inter', fontSize: 14, color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
-        bodySmall: TextStyle(fontFamily: 'Inter', fontSize: 12, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-        labelLarge: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 14),
-        labelMedium: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 12),
-        labelSmall: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w500, fontSize: 10),
-      ),
-
-      // AppBar
+      scaffoldBackgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+      fontFamily: 'DM Sans',
       appBarTheme: AppBarTheme(
+        backgroundColor: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
         elevation: 0,
         centerTitle: false,
-        backgroundColor: isDark ? AppColors.cardDark : AppColors.cardLight,
-        foregroundColor: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
         titleTextStyle: TextStyle(
-          fontFamily: 'Sora',
-          fontWeight: FontWeight.w600,
+          fontFamily: 'DM Sans',
           fontSize: 18,
-          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+          fontWeight: FontWeight.w600,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
       ),
-
-      // Card
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+        selectedItemColor: AppColors.accent,
+        unselectedItemColor: isDark ? AppColors.text3Dark : AppColors.text3Light,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        selectedLabelStyle: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500),
+      ),
       cardTheme: CardThemeData(
+        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           side: BorderSide(
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
         ),
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
       ),
-
-      // Input fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark ? AppColors.cardDark : AppColors.cardLight,
+        fillColor: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.danger),
+        ),
+        labelStyle: TextStyle(
+          color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+          fontFamily: 'DM Sans',
+        ),
+        hintStyle: TextStyle(
+          color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+          fontFamily: 'DM Sans',
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-
-      // ElevatedButton
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
-          elevation: 0,
-          minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'DM Sans',
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            fontSize: 15,
           ),
         ),
       ),
-
-      // OutlinedButton
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          minimumSize: const Size(double.infinity, 52),
-          side: const BorderSide(color: AppColors.primary),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
+          side: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          ),
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'DM Sans',
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            fontSize: 15,
           ),
         ),
       ),
-
-      // TextButton
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.accent,
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
+            fontFamily: 'DM Sans',
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
-
-      // BottomNavigationBar
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: isDark ? AppColors.cardDark : AppColors.cardLight,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        selectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 11),
-        unselectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontSize: 11),
-      ),
-
-      // Chip
-      chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        side: BorderSide.none,
-      ),
-
-      // Divider
       dividerTheme: DividerThemeData(
         color: isDark ? AppColors.borderDark : AppColors.borderLight,
         thickness: 1,
+        space: 1,
+      ),
+      textTheme: TextTheme(
+        displayLarge: TextStyle(
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w700,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: 'DM Sans',
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: 'DM Sans',
+          fontSize: 13,
+          color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: 'DM Sans',
+          fontSize: 11,
+          color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+        ),
+        labelSmall: TextStyle(
+          fontFamily: 'DM Mono',
+          fontSize: 11,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
       ),
     );
   }

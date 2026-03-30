@@ -1,60 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/router/app_router.dart';
+import '../../../core/router/app_router.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({super.key, required this.child});
+
   final Widget child;
 
   static const _tabs = [
-    _TabItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded, label: 'Dashboard', path: Routes.dashboard),
-    _TabItem(icon: Icons.storefront_outlined, activeIcon: Icons.storefront_rounded, label: 'Marketplace', path: Routes.marketplace),
-    _TabItem(icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long_rounded, label: 'My Loans', path: Routes.myLoans),
-    _TabItem(icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet_rounded, label: 'Wallet', path: Routes.wallet),
-    _TabItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile', path: Routes.profile),
+    _TabItem(label: 'Markets', icon: Icons.show_chart_rounded, route: AppRoutes.marketplace),
+    _TabItem(label: 'Watchlist', icon: Icons.star_outline_rounded, route: AppRoutes.watchlist),
+    _TabItem(label: 'Positions', icon: Icons.account_balance_wallet_outlined, route: AppRoutes.positions),
+    _TabItem(label: 'Account', icon: Icons.person_outline_rounded, route: AppRoutes.account),
   ];
 
-  int _currentIndex(String location) {
-    if (location.startsWith(Routes.marketplace)) return 1;
-    if (location.startsWith('/loans')) return 2;
-    if (location.startsWith(Routes.wallet)) return 3;
-    if (location.startsWith(Routes.profile)) return 4;
+  int _currentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    for (int i = 0; i < _tabs.length; i++) {
+      if (location.startsWith(_tabs[i].route)) return i;
+    }
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final idx = _currentIndex(location);
+    final currentIndex = _currentIndex(context);
 
     return Scaffold(
-      body: child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: idx,
-        onTap: (i) => context.go(_tabs[i].path),
-        items: _tabs
-            .map((t) => BottomNavigationBarItem(
-                  icon: Icon(t.icon),
-                  activeIcon: Icon(t.activeIcon),
-                  label: t.label,
-                ))
-            .toList(),
+      body: Stack(
+        children: [
+          child,
+          // Offline banner placeholder — wired up in Stage 3
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).dividerColor,
+              width: 1,
+            ),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (index) => context.go(_tabs[index].route),
+          items: _tabs
+              .map((t) => BottomNavigationBarItem(
+                    icon: Icon(t.icon),
+                    label: t.label,
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
 }
 
 class _TabItem {
-  const _TabItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.path,
-  });
-
-  final IconData icon;
-  final IconData activeIcon;
+  const _TabItem({required this.label, required this.icon, required this.route});
   final String label;
-  final String path;
+  final IconData icon;
+  final String route;
 }

@@ -1,5 +1,5 @@
 -- ============================================
--- OpenCapital Database Schema
+-- Nipanze Database Schema
 -- Version: 3.1 (Auth-Integrated)
 -- PostgreSQL 14+
 -- ============================================
@@ -1832,6 +1832,6 @@ BEGIN
     EXECUTE format(
         'COMMENT ON DATABASE %I IS %L',
         db,
-        'OpenCapital v3.1 — Non-custodial peer-to-peer lending. Uganda.'
+        'Nipanze v3.1 — Non-custodial peer-to-peer lending. Uganda.'
     );
 END $$;

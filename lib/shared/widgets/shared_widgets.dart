@@ -1,138 +1,116 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../features/auth/domain/models/nipanze_user.dart';
 
-import '../../core/theme/app_theme.dart';
+// ─── Risk Badge ────────────────────────────────────────────────────────────────
 
-/// Reusable widget for displaying one of the three wallet pools.
-/// Used on WalletPage and DashboardPage.
-class BalanceCard extends StatelessWidget {
-  const BalanceCard({
-    super.key,
-    required this.label,
-    required this.sublabel,
-    required this.amount,
-    required this.color,
-    required this.icon,
-    required this.tooltipText,
-  });
+enum RiskLevel { low, medium, high }
 
-  final String label;
-  final String sublabel;
-  final double amount;
-  final Color color;
-  final IconData icon;
-  final String tooltipText;
+class RiskBadge extends StatelessWidget {
+  const RiskBadge(this.level, {super.key});
+
+  factory RiskBadge.fromString(String s) {
+    final level = switch (s.toLowerCase()) {
+      'low' => RiskLevel.low,
+      'high' => RiskLevel.high,
+      _ => RiskLevel.medium,
+    };
+    return RiskBadge(level);
+  }
+
+  final RiskLevel level;
 
   @override
   Widget build(BuildContext context) {
-    final fmt = NumberFormat('#,###', 'en_UG');
+    final (label, color) = switch (level) {
+      RiskLevel.low => ('Low risk', AppColors.success),
+      RiskLevel.medium => ('Med risk', AppColors.warning),
+      RiskLevel.high => ('High risk', AppColors.danger),
+    };
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: Theme.of(context).textTheme.labelLarge),
-                  const SizedBox(height: 2),
-                  Text(sublabel,
-                      style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'UGX ${fmt.format(amount)}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                Tooltip(
-                  message: tooltipText,
-                  child: Icon(
-                    Icons.info_outline_rounded,
-                    size: 14,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.4),
-                  ),
-                ),
-              ],
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+          letterSpacing: 0.2,
         ),
       ),
     );
   }
 }
 
-/// Reputation tier badge chip.
-class ReputationTierBadge extends StatelessWidget {
-  const ReputationTierBadge({super.key, required this.tier, this.score});
-  final String tier;
-  final int? score;
+// ─── Reputation Tier Badge ─────────────────────────────────────────────────────
 
-  Color get _color => switch (tier.toLowerCase()) {
-        'platinum' => AppColors.tierPlatinum,
-        'gold' => AppColors.tierGold,
-        'silver' => AppColors.tierSilver,
-        'bronze' => AppColors.tierBronze,
-        _ => AppColors.tierRestricted,
-      };
+class RepTierBadge extends StatelessWidget {
+  const RepTierBadge(this.tier, {super.key});
+
+  final RepTier tier;
 
   @override
   Widget build(BuildContext context) {
+    final (label, color) = switch (tier) {
+      RepTier.platinum => ('★ Platinum', AppColors.accent),
+      RepTier.gold => ('★ Gold', const Color(0xFFD97706)),
+      RepTier.silver => ('★ Silver', AppColors.text2Dark),
+      RepTier.bronze => ('★ Bronze', AppColors.warning),
+      RepTier.restricted => ('Restricted', AppColors.danger),
+    };
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.12),
+        color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _color.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Section Header ────────────────────────────────────────────────────────────
+
+class SectionHeader extends StatelessWidget {
+  const SectionHeader(this.title, {super.key, this.trailing});
+
+  final String title;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.workspace_premium_rounded, size: 13, color: _color),
-          const SizedBox(width: 4),
           Text(
-            tier[0].toUpperCase() + tier.substring(1).toLowerCase(),
+            title.toUpperCase(),
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: _color,
-              fontFamily: 'Inter',
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              letterSpacing: 0.6,
             ),
           ),
-          if (score != null) ...[
-            const SizedBox(width: 4),
-            Text(
-              '($score)',
-              style: TextStyle(
-                fontSize: 10,
-                color: _color.withOpacity(0.7),
-                fontFamily: 'Inter',
-              ),
-            ),
+          if (trailing != null) ...[
+            const Spacer(),
+            trailing!,
           ],
         ],
       ),
@@ -140,43 +118,263 @@ class ReputationTierBadge extends StatelessWidget {
   }
 }
 
-/// KYC status chip.
-class KycStatusChip extends StatelessWidget {
-  const KycStatusChip({super.key, required this.status});
-  final String? status;
+// ─── UGX Amount Text ──────────────────────────────────────────────────────────
 
-  Color get _color => switch (status) {
-        'approved' => AppColors.success,
-        'pending' => AppColors.warning,
-        'rejected' => AppColors.error,
-        'expired' => AppColors.error,
-        _ => Colors.grey,
-      };
+class UgxAmount extends StatelessWidget {
+  const UgxAmount(
+    this.amount, {
+    super.key,
+    this.fontSize = 20,
+    this.color,
+  });
 
-  String get _label => switch (status) {
-        'approved' => 'KYC Verified',
-        'pending' => 'KYC Pending',
-        'rejected' => 'KYC Rejected',
-        'expired' => 'KYC Expired',
-        'not_started' => 'KYC Required',
-        _ => 'KYC Unknown',
-      };
+  final int amount;
+  final double fontSize;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: _color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+    final formatted = _formatUgx(amount);
+    return Text(
+      'UGX $formatted',
+      style: TextStyle(
+        fontFamily: 'DM Mono',
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.accent,
       ),
-      child: Text(
-        _label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: _color,
-          fontFamily: 'Inter',
+    );
+  }
+
+  String _formatUgx(int amount) {
+    final s = amount.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(s[i]);
+    }
+    return buffer.toString();
+  }
+}
+
+// ─── Live Dot ─────────────────────────────────────────────────────────────────
+
+class LiveDot extends StatefulWidget {
+  const LiveDot({super.key});
+
+  @override
+  State<LiveDot> createState() => _LiveDotState();
+}
+
+class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 1.0, end: 0.3).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: Container(
+        width: 6,
+        height: 6,
+        decoration: const BoxDecoration(
+          color: AppColors.success,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Loading Skeleton ─────────────────────────────────────────────────────────
+
+class SkeletonBox extends StatefulWidget {
+  const SkeletonBox({super.key, required this.width, required this.height, this.radius = 8});
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  State<SkeletonBox> createState() => _SkeletonBoxState();
+}
+
+class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.2, end: 0.5).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(widget.radius),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.action,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            const SizedBox(height: 16),
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            if (action != null) ...[
+              const SizedBox(height: 24),
+              action!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Error State ──────────────────────────────────────────────────────────────
+
+class ErrorState extends StatelessWidget {
+  const ErrorState({super.key, required this.message, this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+            const SizedBox(height: 16),
+            Text('Something went wrong', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Retry'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Subscription Gate Card ───────────────────────────────────────────────────
+
+class SubscriptionGateCard extends StatelessWidget {
+  const SubscriptionGateCard({
+    super.key,
+    required this.requiredPlan,
+    required this.reason,
+    required this.onUpgrade,
+  });
+
+  final String requiredPlan;
+  final String reason;
+  final VoidCallback onUpgrade;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Icon(Icons.lock_outline_rounded, size: 32, color: AppColors.purple),
+            const SizedBox(height: 12),
+            Text(
+              'Subscription required',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              reason,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onUpgrade,
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
+              child: Text('Upgrade to $requiredPlan'),
+            ),
+          ],
         ),
       ),
     );

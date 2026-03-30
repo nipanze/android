@@ -1,4 +1,4 @@
-# OpenCapital — MVP Build Plan
+# Nipanze — MVP Build Plan
 
 > **Stack:** Flutter + Supabase (free tier) + Supabase CLI Local Stack
 > **Database:** The production `schema.sql` (19 tables) is the single source of truth — no simplified schema, no SQLite.
@@ -94,8 +94,8 @@ brew install supabase/tap/supabase   # macOS
 # Docker Desktop must be installed and running
 
 # 2. Create Flutter project
-flutter create opencapital --platforms android,ios,web,linux
-cd opencapital
+flutter create nipanze --platforms android,ios,web,linux
+cd nipanze
 
 # 3. Install packages
 flutter pub add supabase_flutter
@@ -131,7 +131,7 @@ Future<void> main() async {
         ? 'your-local-anon-key'
         : const String.fromEnvironment('SUPABASE_ANON_KEY'),
   );
-  runApp(const OpenCapitalApp());
+  runApp(const NipanzeApp());
 }
 
 final supabase = Supabase.instance.client;
@@ -197,7 +197,7 @@ All test users are pre-created in `seed.sql`. After loading, confirm their email
 | `lucy.nambi@yahoo.com` | both | KYC approved |
 | `charles.mwesigwa@gmail.com` | both | KYC approved, 1,200,000 lendable |
 | `alice.namuli@gmail.com` | borrower | KYC pending, `pending_verification` status |
-| `admin1@opencapital.ug` | admin | Full access |
+| `admin1@nipanze.ug` | admin | Full access |
 | `test.user@gmail.com` | borrower | No KYC, no profile — intentionally minimal |
 
 Password for all seed accounts: `Test1234!`
@@ -1778,7 +1778,7 @@ testWidgets('push message shows in-app banner when app is foreground', (tester) 
   final controller = StreamController<PushMessage>();
   when(() => mockMessaging.onMessage).thenAnswer((_) => controller.stream);
 
-  await tester.pumpWidget(OpenCapitalApp(messaging: mockMessaging));
+  await tester.pumpWidget(NipanzeApp(messaging: mockMessaging));
   controller.add(PushMessage(title: 'New bid on your loan'));
   await tester.pump();
   expect(find.text('New bid on your loan'), findsOneWidget);

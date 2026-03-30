@@ -1,12 +1,9 @@
-// ignore_for_file: directives_ordering, deprecated_member_use
+// ignore_for_file: deprecated_member_use
 
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
-import '../../../../features/auth/data/auth_repository.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
@@ -19,262 +16,166 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  final _confirmCtrl = TextEditingController();
-  bool _obscure = true;
-  String _role = 'borrower';
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
-    _passCtrl.dispose();
-    _confirmCtrl.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
-  void _submit(AuthBloc bloc) {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    bloc.add(AuthRegisterRequested(
-      email: _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-      role: _role,
+    context.read<AuthBloc>().add(AuthSignUpRequested(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
     ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(authRepository: getIt<AuthRepository>()),
-      child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (ctx, state) {
-          if (state is AuthSuccess) {
-            ctx.go('${Routes.verifyEmail}?email=${Uri.encodeComponent(_emailCtrl.text.trim())}');
-          }
-          if (state is AuthError) {
-            ScaffoldMessenger.of(ctx).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
-            );
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Create account'),
+      ),
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthUnauthenticated && state.pendingVerification) {
+            context.go(AppRoutes.verifyEmail);
           }
         },
-        builder: (ctx, state) {
-          final bloc = ctx.read<AuthBloc>();
+        builder: (context, state) {
           final isLoading = state is AuthLoading;
+          final errorMessage = state is AuthError ? state.message : null;
 
-          return Scaffold(
-            appBar: AppBar(title: const Text('Create Account')),
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FadeInDown(
-                        child: Text('Join OpenCapital',
-                            style: Theme.of(ctx).textTheme.headlineLarge),
-                      ),
-                      const SizedBox(height: 8),
-                      FadeInDown(
-                        delay: const Duration(milliseconds: 80),
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (errorMessage != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+                        ),
                         child: Text(
-                          'Create your account to start borrowing or lending.',
-                          style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(ctx)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
+                          errorMessage,
+                          style: const TextStyle(color: AppColors.danger, fontSize: 12),
                         ),
                       ),
-                      const SizedBox(height: 32),
-
-                      // Role selector
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 100),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('I want to',
-                                style: Theme.of(ctx).textTheme.labelLarge),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                for (final r in [
-                                  ('borrower', 'Borrow', Icons.arrow_downward_rounded),
-                                  ('lender', 'Lend', Icons.arrow_upward_rounded),
-                                  ('both', 'Both', Icons.swap_vert_rounded),
-                                ])
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: _RoleChip(
-                                        label: r.$2,
-                                        icon: r.$3,
-                                        selected: _role == r.$1,
-                                        onTap: () => setState(() => _role = r.$1),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Email
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 150),
-                        child: TextFormField(
-                          key: const Key('emailField'),
-                          controller: _emailCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                          autocorrect: false,
-                          decoration: const InputDecoration(
-                            labelText: 'Email address',
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Email is required';
-                            if (!v.contains('@')) return 'Enter a valid email';
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 200),
-                        child: TextFormField(
-                          key: const Key('passwordField'),
-                          controller: _passCtrl,
-                          obscureText: _obscure,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscure
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined),
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                            ),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.length < 8) {
-                              return 'Password must be at least 8 characters';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Confirm password
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 230),
-                        child: TextFormField(
-                          key: const Key('confirmPasswordField'),
-                          controller: _confirmCtrl,
-                          obscureText: _obscure,
-                          decoration: const InputDecoration(
-                            labelText: 'Confirm password',
-                            prefixIcon: Icon(Icons.lock_outline_rounded),
-                          ),
-                          validator: (v) {
-                            if (v != _passCtrl.text) return 'Passwords do not match';
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      FadeInUp(
-                        delay: const Duration(milliseconds: 260),
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : () => _submit(bloc),
-                          child: isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Text('Create Account'),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Already have an account? ',
-                              style: Theme.of(ctx).textTheme.bodyMedium),
-                          TextButton(
-                            onPressed: () => ctx.pop(),
-                            child: const Text('Sign In'),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 20),
                     ],
-                  ),
+
+                    TextFormField(
+                      controller: _nameController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Full name',
+                        prefixIcon: Icon(Icons.person_outline, size: 18),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Enter your full name';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined, size: 18),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Enter your email';
+                        if (!v.contains('@')) return 'Enter a valid email';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined, size: 18),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            size: 18,
+                          ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.length < 8) return 'Password must be at least 8 characters';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _confirmController,
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm password',
+                        prefixIcon: Icon(Icons.lock_outlined, size: 18),
+                      ),
+                      validator: (v) {
+                        if (v != _passwordController.text) return 'Passwords do not match';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    ElevatedButton(
+                      onPressed: isLoading ? null : _submit,
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Create account'),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Text(
+                      'By registering you agree that Nipanze is a technology marketplace and does not hold or move funds.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6),
+                    ),
+                  ],
                 ),
               ),
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.primary
-              : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.borderLight,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: selected ? Colors.white : AppColors.primary, size: 20),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-                color: selected ? Colors.white : AppColors.primary,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

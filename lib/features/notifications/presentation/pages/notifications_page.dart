@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: unused_import
 
-/// Notifications — Real-time notifications feed. Stage 3.1.
+import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
+
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text('Real-time notifications feed. Stage 3.1.', textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium),
-        ),
+      body: const EmptyState(
+        icon: Icons.notifications_outlined,
+        title: 'No notifications',
+        subtitle: 'You\'ll be notified here when bids arrive, rates change, or contracts are ready.',
       ),
     );
   }

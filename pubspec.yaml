@@ -1,5 +1,5 @@
-name: opencapital
-description: A non-custodial peer-to-peer lending marketplace for Uganda.
+name: nipanze
+description: Nipanze — digital loan listing marketplace for Uganda and emerging economies.
 version: 1.0.0+1
 publish_to: none
 
@@ -56,6 +56,9 @@ dependencies:
   # Notifications (Stage 3)
   flutter_local_notifications: ^17.2.4
 
+  # Fonts (DM Sans + DM Mono via Google Fonts — no bundled ttf required)
+  google_fonts: ^6.2.1
+
   # Utilities
   intl: ^0.20.2
   equatable: ^2.0.5
@@ -87,21 +90,3 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-
-  fonts:
-    - family: Sora
-      fonts:
-        - asset: assets/fonts/Sora-Regular.ttf
-        - asset: assets/fonts/Sora-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Sora-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Sora-Bold.ttf
-          weight: 700
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600

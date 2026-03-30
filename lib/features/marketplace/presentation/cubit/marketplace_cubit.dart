@@ -1,83 +1,60 @@
-// ignore_for_file: unused_import, directives_ordering
+// ignore_for_file: unused_import
 
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:equatable/equatable.dart';
-import 'package:opencapital/core/errors/app_errors.dart';
-import 'package:opencapital/features/marketplace/data/marketplace_repository.dart';
-import 'package:opencapital/shared/models/loan_listing_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
+import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 
-import '../../../shared/models/loan_listing_model.dart';
-import '../data/marketplace_repository.dart';
-import '../../../core/errors/app_errors.dart';
+import '../../../data/marketplace_repository.dart';
+import '../../../domain/models/loan_listing.dart';
 
-abstract class MarketplaceState extends Equatable {
-  const MarketplaceState();
-  @override List<Object?> get props => [];
-}
-class MarketplaceInitial extends MarketplaceState { const MarketplaceInitial(); }
-class MarketplaceLoading extends MarketplaceState { const MarketplaceLoading(); }
-class MarketplaceLoaded extends MarketplaceState {
-  const MarketplaceLoaded(this.listings, {this.filteredListings});
-  final List<LoanListingModel> listings;
-  final List<LoanListingModel>? filteredListings;
-  List<LoanListingModel> get display => filteredListings ?? listings;
-  @override List<Object?> get props => [listings, filteredListings];
-}
-class MarketplaceError extends MarketplaceState {
-  const MarketplaceError(this.message);
-  final String message;
-  @override List<Object?> get props => [message];
-}
+part 'marketplace_state.dart';
 
+@injectable
 class MarketplaceCubit extends Cubit<MarketplaceState> {
-  MarketplaceCubit({required this.repository}) : super(const MarketplaceInitial());
+  MarketplaceCubit(this._repository) : super(const MarketplaceInitial());
 
-  final MarketplaceRepository repository;
-  StreamSubscription<List<LoanListingModel>>? _sub;
-  List<LoanListingModel> _all = [];
+  final MarketplaceRepository _repository;
+  StreamSubscription<List<LoanListing>>? _realtimeSub;
 
-  void watch() {
+  String _activeFilter = 'all';
+
+  Future<void> load({String filter = 'all'}) async {
+    _activeFilter = filter;
     emit(const MarketplaceLoading());
-    _sub?.cancel();
-    _sub = repository.watchListings().listen(
+    try {
+      final listings = await _repository.getListings(
+        riskFilter: filter == 'low' ? 'low' : null,
+        closingSoon: filter == 'closing',
+        highYield: filter == 'yield',
+      );
+      emit(MarketplaceLoaded(listings: listings, activeFilter: filter));
+      _subscribeRealtime();
+    } catch (e) {
+      emit(MarketplaceError(e.toString()));
+    }
+  }
+
+  void _subscribeRealtime() {
+    _realtimeSub?.cancel();
+    _realtimeSub = _repository.watchListings().listen(
       (listings) {
-        _all = listings;
-        emit(MarketplaceLoaded(listings));
+        if (!isClosed) {
+          emit(MarketplaceLoaded(listings: listings, activeFilter: _activeFilter));
+        }
       },
-      onError: (e) => emit(MarketplaceError(parseSupabaseError(e).message)),
+      onError: (_) {}, // silently ignore realtime errors — stale data still shown
     );
   }
 
-  void applyFilters({
-    String? purpose,
-    String? district,
-    String? riskCategory,
-    double? maxRate,
-  }) {
-    var filtered = List<LoanListingModel>.from(_all);
-    if (purpose != null && purpose.isNotEmpty) {
-      filtered = filtered.where((l) => l.purpose == purpose).toList();
-    }
-    if (district != null && district.isNotEmpty) {
-      filtered = filtered.where((l) => l.district == district).toList();
-    }
-    if (riskCategory != null && riskCategory.isNotEmpty) {
-      filtered = filtered.where((l) => l.riskCategory == riskCategory).toList();
-    }
-    if (maxRate != null) {
-      filtered = filtered
-          .where((l) => l.maxInterestRate == null || l.maxInterestRate! <= maxRate)
-          .toList();
-    }
-    emit(MarketplaceLoaded(_all, filteredListings: filtered));
-  }
-
-  void clearFilters() => emit(MarketplaceLoaded(_all));
+  Future<void> refresh() => load(filter: _activeFilter);
 
   @override
   Future<void> close() {
-    _sub?.cancel();
+    _realtimeSub?.cancel();
     return super.close();
   }
 }

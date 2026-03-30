@@ -1,21 +1,19 @@
 -- ============================================
--- OpenCapital Seed Data
--- Version: 2.1 (Production-Ready)
+-- NIPANZE Seed Data
+-- Version: 1.2 (Schema-Aligned)
 -- ============================================
 --
--- HOW THIS WORKS:
---   1. INSERT into auth.users with FIXED UUIDs
---      - Password hashed via pgcrypto crypt() — $2a$ format GoTrue accepts
---      - All token columns set to '' (empty string) not NULL — GoTrue requires this
---      - email_confirmed_at set so signInWithPassword works immediately
---      → handle_new_auth_user trigger fires → creates public.users row
---      → trg_auto_create_wallet fires → creates wallet_balances row
---
---   2. UPDATE public.users to set role, status, phone etc.
---
---   3. INSERT user_profiles, kyc_verifications, risk_assessments
---
---   4. INSERT loan_requests, wallet deposits, bids, bid acceptance
+-- FIXES vs v1.1:
+--   1. loan_requests: removed total_bid_amount, funding_percentage
+--      (columns do not exist in schema v5.0)
+--   2. contracts: replaced monthly_payment_ugx, total_repayment_ugx,
+--      total_interest_ugx, outstanding_balance, total_repaid, days_overdue
+--      with indicative_monthly_payment_ugx, indicative_total_repayment_ugx,
+--      indicative_total_interest_ugx (correct schema column names)
+--   3. repayment_schedules: removed amount_due, amount_paid, paid_at,
+--      days_late (do not exist). Uses reported_status/reported_at/reported_by only.
+--   4. notifications: replaced 'repayment_due' enum value (does not exist)
+--      with 'system'.
 --
 -- Password for ALL accounts: Test1234!
 --
@@ -34,24 +32,14 @@
 --   lucy.nambi           → 10000000-0000-0000-0000-000000000012
 --   charles.mwesigwa     → 10000000-0000-0000-0000-000000000013
 --   alice.namuli         → 10000000-0000-0000-0000-000000000014
---   admin1               → 10000000-0000-0000-0000-000000000015
---   admin2               → 10000000-0000-0000-0000-000000000016
---   admin3               → 10000000-0000-0000-0000-000000000017
---   test.user            → 10000000-0000-0000-0000-000000000018
+--   admin1@nipanze.ug    → 10000000-0000-0000-0000-000000000015
+--   admin2@nipanze.ug    → 10000000-0000-0000-0000-000000000016
+--   test.user            → 10000000-0000-0000-0000-000000000017
 -- ============================================
 
 
 -- ============================================
 -- STEP 1: AUTH USERS
--- ============================================
--- KEY FIXES vs previous version:
---   1. encrypted_password uses crypt('Test1234!', gen_salt('bf'))
---      which produces a $2a$ hash GoTrue accepts.
---      The old $2b$ hash (Node.js bcrypt) caused "Invalid login credentials".
---
---   2. All token columns (confirmation_token, recovery_token, etc.)
---      set to '' (empty string). GoTrue does a Go string scan on these
---      columns and panics on NULL → "Database error querying schema".
 -- ============================================
 
 INSERT INTO auth.users (
@@ -59,7 +47,6 @@ INSERT INTO auth.users (
     email_confirmed_at, created_at, updated_at,
     raw_app_meta_data, raw_user_meta_data,
     is_super_admin, role, aud,
-    -- All token columns must be '' not NULL
     confirmation_token, recovery_token,
     email_change_token_new, email_change,
     email_change_token_current, phone_change,
@@ -71,7 +58,8 @@ INSERT INTO auth.users (
     'david.mukasa@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-15 08:30:00', '2024-01-15 08:30:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"David Mukasa"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -81,7 +69,8 @@ INSERT INTO auth.users (
     'sarah.namukasa@yahoo.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-18 10:45:00', '2024-01-18 10:45:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Sarah Namukasa"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -91,7 +80,8 @@ INSERT INTO auth.users (
     'james.okello@outlook.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-20 14:20:00', '2024-01-20 14:20:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"James Okello"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -101,7 +91,8 @@ INSERT INTO auth.users (
     'maria.nakato@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-22 09:10:00', '2024-01-22 09:10:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Maria Nakato"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -111,7 +102,8 @@ INSERT INTO auth.users (
     'robert.ssemwanga@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-25 11:30:00', '2024-01-25 11:30:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Robert Ssemwanga"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -121,7 +113,8 @@ INSERT INTO auth.users (
     'info@greenleafagro.co.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-02-18 09:20:00', '2024-02-18 09:20:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Michael Semakula"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -131,7 +124,8 @@ INSERT INTO auth.users (
     'contact@kampalatech.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-02-20 11:40:00', '2024-02-20 11:40:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Sandra Namutebi"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -141,7 +135,8 @@ INSERT INTO auth.users (
     'invest@pearlcapital.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-01 10:10:00', '2024-03-01 10:10:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"William Kasujja"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -151,7 +146,8 @@ INSERT INTO auth.users (
     'funds@victoriainvest.co.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-03 12:30:00', '2024-03-03 12:30:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Catherine Namboze"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -161,7 +157,8 @@ INSERT INTO auth.users (
     'lending@equatorfinance.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-05 09:45:00', '2024-03-05 09:45:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"George Mulindwa"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -171,7 +168,8 @@ INSERT INTO auth.users (
     'frank.omondi@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-08 14:15:00', '2024-03-08 14:15:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Frank Omondi"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -181,7 +179,8 @@ INSERT INTO auth.users (
     'lucy.nambi@yahoo.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-10 11:20:00', '2024-03-10 11:20:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Lucy Nambi"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -191,7 +190,8 @@ INSERT INTO auth.users (
     'charles.mwesigwa@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-03-12 16:40:00', '2024-03-12 16:40:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Charles Mwesigwa"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
@@ -201,343 +201,515 @@ INSERT INTO auth.users (
     'alice.namuli@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2026-01-25 09:15:00', '2026-01-25 09:15:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Alice Namuli"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
 (
     '10000000-0000-0000-0000-000000000015',
     '00000000-0000-0000-0000-000000000000',
-    'admin1@opencapital.ug',
+    'admin1@nipanze.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Admin One"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
 (
     '10000000-0000-0000-0000-000000000016',
     '00000000-0000-0000-0000-000000000000',
-    'admin2@opencapital.ug',
+    'admin2@nipanze.ug',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Admin Two"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 ),
 (
     '10000000-0000-0000-0000-000000000017',
     '00000000-0000-0000-0000-000000000000',
-    'admin3@opencapital.ug',
-    crypt('Test1234!', gen_salt('bf')),
-    NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00',
-    '{"provider":"email","providers":["email"]}', '{}',
-    FALSE, 'authenticated', 'authenticated',
-    '', '', '', '', '', '', '', ''
-),
-(
-    '10000000-0000-0000-0000-000000000018',
-    '00000000-0000-0000-0000-000000000000',
     'test.user@gmail.com',
     crypt('Test1234!', gen_salt('bf')),
     NOW(), '2026-02-06 10:00:00', '2026-02-06 10:00:00',
-    '{"provider":"email","providers":["email"]}', '{}',
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Test User"}',
     FALSE, 'authenticated', 'authenticated',
     '', '', '', '', '', '', '', ''
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- handle_new_auth_user trigger has now fired for each row above,
--- creating public.users rows and wallet_balances rows automatically.
+-- creating public.profiles rows and free watchlist subscriptions automatically.
 
 
 -- ============================================
--- STEP 2: UPDATE public.users
--- Set role, status, phone, verification flags etc.
+-- STEP 2: UPDATE public.profiles
 -- ============================================
 
-UPDATE users SET phone_number='+256701234567', role='borrower',  status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-01-28 14:22:00', last_login_ip='102.168.1.45',  created_at='2024-01-15 08:30:00' WHERE email='david.mukasa@gmail.com';
-UPDATE users SET phone_number='+256702345678', role='borrower',  status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-01-29 09:15:00', last_login_ip='102.168.1.67',  created_at='2024-01-18 10:45:00' WHERE email='sarah.namukasa@yahoo.com';
-UPDATE users SET phone_number='+256703456789', role='both',      status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-27 16:40:00', last_login_ip='102.168.1.89',  created_at='2024-01-20 14:20:00' WHERE email='james.okello@outlook.com';
-UPDATE users SET phone_number='+256704567890', role='borrower',  status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-01-28 11:30:00', last_login_ip='102.168.1.102', created_at='2024-01-22 09:10:00' WHERE email='maria.nakato@gmail.com';
-UPDATE users SET phone_number='+256705678901', role='both',      status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 08:20:00', last_login_ip='102.168.1.125', created_at='2024-01-25 11:30:00' WHERE email='robert.ssemwanga@gmail.com';
-UPDATE users SET phone_number='+256711234567', role='lender',    status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-28 16:30:00', last_login_ip='102.168.2.10',  created_at='2024-02-18 09:20:00' WHERE email='info@greenleafagro.co.ug';
-UPDATE users SET phone_number='+256712345678', role='lender',    status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 10:20:00', last_login_ip='102.168.2.20',  created_at='2024-02-20 11:40:00' WHERE email='contact@kampalatech.ug';
-UPDATE users SET phone_number='+256716789012', role='lender',    status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-28 17:20:00', last_login_ip='102.168.2.30',  created_at='2024-03-01 10:10:00' WHERE email='invest@pearlcapital.ug';
-UPDATE users SET phone_number='+256717890123', role='lender',    status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 08:50:00', last_login_ip='102.168.2.40',  created_at='2024-03-03 12:30:00' WHERE email='funds@victoriainvest.co.ug';
-UPDATE users SET phone_number='+256718901234', role='lender',    status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-27 15:30:00', last_login_ip='102.168.2.50',  created_at='2024-03-05 09:45:00' WHERE email='lending@equatorfinance.ug';
-UPDATE users SET phone_number='+256719012345', role='borrower',  status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-01-28 12:40:00', last_login_ip='102.168.3.10',  created_at='2024-03-08 14:15:00' WHERE email='frank.omondi@gmail.com';
-UPDATE users SET phone_number='+256720123456', role='both',      status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 13:25:00', last_login_ip='102.168.3.20',  created_at='2024-03-10 11:20:00' WHERE email='lucy.nambi@yahoo.com';
-UPDATE users SET phone_number='+256721234567', role='both',      status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-01-28 08:15:00', last_login_ip='102.168.3.30',  created_at='2024-03-12 16:40:00' WHERE email='charles.mwesigwa@gmail.com';
-UPDATE users SET phone_number='+256726789012', role='borrower',  status='pending_verification', email_verified=TRUE,  phone_verified=FALSE, two_factor_enabled=FALSE, last_login_at=NULL,                  last_login_ip=NULL,            created_at='2026-01-25 09:15:00' WHERE email='alice.namuli@gmail.com';
-UPDATE users SET phone_number='+256700000001', role='admin',     status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 18:00:00', last_login_ip='10.0.0.1',      created_at='2024-01-01 08:00:00' WHERE email='admin1@opencapital.ug';
-UPDATE users SET phone_number='+256700000002', role='admin',     status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 17:30:00', last_login_ip='10.0.0.2',      created_at='2024-01-01 08:00:00' WHERE email='admin2@opencapital.ug';
-UPDATE users SET phone_number='+256700000003', role='admin',     status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=TRUE,  last_login_at='2026-01-29 17:00:00', last_login_ip='10.0.0.3',      created_at='2024-01-01 08:00:00' WHERE email='admin3@opencapital.ug';
-UPDATE users SET phone_number='+256799999999', role='borrower',  status='active',               email_verified=TRUE,  phone_verified=TRUE,  two_factor_enabled=FALSE, last_login_at='2026-02-06 10:00:00', last_login_ip='127.0.0.1',     created_at='2026-02-06 10:00:00' WHERE email='test.user@gmail.com';
+-- Borrowers
+UPDATE profiles SET
+    full_name='David Mukasa', phone='+256701234567', district='Central',
+    employment_type='employed', employer_name='Uganda Revenue Authority', monthly_income_ugx=4500000,
+    account_status='active', credit_score=75, lender_token='L-#4821',
+    created_at='2024-01-15 08:30:00'
+WHERE id='10000000-0000-0000-0000-000000000001';
+
+UPDATE profiles SET
+    full_name='Sarah Namukasa', phone='+256702345678', district='Central',
+    employment_type='employed', employer_name='Stanbic Bank Uganda', monthly_income_ugx=3200000,
+    account_status='active', credit_score=68, lender_token='L-#3947',
+    created_at='2024-01-18 10:45:00'
+WHERE id='10000000-0000-0000-0000-000000000002';
+
+UPDATE profiles SET
+    full_name='James Okello', phone='+256703456789', district='Central',
+    employment_type='employed', employer_name='MTN Uganda', monthly_income_ugx=5800000,
+    account_status='active', credit_score=82, lender_token='L-#7263',
+    created_at='2024-01-20 14:20:00'
+WHERE id='10000000-0000-0000-0000-000000000003';
+
+UPDATE profiles SET
+    full_name='Maria Nakato', phone='+256704567890', district='Central',
+    employment_type='self_employed', employer_name='Nakato Boutique', monthly_income_ugx=2800000,
+    account_status='active', credit_score=55, lender_token='L-#5519',
+    created_at='2024-01-22 09:10:00'
+WHERE id='10000000-0000-0000-0000-000000000004';
+
+UPDATE profiles SET
+    full_name='Robert Ssemwanga', phone='+256705678901', district='Central',
+    employment_type='employed', employer_name='DFCU Bank', monthly_income_ugx=6500000,
+    account_status='active', credit_score=85, lender_token='L-#1038',
+    created_at='2024-01-25 11:30:00'
+WHERE id='10000000-0000-0000-0000-000000000005';
+
+-- Lenders
+UPDATE profiles SET
+    full_name='Michael Semakula', phone='+256711234567', district='Central',
+    employment_type='business_owner', employer_name='GreenLeaf Agro Solutions Ltd', monthly_income_ugx=15000000,
+    account_status='active', credit_score=72, lender_token='L-#6641',
+    created_at='2024-02-18 09:20:00'
+WHERE id='10000000-0000-0000-0000-000000000006';
+
+UPDATE profiles SET
+    full_name='Sandra Namutebi', phone='+256712345678', district='Central',
+    employment_type='business_owner', employer_name='Kampala Tech Innovations', monthly_income_ugx=12000000,
+    account_status='active', credit_score=78, lender_token='L-#2290',
+    created_at='2024-02-20 11:40:00'
+WHERE id='10000000-0000-0000-0000-000000000007';
+
+UPDATE profiles SET
+    full_name='William Kasujja', phone='+256716789012', district='Central',
+    employment_type='business_owner', employer_name='Pearl Capital Investment Fund', monthly_income_ugx=25000000,
+    account_status='active', credit_score=91, lender_token='L-#9002',
+    created_at='2024-03-01 10:10:00'
+WHERE id='10000000-0000-0000-0000-000000000008';
+
+UPDATE profiles SET
+    full_name='Catherine Namboze', phone='+256717890123', district='Central',
+    employment_type='business_owner', employer_name='Victoria Investment Group', monthly_income_ugx=22000000,
+    account_status='active', credit_score=88, lender_token='L-#3375',
+    created_at='2024-03-03 12:30:00'
+WHERE id='10000000-0000-0000-0000-000000000009';
+
+UPDATE profiles SET
+    full_name='George Mulindwa', phone='+256718901234', district='Central',
+    employment_type='business_owner', employer_name='Equator Finance Corporation', monthly_income_ugx=28000000,
+    account_status='active', credit_score=89, lender_token='L-#7714',
+    created_at='2024-03-05 09:45:00'
+WHERE id='10000000-0000-0000-0000-000000000010';
+
+-- Borrowers continued
+UPDATE profiles SET
+    full_name='Frank Omondi', phone='+256719012345', district='Eastern',
+    employment_type='employed', employer_name='Bank of Africa', monthly_income_ugx=3300000,
+    account_status='active', credit_score=42, lender_token='L-#8831',
+    created_at='2024-03-08 14:15:00'
+WHERE id='10000000-0000-0000-0000-000000000011';
+
+UPDATE profiles SET
+    full_name='Lucy Nambi', phone='+256720123456', district='Central',
+    employment_type='employed', employer_name='National Social Security Fund', monthly_income_ugx=2900000,
+    account_status='active', credit_score=60, lender_token='L-#4402',
+    created_at='2024-03-10 11:20:00'
+WHERE id='10000000-0000-0000-0000-000000000012';
+
+UPDATE profiles SET
+    full_name='Charles Mwesigwa', phone='+256721234567', district='Western',
+    employment_type='employed', employer_name='Shell Uganda', monthly_income_ugx=5200000,
+    account_status='active', credit_score=77, lender_token='L-#5566',
+    created_at='2024-03-12 16:40:00'
+WHERE id='10000000-0000-0000-0000-000000000013';
+
+-- KYC-pending borrower (tests the KYC gate)
+UPDATE profiles SET
+    full_name='Alice Namuli', phone='+256726789012', district='Central',
+    employment_type='employed', employer_name='Equity Bank', monthly_income_ugx=2700000,
+    account_status='pending_verification', credit_score=50, lender_token='L-#1193',
+    created_at='2026-01-25 09:15:00'
+WHERE id='10000000-0000-0000-0000-000000000014';
+
+-- Admins
+UPDATE profiles SET
+    full_name='Admin One', phone='+256700000001', district='Central',
+    account_status='active', role='admin', credit_score=50, lender_token='L-#0001',
+    created_at='2024-01-01 08:00:00'
+WHERE id='10000000-0000-0000-0000-000000000015';
+
+UPDATE profiles SET
+    full_name='Admin Two', phone='+256700000002', district='Central',
+    account_status='active', role='admin', credit_score=50, lender_token='L-#0002',
+    created_at='2024-01-01 08:00:00'
+WHERE id='10000000-0000-0000-0000-000000000016';
+
+-- Test user
+UPDATE profiles SET
+    full_name='Test User', phone='+256799999999', district='Central',
+    account_status='active', credit_score=50, lender_token='L-#9999',
+    created_at='2026-02-06 10:00:00'
+WHERE id='10000000-0000-0000-0000-000000000017';
 
 
 -- ============================================
--- STEP 3: USER PROFILES
+-- STEP 3: KYC VERIFICATIONS
+-- expires_at set to 2027 so trg_fn_require_kyc_for_loan
+-- does not raise NIPANZE_KYC_EXPIRED.
+-- Alice Namuli stays 'pending' to test the KYC gate.
 -- ============================================
 
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'David', 'Mukasa', '1988-03-15', 'male', 'Plot 23, Kololo Heights', 'P.O. Box 12345', 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'Uganda Revenue Authority', 'Tax Officer', 4500000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-01-15 08:30:00' FROM users u WHERE u.email = 'david.mukasa@gmail.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Sarah', 'Namukasa', '1992-07-22', 'female', 'Block 12, Ntinda Estate', 'P.O. Box 23456', 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'Stanbic Bank Uganda', 'Bank Teller', 3200000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-01-18 10:45:00' FROM users u WHERE u.email = 'sarah.namukasa@yahoo.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'James', 'Okello', '1985-11-08', 'male', 'House 45, Bugolobi', 'P.O. Box 34567', 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'MTN Uganda', 'Network Engineer', 5800000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-01-20 14:20:00' FROM users u WHERE u.email = 'james.okello@outlook.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Maria', 'Nakato', '1990-05-14', 'female', 'Apartment 7, Nakasero', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'Boutique Owner', 2800000.00, 'Nakato Boutique', 'UG-BIZ-2020-012345', 'Retail', 4, TRUE, 100, '2024-01-22 09:10:00' FROM users u WHERE u.email = 'maria.nakato@gmail.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Robert', 'Ssemwanga', '1987-09-30', 'male', 'Villa 18, Muyenga', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'DFCU Bank', 'Branch Manager', 6500000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-01-25 11:30:00' FROM users u WHERE u.email = 'robert.ssemwanga@gmail.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Michael', 'Semakula', '1980-01-20', 'male', 'Industrial Area, Plot 123', 'P.O. Box 1000', 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'CEO', 15000000.00, 'GreenLeaf Agro Solutions Ltd', 'UG-BIZ-2019-045678', 'Agriculture', 5, TRUE, 100, '2024-02-18 09:20:00' FROM users u WHERE u.email = 'info@greenleafagro.co.ug' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Sandra', 'Namutebi', '1983-07-15', 'female', 'Plot 45, Nakawa', 'P.O. Box 2000', 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'Managing Director', 12000000.00, 'Kampala Tech Innovations', 'UG-BIZ-2020-056789', 'Technology', 4, TRUE, 100, '2024-02-20 11:40:00' FROM users u WHERE u.email = 'contact@kampalatech.ug' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'William', 'Kasujja', '1975-05-18', 'male', 'Pearl House, 14th Floor', 'P.O. Box 3000', 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'Investment Manager', 25000000.00, 'Pearl Capital Investment Fund', 'UG-INV-2015-001234', 'Financial Services', 9, TRUE, 100, '2024-03-01 10:10:00' FROM users u WHERE u.email = 'invest@pearlcapital.ug' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Catherine', 'Namboze', '1977-12-03', 'female', 'Crown Tower, Suite 1201', 'P.O. Box 4000', 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'Fund Manager', 22000000.00, 'Victoria Investment Group', 'UG-INV-2014-002345', 'Investment Management', 10, TRUE, 100, '2024-03-03 12:30:00' FROM users u WHERE u.email = 'funds@victoriainvest.co.ug' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'George', 'Mulindwa', '1979-08-25', 'male', 'Finance Plaza, 8th Floor', 'P.O. Box 5000', 'Kampala', 'Central', 'Uganda', '00256', 'self_employed', NULL, 'Director', 28000000.00, 'Equator Finance Corporation', 'UG-INV-2016-003456', 'Financial Services', 8, TRUE, 100, '2024-03-05 09:45:00' FROM users u WHERE u.email = 'lending@equatorfinance.ug' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Frank', 'Omondi', '1991-10-14', 'male', 'Plot 12, Makindye', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'Bank of Africa', 'Credit Officer', 3300000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-03-08 14:15:00' FROM users u WHERE u.email = 'frank.omondi@gmail.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Lucy', 'Nambi', '1988-04-07', 'female', 'House 78, Najanankumbi', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'National Social Security Fund', 'Accountant', 2900000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-03-10 11:20:00' FROM users u WHERE u.email = 'lucy.nambi@yahoo.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Charles', 'Mwesigwa', '1984-06-21', 'male', 'Apartment 15, Kabalagala', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'Shell Uganda', 'Operations Manager', 5200000.00, NULL, NULL, NULL, NULL, TRUE, 100, '2024-03-12 16:40:00' FROM users u WHERE u.email = 'charles.mwesigwa@gmail.com' ON CONFLICT (user_id) DO NOTHING;
-
-INSERT INTO user_profiles (profile_id, user_id, first_name, last_name, date_of_birth, gender, address_line1, address_line2, city, district, country, postal_code, employment_status, employer_name, job_title, monthly_income, business_name, business_registration_number, business_type, years_in_business, profile_completed, profile_completion_percentage, created_at)
-SELECT gen_random_uuid(), u.user_id, 'Alice', 'Namuli', '1993-09-12', 'female', 'House 34, Mutungo', NULL, 'Kampala', 'Central', 'Uganda', '00256', 'employed', 'Equity Bank', 'Customer Service', 2700000.00, NULL, NULL, NULL, NULL, FALSE, 65, '2026-01-25 09:15:00' FROM users u WHERE u.email = 'alice.namuli@gmail.com' ON CONFLICT (user_id) DO NOTHING;
+INSERT INTO kyc_verifications (
+    id, user_id, status,
+    national_id_type, national_id_number,
+    national_id_front_url, national_id_back_url, selfie_url,
+    id_verified, selfie_verified, verified_by,
+    submitted_at, reviewed_at, expires_at, created_at
+) VALUES
+('a1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'approved', 'national_id', 'CM88015KL234567', 'https://storage.nipanze.ug/kyc/user-001-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-001-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-001-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-01-15 09:15:00', '2024-01-16 10:30:00', '2027-01-15 00:00:00', '2024-01-15 09:15:00'),
+('a1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'approved', 'national_id', 'CM92022NM345678', 'https://storage.nipanze.ug/kyc/user-002-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-002-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-002-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-01-18 11:00:00', '2024-01-19 11:45:00', '2027-01-18 00:00:00', '2024-01-18 11:00:00'),
+('a1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'approved', 'national_id', 'CM85011OK345679', 'https://storage.nipanze.ug/kyc/user-003-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-003-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-003-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-01-20 14:30:00', '2024-01-21 09:30:00', '2027-01-20 00:00:00', '2024-01-20 14:30:00'),
+('a1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'approved', 'national_id', 'CM90014NK567890', 'https://storage.nipanze.ug/kyc/user-004-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-004-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-004-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-01-22 09:30:00', '2024-01-23 14:30:00', '2027-01-22 00:00:00', '2024-01-22 09:30:00'),
+('a1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000005', 'approved', 'national_id', 'CM87030SS678901', 'https://storage.nipanze.ug/kyc/user-005-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-005-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-005-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-01-25 11:45:00', '2024-01-25 16:00:00', '2027-01-25 00:00:00', '2024-01-25 11:45:00'),
+('a1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000006', 'approved', 'national_id', 'CM80020SM456789', 'https://storage.nipanze.ug/kyc/user-006-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-006-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-006-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-02-18 09:00:00', '2024-02-19 10:30:00', '2027-02-18 00:00:00', '2024-02-18 09:00:00'),
+('a1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000007', 'approved', 'national_id', 'CM83015SN789012', 'https://storage.nipanze.ug/kyc/user-007-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-007-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-007-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-02-20 10:00:00', '2024-02-21 11:00:00', '2027-02-20 00:00:00', '2024-02-20 10:00:00'),
+('a1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000008', 'approved', 'national_id', 'CM75018WK890123', 'https://storage.nipanze.ug/kyc/user-008-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-008-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-008-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-03-01 09:00:00', '2024-03-02 10:00:00', '2027-03-01 00:00:00', '2024-03-01 09:00:00'),
+('a1000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000009', 'approved', 'national_id', 'CM77012CN901234', 'https://storage.nipanze.ug/kyc/user-009-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-009-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-009-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-03-03 11:00:00', '2024-03-04 11:00:00', '2027-03-03 00:00:00', '2024-03-03 11:00:00'),
+('a1000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000010', 'approved', 'national_id', 'CM79025GM012345', 'https://storage.nipanze.ug/kyc/user-010-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-010-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-010-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-03-05 09:00:00', '2024-03-06 10:00:00', '2027-03-05 00:00:00', '2024-03-05 09:00:00'),
+('a1000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', 'approved', 'national_id', 'CM91114OM789012', 'https://storage.nipanze.ug/kyc/user-011-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-011-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-011-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-03-08 09:30:00', '2024-03-09 14:00:00', '2027-03-08 00:00:00', '2024-03-08 09:30:00'),
+('a1000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', 'approved', 'national_id', 'CM88047NB890123', 'https://storage.nipanze.ug/kyc/user-012-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-012-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-012-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-03-10 09:00:00', '2024-03-11 11:00:00', '2027-03-10 00:00:00', '2024-03-10 09:00:00'),
+('a1000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', 'approved', 'national_id', 'CM84021MW901234', 'https://storage.nipanze.ug/kyc/user-013-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-013-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-013-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-03-12 12:00:00', '2024-03-13 15:00:00', '2027-03-12 00:00:00', '2024-03-12 12:00:00'),
+-- Alice Namuli — pending (tests KYC gate)
+('a1000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'pending',  'national_id', 'CM93255NM789013', 'https://storage.nipanze.ug/kyc/user-014-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-014-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-014-selfie.jpg', FALSE, FALSE, NULL,                                          '2026-01-25 10:30:00', NULL,                  NULL,                  '2026-01-25 10:30:00')
+ON CONFLICT (user_id) DO NOTHING;
 
 
 -- ============================================
--- STEP 4: KYC VERIFICATIONS
+-- STEP 4: NEGOTIATORS
 -- ============================================
 
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM88015KL234567', 'https://storage.opencapital.ug/kyc/user-001-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-001-id-back.jpg', TRUE, '2024-01-16 10:30:00', 'https://storage.opencapital.ug/kyc/user-001-selfie.jpg', TRUE, '2024-01-16 10:30:00', 'https://storage.opencapital.ug/kyc/user-001-address.pdf', TRUE, '2024-01-16 10:30:00', (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'), '2024-01-15 09:15:00', '2024-01-16 10:30:00', '2029-01-15', '2024-01-15 09:15:00' FROM users u WHERE u.email = 'david.mukasa@gmail.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM92022NM345678', 'https://storage.opencapital.ug/kyc/user-002-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-002-id-back.jpg', TRUE, '2024-01-19 11:45:00', 'https://storage.opencapital.ug/kyc/user-002-selfie.jpg', TRUE, '2024-01-19 11:45:00', 'https://storage.opencapital.ug/kyc/user-002-address.pdf', TRUE, '2024-01-19 11:45:00', (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'), '2024-01-18 11:00:00', '2024-01-19 11:45:00', '2029-01-18', '2024-01-18 11:00:00' FROM users u WHERE u.email = 'sarah.namukasa@yahoo.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM85011OK345679', 'https://storage.opencapital.ug/kyc/user-003-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-003-id-back.jpg', TRUE, '2024-01-21 09:30:00', 'https://storage.opencapital.ug/kyc/user-003-selfie.jpg', TRUE, '2024-01-21 09:30:00', 'https://storage.opencapital.ug/kyc/user-003-address.pdf', TRUE, '2024-01-21 09:30:00', (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'), '2024-01-20 14:30:00', '2024-01-21 09:30:00', '2029-01-20', '2024-01-20 14:30:00' FROM users u WHERE u.email = 'james.okello@outlook.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM90014NK567890', 'https://storage.opencapital.ug/kyc/user-004-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-004-id-back.jpg', TRUE, '2024-01-23 14:30:00', 'https://storage.opencapital.ug/kyc/user-004-selfie.jpg', TRUE, '2024-01-23 14:30:00', 'https://storage.opencapital.ug/kyc/user-004-address.pdf', TRUE, '2024-01-23 14:30:00', (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'), '2024-01-22 09:30:00', '2024-01-23 14:30:00', '2029-01-22', '2024-01-22 09:30:00' FROM users u WHERE u.email = 'maria.nakato@gmail.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM87030SS678901', 'https://storage.opencapital.ug/kyc/user-005-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-005-id-back.jpg', TRUE, '2024-01-25 16:00:00', 'https://storage.opencapital.ug/kyc/user-005-selfie.jpg', TRUE, '2024-01-25 16:00:00', 'https://storage.opencapital.ug/kyc/user-005-address.pdf', TRUE, '2024-01-25 16:00:00', (SELECT user_id FROM users WHERE email = 'admin1@opencapital.ug'), '2024-01-25 11:45:00', '2024-01-25 16:00:00', '2029-01-25', '2024-01-25 11:45:00' FROM users u WHERE u.email = 'robert.ssemwanga@gmail.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, business_registration_url, business_license_url, tax_clearance_url, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'business_registration', 'UG-BIZ-2019-045678', 'https://storage.opencapital.ug/kyc/user-011-license.pdf', NULL, TRUE, '2024-02-19 10:30:00', NULL, FALSE, NULL, 'https://storage.opencapital.ug/kyc/user-011-address.pdf', TRUE, '2024-02-19 10:30:00', 'https://storage.opencapital.ug/kyc/user-011-registration.pdf', 'https://storage.opencapital.ug/kyc/user-011-license.pdf', 'https://storage.opencapital.ug/kyc/user-011-tax.pdf', (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'), '2024-02-19 09:00:00', '2024-02-19 10:30:00', '2027-02-19', '2024-02-19 09:00:00' FROM users u WHERE u.email = 'info@greenleafagro.co.ug';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM91114OM789012', 'https://storage.opencapital.ug/kyc/user-011-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-011-id-back.jpg', TRUE, '2024-03-09 14:00:00', 'https://storage.opencapital.ug/kyc/user-011-selfie.jpg', TRUE, '2024-03-09 14:00:00', 'https://storage.opencapital.ug/kyc/user-011-address.pdf', TRUE, '2024-03-09 14:00:00', (SELECT user_id FROM users WHERE email = 'admin2@opencapital.ug'), '2024-03-09 09:30:00', '2024-03-09 14:00:00', '2029-03-09', '2024-03-09 09:30:00' FROM users u WHERE u.email = 'frank.omondi@gmail.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM88047NB890123', 'https://storage.opencapital.ug/kyc/user-012-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-012-id-back.jpg', TRUE, '2024-03-11 11:00:00', 'https://storage.opencapital.ug/kyc/user-012-selfie.jpg', TRUE, '2024-03-11 11:00:00', 'https://storage.opencapital.ug/kyc/user-012-address.pdf', TRUE, '2024-03-11 11:00:00', (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'), '2024-03-11 09:00:00', '2024-03-11 11:00:00', '2029-03-11', '2024-03-11 09:00:00' FROM users u WHERE u.email = 'lucy.nambi@yahoo.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'approved', 'national_id', 'CM84021MW901234', 'https://storage.opencapital.ug/kyc/user-013-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-013-id-back.jpg', TRUE, '2024-03-13 15:00:00', 'https://storage.opencapital.ug/kyc/user-013-selfie.jpg', TRUE, '2024-03-13 15:00:00', 'https://storage.opencapital.ug/kyc/user-013-address.pdf', TRUE, '2024-03-13 15:00:00', (SELECT user_id FROM users WHERE email = 'admin3@opencapital.ug'), '2024-03-13 12:00:00', '2024-03-13 15:00:00', '2029-03-13', '2024-03-13 12:00:00' FROM users u WHERE u.email = 'charles.mwesigwa@gmail.com';
-
-INSERT INTO kyc_verifications (verification_id, user_id, status, id_type, id_number, id_front_url, id_back_url, id_verified, id_verified_at, selfie_url, selfie_verified, selfie_verified_at, proof_of_address_url, proof_of_address_verified, proof_of_address_verified_at, verified_by, submitted_at, verified_at, expires_at, created_at)
-SELECT gen_random_uuid(), u.user_id, 'pending', 'national_id', 'CM93255NM789012', 'https://storage.opencapital.ug/kyc/user-026-id-front.jpg', 'https://storage.opencapital.ug/kyc/user-026-id-back.jpg', FALSE, NULL, 'https://storage.opencapital.ug/kyc/user-026-selfie.jpg', FALSE, NULL, 'https://storage.opencapital.ug/kyc/user-026-address.pdf', FALSE, NULL, NULL, '2026-01-25 10:30:00', NULL, NULL, '2026-01-25 10:30:00' FROM users u WHERE u.email = 'alice.namuli@gmail.com';
+INSERT INTO negotiators (
+    id, full_name, phone, email, credentials, specialisation,
+    status, deals_completed, avg_rating, created_at
+) VALUES
+('b1000000-0000-0000-0000-000000000001', 'Amos Tukahirwa',  '+256701000001', 'amos.tukahirwa@nipanze.ug',  'Licensed Attorney · KCCA No. 00123', 'Loan agreements & debt recovery',   'available', 18, 4.7, '2024-01-10 09:00:00'),
+('b1000000-0000-0000-0000-000000000002', 'Phiona Nassanga', '+256701000002', 'phiona.nassanga@nipanze.ug', 'Certified Mediator · ULS No. 04521', 'Financial disputes & contract law', 'available', 12, 4.5, '2024-01-10 09:00:00'),
+('b1000000-0000-0000-0000-000000000003', 'Isaac Byaruhanga','+256701000003', 'isaac.b@nipanze.ug',         'ICPAU Registered · ULS No. 07812',  'SME lending & agri-finance',        'busy',       9, 4.3, '2024-02-01 09:00:00')
+ON CONFLICT DO NOTHING;
 
 
 -- ============================================
--- STEP 5: RISK ASSESSMENTS
+-- STEP 5: SUBSCRIPTIONS
 -- ============================================
 
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 750, 91.0, 'low', 95, 88, 15.2, 90, (SELECT user_id FROM users WHERE email='admin1@opencapital.ug'), '2024-01-16 11:00:00', '2026-07-15', TRUE, '2024-01-16 11:00:00' FROM users u WHERE u.email='david.mukasa@gmail.com';
+-- Borrowers
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-15 09:00:00', expires_at='2025-01-15 09:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000001';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-18 11:00:00', expires_at='2025-01-18 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000002';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-20 15:00:00', expires_at='2025-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-22 10:00:00', expires_at='2025-01-22 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000004';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-25 12:00:00', expires_at='2025-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-08 15:00:00', expires_at='2025-03-08 15:00:00', auto_renew=FALSE WHERE user_id='10000000-0000-0000-0000-000000000011';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-10 12:00:00', expires_at='2025-03-10 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000012';
+UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-12 17:00:00', expires_at='2025-03-12 17:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000013';
 
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 720, 74.0, 'low', 78, 72, 22.5, 70, NULL, '2024-01-19 12:00:00', '2026-07-18', TRUE, '2024-01-19 12:00:00' FROM users u WHERE u.email='sarah.namukasa@yahoo.com';
+-- Lenders
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-18 10:00:00', expires_at='2025-02-18 10:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000006';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-20 12:00:00', expires_at='2025-02-20 12:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000007';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-01 11:00:00', expires_at='2025-03-01 11:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000008';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-03 13:00:00', expires_at='2025-03-03 13:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000009';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-03-05 10:00:00', expires_at='2025-03-05 10:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000010';
 
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 780, 88.0, 'low', 92, 85, 18.7, 87, NULL, '2024-01-21 09:00:00', '2026-07-20', TRUE, '2024-01-21 09:00:00' FROM users u WHERE u.email='james.okello@outlook.com';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 650, 61.0, 'medium', 65, 58, 35.0, 60, NULL, '2024-01-23 14:00:00', '2026-07-22', TRUE, '2024-01-23 14:00:00' FROM users u WHERE u.email='maria.nakato@gmail.com';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 790, 85.0, 'low', 90, 88, 12.0, 85, NULL, '2024-01-25 17:00:00', '2026-07-25', TRUE, '2024-01-25 17:00:00' FROM users u WHERE u.email='robert.ssemwanga@gmail.com';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 710, 79.0, 'low', 82, 78, 28.0, 75, (SELECT user_id FROM users WHERE email='admin3@opencapital.ug'), '2024-02-20 09:00:00', '2026-08-18', TRUE, '2024-02-20 09:00:00' FROM users u WHERE u.email='info@greenleafagro.co.ug';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 850, 95.0, 'low', 98, 95, 10.0, 96, NULL, '2024-03-02 10:00:00', '2026-09-01', TRUE, '2024-03-02 10:00:00' FROM users u WHERE u.email='invest@pearlcapital.ug';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 845, 95.0, 'low', 96, 93, 12.0, 95, NULL, '2024-03-04 11:00:00', '2026-09-03', TRUE, '2024-03-04 11:00:00' FROM users u WHERE u.email='funds@victoriainvest.co.ug';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 580, 44.0, 'high', 48, 42, 45.0, 40, NULL, '2024-03-09 10:00:00', '2026-09-18', TRUE, '2024-03-09 10:00:00' FROM users u WHERE u.email='frank.omondi@gmail.com';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 690, 68.0, 'medium', 70, 65, 28.0, 65, NULL, '2024-03-11 12:00:00', '2026-09-11', TRUE, '2024-03-11 12:00:00' FROM users u WHERE u.email='lucy.nambi@yahoo.com';
-
-INSERT INTO risk_assessments (assessment_id, user_id, credit_score, risk_score, risk_category, income_verification_score, employment_stability_score, debt_to_income_ratio, previous_loan_performance_score, assessed_by, assessment_date, valid_until, is_current, created_at)
-SELECT gen_random_uuid(), u.user_id, 760, 82.0, 'low', 85, 80, 16.0, 80, NULL, '2024-03-13 16:00:00', '2026-09-13', TRUE, '2024-03-13 16:00:00' FROM users u WHERE u.email='charles.mwesigwa@gmail.com';
+-- Alice Namuli and test.user remain on free watchlist (no UPDATE needed)
 
 
 -- ============================================
 -- STEP 6: LOAN REQUESTS
+-- FIX: Removed total_bid_amount and funding_percentage
+--      (columns do not exist in schema v5.0).
+-- Uses session_replication_role to bypass triggers
+-- for back-dated / non-active status rows.
 -- ============================================
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 5000000.00, 'Home Renovation', 'Complete home renovation including kitchen and bathroom upgrades', 12, 12.0, 0.00, 0, 0.00, 'active', '2025-11-15 11:00:00', '2025-11-22 11:00:00', NULL, '{"renovation_plan":"plan.pdf"}', 45, '2025-11-14 14:20:00' FROM users u WHERE u.email='david.mukasa@gmail.com';
+SET session_replication_role = 'replica';
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 5500000.00, 'Education', 'Professional certification courses in financial management', 12, 15.0, 0.00, 0, 0.00, 'active', '2026-01-20 11:30:00', '2026-01-27 11:30:00', NULL, '{"course_brochure":"course.pdf"}', 28, '2026-01-19 14:15:00' FROM users u WHERE u.email='sarah.namukasa@yahoo.com';
+INSERT INTO loan_requests (
+    id, borrower_id, title, purpose,
+    requested_amount, duration_months, max_interest_rate,
+    district, risk_category, credit_score_band,
+    status, listed_at, expires_at, contracted_at,
+    number_of_bids, views_count, created_at
+) VALUES
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 8000000.00, 'Business Expansion', 'Equipment purchase for IT consultancy expansion', 18, 10.5, 0.00, 0, 0.00, 'active', '2025-11-20 10:00:00', '2025-11-27 10:00:00', NULL, '{"business_plan":"plan.pdf"}', 52, '2025-11-19 16:30:00' FROM users u WHERE u.email='james.okello@outlook.com';
+-- David Mukasa — contracted
+('c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
+ 'Home Renovation Loan', 'Home improvement — kitchen and bathroom upgrade',
+ 5000000, 12, 12.00, 'Central', 'low', 'A', 'contracted',
+ '2024-02-01 09:00:00', '2024-02-08 09:00:00', '2024-02-06 14:30:00',
+ 2, 87, '2024-02-01 08:45:00'),
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 3500000.00, 'Business Inventory', 'Inventory expansion for boutique store', 12, 15.0, 0.00, 0, 0.00, 'active', '2026-01-24 15:00:00', '2026-01-31 15:00:00', NULL, '{"inventory_list":"inventory.pdf"}', 15, '2026-01-23 11:45:00' FROM users u WHERE u.email='maria.nakato@gmail.com';
+-- Sarah Namukasa — contracted
+('c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002',
+ 'Professional Certification', 'Financial management certification courses at Makerere',
+ 3500000, 12, 15.00, 'Central', 'medium', 'B+', 'contracted',
+ '2024-03-01 10:00:00', '2024-03-08 10:00:00', '2024-03-05 11:00:00',
+ 1, 54, '2024-03-01 09:45:00'),
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 6000000.00, 'Vehicle Purchase', 'Purchase of delivery van for business', 24, 13.0, 0.00, 0, 0.00, 'draft', NULL, NULL, NULL, '{"vehicle_quote":"quote.pdf"}', 3, '2026-01-28 14:30:00' FROM users u WHERE u.email='robert.ssemwanga@gmail.com';
+-- James Okello — active, high bid activity
+('c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003',
+ 'Business Expansion — IT Equipment', 'Purchase servers and networking equipment for IT consultancy',
+ 8000000, 18, 10.50, 'Central', 'low', 'A+', 'active',
+ '2026-01-20 10:00:00', '2026-01-27 10:00:00', NULL,
+ 2, 112, '2026-01-20 09:45:00'),
 
-INSERT INTO loan_requests (request_id, borrower_id, requested_amount, purpose, purpose_description, duration_months, max_interest_rate, total_bid_amount, number_of_bids, funding_percentage, status, listed_at, expires_at, funded_at, supporting_documents, views_count, created_at)
-SELECT gen_random_uuid(), u.user_id, 4500000.00, 'Medical Expenses', 'Medical treatment and recovery expenses', 18, 14.5, 0.00, 0, 0.00, 'active', '2026-01-26 10:00:00', '2026-02-02 10:00:00', NULL, '{"medical_reports":"reports.pdf"}', 22, '2026-01-25 15:50:00' FROM users u WHERE u.email='frank.omondi@gmail.com';
+-- Maria Nakato — active, one bid
+('c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004',
+ 'Boutique Inventory Stock', 'Pre-season stock purchase for Nakato Boutique',
+ 3500000, 12, 15.00, 'Central', 'medium', 'B', 'active',
+ '2026-01-24 15:00:00', '2026-01-31 15:00:00', NULL,
+ 1, 35, '2026-01-24 14:45:00'),
 
+-- Frank Omondi — active, high risk
+('c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000011',
+ 'Medical Expense Cover', 'Surgery and recovery expenses at Mulago Hospital',
+ 4500000, 18, 14.50, 'Eastern', 'high', 'C', 'active',
+ '2026-01-26 10:00:00', '2026-02-02 10:00:00', NULL,
+ 1, 41, '2026-01-26 09:45:00'),
 
--- ============================================
--- STEP 7: WALLET DEPOSITS
--- ============================================
+-- Lucy Nambi — active, no bids
+('c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000012',
+ 'Farm Equipment Purchase', 'Irrigation pump and tilling equipment for family farm in Wakiso',
+ 6000000, 24, 13.00, 'Central', 'medium', 'B', 'active',
+ '2026-01-28 09:00:00', '2026-02-04 09:00:00', NULL,
+ 0, 18, '2026-01-28 08:45:00'),
 
-UPDATE wallet_balances SET lendable_balance = 10000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='invest@pearlcapital.ug');
-UPDATE wallet_balances SET lendable_balance =  5000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='funds@victoriainvest.co.ug');
-UPDATE wallet_balances SET lendable_balance =  5000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='robert.ssemwanga@gmail.com');
-UPDATE wallet_balances SET lendable_balance =  3000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='charles.mwesigwa@gmail.com');
-UPDATE wallet_balances SET lendable_balance =  5000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='lending@equatorfinance.ug');
-UPDATE wallet_balances SET lendable_balance =  3000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='info@greenleafagro.co.ug');
-UPDATE wallet_balances SET lendable_balance =  3000000.00 WHERE user_id = (SELECT user_id FROM users WHERE email='contact@kampalatech.ug');
+-- Charles Mwesigwa — expired
+('c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000013',
+ 'Vehicle Purchase — Delivery Van', 'Toyota Hiace for goods delivery business in Mbarara',
+ 9000000, 24, 11.00, 'Western', 'low', 'A', 'expired',
+ '2025-12-10 11:00:00', '2025-12-17 11:00:00', NULL,
+ 1, 67, '2025-12-10 10:45:00'),
 
+-- Robert Ssemwanga — active, closing soon
+('c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000005',
+ 'Business Working Capital', 'Short-term working capital for DFCU supplier contracts',
+ 7000000, 6, 9.50, 'Central', 'low', 'A+', 'active',
+ NOW() - INTERVAL '6 days 20 hours',
+ NOW() + INTERVAL '4 hours',
+ NULL, 1, 29, NOW() - INTERVAL '6 days 21 hours');
 
--- ============================================
--- STEP 8: BIDS (all inserted as 'pending')
--- ============================================
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 2000000.00, 11.0, 'pending', TRUE, '2025-11-15 12:30:00'
-FROM loan_requests lr JOIN users l ON l.email='invest@pearlcapital.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 2000000.00, 11.5, 'pending', FALSE, '2025-11-16 09:15:00'
-FROM loan_requests lr JOIN users l ON l.email='funds@victoriainvest.co.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 1000000.00, 12.0, 'pending', FALSE, '2025-11-18 08:45:00'
-FROM loan_requests lr JOIN users l ON l.email='robert.ssemwanga@gmail.com'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 1500000.00, 14.5, 'pending', FALSE, '2026-01-21 11:20:00'
-FROM loan_requests lr JOIN users l ON l.email='robert.ssemwanga@gmail.com'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='sarah.namukasa@yahoo.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 1800000.00, 15.0, 'pending', FALSE, '2026-01-24 08:45:00'
-FROM loan_requests lr JOIN users l ON l.email='charles.mwesigwa@gmail.com'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='sarah.namukasa@yahoo.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at, expires_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 1000000.00, 15.0, 'pending', FALSE, '2026-01-26 14:20:00', '2026-02-02 14:20:00'
-FROM loan_requests lr JOIN users l ON l.email='robert.ssemwanga@gmail.com'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='sarah.namukasa@yahoo.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 5000000.00, 10.0, 'pending', TRUE, '2025-11-20 11:20:00'
-FROM loan_requests lr JOIN users l ON l.email='invest@pearlcapital.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 3000000.00, 10.5, 'pending', TRUE, '2025-11-23 13:15:00'
-FROM loan_requests lr JOIN users l ON l.email='lending@equatorfinance.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at, expires_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 1500000.00, 14.0, 'pending', FALSE, '2026-01-27 10:30:00', '2026-02-03 10:30:00'
-FROM loan_requests lr JOIN users l ON l.email='info@greenleafagro.co.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='maria.nakato@gmail.com') LIMIT 1;
-
-INSERT INTO bids (bid_id, request_id, lender_id, bid_amount, interest_rate, status, auto_accept, created_at, expires_at)
-SELECT gen_random_uuid(), lr.request_id, l.user_id, 2000000.00, 14.5, 'pending', FALSE, '2026-01-28 09:15:00', '2026-02-04 09:15:00'
-FROM loan_requests lr JOIN users l ON l.email='contact@kampalatech.ug'
-WHERE lr.borrower_id=(SELECT user_id FROM users WHERE email='frank.omondi@gmail.com') LIMIT 1;
+SET session_replication_role = 'origin';
 
 
 -- ============================================
--- STEP 9: BID ACCEPTANCE
--- Fires trg_fn_lock_funds_on_accept and
--- trg_fn_update_funding_progress automatically.
+-- STEP 7: LOAN BIDS
 -- ============================================
 
-UPDATE bids SET status='accepted', accepted_at='2025-11-15 12:30:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='invest@pearlcapital.ug')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com'))
-  AND bid_amount=2000000.00 AND status='pending';
+SET session_replication_role = 'replica';
 
-UPDATE bids SET status='accepted', accepted_at='2025-11-16 14:20:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='funds@victoriainvest.co.ug')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com'))
-  AND bid_amount=2000000.00 AND status='pending';
+INSERT INTO loan_bids (
+    id, request_id, lender_id,
+    amount, interest_rate, status,
+    placed_at, accepted_at, created_at
+) VALUES
 
-UPDATE bids SET status='accepted', accepted_at='2025-11-18 09:45:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='robert.ssemwanga@gmail.com')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com'))
-  AND bid_amount=1000000.00 AND status='pending';
+-- David Mukasa's contracted listing
+('d1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000008', 3000000, 11.00, 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
+('d1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000009', 2000000, 11.50, 'rejected', '2024-02-03 09:00:00', NULL,                   '2024-02-03 09:00:00'),
 
-UPDATE bids SET status='accepted', accepted_at='2026-01-21 15:30:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='robert.ssemwanga@gmail.com')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='sarah.namukasa@yahoo.com'))
-  AND bid_amount=1500000.00 AND status='pending';
+-- Sarah Namukasa's contracted listing
+('d1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000009', 3500000, 14.00, 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
 
-UPDATE bids SET status='accepted', accepted_at='2026-01-24 09:30:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='charles.mwesigwa@gmail.com')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='sarah.namukasa@yahoo.com'))
-  AND bid_amount=1800000.00 AND status='pending';
+-- James Okello's active listing — live order book
+('d1000000-0000-0000-0000-000000000004', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000008', 5000000, 10.00, 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
+('d1000000-0000-0000-0000-000000000005', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000010', 3000000, 10.50, 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
 
-UPDATE bids SET status='accepted', accepted_at='2025-11-20 11:20:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='invest@pearlcapital.ug')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.com'))
-  AND bid_amount=5000000.00 AND status='pending';
+-- Maria Nakato's active listing
+('d1000000-0000-0000-0000-000000000006', 'c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000006', 1500000, 14.00, 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
 
-UPDATE bids SET status='accepted', accepted_at='2025-11-23 13:15:00'
-WHERE lender_id=(SELECT user_id FROM users WHERE email='lending@equatorfinance.ug')
-  AND request_id=(SELECT request_id FROM loan_requests WHERE borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.com'))
-  AND bid_amount=3000000.00 AND status='pending';
+-- Frank Omondi's active listing
+('d1000000-0000-0000-0000-000000000007', 'c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000007', 2000000, 14.50, 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
+
+-- Charles Mwesigwa's expired listing
+('d1000000-0000-0000-0000-000000000008', 'c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000006', 4000000, 10.50, 'expired', '2025-12-11 10:00:00', NULL, '2025-12-11 10:00:00'),
+
+-- Robert Ssemwanga's closing-soon listing
+('d1000000-0000-0000-0000-000000000009', 'c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000010', 3000000,  9.50, 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours');
+
+SET session_replication_role = 'origin';
 
 
 -- ============================================
--- STEP 10: POST-ACCEPT FIXUPS
+-- STEP 8: CONTRACTS
+-- FIX: Uses indicative_* column names from schema v5.0.
+--      Removed outstanding_balance, total_repaid, days_overdue
+--      (not in schema). Added borrower_confirmed_at / lender_confirmed_at.
 -- ============================================
 
-UPDATE loan_requests SET funded_at='2025-11-20 14:30:00'
-WHERE borrower_id=(SELECT user_id FROM users WHERE email='david.mukasa@gmail.com') AND status='fully_funded';
+-- Contract 1: David Mukasa ↔ Pearl Capital (in_execution)
+INSERT INTO contracts (
+    id, request_id, bid_id,
+    borrower_id, lender_id, negotiator_id,
+    status, amount, interest_rate, duration_months,
+    purpose, district,
+    indicative_monthly_payment_ugx,
+    indicative_total_repayment_ugx,
+    indicative_total_interest_ugx,
+    repayment_start_date, maturity_date,
+    borrower_confirmed, borrower_confirmed_at,
+    lender_confirmed,   lender_confirmed_at,
+    contract_activated_at, created_at
+) VALUES (
+    'e1000000-0000-0000-0000-000000000001',
+    'c1000000-0000-0000-0000-000000000001',
+    'd1000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000008',
+    'b1000000-0000-0000-0000-000000000001',
+    'in_execution',
+    3000000, 11.00, 12,
+    'Home Renovation Loan', 'Central',
+    265000, 3180000, 180000,
+    '2024-03-01', '2025-02-01',
+    TRUE, '2024-02-09 10:00:00',
+    TRUE, '2024-02-09 14:00:00',
+    '2024-02-10 09:00:00', '2024-02-06 14:30:00'
+);
 
-UPDATE loan_requests SET funded_at='2025-11-25 15:45:00'
-WHERE borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.com') AND status='fully_funded';
+-- Contract 2: Sarah Namukasa ↔ Victoria Investment (draft)
+INSERT INTO contracts (
+    id, request_id, bid_id,
+    borrower_id, lender_id, negotiator_id,
+    status, amount, interest_rate, duration_months,
+    purpose, district,
+    indicative_monthly_payment_ugx,
+    indicative_total_repayment_ugx,
+    indicative_total_interest_ugx,
+    borrower_confirmed, lender_confirmed,
+    created_at
+) VALUES (
+    'e1000000-0000-0000-0000-000000000002',
+    'c1000000-0000-0000-0000-000000000002',
+    'd1000000-0000-0000-0000-000000000003',
+    '10000000-0000-0000-0000-000000000002',
+    '10000000-0000-0000-0000-000000000009',
+    'b1000000-0000-0000-0000-000000000002',
+    'draft',
+    3500000, 14.00, 12,
+    'Professional Certification', 'Central',
+    314000, 3768000, 268000,
+    FALSE, FALSE,
+    '2024-03-05 11:00:00'
+);
+
+
+-- ============================================
+-- STEP 8b: NEGOTIATOR ASSIGNMENTS
+-- ============================================
+
+INSERT INTO negotiator_assignments (id, contract_id, negotiator_id, assigned_at) VALUES
+('e1000000-0000-0000-0000-000000000003', 'e1000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', '2024-02-06 15:00:00'),
+('e1000000-0000-0000-0000-000000000004', 'e1000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000002', '2024-03-05 11:30:00');
+
+
+-- ============================================
+-- STEP 8c: REPAYMENT SCHEDULES
+-- FIX: Removed amount_due, amount_paid, paid_at, days_late.
+--      Only columns in schema: contract_id, instalment_number,
+--      due_date, principal_ugx, interest_ugx,
+--      reported_status, reported_at, reported_by, created_at.
+--      total_ugx is a generated column — omit from INSERT.
+-- ============================================
+
+INSERT INTO repayment_schedules (
+    id, contract_id, instalment_number, due_date,
+    principal_ugx, interest_ugx,
+    reported_status, reported_at, reported_by,
+    created_at
+) VALUES
+('e2000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001',  1, '2024-03-01', 237500, 27500, 'reported_paid', '2024-03-01 09:00:00', '10000000-0000-0000-0000-000000000001', '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001',  2, '2024-04-01', 239700, 25300, 'reported_paid', '2024-04-01 10:00:00', '10000000-0000-0000-0000-000000000001', '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000003', 'e1000000-0000-0000-0000-000000000001',  3, '2024-05-01', 241900, 23100, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000004', 'e1000000-0000-0000-0000-000000000001',  4, '2024-06-01', 244100, 20900, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000005', 'e1000000-0000-0000-0000-000000000001',  5, '2024-07-01', 246400, 18600, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000006', 'e1000000-0000-0000-0000-000000000001',  6, '2024-08-01', 248700, 16300, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000007', 'e1000000-0000-0000-0000-000000000001',  7, '2024-09-01', 251000, 14000, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000008', 'e1000000-0000-0000-0000-000000000001',  8, '2024-10-01', 253300, 11700, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000009', 'e1000000-0000-0000-0000-000000000001',  9, '2024-11-01', 255700,  9300, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000010', 'e1000000-0000-0000-0000-000000000001', 10, '2024-12-01', 258100,  6900, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000011', 'e1000000-0000-0000-0000-000000000001', 11, '2025-01-01', 260500,  4500, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
+('e2000000-0000-0000-0000-000000000012', 'e1000000-0000-0000-0000-000000000001', 12, '2025-02-01', 262800,  2200, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00');
+
+
+-- ============================================
+-- STEP 9: WATCHLIST
+-- ============================================
+
+INSERT INTO watchlist (id, user_id, request_id, added_at) VALUES
+('e3000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'c1000000-0000-0000-0000-000000000003', '2026-01-21 08:00:00'),
+('e3000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'c1000000-0000-0000-0000-000000000005', '2026-01-26 11:00:00'),
+('e3000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000009', 'c1000000-0000-0000-0000-000000000004', '2026-01-25 14:00:00'),
+('e3000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000007', 'c1000000-0000-0000-0000-000000000008', NOW() - INTERVAL '3 hours'),
+('e3000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000012', 'c1000000-0000-0000-0000-000000000003', '2026-01-22 10:00:00')
+ON CONFLICT (user_id, request_id) DO NOTHING;
+
+
+-- ============================================
+-- STEP 10: NOTIFICATIONS
+-- FIX: 'repayment_due' is not in notification_type_enum.
+--      Replaced with 'system'.
+-- ============================================
+
+INSERT INTO notifications (
+    id, user_id, type, title, body,
+    is_read, request_id, contract_id, bid_id, created_at
+) VALUES
+('e4000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'bid_accepted',            'Bid accepted',             'Your listing has been matched. A negotiator has been assigned.',      TRUE,  'c1000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-06 14:31:00'),
+('e4000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'bid_accepted',            'Your bid was accepted',    'Your offer has been accepted. A negotiator will be in touch.',        TRUE,  'c1000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-06 14:31:00'),
+('e4000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'negotiator_assigned',     'Negotiator assigned',      'Amos Tukahirwa has been assigned to facilitate your deal.',           TRUE,  NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-02-06 15:00:00'),
+('e4000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000008', 'negotiator_assigned',     'Negotiator assigned',      'Amos Tukahirwa has been assigned to facilitate your deal.',           TRUE,  NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-02-06 15:00:00'),
+('e4000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', 'contract_draft_available','Contract draft ready',     'Your contract draft is available for review. Please confirm.',       FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000002', NULL,                                   '2024-03-05 12:00:00'),
+('e4000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000009', 'contract_draft_available','Contract draft ready',     'Your contract draft is available for review. Please confirm.',       FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000002', NULL,                                   '2024-03-05 12:00:00'),
+('e4000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000003', 'bid_received',            'New bid received',         'Pearl Capital (L-#9002) placed a bid at 10.00% on your listing.',    FALSE, 'c1000000-0000-0000-0000-000000000003', NULL,                                   'd1000000-0000-0000-0000-000000000004', '2026-01-21 11:21:00'),
+('e4000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000003', 'bid_received',            'New bid received',         'Equator Finance (L-#7714) placed a bid at 10.50% on your listing.',  FALSE, 'c1000000-0000-0000-0000-000000000003', NULL,                                   'd1000000-0000-0000-0000-000000000005', '2026-01-23 13:16:00'),
+('e4000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000005', 'closing_soon_6h',         'Listing closing soon',     'Your listing "Business Working Capital" closes in under 6 hours.',   FALSE, 'c1000000-0000-0000-0000-000000000008', NULL,                                   NULL,                                   NOW() - INTERVAL '1 hour'),
+-- FIX: was 'repayment_due' (not in enum) → replaced with 'system'
+('e4000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000001', 'system',                  'Repayment due soon',       'Instalment 3 of UGX 265,000 is due on 1 May 2024.',                  FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-04-25 08:00:00')
+ON CONFLICT DO NOTHING;
+
+
+-- ============================================
+-- STEP 11: REFERRALS
+-- ============================================
+
+INSERT INTO referrals (
+    id, referrer_id, referred_email, referred_user_id,
+    code, is_activated, activated_at, reward_applied, created_at
+) VALUES
+('e5000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'frank.omondi@gmail.com',     '10000000-0000-0000-0000-000000000011', 'NIP-DAVID-01', TRUE,  '2024-03-08 15:00:00', TRUE,  '2024-03-01 10:00:00'),
+('e5000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'lucy.nambi@yahoo.com',       '10000000-0000-0000-0000-000000000012', 'NIP-PEARL-01', TRUE,  '2024-03-10 12:00:00', TRUE,  '2024-03-05 09:00:00'),
+('e5000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'charles.mwesigwa@gmail.com', '10000000-0000-0000-0000-000000000013', 'NIP-JAMES-01', TRUE,  '2024-03-12 17:00:00', FALSE, '2024-03-08 11:00:00'),
+('e5000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'newuser@example.com',        NULL,                                   'NIP-DAVID-02', FALSE, NULL,                  FALSE, '2026-01-20 09:00:00')
+ON CONFLICT DO NOTHING;
 
 
 -- ============================================
@@ -545,25 +717,44 @@ WHERE borrower_id=(SELECT user_id FROM users WHERE email='james.okello@outlook.c
 -- ============================================
 
 SELECT table_name, record_count FROM (
-    SELECT 'auth.users'       AS table_name, COUNT(*) AS record_count FROM auth.users
-    UNION ALL SELECT 'public.users',          COUNT(*) FROM public.users
-    UNION ALL SELECT 'user_profiles',         COUNT(*) FROM user_profiles
-    UNION ALL SELECT 'kyc_verifications',     COUNT(*) FROM kyc_verifications
-    UNION ALL SELECT 'risk_assessments',      COUNT(*) FROM risk_assessments
-    UNION ALL SELECT 'wallet_balances',       COUNT(*) FROM wallet_balances
-    UNION ALL SELECT 'loan_requests',         COUNT(*) FROM loan_requests
-    UNION ALL SELECT 'bids',                  COUNT(*) FROM bids
+    SELECT 'auth.users'             AS table_name, COUNT(*) AS record_count FROM auth.users             WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'profiles',                   COUNT(*) FROM profiles                                WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'subscriptions',              COUNT(*) FROM subscriptions
+    UNION ALL SELECT 'kyc_verifications',          COUNT(*) FROM kyc_verifications
+    UNION ALL SELECT 'negotiators',                COUNT(*) FROM negotiators
+    UNION ALL SELECT 'loan_requests',              COUNT(*) FROM loan_requests
+    UNION ALL SELECT 'loan_bids',                  COUNT(*) FROM loan_bids
+    UNION ALL SELECT 'contracts',                  COUNT(*) FROM contracts
+    UNION ALL SELECT 'negotiator_assignments',     COUNT(*) FROM negotiator_assignments
+    UNION ALL SELECT 'repayment_schedules',        COUNT(*) FROM repayment_schedules
+    UNION ALL SELECT 'watchlist',                  COUNT(*) FROM watchlist
+    UNION ALL SELECT 'notifications',              COUNT(*) FROM notifications
+    UNION ALL SELECT 'referrals',                  COUNT(*) FROM referrals
 ) t ORDER BY table_name;
 
--- Auth sync: every seed user should show confirmed=true
-SELECT pu.email, au.email_confirmed_at IS NOT NULL AS confirmed, pu.role, pu.status
-FROM public.users pu
-LEFT JOIN auth.users au ON au.id = pu.user_id
-ORDER BY pu.email;
 
--- Wallet state
-SELECT u.email, wb.lendable_balance, wb.locked_repayment, wb.non_lendable_borrowed
-FROM users u JOIN wallet_balances wb ON u.user_id = wb.user_id
-WHERE u.role IN ('lender','both') ORDER BY u.email;
+SELECT p.full_name, au.email, au.email_confirmed_at IS NOT NULL AS confirmed,
+       p.account_status, p.role, p.credit_score, p.reputation_tier
+FROM profiles p
+LEFT JOIN auth.users au ON au.id = p.id
+WHERE p.id::text LIKE '10000000%'
+ORDER BY p.created_at;
 
-SELECT '✅ Seed data v2.1 inserted successfully — 15/15 integration tests should pass' AS status;
+
+SELECT au.email, s.plan, s.status, s.expires_at
+FROM subscriptions s
+JOIN profiles p ON p.id = s.user_id
+JOIN auth.users au ON au.id = p.id
+WHERE s.status = 'active'
+ORDER BY s.plan, au.email;
+
+
+SELECT lr.title, lr.district, lr.risk_category, lr.requested_amount,
+       lr.number_of_bids, lr.status, lr.expires_at,
+       (lr.expires_at < NOW() + INTERVAL '24 hours') AS closing_soon
+FROM loan_requests lr
+WHERE lr.status = 'active'
+ORDER BY lr.listed_at DESC;
+
+
+SELECT '✅ Nipanze seed v1.2 inserted successfully' AS status;

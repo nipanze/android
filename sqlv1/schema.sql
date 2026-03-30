@@ -1,5 +1,5 @@
 -- ============================================
--- OpenCapital Database Schema
+-- Nipanze Database Schema
 -- Version: 3.0 (Fully Integrated)
 -- PostgreSQL 14+
 -- ============================================
@@ -9,8 +9,8 @@
 -- from borrowed disbursements.
 --
 -- Deploy (fresh):
---   createdb opencapital
---   psql -U postgres -d opencapital -f schema.sql
+--   createdb nipanze
+--   psql -U postgres -d nipanze -f schema.sql
 --
 -- Tables (19):
 --   users, user_profiles,
@@ -1928,7 +1928,7 @@ BEGIN
     EXECUTE format(
         'COMMENT ON DATABASE %I IS %L',
         db,
-        'OpenCapital v3.0 — Non-custodial peer-to-peer lending. Uganda.'
+        'Nipanze v3.0 — Non-custodial peer-to-peer lending. Uganda.'
     );
 END $$;
 
@@ -1938,17 +1938,17 @@ END $$;
 -- ============================================
 --
 -- Fresh install:
---   createdb opencapital
---   psql -U postgres -d opencapital -f schema.sql
+--   createdb nipanze
+--   psql -U postgres -d nipanze -f schema.sql
 --
 -- Required before going to production:
 --   1. SSL: set sslmode=require on all connections
 --   2. App user:
---        CREATE USER opencapital_app WITH PASSWORD '...';
+--        CREATE USER nipanze_app WITH PASSWORD '...';
 --        GRANT SELECT, INSERT, UPDATE, DELETE
---          ON ALL TABLES IN SCHEMA public TO opencapital_app;
---        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO opencapital_app;
---        REVOKE DELETE ON audit_logs FROM opencapital_app; -- append-only
+--          ON ALL TABLES IN SCHEMA public TO nipanze_app;
+--        GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO nipanze_app;
+--        REVOKE DELETE ON audit_logs FROM nipanze_app; -- append-only
 --   3. Connection pooling: PgBouncer in transaction mode
 --   4. Backups: WAL archiving + daily base backup (pg_basebackup or managed snapshots)
 --   5. Monitoring: pg_stat_statements, log_min_duration_statement = 500ms

@@ -1,8 +1,8 @@
-# OpenCapital — Flutter + Supabase
+# Nipanze — Flutter + Supabase
 
-## A Non-Custodial Digital Marketplace for Direct Public Lending and Project Funding
+## A Non-Custodial Digital Loan Listing Marketplace
 
-> OpenCapital is a non-custodial digital marketplace that allows individuals and businesses to borrow and lend directly through competitive market bidding — without banks holding funds or setting interest rates.
+> Nipanze is a peer-to-peer loan listing marketplace that connects borrowers and lenders through competitive market bidding — without a bank, custodian, or intermediary holding any funds.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Status: MVP](https://img.shields.io/badge/Status-MVP-blue.svg)
@@ -21,7 +21,6 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 - [Business Model](#business-model)
 - [Privacy & Anonymity](#privacy--anonymity)
 - [How It Works](#how-it-works)
-- [User Model & Wallet Rules](#user-model--wallet-rules)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Screen / Route Map](#screen--route-map)
@@ -44,13 +43,13 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 
 ## Overview
 
-OpenCapital is a **transparent, market-driven capital marketplace** that directly connects borrowers and lenders through competitive bidding.
+Nipanze is a **transparent, market-driven loan listing marketplace** that directly connects borrowers and lenders through competitive bidding.
 
-Unlike traditional banks or centralized digital lenders, OpenCapital does **not** issue loans, pool funds, or set interest rates. It operates as a **non-custodial exchange**, enabling participants to discover fair pricing through open market competition.
+Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, or set interest rates. It operates as a **non-custodial listing exchange**, enabling participants to discover fair pricing through open market competition. All money movement happens directly between matched parties via licensed payment providers — **never through Nipanze**.
 
-Borrowers can **view and compare lender bids in real time** before accepting any offer. No obligation exists until a borrower explicitly commits.
+Borrowers can **view and compare lender bids in real time** before accepting any offer. No obligation exists until a borrower explicitly commits. After acceptance, a vetted **negotiator** is assigned to facilitate the off-platform deal.
 
-**Core Principle:** Democratize access to capital by eliminating unnecessary intermediaries and enabling true price discovery through open market competition.
+**Core Principle:** Democratise access to capital by eliminating unnecessary intermediaries and enabling true price discovery through open market competition.
 
 ---
 
@@ -64,24 +63,25 @@ In Uganda and similar emerging economies, access to affordable capital faces cri
 - **Limited transparency:** Opaque pricing and decision-making
 - **Underutilised savings:** Public funds lack productive investment channels
 
-Many digital lending platforms simply replicate banking models — acting as shadow banks with centralized pricing and custody of funds.
+Many digital lending platforms simply replicate banking models — acting as shadow banks with centralised pricing and custody of funds.
 
-> Rapid mobile money adoption, increasing digital identity systems, and growing public demand for alternative investment opportunities create the ideal conditions for decentralized capital marketplaces in emerging economies.
+> Rapid mobile money adoption, increasing digital identity systems, and growing public demand for alternative investment opportunities create the ideal conditions for decentralised capital marketplaces in emerging economies.
 
 ---
 
 ## Solution
 
-OpenCapital transforms lending into an **open marketplace activity** where:
+Nipanze transforms lending into an **open marketplace activity** where:
 
 - Borrowers publish funding requests with their maximum acceptable interest rate
 - Lenders compete by bidding lower interest rates
-- Borrowers observe live bidding activity **before committing**
+- Borrowers observe live bidding activity (the **order book**) **before committing**
 - Market forces determine the final cost of capital
-- Licensed payment providers handle all fund transfers
-- The platform orchestrates matching, contracts, and repayment coordination
+- A vetted **negotiator** is auto-assigned after bid acceptance to facilitate the deal
+- Participants arrange settlement directly — Nipanze never touches funds
+- The platform orchestrates matching, anonymity, negotiator assignment, and reputation
 
-**We are not a bank. We are a capital exchange.**
+**We are not a lender. We are a capital exchange.**
 
 ---
 
@@ -90,64 +90,74 @@ OpenCapital transforms lending into an **open marketplace activity** where:
 ### For Borrowers
 
 - **Competitive rates** — market-driven pricing reduces borrowing costs
-- **Fast access** — digital verification and automated matching
-- **Transparent process** — real-time visibility into bid activity before commitment
-- **Flexible terms** — define your own loan parameters
-- **Clear repayment tracking** — scheduled visibility into obligations
+- **Fast listing** — digital KYC and self-service listing creation
+- **Transparent process** — real-time order book visibility before commitment
+- **Flexible terms** — define amount, duration, and ceiling rate
+- **Watchlist** — track listings for free, subscribe only to bid or list
 
 ### For Lenders
 
-- **Direct investment** — fund specific borrowers or projects
-- **Risk transparency** — comprehensive risk scores and borrower insights
-- **Higher returns** — competitive market yields
-- **Portfolio control** — full control over exposure and diversification
+- **Direct investment** — bid on specific listings you choose
+- **Risk transparency** — risk scores and credit bands (never raw scores)
+- **Higher returns** — compete to offer the best rate
+- **Order book** — see where your bid stands against competing lenders
+- **Reputation system** — behaviour-based trust scores
 
 ### Platform Features
 
-- **Unified participant model** — one account can borrow and lend seamlessly
-- **Non-custodial architecture** — platform never holds user funds
-- **Wallet segregation** — DB-enforced separation of own funds vs borrowed funds
-- **Risk assessment engine** — multi-factor credit scoring stored in `risk_assessments`
-- **Digital contracts** — automated agreement generation, e-signing, and PDF download
-- **Compliance built-in** — KYC, AML gates, and append-only audit trail from day one
+- **Subscription model** — Borrower (UGX 20K/mo), Lender (UGX 35K/mo), Pro (UGX 150K/mo). Watchlist is free.
+- **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
+- **Anonymity by default** — borrower and lender identities masked until post-acceptance reveal
+- **Negotiator assignment** — vetted facilitators assigned automatically on bid acceptance
+- **Contact reveal** — opt-in, one-time identity disclosure (UGX 25,000 add-on)
+- **Reputation engine** — weighted 0–100 score with Platinum / Gold / Silver / Bronze / Restricted tiers
+- **KYC gate** — listing creation blocked without approved KYC (DB trigger enforced)
+- **Compliance built-in** — append-only audit trail from day one
 
 ---
 
 ## Business Model
 
-OpenCapital generates revenue through marketplace facilitation rather than interest spreads.
+Nipanze generates revenue through subscription fees and contact reveal add-ons — not interest spreads.
 
-Revenue sources include transaction facilitation fees, contract execution fees, premium analytics for lenders, institutional marketplace access, and optional risk assessment services. OpenCapital does not earn interest margins, custody fees, or lending spreads.
+| Revenue Stream | Description |
+|---|---|
+| Borrower subscription | UGX 20,000/month — list up to 2 requests, accept bids |
+| Lender subscription | UGX 35,000/month — place bids, track positions |
+| Pro subscription | UGX 150,000/month — analytics API access |
+| Contact reveal | UGX 25,000 per reveal — one-time post-acceptance add-on |
+
+Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance.
 
 ---
 
 ## Privacy & Anonymity
 
-OpenCapital is **anonymous by default and transparent by design**. During loan listing and bidding, borrower and lender identities are fully masked. Participants interact using risk indicators, financial terms, and performance metrics — not personal identity.
+Nipanze is **anonymous by default and transparent by design**. During listing and bidding, borrower and lender identities are fully masked. Participants interact using risk indicators, financial terms, and performance metrics — not personal identity.
 
-Full legal identity and contact details are revealed **only after a bid is accepted and a digital contract is executed** — enforced at the API layer, not just the UI.
+Full legal identity and contact details are revealed **only after a bid is accepted and the contact reveal add-on is purchased** — enforced at the API layer, not just the UI.
 
 ### Field Masking Rules
 
 #### Borrower → Public Loan Listing (`v_loan_listings` view)
 
-**Exposed (safe):** `request_id`, `requested_amount`, `duration_months`, `max_interest_rate`, `purpose`, `district` (from `user_profiles`), `risk_category`, `credit_score_band` (range only, never raw score), `funding_percentage`, `number_of_bids`, `listed_at`
+**Exposed (safe):** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `max_interest_rate`, `risk_category`, `credit_score_band` (range only, never raw score), `number_of_bids`, `funding_percentage`, `listed_at`, `expires_at`, `best_bid_rate`
 
-**Masked (never in any public response):** `borrower_id`, email, phone, full name, date of birth, `address_line1/2`, `employer_name`, `business_registration_number`, all document URLs, raw `credit_score`
+**Masked (never in any public response):** `borrower_id`, email, phone, full name, raw credit score
 
-#### Lender → Public Bids
+#### Lender → Order Book
 
-**Masked:** Lender name, email, phone, wallet balances, any identifying information.
+**Exposed:** `lender_token` (e.g. `L-#482`), `amount`, `interest_rate`, timestamp
 
-**Exposed:** `bid_id`, `bid_amount`, `interest_rate`, lender `reputation_score`, lender `reputation_tier`, timestamp.
+**Masked:** Lender name, email, phone — never exposed in order book
 
-#### Post-Acceptance
+#### Post-Acceptance Reveal (`contact_reveals` table)
 
-Revealed to contract parties only via `contract_bids` + `user_profiles` with RLS policies: legal names, verified contact information, payment identifiers, contract document URL, regulatory disclosures.
+Revealed only to the initiating party via opt-in reveal flow: legal name, phone, email, assigned negotiator contact.
 
 ### Reputation System
 
-Trust is **earned, not claimed**. A dynamic, behavior-based reputation score (0–100) is computed by `sp_calculate_reputation_score()` after contract events and stored in `users.reputation_score`. The tier is auto-synced by `trg_sync_reputation_tier`.
+Trust is **earned, not claimed**. A dynamic, behaviour-based reputation score (0–100) is computed by `sp_calculate_reputation_score()` after contract events.
 
 #### Formula (Weighted)
 
@@ -159,12 +169,12 @@ Reputation Score =
   Consistency & Reliability × 20%
 ```
 
-#### Reputation Tiers (`fn_score_to_tier`)
+#### Reputation Tiers
 
 | Score | Tier | Notes |
 | --- | --- | --- |
-| 85–100 | Platinum | Auto-accept eligibility, highest visibility |
-| 70–84 | Gold | Enhanced visibility, lower platform fees |
+| 85–100 | Platinum | Highest visibility |
+| 70–84 | Gold | Enhanced visibility |
 | 55–69 | Silver | Standard access |
 | 40–54 | Bronze | Basic access |
 | < 40 | Restricted | Limited platform access |
@@ -174,43 +184,14 @@ Reputation Score =
 ## How It Works
 
 ```
-1. REQUEST    → Borrower specifies: amount, duration, max interest rate
-2. VERIFY     → KYC approval required (trg_fn_require_kyc_for_loan enforces this)
-3. LIST       → Anonymous request published via v_loan_listings view
-4. BID        → Lenders compete; borrowers view bids before committing
+1. SUBSCRIBE  → User selects Borrower or Lender plan (Watchlist is free)
+2. KYC        → Identity verified before listing creation is allowed
+3. LIST       → Borrower specifies amount, duration, ceiling rate
+4. BID        → Lenders compete; order book visible in real time
 5. ACCEPT     → Borrower explicitly accepts one bid (accept_bid RPC)
-6. CONTRACT   → loan_contracts + contract_bids rows created; both parties sign
-7. DISBURSE   → Funds move via licensed payment rails → non_lendable_borrowed credited
-8. REPAY      → Scheduled installments; lender lendable_balance restored on completion
-```
-
----
-
-## User Model & Wallet Rules
-
-OpenCapital uses a **single unified user account**. A user may borrow, lend, or do both (`role = 'both'`), subject to rules enforced at the database level.
-
-### Three Segregated Wallet Pools (`wallet_balances`)
-
-| Column | Label | Rule |
-| --- | --- | --- |
-| `lendable_balance` | 💰 Your Money | Deposited funds. The **only** pool eligible for bid amounts. |
-| `locked_repayment` | 🔒 Locked | Reserved when a bid is accepted. Cannot be moved until repayments flow back. |
-| `non_lendable_borrowed` | 🚫 Borrowed Funds | Credited on disbursement. **Permanently ineligible** for lending. |
-
-### Core Rule
-
-> Borrowed funds (`non_lendable_borrowed`) can **never** flow into `lendable_balance`. This is enforced at the column level and in `trg_fn_debit_borrower_on_repayment`.
-
-### Trigger Chain (Full Lifecycle)
-
-```
-deposit          → lendable_balance   ↑
-bid placed       → (validated: lendable_balance >= bid_amount)
-bid accepted     → lendable_balance ↓  locked_repayment ↑   (lender)
-disbursement     → non_lendable_borrowed ↑                   (borrower)
-repayment paid   → non_lendable_borrowed ↓ / lendable ↓      (borrower)
-                 → lendable_balance ↑  locked_repayment ↓    (lender)
+6. NEGOTIATE  → Negotiator auto-assigned; both parties notified
+7. REVEAL     → Optional contact reveal (UGX 25,000 add-on)
+8. SETTLE     → Parties arrange payment directly off-platform
 ```
 
 ---
@@ -224,10 +205,10 @@ repayment paid   → non_lendable_borrowed ↓ / lendable ↓      (borrower)
 | Navigation | GoRouter | Declarative routing with auth guards |
 | DI Container | get_it + injectable | Service locator with code-gen |
 | Auth | Supabase Auth | Email login, JWT, session management |
-| Database | Supabase Postgres (19 tables) | Relational data, RLS, triggers, functions |
-| Realtime | Supabase Realtime | WebSocket live subscriptions |
+| Database | Supabase Postgres | Relational data, RLS, triggers, functions |
+| Realtime | Supabase Realtime | WebSocket live order book subscriptions |
 | Storage | Supabase Storage | KYC docs, contract PDFs |
-| Functions | Supabase Edge Functions (Stage 4) | Server-side business logic, async jobs |
+| Functions | Supabase Edge Functions (Stage 5) | Server-side logic, PDF generation |
 
 ---
 
@@ -235,43 +216,43 @@ repayment paid   → non_lendable_borrowed ↓ / lendable ↓      (borrower)
 
 ```
 lib/
-├── main.dart                       # Supabase init, DI setup, BLoC observer
+├── main.dart                       # Supabase init, DI setup
 ├── core/
-│   ├── theme/                      # AppTheme — light/dark, #1A56DB brand colour
+│   ├── theme/                      # AppTheme — DM Sans / DM Mono, dark/light
 │   ├── router/                     # GoRouter, auth redirect guards, route constants
 │   ├── config/                     # SupabaseConfig — reads --dart-define at build time
-│   ├── constants/                  # TableNames, StorageKeys, AppStrings
-│   ├── errors/                     # AppException hierarchy
+│   ├── constants/                  # Tables, Views, Rpcs, Channels, SettingKeys
+│   ├── errors/                     # AppException hierarchy, parseSupabaseError()
 │   └── di/                         # Injectable config, GetIt locator
 ├── features/
-│   ├── auth/                       # Login, Register, Verify Email, Reset Password
-│   ├── dashboard/                  # Home — portfolio stats, quick actions
-│   ├── marketplace/                # Loan list (v_loan_listings), filters, detail
-│   ├── loans/                      # Create loan, my loans, repayment schedule
-│   ├── bids/                       # Place bid, my bids, bid history
-│   ├── contracts/                  # Contract view, signing, PDF download
-│   ├── wallet/                     # Three-pool display, top-up, transaction history
-│   ├── analytics/                  # Portfolio charts (v_user_portfolio, v_lender_investments)
+│   ├── auth/                       # Login, Register, Verify Email, Reset Password, Onboarding
+│   ├── dashboard/                  # Home stub (redirects to marketplace post-login)
+│   ├── marketplace/                # Live feed (v_loan_listings), filters, loan detail, order book
+│   ├── watchlist/                  # Saved listings, closing alerts (free for all users)
+│   ├── positions/                  # My listings · My bids · Contracts (3-tab)
+│   ├── account/                    # Subscription, identity (KYC), reputation tier
+│   ├── loans/                      # Create listing, my listings, repayment schedule
+│   ├── bids/                       # My bids page
+│   ├── contracts/                  # Contract list and detail
 │   ├── notifications/              # Notification centre, unread badge
 │   ├── kyc/                        # Document upload, status display
-│   ├── risk/                       # Risk profile, credit score band, assessment history
-│   ├── profile/                    # User profile, edit, completion percentage
-│   └── admin/                      # User notes, audit logs, KYC review (admin role only)
+│   ├── profile/                    # User profile, edit
+│   └── admin/                      # KYC review, user management, audit logs (admin only)
 │       └── */
 │           ├── data/               # DataSources (Supabase) + Models
 │           ├── domain/             # Entities, UseCases, Repository interfaces
 │           └── presentation/       # BLoC + Pages + Widgets
 ├── shared/
-│   └── widgets/                    # MainScaffold, SearchBar, BalanceCard, RepTierBadge
+│   ├── models/                     # LoanListingModel, BidModel, ContractModel, UserModel…
+│   └── widgets/                    # MainScaffold, ReputationTierBadge, KycStatusChip
 sql/
-│   ├── schema.sql                  # Full schema v3.2 — tables, triggers, RPCs, views, mock functions
-│   └── seed.sql                    # Seed data v2.1 — 18 users with fixed UUIDs, Test1234! password
+│   ├── schema.sql                  # Full schema v4.0 — tables, triggers, RPCs, views
+│   └── seed.sql                    # Seed data v1.0 — 16 users, 41 listings, 3 contracts
 supabase/
 │   └── migrations/                 # Incremental migrations applied on top of schema.sql
 assets/
-    ├── fonts/                      # Sora (headings) + Inter (body)
-    ├── images/                     # Onboarding illustrations
-    └── icons/                      # Custom SVG icons
+    ├── fonts/                      # DM Sans (body) + DM Mono (numeric values)
+    └── images/                     # Onboarding illustrations
 ```
 
 ---
@@ -286,17 +267,16 @@ assets/
 | `/auth/register` | RegisterPage | No |
 | `/auth/verify-email` | VerifyEmailPage | Yes (unverified) |
 | `/auth/forgot-password` | ForgotPasswordPage | No |
-| `/dashboard` | DashboardPage | Yes |
-| `/marketplace` | MarketplacePage | Yes |
-| `/marketplace/:requestId` | LoanDetailPage | Yes |
+| `/marketplace` | MarketplacePage (tab 1) | Yes |
+| `/marketplace/:requestId` | LoanDetailPage + Order Book | Yes |
+| `/watchlist` | WatchlistPage (tab 2) | Yes |
+| `/positions` | PositionsPage (tab 3) | Yes |
+| `/account` | AccountPage (tab 4) | Yes |
 | `/loans/create` | LoanCreatePage | Yes (borrower + KYC) |
 | `/loans/my-loans` | MyLoansPage | Yes |
-| `/loans/repayments/:contractId` | RepaymentSchedulePage | Yes |
 | `/bids` | MyBidsPage | Yes |
 | `/contracts` | ContractsPage | Yes |
 | `/contracts/:contractId` | ContractDetailPage | Yes (party only) |
-| `/wallet` | WalletPage | Yes |
-| `/analytics` | AnalyticsPage | Yes |
 | `/notifications` | NotificationsPage | Yes |
 | `/kyc` | KycPage | Yes |
 | `/profile` | ProfilePage | Yes |
@@ -306,82 +286,65 @@ assets/
 
 ## Database Schema
 
-The full schema lives in `sql/schema.sql` (v3.2). It defines 19 tables, all triggers, functions, views, indexes, mock RPCs, and seeded `system_settings` in a single deployable file. Apply it with:
+The full schema lives in `sql/schema.sql` (v4.0). It defines all tables, triggers, functions, views, indexes, and seed `system_settings` in a single deployable file. Apply with:
 
 ```bash
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/schema.sql
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 ```
 
-### Tables
+### Tables (v4.0)
 
 | Table | Purpose |
 | --- | --- |
-| `users` | Core authentication and identity. Holds `reputation_score`, `reputation_tier`. |
-| `user_profiles` | Extended personal, address, employment data. Only `district` is public. |
-| `password_reset_tokens` | Single-use, 1-hour TTL. |
-| `email_verification_tokens` | Email confirmation on register / email change. |
-| `refresh_tokens` | JWT refresh token store. SHA-256 hash only, never plaintext. Rotation chain. |
-| `kyc_verifications` | Document upload and admin review. `status='approved'` required for loan creation. |
-| `risk_assessments` | Credit scores (300–850) and risk categories. `is_current=TRUE` is live. |
-| `wallet_balances` | Three segregated pools. Auto-created on user INSERT. |
-| `loan_requests` | Borrower funding requests. Public view via `v_loan_listings`. |
-| `bids` | Lender offers. INSERT validates `lendable_balance`. |
-| `loan_contracts` | Executed agreements. Activated when all parties sign. |
-| `contract_bids` | Junction: one row per lender per contract. Tracks per-lender signature. |
-| `disbursements` | Fund transfers from each lender to borrower. |
-| `loan_repayments` | Amortization schedule. Generated by `sp_calculate_repayment_schedule()`. |
-| `repayment_transactions` | Actual payment events per installment. |
+| `profiles` | Core user profile. Extends `auth.users` 1-to-1. Holds `credit_score`, `reputation_tier`, `lender_token`. |
+| `system_settings` | Platform config. Business limits read from here at runtime. |
+| `subscriptions` | Active plan per user. `watchlist` plan = free. |
+| `kyc_verifications` | Document upload and admin review. `status='approved'` required for listing creation. |
+| `loan_requests` | Borrower funding requests. Public view via `v_loan_listings` (borrower_id excluded). |
+| `loan_bids` | Lender offers. Lenders shown as `lender_token` — identity never exposed in order book. |
+| `watchlist` | User-saved listings. Free for all plans. |
+| `negotiators` | Vetted professionals assignable to matched deals. |
+| `contracts` | Created atomically on bid acceptance. Drives full post-acceptance lifecycle. |
+| `repayment_schedules` | Amortisation lines per contract. Participants self-report; Nipanze does not verify. |
+| `negotiator_assignments` | Links a contract to its assigned negotiator. |
+| `negotiator_assessments` | Structured assessments that feed `sp_calculate_reputation_score`. |
+| `contact_reveals` | Opt-in, irreversible identity disclosure. Logged in `audit_logs`. |
+| `credit_score_events` | Audit trail for score changes. |
+| `notifications` | In-app notification feed. |
 | `audit_logs` | **Append-only** compliance trail. Never update or delete rows. |
-| `notifications` | In-app notification feed. `data` JSONB for deep-linking. |
-| `user_notes` | Internal CRM notes. Never visible to subject user. |
-| `system_settings` | Runtime platform config. Public settings served to client. |
+| `refresh_tokens` | JWT refresh token store with rotation chain. |
+| `api_keys` | Pro plan API keys. |
+| `referrals` | Referral programme tracking. |
 
 ### Key Functions and Triggers
 
 | Name | Type | Purpose |
 | --- | --- | --- |
-| `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.users` on signup |
+| `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles`; creates free watchlist subscription |
 | `sp_calculate_reputation_score(user_id)` | Function | Weighted 0–100 reputation score |
-| `fn_score_to_tier(score)` | Function (IMMUTABLE) | Maps score → tier enum |
-| `sp_calculate_credit_score(user_id)` | Function | Credit score 300–850 |
-| `sp_calculate_repayment_schedule(contract_id)` | Function | Generates amortization schedule |
-| `accept_bid(request_id, bid_id, borrower_id)` | RPC | Atomic bid acceptance + contract creation |
-| `mock_top_up(user_id, amount)` | RPC | MVP wallet top-up (replaced in Stage 4) |
-| `mock_disburse(contract_id, bid_id)` | RPC | MVP disbursement (replaced in Stage 4) |
-| `mock_repayment(repayment_id, amount)` | RPC | MVP repayment (replaced in Stage 4) |
-| `trg_sync_reputation_tier` | BEFORE UPDATE on `users` | Auto-syncs `reputation_tier` from `reputation_score` |
-| `trg_auto_create_wallet` | AFTER INSERT on `users` | Creates `wallet_balances` row |
-| `trg_require_kyc_for_loan` | BEFORE INSERT on `loan_requests` | Blocks without approved KYC |
-| `trg_require_active_borrower` | BEFORE INSERT on `loan_requests` | Blocks if `users.status != 'active'` |
-| `trg_enforce_lendable_on_bid` | BEFORE INSERT on `bids` | Blocks if `lendable_balance < bid_amount` |
-| `trg_lock_funds_on_accept` | AFTER UPDATE on `bids` | Moves funds to `locked_repayment` |
-| `trg_update_funding_progress` | AFTER UPDATE on `bids` | Updates `funding_percentage` and loan status |
-| `trg_credit_borrower_on_disbursement` | AFTER UPDATE on `disbursements` | Credits `non_lendable_borrowed` |
-| `trg_check_all_lenders_signed` | AFTER UPDATE on `contract_bids` | Auto-activates contract |
-| `trg_update_contract_on_repayment` | AFTER UPDATE on `loan_repayments` | Updates `outstanding_balance`, detects default |
-| `trg_release_lender_funds` | AFTER UPDATE on `repayment_transactions` | Restores `lendable_balance` |
+| `sp_calculate_repayment_schedule(contract_id)` | Function | Generates amortisation schedule |
+| `accept_bid(request_id, bid_id, borrower_id)` | RPC | Atomic bid acceptance + contract + negotiator assignment |
+| `sp_assign_negotiator(contract_id)` | RPC | Auto-assigns an available negotiator |
 
 ### Key Views
 
 | View | Purpose |
 | --- | --- |
-| `v_loan_listings` | Anonymised marketplace listing — `borrower_id` intentionally excluded |
-| `v_active_loans` | Admin dashboard — active contracts with borrower names |
-| `v_user_portfolio` | Dashboard — borrower + lender aggregates + wallet in one query |
-| `v_lender_investments` | Lender returns page — invested amounts, default exposure, avg rate |
-| `v_loan_performance` | Monthly platform KPIs for analytics and reports |
+| `v_loan_listings` | Anonymised marketplace — `borrower_id` intentionally excluded |
+| `v_user_portfolio` | Dashboard — borrower + lender aggregates in one query |
+| `v_lender_investments` | Lender returns page — invested amounts, avg rate |
+| `v_loan_performance` | Monthly platform KPIs |
 
 ---
 
 ## Supabase Setup
 
-### 1. Local Development Stack (Stages 1–3)
+### 1. Local Development Stack
 
 ```bash
-# Install Supabase CLI
-brew install supabase/tap/supabase   # macOS
-# Linux: https://supabase.com/docs/guides/cli/getting-started
+# Install Supabase CLI (Linux)
+# https://supabase.com/docs/guides/cli/getting-started
 # Docker Desktop must be running
 
 supabase init
@@ -397,7 +360,7 @@ Studio at `http://127.0.0.1:54323` provides table browsing, auth user management
 
 ### 2. Auth Bridge Trigger
 
-The `handle_new_auth_user()` function is defined in `sql/schema.sql` and runs automatically on every `auth.users` INSERT. It creates the corresponding `public.users` row, which in turn fires `trg_auto_create_wallet` to create the `wallet_balances` row. No separate migration file is needed.
+The `handle_new_auth_user()` function is defined in `sql/schema.sql` and runs automatically on every `auth.users` INSERT. It creates the corresponding `public.profiles` row and provisions a free `watchlist` subscription automatically.
 
 ### 3. Storage Buckets
 
@@ -408,7 +371,7 @@ Create two buckets in Storage → New bucket:
 
 ### 4. Production Project
 
-1. Go to [supabase.com](https://supabase.com) and create a project named `opencapital`
+1. Go to [supabase.com](https://supabase.com) and create a project named `nipanze`
 2. Note your Project URL and anon key from Settings → API
 3. Apply schema: Settings → SQL Editor → paste `sql/schema.sql`
 4. Apply seed (optional on production): same method
@@ -428,8 +391,8 @@ Create two buckets in Storage → New bucket:
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/opencapital.git
-cd opencapital
+git clone https://github.com/your-org/nipanze.git
+cd nipanze
 
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
@@ -449,7 +412,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 flutter run -d android  # Android (emulator or device)
 ```
 
-The run scripts (`run_local.sh`, `run_linux.sh`) source `.env.local` and inject Supabase credentials via `--dart-define` automatically.
+The run scripts source `.env.local` and inject Supabase credentials via `--dart-define` automatically.
 
 ### Resetting Local Data
 
@@ -487,13 +450,13 @@ LOCAL_SUPABASE_URL=http://127.0.0.1:54321
 LOCAL_ANON_KEY=sb_publishable_...
 LOCAL_SERVICE_ROLE_KEY=sb_secret_...
 
-# Production — fill in at Stage 4
+# Production — fill in at Stage 3.5
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
-Credentials are injected via `--dart-define` at build time and read by `lib/core/config/supabase_config.dart` using `String.fromEnvironment()`. The anon key is safe to bundle — RLS enforces access control at the database level. The service role key is used only in test teardown helpers and Edge Functions, never in client code.
+Credentials are injected via `--dart-define` at build time and read by `lib/core/config/supabase_config.dart`. The anon key is safe to bundle — RLS enforces access control at the database level.
 
 ---
 
@@ -505,18 +468,15 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 | `flutter_bloc ^8.x` | BLoC state management | 1 |
 | `go_router ^14.x` | Declarative routing with auth guards | 1 |
 | `get_it + injectable` | Dependency injection with code-gen | 1 |
+| `google_fonts` | DM Sans + DM Mono typography | 1 |
 | `flutter_secure_storage ^9.x` | Secure token storage | 1 |
-| `reactive_forms ^18.x` | Form validation | 1 |
+| `hive_flutter ^1.x` | UI-layer cache only | 1 |
 | `animate_do ^3.x` | FadeIn/SlideIn animations | 1 |
-| `lottie ^3.x` | Loading and empty state animations | 1 |
-| `smooth_page_indicator ^1.x` | Onboarding slide dots | 1 |
+| `lottie ^3.x` | Loading and empty state animations | 2 |
 | `shimmer ^3.x` | Skeleton loading screens | 2 |
-| `percent_indicator ^4.x` | Loan funding progress bars | 2 |
-| `fl_chart ^0.69.x` | Portfolio and analytics charts | 2 |
-| `cached_network_image ^3.x` | Avatar and document thumbnails | 2 |
-| `hive_flutter ^1.x` | UI-layer cache only (not primary DB) | 2 |
-| `pdf ^3.x` | Client-side contract PDF generation | 3 |
-| `printing + flutter_pdfview` | PDF view and download | 3 |
+| `percent_indicator ^4.x` | Bid coverage progress bars | 2 |
+| `fl_chart ^0.69.x` | Portfolio and analytics charts | 3 |
+| `pdf ^3.x` | Client-side contract PDF | 5 |
 | `local_auth ^2.x` | Biometric login | 3 |
 | `flutter_local_notifications ^17.x` | In-app notification banners | 3 |
 
@@ -524,7 +484,7 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 
 ## Edge Functions
 
-Edge Functions (Deno TypeScript) wrap the existing Postgres RPCs for server-side enforcement. Added in Stage 4, one at a time.
+Edge Functions (Deno TypeScript) wrap Postgres RPCs for server-side enforcement. Added in Stage 5.
 
 ```bash
 supabase functions new accept-bid
@@ -532,14 +492,14 @@ supabase functions serve accept-bid --env-file .env.local   # local test
 supabase functions deploy accept-bid                         # deploy
 ```
 
-| Function | Replaces | Purpose |
-| --- | --- | --- |
-| `accept-bid` | `accept_bid` RPC | Atomic bid acceptance with server enforcement |
-| `place-bid` | Client-side bid INSERT | Server-side balance validation |
-| `process-repayment` | `mock_repayment` RPC | Handle real payment provider webhooks |
-| `calculate-risk-score` | Client-side scoring | Run after KYC approval or contract event |
-| `send-notification` | Client-side notification INSERT | Triggered by DB webhook on status changes |
-| `generate-contract` | Client-side PDF | Generate, hash, and store PDF on activation |
+| Function | Purpose |
+| --- | --- |
+| `accept-bid` | Atomic bid acceptance with server enforcement |
+| `place-bid` | Server-side balance/subscription validation |
+| `assign-negotiator` | Auto-assign vetted negotiator on acceptance |
+| `generate-contract-pdf` | Generate, hash, and store contract PDF |
+| `send-sms` | Africa's Talking or Twilio SMS alerts |
+| `calculate-reputation` | Run after contract events |
 
 ---
 
@@ -552,7 +512,7 @@ flutter test
 # Single test file
 flutter test test/features/auth/auth_bloc_test.dart
 
-# Integration tests — Linux desktop only (web not supported by integration_test)
+# Integration tests — Linux desktop only
 supabase start
 flutter test integration_test/integration_test.dart -d linux
 
@@ -563,29 +523,24 @@ genhtml coverage/lcov.info -o coverage/html
 
 ### Test Accounts
 
-All accounts are pre-loaded by `sql/seed.sql` v2.1 with fixed UUIDs and `email_confirmed_at` set.
+All accounts are pre-loaded by `sql/seed.sql` v1.0 with fixed UUIDs and `email_confirmed_at` set.
 **Password for all accounts: `Test1234!`**
-
-No manual email confirmation step is required — seed accounts are ready to sign in immediately.
 
 | Email | Role | State |
 | --- | --- | --- |
-| `david.mukasa@gmail.com` | borrower | KYC approved, loan fully funded |
-| `sarah.namukasa@yahoo.com` | borrower | KYC approved, loan partially funded |
-| `james.okello@outlook.com` | both | KYC approved, loan fully funded |
-| `maria.nakato@gmail.com` | borrower | KYC approved, loan active (no bids) |
-| `robert.ssemwanga@gmail.com` | both | KYC approved, lender + draft loan |
-| `invest@pearlcapital.ug` | lender | 3M lendable, 7M locked |
-| `funds@victoriainvest.co.ug` | lender | 3M lendable, 2M locked |
-| `lending@equatorfinance.ug` | lender | 2M lendable, 3M locked |
-| `info@greenleafagro.co.ug` | lender | 1.5M lendable, pending bid |
-| `contact@kampalatech.ug` | lender | 1M lendable, pending bid |
-| `charles.mwesigwa@gmail.com` | both | KYC approved, 1.2M lendable |
-| `lucy.nambi@yahoo.com` | both | KYC approved |
-| `frank.omondi@gmail.com` | borrower | KYC approved, loan active (no bids) |
-| `alice.namuli@gmail.com` | borrower | KYC pending — use to test KYC gate |
-| `admin1@opencapital.ug` | admin | Full access |
-| `test.user@gmail.com` | borrower | No KYC, no profile — minimal fixture |
+| `david.mukasa@gmail.com` | Borrower | KYC approved, active listing |
+| `sarah.namukasa@yahoo.com` | Borrower | KYC approved, contract draft pending |
+| `james.okello@outlook.com` | Both | KYC approved, borrower + lender flows |
+| `maria.nakato@gmail.com` | Borrower | Active listing, 1 pending bid |
+| `robert.ssemwanga@gmail.com` | Both | Bid submitted on two listings |
+| `invest@pearlcapital.ug` | Lender | Multiple active bids |
+| `funds@victoriainvest.co.ug` | Lender | Bid accepted — contract viewable |
+| `lending@equatorfinance.ug` | Lender | Bid accepted — contract viewable |
+| `info@greenleafagro.co.ug` | Lender | Pending bid |
+| `contact@kampalatech.ug` | Lender | Pending bid |
+| `alice.namuli@gmail.com` | Borrower | KYC pending — test listing gate |
+| `admin1@nipanze.ug` | Admin | Full admin dashboard access |
+| `test.user@gmail.com` | Borrower | No KYC, no profile — test onboarding gates |
 
 ---
 
@@ -598,83 +553,62 @@ No manual email confirmation step is required — seed accounts are ready to sig
 | Linux desktop | ✅ | `flutter build linux --release` |
 | Edge Functions | ✅ (free tier) | `supabase functions deploy` |
 | DB Migrations | ✅ | `supabase db push` |
-| Android Play Store | Stage 4 | `flutter build appbundle --release` |
-| iOS App Store | Stage 4 | `flutter build ios --release` |
+| Android Play Store | Stage 6 | `flutter build appbundle --release` |
+| iOS App Store | Stage 6 | `flutter build ios --release` |
 
 ---
 
 ## Security
 
-- **No fund custody** — platform never holds user money
+- **No fund custody** — Nipanze never holds, pools, or moves user money
 - **RLS on all tables** — Postgres enforces access control, not just the application layer
 - **JWT auth** — Supabase issues short-lived JWTs; sessions auto-refresh
-- **Service role key never in client** — only used inside Edge Functions and test helpers
-- **Wallet segregation** — `non_lendable_borrowed` can never flow into `lendable_balance` (DB constraint)
-- **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
+- **Service role key never in client** — only used inside Edge Functions
 - **Anonymised listings** — `borrower_id` excluded from `v_loan_listings` at the view level
-- **KYC gate** — DB trigger blocks loan creation without approved KYC
-- **Contract hash** — `loan_contracts.contract_hash` stores SHA-256 of signed PDF for tamper detection
-- **Refresh token rotation** — reuse attack detection via `replaced_by` chain in `refresh_tokens`
+- **KYC gate** — DB trigger blocks listing creation without approved KYC
+- **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
+- **Lender tokens** — stable per-session anonymous IDs (e.g. `L-#482`) in order book
+- **Refresh token rotation** — reuse attack detection via `replaced_by` chain
 - **`--dart-define` credentials** — Supabase keys injected at build time, not hardcoded
 
 ---
 
 ## Regulatory Compliance
 
-> OpenCapital operates as a technology marketplace and partners with licensed financial institutions and payment providers for fund movement and settlement.
+> Nipanze operates as a technology marketplace. We do not hold funds, accept deposits, issue loans, pool capital, or set interest rates.
 
-**We DO:** Provide marketplace infrastructure, verify user identities (KYC via `kyc_verifications`), assess and display risk scores (`risk_assessments`), coordinate payment initiation, maintain an immutable audit trail (`audit_logs`).
+**We DO:** Provide marketplace infrastructure, verify user identities (KYC), display risk scores, coordinate negotiator assignment, maintain an immutable audit trail.
 
-**We DO NOT:** Accept deposits, hold or pool user funds, issue loans or set interest rates, guarantee returns, act as a bank or financial institution.
+**We DO NOT:** Accept deposits, hold or pool user funds, issue loans or set interest rates, guarantee returns, act as a bank or financial institution, process payments.
+
+All money movement is arranged directly between matched participants off-platform.
 
 ---
 
 ## Roadmap
 
+See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage roadmap.
+
 ### Stage 1 — Foundation ✅ Complete
+- Schema v4.0, seed data, Flutter scaffold, auth, navigation, onboarding, unit + integration tests
 
-- [x] Schema design — 19 tables, triggers, functions, views, mock RPCs (`sql/schema.sql` v3.2)
-- [x] Seed data — 18 users with fixed UUIDs, GoTrue-compatible passwords (`sql/seed.sql` v2.1)
-- [x] Flutter scaffold — theme, routing, DI, bottom nav, all platform targets
-- [x] Supabase Auth — email/password, verification, password reset
-- [x] Auth bridge — `handle_new_auth_user()` trigger syncs `auth.users` → `public.users` + wallet
-- [x] Auth guards and navigation shell
-- [x] Onboarding — 3-slide responsive page with animated indicators
-- [x] Unit tests — 7/7 passing (`auth_bloc_test.dart`)
-- [x] Integration tests — 15/15 passing (Linux desktop, local stack)
+### Stage 2 — Core Marketplace *(in progress)*
+- Live marketplace feed, order book, KYC upload, listing creation, bidding, bid acceptance
 
-### Stage 2 — Core Marketplace *(real schema, mock payments)*
+### Stage 3 — Polish & Supporting Features
+- Watchlist alerts, positions, notifications, analytics, profile, error/empty states
 
-- [ ] Wallet page with three segregated balance types
-- [ ] Mock top-up (`mock_top_up` RPC already in schema)
-- [ ] Loan request creation with DB trigger enforcement
-- [ ] Anonymised marketplace listing via `v_loan_listings`
-- [ ] Competitive bidding with Realtime subscriptions
-- [ ] `accept_bid` RPC — atomic contract creation (already in schema)
-- [ ] Contract signing and `sp_calculate_repayment_schedule`
-- [ ] Mock disbursement (`mock_disburse` RPC already in schema)
-- [ ] Mock repayment (`mock_repayment` RPC already in schema)
-- [ ] Reputation recalculation via `sp_calculate_reputation_score`
+### Stage 3.5 — Cloud Migration & Auth Hardening
+- Supabase Cloud, RLS audit, token rotation, APK release build
 
-### Stage 3 — Polish *(no external APIs)*
+### Stage 4 — Negotiator Module & Contract Drafting
+- Negotiator assignment, contact reveal flow, draft contract generation
 
-- [ ] In-app Realtime notifications (`notifications` table)
-- [ ] KYC document upload (Supabase Storage) + admin review in Studio
-- [ ] Contract PDF generation and upload to Storage
-- [ ] Analytics charts from `v_user_portfolio`, `v_lender_investments`
-- [ ] Risk profile display (credit score band, risk category)
-- [ ] Dashboard live data from `v_user_portfolio`
-- [ ] Biometric login, dark mode, offline cache (Hive)
+### Stage 5 — Admin, Compliance & Credit Score Automation
+- Admin dashboard, in-app KYC review, reputation automation, PDF contracts, SMS
 
-### Stage 4 — External Integrations
-
-- [ ] Edge Functions — server-side logic enforcement (one at a time)
-- [ ] MTN Mobile Money (sandbox → production)
-- [ ] Airtel Money (sandbox → production)
-- [ ] Africa's Talking SMS OTP
-- [ ] Automated KYC verification (Smile Identity)
-- [ ] Background push notifications (FCM)
-- [ ] Play Store / App Store submission
+### Stage 6 — Launch & Growth
+- Play Store, App Store, referral programme, Pro API
 
 ---
 
@@ -692,16 +626,16 @@ No manual email confirmation step is required — seed accounts are ready to sig
 
 MIT License — see the [LICENSE](LICENSE) file for details.
 
-Copyright © 2024–2026 OpenCapital Platforms Limited. All rights reserved.
+Copyright © 2024–2026 Nipanze Platforms Limited. All rights reserved.
 
 ---
 
 ## Contact
 
-**OpenCapital Platforms Limited**
-Email: <contact@opencapital.com>
-Website: <https://opencapital.com>
+**Nipanze Platforms Limited**
+Email: <contact@nipanze.ug>
+Website: <https://nipanze.ug>
 
 ---
 
-*Made with ❤️ for financial inclusion*
+*Made with ❤️ for financial inclusion in Uganda*
