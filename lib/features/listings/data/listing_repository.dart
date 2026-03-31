@@ -1,0 +1,94 @@
+import 'package:injectable/injectable.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/app_exception.dart';
+import '../domain/models/my_listing.dart';
+
+@lazySingleton
+class ListingRepository {
+  ListingRepository(this._client);
+
+  final SupabaseClient _client;
+
+  String get _uid => _client.auth.currentUser!.id;
+
+  /// Fetch all loan requests belonging to the current borrower.
+  Future<List<MyListing>> getMyListings() async {
+    try {
+      final data = await _client
+          .from(TableNames.loanRequests)
+          .select(
+            'id, title, purpose, district, duration_months, requested_amount, '
+            'max_interest_rate, risk_category, credit_score_band, status, '
+            'number_of_bids, listed_at, expires_at, contracted_at, cancelled_at',
+          )
+          .eq('borrower_id', _uid)
+          .order('listed_at', ascending: false);
+
+      return (data as List).map((e) => MyListing.fromMap(e)).toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  /// Create a new loan request. All DB-level guards (KYC, subscription,
+  /// max_concurrent_loans, expiry) are enforced by triggers server-side.
+  Future<String> createListing({
+    required String title,
+    required String purpose,
+    required int requestedAmount,
+    required int durationMonths,
+    required double maxInterestRate,
+    required String district,
+    required String riskCategory,
+  }) async {
+    try {
+      final data = await _client
+          .from(TableNames.loanRequests)
+          .insert({
+            'borrower_id': _uid,
+            'title': title,
+            'purpose': purpose,
+            'requested_amount': requestedAmount,
+            'duration_months': durationMonths,
+            'max_interest_rate': maxInterestRate,
+            'district': district,
+            'risk_category': riskCategory,
+            'credit_score_band': 'B', // band assigned by admin in Stage 5
+          })
+          .select('id')
+          .single();
+
+      return data['id'] as String;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  /// Cancel an active listing.
+  Future<void> cancelListing(String requestId) async {
+    try {
+      await _client
+          .from(TableNames.loanRequests)
+          .update({
+            'status': 'cancelled',
+            'cancelled_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', requestId)
+          .eq('borrower_id', _uid);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  /// Realtime stream — refreshes whenever any of the current user's
+  /// loan_requests rows change.
+  Stream<List<MyListing>> watchMyListings() {
+    return _client
+        .from(TableNames.loanRequests)
+        .stream(primaryKey: ['id'])
+        .eq('borrower_id', _uid)
+        .asyncMap((_) => getMyListings());
+  }
+}

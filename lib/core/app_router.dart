@@ -1,3 +1,4 @@
+// lib/core/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,7 +34,7 @@ class AppRoutes {
   static const String watchlist = '/watchlist';
   static const String positions = '/positions';
   static const String myListings = '/listings/my-listings';
-  static const String listingCreate = '/listings/create';  // ← top-level, not nested
+  static const String listingCreate = '/listings/my-listings/create';
   static const String contractDetail = '/contracts/:contractId';
   static const String notifications = '/notifications';
   static const String kyc = '/kyc';
@@ -106,17 +107,18 @@ class AppRouter {
             name: 'watchlist',
             pageBuilder: (_, state) => _fade(state, const WatchlistPage()),
           ),
-          // ── Request tab — goes directly to the create form ──────────
-          GoRoute(
-            path: AppRoutes.listingCreate,
-            name: 'listingCreate',
-            pageBuilder: (_, state) => _fade(state, const ListingCreatePage()),
-          ),
-          // ── My listings — accessible via profile/account, not the tab ──
+          // ── Request tab (centre) — borrower loan requests ──────────
           GoRoute(
             path: AppRoutes.myListings,
             name: 'myListings',
             pageBuilder: (_, state) => _fade(state, const MyListingsPage()),
+            routes: [
+              GoRoute(
+                path: 'create',
+                name: 'listingCreate',
+                pageBuilder: (_, state) => _slide(state, const ListingCreatePage()),
+              ),
+            ],
           ),
           GoRoute(
             path: AppRoutes.positions,

@@ -1,138 +1,193 @@
-// ignore_for_file: unused_import, directives_ordering, curly_braces_in_flow_control_structures, deprecated_member_use, unawaited_futures
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/domain/models/nipanze_user.dart';
+
+// ─── Purpose options ──────────────────────────────────────────────────────────
+const _purposes = [
+  'Agricultural equipment',
+  'Business expansion',
+  'Education / School fees',
+  'Emergency medical',
+  'Greenhouse / Farming',
+  'Home improvement',
+  'Inventory / Stock',
+  'Land purchase',
+  'Livestock',
+  'Solar / Energy',
+  'Transport / Vehicle',
+  'Water & Sanitation',
+  'Wedding / Event',
+  'Other',
+];
+
+// ─── Districts ────────────────────────────────────────────────────────────────
+const _districts = [
+  'Kampala', 'Wakiso', 'Mukono', 'Jinja', 'Mbale', 'Gulu', 'Mbarara',
+  'Masaka', 'Lira', 'Soroti', 'Arua', 'Fort Portal', 'Kabale', 'Other',
+];
 
 class ListingCreatePage extends StatefulWidget {
   const ListingCreatePage({super.key});
-  @override State<ListingCreatePage> createState() => _ListingCreatePageState();
+  @override
+  State<ListingCreatePage> createState() => _ListingCreatePageState();
 }
 
 class _ListingCreatePageState extends State<ListingCreatePage> {
   final _pageController = PageController();
-  int _step = 0;
+  int _step = 0; // 0 = loan details, 1 = review & publish
 
   // Step 1 fields
-  final _titleController = TextEditingController();
-  final _purposeController = TextEditingController();
   final _amountController = TextEditingController();
   final _durationController = TextEditingController();
-
-  // Step 2 fields
   final _rateController = TextEditingController();
-  String _riskCategory = 'medium';
+  final _descriptionController = TextEditingController();
+  String? _selectedPurpose;
+  String? _customPurpose;
+  String _district = 'Kampala';
+  final _formKey = GlobalKey<FormState>();
 
-  // Step 3 fields
-  String _district = 'Central';
-
-  final _formKey1 = GlobalKey<FormState>();
-  final _formKey2 = GlobalKey<FormState>();
   bool _submitting = false;
-
-  static const _districts = [
-    'Central', 'Eastern', 'Northern', 'Western', 'Kampala'
-  ];
+  bool _savingDraft = false;
 
   @override
   void dispose() {
     _pageController.dispose();
-    _titleController.dispose();
-    _purposeController.dispose();
     _amountController.dispose();
     _durationController.dispose();
     _rateController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  void _next() {
-    if (_step == 0 && !_formKey1.currentState!.validate()) return;
-    if (_step == 1 && !_formKey2.currentState!.validate()) return;
-    if (_step < 2) {
-      setState(() => _step++);
-      _pageController.nextPage(
-          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-    } else {
-      _submit();
+  String get _purposeValue =>
+      _selectedPurpose == 'Other' ? (_customPurpose ?? '') : (_selectedPurpose ?? '');
+
+  bool get _step1Valid {
+    if (!_formKey.currentState!.validate()) return false;
+    if (_selectedPurpose == null) return false;
+    if (_selectedPurpose == 'Other' &&
+        (_customPurpose == null || _customPurpose!.trim().isEmpty)) {
+      return false;
     }
+    return true;
   }
 
-  Future<void> _submit() async {
+  void _next() {
+    if (!_step1Valid) {
+      _formKey.currentState!.validate();
+      if (_selectedPurpose == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a purpose.')),
+        );
+      }
+      return;
+    }
+    setState(() => _step = 1);
+    _pageController.nextPage(
+        duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+
+  Future<void> _submit({bool draft = false}) async {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
 
-    // Gate: KYC required
     if (!authState.user.kycApproved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('KYC verification required before listing. Please complete KYC.'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
+      _showGate('Complete KYC verification before posting a listing.');
       return;
     }
-
-    // Gate: Borrower subscription
     if (!authState.user.canBorrow) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A Borrower or Pro subscription is required to post a listing.'),
-          backgroundColor: AppColors.warning,
-        ),
-      );
+      _showGate('A Borrower or Pro subscription is required to post a listing.');
       return;
     }
 
-    setState(() => _submitting = true);
-    // Actual insert handled by DB trigger chain — stub shows confirmation
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() => _submitting = false);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Listing submitted'),
-          content: const Text(
-              'Your loan request has been submitted for review. It will appear live on the marketplace shortly.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.pop();
-              },
-              child: const Text('Done'),
-            ),
-          ],
-        ),
-      );
-    }
+    setState(() => draft ? _savingDraft = true : _submitting = true);
+    await Future.delayed(const Duration(milliseconds: 800)); // replace with real insert
+    if (!mounted) return;
+    setState(() => draft ? _savingDraft = false : _submitting = false);
+
+    unawaited(showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(draft ? 'Draft saved' : 'Request submitted'),
+        content: Text(draft
+            ? 'Your loan request has been saved as a draft. You can publish it from My Requests.'
+            : 'Your loan request is now live on the marketplace. Lenders will start bidding shortly.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.go(AppRoutes.myListings);
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    ));
+  }
+
+  void _showGate(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.warning,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () {
-            if (_step > 0) {
-              setState(() => _step--);
-              _pageController.previousPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut);
-            } else {
-              context.pop();
-            }
-          },
+        automaticallyImplyLeading: false,
+        leading: _step > 0
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                onPressed: () {
+                  setState(() => _step = 0);
+                  _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut);
+                },
+              )
+            : null,
+        // ── Title + subnote ────────────────────────────────────────────
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _step == 0 ? 'Request a loan' : 'Review & publish',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              'Post a request to the marketplace',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
-        title: Text('Create listing — Step ${_step + 1} of 3'),
+        // ── Step counter top-right ─────────────────────────────────────
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                'Step ${_step + 1} of 2',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: LinearProgressIndicator(
-            value: (_step + 1) / 3,
+            value: (_step + 1) / 2,
             backgroundColor: Theme.of(context).dividerColor,
             valueColor: const AlwaysStoppedAnimation(AppColors.accent),
             minHeight: 3,
@@ -142,225 +197,356 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [
-          // Step 1: Amount + purpose
-          _StepWrapper(
-            child: Form(
-              key: _formKey1,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Loan details', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 6),
-                Text('Describe what you need funding for.',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Listing title'),
-                  validator: (v) => v == null || v.isEmpty ? 'Enter a title' : null,
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _purposeController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                      labelText: 'Purpose / Description',
-                      alignLabelWithHint: true),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Describe your purpose' : null,
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      labelText: 'Amount (UGX)',
-                      hintText: 'Min 100,000 — Max 50,000,000'),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Enter amount';
-                    final n = int.tryParse(v.replaceAll(',', ''));
-                    if (n == null) return 'Enter a valid number';
-                    if (n < 100000) return 'Minimum UGX 100,000';
-                    if (n > 50000000) return 'Maximum UGX 50,000,000';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _durationController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      labelText: 'Duration (months)',
-                      hintText: '1 – 60 months'),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Enter duration';
-                    final n = int.tryParse(v);
-                    if (n == null || n < 1 || n > 60)
-                      return 'Enter 1–60 months';
-                    return null;
-                  },
-                ),
-              ]),
-            ),
-          ),
+        children: [_buildStep1(), _buildStep2()],
+      ),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
 
-          // Step 2: Rate + risk
-          _StepWrapper(
-            child: Form(
-              key: _formKey2,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Interest & risk', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 6),
-                Text('Set your maximum acceptable interest rate.',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _rateController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      labelText: 'Max interest rate (%)',
-                      hintText: '5% – 30%',
-                      suffixText: '%'),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Enter a rate';
-                    final r = double.tryParse(v);
-                    if (r == null || r < 5 || r > 30)
-                      return 'Rate must be 5–30%';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                Text('Risk category', style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 8),
-                Row(children: ['low', 'medium', 'high'].map((r) {
-                  final isSelected = _riskCategory == r;
-                  final color = r == 'low'
-                      ? AppColors.success
-                      : r == 'medium'
-                          ? AppColors.warning
-                          : AppColors.danger;
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _riskCategory = r),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? color.withOpacity(0.12)
-                              : Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: isSelected ? color : Theme.of(context).dividerColor),
-                        ),
-                        child: Text(
-                          r[0].toUpperCase() + r.substring(1),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w600,
-                            color: isSelected ? color : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList()),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'Lenders bid below your ceiling rate. You always see every offer before accepting. No obligation until you accept.',
-                    style: TextStyle(fontSize: 11),
-                  ),
-                ),
-              ]),
-            ),
-          ),
+  // ─── Step 1: Loan details ───────────────────────────────────────────────────
 
-          // Step 3: District + review
-          _StepWrapper(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Location & review', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 6),
-              Text('Confirm your district and review the listing.',
-                  style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 24),
-              DropdownButtonFormField<String>(
-                value: _district,
-                decoration: const InputDecoration(labelText: 'District'),
-                items: _districts
-                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                    .toList(),
-                onChanged: (v) => setState(() => _district = v ?? 'Central'),
-              ),
-              const SizedBox(height: 20),
-              Text('Summary', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 10),
-              _ReviewRow('Title', _titleController.text.isEmpty ? '—' : _titleController.text),
-              _ReviewRow('Amount', 'UGX ${_amountController.text}'),
-              _ReviewRow('Duration', '${_durationController.text} months'),
-              _ReviewRow('Ceiling rate', '${_rateController.text}%'),
-              _ReviewRow('Risk', _riskCategory),
-              _ReviewRow('District', _district),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
-                ),
-                child: const Text(
-                  'KYC verification and an active Borrower subscription are required to post. These are enforced by the database.',
-                  style: TextStyle(fontSize: 11),
+  Widget _buildStep1() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Form(
+        key: _formKey,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Info banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+            ),
+            child: const Row(children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 16, color: AppColors.accent),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Loans: UGX 100,000 – 50,000,000 · Up to 60 months · Max 30% interest',
+                  style: TextStyle(fontSize: 11, color: AppColors.accent),
                 ),
               ),
             ]),
           ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: ElevatedButton(
-            onPressed: _submitting ? null : _next,
-            child: _submitting
-                ? const SizedBox(
-                    height: 20, width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(_step < 2 ? 'Continue' : 'Submit listing'),
+          const SizedBox(height: 20),
+
+          // Amount
+          TextFormField(
+            controller: _amountController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Loan Amount (UGX) *',
+              hintText: 'e.g. 2000000',
+              prefixIcon: Icon(Icons.account_balance_wallet_outlined, size: 20),
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Enter an amount';
+              final n = int.tryParse(v);
+              if (n == null) return 'Enter a valid number';
+              if (n < 100000) return 'Minimum UGX 100,000';
+              if (n > 50000000) return 'Maximum UGX 50,000,000';
+              return null;
+            },
           ),
-        ),
+          const SizedBox(height: 14),
+
+          // Duration
+          TextFormField(
+            controller: _durationController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Duration (months) *',
+              hintText: '1 – 60',
+              prefixIcon: Icon(Icons.calendar_month_outlined, size: 20),
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Enter duration';
+              final n = int.tryParse(v);
+              if (n == null || n < 1 || n > 60) return '1 to 60 months';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+
+          // Max interest rate
+          TextFormField(
+            controller: _rateController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Max Interest Rate (%) *',
+              hintText: 'e.g. 15',
+              prefixIcon: Icon(Icons.percent_rounded, size: 20),
+              suffixText: '%',
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Enter a rate';
+              final r = double.tryParse(v);
+              if (r == null || r < 5 || r > 30) return '5% to 30%';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+
+          // Purpose dropdown
+          DropdownButtonFormField<String>(
+            initialValue: _selectedPurpose,
+            decoration: const InputDecoration(
+              labelText: 'Purpose *',
+              prefixIcon: Icon(Icons.category_outlined, size: 20),
+            ),
+            hint: const Text('Select purpose'),
+            items: _purposes
+                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                .toList(),
+            onChanged: (v) => setState(() {
+              _selectedPurpose = v;
+              if (v != 'Other') _customPurpose = null;
+            }),
+            validator: (v) => v == null ? 'Select a purpose' : null,
+          ),
+
+          // Custom purpose field when Other selected
+          if (_selectedPurpose == 'Other') ...[
+            const SizedBox(height: 14),
+            TextFormField(
+              decoration: const InputDecoration(
+                labelText: 'Describe your purpose *',
+                prefixIcon: Icon(Icons.edit_outlined, size: 20),
+              ),
+              onChanged: (v) => _customPurpose = v,
+              validator: (v) {
+                if (_selectedPurpose == 'Other' &&
+                    (v == null || v.trim().isEmpty)) {
+                  return 'Please describe your purpose';
+                }
+                return null;
+              },
+            ),
+          ],
+          const SizedBox(height: 14),
+
+          // District
+          DropdownButtonFormField<String>(
+            initialValue: _district,
+            decoration: const InputDecoration(
+              labelText: 'District *',
+              prefixIcon: Icon(Icons.location_on_outlined, size: 20),
+            ),
+            items: _districts
+                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                .toList(),
+            onChanged: (v) => setState(() => _district = v ?? 'Kampala'),
+          ),
+          const SizedBox(height: 14),
+
+          // Description (optional)
+          TextFormField(
+            controller: _descriptionController,
+            maxLines: 4,
+            maxLength: 500,
+            decoration: const InputDecoration(
+              labelText: 'Description (optional)',
+              alignLabelWithHint: true,
+              prefixIcon: Padding(
+                padding: EdgeInsets.only(bottom: 60),
+                child: Icon(Icons.notes_rounded, size: 20),
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }
+
+  // ─── Step 2: Review & publish ───────────────────────────────────────────────
+
+  Widget _buildStep2() {
+    final amount = int.tryParse(_amountController.text) ?? 0;
+    final duration = _durationController.text;
+    final rate = _rateController.text;
+    final description = _descriptionController.text.trim();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Review your request',
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text('Confirm the details before publishing to the marketplace.',
+            style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: 20),
+
+        // Summary card
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: Column(children: [
+            _ReviewRow(
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Amount',
+              value: 'UGX ${_fmtAmount(amount)}',
+              highlight: true,
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.calendar_month_outlined,
+              label: 'Duration',
+              value: '$duration months',
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.percent_rounded,
+              label: 'Max interest rate',
+              value: '$rate% per annum',
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.category_outlined,
+              label: 'Purpose',
+              value: _purposeValue,
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.location_on_outlined,
+              label: 'District',
+              value: _district,
+            ),
+            if (description.isNotEmpty) ...[
+              _divider(),
+              _ReviewRow(
+                icon: Icons.notes_rounded,
+                label: 'Description',
+                value: description,
+              ),
+            ],
+          ]),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Non-custodial note
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+          ),
+          child: const Row(children: [
+            Icon(Icons.verified_outlined, size: 14, color: AppColors.success),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Your identity is never shown to lenders. Risk grading is assigned by Nipanze after review.',
+                style: TextStyle(fontSize: 11, color: AppColors.success),
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  Widget _divider() => Divider(height: 1, color: Theme.of(context).dividerColor);
+
+  // ─── Bottom bar ─────────────────────────────────────────────────────────────
+
+  Widget _buildBottomBar() {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+        child: _step == 0
+            ? ElevatedButton(
+                onPressed: _next,
+                child: const Text('Continue'),
+              )
+            : Column(mainAxisSize: MainAxisSize.min, children: [
+                ElevatedButton(
+                  onPressed: _submitting ? null : _submit,
+                  child: _submitting
+                      ? const SizedBox(
+                          height: 20, width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('Publish to marketplace'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: _savingDraft ? null : () => _submit(draft: true),
+                  child: _savingDraft
+                      ? const SizedBox(
+                          height: 18, width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Save as draft'),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Saved as draft first. Review and publish when ready.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ]),
+      ),
+    );
+  }
+
+  String _fmtAmount(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
 }
 
-class _StepWrapper extends StatelessWidget {
-  const _StepWrapper({required this.child});
-  final Widget child;
-  @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: child,
-      );
-}
+// ─── Review row ───────────────────────────────────────────────────────────────
 
 class _ReviewRow extends StatelessWidget {
-  const _ReviewRow(this.label, this.value);
+  const _ReviewRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  final IconData icon;
   final String label;
   final String value;
+  final bool highlight;
+
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const Spacer(),
-          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: highlight ? 18 : 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: highlight ? 'DM Mono' : 'DM Sans',
+                color: highlight ? AppColors.accent : null,
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
 }

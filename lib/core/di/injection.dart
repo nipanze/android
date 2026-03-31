@@ -1,19 +1,26 @@
+// lib/core/di/injection.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'injection.config.dart';
+
+import '../../features/auth/data/auth_repository.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/listings/data/listing_repository.dart';
+import '../../features/listings/presentation/cubit/my_listings_cubit.dart';
+import '../../features/marketplace/data/marketplace_repository.dart';
+import '../../features/marketplace/presentation/cubit/marketplace_cubit.dart';
+
+part 'injection.config.dart';
 
 final GetIt getIt = GetIt.instance;
 
-// ignore: prefer_void_to_null
-/// Call once in main() after Supabase.initialize().
-/// The real init() is generated into injection.config.dart by build_runner.
-/// Until code generation runs, this is a no-op that keeps the compiler happy.
-void configureDependencies() {
-  getIt.init();
-}
+@InjectableInit(
+  initializerName: 'init',
+  preferRelativeImports: true,
+  asExtension: true,
+)
+void configureDependencies() => getIt.init();
 
-/// Provides the Supabase client as a singleton injectable.
 @module
 abstract class SupabaseModule {
   @singleton
