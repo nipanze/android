@@ -34,8 +34,9 @@ class MainScaffold extends StatelessWidget {
 
     // listingCreate before myListings — more specific prefix wins
     if (location.startsWith(AppRoutes.listingCreate)) return 2;
-    if (location.startsWith(AppRoutes.myListings))
+    if (location.startsWith(AppRoutes.myListings)) {
       return 2; // "My requests" accessed via + in AppBar still highlights Request
+    }
     if (location.startsWith(AppRoutes.marketplace)) return 0;
     if (location.startsWith(AppRoutes.watchlist)) return 1;
     if (location.startsWith(AppRoutes.positions)) return 3;
