@@ -87,7 +87,7 @@ class MyListingCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   'Ceiling ${listing.maxInterestRate.toStringAsFixed(1)}%',
-                  style: const TextStyle(fontFamily: 'DM Mono', fontSize: 10),
+                  style: const TextStyle(fontFamily: AppFonts.body, fontSize: 10),
                 ),
               ],
             ),

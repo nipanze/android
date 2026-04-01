@@ -37,7 +37,7 @@ class ContractDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Contract ID: $contractId',
-              style: const TextStyle(fontFamily: 'DM Mono', fontSize: 11),
+              style: const TextStyle(fontFamily: AppFonts.body, fontSize: 11),
             ),
             const SizedBox(height: 8),
             const Text('Full contract view — Stage 4 feature'),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Nipanze brand colours and typography.
-/// Brand: DM Sans (body) · DM Mono (numeric/code values)
+/// Typography: Sora (headings/hero numbers) · Inter (body/forms/data)
 class AppColors {
   AppColors._();
 
@@ -32,6 +32,19 @@ class AppColors {
   static const Color text3Light = Color(0xFF9BA6B8);
 }
 
+/// Font family constants — use these instead of raw strings everywhere.
+class AppFonts {
+  AppFonts._();
+
+  /// Inter — body text, labels, form fields, buttons, data tables.
+  /// Excellent for small sizes and numeric data (loan amounts, rates, bids).
+  static const String body = 'Inter';
+
+  /// Sora — screen titles, section headings, hero numbers (e.g. "UGX 5,000,000").
+  /// Gives Nipanze a distinctive, modern fintech identity.
+  static const String heading = 'Sora';
+}
+
 class AppTheme {
   AppTheme._();
 
@@ -59,28 +72,41 @@ class AppTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-      fontFamily: 'DM Sans',
+
+      // Inter as the default for all body/UI text
+      fontFamily: AppFonts.body,
+
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
         foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.heading, // Sora for screen titles
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
       ),
+
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
         selectedItemColor: AppColors.accent,
         unselectedItemColor: isDark ? AppColors.text3Dark : AppColors.text3Light,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        selectedLabelStyle: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500),
+        selectedLabelStyle: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 9,
+          fontWeight: FontWeight.w500,
+        ),
       ),
+
       cardTheme: CardThemeData(
         color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
         elevation: 0,
@@ -91,6 +117,7 @@ class AppTheme {
           ),
         ),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
@@ -115,15 +142,16 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.danger),
         ),
         labelStyle: TextStyle(
+          fontFamily: AppFonts.body,
           color: isDark ? AppColors.text2Dark : AppColors.text2Light,
-          fontFamily: 'DM Sans',
         ),
         hintStyle: TextStyle(
+          fontFamily: AppFonts.body,
           color: isDark ? AppColors.text3Dark : AppColors.text3Light,
-          fontFamily: 'DM Sans',
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -131,12 +159,13 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(
-            fontFamily: 'DM Sans',
+            fontFamily: AppFonts.body,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
@@ -146,58 +175,128 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(
-            fontFamily: 'DM Sans',
+            fontFamily: AppFonts.body,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
+
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.accent,
           textStyle: const TextStyle(
-            fontFamily: 'DM Sans',
+            fontFamily: AppFonts.body,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
         ),
       ),
+
       dividerTheme: DividerThemeData(
         color: isDark ? AppColors.borderDark : AppColors.borderLight,
         thickness: 1,
         space: 1,
       ),
+
       textTheme: TextTheme(
+        // Sora — large display headings (e.g. onboarding hero text)
         displayLarge: TextStyle(
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.heading,
           fontWeight: FontWeight.w700,
           color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
+        displayMedium: TextStyle(
+          fontFamily: AppFonts.heading,
+          fontWeight: FontWeight.w700,
+          fontSize: 28,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        displaySmall: TextStyle(
+          fontFamily: AppFonts.heading,
+          fontWeight: FontWeight.w600,
+          fontSize: 22,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+
+        // Sora — screen/section headings
+        headlineLarge: TextStyle(
+          fontFamily: AppFonts.heading,
+          fontWeight: FontWeight.w700,
+          fontSize: 24,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
         headlineMedium: TextStyle(
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.heading,
           fontWeight: FontWeight.w600,
           fontSize: 20,
           color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
+        headlineSmall: TextStyle(
+          fontFamily: AppFonts.heading,
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+
+        // Inter — card titles, list item titles
+        titleLarge: TextStyle(
+          fontFamily: AppFonts.body,
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
         titleMedium: TextStyle(
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.body,
           fontWeight: FontWeight.w600,
           fontSize: 15,
           color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
-        bodyMedium: TextStyle(
-          fontFamily: 'DM Sans',
+        titleSmall: TextStyle(
+          fontFamily: AppFonts.body,
+          fontWeight: FontWeight.w500,
           fontSize: 13,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+
+        // Inter — body text, descriptions, paragraphs
+        bodyLarge: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
           color: isDark ? AppColors.text2Dark : AppColors.text2Light,
         ),
         bodySmall: TextStyle(
-          fontFamily: 'DM Sans',
+          fontFamily: AppFonts.body,
           fontSize: 11,
+          fontWeight: FontWeight.w400,
           color: isDark ? AppColors.text3Dark : AppColors.text3Light,
         ),
-        labelSmall: TextStyle(
-          fontFamily: 'DM Mono',
+
+        // Inter — labels, tags, badges, captions
+        labelLarge: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        labelMedium: TextStyle(
+          fontFamily: AppFonts.body,
           fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+        ),
+        // labelSmall — numeric values: loan amounts, rates, bids (Inter tabular)
+        labelSmall: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
           color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
       ),

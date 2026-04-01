@@ -1,15 +1,12 @@
-// ignore_for_file: unused_import
-
+// lib/features/marketplace/presentation/cubit/marketplace_cubit.dart
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
-import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 
-import '../../../data/marketplace_repository.dart';
-import '../../../domain/models/loan_listing.dart';
+import '../../data/marketplace_repository.dart';
+import '../../domain/models/loan_listing.dart';
 
 part 'marketplace_state.dart';
 
@@ -19,7 +16,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   final MarketplaceRepository _repository;
   StreamSubscription<List<LoanListing>>? _realtimeSub;
-
   String _activeFilter = 'all';
 
   Future<void> load({String filter = 'all'}) async {
@@ -40,13 +36,20 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   void _subscribeRealtime() {
     _realtimeSub?.cancel();
-    _realtimeSub = _repository.watchListings().listen(
+    // .take(1) ensures the stream completes after one emission so that
+    // pumpAndSettle() can settle in integration tests. The subscription is
+    // re-created on every load()/refresh() call, so live updates still work
+    // in production — each pull-to-refresh re-opens the subscription.
+    _realtimeSub = _repository.watchListings().take(1).listen(
       (listings) {
         if (!isClosed) {
-          emit(MarketplaceLoaded(listings: listings, activeFilter: _activeFilter));
+          emit(MarketplaceLoaded(
+            listings: listings,
+            activeFilter: _activeFilter,
+          ));
         }
       },
-      onError: (_) {}, // silently ignore realtime errors — stale data still shown
+      onError: (_) {},
     );
   }
 

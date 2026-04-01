@@ -1,7 +1,9 @@
+// lib/features/marketplace/presentation/cubit/marketplace_state.dart
 part of 'marketplace_cubit.dart';
 
 abstract class MarketplaceState extends Equatable {
   const MarketplaceState();
+
   @override
   List<Object?> get props => [];
 }
@@ -15,7 +17,10 @@ class MarketplaceLoading extends MarketplaceState {
 }
 
 class MarketplaceLoaded extends MarketplaceState {
-  const MarketplaceLoaded({required this.listings, required this.activeFilter});
+  const MarketplaceLoaded({
+    required this.listings,
+    required this.activeFilter,
+  });
 
   final List<LoanListing> listings;
   final String activeFilter;

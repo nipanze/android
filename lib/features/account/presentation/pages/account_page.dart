@@ -1,3 +1,4 @@
+// lib/features/account/presentation/pages/account_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +61,7 @@ class AccountPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: isSelected ? AppColors.accent : Theme.of(context).dividerColor)),
             child: Column(children: [
-              Text(_planPrice(plan), style: TextStyle(fontFamily: 'DM Mono', fontSize: 13, fontWeight: FontWeight.w700, color: isSelected ? AppColors.accent : null)),
+              Text(_planPrice(plan), style: TextStyle(fontFamily: AppFonts.body, fontSize: 13, fontWeight: FontWeight.w700, color: isSelected ? AppColors.accent : null)),
               Text(plan.name[0].toUpperCase() + plan.name.substring(1), style: const TextStyle(fontSize: 10)),
             ]),
           ),

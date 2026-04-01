@@ -1,83 +1,478 @@
-// ignore_for_file: deprecated_member_use, prefer_const_constructors
+// lib/features/kyc/presentation/pages/kyc_page.dart
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:image_picker/image_picker.dart';
 
-class KycPage extends StatefulWidget {
+import '../../../../core/di/injection.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../domain/models/kyc_verification.dart';
+import '../cubit/kyc_cubit.dart';
+
+class KycPage extends StatelessWidget {
   const KycPage({super.key});
-  @override State<KycPage> createState() => _KycPageState();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<KycCubit>()..load(),
+      child: const _KycView(),
+    );
+  }
 }
 
-class _KycPageState extends State<KycPage> {
-  String _status = 'not_submitted';
-  bool _submitting = false;
+class _KycView extends StatelessWidget {
+  const _KycView();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => context.pop(),
+        ),
         title: const Text('Identity verification'),
       ),
-      body: SingleChildScrollView(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Status banner
-        Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(
-          color: _statusColor(_status).withOpacity(0.08), borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _statusColor(_status).withOpacity(0.3))),
-          child: Row(children: [
-            Icon(_statusIcon(_status), color: _statusColor(_status), size: 20),
-            const SizedBox(width: 10),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(_statusLabel(_status), style: TextStyle(fontWeight: FontWeight.w600, color: _statusColor(_status), fontSize: 13)),
-              Text(_statusDescription(_status), style: Theme.of(context).textTheme.bodySmall),
-            ])),
-          ]),
-        ),
-        const SizedBox(height: 24),
-        Text('Required documents', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        _DocItem(icon: Icons.badge_outlined, title: 'National ID — front', subtitle: 'Clear photo of the front of your Ugandan National ID'),
-        _DocItem(icon: Icons.badge_outlined, title: 'National ID — back', subtitle: 'Clear photo of the back of your National ID'),
-        _DocItem(icon: Icons.face_outlined, title: 'Selfie', subtitle: 'Hold your ID next to your face'),
-        const SizedBox(height: 24),
-        Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(
-          color: AppColors.accent.withOpacity(0.06), borderRadius: BorderRadius.circular(10)),
-          child: const Text('Document uploads are stored securely. Your identity is never shown to other marketplace participants.', style: TextStyle(fontSize: 11))),
-        const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: _submitting ? null : () async {
-            setState(() => _submitting = true);
-            await Future.delayed(const Duration(seconds: 1));
-            if (mounted) setState(() { _status = 'pending'; _submitting = false; });
-          },
-          child: _submitting
-            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : const Text('Submit documents'),
-        ),
-      ])),
+      body: BlocConsumer<KycCubit, KycState>(
+        listener: (context, state) {
+          if (state is KycError) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.danger,
+              action: SnackBarAction(
+                label: 'Dismiss',
+                textColor: Colors.white,
+                onPressed: () => context.read<KycCubit>().clearError(),
+              ),
+            ));
+          }
+        },
+        builder: (context, state) {
+          if (state is KycLoading || state is KycInitial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final kyc = switch (state) {
+            KycLoaded()     => state.kyc,
+            KycUploading()  => state.kyc,
+            KycSubmitting() => state.kyc,
+            KycError()      => state.kyc,
+            _               => null,
+          };
+
+          final isUploading  = state is KycUploading;
+          final isSubmitting = state is KycSubmitting;
+          final uploadingDoc = isUploading ? state.docType : null;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+              // Status banner
+              _StatusBanner(kyc: kyc),
+              const SizedBox(height: 24),
+
+              // Rejection reason
+              if (kyc?.isRejected == true && kyc?.rejectionReason != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AppColors.danger.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline,
+                          color: AppColors.danger, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Rejection reason',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.danger)),
+                          const SizedBox(height: 2),
+                          Text(kyc!.rejectionReason!,
+                              style: const TextStyle(fontSize: 11)),
+                        ],
+                      )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // Already approved — show expiry
+              if (kyc?.isApproved == true) ...[
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: AppColors.success.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.verified_rounded,
+                        color: AppColors.success, size: 20),
+                    const SizedBox(width: 12),
+                    Column(crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      const Text('Identity verified',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.success,
+                              fontSize: 13)),
+                      if (kyc?.expiresAt != null)
+                        Text(
+                          'Expires ${_fmtDate(kyc!.expiresAt!)}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                    ]),
+                  ]),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Pending
+              if (kyc?.isPending == true) ...[
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: AppColors.warning.withValues(alpha: 0.25)),
+                  ),
+                  child: const Row(children: [
+                    Icon(Icons.hourglass_top_rounded,
+                        color: AppColors.warning, size: 20),
+                    SizedBox(width: 12),
+                    Expanded(child: Text(
+                      'Documents submitted — admin review in progress. '
+                      'This usually takes 1–2 business days.',
+                      style: TextStyle(fontSize: 12),
+                    )),
+                  ]),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Document upload section
+              if (kyc?.isApproved != true) ...[
+                Text('Required documents',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  'Upload clear, well-lit photos. All documents are stored securely.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 14),
+
+                _DocUploadTile(
+                  docType: 'national_id_front',
+                  icon: Icons.badge_outlined,
+                  title: 'National ID — front',
+                  subtitle: 'Clear photo of the front of your Ugandan National ID',
+                  uploadedUrl: kyc?.nationalIdFrontUrl,
+                  isUploading: uploadingDoc == 'national_id_front',
+                  enabled: !isSubmitting,
+                  onPick: () => _pickAndUpload(
+                      context, 'national_id_front'),
+                ),
+
+                _DocUploadTile(
+                  docType: 'national_id_back',
+                  icon: Icons.badge_outlined,
+                  title: 'National ID — back',
+                  subtitle: 'Clear photo of the back of your National ID',
+                  uploadedUrl: kyc?.nationalIdBackUrl,
+                  isUploading: uploadingDoc == 'national_id_back',
+                  enabled: !isSubmitting,
+                  onPick: () => _pickAndUpload(
+                      context, 'national_id_back'),
+                ),
+
+                _DocUploadTile(
+                  docType: 'selfie',
+                  icon: Icons.face_outlined,
+                  title: 'Selfie with ID',
+                  subtitle: 'Hold your National ID next to your face',
+                  uploadedUrl: kyc?.selfieUrl,
+                  isUploading: uploadingDoc == 'selfie',
+                  enabled: !isSubmitting,
+                  onPick: () => _pickAndUpload(context, 'selfie',
+                      preferCamera: true),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Privacy note
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(children: [
+                    Icon(Icons.lock_outline_rounded,
+                        size: 14, color: AppColors.accent),
+                    SizedBox(width: 8),
+                    Expanded(child: Text(
+                      'Your identity is never shown to other marketplace '
+                      'participants. Documents are reviewed by Nipanze admin only.',
+                      style: TextStyle(fontSize: 10, color: AppColors.accent),
+                    )),
+                  ]),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Submit button
+                if (kyc?.isPending != true)
+                  ElevatedButton(
+                    onPressed: (isSubmitting ||
+                            isUploading ||
+                            kyc?.allDocsUploaded != true)
+                        ? null
+                        : () => context.read<KycCubit>().submit(),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            height: 20, width: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
+                        : const Text('Submit for review'),
+                  ),
+
+                if (kyc?.allDocsUploaded != true && !isUploading)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Upload all three documents to enable submission.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+              ],
+            ]),
+          );
+        },
+      ),
     );
   }
-  Color _statusColor(String s) { switch(s) { case 'approved': return AppColors.success; case 'pending': return AppColors.warning; case 'rejected': return AppColors.danger; default: return AppColors.accent; } }
-  IconData _statusIcon(String s) { switch(s) { case 'approved': return Icons.verified; case 'pending': return Icons.hourglass_top; case 'rejected': return Icons.cancel_outlined; default: return Icons.upload_file_outlined; } }
-  String _statusLabel(String s) { switch(s) { case 'approved': return 'KYC Approved'; case 'pending': return 'Under review'; case 'rejected': return 'Rejected'; default: return 'Not submitted'; } }
-  String _statusDescription(String s) { switch(s) { case 'approved': return 'Identity verified. You can now create listings.'; case 'pending': return 'Documents submitted. Admin review in progress.'; case 'rejected': return 'Submission rejected. Please re-submit.'; default: return 'Submit documents to unlock listing creation.'; } }
+
+  Future<void> _pickAndUpload(
+    BuildContext context,
+    String docType, {
+    bool preferCamera = false,
+  }) async {
+    final picker = ImagePicker();
+
+    // Show source selector unless preferCamera
+    ImageSource? source;
+    if (preferCamera) {
+      source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (_) => const _SourcePicker(),
+      );
+    } else {
+      source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (_) => const _SourcePicker(),
+      );
+    }
+    if (source == null) return;
+
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 1920,
+    );
+    if (picked == null) return;
+
+    if (!context.mounted) return;
+    await context.read<KycCubit>().uploadDocument(File(picked.path), docType);
+  }
+
+  String _fmtDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
 
-class _DocItem extends StatelessWidget {
-  const _DocItem({required this.icon, required this.title, required this.subtitle});
-  final IconData icon; final String title; final String subtitle;
-  @override Widget build(BuildContext context) => Container(margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(12), decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Theme.of(context).dividerColor)),
-    child: Row(children: [
-      Icon(icon, size: 20, color: AppColors.accent),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-        Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-      ])),
-      Icon(Icons.upload_outlined, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
-    ]));
+// ─── Status Banner ────────────────────────────────────────────────────────────
+
+class _StatusBanner extends StatelessWidget {
+  const _StatusBanner({required this.kyc});
+  final KycVerification? kyc;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = kyc?.status ?? 'not_submitted';
+
+    final (label, description, icon, color) = switch (status) {
+      'approved'      => ('KYC Approved',    'Identity verified. You can now create listings.',       Icons.verified_rounded,         AppColors.success),
+      'pending'       => ('Under review',    'Documents submitted. Admin review in progress.',        Icons.hourglass_top_rounded,    AppColors.warning),
+      'rejected'      => ('Rejected',        'Submission rejected. Please re-upload and resubmit.',   Icons.cancel_outlined,          AppColors.danger),
+      'expired'       => ('Expired',         'Your KYC has expired. Please re-verify.',               Icons.timer_off_outlined,       AppColors.warning),
+      _               => ('Not submitted',   'Submit documents to unlock listing creation.',          Icons.upload_file_outlined,     AppColors.accent),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(children: [
+        Icon(icon, color: color, size: 22),
+        const SizedBox(width: 12),
+        Expanded(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(
+                fontWeight: FontWeight.w600, color: color, fontSize: 13)),
+            const SizedBox(height: 2),
+            Text(description,
+                style: Theme.of(context).textTheme.bodySmall),
+          ],
+        )),
+      ]),
+    );
+  }
+}
+
+// ─── Document Upload Tile ─────────────────────────────────────────────────────
+
+class _DocUploadTile extends StatelessWidget {
+  const _DocUploadTile({
+    required this.docType,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.uploadedUrl,
+    required this.isUploading,
+    required this.enabled,
+    required this.onPick,
+  });
+
+  final String docType;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? uploadedUrl;
+  final bool isUploading;
+  final bool enabled;
+  final VoidCallback onPick;
+
+  bool get isUploaded => uploadedUrl != null;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled && !isUploading ? onPick : null,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isUploaded
+                ? AppColors.success.withValues(alpha: 0.5)
+                : Theme.of(context).dividerColor,
+            width: isUploaded ? 1.5 : 1,
+          ),
+        ),
+        child: Row(children: [
+          // Doc icon or uploaded thumbnail
+          Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(
+              color: isUploaded
+                  ? AppColors.success.withValues(alpha: 0.1)
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: isUploading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : Icon(
+                    isUploaded ? Icons.check_circle_rounded : icon,
+                    size: 20,
+                    color: isUploaded ? AppColors.success : AppColors.accent),
+          ),
+          const SizedBox(width: 12),
+
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 2),
+              Text(
+                isUploaded ? 'Uploaded — tap to replace' : subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: isUploaded ? AppColors.success : null),
+              ),
+            ],
+          )),
+
+          // Action icon
+          if (!isUploading)
+            Icon(
+              isUploaded
+                  ? Icons.refresh_rounded
+                  : Icons.upload_rounded,
+              size: 18,
+              color: isUploaded
+                  ? AppColors.success
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+        ]),
+      ),
+    );
+  }
+}
+
+// ─── Image source picker ──────────────────────────────────────────────────────
+
+class _SourcePicker extends StatelessWidget {
+  const _SourcePicker();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const SizedBox(height: 12),
+        Container(width: 36, height: 4,
+            decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(2))),
+        const SizedBox(height: 16),
+        Text('Choose source',
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 16),
+        ListTile(
+          leading: const Icon(Icons.camera_alt_outlined),
+          title: const Text('Camera'),
+          onTap: () => Navigator.pop(context, ImageSource.camera),
+        ),
+        ListTile(
+          leading: const Icon(Icons.photo_library_outlined),
+          title: const Text('Photo library'),
+          onTap: () => Navigator.pop(context, ImageSource.gallery),
+        ),
+        const SizedBox(height: 8),
+      ]),
+    );
+  }
 }

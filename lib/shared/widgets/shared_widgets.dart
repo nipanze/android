@@ -1,3 +1,4 @@
+// lib/shared/widgets/shared_widgets.dart
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
@@ -138,7 +139,7 @@ class UgxAmount extends StatelessWidget {
     return Text(
       'UGX $formatted',
       style: TextStyle(
-        fontFamily: 'DM Mono',
+        fontFamily: AppFonts.body,
         fontSize: fontSize,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.accent,

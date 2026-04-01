@@ -1,13 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../settings/data/system_settings_repository.dart';
 
 // ─── Purpose options ──────────────────────────────────────────────────────────
 const _purposes = [
@@ -55,6 +55,18 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
 
   bool _submitting = false;
   bool _savingDraft = false;
+  PlatformLimits _limits = PlatformLimits.defaults;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLimits();
+  }
+
+  Future<void> _loadLimits() async {
+    final limits = await getIt<SystemSettingsRepository>().getLimits();
+    if (mounted) setState(() { _limits = limits; });
+  }
 
   @override
   void dispose() {
@@ -112,7 +124,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     if (!mounted) return;
     setState(() => draft ? _savingDraft = false : _submitting = false);
 
-    unawaited(showDialog(
+    await showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(draft ? 'Draft saved' : 'Request submitted'),
@@ -129,7 +141,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           ),
         ],
       ),
-    ));
+    );
   }
 
   void _showGate(String message) {
@@ -158,32 +170,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 },
               )
             : null,
-        // ── Title + subnote ────────────────────────────────────────────
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _step == 0 ? 'Request a loan' : 'Review & publish',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              'Post a request to the marketplace',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        // ── Step counter top-right ─────────────────────────────────────
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Text(
-                'Step ${_step + 1} of 2',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ),
-        ],
+        title: Text(_step == 0 ? 'Request a loan' : 'Review & publish'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: LinearProgressIndicator(
@@ -219,14 +206,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
             ),
-            child: const Row(children: [
-              Icon(Icons.info_outline_rounded,
+            child: Row(children: [
+              const Icon(Icons.info_outline_rounded,
                   size: 16, color: AppColors.accent),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Loans: UGX 100,000 – 50,000,000 · Up to 60 months · Max 30% interest',
-                  style: TextStyle(fontSize: 11, color: AppColors.accent),
+                  'Loans: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Max ${_limits.maxInterestRate.toStringAsFixed(0)}% interest',
+                  style: const TextStyle(fontSize: 11, color: AppColors.accent),
                 ),
               ),
             ]),
@@ -247,8 +234,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               if (v == null || v.isEmpty) return 'Enter an amount';
               final n = int.tryParse(v);
               if (n == null) return 'Enter a valid number';
-              if (n < 100000) return 'Minimum UGX 100,000';
-              if (n > 50000000) return 'Maximum UGX 50,000,000';
+              if (n < _limits.minLoanAmount) return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
+              if (n > _limits.maxLoanAmount) return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
               return null;
             },
           ),
@@ -277,16 +264,16 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           TextFormField(
             controller: _rateController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Max Interest Rate (%) *',
-              hintText: 'e.g. 15',
-              prefixIcon: Icon(Icons.percent_rounded, size: 20),
+              hintText: 'e.g. 15 (max ${_limits.maxInterestRate.toStringAsFixed(0)}%)',
+              prefixIcon: const Icon(Icons.percent_rounded, size: 20),
               suffixText: '%',
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Enter a rate';
               final r = double.tryParse(v);
-              if (r == null || r < 5 || r > 30) return '5% to 30%';
+              if (r == null || r < _limits.minInterestRate || r > _limits.maxInterestRate) return '${_limits.minInterestRate.toStringAsFixed(0)}% to ${_limits.maxInterestRate.toStringAsFixed(0)}%';
               return null;
             },
           ),
@@ -438,7 +425,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           decoration: BoxDecoration(
             color: AppColors.success.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+            border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.2)),
           ),
           child: const Row(children: [
             Icon(Icons.verified_outlined, size: 14, color: AppColors.success),
@@ -455,7 +443,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
-  Widget _divider() => Divider(height: 1, color: Theme.of(context).dividerColor);
+  Widget _divider() => Divider(height: 1,
+      color: Theme.of(context).dividerColor);
 
   // ─── Bottom bar ─────────────────────────────────────────────────────────────
 
@@ -498,6 +487,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
+  String _fmt(int n) => _fmtAmount(n);
+
   String _fmtAmount(int n) {
     final s = n.toString();
     final buf = StringBuffer();
@@ -529,7 +520,9 @@ class _ReviewRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(icon,
+            size: 16,
+            color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

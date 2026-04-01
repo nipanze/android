@@ -356,15 +356,15 @@ class _OrderBook extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(children: [
                   Expanded(child: Text(bid.lenderToken ?? 'L-#???',
-                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 11,
+                      style: TextStyle(fontFamily: AppFonts.body, fontSize: 11,
                           color: color,
                           fontWeight: isFirst ? FontWeight.w500 : null))),
                   Expanded(child: Text(_fmt(bid.amount),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontFamily: 'DM Mono', fontSize: 11))),
+                      style: const TextStyle(fontFamily: AppFonts.body, fontSize: 11))),
                   Expanded(child: Text('${bid.interestRate.toStringAsFixed(1)}%',
                       textAlign: TextAlign.right,
-                      style: TextStyle(fontFamily: 'DM Mono', fontSize: 11,
+                      style: TextStyle(fontFamily: AppFonts.body, fontSize: 11,
                           color: color,
                           fontWeight: isFirst ? FontWeight.w500 : null))),
                 ]),
@@ -497,7 +497,7 @@ class _SubscriptionGateSheet extends StatelessWidget {
               const SizedBox(height: 2),
               Text(plan.price,
                   style: const TextStyle(
-                      fontFamily: 'DM Mono', fontSize: 9)),
+                      fontFamily: AppFonts.body, fontSize: 9)),
               const SizedBox(height: 8),
               ...plan.features.map((f) => Padding(
                 padding: const EdgeInsets.only(bottom: 3),

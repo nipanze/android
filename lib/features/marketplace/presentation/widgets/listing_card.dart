@@ -97,7 +97,7 @@ class ListingCard extends StatelessWidget {
                   Text(
                     'Best: ${listing.bestBidRate!.toStringAsFixed(1)}%',
                     style: const TextStyle(
-                      fontFamily: 'DM Mono',
+                      fontFamily: AppFonts.body,
                       fontSize: 11,
                       color: AppColors.success,
                     ),

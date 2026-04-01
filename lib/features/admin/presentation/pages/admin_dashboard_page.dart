@@ -63,7 +63,7 @@ class _KpiBox extends StatelessWidget {
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 9, letterSpacing: 0.5)),
       const Spacer(),
-      Text(value, style: const TextStyle(fontFamily: 'DM Mono', fontSize: 18, fontWeight: FontWeight.w600)),
+      Text(value, style: const TextStyle(fontFamily: AppFonts.body, fontSize: 18, fontWeight: FontWeight.w600)),
       Text(trend, style: TextStyle(fontSize: 10, color: trendUp ? AppColors.success : AppColors.danger)),
     ]));
 }

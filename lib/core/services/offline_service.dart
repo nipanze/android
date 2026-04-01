@@ -1,3 +1,6 @@
+// lib/core/services/offline_service.dart
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:injectable/injectable.dart';
 
@@ -9,10 +12,9 @@ class OfflineService {
 
   /// Returns true if the device currently has network access.
   Future<bool> get isOnline async {
-    final result = await _connectivity.checkConnectivity();
-    // ignore: unrelated_type_equality_checks
-    return result != ConnectivityResult.none;
-  }
+   final results = await _connectivity.checkConnectivity();
+   return !results.contains(ConnectivityResult.none) && results.isNotEmpty;
+ }
 
   /// Returns true if the device is offline.
   Future<bool> get isOffline async => !(await isOnline);

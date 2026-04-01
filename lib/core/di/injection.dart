@@ -1,14 +1,16 @@
-// lib/core/di/injection.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/kyc/data/kyc_repository.dart';
+import '../../features/kyc/presentation/cubit/kyc_cubit.dart';
 import '../../features/listings/data/listing_repository.dart';
 import '../../features/listings/presentation/cubit/my_listings_cubit.dart';
 import '../../features/marketplace/data/marketplace_repository.dart';
 import '../../features/marketplace/presentation/cubit/marketplace_cubit.dart';
+import '../../features/settings/data/system_settings_repository.dart';
 
 part 'injection.config.dart';
 
