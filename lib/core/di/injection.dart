@@ -1,3 +1,4 @@
+// lib/core/di/injection.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +11,8 @@ import '../../features/listings/data/listing_repository.dart';
 import '../../features/listings/presentation/cubit/my_listings_cubit.dart';
 import '../../features/marketplace/data/marketplace_repository.dart';
 import '../../features/marketplace/presentation/cubit/marketplace_cubit.dart';
+import '../../features/positions/data/positions_repository.dart';
+import '../../features/positions/presentation/cubit/positions_cubit.dart';
 import '../../features/settings/data/system_settings_repository.dart';
 
 part 'injection.config.dart';
