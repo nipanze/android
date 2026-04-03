@@ -1,9 +1,12 @@
 // lib/features/marketplace/presentation/pages/marketplace_page.dart
+// ignore_for_file: directives_ordering
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -70,9 +73,31 @@ class _MarketplaceView extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () => context.push(AppRoutes.notifications),
+                  BlocBuilder<NotificationCubit, NotificationState>(
+                    builder: (context, state) {
+                      final unread = state is NotificationLoaded
+                          ? state.unreadCount : 0;
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.notifications_outlined),
+                            onPressed: () => context.push(AppRoutes.notifications),
+                          ),
+                          if (unread > 0)
+                            Positioned(
+                              right: 8, top: 8,
+                              child: Container(
+                                width: 8, height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.danger,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

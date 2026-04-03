@@ -61,4 +61,6 @@ class AppStrings {
   static const String sessionExpired = 'Your session has expired. Please sign in again.';
   static const String kycRequired = 'Complete KYC verification before posting a listing.';
   static const String subscriptionRequired = 'An active subscription is required for this action.';
+
+  static String? get nonCustodialDisclaimer => null;
 }
