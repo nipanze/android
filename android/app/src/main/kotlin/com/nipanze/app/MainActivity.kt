@@ -1,4 +1,4 @@
-package com.example.nipanze
+package com.nipanze.app
 
 import io.flutter.embedding.android.FlutterActivity
 

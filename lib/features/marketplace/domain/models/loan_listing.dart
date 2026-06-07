@@ -1,8 +1,7 @@
+// lib/features/marketplace/domain/models/loan_listing.dart
 import 'package:equatable/equatable.dart';
 
 // ─── LoanListing ──────────────────────────────────────────────────────────────
-// v5 schema: no total_bid_amount / funding_percentage on loan_requests.
-// Bid activity is represented by number_of_bids + best_bid_rate only.
 
 class LoanListing extends Equatable {
   const LoanListing({
@@ -92,7 +91,7 @@ class LoanBid extends Equatable {
   final double interestRate;
   final String status;
   final DateTime placedAt;
-  final String? lenderToken; // anonymised — e.g. L-#482
+  final String? lenderToken;
 
   factory LoanBid.fromMap(Map<String, dynamic> map) {
     return LoanBid(
@@ -111,8 +110,6 @@ class LoanBid extends Equatable {
 }
 
 // ─── ContractSummary ──────────────────────────────────────────────────────────
-// Returned by v_user_portfolio / contract detail queries.
-// indicative_* fields reflect the SP-generated schedule, not a custodial balance.
 
 class ContractSummary extends Equatable {
   const ContractSummary({
@@ -123,6 +120,14 @@ class ContractSummary extends Equatable {
     required this.indicativeTotalRepayableUgx,
     required this.status,
     required this.contractedAt,
+    // Fields used by ContractDetailPage
+    required this.amount,
+    required this.district,
+    required this.purpose,
+    required this.durationMonths,
+    required this.interestRate,
+    this.indicativeMonthlyPayment,
+    this.indicativeTotalRepayment,
   });
 
   final String contractId;
@@ -130,8 +135,17 @@ class ContractSummary extends Equatable {
   final double agreedRate;
   final int indicativeMonthlyPaymentUgx;
   final int indicativeTotalRepayableUgx;
-  final String status; // 'active' | 'completed' | 'defaulted'
+  final String status;
   final DateTime contractedAt;
+
+  // Detail-page fields
+  final int amount;
+  final String district;
+  final String purpose;
+  final int durationMonths;
+  final double interestRate;
+  final int? indicativeMonthlyPayment;
+  final int? indicativeTotalRepayment;
 
   factory ContractSummary.fromMap(Map<String, dynamic> map) {
     return ContractSummary(
@@ -144,7 +158,18 @@ class ContractSummary extends Equatable {
           (map['indicative_total_repayable_ugx'] as num?)?.toInt() ?? 0,
       status: map['status'] as String? ?? 'active',
       contractedAt:
-          DateTime.tryParse(map['contracted_at'] as String? ?? '') ?? DateTime.now(),
+          DateTime.tryParse(map['contracted_at'] as String? ?? '') ??
+              DateTime.now(),
+      amount: (map['amount'] as num?)?.toInt() ??
+          (map['indicative_monthly_payment_ugx'] as num?)?.toInt() ?? 0,
+      district: map['district'] as String? ?? '',
+      purpose: map['purpose'] as String? ?? '',
+      durationMonths: map['duration_months'] as int? ?? 0,
+      interestRate: (map['agreed_rate'] as num?)?.toDouble() ?? 0,
+      indicativeMonthlyPayment:
+          (map['indicative_monthly_payment_ugx'] as num?)?.toInt(),
+      indicativeTotalRepayment:
+          (map['indicative_total_repayable_ugx'] as num?)?.toInt(),
     );
   }
 
@@ -153,7 +178,6 @@ class ContractSummary extends Equatable {
 }
 
 // ─── RepaymentLine ────────────────────────────────────────────────────────────
-// participant-reported only — platform never holds or moves funds.
 
 class RepaymentLine extends Equatable {
   const RepaymentLine({
@@ -161,14 +185,19 @@ class RepaymentLine extends Equatable {
     required this.contractId,
     required this.periodNumber,
     required this.reportedStatus,
+    required this.instalmentNumber,
+    required this.dueDate,
+    required this.totalUgx,
     this.reportedAt,
   });
 
   final String id;
   final String contractId;
   final int periodNumber;
-  /// 'pending' | 'paid' | 'overdue' — self-reported by participant
   final String reportedStatus;
+  final int instalmentNumber;
+  final DateTime dueDate;
+  final int totalUgx;
   final DateTime? reportedAt;
 
   bool get isPaid => reportedStatus == 'paid';
@@ -180,6 +209,12 @@ class RepaymentLine extends Equatable {
       contractId: map['contract_id'] as String,
       periodNumber: map['period_number'] as int? ?? 0,
       reportedStatus: map['reported_status'] as String? ?? 'pending',
+      // instalment_number mirrors period_number; fall back if column differs
+      instalmentNumber: map['instalment_number'] as int? ??
+          map['period_number'] as int? ?? 0,
+      dueDate: DateTime.tryParse(map['due_date'] as String? ?? '') ??
+          DateTime.now(),
+      totalUgx: (map['total_ugx'] as num?)?.toInt() ?? 0,
       reportedAt: map['reported_at'] != null
           ? DateTime.tryParse(map['reported_at'] as String)
           : null,

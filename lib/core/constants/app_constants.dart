@@ -14,6 +14,8 @@ class TableNames {
   static const String notifications = 'notifications';
   static const String auditLogs = 'audit_logs';
   static const String systemSettings = 'system_settings';
+
+  static const String negotiatorAssignments = 'negotiator_assignments';
 }
 
 class ViewNames {

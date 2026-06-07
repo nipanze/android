@@ -7,6 +7,8 @@ import '../../features/account/data/profile_repository.dart';
 import '../../features/account/presentation/cubit/profile_cubit.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/contracts/data/contract_repository.dart';
+import '../../features/contracts/presentation/cubit/contract_cubit.dart';
 import '../../features/kyc/data/kyc_repository.dart';
 import '../../features/kyc/presentation/cubit/kyc_cubit.dart';
 import '../../features/listings/data/listing_repository.dart';

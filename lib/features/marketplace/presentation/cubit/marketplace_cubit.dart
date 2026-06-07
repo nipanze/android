@@ -1,13 +1,10 @@
 // lib/features/marketplace/presentation/cubit/marketplace_cubit.dart
 import 'dart:async';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
-
 part 'marketplace_state.dart';
 
 @injectable
@@ -19,6 +16,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   String _activeFilter = 'all';
 
   Future<void> load({String filter = 'all'}) async {
+    if (isClosed) return; // ← guard: stale cubit from previous test/widget tree
     _activeFilter = filter;
     emit(const MarketplaceLoading());
     try {
@@ -27,9 +25,11 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         closingSoon: filter == 'closing',
         highYield: filter == 'yield',
       );
+      if (isClosed) return; // ← guard: cubit may have closed during await
       emit(MarketplaceLoaded(listings: listings, activeFilter: filter));
       _subscribeRealtime();
     } catch (e) {
+      if (isClosed) return;
       emit(MarketplaceError(e.toString()));
     }
   }

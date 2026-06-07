@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.nipanze"
+    namespace = "com.nipanze.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.nipanze"
+        applicationId = "com.nipanze.app"
         minSdk = flutter.minSdkVersion  // flutter_local_notifications requires minSdk 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

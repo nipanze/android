@@ -91,10 +91,14 @@ Future<void> _tapNav(WidgetTester tester, String label) async {
   await _pump(tester, total: const Duration(seconds: 3));
 }
 
-Future<void> _signOut(WidgetTester tester) async {
+Future<void> _goAccount(WidgetTester tester) async {
   await _tapNav(tester, 'Account');
-  // ProfileCubit loads async — wait for it before scrolling
+  // ProfileCubit loads async — wait for profile data before asserting
   await _pump(tester, total: const Duration(seconds: 4));
+}
+
+Future<void> _signOut(WidgetTester tester) async {
+  await _goAccount(tester);
   // Scroll down in large steps until Sign out is visible and hittable
   for (var i = 0; i < 10; i++) {
     final signOutBtn = find.widgetWithText(OutlinedButton, 'Sign out');
@@ -249,8 +253,6 @@ void main() {
       (tester) async {
     await _launchApp(tester);
     await _signIn(tester, 'lender@nipanze.test', 'Test1234!');
-    // Tap the FilterChip widget directly — find.text('Low risk') is ambiguous
-    // because listing cards also show a "Low risk" RiskBadge label.
     await tester.tap(find.widgetWithText(FilterChip, 'Low risk'));
     await _pump(tester, total: const Duration(seconds: 3));
     await tester.tap(find.widgetWithText(FilterChip, 'All'));
@@ -280,8 +282,7 @@ void main() {
     expect(find.text('Positions'), findsWidgets);
   });
 
-  testWidgets('18. Positions: Borrower tab is visible',
-      (tester) async {
+  testWidgets('18. Positions: Borrower tab is visible', (tester) async {
     await _launchApp(tester);
     await _signIn(tester, 'lender@nipanze.test', 'Test1234!');
     await _tapNav(tester, 'Positions');
@@ -354,7 +355,4 @@ void main() {
     await _signOut(tester);
     expect(find.text('Welcome back'), findsOneWidget);
   });
-}
-
-Future<void> _goAccount(WidgetTester tester) async {
 }
