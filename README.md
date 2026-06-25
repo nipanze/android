@@ -1,8 +1,8 @@
 # Nipanze — Flutter + Supabase
 
-## A Non-Custodial Digital Loan Listing Marketplace
+## A Non-Custodial Digital Lending Matchmaking Marketplace
 
-> Nipanze is a peer-to-peer loan listing marketplace that connects borrowers and lenders through competitive market bidding — without a bank, custodian, or intermediary holding any funds.
+> Nipanze is a peer-to-peer financial marketplace that connects borrowers and lenders through structured requests, lender offers, and controlled contact sharing — without a bank, custodian, or intermediary holding any funds.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Status: MVP](https://img.shields.io/badge/Status-MVP-blue.svg)
@@ -19,7 +19,7 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 - [Solution](#solution)
 - [Key Features](#key-features)
 - [Business Model](#business-model)
-- [Privacy & Anonymity](#privacy--anonymity)
+- [Transparency & Controlled Contact](#transparency--controlled-contact)
 - [How It Works](#how-it-works)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -43,13 +43,13 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 
 ## Overview
 
-Nipanze is a **transparent, market-driven loan listing marketplace** that directly connects borrowers and lenders through competitive bidding.
+Nipanze is a **peer-to-peer financial marketplace** that connects people who need money with people willing to lend, all within a single unified account system.
 
-Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, or set interest rates. It operates as a **non-custodial listing exchange**, enabling participants to discover fair pricing through open market competition. All money movement happens directly between matched parties via licensed payment providers — **never through Nipanze**.
+Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, guarantee repayment, track repayments, or act as a financial institution. It simply helps financial requests and offers meet through structured discovery, matching, and controlled connection.
 
-Borrowers can **view and compare lender bids in real time** before accepting any offer. No obligation exists until a borrower explicitly commits. After acceptance, a vetted **negotiator** is assigned to facilitate the off-platform deal.
+Users operate from one account and can act as both borrower and lender. Borrowing is free, marketplace viewing is free, and making lending offers requires a subscription. Contact details remain hidden until an offer is accepted.
 
-**Core Principle:** Democratise access to capital by eliminating unnecessary intermediaries and enabling true price discovery through open market competition.
+**Core Principle:** One marketplace. One account. Multiple financial opportunities.
 
 ---
 
@@ -57,31 +57,31 @@ Borrowers can **view and compare lender bids in real time** before accepting any
 
 In Uganda and similar emerging economies, access to affordable capital faces critical barriers:
 
-- **High interest rates:** Traditional banks charge premium rates with limited competition
-- **Rigid requirements:** Strict credit criteria exclude viable borrowers
-- **Slow processing:** Lengthy approval processes delay funding
-- **Limited transparency:** Opaque pricing and decision-making
-- **Underutilised savings:** Public funds lack productive investment channels
+- **Long bank procedures:** Formal approvals can take too long for urgent needs
+- **Lack of collateral:** Many viable borrowers cannot meet traditional security requirements
+- **Limited financial history:** Thin credit files exclude people with real repayment ability
+- **High interest rates:** Borrowers lack flexible, competitive alternatives
+- **Limited lender visibility:** Potential lenders struggle to find borrowers and assess repayment ability
+- **Weak lending structure:** Informal lending lacks a reliable marketplace for discovery, offers, and connection
 
-Many digital lending platforms simply replicate banking models — acting as shadow banks with centralised pricing and custody of funds.
-
-> Rapid mobile money adoption, increasing digital identity systems, and growing public demand for alternative investment opportunities create the ideal conditions for decentralised capital marketplaces in emerging economies.
+Many lending options still focus on collateral and institutional gatekeeping instead of giving borrowers a structured way to show income, intent, and repayment plans.
 
 ---
 
 ## Solution
 
-Nipanze transforms lending into an **open marketplace activity** where:
+Nipanze provides a simple marketplace structure where:
 
-- Borrowers publish funding requests with their maximum acceptable interest rate
-- Lenders compete by bidding lower interest rates
-- Borrowers observe live bidding activity (the **order book**) **before committing**
-- Market forces determine the final cost of capital
-- A vetted **negotiator** is auto-assigned after bid acceptance to facilitate the deal
-- Participants arrange settlement directly — Nipanze never touches funds
-- The platform orchestrates matching, anonymity, negotiator assignment, and reputation
+- Borrowers publish structured funding requests for free
+- Every request includes loan details, source of income, loan purpose, and repayment plan
+- Lenders browse listed requests for free
+- Lenders subscribe when they want to make offers
+- Borrowers review available offers and select the one that fits
+- Contact details are revealed only after a borrower accepts an offer
+- Both parties connect outside the platform
+- The platform supports discovery, matching, and controlled contact sharing
 
-**We are not a lender. We are a capital exchange.**
+**We are not a lender. We are a matchmaking marketplace.**
 
 ---
 
@@ -89,109 +89,98 @@ Nipanze transforms lending into an **open marketplace activity** where:
 
 ### For Borrowers
 
-- **Competitive rates** — market-driven pricing reduces borrowing costs
-- **Fast listing** — digital KYC and self-service listing creation
-- **Transparent process** — real-time order book visibility before commitment
-- **Flexible terms** — define amount, duration, and ceiling rate
-- **Watchlist** — track listings for free, subscribe only to bid or list
+- **Free access** — post loan requests without paying to list
+- **Structured requests** — explain amount, duration, repayment plan, income source, and purpose
+- **Repayment visibility** — show lenders how the loan will be repaid
+- **Flexible options** — receive and compare offers from multiple lenders
+- **My Requests** — track borrowing activity and lender responses in one place
+- **Controlled contact** — personal contact details stay hidden until an offer is accepted
 
 ### For Lenders
 
-- **Direct investment** — bid on specific listings you choose
-- **Risk transparency** — risk scores and credit bands (never raw scores)
-- **Higher returns** — compete to offer the best rate
-- **Order book** — see where your bid stands against competing lenders
-- **Reputation system** — behaviour-based trust scores
+- **Free browsing** — review borrower requests before subscribing
+- **Repayment context** — assess income source, loan purpose, and repayment plan
+- **My Offers** — manage lending activity using simple, human, trustworthy language
+- **Custom terms** — make offers with your own amount and expectations
+- **Borrower context** — use profile, purpose, and repayment-plan details to compare opportunities
+- **Return potential** — lend directly to selected borrowers for profit
 
 ### Platform Features
 
-- **Subscription model** — Borrower (UGX 20K/mo), Lender (UGX 35K/mo), Pro (UGX 150K/mo). Watchlist is free.
+- **Free borrower posting** — borrowers can create requests without a listing fee
+- **Free lender browsing** — lenders can browse requests before subscribing
+- **Subscription-gated offers** — making lending offers requires an active subscription
+- **Single account, multiple roles** — each user can borrow and lend from one account
+- **Marketplace main screen** — live feed of borrower requests with amount, purpose, profile, and repayment plan
 - **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
-- **Anonymity by default** — borrower and lender identities masked until post-acceptance reveal
-- **Negotiator assignment** — vetted facilitators assigned automatically on bid acceptance
-- **Contact reveal** — opt-in, one-time identity disclosure (UGX 25,000 add-on)
-- **Reputation engine** — weighted 0–100 score with Platinum / Gold / Silver / Bronze / Restricted tiers
-- **KYC gate** — listing creation blocked without approved KYC (DB trigger enforced)
+- **Controlled contact sharing** — contact details are revealed only after acceptance
 - **Compliance built-in** — append-only audit trail from day one
 
 ---
 
 ## Business Model
 
-Nipanze generates revenue through subscription fees and contact reveal add-ons — not interest spreads.
+Nipanze generates revenue through lender subscriptions for making offers — not interest spreads.
 
 | Revenue Stream | Description |
 |---|---|
-| Borrower subscription | UGX 20,000/month — list up to 2 requests, accept bids |
-| Lender subscription | UGX 35,000/month — place bids, track positions |
-| Pro subscription | UGX 150,000/month — analytics API access |
-| Contact reveal | UGX 25,000 per reveal — one-time post-acceptance add-on |
+| Lender subscriptions | Paid access for lenders who want to make offers |
 
 Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance.
 
 ---
 
-## Privacy & Anonymity
+## Transparency & Controlled Contact
 
-Nipanze is **anonymous by default and transparent by design**. During listing and bidding, borrower and lender identities are fully masked. Participants interact using risk indicators, financial terms, and performance metrics — not personal identity.
+Nipanze is **transparent before matching and controlled by design**. Borrower requests show enough structured information for lenders to make informed decisions, while personal contact details remain protected until a borrower accepts an offer.
 
-Full legal identity and contact details are revealed **only after a bid is accepted and the contact reveal add-on is purchased** — enforced at the API layer, not just the UI.
+Contact details are revealed **only after an offer is accepted** — enforced at the API layer, not just the UI.
+
+### Borrower Request Structure
+
+Each borrower request must include:
+
+- **Loan details:** amount needed, duration, and preferred repayment plan
+- **Source of income:** salary, business income, side income, or other repayment source
+- **Purpose of the loan:** what the money will be used for
+- **Repayment plan:** amount payable per period and repayment timeline
+
+Example: “I earn 800,000 UGX monthly and can repay 200,000 UGX per month.”
 
 ### Field Masking Rules
 
 #### Borrower → Public Loan Listing (`v_loan_listings` view)
 
-**Exposed (safe):** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `max_interest_rate`, `risk_category`, `credit_score_band` (range only, never raw score), `number_of_bids`, `funding_percentage`, `listed_at`, `expires_at`, `best_bid_rate`
+**Exposed:** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `income_source`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `listed_at`, `expires_at`
 
-**Masked (never in any public response):** `borrower_id`, email, phone, full name, raw credit score
+**Masked before acceptance:** `borrower_id`, email, phone, full name, national ID, and private verification documents
 
-#### Lender → Order Book
+#### Lender → Offers
 
-**Exposed:** `lender_token` (e.g. `L-#482`), `amount`, `interest_rate`, timestamp
+**Exposed:** offer amount, proposed expectations or terms, timestamp
 
-**Masked:** Lender name, email, phone — never exposed in order book
+**Masked before acceptance:** lender name, email, phone, and private verification documents
 
-#### Post-Acceptance Reveal (`contact_reveals` table)
+#### Post-Acceptance Contact Sharing
 
-Revealed only to the initiating party via opt-in reveal flow: legal name, phone, email, assigned negotiator contact.
+Revealed only after the borrower accepts an offer: legal name, phone, and email.
 
-### Reputation System
+### Platform Boundary
 
-Trust is **earned, not claimed**. A dynamic, behaviour-based reputation score (0–100) is computed by `sp_calculate_reputation_score()` after contract events.
-
-#### Formula (Weighted)
-
-```
-Reputation Score =
-  Repayment Performance     × 40%
-  Participation History     × 20%
-  Risk Accuracy             × 20%
-  Consistency & Reliability × 20%
-```
-
-#### Reputation Tiers
-
-| Score | Tier | Notes |
-| --- | --- | --- |
-| 85–100 | Platinum | Highest visibility |
-| 70–84 | Gold | Enhanced visibility |
-| 55–69 | Silver | Standard access |
-| 40–54 | Bronze | Basic access |
-| < 40 | Restricted | Limited platform access |
+Nipanze helps participants discover each other and make informed matching decisions. It does not handle money, track repayments, guarantee repayment, or manage the relationship after contact details are revealed.
 
 ---
 
 ## How It Works
 
 ```
-1. SUBSCRIBE  → User selects Borrower or Lender plan (Watchlist is free)
-2. KYC        → Identity verified before listing creation is allowed
-3. LIST       → Borrower specifies amount, duration, ceiling rate
-4. BID        → Lenders compete; order book visible in real time
-5. ACCEPT     → Borrower explicitly accepts one bid (accept_bid RPC)
-6. NEGOTIATE  → Negotiator auto-assigned; both parties notified
-7. REVEAL     → Optional contact reveal (UGX 25,000 add-on)
-8. SETTLE     → Parties arrange payment directly off-platform
+1. POST       → Borrower posts a structured loan request for free
+2. BROWSE     → Lenders browse borrower requests for free
+3. OFFER      → Lenders subscribe to make offers
+4. REVIEW     → Borrower reviews available offers
+5. ACCEPT     → Borrower selects one offer
+6. REVEAL     → Contact details are revealed only after acceptance
+7. CONNECT    → Parties proceed independently outside the platform
 ```
 
 ---
@@ -206,8 +195,8 @@ Reputation Score =
 | DI Container | get_it + injectable | Service locator with code-gen |
 | Auth | Supabase Auth | Email login, JWT, session management |
 | Database | Supabase Postgres | Relational data, RLS, triggers, functions |
-| Realtime | Supabase Realtime | WebSocket live order book subscriptions |
-| Storage | Supabase Storage | KYC docs, contract PDFs |
+| Realtime | Supabase Realtime | WebSocket updates for marketplace requests and offers |
+| Storage | Supabase Storage | Optional profile and verification documents |
 | Functions | Supabase Edge Functions (Stage 5) | Server-side logic, PDF generation |
 
 ---
@@ -227,27 +216,26 @@ lib/
 ├── features/
 │   ├── auth/                       # Login, Register, Verify Email, Reset Password, Onboarding
 │   ├── dashboard/                  # Home stub (redirects to marketplace post-login)
-│   ├── marketplace/                # Live feed (v_loan_listings), filters, loan detail, order book
-│   ├── watchlist/                  # Saved listings, closing alerts (free for all users)
-│   ├── positions/                  # My listings · My bids · Contracts (3-tab)
-│   ├── account/                    # Subscription, identity (KYC), reputation tier
-│   ├── loans/                      # Create listing, my listings, repayment schedule
-│   ├── bids/                       # My bids page
-│   ├── contracts/                  # Contract list and detail
+│   ├── marketplace/                # Live feed (v_loan_listings), filters, loan detail, offers
+│   ├── watchlist/                  # Saved listings, closing alerts
+│   ├── positions/                  # My Requests · My Offers
+│   ├── account/                    # Subscription, profile, verification
+│   ├── loans/                      # Create request, my requests
+│   ├── offers/                     # My Offers page
 │   ├── notifications/              # Notification centre, unread badge
-│   ├── kyc/                        # Document upload, status display
+│   ├── kyc/                        # Optional verification, status display
 │   ├── profile/                    # User profile, edit
-│   └── admin/                      # KYC review, user management, audit logs (admin only)
+│   └── admin/                      # Verification review, user management, audit logs (admin only)
 │       └── */
 │           ├── data/               # DataSources (Supabase) + Models
 │           ├── domain/             # Entities, UseCases, Repository interfaces
 │           └── presentation/       # BLoC + Pages + Widgets
 ├── shared/
-│   ├── models/                     # LoanListingModel, BidModel, ContractModel, UserModel…
-│   └── widgets/                    # MainScaffold, ReputationTierBadge, KycStatusChip
+│   ├── models/                     # LoanListingModel, OfferModel, UserModel…
+│   └── widgets/                    # MainScaffold, ProfileSummary, VerificationChip
 sql/
 │   ├── schema.sql                  # Full schema v4.0 — tables, triggers, RPCs, views
-│   └── seed.sql                    # Seed data v1.0 — 16 users, 41 listings, 3 contracts
+│   └── seed.sql                    # Seed data v1.0 — users, listings, and offers
 supabase/
 │   └── migrations/                 # Incremental migrations applied on top of schema.sql
 assets/
@@ -268,15 +256,13 @@ assets/
 | `/auth/verify-email` | VerifyEmailPage | Yes (unverified) |
 | `/auth/forgot-password` | ForgotPasswordPage | No |
 | `/marketplace` | MarketplacePage (tab 1) | Yes |
-| `/marketplace/:requestId` | LoanDetailPage + Order Book | Yes |
+| `/marketplace/:requestId` | LoanDetailPage + Offers | Yes |
 | `/watchlist` | WatchlistPage (tab 2) | Yes |
-| `/positions` | PositionsPage (tab 3) | Yes |
+| `/positions` | My Requests + My Offers | Yes |
 | `/account` | AccountPage (tab 4) | Yes |
-| `/loans/create` | LoanCreatePage | Yes (borrower + KYC) |
-| `/loans/my-loans` | MyLoansPage | Yes |
-| `/bids` | MyBidsPage | Yes |
-| `/contracts` | ContractsPage | Yes |
-| `/contracts/:contractId` | ContractDetailPage | Yes (party only) |
+| `/loans/create` | LoanCreatePage | Yes (borrower) |
+| `/loans/my-loans` | MyRequestsPage | Yes |
+| `/offers` | MyOffersPage | Yes |
 | `/notifications` | NotificationsPage | Yes |
 | `/kyc` | KycPage | Yes |
 | `/profile` | ProfilePage | Yes |
@@ -297,44 +283,34 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 
 | Table | Purpose |
 | --- | --- |
-| `profiles` | Core user profile. Extends `auth.users` 1-to-1. Holds `credit_score`, `reputation_tier`, `lender_token`. |
+| `profiles` | Core user profile. Extends `auth.users` 1-to-1. Supports one account with borrower and lender activity. |
 | `system_settings` | Platform config. Business limits read from here at runtime. |
-| `subscriptions` | Active plan per user. `watchlist` plan = free. |
-| `kyc_verifications` | Document upload and admin review. `status='approved'` required for listing creation. |
-| `loan_requests` | Borrower funding requests. Public view via `v_loan_listings` (borrower_id excluded). |
-| `loan_bids` | Lender offers. Lenders shown as `lender_token` — identity never exposed in order book. |
-| `watchlist` | User-saved listings. Free for all plans. |
-| `negotiators` | Vetted professionals assignable to matched deals. |
-| `contracts` | Created atomically on bid acceptance. Drives full post-acceptance lifecycle. |
-| `repayment_schedules` | Amortisation lines per contract. Participants self-report; Nipanze does not verify. |
-| `negotiator_assignments` | Links a contract to its assigned negotiator. |
-| `negotiator_assessments` | Structured assessments that feed `sp_calculate_reputation_score`. |
-| `contact_reveals` | Opt-in, irreversible identity disclosure. Logged in `audit_logs`. |
-| `credit_score_events` | Audit trail for score changes. |
+| `subscriptions` | Lender offer access. Borrower posting and marketplace viewing remain free. |
+| `kyc_verifications` | Optional verification and admin review. |
+| `loan_requests` | Structured borrower funding requests with amount, duration, purpose, income source, and repayment plan. |
+| `loan_offers` | Lender offers on borrower requests. Contact details stay hidden until acceptance. |
+| `watchlist` | User-saved listings. |
+| `contact_reveals` | Post-acceptance contact sharing. Logged in `audit_logs`. |
 | `notifications` | In-app notification feed. |
 | `audit_logs` | **Append-only** compliance trail. Never update or delete rows. |
 | `refresh_tokens` | JWT refresh token store with rotation chain. |
-| `api_keys` | Pro plan API keys. |
 | `referrals` | Referral programme tracking. |
 
 ### Key Functions and Triggers
 
 | Name | Type | Purpose |
 | --- | --- | --- |
-| `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles`; creates free watchlist subscription |
-| `sp_calculate_reputation_score(user_id)` | Function | Weighted 0–100 reputation score |
-| `sp_calculate_repayment_schedule(contract_id)` | Function | Generates amortisation schedule |
-| `accept_bid(request_id, bid_id, borrower_id)` | RPC | Atomic bid acceptance + contract + negotiator assignment |
-| `sp_assign_negotiator(contract_id)` | RPC | Auto-assigns an available negotiator |
+| `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles` |
+| `accept_offer(request_id, offer_id, borrower_id)` | RPC | Atomic offer acceptance + contact eligibility |
 
 ### Key Views
 
 | View | Purpose |
 | --- | --- |
-| `v_loan_listings` | Anonymised marketplace — `borrower_id` intentionally excluded |
-| `v_user_portfolio` | Dashboard — borrower + lender aggregates in one query |
-| `v_lender_investments` | Lender returns page — invested amounts, avg rate |
-| `v_loan_performance` | Monthly platform KPIs |
+| `v_loan_listings` | Public marketplace listings with borrower contact details excluded |
+| `v_user_marketplace_activity` | Dashboard — borrower requests and lender offers in one query |
+| `v_lender_offers` | Lender offer activity |
+| `v_marketplace_activity` | Marketplace request and offer KPIs |
 
 ---
 
@@ -360,14 +336,13 @@ Studio at `http://127.0.0.1:54323` provides table browsing, auth user management
 
 ### 2. Auth Bridge Trigger
 
-The `handle_new_auth_user()` function is defined in `sql/schema.sql` and runs automatically on every `auth.users` INSERT. It creates the corresponding `public.profiles` row and provisions a free `watchlist` subscription automatically.
+The `handle_new_auth_user()` function is defined in `sql/schema.sql` and runs automatically on every `auth.users` INSERT. It creates the corresponding `public.profiles` row for marketplace access.
 
 ### 3. Storage Buckets
 
-Create two buckets in Storage → New bucket:
+Create one bucket in Storage → New bucket:
 
-- `kyc-documents` — private; user can upload to own folder only
-- `contracts` — private; only contract parties can read
+- `verification-documents` — private; user can upload optional ID documents to own folder only
 
 ### 4. Production Project
 
@@ -474,9 +449,8 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 | `animate_do ^3.x` | FadeIn/SlideIn animations | 1 |
 | `lottie ^3.x` | Loading and empty state animations | 2 |
 | `shimmer ^3.x` | Skeleton loading screens | 2 |
-| `percent_indicator ^4.x` | Bid coverage progress bars | 2 |
+| `percent_indicator ^4.x` | Request interest and offer coverage indicators | 2 |
 | `fl_chart ^0.69.x` | Portfolio and analytics charts | 3 |
-| `pdf ^3.x` | Client-side contract PDF | 5 |
 | `local_auth ^2.x` | Biometric login | 3 |
 | `flutter_local_notifications ^17.x` | In-app notification banners | 3 |
 
@@ -487,19 +461,17 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 Edge Functions (Deno TypeScript) wrap Postgres RPCs for server-side enforcement. Added in Stage 5.
 
 ```bash
-supabase functions new accept-bid
-supabase functions serve accept-bid --env-file .env.local   # local test
-supabase functions deploy accept-bid                         # deploy
+supabase functions new accept-offer
+supabase functions serve accept-offer --env-file .env.local   # local test
+supabase functions deploy accept-offer                         # deploy
 ```
 
 | Function | Purpose |
 | --- | --- |
-| `accept-bid` | Atomic bid acceptance with server enforcement |
-| `place-bid` | Server-side balance/subscription validation |
-| `assign-negotiator` | Auto-assign vetted negotiator on acceptance |
-| `generate-contract-pdf` | Generate, hash, and store contract PDF |
+| `accept-offer` | Atomic offer acceptance with server enforcement |
+| `make-offer` | Server-side subscription validation for lender offers |
+| `reveal-contact` | Post-acceptance contact sharing |
 | `send-sms` | Africa's Talking or Twilio SMS alerts |
-| `calculate-reputation` | Run after contract events |
 
 ---
 
@@ -528,19 +500,19 @@ All accounts are pre-loaded by `sql/seed.sql` v1.0 with fixed UUIDs and `email_c
 
 | Email | Role | State |
 | --- | --- | --- |
-| `david.mukasa@gmail.com` | Borrower | KYC approved, active listing |
-| `sarah.namukasa@yahoo.com` | Borrower | KYC approved, contract draft pending |
-| `james.okello@outlook.com` | Both | KYC approved, borrower + lender flows |
-| `maria.nakato@gmail.com` | Borrower | Active listing, 1 pending bid |
-| `robert.ssemwanga@gmail.com` | Both | Bid submitted on two listings |
-| `invest@pearlcapital.ug` | Lender | Multiple active bids |
-| `funds@victoriainvest.co.ug` | Lender | Bid accepted — contract viewable |
-| `lending@equatorfinance.ug` | Lender | Bid accepted — contract viewable |
-| `info@greenleafagro.co.ug` | Lender | Pending bid |
-| `contact@kampalatech.ug` | Lender | Pending bid |
-| `alice.namuli@gmail.com` | Borrower | KYC pending — test listing gate |
+| `david.mukasa@gmail.com` | Borrower | Verified, active listing |
+| `sarah.namukasa@yahoo.com` | Borrower | Verified, offer accepted |
+| `james.okello@outlook.com` | Both | Verified, borrower + lender flows |
+| `maria.nakato@gmail.com` | Borrower | Active listing, 1 pending offer |
+| `robert.ssemwanga@gmail.com` | Both | Offers submitted on two listings |
+| `invest@pearlcapital.ug` | Lender | Multiple active offers |
+| `funds@victoriainvest.co.ug` | Lender | Offer accepted — contact reveal available |
+| `lending@equatorfinance.ug` | Lender | Offer accepted — contact reveal available |
+| `info@greenleafagro.co.ug` | Lender | Pending offer |
+| `contact@kampalatech.ug` | Lender | Pending offer |
+| `alice.namuli@gmail.com` | Borrower | Optional ID verification pending |
 | `admin1@nipanze.ug` | Admin | Full admin dashboard access |
-| `test.user@gmail.com` | Borrower | No KYC, no profile — test onboarding gates |
+| `test.user@gmail.com` | Borrower | No profile — test onboarding gates |
 
 ---
 
@@ -564,10 +536,9 @@ All accounts are pre-loaded by `sql/seed.sql` v1.0 with fixed UUIDs and `email_c
 - **RLS on all tables** — Postgres enforces access control, not just the application layer
 - **JWT auth** — Supabase issues short-lived JWTs; sessions auto-refresh
 - **Service role key never in client** — only used inside Edge Functions
-- **Anonymised listings** — `borrower_id` excluded from `v_loan_listings` at the view level
-- **KYC gate** — DB trigger blocks listing creation without approved KYC
+- **Controlled contact sharing** — borrower and lender contact details stay hidden until acceptance
 - **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
-- **Lender tokens** — stable per-session anonymous IDs (e.g. `L-#482`) in order book
+- **Private documents** — verification documents are never exposed in marketplace listings
 - **Refresh token rotation** — reuse attack detection via `replaced_by` chain
 - **`--dart-define` credentials** — Supabase keys injected at build time, not hardcoded
 
@@ -577,11 +548,11 @@ All accounts are pre-loaded by `sql/seed.sql` v1.0 with fixed UUIDs and `email_c
 
 > Nipanze operates as a technology marketplace. We do not hold funds, accept deposits, issue loans, pool capital, or set interest rates.
 
-**We DO:** Provide marketplace infrastructure, verify user identities (KYC), display risk scores, coordinate negotiator assignment, maintain an immutable audit trail.
+**We DO:** Provide marketplace infrastructure, show borrower-provided request information, manage controlled contact sharing, and facilitate discovery.
 
 **We DO NOT:** Accept deposits, hold or pool user funds, issue loans or set interest rates, guarantee returns, act as a bank or financial institution, process payments.
 
-All money movement is arranged directly between matched participants off-platform.
+All money movement, loan documentation, and repayment tracking happen directly between matched participants outside the platform.
 
 ---
 
@@ -593,7 +564,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 - Schema v4.0, seed data, Flutter scaffold, auth, navigation, onboarding, unit + integration tests
 
 ### Stage 2 — Core Marketplace *(in progress)*
-- Live marketplace feed, order book, KYC upload, listing creation, bidding, bid acceptance
+- Live marketplace feed, structured borrower requests, free browsing, subscription-gated offers, offer acceptance
 
 ### Stage 3 — Polish & Supporting Features
 - Watchlist alerts, positions, notifications, analytics, profile, error/empty states
@@ -601,14 +572,14 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 3.5 — Cloud Migration & Auth Hardening
 - Supabase Cloud, RLS audit, token rotation, APK release build
 
-### Stage 4 — Negotiator Module & Contract Drafting
-- Negotiator assignment, contact reveal flow, draft contract generation
+### Stage 4 — Contact Sharing
+- Post-acceptance contact sharing, notifications, profile improvements
 
-### Stage 5 — Admin, Compliance & Credit Score Automation
-- Admin dashboard, in-app KYC review, reputation automation, PDF contracts, SMS
+### Stage 5 — Admin & Compliance
+- Admin dashboard, verification review, audit trails, SMS
 
 ### Stage 6 — Launch & Growth
-- Play Store, App Store, referral programme, Pro API
+- Play Store, App Store, referral programme, lender subscription growth
 
 ---
 

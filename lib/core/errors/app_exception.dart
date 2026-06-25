@@ -29,12 +29,13 @@ class ValidationException extends AppException {
 }
 
 class PermissionException extends AppException {
-  const PermissionException([super.message = 'You do not have permission to perform this action.']);
+  const PermissionException(
+      [super.message = 'You do not have permission to perform this action.']);
 }
 
 class KycRequiredException extends AppException {
   const KycRequiredException()
-      : super('KYC verification is required before posting a listing.');
+      : super('Verification is required before continuing.');
 }
 
 class SubscriptionRequiredException extends AppException {
@@ -43,7 +44,7 @@ class SubscriptionRequiredException extends AppException {
 }
 
 class ListingNotFoundException extends AppException {
-  const ListingNotFoundException() : super('This listing could not be found.');
+  const ListingNotFoundException() : super('This request could not be found.');
 }
 
 /// Parses Supabase exceptions into user-friendly [AppException]s.
@@ -67,50 +68,55 @@ AppException _parseAuthError(String message) {
     return const AuthException('Invalid email or password.');
   }
   if (lower.contains('email not confirmed')) {
-    return const AuthException('Please verify your email address before signing in.');
+    return const AuthException(
+        'Please verify your email address before signing in.');
   }
   if (lower.contains('user already registered')) {
     return const AuthException('An account with this email already exists.');
   }
   if (lower.contains('rate limit')) {
-    return const AuthException('Too many attempts. Please wait a moment and try again.');
+    return const AuthException(
+        'Too many attempts. Please wait a moment and try again.');
   }
   return const AuthException('Authentication failed. Please try again.');
 }
 
 AppException _parsePostgrestError(String code, String message) {
   // Nipanze-specific trigger codes
-  if (message.contains('NIPANZE_KYC_REQUIRED')) return const KycRequiredException();
+  if (message.contains('NIPANZE_KYC_REQUIRED')) {
+    return const KycRequiredException();
+  }
   if (message.contains('NIPANZE_KYC_EXPIRED')) {
-    return const DatabaseException('Your KYC has expired. Please re-verify to continue.');
+    return const DatabaseException(
+        'Your KYC has expired. Please re-verify to continue.');
   }
   if (message.contains('NIPANZE_ACCOUNT_INACTIVE')) {
     return const PermissionException('Your account is not active.');
   }
-  if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED')) {
-    return const SubscriptionRequiredException('Borrower or Pro');
-  }
   if (message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
-    return const SubscriptionRequiredException('Lender or Pro');
+    return const SubscriptionRequiredException('Lender');
   }
   if (message.contains('NIPANZE_MAX_LISTINGS')) {
-    return const DatabaseException('You have reached the maximum number of active listings.');
+    return const DatabaseException(
+        'You have reached the maximum number of active requests.');
   }
   if (message.contains('NIPANZE_SELF_BID')) {
-    return const ValidationException('You cannot bid on your own listing.');
+    return const ValidationException(
+        'You cannot make an offer on your own request.');
   }
-  if (message.contains('NIPANZE_RATE_CEILING')) {
-    return const ValidationException('Your bid rate exceeds the listing ceiling rate.');
+  if (message.contains('NIPANZE_OFFER_LOCKED')) {
+    return const DatabaseException(
+        'This offer has already been accepted and cannot be changed.');
   }
-  if (message.contains('NIPANZE_BID_LOCKED')) {
-    return const DatabaseException('This bid has already been accepted and cannot be changed.');
-  }
-  if (message.contains('NIPANZE_NO_NEGOTIATOR')) {
-    return const DatabaseException('No negotiators are available. Please try again shortly.');
+  if (message.contains('NIPANZE_CONTACT_NOT_ALLOWED')) {
+    return const PermissionException(
+        'Contact details are only available after an offer is accepted.');
   }
 
   // Generic Postgres codes
-  if (code == '23505') return const DatabaseException('A duplicate entry already exists.');
+  if (code == '23505') {
+    return const DatabaseException('A duplicate entry already exists.');
+  }
   if (code == '42501') return const PermissionException();
   if (code == 'PGRST116') return const ListingNotFoundException();
 

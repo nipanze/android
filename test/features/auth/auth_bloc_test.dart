@@ -6,6 +6,8 @@ import 'package:nipanze/core/errors/app_exception.dart';
 import 'package:nipanze/features/auth/data/auth_repository.dart';
 import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
 import 'package:nipanze/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    hide AuthException, AuthState;
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -21,7 +23,8 @@ void main() {
 
   setUp(() {
     mockRepo = MockAuthRepository();
-    when(() => mockRepo.authStateChanges).thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.authStateChanges)
+        .thenAnswer((_) => const Stream.empty());
     when(() => mockRepo.currentUser).thenReturn(null);
     when(() => mockRepo.isEmailVerified).thenReturn(false);
   });
@@ -58,8 +61,9 @@ void main() {
       'AuthSignInRequested emits Loading then Authenticated on success',
       build: () => AuthBloc(mockRepo),
       setUp: () {
-        when(() => mockRepo.signIn(email: 'test@nipanze.ug', password: 'Test1234!'))
-            .thenAnswer((_) async => testUser);
+        when(() => mockRepo.signIn(
+            email: 'test@nipanze.ug',
+            password: 'Test1234!')).thenAnswer((_) async => testUser);
         when(() => mockRepo.isEmailVerified).thenReturn(true);
       },
       act: (bloc) => bloc.add(const AuthSignInRequested(
@@ -76,7 +80,8 @@ void main() {
       'AuthSignInRequested emits Loading then AuthError on failure',
       build: () => AuthBloc(mockRepo),
       setUp: () {
-        when(() => mockRepo.signIn(email: any(named: 'email'), password: any(named: 'password')))
+        when(() => mockRepo.signIn(
+                email: any(named: 'email'), password: any(named: 'password')))
             .thenThrow(const AuthException('Invalid email or password.'));
       },
       act: (bloc) => bloc.add(const AuthSignInRequested(
@@ -94,10 +99,10 @@ void main() {
       build: () => AuthBloc(mockRepo),
       setUp: () {
         when(() => mockRepo.signUp(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
-          fullName: any(named: 'fullName'),
-        )).thenAnswer((_) async {});
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+              fullName: any(named: 'fullName'),
+            )).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthSignUpRequested(
         email: 'new@nipanze.ug',
@@ -106,7 +111,8 @@ void main() {
       )),
       expect: () => [
         isA<AuthLoading>(),
-        predicate<AuthState>((s) => s is AuthUnauthenticated && s.pendingVerification),
+        predicate<AuthState>(
+            (s) => s is AuthUnauthenticated && s.pendingVerification),
       ],
     );
 
@@ -153,6 +159,57 @@ void main() {
     test('unknown error returns generic DatabaseException', () {
       final e = parseSupabaseError(Exception('unexpected error'));
       expect(e, isA<DatabaseException>());
+    });
+
+    test('duplicate postgres code returns duplicate DatabaseException', () {
+      final e = parseSupabaseError(const PostgrestException(
+        message: 'duplicate key value violates unique constraint',
+        code: '23505',
+      ));
+
+      expect(e, isA<DatabaseException>());
+      expect(e.message, 'A duplicate entry already exists.');
+    });
+
+    test('request not found postgres code returns ListingNotFoundException',
+        () {
+      final e = parseSupabaseError(const PostgrestException(
+        message: 'JSON object requested, multiple or no rows returned',
+        code: 'PGRST116',
+      ));
+
+      expect(e, isA<ListingNotFoundException>());
+      expect(e.message, 'This request could not be found.');
+    });
+
+    test('lender subscription trigger maps to offer subscription message', () {
+      final e = parseSupabaseError(const PostgrestException(
+        message: 'NIPANZE_LENDER_SUBSCRIPTION_REQUIRED',
+      ));
+
+      expect(e, isA<SubscriptionRequiredException>());
+      expect(e.message, 'A Lender subscription is required for this action.');
+    });
+
+    test('self offer trigger maps to user-friendly validation message', () {
+      final e = parseSupabaseError(const PostgrestException(
+        message: 'NIPANZE_SELF_BID',
+      ));
+
+      expect(e, isA<ValidationException>());
+      expect(e.message, 'You cannot make an offer on your own request.');
+    });
+
+    test('contact reveal trigger maps to permission message', () {
+      final e = parseSupabaseError(const PostgrestException(
+        message: 'NIPANZE_CONTACT_NOT_ALLOWED',
+      ));
+
+      expect(e, isA<PermissionException>());
+      expect(
+        e.message,
+        'Contact details are only available after an offer is accepted.',
+      );
     });
   });
 }

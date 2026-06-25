@@ -1,19 +1,20 @@
 -- ============================================
 -- NIPANZE Seed Data
--- Version: 1.2 (Schema-Aligned)
+-- Version: 2.0 (Schema v4.0 Aligned)
 -- ============================================
 --
--- FIXES vs v1.1:
---   1. loan_requests: removed total_bid_amount, funding_percentage
---      (columns do not exist in schema v5.0)
---   2. contracts: replaced monthly_payment_ugx, total_repayment_ugx,
---      total_interest_ugx, outstanding_balance, total_repaid, days_overdue
---      with indicative_monthly_payment_ugx, indicative_total_repayment_ugx,
---      indicative_total_interest_ugx (correct schema column names)
---   3. repayment_schedules: removed amount_due, amount_paid, paid_at,
---      days_late (do not exist). Uses reported_status/reported_at/reported_by only.
---   4. notifications: replaced 'repayment_due' enum value (does not exist)
---      with 'system'.
+-- Aligned to schema v4.0:
+--   • profiles: removed credit_score, reputation_tier, lender_token
+--   • subscriptions: borrower plan removed — borrowing is free (plan = 'free')
+--   • loan_requests: removed max_interest_rate, risk_category, credit_score_band
+--     Added: income_source, preferred_repayment_plan,
+--            repayment_amount_per_period, repayment_timeline
+--   • loan_bids → loan_offers: offer_amount, proposed_expectations
+--   • negotiators, contracts, repayment_schedules,
+--     negotiator_assignments removed (not in schema v4.0)
+--   • contact_reveals added (tied to offer_id, not contract_id)
+--   • notifications: bid_id → offer_id; updated enum values
+--   • Notification types aligned to v4.0 enum
 --
 -- Password for ALL accounts: Test1234!
 --
@@ -242,141 +243,141 @@ INSERT INTO auth.users (
 ON CONFLICT (id) DO NOTHING;
 
 -- handle_new_auth_user trigger has now fired for each row above,
--- creating public.profiles rows and free watchlist subscriptions automatically.
+-- creating public.profiles rows and free subscriptions automatically.
 
 
 -- ============================================
 -- STEP 2: UPDATE public.profiles
+-- NOTE: credit_score, reputation_tier, lender_token removed in v4.0.
 -- ============================================
 
 -- Borrowers
 UPDATE profiles SET
     full_name='David Mukasa', phone='+256701234567', district='Central',
-    employment_type='employed', employer_name='Uganda Revenue Authority', monthly_income_ugx=4500000,
-    account_status='active', credit_score=75, lender_token='L-#4821',
+    employment_type='employed', employer_name='Uganda Revenue Authority',
+    monthly_income_ugx=4500000, account_status='active',
     created_at='2024-01-15 08:30:00'
 WHERE id='10000000-0000-0000-0000-000000000001';
 
 UPDATE profiles SET
     full_name='Sarah Namukasa', phone='+256702345678', district='Central',
-    employment_type='employed', employer_name='Stanbic Bank Uganda', monthly_income_ugx=3200000,
-    account_status='active', credit_score=68, lender_token='L-#3947',
+    employment_type='employed', employer_name='Stanbic Bank Uganda',
+    monthly_income_ugx=3200000, account_status='active',
     created_at='2024-01-18 10:45:00'
 WHERE id='10000000-0000-0000-0000-000000000002';
 
 UPDATE profiles SET
     full_name='James Okello', phone='+256703456789', district='Central',
-    employment_type='employed', employer_name='MTN Uganda', monthly_income_ugx=5800000,
-    account_status='active', credit_score=82, lender_token='L-#7263',
+    employment_type='employed', employer_name='MTN Uganda',
+    monthly_income_ugx=5800000, account_status='active',
     created_at='2024-01-20 14:20:00'
 WHERE id='10000000-0000-0000-0000-000000000003';
 
 UPDATE profiles SET
     full_name='Maria Nakato', phone='+256704567890', district='Central',
-    employment_type='self_employed', employer_name='Nakato Boutique', monthly_income_ugx=2800000,
-    account_status='active', credit_score=55, lender_token='L-#5519',
+    employment_type='self_employed', employer_name='Nakato Boutique',
+    monthly_income_ugx=2800000, account_status='active',
     created_at='2024-01-22 09:10:00'
 WHERE id='10000000-0000-0000-0000-000000000004';
 
 UPDATE profiles SET
     full_name='Robert Ssemwanga', phone='+256705678901', district='Central',
-    employment_type='employed', employer_name='DFCU Bank', monthly_income_ugx=6500000,
-    account_status='active', credit_score=85, lender_token='L-#1038',
+    employment_type='employed', employer_name='DFCU Bank',
+    monthly_income_ugx=6500000, account_status='active',
     created_at='2024-01-25 11:30:00'
 WHERE id='10000000-0000-0000-0000-000000000005';
 
 -- Lenders
 UPDATE profiles SET
     full_name='Michael Semakula', phone='+256711234567', district='Central',
-    employment_type='business_owner', employer_name='GreenLeaf Agro Solutions Ltd', monthly_income_ugx=15000000,
-    account_status='active', credit_score=72, lender_token='L-#6641',
+    employment_type='business_owner', employer_name='GreenLeaf Agro Solutions Ltd',
+    monthly_income_ugx=15000000, account_status='active',
     created_at='2024-02-18 09:20:00'
 WHERE id='10000000-0000-0000-0000-000000000006';
 
 UPDATE profiles SET
     full_name='Sandra Namutebi', phone='+256712345678', district='Central',
-    employment_type='business_owner', employer_name='Kampala Tech Innovations', monthly_income_ugx=12000000,
-    account_status='active', credit_score=78, lender_token='L-#2290',
+    employment_type='business_owner', employer_name='Kampala Tech Innovations',
+    monthly_income_ugx=12000000, account_status='active',
     created_at='2024-02-20 11:40:00'
 WHERE id='10000000-0000-0000-0000-000000000007';
 
 UPDATE profiles SET
     full_name='William Kasujja', phone='+256716789012', district='Central',
-    employment_type='business_owner', employer_name='Pearl Capital Investment Fund', monthly_income_ugx=25000000,
-    account_status='active', credit_score=91, lender_token='L-#9002',
+    employment_type='business_owner', employer_name='Pearl Capital Investment Fund',
+    monthly_income_ugx=25000000, account_status='active',
     created_at='2024-03-01 10:10:00'
 WHERE id='10000000-0000-0000-0000-000000000008';
 
 UPDATE profiles SET
     full_name='Catherine Namboze', phone='+256717890123', district='Central',
-    employment_type='business_owner', employer_name='Victoria Investment Group', monthly_income_ugx=22000000,
-    account_status='active', credit_score=88, lender_token='L-#3375',
+    employment_type='business_owner', employer_name='Victoria Investment Group',
+    monthly_income_ugx=22000000, account_status='active',
     created_at='2024-03-03 12:30:00'
 WHERE id='10000000-0000-0000-0000-000000000009';
 
 UPDATE profiles SET
     full_name='George Mulindwa', phone='+256718901234', district='Central',
-    employment_type='business_owner', employer_name='Equator Finance Corporation', monthly_income_ugx=28000000,
-    account_status='active', credit_score=89, lender_token='L-#7714',
+    employment_type='business_owner', employer_name='Equator Finance Corporation',
+    monthly_income_ugx=28000000, account_status='active',
     created_at='2024-03-05 09:45:00'
 WHERE id='10000000-0000-0000-0000-000000000010';
 
 -- Borrowers continued
 UPDATE profiles SET
     full_name='Frank Omondi', phone='+256719012345', district='Eastern',
-    employment_type='employed', employer_name='Bank of Africa', monthly_income_ugx=3300000,
-    account_status='active', credit_score=42, lender_token='L-#8831',
+    employment_type='employed', employer_name='Bank of Africa',
+    monthly_income_ugx=3300000, account_status='active',
     created_at='2024-03-08 14:15:00'
 WHERE id='10000000-0000-0000-0000-000000000011';
 
 UPDATE profiles SET
     full_name='Lucy Nambi', phone='+256720123456', district='Central',
-    employment_type='employed', employer_name='National Social Security Fund', monthly_income_ugx=2900000,
-    account_status='active', credit_score=60, lender_token='L-#4402',
+    employment_type='employed', employer_name='National Social Security Fund',
+    monthly_income_ugx=2900000, account_status='active',
     created_at='2024-03-10 11:20:00'
 WHERE id='10000000-0000-0000-0000-000000000012';
 
 UPDATE profiles SET
     full_name='Charles Mwesigwa', phone='+256721234567', district='Western',
-    employment_type='employed', employer_name='Shell Uganda', monthly_income_ugx=5200000,
-    account_status='active', credit_score=77, lender_token='L-#5566',
+    employment_type='employed', employer_name='Shell Uganda',
+    monthly_income_ugx=5200000, account_status='active',
     created_at='2024-03-12 16:40:00'
 WHERE id='10000000-0000-0000-0000-000000000013';
 
--- KYC-pending borrower (tests the KYC gate)
+-- Alice Namuli — pending_verification (tests the account-status gate)
 UPDATE profiles SET
     full_name='Alice Namuli', phone='+256726789012', district='Central',
-    employment_type='employed', employer_name='Equity Bank', monthly_income_ugx=2700000,
-    account_status='pending_verification', credit_score=50, lender_token='L-#1193',
+    employment_type='employed', employer_name='Equity Bank',
+    monthly_income_ugx=2700000, account_status='pending_verification',
     created_at='2026-01-25 09:15:00'
 WHERE id='10000000-0000-0000-0000-000000000014';
 
 -- Admins
 UPDATE profiles SET
     full_name='Admin One', phone='+256700000001', district='Central',
-    account_status='active', role='admin', credit_score=50, lender_token='L-#0001',
+    account_status='active', role='admin',
     created_at='2024-01-01 08:00:00'
 WHERE id='10000000-0000-0000-0000-000000000015';
 
 UPDATE profiles SET
     full_name='Admin Two', phone='+256700000002', district='Central',
-    account_status='active', role='admin', credit_score=50, lender_token='L-#0002',
+    account_status='active', role='admin',
     created_at='2024-01-01 08:00:00'
 WHERE id='10000000-0000-0000-0000-000000000016';
 
--- Test user
+-- Test user — no profile edits; tests onboarding gate
 UPDATE profiles SET
     full_name='Test User', phone='+256799999999', district='Central',
-    account_status='active', credit_score=50, lender_token='L-#9999',
+    account_status='active',
     created_at='2026-02-06 10:00:00'
 WHERE id='10000000-0000-0000-0000-000000000017';
 
 
 -- ============================================
 -- STEP 3: KYC VERIFICATIONS
--- expires_at set to 2027 so trg_fn_require_kyc_for_loan
--- does not raise NIPANZE_KYC_EXPIRED.
--- Alice Namuli stays 'pending' to test the KYC gate.
+-- Optional verification — not required to post a request.
+-- Alice Namuli stays 'pending' to test the KYC badge flow.
 -- ============================================
 
 INSERT INTO kyc_verifications (
@@ -399,120 +400,170 @@ INSERT INTO kyc_verifications (
 ('a1000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', 'approved', 'national_id', 'CM91114OM789012', 'https://storage.nipanze.ug/kyc/user-011-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-011-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-011-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-03-08 09:30:00', '2024-03-09 14:00:00', '2027-03-08 00:00:00', '2024-03-08 09:30:00'),
 ('a1000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', 'approved', 'national_id', 'CM88047NB890123', 'https://storage.nipanze.ug/kyc/user-012-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-012-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-012-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000015', '2024-03-10 09:00:00', '2024-03-11 11:00:00', '2027-03-10 00:00:00', '2024-03-10 09:00:00'),
 ('a1000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', 'approved', 'national_id', 'CM84021MW901234', 'https://storage.nipanze.ug/kyc/user-013-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-013-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-013-selfie.jpg', TRUE,  TRUE,  '10000000-0000-0000-0000-000000000016', '2024-03-12 12:00:00', '2024-03-13 15:00:00', '2027-03-12 00:00:00', '2024-03-12 12:00:00'),
--- Alice Namuli — pending (tests KYC gate)
-('a1000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'pending',  'national_id', 'CM93255NM789013', 'https://storage.nipanze.ug/kyc/user-014-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-014-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-014-selfie.jpg', FALSE, FALSE, NULL,                                          '2026-01-25 10:30:00', NULL,                  NULL,                  '2026-01-25 10:30:00')
+-- Alice Namuli — pending (tests KYC badge; she can still post requests since KYC is optional)
+('a1000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'pending',  'national_id', 'CM93255NM789013', 'https://storage.nipanze.ug/kyc/user-014-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-014-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-014-selfie.jpg', FALSE, FALSE, NULL, '2026-01-25 10:30:00', NULL, NULL, '2026-01-25 10:30:00')
 ON CONFLICT (user_id) DO NOTHING;
 
 
 -- ============================================
--- STEP 4: NEGOTIATORS
+-- STEP 4: SUBSCRIPTIONS
+-- Free plan = browse marketplace + post requests (no cost).
+-- Lender / Pro plan required to make offers.
+-- Borrowers stay on the auto-provisioned 'free' plan — no update needed.
+-- Lenders are upgraded to 'lender' or 'pro'.
 -- ============================================
 
-INSERT INTO negotiators (
-    id, full_name, phone, email, credentials, specialisation,
-    status, deals_completed, avg_rating, created_at
-) VALUES
-('b1000000-0000-0000-0000-000000000001', 'Amos Tukahirwa',  '+256701000001', 'amos.tukahirwa@nipanze.ug',  'Licensed Attorney · KCCA No. 00123', 'Loan agreements & debt recovery',   'available', 18, 4.7, '2024-01-10 09:00:00'),
-('b1000000-0000-0000-0000-000000000002', 'Phiona Nassanga', '+256701000002', 'phiona.nassanga@nipanze.ug', 'Certified Mediator · ULS No. 04521', 'Financial disputes & contract law', 'available', 12, 4.5, '2024-01-10 09:00:00'),
-('b1000000-0000-0000-0000-000000000003', 'Isaac Byaruhanga','+256701000003', 'isaac.b@nipanze.ug',         'ICPAU Registered · ULS No. 07812',  'SME lending & agri-finance',        'busy',       9, 4.3, '2024-02-01 09:00:00')
-ON CONFLICT DO NOTHING;
+-- Lenders — upgrade from free to lender/pro
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-18 10:00:00', expires_at='2025-02-18 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000006';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-20 12:00:00', expires_at='2025-02-20 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000007';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-01 11:00:00', expires_at='2025-03-01 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000008';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-03 13:00:00', expires_at='2025-03-03 13:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000009';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-03-05 10:00:00', expires_at='2025-03-05 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000010';
 
+-- James Okello acts as both borrower and lender — upgrade to pro
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-01-20 15:00:00', expires_at='2025-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
 
--- ============================================
--- STEP 5: SUBSCRIPTIONS
--- ============================================
+-- Robert Ssemwanga acts as both — upgrade to lender
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-01-25 12:00:00', expires_at='2025-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
 
--- Borrowers
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-15 09:00:00', expires_at='2025-01-15 09:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000001';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-18 11:00:00', expires_at='2025-01-18 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000002';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-20 15:00:00', expires_at='2025-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-22 10:00:00', expires_at='2025-01-22 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000004';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-01-25 12:00:00', expires_at='2025-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-08 15:00:00', expires_at='2025-03-08 15:00:00', auto_renew=FALSE WHERE user_id='10000000-0000-0000-0000-000000000011';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-10 12:00:00', expires_at='2025-03-10 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000012';
-UPDATE subscriptions SET plan='borrower', status='active', amount_ugx=20000,  started_at='2024-03-12 17:00:00', expires_at='2025-03-12 17:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000013';
-
--- Lenders
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-18 10:00:00', expires_at='2025-02-18 10:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000006';
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-20 12:00:00', expires_at='2025-02-20 12:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000007';
-UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-01 11:00:00', expires_at='2025-03-01 11:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000008';
-UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-03 13:00:00', expires_at='2025-03-03 13:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000009';
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-03-05 10:00:00', expires_at='2025-03-05 10:00:00', auto_renew=TRUE WHERE user_id='10000000-0000-0000-0000-000000000010';
-
--- Alice Namuli and test.user remain on free watchlist (no UPDATE needed)
+-- All remaining borrowers (001, 002, 004, 011, 012, 013, 014, 017)
+-- stay on the auto-provisioned free plan. No update required.
 
 
 -- ============================================
--- STEP 6: LOAN REQUESTS
--- FIX: Removed total_bid_amount and funding_percentage
---      (columns do not exist in schema v5.0).
--- Uses session_replication_role to bypass triggers
--- for back-dated / non-active status rows.
+-- STEP 5: LOAN REQUESTS
+-- Triggers bypassed via session_replication_role for back-dated /
+-- non-active rows. Active rows use future expires_at values.
+-- New columns: income_source, preferred_repayment_plan,
+--              repayment_amount_per_period, repayment_timeline
+-- Removed: max_interest_rate, risk_category, credit_score_band
 -- ============================================
 
 SET session_replication_role = 'replica';
 
 INSERT INTO loan_requests (
-    id, borrower_id, title, purpose,
-    requested_amount, duration_months, max_interest_rate,
-    district, risk_category, credit_score_band,
+    id, borrower_id,
+    title, purpose,
+    requested_amount, duration_months,
+    income_source,
+    preferred_repayment_plan,
+    repayment_amount_per_period,
+    repayment_timeline,
+    district,
     status, listed_at, expires_at, contracted_at,
-    number_of_bids, views_count, created_at
+    number_of_offers, views_count, created_at
 ) VALUES
 
--- David Mukasa — contracted
-('c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
- 'Home Renovation Loan', 'Home improvement — kitchen and bathroom upgrade',
- 5000000, 12, 12.00, 'Central', 'low', 'A', 'contracted',
- '2024-02-01 09:00:00', '2024-02-08 09:00:00', '2024-02-06 14:30:00',
+-- David Mukasa — contracted (offer accepted, contact revealed)
+('c1000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000001',
+ 'Home Renovation Loan',
+ 'Kitchen and bathroom upgrade at family home in Kampala',
+ 5000000, 12,
+ 'Monthly salary from Uganda Revenue Authority — UGX 4,500,000',
+ 'Monthly instalments',
+ 450000,
+ '12 months starting March 2024',
+ 'Central',
+ 'contracted', '2024-02-01 09:00:00', '2024-02-08 09:00:00', '2024-02-06 14:30:00',
  2, 87, '2024-02-01 08:45:00'),
 
--- Sarah Namukasa — contracted
-('c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002',
- 'Professional Certification', 'Financial management certification courses at Makerere',
- 3500000, 12, 15.00, 'Central', 'medium', 'B+', 'contracted',
- '2024-03-01 10:00:00', '2024-03-08 10:00:00', '2024-03-05 11:00:00',
+-- Sarah Namukasa — contracted (offer accepted, contact pending reveal)
+('c1000000-0000-0000-0000-000000000002',
+ '10000000-0000-0000-0000-000000000002',
+ 'Professional Certification',
+ 'Financial management certification at Makerere University Business School',
+ 3500000, 12,
+ 'Monthly salary from Stanbic Bank Uganda — UGX 3,200,000',
+ 'Monthly instalments',
+ 320000,
+ '12 months starting April 2024',
+ 'Central',
+ 'contracted', '2024-03-01 10:00:00', '2024-03-08 10:00:00', '2024-03-05 11:00:00',
  1, 54, '2024-03-01 09:45:00'),
 
--- James Okello — active, high bid activity
-('c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003',
- 'Business Expansion — IT Equipment', 'Purchase servers and networking equipment for IT consultancy',
- 8000000, 18, 10.50, 'Central', 'low', 'A+', 'active',
- '2026-01-20 10:00:00', '2026-01-27 10:00:00', NULL,
+-- James Okello — active, two pending offers
+('c1000000-0000-0000-0000-000000000003',
+ '10000000-0000-0000-0000-000000000003',
+ 'Business Expansion — IT Equipment',
+ 'Purchase servers and networking equipment for growing IT consultancy',
+ 8000000, 18,
+ 'Monthly salary from MTN Uganda — UGX 5,800,000',
+ 'Monthly instalments',
+ 500000,
+ '18 months starting February 2026',
+ 'Central',
+ 'active', '2026-01-20 10:00:00', '2026-01-27 10:00:00', NULL,
  2, 112, '2026-01-20 09:45:00'),
 
--- Maria Nakato — active, one bid
-('c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004',
- 'Boutique Inventory Stock', 'Pre-season stock purchase for Nakato Boutique',
- 3500000, 12, 15.00, 'Central', 'medium', 'B', 'active',
- '2026-01-24 15:00:00', '2026-01-31 15:00:00', NULL,
+-- Maria Nakato — active, one pending offer
+('c1000000-0000-0000-0000-000000000004',
+ '10000000-0000-0000-0000-000000000004',
+ 'Boutique Inventory Stock',
+ 'Pre-season clothing stock purchase for Nakato Boutique ahead of Easter season',
+ 3500000, 12,
+ 'Business income from Nakato Boutique — approx UGX 2,800,000 per month',
+ 'Monthly instalments',
+ 320000,
+ '12 months starting February 2026',
+ 'Central',
+ 'active', '2026-01-24 15:00:00', '2026-01-31 15:00:00', NULL,
  1, 35, '2026-01-24 14:45:00'),
 
--- Frank Omondi — active, high risk
-('c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000011',
- 'Medical Expense Cover', 'Surgery and recovery expenses at Mulago Hospital',
- 4500000, 18, 14.50, 'Eastern', 'high', 'C', 'active',
- '2026-01-26 10:00:00', '2026-02-02 10:00:00', NULL,
+-- Frank Omondi — active, one pending offer
+('c1000000-0000-0000-0000-000000000005',
+ '10000000-0000-0000-0000-000000000011',
+ 'Medical Expense Cover',
+ 'Surgery and recovery costs at Mulago National Referral Hospital',
+ 4500000, 18,
+ 'Monthly salary from Bank of Africa — UGX 3,300,000',
+ 'Monthly instalments',
+ 280000,
+ '18 months starting February 2026',
+ 'Eastern',
+ 'active', '2026-01-26 10:00:00', '2026-02-02 10:00:00', NULL,
  1, 41, '2026-01-26 09:45:00'),
 
--- Lucy Nambi — active, no bids
-('c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000012',
- 'Farm Equipment Purchase', 'Irrigation pump and tilling equipment for family farm in Wakiso',
- 6000000, 24, 13.00, 'Central', 'medium', 'B', 'active',
- '2026-01-28 09:00:00', '2026-02-04 09:00:00', NULL,
+-- Lucy Nambi — active, no offers yet
+('c1000000-0000-0000-0000-000000000006',
+ '10000000-0000-0000-0000-000000000012',
+ 'Farm Equipment Purchase',
+ 'Irrigation pump and tilling equipment for family farm in Wakiso district',
+ 6000000, 24,
+ 'Monthly salary from National Social Security Fund — UGX 2,900,000',
+ 'Monthly instalments',
+ 280000,
+ '24 months starting February 2026',
+ 'Central',
+ 'active', '2026-01-28 09:00:00', '2026-02-04 09:00:00', NULL,
  0, 18, '2026-01-28 08:45:00'),
 
 -- Charles Mwesigwa — expired
-('c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000013',
- 'Vehicle Purchase — Delivery Van', 'Toyota Hiace for goods delivery business in Mbarara',
- 9000000, 24, 11.00, 'Western', 'low', 'A', 'expired',
- '2025-12-10 11:00:00', '2025-12-17 11:00:00', NULL,
+('c1000000-0000-0000-0000-000000000007',
+ '10000000-0000-0000-0000-000000000013',
+ 'Vehicle Purchase — Delivery Van',
+ 'Toyota Hiace for goods delivery business serving Mbarara and Kampala',
+ 9000000, 24,
+ 'Monthly salary from Shell Uganda — UGX 5,200,000',
+ 'Monthly instalments',
+ 420000,
+ '24 months starting January 2026',
+ 'Western',
+ 'expired', '2025-12-10 11:00:00', '2025-12-17 11:00:00', NULL,
  1, 67, '2025-12-10 10:45:00'),
 
--- Robert Ssemwanga — active, closing soon
-('c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000005',
- 'Business Working Capital', 'Short-term working capital for DFCU supplier contracts',
- 7000000, 6, 9.50, 'Central', 'low', 'A+', 'active',
+-- Robert Ssemwanga — active, closing soon (expires in ~4 hours from seed time)
+('c1000000-0000-0000-0000-000000000008',
+ '10000000-0000-0000-0000-000000000005',
+ 'Business Working Capital',
+ 'Short-term working capital to fulfil supplier contracts at DFCU Bank',
+ 7000000, 6,
+ 'Monthly salary from DFCU Bank — UGX 6,500,000',
+ 'Monthly instalments',
+ 1200000,
+ '6 months starting February 2026',
+ 'Central',
+ 'active',
  NOW() - INTERVAL '6 days 20 hours',
  NOW() + INTERVAL '4 hours',
  NULL, 1, 29, NOW() - INTERVAL '6 days 21 hours');
@@ -521,147 +572,121 @@ SET session_replication_role = 'origin';
 
 
 -- ============================================
--- STEP 7: LOAN BIDS
+-- STEP 6: LOAN OFFERS
+-- Replaces loan_bids. Columns: offer_amount, proposed_expectations.
+-- Bypasses triggers for historical/non-active rows.
 -- ============================================
 
 SET session_replication_role = 'replica';
 
-INSERT INTO loan_bids (
+INSERT INTO loan_offers (
     id, request_id, lender_id,
-    amount, interest_rate, status,
-    placed_at, accepted_at, created_at
+    offer_amount, proposed_expectations,
+    status, offered_at, accepted_at, created_at
 ) VALUES
 
--- David Mukasa's contracted listing
-('d1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000008', 3000000, 11.00, 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
-('d1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000009', 2000000, 11.50, 'rejected', '2024-02-03 09:00:00', NULL,                   '2024-02-03 09:00:00'),
+-- David Mukasa's contracted listing — two offers, one accepted
+('d1000000-0000-0000-0000-000000000001',
+ 'c1000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000008',
+ 5000000,
+ 'I can provide the full amount at 11% per annum. Monthly instalments work for me.',
+ 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
 
--- Sarah Namukasa's contracted listing
-('d1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000009', 3500000, 14.00, 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
+('d1000000-0000-0000-0000-000000000002',
+ 'c1000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000009',
+ 5000000,
+ 'Happy to lend the full amount. Expecting 11.5% per annum with monthly repayments.',
+ 'rejected', '2024-02-03 09:00:00', NULL, '2024-02-03 09:00:00'),
 
--- James Okello's active listing — live order book
-('d1000000-0000-0000-0000-000000000004', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000008', 5000000, 10.00, 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
-('d1000000-0000-0000-0000-000000000005', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000010', 3000000, 10.50, 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
+-- Sarah Namukasa's contracted listing — one offer, accepted
+('d1000000-0000-0000-0000-000000000003',
+ 'c1000000-0000-0000-0000-000000000002',
+ '10000000-0000-0000-0000-000000000009',
+ 3500000,
+ 'Willing to fund the full amount at 14% per annum. Monthly repayments as proposed.',
+ 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
 
--- Maria Nakato's active listing
-('d1000000-0000-0000-0000-000000000006', 'c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000006', 1500000, 14.00, 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
+-- James Okello's active listing — two pending offers
+('d1000000-0000-0000-0000-000000000004',
+ 'c1000000-0000-0000-0000-000000000003',
+ '10000000-0000-0000-0000-000000000008',
+ 8000000,
+ 'Can cover the full amount at 10% per annum. Happy with 18-month monthly instalments.',
+ 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
 
--- Frank Omondi's active listing
-('d1000000-0000-0000-0000-000000000007', 'c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000007', 2000000, 14.50, 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
+('d1000000-0000-0000-0000-000000000005',
+ 'c1000000-0000-0000-0000-000000000003',
+ '10000000-0000-0000-0000-000000000010',
+ 8000000,
+ 'Offering full amount at 10.5% per annum. Monthly instalments over 18 months.',
+ 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
 
--- Charles Mwesigwa's expired listing
-('d1000000-0000-0000-0000-000000000008', 'c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000006', 4000000, 10.50, 'expired', '2025-12-11 10:00:00', NULL, '2025-12-11 10:00:00'),
+-- Maria Nakato's active listing — one pending offer
+('d1000000-0000-0000-0000-000000000006',
+ 'c1000000-0000-0000-0000-000000000004',
+ '10000000-0000-0000-0000-000000000006',
+ 3500000,
+ 'Can fund the full requested amount at 14% per annum. Monthly repayments as stated.',
+ 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
 
--- Robert Ssemwanga's closing-soon listing
-('d1000000-0000-0000-0000-000000000009', 'c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000010', 3000000,  9.50, 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours');
+-- Frank Omondi's active listing — one pending offer
+('d1000000-0000-0000-0000-000000000007',
+ 'c1000000-0000-0000-0000-000000000005',
+ '10000000-0000-0000-0000-000000000007',
+ 4500000,
+ 'Prepared to lend the full amount at 14.5% per annum given the medical urgency.',
+ 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
+
+-- Charles Mwesigwa's expired listing — one expired offer
+('d1000000-0000-0000-0000-000000000008',
+ 'c1000000-0000-0000-0000-000000000007',
+ '10000000-0000-0000-0000-000000000006',
+ 9000000,
+ 'Happy to fund the full van purchase. Expecting 11% per annum over 24 months.',
+ 'expired', '2025-12-11 10:00:00', NULL, '2025-12-11 10:00:00'),
+
+-- Robert Ssemwanga's closing-soon listing — one pending offer
+('d1000000-0000-0000-0000-000000000009',
+ 'c1000000-0000-0000-0000-000000000008',
+ '10000000-0000-0000-0000-000000000010',
+ 7000000,
+ 'Can provide full working capital at 9.5% per annum. Six monthly repayments.',
+ 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours');
 
 SET session_replication_role = 'origin';
 
 
 -- ============================================
--- STEP 8: CONTRACTS
--- FIX: Uses indicative_* column names from schema v5.0.
---      Removed outstanding_balance, total_repaid, days_overdue
---      (not in schema). Added borrower_confirmed_at / lender_confirmed_at.
+-- STEP 7: CONTACT REVEALS
+-- Created only for accepted offers.
+-- David Mukasa's deal: revealed (both parties connected).
+-- Sarah Namukasa's deal: pending (borrower has not yet triggered reveal).
 -- ============================================
 
--- Contract 1: David Mukasa ↔ Pearl Capital (in_execution)
-INSERT INTO contracts (
-    id, request_id, bid_id,
-    borrower_id, lender_id, negotiator_id,
-    status, amount, interest_rate, duration_months,
-    purpose, district,
-    indicative_monthly_payment_ugx,
-    indicative_total_repayment_ugx,
-    indicative_total_interest_ugx,
-    repayment_start_date, maturity_date,
-    borrower_confirmed, borrower_confirmed_at,
-    lender_confirmed,   lender_confirmed_at,
-    contract_activated_at, created_at
-) VALUES (
-    'e1000000-0000-0000-0000-000000000001',
-    'c1000000-0000-0000-0000-000000000001',
-    'd1000000-0000-0000-0000-000000000001',
-    '10000000-0000-0000-0000-000000000001',
-    '10000000-0000-0000-0000-000000000008',
-    'b1000000-0000-0000-0000-000000000001',
-    'in_execution',
-    3000000, 11.00, 12,
-    'Home Renovation Loan', 'Central',
-    265000, 3180000, 180000,
-    '2024-03-01', '2025-02-01',
-    TRUE, '2024-02-09 10:00:00',
-    TRUE, '2024-02-09 14:00:00',
-    '2024-02-10 09:00:00', '2024-02-06 14:30:00'
-);
-
--- Contract 2: Sarah Namukasa ↔ Victoria Investment (draft)
-INSERT INTO contracts (
-    id, request_id, bid_id,
-    borrower_id, lender_id, negotiator_id,
-    status, amount, interest_rate, duration_months,
-    purpose, district,
-    indicative_monthly_payment_ugx,
-    indicative_total_repayment_ugx,
-    indicative_total_interest_ugx,
-    borrower_confirmed, lender_confirmed,
-    created_at
-) VALUES (
-    'e1000000-0000-0000-0000-000000000002',
-    'c1000000-0000-0000-0000-000000000002',
-    'd1000000-0000-0000-0000-000000000003',
-    '10000000-0000-0000-0000-000000000002',
-    '10000000-0000-0000-0000-000000000009',
-    'b1000000-0000-0000-0000-000000000002',
-    'draft',
-    3500000, 14.00, 12,
-    'Professional Certification', 'Central',
-    314000, 3768000, 268000,
-    FALSE, FALSE,
-    '2024-03-05 11:00:00'
-);
-
-
--- ============================================
--- STEP 8b: NEGOTIATOR ASSIGNMENTS
--- ============================================
-
-INSERT INTO negotiator_assignments (id, contract_id, negotiator_id, assigned_at) VALUES
-('e1000000-0000-0000-0000-000000000003', 'e1000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', '2024-02-06 15:00:00'),
-('e1000000-0000-0000-0000-000000000004', 'e1000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000002', '2024-03-05 11:30:00');
-
-
--- ============================================
--- STEP 8c: REPAYMENT SCHEDULES
--- FIX: Removed amount_due, amount_paid, paid_at, days_late.
---      Only columns in schema: contract_id, instalment_number,
---      due_date, principal_ugx, interest_ugx,
---      reported_status, reported_at, reported_by, created_at.
---      total_ugx is a generated column — omit from INSERT.
--- ============================================
-
-INSERT INTO repayment_schedules (
-    id, contract_id, instalment_number, due_date,
-    principal_ugx, interest_ugx,
-    reported_status, reported_at, reported_by,
-    created_at
+INSERT INTO contact_reveals (
+    id, offer_id, request_id, revealed_by,
+    status, revealed_at, created_at
 ) VALUES
-('e2000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001',  1, '2024-03-01', 237500, 27500, 'reported_paid', '2024-03-01 09:00:00', '10000000-0000-0000-0000-000000000001', '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000001',  2, '2024-04-01', 239700, 25300, 'reported_paid', '2024-04-01 10:00:00', '10000000-0000-0000-0000-000000000001', '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000003', 'e1000000-0000-0000-0000-000000000001',  3, '2024-05-01', 241900, 23100, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000004', 'e1000000-0000-0000-0000-000000000001',  4, '2024-06-01', 244100, 20900, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000005', 'e1000000-0000-0000-0000-000000000001',  5, '2024-07-01', 246400, 18600, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000006', 'e1000000-0000-0000-0000-000000000001',  6, '2024-08-01', 248700, 16300, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000007', 'e1000000-0000-0000-0000-000000000001',  7, '2024-09-01', 251000, 14000, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000008', 'e1000000-0000-0000-0000-000000000001',  8, '2024-10-01', 253300, 11700, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000009', 'e1000000-0000-0000-0000-000000000001',  9, '2024-11-01', 255700,  9300, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000010', 'e1000000-0000-0000-0000-000000000001', 10, '2024-12-01', 258100,  6900, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000011', 'e1000000-0000-0000-0000-000000000001', 11, '2025-01-01', 260500,  4500, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00'),
-('e2000000-0000-0000-0000-000000000012', 'e1000000-0000-0000-0000-000000000001', 12, '2025-02-01', 262800,  2200, 'pending',       NULL,                  NULL,                                   '2024-02-10 09:00:00');
+-- David Mukasa accepted Pearl Capital's offer — contact revealed
+('f1000000-0000-0000-0000-000000000001',
+ 'd1000000-0000-0000-0000-000000000001',
+ 'c1000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000001',
+ 'revealed', '2024-02-07 10:00:00', '2024-02-06 14:31:00'),
+
+-- Sarah Namukasa accepted Victoria's offer — reveal pending
+('f1000000-0000-0000-0000-000000000002',
+ 'd1000000-0000-0000-0000-000000000003',
+ 'c1000000-0000-0000-0000-000000000002',
+ '10000000-0000-0000-0000-000000000002',
+ 'pending', NULL, '2024-03-05 11:01:00')
+ON CONFLICT (offer_id) DO NOTHING;
 
 
 -- ============================================
--- STEP 9: WATCHLIST
+-- STEP 8: WATCHLIST
 -- ============================================
 
 INSERT INTO watchlist (id, user_id, request_id, added_at) VALUES
@@ -674,31 +699,105 @@ ON CONFLICT (user_id, request_id) DO NOTHING;
 
 
 -- ============================================
--- STEP 10: NOTIFICATIONS
--- FIX: 'repayment_due' is not in notification_type_enum.
---      Replaced with 'system'.
+-- STEP 9: NOTIFICATIONS
+-- Columns aligned to v4.0: offer_id replaces bid_id.
+-- No contract_id (contracts table removed).
+-- Enum values aligned to notification_type_enum v4.0.
 -- ============================================
 
 INSERT INTO notifications (
     id, user_id, type, title, body,
-    is_read, request_id, contract_id, bid_id, created_at
+    is_read, request_id, offer_id, created_at
 ) VALUES
-('e4000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'bid_accepted',            'Bid accepted',             'Your listing has been matched. A negotiator has been assigned.',      TRUE,  'c1000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-06 14:31:00'),
-('e4000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'bid_accepted',            'Your bid was accepted',    'Your offer has been accepted. A negotiator will be in touch.',        TRUE,  'c1000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-06 14:31:00'),
-('e4000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'negotiator_assigned',     'Negotiator assigned',      'Amos Tukahirwa has been assigned to facilitate your deal.',           TRUE,  NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-02-06 15:00:00'),
-('e4000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000008', 'negotiator_assigned',     'Negotiator assigned',      'Amos Tukahirwa has been assigned to facilitate your deal.',           TRUE,  NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-02-06 15:00:00'),
-('e4000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', 'contract_draft_available','Contract draft ready',     'Your contract draft is available for review. Please confirm.',       FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000002', NULL,                                   '2024-03-05 12:00:00'),
-('e4000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000009', 'contract_draft_available','Contract draft ready',     'Your contract draft is available for review. Please confirm.',       FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000002', NULL,                                   '2024-03-05 12:00:00'),
-('e4000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000003', 'bid_received',            'New bid received',         'Pearl Capital (L-#9002) placed a bid at 10.00% on your listing.',    FALSE, 'c1000000-0000-0000-0000-000000000003', NULL,                                   'd1000000-0000-0000-0000-000000000004', '2026-01-21 11:21:00'),
-('e4000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000003', 'bid_received',            'New bid received',         'Equator Finance (L-#7714) placed a bid at 10.50% on your listing.',  FALSE, 'c1000000-0000-0000-0000-000000000003', NULL,                                   'd1000000-0000-0000-0000-000000000005', '2026-01-23 13:16:00'),
-('e4000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000005', 'closing_soon_6h',         'Listing closing soon',     'Your listing "Business Working Capital" closes in under 6 hours.',   FALSE, 'c1000000-0000-0000-0000-000000000008', NULL,                                   NULL,                                   NOW() - INTERVAL '1 hour'),
--- FIX: was 'repayment_due' (not in enum) → replaced with 'system'
-('e4000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000001', 'system',                  'Repayment due soon',       'Instalment 3 of UGX 265,000 is due on 1 May 2024.',                  FALSE, NULL,                                   'e1000000-0000-0000-0000-000000000001', NULL,                                   '2024-04-25 08:00:00')
+
+-- David Mukasa — offer accepted, contact revealed
+('e4000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000001',
+ 'offer_accepted', 'Offer accepted',
+ 'You accepted Pearl Capital''s offer. Contact details have been shared.',
+ TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
+ '2024-02-06 14:31:00'),
+
+('e4000000-0000-0000-0000-000000000002',
+ '10000000-0000-0000-0000-000000000008',
+ 'offer_accepted', 'Your offer was accepted',
+ 'David Mukasa accepted your offer. Contact details have been shared.',
+ TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
+ '2024-02-06 14:31:00'),
+
+('e4000000-0000-0000-0000-000000000003',
+ '10000000-0000-0000-0000-000000000001',
+ 'contact_revealed', 'Contact details revealed',
+ 'You can now connect with Pearl Capital Investment Fund directly.',
+ TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
+ '2024-02-07 10:00:00'),
+
+('e4000000-0000-0000-0000-000000000004',
+ '10000000-0000-0000-0000-000000000008',
+ 'contact_revealed', 'Contact details revealed',
+ 'The borrower has revealed contact details. You can now connect directly.',
+ TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
+ '2024-02-07 10:00:00'),
+
+-- Sarah Namukasa — offer accepted, contact pending reveal
+('e4000000-0000-0000-0000-000000000005',
+ '10000000-0000-0000-0000-000000000002',
+ 'offer_accepted', 'Offer accepted',
+ 'You accepted Victoria Investment Group''s offer. Reveal contact details to connect.',
+ FALSE, 'c1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003',
+ '2024-03-05 11:01:00'),
+
+('e4000000-0000-0000-0000-000000000006',
+ '10000000-0000-0000-0000-000000000009',
+ 'offer_accepted', 'Your offer was accepted',
+ 'Sarah Namukasa accepted your offer. Waiting for contact details to be revealed.',
+ FALSE, 'c1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003',
+ '2024-03-05 11:01:00'),
+
+-- James Okello — two offers received on active listing
+('e4000000-0000-0000-0000-000000000007',
+ '10000000-0000-0000-0000-000000000003',
+ 'offer_received', 'New offer received',
+ 'Pearl Capital Investment Fund made an offer on your listing.',
+ FALSE, 'c1000000-0000-0000-0000-000000000003', 'd1000000-0000-0000-0000-000000000004',
+ '2026-01-21 11:21:00'),
+
+('e4000000-0000-0000-0000-000000000008',
+ '10000000-0000-0000-0000-000000000003',
+ 'offer_received', 'New offer received',
+ 'Equator Finance Corporation made an offer on your listing.',
+ FALSE, 'c1000000-0000-0000-0000-000000000003', 'd1000000-0000-0000-0000-000000000005',
+ '2026-01-23 13:16:00'),
+
+-- Maria Nakato — one offer received
+('e4000000-0000-0000-0000-000000000009',
+ '10000000-0000-0000-0000-000000000004',
+ 'offer_received', 'New offer received',
+ 'GreenLeaf Agro Solutions made an offer on your listing.',
+ FALSE, 'c1000000-0000-0000-0000-000000000004', 'd1000000-0000-0000-0000-000000000006',
+ '2026-01-27 10:31:00'),
+
+-- Robert Ssemwanga — closing soon alert
+('e4000000-0000-0000-0000-000000000010',
+ '10000000-0000-0000-0000-000000000005',
+ 'closing_soon_6h', 'Listing closing soon',
+ 'Your listing "Business Working Capital" closes in under 6 hours.',
+ FALSE, 'c1000000-0000-0000-0000-000000000008', NULL,
+ NOW() - INTERVAL '1 hour'),
+
+-- Offer rejected notification (David's second lender)
+('e4000000-0000-0000-0000-000000000011',
+ '10000000-0000-0000-0000-000000000009',
+ 'offer_rejected', 'Your offer was not selected',
+ 'David Mukasa selected a different offer. Your offer on "Home Renovation Loan" was not chosen.',
+ TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000002',
+ '2024-02-06 14:32:00')
+
 ON CONFLICT DO NOTHING;
 
 
 -- ============================================
--- STEP 11: REFERRALS
+-- STEP 10: REFERRALS
 -- ============================================
 
 INSERT INTO referrals (
@@ -717,44 +816,46 @@ ON CONFLICT DO NOTHING;
 -- ============================================
 
 SELECT table_name, record_count FROM (
-    SELECT 'auth.users'             AS table_name, COUNT(*) AS record_count FROM auth.users             WHERE id::text LIKE '10000000%'
-    UNION ALL SELECT 'profiles',                   COUNT(*) FROM profiles                                WHERE id::text LIKE '10000000%'
-    UNION ALL SELECT 'subscriptions',              COUNT(*) FROM subscriptions
-    UNION ALL SELECT 'kyc_verifications',          COUNT(*) FROM kyc_verifications
-    UNION ALL SELECT 'negotiators',                COUNT(*) FROM negotiators
-    UNION ALL SELECT 'loan_requests',              COUNT(*) FROM loan_requests
-    UNION ALL SELECT 'loan_bids',                  COUNT(*) FROM loan_bids
-    UNION ALL SELECT 'contracts',                  COUNT(*) FROM contracts
-    UNION ALL SELECT 'negotiator_assignments',     COUNT(*) FROM negotiator_assignments
-    UNION ALL SELECT 'repayment_schedules',        COUNT(*) FROM repayment_schedules
-    UNION ALL SELECT 'watchlist',                  COUNT(*) FROM watchlist
-    UNION ALL SELECT 'notifications',              COUNT(*) FROM notifications
-    UNION ALL SELECT 'referrals',                  COUNT(*) FROM referrals
+    SELECT 'auth.users'           AS table_name, COUNT(*) AS record_count FROM auth.users           WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'profiles',                 COUNT(*) FROM profiles                              WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'subscriptions',            COUNT(*) FROM subscriptions
+    UNION ALL SELECT 'kyc_verifications',        COUNT(*) FROM kyc_verifications
+    UNION ALL SELECT 'loan_requests',            COUNT(*) FROM loan_requests
+    UNION ALL SELECT 'loan_offers',              COUNT(*) FROM loan_offers
+    UNION ALL SELECT 'contact_reveals',          COUNT(*) FROM contact_reveals
+    UNION ALL SELECT 'watchlist',                COUNT(*) FROM watchlist
+    UNION ALL SELECT 'notifications',            COUNT(*) FROM notifications
+    UNION ALL SELECT 'referrals',                COUNT(*) FROM referrals
 ) t ORDER BY table_name;
 
 
-SELECT p.full_name, au.email, au.email_confirmed_at IS NOT NULL AS confirmed,
-       p.account_status, p.role, p.credit_score, p.reputation_tier
+SELECT p.full_name, au.email,
+       au.email_confirmed_at IS NOT NULL AS confirmed,
+       p.account_status, p.role,
+       s.plan AS subscription_plan, s.status AS subscription_status
 FROM profiles p
-LEFT JOIN auth.users au ON au.id = p.id
+LEFT JOIN auth.users  au ON au.id = p.id
+LEFT JOIN subscriptions s ON s.user_id = p.id AND s.status = 'active'
 WHERE p.id::text LIKE '10000000%'
 ORDER BY p.created_at;
 
 
-SELECT au.email, s.plan, s.status, s.expires_at
-FROM subscriptions s
-JOIN profiles p ON p.id = s.user_id
-JOIN auth.users au ON au.id = p.id
-WHERE s.status = 'active'
-ORDER BY s.plan, au.email;
-
-
-SELECT lr.title, lr.district, lr.risk_category, lr.requested_amount,
-       lr.number_of_bids, lr.status, lr.expires_at,
+SELECT lr.title, lr.district, lr.requested_amount,
+       lr.income_source, lr.repayment_amount_per_period,
+       lr.number_of_offers, lr.status, lr.expires_at,
        (lr.expires_at < NOW() + INTERVAL '24 hours') AS closing_soon
 FROM loan_requests lr
 WHERE lr.status = 'active'
 ORDER BY lr.listed_at DESC;
 
 
-SELECT '✅ Nipanze seed v1.2 inserted successfully' AS status;
+SELECT lo.status AS offer_status, lo.offer_amount,
+       lr.title AS listing_title,
+       cr.status AS reveal_status
+FROM loan_offers lo
+JOIN loan_requests  lr ON lr.id      = lo.request_id
+LEFT JOIN contact_reveals cr ON cr.offer_id = lo.id
+ORDER BY lo.offered_at;
+
+
+SELECT '✅ Nipanze seed v2.0 inserted successfully' AS status;
