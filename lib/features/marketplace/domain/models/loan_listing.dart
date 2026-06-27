@@ -11,14 +11,15 @@ class LoanListing extends Equatable {
     required this.district,
     required this.durationMonths,
     required this.requestedAmount,
-    required this.maxInterestRate,
-    required this.riskCategory,
-    required this.creditScoreBand,
+    required this.incomeSource,
+    required this.preferredRepaymentPlan,
+    required this.repaymentAmountPerPeriod,
+    required this.repaymentTimeline,
     required this.status,
     required this.listedAt,
     required this.expiresAt,
-    required this.numberOfBids,
-    this.bestBidRate,
+    required this.numberOfOffers,
+    this.kycStatus,
   });
 
   final String requestId;
@@ -27,14 +28,15 @@ class LoanListing extends Equatable {
   final String district;
   final int durationMonths;
   final int requestedAmount;
-  final double maxInterestRate;
-  final String riskCategory;
-  final String creditScoreBand;
+  final String incomeSource;
+  final String preferredRepaymentPlan;
+  final int repaymentAmountPerPeriod;
+  final String repaymentTimeline;
   final String status;
   final DateTime listedAt;
   final DateTime expiresAt;
-  final int numberOfBids;
-  final double? bestBidRate;
+  final int numberOfOffers;
+  final String? kycStatus;
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
   bool get isClosingSoon24h => timeRemaining.inHours < 24 && !timeRemaining.isNegative;
@@ -57,170 +59,60 @@ class LoanListing extends Equatable {
       district: map['district'] as String? ?? '',
       durationMonths: map['duration_months'] as int? ?? 0,
       requestedAmount: (map['requested_amount'] as num?)?.toInt() ?? 0,
-      maxInterestRate: (map['max_interest_rate'] as num?)?.toDouble() ?? 0,
-      riskCategory: map['risk_category'] as String? ?? 'medium',
-      creditScoreBand: map['credit_score_band'] as String? ?? 'B',
+      incomeSource: map['income_source'] as String? ?? '',
+      preferredRepaymentPlan: map['preferred_repayment_plan'] as String? ?? '',
+      repaymentAmountPerPeriod: (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
+      repaymentTimeline: map['repayment_timeline'] as String? ?? '',
       status: map['status'] as String? ?? 'active',
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ?? DateTime.now(),
       expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ?? DateTime.now(),
-      numberOfBids: map['number_of_bids'] as int? ?? 0,
-      bestBidRate: (map['best_bid_rate'] as num?)?.toDouble(),
+      numberOfOffers: map['number_of_offers'] as int? ?? 0,
+      kycStatus: map['kyc_status'] as String?,
     );
   }
 
   @override
-  List<Object?> get props => [requestId, status, numberOfBids, bestBidRate];
+  List<Object?> get props => [requestId, status, numberOfOffers];
 }
 
-// ─── LoanBid ──────────────────────────────────────────────────────────────────
+// ─── LoanOffer ────────────────────────────────────────────────────────────────
 
-class LoanBid extends Equatable {
-  const LoanBid({
+class LoanOffer extends Equatable {
+  const LoanOffer({
     required this.id,
     required this.requestId,
-    required this.amount,
-    required this.interestRate,
+    required this.lenderId,
+    required this.offerAmount,
+    this.proposedExpectations,
     required this.status,
-    required this.placedAt,
-    this.lenderToken,
+    required this.offeredAt,
+    this.acceptedAt,
   });
 
   final String id;
   final String requestId;
-  final int amount;
-  final double interestRate;
+  final String lenderId;
+  final int offerAmount;
+  final String? proposedExpectations;
   final String status;
-  final DateTime placedAt;
-  final String? lenderToken;
+  final DateTime offeredAt;
+  final DateTime? acceptedAt;
 
-  factory LoanBid.fromMap(Map<String, dynamic> map) {
-    return LoanBid(
+  factory LoanOffer.fromMap(Map<String, dynamic> map) {
+    return LoanOffer(
       id: map['id'] as String,
       requestId: map['request_id'] as String,
-      amount: (map['amount'] as num?)?.toInt() ?? 0,
-      interestRate: (map['interest_rate'] as num?)?.toDouble() ?? 0,
+      lenderId: map['lender_id'] as String,
+      offerAmount: (map['offer_amount'] as num?)?.toInt() ?? 0,
+      proposedExpectations: map['proposed_expectations'] as String?,
       status: map['status'] as String? ?? 'pending',
-      placedAt: DateTime.tryParse(map['placed_at'] as String? ?? '') ?? DateTime.now(),
-      lenderToken: map['lender_token'] as String?,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, status, interestRate];
-}
-
-// ─── ContractSummary ──────────────────────────────────────────────────────────
-
-class ContractSummary extends Equatable {
-  const ContractSummary({
-    required this.contractId,
-    required this.requestId,
-    required this.agreedRate,
-    required this.indicativeMonthlyPaymentUgx,
-    required this.indicativeTotalRepayableUgx,
-    required this.status,
-    required this.contractedAt,
-    // Fields used by ContractDetailPage
-    required this.amount,
-    required this.district,
-    required this.purpose,
-    required this.durationMonths,
-    required this.interestRate,
-    this.indicativeMonthlyPayment,
-    this.indicativeTotalRepayment,
-  });
-
-  final String contractId;
-  final String requestId;
-  final double agreedRate;
-  final int indicativeMonthlyPaymentUgx;
-  final int indicativeTotalRepayableUgx;
-  final String status;
-  final DateTime contractedAt;
-
-  // Detail-page fields
-  final int amount;
-  final String district;
-  final String purpose;
-  final int durationMonths;
-  final double interestRate;
-  final int? indicativeMonthlyPayment;
-  final int? indicativeTotalRepayment;
-
-  factory ContractSummary.fromMap(Map<String, dynamic> map) {
-    return ContractSummary(
-      contractId: map['id'] as String,
-      requestId: map['request_id'] as String,
-      agreedRate: (map['agreed_rate'] as num?)?.toDouble() ?? 0,
-      indicativeMonthlyPaymentUgx:
-          (map['indicative_monthly_payment_ugx'] as num?)?.toInt() ?? 0,
-      indicativeTotalRepayableUgx:
-          (map['indicative_total_repayable_ugx'] as num?)?.toInt() ?? 0,
-      status: map['status'] as String? ?? 'active',
-      contractedAt:
-          DateTime.tryParse(map['contracted_at'] as String? ?? '') ??
-              DateTime.now(),
-      amount: (map['amount'] as num?)?.toInt() ??
-          (map['indicative_monthly_payment_ugx'] as num?)?.toInt() ?? 0,
-      district: map['district'] as String? ?? '',
-      purpose: map['purpose'] as String? ?? '',
-      durationMonths: map['duration_months'] as int? ?? 0,
-      interestRate: (map['agreed_rate'] as num?)?.toDouble() ?? 0,
-      indicativeMonthlyPayment:
-          (map['indicative_monthly_payment_ugx'] as num?)?.toInt(),
-      indicativeTotalRepayment:
-          (map['indicative_total_repayable_ugx'] as num?)?.toInt(),
-    );
-  }
-
-  @override
-  List<Object?> get props => [contractId, status];
-}
-
-// ─── RepaymentLine ────────────────────────────────────────────────────────────
-
-class RepaymentLine extends Equatable {
-  const RepaymentLine({
-    required this.id,
-    required this.contractId,
-    required this.periodNumber,
-    required this.reportedStatus,
-    required this.instalmentNumber,
-    required this.dueDate,
-    required this.totalUgx,
-    this.reportedAt,
-  });
-
-  final String id;
-  final String contractId;
-  final int periodNumber;
-  final String reportedStatus;
-  final int instalmentNumber;
-  final DateTime dueDate;
-  final int totalUgx;
-  final DateTime? reportedAt;
-
-  bool get isPaid => reportedStatus == 'paid';
-  bool get isOverdue => reportedStatus == 'overdue';
-
-  factory RepaymentLine.fromMap(Map<String, dynamic> map) {
-    return RepaymentLine(
-      id: map['id'] as String,
-      contractId: map['contract_id'] as String,
-      periodNumber: map['period_number'] as int? ?? 0,
-      reportedStatus: map['reported_status'] as String? ?? 'pending',
-      // instalment_number mirrors period_number; fall back if column differs
-      instalmentNumber: map['instalment_number'] as int? ??
-          map['period_number'] as int? ?? 0,
-      dueDate: DateTime.tryParse(map['due_date'] as String? ?? '') ??
-          DateTime.now(),
-      totalUgx: (map['total_ugx'] as num?)?.toInt() ?? 0,
-      reportedAt: map['reported_at'] != null
-          ? DateTime.tryParse(map['reported_at'] as String)
+      offeredAt: DateTime.tryParse(map['offered_at'] as String? ?? '') ?? DateTime.now(),
+      acceptedAt: map['accepted_at'] != null 
+          ? DateTime.tryParse(map['accepted_at'] as String) 
           : null,
     );
   }
 
   @override
-  List<Object?> get props => [id, reportedStatus];
+  List<Object?> get props => [id, status, offerAmount];
 }

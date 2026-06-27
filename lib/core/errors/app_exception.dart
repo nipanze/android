@@ -82,35 +82,36 @@ AppException _parseAuthError(String message) {
 }
 
 AppException _parsePostgrestError(String code, String message) {
-  // Nipanze-specific trigger codes
+  // Nipanze-specific trigger codes (aligned to v4.0)
   if (message.contains('NIPANZE_KYC_REQUIRED')) {
     return const KycRequiredException();
-  }
-  if (message.contains('NIPANZE_KYC_EXPIRED')) {
-    return const DatabaseException(
-        'Your KYC has expired. Please re-verify to continue.');
   }
   if (message.contains('NIPANZE_ACCOUNT_INACTIVE')) {
     return const PermissionException('Your account is not active.');
   }
-  if (message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
+  if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED')) {
     return const SubscriptionRequiredException('Lender');
   }
-  if (message.contains('NIPANZE_MAX_LISTINGS')) {
+  if (message.contains('NIPANZE_MAX_REQUESTS')) {
     return const DatabaseException(
-        'You have reached the maximum number of active requests.');
+        'You have reached the maximum number of active listings.');
   }
-  if (message.contains('NIPANZE_SELF_BID')) {
+  if (message.contains('NIPANZE_SELF_OFFER')) {
     return const ValidationException(
-        'You cannot make an offer on your own request.');
+        'You cannot make an offer on your own listing.');
+  }
+  if (message.contains('NIPANZE_MIN_OFFER')) {
+    return const ValidationException('Offer amount is below the platform minimum.');
   }
   if (message.contains('NIPANZE_OFFER_LOCKED')) {
     return const DatabaseException(
-        'This offer has already been accepted and cannot be changed.');
+        'This offer has already been accepted and cannot be modified.');
   }
-  if (message.contains('NIPANZE_CONTACT_NOT_ALLOWED')) {
-    return const PermissionException(
-        'Contact details are only available after an offer is accepted.');
+  if (message.contains('NIPANZE_ALREADY_REVEALED')) {
+    return const DatabaseException('Contact details have already been revealed.');
+  }
+  if (message.contains('NIPANZE_LISTING_NOT_ACTIVE') || message.contains('NIPANZE_LISTING_EXPIRED')) {
+    return const DatabaseException('This listing is no longer accepting offers.');
   }
 
   // Generic Postgres codes

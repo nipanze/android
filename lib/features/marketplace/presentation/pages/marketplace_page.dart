@@ -29,12 +29,6 @@ class MarketplacePage extends StatelessWidget {
 class _MarketplaceView extends StatelessWidget {
   const _MarketplaceView();
 
-  static const _filters = [
-    ('all', 'All'),
-    ('low', 'Low risk'),
-    ('yield', 'High yield'),
-    ('closing', 'Closing soon'),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -103,48 +97,7 @@ class _MarketplaceView extends StatelessWidget {
               ),
             ),
 
-            // Filter pills
-            BlocBuilder<MarketplaceCubit, MarketplaceState>(
-              buildWhen: (prev, curr) => curr is MarketplaceLoaded,
-              builder: (context, state) {
-                final active = state is MarketplaceLoaded ? state.activeFilter : 'all';
-                return SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: _filters.map((f) {
-                      final isOn = f.$1 == active;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(f.$2),
-                          selected: isOn,
-                          onSelected: (_) =>
-                              context.read<MarketplaceCubit>().load(filter: f.$1),
-                          labelStyle: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: isOn ? Colors.white : null,
-                          ),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.surfaceContainerHighest,
-                          selectedColor: AppColors.accent,
-                          side: BorderSide(
-                            color: isOn
-                                ? AppColors.accent
-                                : Theme.of(context).dividerColor,
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          visualDensity: VisualDensity.compact,
-                          showCheckmark: false,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
-            ),
+            const SizedBox(height: 8),
 
             const SizedBox(height: 8),
 

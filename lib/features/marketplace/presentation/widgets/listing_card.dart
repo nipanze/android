@@ -14,8 +14,8 @@ class ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasActiveBids = listing.numberOfBids > 0;
-    final borderColor = hasActiveBids
+    final hasOffers = listing.numberOfOffers > 0;
+    final borderColor = hasOffers
         ? AppColors.accent.withOpacity(0.6)
         : Theme.of(context).dividerColor;
 
@@ -57,7 +57,11 @@ class ListingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                RiskBadge.fromString(listing.riskCategory),
+                if (listing.kycStatus != null)
+                   Badge(
+                    label: Text(listing.kycStatus!.toUpperCase()),
+                    backgroundColor: listing.kycStatus == 'verified' ? AppColors.success : AppColors.warning,
+                   ),
               ],
             ),
 
@@ -68,19 +72,21 @@ class ListingCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Bid row
+            // Offer row
             Row(
               children: [
                 Text(
-                  'Max ${listing.maxInterestRate.toStringAsFixed(1)}%',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  listing.purpose,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 6),
-                Text('·', style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(width: 6),
-                if (hasActiveBids)
+                const Spacer(),
+                if (hasOffers)
                   Text(
-                    '${listing.numberOfBids} bid${listing.numberOfBids != 1 ? 's' : ''}',
+                    '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -89,26 +95,16 @@ class ListingCard extends StatelessWidget {
                   )
                 else
                   Text(
-                    'No bids yet',
+                    'No offers yet',
                     style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                const Spacer(),
-                if (listing.bestBidRate != null)
-                  Text(
-                    'Best: ${listing.bestBidRate!.toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      fontFamily: AppFonts.body,
-                      fontSize: 11,
-                      color: AppColors.success,
-                    ),
                   ),
               ],
             ),
 
             const SizedBox(height: 8),
 
-            // Bid activity bar (bid-count based — no money totals)
-            _BidActivityBar(bidCount: listing.numberOfBids),
+            // Activity bar
+            _OfferActivityBar(offerCount: listing.numberOfOffers),
 
             const SizedBox(height: 5),
 
@@ -116,10 +112,10 @@ class ListingCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  hasActiveBids
-                      ? '${listing.numberOfBids} bid${listing.numberOfBids != 1 ? 's' : ''} placed'
-                      : 'No bids yet',
+                  listing.incomeSource,
                   style: Theme.of(context).textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const Spacer(),
                 Text(
@@ -142,23 +138,19 @@ class ListingCard extends StatelessWidget {
   }
 }
 
-// ─── Bid Activity Bar ─────────────────────────────────────────────────────────
-// Shows lender competition level by bid count — never by money amounts.
-// 0 bids = empty, 5+ bids = full. Platform is non-custodial; no totals held.
+class _OfferActivityBar extends StatelessWidget {
+  const _OfferActivityBar({required this.offerCount});
 
-class _BidActivityBar extends StatelessWidget {
-  const _BidActivityBar({required this.bidCount});
+  final int offerCount;
 
-  final int bidCount;
-
-  static const _maxBidsForFullBar = 5;
+  static const _maxOffersForFullBar = 5;
 
   @override
   Widget build(BuildContext context) {
-    final fraction = (bidCount / _maxBidsForFullBar).clamp(0.0, 1.0);
-    final color = bidCount >= 4
+    final fraction = (offerCount / _maxOffersForFullBar).clamp(0.0, 1.0);
+    final color = offerCount >= 4
         ? AppColors.success
-        : bidCount >= 2
+        : offerCount >= 2
             ? AppColors.warning
             : AppColors.text2Dark;
 

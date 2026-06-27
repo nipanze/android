@@ -14,24 +14,24 @@ class ProfileRepository {
 
   String get _uid => _client.auth.currentUser!.id;
 
-  /// Full profile from v_user_portfolio joined with profiles.
+  /// Full profile from v_user_marketplace_activity joined with profiles.
   Future<UserProfile?> getProfile() async {
     try {
-      // Fetch portfolio view (subscription, kyc, counts)
-      final portfolio = await _client
-          .from(ViewNames.userPortfolio)
+      // Fetch activity view (subscription, kyc, counts)
+      final activity = await _client
+          .from(ViewNames.userMarketplaceActivity)
           .select()
           .eq('user_id', _uid)
           .maybeSingle();
 
-      // Fetch raw profile fields not in view
+      // Fetch raw profile fields
       final profile = await _client
           .from(TableNames.profiles)
-          .select('full_name, phone, district, employment_type, employer_name, monthly_income_ugx, lender_token, account_status')
+          .select('full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status')
           .eq('id', _uid)
           .maybeSingle();
 
-      if (portfolio == null && profile == null) return null;
+      if (activity == null && profile == null) return null;
 
       final email = _client.auth.currentUser?.email ?? '';
 
@@ -44,23 +44,19 @@ class ProfileRepository {
         employmentType: profile?['employment_type'] as String?,
         employerName:   profile?['employer_name']   as String?,
         monthlyIncomeUgx: (profile?['monthly_income_ugx'] as num?)?.toInt(),
-        creditScore:    portfolio?['credit_score']  as int?    ?? 50,
-        reputationTier: portfolio?['reputation_tier'] as String? ?? 'bronze',
-        lenderToken:    profile?['lender_token']    as String?  ?? '',
         accountStatus:  profile?['account_status']  as String?  ?? 'active',
-        subscriptionPlan:    portfolio?['subscription_plan']       as String?,
-        subscriptionStatus:  portfolio?['subscription_status']     as String?,
-        subscriptionExpiresAt: portfolio?['subscription_expires_at'] != null
-            ? DateTime.tryParse(portfolio!['subscription_expires_at'] as String)
+        subscriptionPlan:    activity?['subscription_plan']       as String?,
+        subscriptionStatus:  activity?['subscription_status']     as String?,
+        subscriptionExpiresAt: activity?['subscription_expires_at'] != null
+            ? DateTime.tryParse(activity!['subscription_expires_at'] as String)
             : null,
-        kycStatus:    portfolio?['kyc_status']    as String?,
-        kycExpiresAt: portfolio?['kyc_expires_at'] != null
-            ? DateTime.tryParse(portfolio!['kyc_expires_at'] as String)
+        kycStatus:    activity?['kyc_status']    as String?,
+        kycExpiresAt: activity?['kyc_expires_at'] != null
+            ? DateTime.tryParse(activity!['kyc_expires_at'] as String)
             : null,
-        activeListings:       (portfolio?['active_listings']        as int?) ?? 0,
-        contractedAsBorrower: (portfolio?['contracted_as_borrower'] as int?) ?? 0,
-        activeBids:           (portfolio?['active_bids']            as int?) ?? 0,
-        contractedAsLender:   (portfolio?['contracted_as_lender']   as int?) ?? 0,
+        activeListings:   (activity?['active_listings']   as int?) ?? 0,
+        activeOffers:     (activity?['active_offers']     as int?) ?? 0,
+        revealedContacts: (activity?['revealed_contacts'] as int?) ?? 0,
       );
     } catch (e) {
       throw parseSupabaseError(e);

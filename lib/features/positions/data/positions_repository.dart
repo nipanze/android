@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../domain/models/lender_bid.dart';
+import '../domain/models/lender_offer.dart';
 
 @lazySingleton
 class PositionsRepository {
@@ -14,28 +14,28 @@ class PositionsRepository {
 
   String get _uid => _client.auth.currentUser!.id;
 
-  /// Fetch all lender bids for the current user from v_lender_bids.
-  Future<List<LenderBid>> getMyBids() async {
+  /// Fetch all lender offers for the current user from v_lender_offers.
+  Future<List<LenderOffer>> getMyOffers() async {
     try {
       final data = await _client
-          .from(ViewNames.lenderBids)
+          .from(ViewNames.lenderOffers)
           .select()
           .eq('lender_id', _uid)
-          .order('placed_at', ascending: false);
+          .order('offered_at', ascending: false);
 
-      return (data as List).map((e) => LenderBid.fromMap(e)).toList();
+      return (data as List).map((e) => LenderOffer.fromMap(e)).toList();
     } catch (e) {
       throw parseSupabaseError(e);
     }
   }
 
-  /// Withdraw a pending bid.
-  Future<void> withdrawBid(String bidId) async {
+  /// Withdraw a pending offer.
+  Future<void> withdrawOffer(String offerId) async {
     try {
       await _client
-          .from(TableNames.loanBids)
+          .from(TableNames.loanOffers)
           .update({'status': 'withdrawn'})
-          .eq('id', bidId)
+          .eq('id', offerId)
           .eq('lender_id', _uid)
           .eq('status', 'pending');
     } catch (e) {
@@ -43,32 +43,11 @@ class PositionsRepository {
     }
   }
 
-  /// Fetch contracted positions where user is borrower or lender.
-  Future<List<Map<String, dynamic>>> getMyContracts() async {
+  /// Dashboard summary from v_user_marketplace_activity.
+  Future<Map<String, dynamic>?> getMarketplaceActivity() async {
     try {
       final data = await _client
-          .from(TableNames.contracts)
-          .select('''
-            id, status, amount, interest_rate, duration_months,
-            purpose, district, repayment_start_date,
-            indicative_monthly_payment_ugx,
-            borrower_id, lender_id,
-            loan_requests!inner(title)
-          ''')
-          .or('borrower_id.eq.$_uid,lender_id.eq.$_uid')
-          .order('created_at', ascending: false);
-
-      return List<Map<String, dynamic>>.from(data as List);
-    } catch (e) {
-      throw parseSupabaseError(e);
-    }
-  }
-
-  /// Portfolio summary from v_user_portfolio.
-  Future<Map<String, dynamic>?> getPortfolioSummary() async {
-    try {
-      final data = await _client
-          .from(ViewNames.userPortfolio)
+          .from(ViewNames.userMarketplaceActivity)
           .select()
           .eq('user_id', _uid)
           .maybeSingle();
@@ -78,12 +57,12 @@ class PositionsRepository {
     }
   }
 
-  /// Realtime stream on loan_bids for the current lender.
-  Stream<List<LenderBid>> watchMyBids() {
+  /// Realtime stream on loan_offers for the current lender.
+  Stream<List<LenderOffer>> watchMyOffers() {
     return _client
-        .from(TableNames.loanBids)
+        .from(TableNames.loanOffers)
         .stream(primaryKey: ['id'])
         .eq('lender_id', _uid)
-        .asyncMap((_) => getMyBids());
+        .asyncMap((_) => getMyOffers());
   }
 }

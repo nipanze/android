@@ -5,35 +5,30 @@ class TableNames {
   static const String subscriptions = 'subscriptions';
   static const String kycVerifications = 'kyc_verifications';
   static const String loanRequests = 'loan_requests';
-  static const String loanBids = 'loan_bids';
+  static const String loanOffers = 'loan_offers';
   static const String watchlist = 'watchlist';
-  static const String contracts = 'contracts';
-  static const String repaymentSchedules = 'repayment_schedules';
-  static const String negotiators = 'negotiators';
   static const String contactReveals = 'contact_reveals';
   static const String notifications = 'notifications';
   static const String auditLogs = 'audit_logs';
   static const String systemSettings = 'system_settings';
-
-  static const String negotiatorAssignments = 'negotiator_assignments';
+  static const String refreshTokens = 'refresh_tokens';
+  static const String referrals = 'referrals';
 }
 
 class ViewNames {
   ViewNames._();
 
   static const String loanListings = 'v_loan_listings';
-  static const String userPortfolio = 'v_user_portfolio';
-  static const String lenderBids = 'v_lender_bids';
-  static const String loanPerformance = 'v_loan_performance';
+  static const String userMarketplaceActivity = 'v_user_marketplace_activity';
+  static const String lenderOffers = 'v_lender_offers';
+  static const String marketplaceActivity = 'v_marketplace_activity';
 }
 
 class RpcNames {
   RpcNames._();
 
-  static const String acceptBid = 'accept_bid';
-  static const String assignNegotiator = 'sp_assign_negotiator';
-  static const String generateRepaymentSchedule = 'sp_generate_repayment_schedule';
-  static const String calculateReputationScore = 'sp_calculate_reputation_score';
+  static const String acceptOffer = 'accept_offer';
+  static const String revealContact = 'reveal_contact';
 }
 
 class StorageKeys {

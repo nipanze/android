@@ -8,7 +8,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
-import '../../features/contracts/presentation/pages/contract_detail_page.dart';
+// Deleted: import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
@@ -34,7 +34,7 @@ class AppRoutes {
   static const String positions = '/positions';
   static const String myListings = '/listings/my-listings';
   static const String listingCreate = '/listings/create';  // ← top-level, not nested
-  static const String contractDetail = '/contracts/:contractId';
+  static const String revealContact = '/marketplace/reveal/:revealId';
   static const String notifications = '/notifications';
   static const String kyc = '/kyc';
   static const String profile = '/profile';
@@ -133,11 +133,12 @@ class AppRouter {
 
       // ── Non-shell authenticated routes ─────────────────────────────
       GoRoute(
-        path: '/contracts/:contractId',
-        name: 'contractDetail',
+        path: AppRoutes.revealContact,
+        name: 'revealContact',
         pageBuilder: (_, state) => _slide(
           state,
-          ContractDetailPage(contractId: state.pathParameters['contractId']!),
+          // Placeholder for RevealContactPage — to be implemented in Stage 2.4
+          Scaffold(appBar: AppBar(title: const Text('Contact Details')), body: const Center(child: Text('Revealed Contact Details'))),
         ),
       ),
       GoRoute(

@@ -15,15 +15,14 @@ class MarketplaceRepository {
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
   Future<List<LoanListing>> getListings({
-    String? riskFilter,
+    String? district,
     bool closingSoon = false,
-    bool highYield = false,
   }) async {
     try {
       var query = _client.from(ViewNames.loanListings).select();
 
-      if (riskFilter != null) {
-        query = query.eq('risk_category', riskFilter) as dynamic;
+      if (district != null) {
+        query = query.eq('district', district) as dynamic;
       }
       if (closingSoon) {
         query = query.eq('closing_soon_24h', true) as dynamic;
@@ -31,19 +30,13 @@ class MarketplaceRepository {
 
       final data = await (query as PostgrestFilterBuilder).order('listed_at', ascending: false);
 
-      final listings = (data as List).map((e) => LoanListing.fromMap(e)).toList();
-
-      if (highYield) {
-        listings.sort((a, b) => (b.maxInterestRate).compareTo(a.maxInterestRate));
-      }
-
-      return listings;
+      return (data as List).map((e) => LoanListing.fromMap(e)).toList();
     } catch (e) {
       throw parseSupabaseError(e);
     }
   }
 
-  /// Get a single listing detail with live bids (anonymised).
+  /// Get a single listing detail.
   Future<LoanListing> getListingDetail(String requestId) async {
     try {
       final data = await _client
@@ -58,40 +51,33 @@ class MarketplaceRepository {
     }
   }
 
-  /// Get live order book for a listing — lender_id replaced with lender_token.
-  Future<List<LoanBid>> getOrderBook(String requestId) async {
+  /// Get live offers for a listing.
+  Future<List<LoanOffer>> getOffers(String requestId) async {
     try {
-      // Join loan_bids with profiles to get lender_token (anonymised identifier)
       final data = await _client
-          .from(TableNames.loanBids)
-          .select('id, request_id, amount, interest_rate, status, placed_at, profiles!inner(lender_token)')
+          .from(TableNames.loanOffers)
+          .select()
           .eq('request_id', requestId)
           .eq('status', 'pending')
-          .order('interest_rate', ascending: true);
+          .order('offered_at', ascending: false);
 
-      return (data as List).map((e) {
-        final profile = e['profiles'] as Map<String, dynamic>?;
-        return LoanBid.fromMap({
-          ...e,
-          'lender_token': profile?['lender_token'],
-        });
-      }).toList();
+      return (data as List).map((e) => LoanOffer.fromMap(e)).toList();
     } catch (e) {
       throw parseSupabaseError(e);
     }
   }
 
-  /// Place a bid on a listing. Requires lender/pro subscription.
-  Future<String> placeBid({
+  /// Place an offer on a listing. Requires lender/pro subscription.
+  Future<String> makeOffer({
     required String requestId,
     required int amount,
-    required double interestRate,
+    String? expectations,
   }) async {
     try {
-      final data = await _client.from(TableNames.loanBids).insert({
+      final data = await _client.from(TableNames.loanOffers).insert({
         'request_id': requestId,
-        'amount': amount,
-        'interest_rate': interestRate,
+        'offer_amount': amount,
+        'proposed_expectations': expectations,
         'lender_id': _client.auth.currentUser!.id,
       }).select('id').single();
 
@@ -101,30 +87,30 @@ class MarketplaceRepository {
     }
   }
 
-  /// Accept a bid. Calls the accept_bid RPC atomically.
-  Future<String> acceptBid({
+  /// Accept an offer. Calls the accept_offer RPC atomically.
+  Future<String> acceptOffer({
     required String requestId,
-    required String bidId,
+    required String offerId,
   }) async {
     try {
-      final result = await _client.rpc(RpcNames.acceptBid, params: {
+      final result = await _client.rpc(RpcNames.acceptOffer, params: {
         'p_request_id': requestId,
-        'p_bid_id': bidId,
+        'p_offer_id': offerId,
         'p_borrower_id': _client.auth.currentUser!.id,
       });
-      return result as String;
+      return result as String; // Returns reveal_id
     } catch (e) {
       throw parseSupabaseError(e);
     }
   }
 
-  /// Withdraw a pending bid.
-  Future<void> withdrawBid(String bidId) async {
+  /// Withdraw a pending offer.
+  Future<void> withdrawOffer(String offerId) async {
     try {
       await _client
-          .from(TableNames.loanBids)
+          .from(TableNames.loanOffers)
           .update({'status': 'withdrawn'})
-          .eq('id', bidId)
+          .eq('id', offerId)
           .eq('lender_id', _client.auth.currentUser!.id)
           .eq('status', 'pending');
     } catch (e) {
@@ -140,12 +126,12 @@ class MarketplaceRepository {
         .asyncMap((_) => getListings());
   }
 
-  /// Real-time stream for a single listing's order book.
-  Stream<List<LoanBid>> watchOrderBook(String requestId) {
+  /// Real-time stream for a single listing's offers.
+  Stream<List<LoanOffer>> watchOffers(String requestId) {
     return _client
-        .from(TableNames.loanBids)
+        .from(TableNames.loanOffers)
         .stream(primaryKey: ['id'])
         .eq('request_id', requestId)
-        .asyncMap((_) => getOrderBook(requestId));
+        .asyncMap((_) => getOffers(requestId));
   }
 }

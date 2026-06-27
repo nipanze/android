@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/positions_repository.dart';
-import '../../domain/models/lender_bid.dart';
+import '../../domain/models/lender_offer.dart';
 
 part 'positions_state.dart';
 
@@ -15,61 +15,54 @@ class PositionsCubit extends Cubit<PositionsState> {
   PositionsCubit(this._repository) : super(const PositionsInitial());
 
   final PositionsRepository _repository;
-  StreamSubscription<List<LenderBid>>? _bidsSub;
+  StreamSubscription<List<LenderOffer>>? _offersSub;
 
   Future<void> load() async {
     emit(const PositionsLoading());
     try {
       final results = await Future.wait([
-        _repository.getMyBids(),
-        _repository.getMyContracts(),
-        _repository.getPortfolioSummary(),
+        _repository.getMyOffers(),
+        _repository.getMarketplaceActivity(),
       ]);
 
       emit(PositionsLoaded(
-        bids:      results[0] as List<LenderBid>,
-        contracts: results[1] as List<Map<String, dynamic>>,
-        portfolio: results[2] as Map<String, dynamic>?,
+        offers:   results[0] as List<LenderOffer>,
+        activity: results[1] as Map<String, dynamic>?,
       ));
 
-      _subscribeBidsRealtime();
+      _subscribeOffersRealtime();
     } catch (e) {
       emit(PositionsError(e.toString()));
     }
   }
 
-  void _subscribeBidsRealtime() {
-    _bidsSub?.cancel();
-    _bidsSub = _repository.watchMyBids().listen(
-      (bids) {
+  void _subscribeOffersRealtime() {
+    _offersSub?.cancel();
+    _offersSub = _repository.watchMyOffers().listen(
+      (offers) {
         if (!isClosed && state is PositionsLoaded) {
           final current = state as PositionsLoaded;
-          emit(current.copyWith(bids: bids));
+          emit(current.copyWith(offers: offers));
         }
       },
       onError: (_) {},
     );
   }
 
-  Future<void> withdrawBid(String bidId) async {
+  Future<void> withdrawOffer(String offerId) async {
     if (state is! PositionsLoaded) return;
     final current = state as PositionsLoaded;
 
-    // Optimistic update
-    final updated = current.bids
-        .map((b) => b.bidId == bidId
-            ? LenderBid(
-                bidId: b.bidId, requestId: b.requestId,
-                listingTitle: b.listingTitle, district: b.district,
-                durationMonths: b.durationMonths, riskCategory: b.riskCategory,
-                bidAmount: b.bidAmount, bidRate: b.bidRate,
-                bidStatus: BidStatus.withdrawn, placedAt: b.placedAt)
-            : b)
+    // Optimistic local update
+    final updated = current.offers
+        .map((o) => o.offerId == offerId
+            ? o.copyWith(status: OfferStatus.withdrawn)
+            : o)
         .toList();
-    emit(current.copyWith(bids: updated));
+    emit(current.copyWith(offers: updated));
 
     try {
-      await _repository.withdrawBid(bidId);
+      await _repository.withdrawOffer(offerId);
     } catch (e) {
       emit(current); // rollback
       emit(PositionsError(e.toString()));
@@ -80,7 +73,7 @@ class PositionsCubit extends Cubit<PositionsState> {
 
   @override
   Future<void> close() {
-    _bidsSub?.cancel();
+    _offersSub?.cancel();
     return super.close();
   }
 }

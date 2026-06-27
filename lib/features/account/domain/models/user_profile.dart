@@ -11,9 +11,6 @@ class UserProfile extends Equatable {
     this.employmentType,
     this.employerName,
     this.monthlyIncomeUgx,
-    required this.creditScore,
-    required this.reputationTier,
-    required this.lenderToken,
     required this.accountStatus,
     // subscription
     this.subscriptionPlan,
@@ -22,11 +19,10 @@ class UserProfile extends Equatable {
     // kyc
     this.kycStatus,
     this.kycExpiresAt,
-    // portfolio counts
+    // marketplace activity
     this.activeListings = 0,
-    this.contractedAsBorrower = 0,
-    this.activeBids = 0,
-    this.contractedAsLender = 0,
+    this.activeOffers = 0,
+    this.revealedContacts = 0,
   });
 
   final String  id;
@@ -37,9 +33,6 @@ class UserProfile extends Equatable {
   final String? employmentType;
   final String? employerName;
   final int?    monthlyIncomeUgx;
-  final int     creditScore;
-  final String  reputationTier;
-  final String  lenderToken;
   final String  accountStatus;
 
   final String?   subscriptionPlan;
@@ -50,9 +43,8 @@ class UserProfile extends Equatable {
   final DateTime? kycExpiresAt;
 
   final int activeListings;
-  final int contractedAsBorrower;
-  final int activeBids;
-  final int contractedAsLender;
+  final int activeOffers;
+  final int revealedContacts;
 
   String get displayName => fullName?.isNotEmpty == true ? fullName! : email;
   String get initials {
@@ -65,36 +57,15 @@ class UserProfile extends Equatable {
   }
 
   bool get isKycApproved => kycStatus == 'approved';
-  bool get canBorrow =>
-      subscriptionPlan == 'borrower' || subscriptionPlan == 'pro';
+  
+  // Borrowing is free for everyone in v4.0 (but check status)
+  bool get canBorrow => accountStatus == 'active';
+  
+  // Lending requires subscription
   bool get canLend =>
-      subscriptionPlan == 'lender' || subscriptionPlan == 'pro';
-
-  factory UserProfile.fromMap(Map<String, dynamic> map) {
-    return UserProfile(
-      id:              map['user_id']        as String,
-      email:           map['full_name']      as String? ?? '',
-      fullName:        map['full_name']      as String?,
-      creditScore:     map['credit_score']   as int?    ?? 50,
-      reputationTier:  map['reputation_tier'] as String? ?? 'bronze',
-      lenderToken:     '',
-      accountStatus:   'active',
-      subscriptionPlan:    map['subscription_plan']       as String?,
-      subscriptionStatus:  map['subscription_status']     as String?,
-      subscriptionExpiresAt: map['subscription_expires_at'] != null
-          ? DateTime.tryParse(map['subscription_expires_at'] as String)
-          : null,
-      kycStatus:    map['kyc_status']    as String?,
-      kycExpiresAt: map['kyc_expires_at'] != null
-          ? DateTime.tryParse(map['kyc_expires_at'] as String)
-          : null,
-      activeListings:       (map['active_listings']        as int?) ?? 0,
-      contractedAsBorrower: (map['contracted_as_borrower'] as int?) ?? 0,
-      activeBids:           (map['active_bids']            as int?) ?? 0,
-      contractedAsLender:   (map['contracted_as_lender']   as int?) ?? 0,
-    );
-  }
+      (subscriptionPlan == 'lender' || subscriptionPlan == 'pro') && 
+      subscriptionStatus == 'active';
 
   @override
-  List<Object?> get props => [id, creditScore, subscriptionPlan, kycStatus];
+  List<Object?> get props => [id, subscriptionPlan, kycStatus, accountStatus];
 }

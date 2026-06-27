@@ -17,27 +17,25 @@ class PositionsLoading extends PositionsState {
 
 class PositionsLoaded extends PositionsState {
   const PositionsLoaded({
-    required this.bids,
-    required this.contracts,
-    this.portfolio,
+    required this.offers,
+    this.activity,
   });
 
-  final List<LenderBid>            bids;
-  final List<Map<String, dynamic>> contracts;
-  final Map<String, dynamic>?      portfolio;
+  // Renamed from bids to offers to match v4.0.
+  // Contracts removed - non-custodial matching only.
+  final List<LenderOffer>          offers;
+  final Map<String, dynamic>?      activity;
 
   PositionsLoaded copyWith({
-    List<LenderBid>?            bids,
-    List<Map<String, dynamic>>? contracts,
-    Map<String, dynamic>?       portfolio,
+    List<LenderOffer>?          offers,
+    Map<String, dynamic>?       activity,
   }) => PositionsLoaded(
-    bids:      bids      ?? this.bids,
-    contracts: contracts ?? this.contracts,
-    portfolio: portfolio ?? this.portfolio,
+    offers:      offers      ?? this.offers,
+    activity:    activity    ?? this.activity,
   );
 
   @override
-  List<Object?> get props => [bids, contracts, portfolio];
+  List<Object?> get props => [offers, activity];
 }
 
 class PositionsError extends PositionsState {
