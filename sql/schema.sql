@@ -550,7 +550,7 @@ CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoke
 -- borrower_id, phone, email, full_name, and national ID are intentionally excluded.
 -- Exposes enough structured context for lenders to make informed offers.
 -- --------------------------------------------
-CREATE VIEW v_loan_listings AS
+CREATE VIEW v_loan_listings WITH (security_invoker = true) AS
 SELECT
     lr.id                                                                     AS request_id,
     lr.title,
@@ -586,7 +586,7 @@ COMMENT ON VIEW v_loan_listings IS
 -- Dashboard view — one query covers both borrower requests and lender offers.
 -- Used in the Positions / My Requests / My Offers screens.
 -- --------------------------------------------
-CREATE VIEW v_user_marketplace_activity AS
+CREATE VIEW v_user_marketplace_activity WITH (security_invoker = true) AS
 SELECT
     p.id                                                                      AS user_id,
     p.full_name,
@@ -630,7 +630,7 @@ COMMENT ON VIEW v_user_marketplace_activity IS
 -- Lender offer activity — for My Offers screen.
 -- Does NOT expose borrower contact details.
 -- --------------------------------------------
-CREATE VIEW v_lender_offers AS
+CREATE VIEW v_lender_offers WITH (security_invoker = true) AS
 SELECT
     lo.lender_id,
     lo.id                                                                     AS offer_id,
@@ -660,7 +660,7 @@ COMMENT ON VIEW v_lender_offers IS
 -- v_marketplace_activity
 -- Marketplace-wide KPIs for admin dashboard.
 -- --------------------------------------------
-CREATE VIEW v_marketplace_activity AS
+CREATE VIEW v_marketplace_activity WITH (security_invoker = true) AS
 SELECT
     DATE_TRUNC('month', lr.listed_at)                                        AS month,
     COUNT(lr.id)                                                              AS total_listings,
@@ -688,7 +688,8 @@ COMMENT ON VIEW v_marketplace_activity IS
 -- ============================================
 
 CREATE OR REPLACE FUNCTION fn_set_updated_at()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
@@ -702,7 +703,8 @@ $$;
 
 -- Set expires_at on loan_request insert using system_settings
 CREATE OR REPLACE FUNCTION trg_fn_set_listing_expiry()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
 DECLARE
     v_days INT;
 BEGIN
@@ -716,7 +718,8 @@ $$;
 
 -- Block listing if account is not active
 CREATE OR REPLACE FUNCTION trg_fn_require_active_account()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM profiles
@@ -732,7 +735,8 @@ $$;
 
 -- Enforce max concurrent active requests from system_settings
 CREATE OR REPLACE FUNCTION trg_fn_max_concurrent_requests()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
 DECLARE
     v_active_count INT;
     v_max          INT;
@@ -756,7 +760,8 @@ $$;
 
 -- Validate a lender offer before insert
 CREATE OR REPLACE FUNCTION trg_fn_validate_offer()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
 DECLARE
     v_listing    loan_requests%ROWTYPE;
     v_min_offer  BIGINT;
@@ -807,7 +812,8 @@ $$;
 
 -- Lock an accepted offer from further updates
 CREATE OR REPLACE FUNCTION trg_fn_lock_accepted_offer()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
 BEGIN
     IF OLD.status = 'accepted' THEN
         RAISE EXCEPTION 'NIPANZE_OFFER_LOCKED: An accepted offer cannot be modified.'
@@ -820,7 +826,8 @@ $$;
 
 -- Auto-expire an offer if expires_at has passed
 CREATE OR REPLACE FUNCTION trg_fn_expire_offer()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
 BEGIN
     IF NEW.expires_at IS NOT NULL AND NEW.expires_at < CURRENT_TIMESTAMP AND NEW.status = 'pending' THEN
         NEW.status := 'expired'::offer_status_enum;
@@ -832,7 +839,8 @@ $$;
 
 -- Increment number_of_offers on loan_requests when an offer is accepted
 CREATE OR REPLACE FUNCTION trg_fn_increment_offer_count()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
 BEGIN
     IF TG_OP = 'UPDATE' AND NEW.status = 'accepted' AND OLD.status != 'accepted' THEN
         UPDATE loan_requests
@@ -924,7 +932,8 @@ CREATE OR REPLACE FUNCTION accept_offer(
     p_borrower_id UUID
 )
 RETURNS UUID    -- returns contact_reveal id (reveal is pending until borrower triggers it)
-LANGUAGE plpgsql SECURITY DEFINER AS $$
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
 DECLARE
     v_listing        loan_requests%ROWTYPE;
     v_offer          loan_offers%ROWTYPE;
@@ -1033,7 +1042,8 @@ CREATE OR REPLACE FUNCTION reveal_contact(
     p_borrower_id UUID
 )
 RETURNS JSONB   -- returns { borrower: {...}, lender: {...} }
-LANGUAGE plpgsql SECURITY DEFINER AS $$
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
 DECLARE
     v_reveal      contact_reveals%ROWTYPE;
     v_offer       loan_offers%ROWTYPE;
@@ -1144,7 +1154,8 @@ ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
 
 
 CREATE OR REPLACE FUNCTION is_admin()
-RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE AS $$
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
+SET search_path = public AS $$
     SELECT EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
     );
@@ -1255,7 +1266,7 @@ CREATE POLICY "audit_logs: own or admin read"
     ON audit_logs FOR SELECT TO authenticated
     USING (user_id = auth.uid() OR is_admin());
 CREATE POLICY "audit_logs: insert only"
-    ON audit_logs FOR INSERT TO authenticated WITH CHECK (TRUE);
+    ON audit_logs FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 CREATE POLICY "audit_logs: no update"
     ON audit_logs FOR UPDATE TO authenticated USING (FALSE);
 CREATE POLICY "audit_logs: no delete"
@@ -1319,5 +1330,31 @@ END $$;
 --   supabase storage create verification-documents --public=false
 
 -- ============================================
+-- FUNCTION SECURITY (Disable public access for SECURITY DEFINER functions)
+-- ============================================
+
+-- Revoke public/authenticated/anon access on trigger/internal functions
+REVOKE EXECUTE ON FUNCTION public.handle_new_auth_user() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_require_active_account() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_max_concurrent_requests() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_validate_offer() FROM public, authenticated, anon;
+
+-- Revoke public/anon access on client-facing RPCs and restrict to authenticated/service_role
+REVOKE EXECUTE ON FUNCTION public.is_admin() FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, service_role;
+
+
+-- ============================================
 -- END OF SCHEMA v4.0
 -- ============================================
+-- Grants for views
+GRANT SELECT ON v_loan_listings TO authenticated, anon;
+GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
+GRANT SELECT ON v_lender_offers TO authenticated, anon;
+GRANT SELECT ON v_marketplace_activity TO authenticated, anon;

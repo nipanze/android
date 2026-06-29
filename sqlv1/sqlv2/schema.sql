@@ -1030,7 +1030,7 @@ COMMENT ON VIEW v_loan_performance IS 'Monthly platform KPIs: volume, default ra
 
 -- v_loan_listings — anonymised marketplace view
 -- borrower_id intentionally excluded
-CREATE VIEW public.v_loan_listings AS
+CREATE VIEW public.v_loan_listings WITH (security_invoker = true) AS
 SELECT
     lr.request_id,
     lr.requested_amount,

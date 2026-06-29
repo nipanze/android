@@ -10,7 +10,7 @@
 | Stage | Title | Status |
 |---|---|---|
 | 1 | Foundation | ✅ Complete |
-| 2 | Core Marketplace | 🔄 In Progress |
+| 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ⬜ Planned |
 | 3.5 | Cloud Migration & Auth Hardening | ⬜ Planned |
 | 4 | Contact Sharing | ⬜ Planned |
@@ -36,43 +36,43 @@
 
 ---
 
-## Stage 2 — Core Marketplace 🔄 In Progress
+## Stage 2 — Core Marketplace ✅ Complete
 
 ### 2.1 Marketplace Feed
-- [ ] `MarketplaceRepository` — `v_loan_listings`, filters, Realtime stream
-- [ ] `MarketplaceCubit` — live feed with Realtime refresh
-- [ ] `MarketplacePage` — filter pills, `ListingCard`, skeleton, live dot
-- [ ] `LoanDetailPage` — listing detail, income + repayment plan display, offers panel
+- [x] `MarketplaceRepository` — `v_loan_listings`, filters, Realtime stream
+- [x] `MarketplaceCubit` — live feed with Realtime refresh
+- [x] `MarketplacePage` — filter pills, `ListingCard`, skeleton, live dot
+- [x] `LoanDetailPage` — listing detail, income + repayment plan display, offers panel
 
 ### 2.2 Loan Requests (Borrower — Free)
-- [ ] `ListingCreatePage` — 2-step form: loan details + income/repayment context
-- [ ] Form fields: title, purpose, amount, duration, district, income source, preferred repayment plan, repayment amount per period, repayment timeline
-- [ ] `SystemSettingsRepository` — fetches public limits from DB; cached singleton; form validators use live values
-- [ ] `MyRequestsPage` + `MyRequestsCubit` + `RequestRepository` — real data, Realtime, cancel with confirm
-- [ ] Contracted request banner redirects to Positions tab
-- [ ] Request tab → direct to `ListingCreatePage` (no intermediate page)
+- [x] `ListingCreatePage` — 2-step form: loan details + income/repayment context
+- [x] Form fields: title, purpose, amount, duration, district, income source, preferred repayment plan, repayment amount per period, repayment timeline
+- [x] `SystemSettingsRepository` — fetches public limits from DB; cached singleton; form validators use live values
+- [x] `MyRequestsPage` + `MyRequestsCubit` + `RequestRepository` — real data, Realtime, cancel with confirm
+- [x] Contracted request banner redirects to Positions tab
+- [x] Request tab → direct to `ListingCreatePage` (no intermediate page)
 
 ### 2.3 Loan Offers (Lender — Subscription Required)
-- [ ] `OfferRepository` — `makeOffer`, `withdrawOffer`, Realtime stream on offers for a listing
-- [ ] `LoanDetailPage` — live Realtime offers panel, glow flash on new offer
-- [ ] Subscription gate modal — plan cards (Free / Lender / Pro), upgrade navigates to Account
-- [ ] `KycVerification` model + `KycRepository` — Storage uploads, `submitForReview`
-- [ ] `KycCubit` — per-doc upload state, error preserves data
-- [ ] `KycPage` — camera/gallery picker, 3 doc tiles, submit gating, rejection reason banner
+- [x] `OfferRepository` — `makeOffer`, `withdrawOffer`, Realtime stream on offers for a listing
+- [x] `LoanDetailPage` — live Realtime offers panel, glow flash on new offer
+- [x] Subscription gate modal — plan cards (Free / Lender / Pro), upgrade navigates to Account
+- [x] `KycVerification` model + `KycRepository` — Storage uploads, `submitForReview`
+- [x] `KycCubit` — per-doc upload state, error preserves data
+- [x] `KycPage` — camera/gallery picker, 3 doc tiles, submit gating, rejection reason banner
 
 ### 2.4 Offer Acceptance
-- [ ] `accept_offer` RPC called from borrower side on `LoanDetailPage`
-- [ ] Rejected offers notified to losing lenders
-- [ ] Listing moves to `contracted` status; removed from live feed
-- [ ] `WatchlistButton` on detail page — toggles DB save, filled star when saved
+- [x] `accept_offer` RPC called from borrower side on `LoanDetailPage`
+- [x] Rejected offers notified to losing lenders
+- [x] Listing moves to `contracted` status; removed from live feed
+- [x] `WatchlistButton` on detail page — toggles DB save, filled star when saved
 
 ### Stage 2 Exit Criteria
-- [ ] Borrower can post a free request and receive offers
-- [ ] Lender with active subscription can browse and make offers
-- [ ] Borrower can accept one offer; all others auto-rejected
-- [ ] Live feed and offers panel refresh via Realtime
-- [ ] Subscription gate blocks offer placement for free-plan users
-- [ ] App stable on Android APK (arm64), web, and Linux desktop
+- [x] Borrower can post a free request and receive offers
+- [x] Lender with active subscription can browse and make offers
+- [x] Borrower can accept one offer; all others auto-rejected
+- [x] Live feed and offers panel refresh via Realtime
+- [x] Subscription gate blocks offer placement for free-plan users
+- [x] App stable on Android APK (arm64), web, and Linux desktop
 
 ---
 
@@ -193,16 +193,16 @@
 |---|---|
 | Register → verify email → login | ✅ |
 | 5-tab nav, Request in centre | ✅ |
-| Browse marketplace with filters | ❌ Stage 2 |
-| Live feed Realtime refresh | ❌ Stage 2 |
-| Post a loan request (free) | ❌ Stage 2 |
-| Form limits from DB (system_settings) | ❌ Stage 2 |
-| Browse and make an offer (lender subscription) | ❌ Stage 2 |
-| Subscription gate modal | ❌ Stage 2 |
-| Borrower accepts an offer | ❌ Stage 2 |
-| Losing offers auto-rejected | ❌ Stage 2 |
-| Live offers panel Realtime + flash | ❌ Stage 2 |
-| KYC upload (camera/gallery, 3 docs) | ❌ Stage 2 |
+| Browse marketplace with filters | ✅ Stage 2 |
+| Live feed Realtime refresh | ✅ Stage 2 |
+| Post a loan request (free) | ✅ Stage 2 |
+| Form limits from DB (system_settings) | ✅ Stage 2 |
+| Browse and make an offer (lender subscription) | ✅ Stage 2 |
+| Subscription gate modal | ✅ Stage 2 |
+| Borrower accepts an offer | ✅ Stage 2 |
+| Losing offers auto-rejected | ✅ Stage 2 |
+| Live offers panel Realtime + flash | ✅ Stage 2 |
+| KYC upload (camera/gallery, 3 docs) | ✅ Stage 2 |
 | Save to watchlist (toggles star) | ❌ Stage 3 |
 | Watchlist — real data, grouped, urgency | ❌ Stage 3 |
 | Positions — My Requests tab | ❌ Stage 3 |
