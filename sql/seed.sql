@@ -493,8 +493,9 @@ INSERT INTO loan_requests (
  500000,
  '18 months starting February 2026',
  'Central',
- 'active', '2026-01-20 10:00:00', '2026-01-27 10:00:00', NULL,
- 2, 112, '2026-01-20 09:45:00'),
+ 'active',
+ NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', NULL,
+ 2, 112, NOW() - INTERVAL '2 days 15 minutes'),
 
 -- Maria Nakato — active, one pending offer
 ('c1000000-0000-0000-0000-000000000004',
@@ -507,8 +508,9 @@ INSERT INTO loan_requests (
  320000,
  '12 months starting February 2026',
  'Central',
- 'active', '2026-01-24 15:00:00', '2026-01-31 15:00:00', NULL,
- 1, 35, '2026-01-24 14:45:00'),
+ 'active',
+ NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', NULL,
+ 1, 35, NOW() - INTERVAL '3 days 15 minutes'),
 
 -- Frank Omondi — active, one pending offer
 ('c1000000-0000-0000-0000-000000000005',
@@ -521,8 +523,9 @@ INSERT INTO loan_requests (
  280000,
  '18 months starting February 2026',
  'Eastern',
- 'active', '2026-01-26 10:00:00', '2026-02-02 10:00:00', NULL,
- 1, 41, '2026-01-26 09:45:00'),
+ 'active',
+ NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 days', NULL,
+ 1, 41, NOW() - INTERVAL '1 day 15 minutes'),
 
 -- Lucy Nambi — active, no offers yet
 ('c1000000-0000-0000-0000-000000000006',
@@ -535,8 +538,9 @@ INSERT INTO loan_requests (
  280000,
  '24 months starting February 2026',
  'Central',
- 'active', '2026-01-28 09:00:00', '2026-02-04 09:00:00', NULL,
- 0, 18, '2026-01-28 08:45:00'),
+ 'active',
+ NOW() - INTERVAL '4 days', NOW() + INTERVAL '3 days', NULL,
+ 0, 18, NOW() - INTERVAL '4 days 15 minutes'),
 
 -- Charles Mwesigwa — expired
 ('c1000000-0000-0000-0000-000000000007',

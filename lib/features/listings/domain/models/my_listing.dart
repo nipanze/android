@@ -10,11 +10,12 @@ class MyListing extends Equatable {
     required this.district,
     required this.durationMonths,
     required this.requestedAmount,
-    required this.maxInterestRate,
-    required this.riskCategory,
-    required this.creditScoreBand,
+    required this.incomeSource,
+    required this.preferredRepaymentPlan,
+    required this.repaymentAmountPerPeriod,
+    required this.repaymentTimeline,
     required this.status,
-    required this.numberOfBids,
+    required this.numberOfOffers,
     required this.listedAt,
     required this.expiresAt,
     this.contractedAt,
@@ -27,11 +28,12 @@ class MyListing extends Equatable {
   final String district;
   final int durationMonths;
   final int requestedAmount;
-  final double maxInterestRate;
-  final String riskCategory;
-  final String creditScoreBand;
+  final String incomeSource;
+  final String preferredRepaymentPlan;
+  final int repaymentAmountPerPeriod;
+  final String repaymentTimeline;
   final ListingStatus status;
-  final int numberOfBids;
+  final int numberOfOffers;
   final DateTime listedAt;
   final DateTime expiresAt;
   final DateTime? contractedAt;
@@ -62,11 +64,12 @@ class MyListing extends Equatable {
       district: map['district'] as String? ?? '',
       durationMonths: map['duration_months'] as int? ?? 0,
       requestedAmount: (map['requested_amount'] as num?)?.toInt() ?? 0,
-      maxInterestRate: (map['max_interest_rate'] as num?)?.toDouble() ?? 0,
-      riskCategory: map['risk_category'] as String? ?? 'medium',
-      creditScoreBand: map['credit_score_band'] as String? ?? 'B',
+      incomeSource: map['income_source'] as String? ?? '',
+      preferredRepaymentPlan: map['preferred_repayment_plan'] as String? ?? '',
+      repaymentAmountPerPeriod: (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
+      repaymentTimeline: map['repayment_timeline'] as String? ?? '',
       status: _statusFromString(map['status'] as String? ?? 'active'),
-      numberOfBids: map['number_of_bids'] as int? ?? 0,
+      numberOfOffers: map['number_of_offers'] as int? ?? 0,
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ?? DateTime.now(),
       expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ?? DateTime.now(),
       contractedAt: map['contracted_at'] != null
@@ -89,5 +92,5 @@ class MyListing extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, status, numberOfBids];
+  List<Object?> get props => [id, status, numberOfOffers];
 }

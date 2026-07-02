@@ -550,7 +550,7 @@ CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoke
 -- borrower_id, phone, email, full_name, and national ID are intentionally excluded.
 -- Exposes enough structured context for lenders to make informed offers.
 -- --------------------------------------------
-CREATE VIEW v_loan_listings WITH (security_invoker = true) AS
+CREATE VIEW v_loan_listings AS
 SELECT
     lr.id                                                                     AS request_id,
     lr.title,
@@ -586,7 +586,7 @@ COMMENT ON VIEW v_loan_listings IS
 -- Dashboard view — one query covers both borrower requests and lender offers.
 -- Used in the Positions / My Requests / My Offers screens.
 -- --------------------------------------------
-CREATE VIEW v_user_marketplace_activity WITH (security_invoker = true) AS
+CREATE VIEW v_user_marketplace_activity AS
 SELECT
     p.id                                                                      AS user_id,
     p.full_name,
@@ -630,7 +630,7 @@ COMMENT ON VIEW v_user_marketplace_activity IS
 -- Lender offer activity — for My Offers screen.
 -- Does NOT expose borrower contact details.
 -- --------------------------------------------
-CREATE VIEW v_lender_offers WITH (security_invoker = true) AS
+CREATE VIEW v_lender_offers AS
 SELECT
     lo.lender_id,
     lo.id                                                                     AS offer_id,
@@ -660,7 +660,7 @@ COMMENT ON VIEW v_lender_offers IS
 -- v_marketplace_activity
 -- Marketplace-wide KPIs for admin dashboard.
 -- --------------------------------------------
-CREATE VIEW v_marketplace_activity WITH (security_invoker = true) AS
+CREATE VIEW v_marketplace_activity AS
 SELECT
     DATE_TRUNC('month', lr.listed_at)                                        AS month,
     COUNT(lr.id)                                                              AS total_listings,
@@ -1358,3 +1358,8 @@ GRANT SELECT ON v_loan_listings TO authenticated, anon;
 GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
 GRANT SELECT ON v_lender_offers TO authenticated, anon;
 GRANT SELECT ON v_marketplace_activity TO authenticated, anon;
+
+-- Explicitly grant privileges on all tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;

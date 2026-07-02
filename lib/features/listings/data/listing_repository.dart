@@ -20,8 +20,9 @@ class ListingRepository {
           .from(TableNames.loanRequests)
           .select(
             'id, title, purpose, district, duration_months, requested_amount, '
-            'max_interest_rate, risk_category, credit_score_band, status, '
-            'number_of_bids, listed_at, expires_at, contracted_at, cancelled_at',
+            'income_source, preferred_repayment_plan, repayment_amount_per_period, '
+            'repayment_timeline, status, number_of_offers, '
+            'listed_at, expires_at, contracted_at, cancelled_at',
           )
           .eq('borrower_id', _uid)
           .order('listed_at', ascending: false);
@@ -39,9 +40,11 @@ class ListingRepository {
     required String purpose,
     required int requestedAmount,
     required int durationMonths,
-    required double maxInterestRate,
     required String district,
-    required String riskCategory,
+    required String incomeSource,
+    required String preferredRepaymentPlan,
+    required int repaymentAmountPerPeriod,
+    required String repaymentTimeline,
   }) async {
     try {
       final data = await _client
@@ -52,10 +55,11 @@ class ListingRepository {
             'purpose': purpose,
             'requested_amount': requestedAmount,
             'duration_months': durationMonths,
-            'max_interest_rate': maxInterestRate,
             'district': district,
-            'risk_category': riskCategory,
-            'credit_score_band': 'B', // band assigned by admin in Stage 5
+            'income_source': incomeSource,
+            'preferred_repayment_plan': preferredRepaymentPlan,
+            'repayment_amount_per_period': repaymentAmountPerPeriod,
+            'repayment_timeline': repaymentTimeline,
           })
           .select('id')
           .single();

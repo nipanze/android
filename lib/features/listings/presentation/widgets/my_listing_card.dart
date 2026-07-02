@@ -65,28 +65,26 @@ class MyListingCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Risk + bid count row
+            // Offer count row
             Row(
               children: [
-                RiskBadge.fromString(listing.riskCategory),
-                const SizedBox(width: 8),
-                if (listing.numberOfBids > 0) ...[
+                if (listing.numberOfOffers > 0) ...[
                   const Icon(Icons.how_to_vote_outlined,
                       size: 12, color: AppColors.success),
                   const SizedBox(width: 3),
                   Text(
-                    '${listing.numberOfBids} bid${listing.numberOfBids != 1 ? 's' : ''}',
+                    '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
                     style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AppColors.success),
                   ),
                 ] else
-                  Text('No bids yet',
+                  Text('No offers yet',
                       style: Theme.of(context).textTheme.bodySmall),
                 const Spacer(),
                 Text(
-                  'Ceiling ${listing.maxInterestRate.toStringAsFixed(1)}%',
+                  '${listing.durationMonths} months',
                   style: const TextStyle(fontFamily: AppFonts.body, fontSize: 10),
                 ),
               ],
@@ -127,7 +125,7 @@ class MyListingCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       textStyle: const TextStyle(fontSize: 11),
                     ),
-                    child: const Text('View bids'),
+                    child: const Text('View offers'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -151,7 +149,7 @@ class MyListingCard extends StatelessWidget {
   }
 
   Color _borderColor(BuildContext context) {
-    if (listing.isActive && listing.numberOfBids > 0) {
+    if (listing.isActive && listing.numberOfOffers > 0) {
       return AppColors.accent.withValues(alpha: 0.5);
     }
     return Theme.of(context).dividerColor;

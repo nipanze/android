@@ -75,15 +75,17 @@ class ListingCard extends StatelessWidget {
             // Offer row
             Row(
               children: [
-                Text(
-                  listing.purpose,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
+                Expanded(
+                  child: Text(
+                    listing.purpose,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 if (hasOffers)
                   Text(
                     '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
@@ -111,13 +113,15 @@ class ListingCard extends StatelessWidget {
             // Footer row
             Row(
               children: [
-                Text(
-                  listing.incomeSource,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Expanded(
+                  child: Text(
+                    listing.incomeSource,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   listing.timeRemainingLabel,
                   style: TextStyle(
