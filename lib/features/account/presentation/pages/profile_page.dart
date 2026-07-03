@@ -41,11 +41,13 @@ class _ProfileViewState extends State<_ProfileView> {
   ];
 
   static const _employmentTypes = [
-    ('employed',       'Employed'),
-    ('self_employed',  'Self-employed'),
-    ('business_owner', 'Business owner'),
-    ('student',        'Student'),
-    ('other',          'Other'),
+    ('employed',             'Employed'),
+    ('government_employee',  'Government employee'),
+    ('self_employed',        'Self-employed'),
+    ('small_business_owner', 'Small business owner'),
+    ('business_owner',       'Business owner'),
+    ('student',              'Student'),
+    ('other',                'Other'),
   ];
 
   @override
@@ -146,10 +148,10 @@ class _ProfileViewState extends State<_ProfileView> {
                   DropdownButtonFormField<String>(
                     initialValue: _employmentType,
                     decoration: const InputDecoration(
-                      labelText: 'Employment type',
+                      labelText: 'Income type',
                       prefixIcon: Icon(Icons.work_outline_rounded, size: 20),
                     ),
-                    hint: const Text('Select type'),
+                    hint: const Text('Select income type'),
                     items: _employmentTypes
                         .map((e) => DropdownMenuItem(
                             value: e.$1, child: Text(e.$2)))

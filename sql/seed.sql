@@ -254,7 +254,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Borrowers
 UPDATE profiles SET
     full_name='David Mukasa', phone='+256701234567', district='Central',
-    employment_type='employed', employer_name='Uganda Revenue Authority',
+    employment_type='government_employee', employer_name='Uganda Revenue Authority',
     monthly_income_ugx=4500000, account_status='active',
     created_at='2024-01-15 08:30:00'
 WHERE id='10000000-0000-0000-0000-000000000001';
@@ -275,7 +275,7 @@ WHERE id='10000000-0000-0000-0000-000000000003';
 
 UPDATE profiles SET
     full_name='Maria Nakato', phone='+256704567890', district='Central',
-    employment_type='self_employed', employer_name='Nakato Boutique',
+    employment_type='small_business_owner', employer_name='Nakato Boutique',
     monthly_income_ugx=2800000, account_status='active',
     created_at='2024-01-22 09:10:00'
 WHERE id='10000000-0000-0000-0000-000000000004';

@@ -31,7 +31,7 @@ CREATE TYPE kyc_status_enum AS ENUM (
 );
 
 CREATE TYPE employment_type_enum AS ENUM (
-    'employed', 'self_employed', 'business_owner', 'student', 'other'
+    'employed', 'government_employee', 'self_employed', 'small_business_owner', 'business_owner', 'student', 'other'
 );
 
 CREATE TYPE subscription_plan_enum AS ENUM (
