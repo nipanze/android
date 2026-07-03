@@ -28,7 +28,8 @@ class MarketplaceRepository {
         query = query.eq('closing_soon_24h', true) as dynamic;
       }
 
-      final data = await (query as PostgrestFilterBuilder).order('listed_at', ascending: false);
+      final data = await (query as PostgrestFilterBuilder)
+          .order('listed_at', ascending: false);
 
       return (data as List).map((e) => LoanListing.fromMap(e)).toList();
     } catch (e) {
@@ -52,7 +53,27 @@ class MarketplaceRepository {
   }
 
   /// Get live offers for a listing.
-  Future<List<LoanOffer>> getOffers(String requestId) async {
+  ///
+  /// Owners need private table rows so they can accept a specific offer.
+  /// Everyone else reads the anonymized public order-book RPC.
+  Future<List<LoanOffer>> getOffers(
+    String requestId, {
+    bool includePrivate = false,
+  }) async {
+    if (includePrivate) return _getPrivateOffers(requestId);
+
+    try {
+      final data = await _client.rpc(RpcNames.getPublicListingOffers, params: {
+        'p_request_id': requestId,
+      });
+
+      return (data as List).map((e) => LoanOffer.fromMap(e)).toList();
+    } catch (_) {
+      return _getPrivateOffers(requestId);
+    }
+  }
+
+  Future<List<LoanOffer>> _getPrivateOffers(String requestId) async {
     try {
       final data = await _client
           .from(TableNames.loanOffers)
@@ -74,12 +95,16 @@ class MarketplaceRepository {
     String? expectations,
   }) async {
     try {
-      final data = await _client.from(TableNames.loanOffers).insert({
-        'request_id': requestId,
-        'offer_amount': amount,
-        'proposed_expectations': expectations,
-        'lender_id': _client.auth.currentUser!.id,
-      }).select('id').single();
+      final data = await _client
+          .from(TableNames.loanOffers)
+          .insert({
+            'request_id': requestId,
+            'offer_amount': amount,
+            'proposed_expectations': expectations,
+            'lender_id': _client.auth.currentUser!.id,
+          })
+          .select('id')
+          .single();
 
       return data['id'] as String;
     } catch (e) {
@@ -122,17 +147,19 @@ class MarketplaceRepository {
   Stream<List<LoanListing>> watchListings() {
     return _client
         .from(TableNames.loanRequests)
-        .stream(primaryKey: ['id'])
-        .asyncMap((_) => getListings());
+        .stream(primaryKey: ['id']).asyncMap((_) => getListings());
   }
 
   /// Real-time stream for a single listing's offers.
-  Stream<List<LoanOffer>> watchOffers(String requestId) {
+  Stream<List<LoanOffer>> watchOffers(
+    String requestId, {
+    bool includePrivate = false,
+  }) {
     return _client
         .from(TableNames.loanOffers)
         .stream(primaryKey: ['id'])
         .eq('request_id', requestId)
-        .asyncMap((_) => getOffers(requestId));
+        .asyncMap((_) => getOffers(requestId, includePrivate: includePrivate));
   }
 
   /// Check if the user is the borrower of a given listing.
@@ -153,4 +180,3 @@ class MarketplaceRepository {
     }
   }
 }
-

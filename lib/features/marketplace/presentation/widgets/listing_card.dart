@@ -113,15 +113,7 @@ class ListingCard extends StatelessWidget {
             // Footer row
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    listing.incomeSource,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
+                const Spacer(),
                 Text(
                   listing.timeRemainingLabel,
                   style: TextStyle(

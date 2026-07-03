@@ -482,7 +482,7 @@ INSERT INTO loan_requests (
  'contracted', '2024-03-01 10:00:00', NOW() + INTERVAL '12 days', '2024-03-05 11:00:00',
  1, 54, '2024-03-01 09:45:00'),
 
--- James Okello — active, two pending offers
+-- James Okello — active, three pending offers (full + partial)
 ('c1000000-0000-0000-0000-000000000003',
  '10000000-0000-0000-0000-000000000003',
  'Business Expansion — IT Equipment',
@@ -495,7 +495,7 @@ INSERT INTO loan_requests (
  'Central',
  'active',
  NOW() - INTERVAL '2 days', NOW() + INTERVAL '15 days', NULL,
- 2, 112, NOW() - INTERVAL '2 days 15 minutes'),
+ 3, 112, NOW() - INTERVAL '2 days 15 minutes'),
 
 -- Maria Nakato — active, one pending offer
 ('c1000000-0000-0000-0000-000000000004',
@@ -527,7 +527,7 @@ INSERT INTO loan_requests (
  NOW() - INTERVAL '1 day', NOW() + INTERVAL '16 days', NULL,
  1, 41, NOW() - INTERVAL '1 day 15 minutes'),
 
--- Lucy Nambi — active, no offers yet
+-- Lucy Nambi — active, three pending offers (full + partial)
 ('c1000000-0000-0000-0000-000000000006',
  '10000000-0000-0000-0000-000000000012',
  'Farm Equipment Purchase',
@@ -540,9 +540,9 @@ INSERT INTO loan_requests (
  'Central',
  'active',
  NOW() - INTERVAL '4 days', NOW() + INTERVAL '13 days', NULL,
- 0, 18, NOW() - INTERVAL '4 days 15 minutes'),
+ 3, 18, NOW() - INTERVAL '4 days 15 minutes'),
 
--- Charles Mwesigwa — active (converted from expired)
+-- Charles Mwesigwa — active (converted from expired), three pending offers
 ('c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000013',
  'Vehicle Purchase — Delivery Van',
@@ -554,9 +554,9 @@ INSERT INTO loan_requests (
  '24 months starting January 2026',
  'Western',
  'active', NOW() - INTERVAL '5 days', NOW() + INTERVAL '15 days', NULL,
- 1, 67, NOW() - INTERVAL '5 days 15 minutes'),
+ 3, 67, NOW() - INTERVAL '5 days 15 minutes'),
 
--- Robert Ssemwanga — active (expires in 14 days)
+-- Robert Ssemwanga — active (expires in 14 days), two pending offers
 ('c1000000-0000-0000-0000-000000000008',
  '10000000-0000-0000-0000-000000000005',
  'Business Working Capital',
@@ -570,7 +570,7 @@ INSERT INTO loan_requests (
  'active',
  NOW() - INTERVAL '6 days 20 hours',
  NOW() + INTERVAL '14 days',
- NULL, 1, 29, NOW() - INTERVAL '6 days 21 hours');
+ NULL, 2, 29, NOW() - INTERVAL '6 days 21 hours');
 
 SET session_replication_role = 'origin';
 
@@ -627,6 +627,13 @@ INSERT INTO loan_offers (
  'Offering full amount at 10.5% per annum. Monthly instalments over 18 months.',
  'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
 
+('d1000000-0000-0000-0000-000000000010',
+ 'c1000000-0000-0000-0000-000000000003',
+ '10000000-0000-0000-0000-000000000009',
+ 3000000,
+ 'Can contribute UGX 3M toward the equipment purchase at 9.5% per annum, repayable monthly.',
+ 'pending', '2026-01-24 08:40:00', NULL, '2026-01-24 08:40:00'),
+
 -- Maria Nakato's active listing — one pending offer
 ('d1000000-0000-0000-0000-000000000006',
  'c1000000-0000-0000-0000-000000000004',
@@ -643,7 +650,29 @@ INSERT INTO loan_offers (
  'Prepared to lend the full amount at 14.5% per annum given the medical urgency.',
  'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
 
--- Charles Mwesigwa's active listing — one pending offer (converted from expired)
+-- Lucy Nambi's active listing — multiple pending offers (partial + full)
+('d1000000-0000-0000-0000-000000000011',
+ 'c1000000-0000-0000-0000-000000000006',
+ '10000000-0000-0000-0000-000000000006',
+ 3000000,
+ 'Can fund UGX 3M now for the pump purchase. Comfortable with the 24-month repayment timeline.',
+ 'pending', NOW() - INTERVAL '3 days 7 hours', NULL, NOW() - INTERVAL '3 days 7 hours'),
+
+('d1000000-0000-0000-0000-000000000012',
+ 'c1000000-0000-0000-0000-000000000006',
+ '10000000-0000-0000-0000-000000000008',
+ 6000000,
+ 'Can fund the full equipment amount if repayments begin as proposed in February.',
+ 'pending', NOW() - INTERVAL '2 days 18 hours', NULL, NOW() - INTERVAL '2 days 18 hours'),
+
+('d1000000-0000-0000-0000-000000000013',
+ 'c1000000-0000-0000-0000-000000000006',
+ '10000000-0000-0000-0000-000000000010',
+ 4000000,
+ 'Can cover UGX 4M for the tilling equipment, with monthly payments over 24 months.',
+ 'pending', NOW() - INTERVAL '1 day 9 hours', NULL, NOW() - INTERVAL '1 day 9 hours'),
+
+-- Charles Mwesigwa's active listing — multiple pending offers (partial + full)
 ('d1000000-0000-0000-0000-000000000008',
  'c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000006',
@@ -651,13 +680,34 @@ INSERT INTO loan_offers (
  'Happy to fund the full van purchase. Expecting 11% per annum over 24 months.',
  'pending', NOW() - INTERVAL '4 days 23 hours', NULL, NOW() - INTERVAL '4 days 23 hours'),
 
--- Robert Ssemwanga's closing-soon listing — one pending offer
+('d1000000-0000-0000-0000-000000000014',
+ 'c1000000-0000-0000-0000-000000000007',
+ '10000000-0000-0000-0000-000000000008',
+ 3000000,
+ 'Can offer UGX 3M as partial funding for the van deposit and initial repairs.',
+ 'pending', NOW() - INTERVAL '3 days 12 hours', NULL, NOW() - INTERVAL '3 days 12 hours'),
+
+('d1000000-0000-0000-0000-000000000015',
+ 'c1000000-0000-0000-0000-000000000007',
+ '10000000-0000-0000-0000-000000000009',
+ 5000000,
+ 'Can fund UGX 5M toward the van purchase with slightly faster monthly repayment preferred.',
+ 'pending', NOW() - INTERVAL '2 days 6 hours', NULL, NOW() - INTERVAL '2 days 6 hours'),
+
+-- Robert Ssemwanga's closing-soon listing — two pending offers
 ('d1000000-0000-0000-0000-000000000009',
  'c1000000-0000-0000-0000-000000000008',
  '10000000-0000-0000-0000-000000000010',
  7000000,
  'Can provide full working capital at 9.5% per annum. Six monthly repayments.',
- 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours');
+ 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours'),
+
+('d1000000-0000-0000-0000-000000000016',
+ 'c1000000-0000-0000-0000-000000000008',
+ '10000000-0000-0000-0000-000000000008',
+ 3000000,
+ 'Can cover UGX 3M of the working capital need if the supplier contract is confirmed.',
+ 'pending', NOW() - INTERVAL '45 minutes', NULL, NOW() - INTERVAL '45 minutes');
 
 SET session_replication_role = 'origin';
 

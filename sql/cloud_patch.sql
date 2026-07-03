@@ -65,7 +65,6 @@ SELECT
     lr.district,
     lr.duration_months,
     lr.requested_amount,
-    lr.income_source,
     lr.preferred_repayment_plan,
     lr.repayment_amount_per_period,
     lr.repayment_timeline,

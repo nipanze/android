@@ -272,7 +272,8 @@ CREATE TABLE loan_requests (
     duration_months             INT NOT NULL
                                     CONSTRAINT chk_lr_duration CHECK (duration_months BETWEEN 1 AND 60),
 
-    -- Borrower's income and repayment context — shown publicly to help lenders assess
+    -- Borrower's income context. Stored for request review, but not exposed
+    -- through the public marketplace listing view.
     income_source               TEXT NOT NULL,          -- e.g. 'Monthly salary from Kampala City Council'
     preferred_repayment_plan    TEXT NOT NULL,          -- e.g. 'Monthly instalments'
     repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000 UGX per month
@@ -558,7 +559,6 @@ SELECT
     lr.district,
     lr.duration_months,
     lr.requested_amount,
-    lr.income_source,
     lr.preferred_repayment_plan,
     lr.repayment_amount_per_period,
     lr.repayment_timeline,
@@ -578,7 +578,7 @@ WHERE lr.status = 'active';
 
 COMMENT ON VIEW v_loan_listings IS
 'Anonymised marketplace feed. borrower_id, contact details, and private documents are never present.
- Income and repayment fields give lenders enough context to make an informed offer.';
+ Repayment fields give lenders enough context to make an informed offer without exposing income source.';
 
 
 -- --------------------------------------------
@@ -681,6 +681,48 @@ ORDER BY month DESC;
 
 COMMENT ON VIEW v_marketplace_activity IS
 'Admin KPIs. No monetary aggregates — non-custodial. Match rate measures how many listings received at least one offer.';
+
+
+-- --------------------------------------------
+-- get_public_listing_offers
+-- Public anonymized order book for active listings.
+-- Does not expose real lender_id values.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION get_public_listing_offers(p_request_id UUID)
+RETURNS TABLE (
+    id UUID,
+    request_id UUID,
+    lender_id TEXT,
+    offer_amount BIGINT,
+    proposed_expectations TEXT,
+    status TEXT,
+    offered_at TIMESTAMP,
+    accepted_at TIMESTAMP
+)
+LANGUAGE SQL
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+    SELECT
+        lo.id,
+        lo.request_id,
+        ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
+        lo.offer_amount,
+        lo.proposed_expectations,
+        lo.status::TEXT,
+        lo.offered_at,
+        lo.accepted_at
+    FROM loan_offers lo
+    JOIN loan_requests lr ON lr.id = lo.request_id
+    WHERE lo.request_id = p_request_id
+      AND lo.status = 'pending'
+      AND lr.status = 'active'
+    ORDER BY lo.offered_at DESC;
+$$;
+
+COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
+'Public anonymized offer book for active listings. Does not expose lender_id or borrower details.';
 
 
 -- ============================================
@@ -837,17 +879,25 @@ END;
 $$;
 
 
--- Increment number_of_offers on loan_requests when an offer is accepted
-CREATE OR REPLACE FUNCTION trg_fn_increment_offer_count()
+-- Sync number_of_offers on loan_requests with pending offers.
+CREATE OR REPLACE FUNCTION trg_fn_sync_offer_count()
 RETURNS TRIGGER LANGUAGE plpgsql
 SET search_path = public AS $$
+DECLARE
+    v_request_id UUID;
 BEGIN
-    IF TG_OP = 'UPDATE' AND NEW.status = 'accepted' AND OLD.status != 'accepted' THEN
-        UPDATE loan_requests
-           SET number_of_offers = number_of_offers + 1
-         WHERE id = NEW.request_id;
-    END IF;
-    RETURN NEW;
+    v_request_id := COALESCE(NEW.request_id, OLD.request_id);
+
+    UPDATE loan_requests lr
+       SET number_of_offers = (
+           SELECT COUNT(*)::INT
+             FROM loan_offers lo
+            WHERE lo.request_id = v_request_id
+              AND lo.status = 'pending'
+       )
+     WHERE lr.id = v_request_id;
+
+    RETURN COALESCE(NEW, OLD);
 END;
 $$;
 
@@ -908,9 +958,9 @@ CREATE TRIGGER trg_lock_accepted_offer
     WHEN (OLD.status = 'accepted')
     EXECUTE FUNCTION trg_fn_lock_accepted_offer();
 
-CREATE TRIGGER trg_increment_offer_count
-    AFTER UPDATE ON loan_offers
-    FOR EACH ROW EXECUTE FUNCTION trg_fn_increment_offer_count();
+CREATE TRIGGER trg_sync_offer_count
+    AFTER INSERT OR UPDATE OR DELETE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_sync_offer_count();
 
 CREATE TRIGGER trg_loan_offers_updated_at
     BEFORE UPDATE ON loan_offers

@@ -99,7 +99,7 @@ Nipanze provides a simple marketplace structure where:
 ### For Lenders
 
 - **Free browsing** — review borrower requests before subscribing
-- **Repayment context** — assess income source, loan purpose, and repayment plan
+- **Repayment context** — assess loan purpose, requested amount, duration, and repayment plan
 - **My Offers** — manage lending activity using simple, human, trustworthy language
 - **Custom terms** — make offers with your own amount and expectations
 - **Borrower context** — use profile, purpose, and repayment-plan details to compare opportunities
@@ -151,13 +151,15 @@ Example: “I earn 800,000 UGX monthly and can repay 200,000 UGX per month.”
 
 #### Borrower → Public Loan Listing (`v_loan_listings` view)
 
-**Exposed:** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `income_source`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `listed_at`, `expires_at`
+**Exposed:** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `listed_at`, `expires_at`
 
-**Masked before acceptance:** `borrower_id`, email, phone, full name, national ID, and private verification documents
+**Masked before acceptance:** `borrower_id`, income source, employer/salary details, email, phone, full name, national ID, and private verification documents
 
 #### Lender → Offers
 
 **Exposed:** offer amount, proposed expectations or terms, timestamp
+
+Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different lenders.
 
 **Masked before acceptance:** lender name, email, phone, and private verification documents
 
@@ -302,6 +304,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | --- | --- | --- |
 | `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles` |
 | `accept_offer(request_id, offer_id, borrower_id)` | RPC | Atomic offer acceptance + contact eligibility |
+| `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active listings |
 
 ### Key Views
 

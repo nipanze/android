@@ -50,16 +50,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   }
 
   Future<void> _loadOnce() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final results = await Future.wait([
-        _repo.getListingDetail(widget.requestId),
-        _repo.getOffers(widget.requestId),
-      ]);
+      final listing = await _repo.getListingDetail(widget.requestId);
       if (!mounted) return;
-
-      final listing = results[0] as LoanListing;
-      final offers = results[1] as List<LoanOffer>;
 
       bool isOwner = false;
       final authState = context.read<AuthBloc>().state;
@@ -70,22 +67,35 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         );
       }
 
+      final offers = await _repo.getOffers(
+        widget.requestId,
+        includePrivate: isOwner,
+      );
+
       if (!mounted) return;
       setState(() {
         _listing = listing;
-        _offers  = offers;
+        _offers = offers;
         _isOwnerValue = isOwner;
         _loading = false;
       });
       _subscribeRealtime();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = e.toString(); _loading = false; });
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
   }
 
   void _subscribeRealtime() {
-    _offersSub = _repo.watchOffers(widget.requestId).listen(
+    _offersSub = _repo
+        .watchOffers(
+      widget.requestId,
+      includePrivate: _isOwnerValue,
+    )
+        .listen(
       (offers) {
         if (!mounted) return;
         final hadOffers = _offers.length;
@@ -118,18 +128,19 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         offerId: offer.id,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Offer accepted — contact details revealed.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Offer accepted — contact details revealed.')));
       // Note: Reveal handling page to be implemented in Stage 2.4
       context.go('/marketplace/reveal/$revealId');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString()), backgroundColor: AppColors.danger));
     }
   }
 
-  void _showSubscriptionGate({required String requiredPlan, required String reason}) {
+  void _showSubscriptionGate(
+      {required String requiredPlan, required String reason}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -158,7 +169,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     if (_error != null || _listing == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: ErrorState(message: _error ?? 'Listing not found', onRetry: _loadOnce),
+        body: ErrorState(
+            message: _error ?? 'Listing not found', onRetry: _loadOnce),
       );
     }
 
@@ -180,30 +192,41 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(listing.title, style: Theme.of(context).textTheme.headlineSmall),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(listing.title,
+                style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             UgxAmount(listing.requestedAmount, fontSize: 26),
             const SizedBox(height: 16),
 
-            // Source of Income + Purpose
-            _DescriptionSection(title: 'Source of Income', body: listing.incomeSource),
+            _DescriptionSection(
+                title: 'Proposed Repayment Plan',
+                body:
+                    '${listing.preferredRepaymentPlan}\n${listing.repaymentTimeline}'),
             const SizedBox(height: 12),
-            _DescriptionSection(title: 'Proposed Repayment Plan', body: '${listing.preferredRepaymentPlan}\n${listing.repaymentTimeline}'),
-            const SizedBox(height: 12),
-            _DescriptionSection(title: 'Purpose of Loan', body: listing.purpose),
-            
+            _DescriptionSection(
+                title: 'Purpose of Loan', body: listing.purpose),
+
             const SizedBox(height: 24),
 
             // Stats grid
             GridView.count(
-              crossAxisCount: 2, shrinkWrap: true,
+              crossAxisCount: 2,
+              shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 2.2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 2.2,
               children: [
                 _StatBox(label: 'Offers', value: '${listing.numberOfOffers}'),
-                _StatBox(label: 'Repayment', value: 'UGX ${listing.repaymentAmountPerPeriod.toString()}'),
-                _StatBox(label: 'Duration', value: '${listing.durationMonths} Months'),
+                _StatBox(
+                    label: 'Repayment',
+                    value:
+                        'UGX ${listing.repaymentAmountPerPeriod.toString()}'),
+                _StatBox(
+                    label: 'Duration',
+                    value: '${listing.durationMonths} Months'),
                 _StatBox(
                   label: 'Time left',
                   value: listing.timeRemainingLabel,
@@ -226,10 +249,18 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: _newOfferFlash
-                    ? [BoxShadow(color: AppColors.success.withValues(alpha: 0.2), blurRadius: 8)]
+                    ? [
+                        BoxShadow(
+                            color: AppColors.success.withValues(alpha: 0.2),
+                            blurRadius: 8)
+                      ]
                     : [],
               ),
-              child: _OfferList(offers: _offers, isOwner: isOwner, onAccept: _acceptOffer),
+              child: _OfferList(
+                  offers: _offers,
+                  requestedAmount: listing.requestedAmount,
+                  isOwner: isOwner,
+                  onAccept: _acceptOffer),
             ),
 
             const SizedBox(height: 32),
@@ -268,21 +299,29 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
 class _DescriptionSection extends StatelessWidget {
   const _DescriptionSection({required this.title, required this.body});
-  final String title; final String body;
+  final String title;
+  final String body;
   @override
   Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(title.toUpperCase(), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 4),
-      Text(body, style: Theme.of(context).textTheme.bodyMedium),
-    ],
-  );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.accent, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(body, style: Theme.of(context).textTheme.bodyMedium),
+        ],
+      );
 }
 
 class _OfferList extends StatelessWidget {
-  const _OfferList({required this.offers, required this.isOwner, required this.onAccept});
+  const _OfferList(
+      {required this.offers,
+      required this.requestedAmount,
+      required this.isOwner,
+      required this.onAccept});
   final List<LoanOffer> offers;
+  final int requestedAmount;
   final bool isOwner;
   final Function(LoanOffer) onAccept;
 
@@ -290,31 +329,68 @@ class _OfferList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (offers.isEmpty) {
       return Container(
-        width: double.infinity, padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12)),
         child: const Text('No offers yet.', textAlign: TextAlign.center),
       );
     }
     return ListView.separated(
-      shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: offers.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final offer = offers[index];
+        final lenderLabel = offer.hasMaskedLender
+            ? 'Lender #${index + 1}'
+            : 'Lender #${offer.lenderId.substring(0, 5)}';
+        final coverage = requestedAmount <= 0
+            ? 0
+            : ((offer.offerAmount / requestedAmount) * 100).round();
+        final offerType = offer.offerAmount >= requestedAmount
+            ? 'Full offer'
+            : 'Partial offer · $coverage%';
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               const Icon(Icons.person_outline, size: 14),
               const SizedBox(width: 4),
-              Text('Lender #${offer.lenderId.substring(0, 5)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-              const Spacer(),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(lenderLabel,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    const SizedBox(height: 2),
+                    Text(
+                      offerType,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: offer.offerAmount >= requestedAmount
+                                ? AppColors.success
+                                : AppColors.accent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
               UgxAmount(offer.offerAmount, fontSize: 14),
             ]),
-            if (offer.proposedExpectations != null && offer.proposedExpectations!.isNotEmpty) ...[
+            if (offer.proposedExpectations != null &&
+                offer.proposedExpectations!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(offer.proposedExpectations!, style: Theme.of(context).textTheme.bodySmall),
+              Text(offer.proposedExpectations!,
+                  style: Theme.of(context).textTheme.bodySmall),
             ],
             if (isOwner) ...[
               const SizedBox(height: 12),
@@ -335,40 +411,65 @@ class _OfferList extends StatelessWidget {
 
 class _StatBox extends StatelessWidget {
   const _StatBox({required this.label, required this.value, this.valueColor});
-  final String label; final String value; final Color? valueColor;
+  final String label;
+  final String value;
+  final Color? valueColor;
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(10)),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label.toUpperCase(), style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 9, fontWeight: FontWeight.bold)),
-      const SizedBox(height: 4),
-      Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: valueColor)),
-    ]),
-  );
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label.toUpperCase(),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontSize: 9, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: valueColor)),
+        ]),
+      );
 }
 
 class _SubscriptionGateSheet extends StatelessWidget {
-  const _SubscriptionGateSheet({required this.requiredPlan, required this.reason, required this.onUpgrade});
-  final String requiredPlan; final String reason; final VoidCallback onUpgrade;
+  const _SubscriptionGateSheet(
+      {required this.requiredPlan,
+      required this.reason,
+      required this.onUpgrade});
+  final String requiredPlan;
+  final String reason;
+  final VoidCallback onUpgrade;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(24),
-    child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.lock_person_outlined, size: 48, color: AppColors.accent),
-      const SizedBox(height: 16),
-      Text('Upgrade Required', style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 8),
-      Text(reason, textAlign: TextAlign.center),
-      const SizedBox(height: 24),
-      ElevatedButton(onPressed: onUpgrade, child: Text('Upgrade to $requiredPlan')),
-    ]),
-  );
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.lock_person_outlined,
+              size: 48, color: AppColors.accent),
+          const SizedBox(height: 16),
+          Text('Upgrade Required',
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(reason, textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          ElevatedButton(
+              onPressed: onUpgrade, child: Text('Upgrade to $requiredPlan')),
+        ]),
+      );
 }
 
 class _MakeOfferSheet extends StatefulWidget {
-  const _MakeOfferSheet({required this.listing, required this.onClose, required this.onOfferPlaced});
-  final LoanListing listing; final VoidCallback onClose; final VoidCallback onOfferPlaced;
+  const _MakeOfferSheet(
+      {required this.listing,
+      required this.onClose,
+      required this.onOfferPlaced});
+  final LoanListing listing;
+  final VoidCallback onClose;
+  final VoidCallback onOfferPlaced;
   @override
   State<_MakeOfferSheet> createState() => _MakeOfferSheetState();
 }
@@ -380,7 +481,11 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   bool _loading = false;
 
   @override
-  void dispose() { _amountController.dispose(); _expController.dispose(); super.dispose(); }
+  void dispose() {
+    _amountController.dispose();
+    _expController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -392,9 +497,15 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
         expectations: _expController.text,
       );
       widget.onOfferPlaced();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Offer sent successfully.')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Offer sent successfully.')));
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(e.toString()), backgroundColor: AppColors.danger));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -402,23 +513,53 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
-    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), border: Border(top: BorderSide(color: Theme.of(context).dividerColor))),
-    child: Form(key: _formKey, child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [Text('Make an Offer', style: Theme.of(context).textTheme.titleMedium), const Spacer(), IconButton(icon: const Icon(Icons.close), onPressed: widget.onClose)]),
-      const SizedBox(height: 16),
-      TextFormField(
-        controller: _amountController, keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: 'Amount (UGX)', prefixIcon: Icon(Icons.payments_outlined)),
-        validator: (v) => (v == null || v.isEmpty) ? 'Enter amount' : null,
-      ),
-      const SizedBox(height: 16),
-      TextFormField(
-        controller: _expController, maxLines: 3,
-        decoration: const InputDecoration(labelText: 'Proposed Expectations', hintText: 'Explain your terms, e.g. "To be paid back in 3 monthly installments starting April"', alignLabelWithHint: true),
-      ),
-      const SizedBox(height: 24),
-      ElevatedButton(onPressed: _loading ? null : _submit, child: _loading ? const CircularProgressIndicator() : const Text('Send Offer')),
-    ])),
-  );
+        padding: EdgeInsets.fromLTRB(
+            20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border:
+                Border(top: BorderSide(color: Theme.of(context).dividerColor))),
+        child: Form(
+            key: _formKey,
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Text('Make an Offer',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const Spacer(),
+                    IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: widget.onClose)
+                  ]),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        labelText: 'Amount (UGX)',
+                        prefixIcon: Icon(Icons.payments_outlined)),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Enter amount' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _expController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                        labelText: 'Proposed Expectations',
+                        hintText:
+                            'Explain your terms, e.g. "To be paid back in 3 monthly installments starting April"',
+                        alignLabelWithHint: true),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                      onPressed: _loading ? null : _submit,
+                      child: _loading
+                          ? const CircularProgressIndicator()
+                          : const Text('Send Offer')),
+                ])),
+      );
 }

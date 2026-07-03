@@ -28,6 +28,7 @@ class RpcNames {
   RpcNames._();
 
   static const String acceptOffer = 'accept_offer';
+  static const String getPublicListingOffers = 'get_public_listing_offers';
   static const String revealContact = 'reveal_contact';
 }
 
@@ -54,10 +55,14 @@ class AppStrings {
 
   // Error messages (user-facing only — internal codes never shown)
   static const String genericError = 'Something went wrong. Please try again.';
-  static const String networkError = 'Check your internet connection and try again.';
-  static const String sessionExpired = 'Your session has expired. Please sign in again.';
-  static const String kycRequired = 'Complete KYC verification before posting a listing.';
-  static const String subscriptionRequired = 'An active subscription is required for this action.';
+  static const String networkError =
+      'Check your internet connection and try again.';
+  static const String sessionExpired =
+      'Your session has expired. Please sign in again.';
+  static const String kycRequired =
+      'Complete KYC verification before posting a listing.';
+  static const String subscriptionRequired =
+      'An active subscription is required for this action.';
 
   static String? get nonCustodialDisclaimer => null;
 }
