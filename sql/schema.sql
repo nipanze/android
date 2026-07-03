@@ -933,9 +933,9 @@ CREATE OR REPLACE FUNCTION accept_offer(
 )
 RETURNS UUID    -- returns contact_reveal id (reveal is pending until borrower triggers it)
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public AS $$
+SET search_path = '' AS $$
 DECLARE
-    v_listing        loan_requests%ROWTYPE;
+    v_listing        public.loan_requests%ROWTYPE;
     v_offer          loan_offers%ROWTYPE;
     v_reveal_id      UUID;
 BEGIN
@@ -1043,7 +1043,7 @@ CREATE OR REPLACE FUNCTION reveal_contact(
 )
 RETURNS JSONB   -- returns { borrower: {...}, lender: {...} }
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public AS $$
+SET search_path = '' AS $$
 DECLARE
     v_reveal      contact_reveals%ROWTYPE;
     v_offer       loan_offers%ROWTYPE;
@@ -1153,13 +1153,21 @@ ALTER TABLE refresh_tokens      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
 
 
-CREATE OR REPLACE FUNCTION is_admin()
+-- is_admin lives in the `private` schema so it is NOT exposed
+-- via the PostgREST REST API (/rpc/is_admin) but is still
+-- callable by RLS policies and other SECURITY DEFINER functions.
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE OR REPLACE FUNCTION private.is_admin()
 RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
 SET search_path = public AS $$
     SELECT EXISTS (
         SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
     );
 $$;
+
+GRANT USAGE  ON SCHEMA private TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
 
 -- system_settings
@@ -1340,8 +1348,9 @@ REVOKE EXECUTE ON FUNCTION public.trg_fn_max_concurrent_requests() FROM public, 
 REVOKE EXECUTE ON FUNCTION public.trg_fn_validate_offer() FROM public, authenticated, anon;
 
 -- Revoke public/anon access on client-facing RPCs and restrict to authenticated/service_role
-REVOKE EXECUTE ON FUNCTION public.is_admin() FROM public, anon;
-GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role;
+-- is_admin is now in private schema — only grant to authenticated for RLS use
+REVOKE EXECUTE ON FUNCTION private.is_admin() FROM public, anon;
+GRANT  EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
 REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, anon;
 GRANT EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
