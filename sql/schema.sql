@@ -926,21 +926,27 @@ CREATE TRIGGER trg_loan_offers_updated_at
 -- borrower calls reveal_contact after accepting.
 -- ============================================
 
-CREATE OR REPLACE FUNCTION accept_offer(
+CREATE OR REPLACE FUNCTION private.accept_offer_internal(
     p_request_id  UUID,
     p_offer_id    UUID,
-    p_borrower_id UUID
+    p_borrower_id UUID,
+    p_caller_id   UUID
 )
-RETURNS UUID    -- returns contact_reveal id (reveal is pending until borrower triggers it)
+RETURNS UUID
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = '' AS $$
 DECLARE
-    v_listing        public.loan_requests%ROWTYPE;
-    v_offer          loan_offers%ROWTYPE;
-    v_reveal_id      UUID;
+    v_listing    public.loan_requests%ROWTYPE;
+    v_offer      public.loan_offers%ROWTYPE;
+    v_reveal_id  UUID;
 BEGIN
-    -- Lock and validate listing
-    SELECT * INTO v_listing FROM loan_requests WHERE id = p_request_id FOR UPDATE;
+    -- Caller validation (must be the borrower)
+    IF p_caller_id IS NULL OR p_caller_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Caller is not the borrower.'
+            USING ERRCODE = 'P0021';
+    END IF;
+
+    SELECT * INTO v_listing FROM public.loan_requests WHERE id = p_request_id FOR UPDATE;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'NIPANZE_LISTING_NOT_FOUND' USING ERRCODE = 'P0020';
     END IF;
@@ -952,10 +958,8 @@ BEGIN
         RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE' USING ERRCODE = 'P0022';
     END IF;
 
-    -- Lock and validate offer
-    SELECT * INTO v_offer
-    FROM loan_offers
-    WHERE id = p_offer_id AND request_id = p_request_id FOR UPDATE;
+    SELECT * INTO v_offer FROM public.loan_offers
+     WHERE id = p_offer_id AND request_id = p_request_id FOR UPDATE;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'NIPANZE_OFFER_NOT_FOUND' USING ERRCODE = 'P0023';
     END IF;
@@ -964,67 +968,65 @@ BEGIN
             USING ERRCODE = 'P0024';
     END IF;
 
-    -- 1. Accept the chosen offer
-    UPDATE loan_offers
-       SET status = 'accepted', accepted_at = NOW()
-     WHERE id = p_offer_id;
+    -- Accept chosen offer
+    UPDATE public.loan_offers SET status = 'accepted', accepted_at = NOW() WHERE id = p_offer_id;
 
-    -- 2. Reject all other pending offers on this listing
-    UPDATE loan_offers
+    -- Reject all other pending offers
+    UPDATE public.loan_offers
        SET status = 'rejected', updated_at = NOW()
-     WHERE request_id = p_request_id
-       AND id         != p_offer_id
-       AND status     = 'pending';
+     WHERE request_id = p_request_id AND id != p_offer_id AND status = 'pending';
 
-    -- 3. Mark listing as contracted
-    UPDATE loan_requests
-       SET status        = 'contracted',
-           contracted_at = NOW()
-     WHERE id = p_request_id;
+    -- Mark listing contracted
+    UPDATE public.loan_requests
+       SET status = 'contracted', contracted_at = NOW() WHERE id = p_request_id;
 
-    -- 4. Create a pending contact_reveal record
-    --    Actual contact details are revealed when reveal_contact() is called.
-    INSERT INTO contact_reveals (offer_id, request_id, revealed_by, status)
-    VALUES (p_offer_id, p_request_id, p_borrower_id, 'pending')
+    -- Create pending contact_reveal
+    INSERT INTO public.contact_reveals (offer_id, request_id, revealed_by)
+    VALUES (p_offer_id, p_request_id, p_borrower_id)
     RETURNING id INTO v_reveal_id;
 
-    -- 5. Notify both parties
-    INSERT INTO notifications (user_id, type, title, body, request_id, offer_id)
+    -- Notify both parties
+    INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
     VALUES
-        (p_borrower_id,
-         'offer_accepted',
-         'Offer accepted',
-         'You have accepted a lender''s offer. You can now reveal contact details to connect.',
+        (p_borrower_id, 'offer_accepted', 'Offer accepted',
+         'You accepted an offer. Reveal contact details to connect with your lender.',
          p_request_id, p_offer_id),
-        (v_offer.lender_id,
-         'offer_accepted',
-         'Your offer was accepted',
-         'A borrower has accepted your offer. Contact details will be shared shortly.',
+        (v_offer.lender_id, 'offer_accepted', 'Your offer was accepted',
+         'Your offer was accepted. Waiting for contact details to be revealed.',
          p_request_id, p_offer_id);
 
-    -- 6. Audit
-    INSERT INTO audit_logs (
-        user_id, event_type, entity_type, entity_id, action, new_values
-    )
-    VALUES (
-        p_borrower_id,
-        'offer_accepted',
-        'loan_offer',
-        p_offer_id,
-        'accept_offer',
+    -- Audit
+    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES (p_borrower_id, 'offer_accepted', 'loan_offers', p_offer_id, 'accept_offer',
         JSONB_BUILD_OBJECT(
             'request_id',  p_request_id,
             'offer_id',    p_offer_id,
             'lender_id',   v_offer.lender_id,
-            'reveal_id',   v_reveal_id
-        )
-    );
+            'accepted_at', NOW()
+        ));
 
     RETURN v_reveal_id;
 END;
 $$;
 
-COMMENT ON FUNCTION accept_offer IS
+GRANT EXECUTE ON FUNCTION private.accept_offer_internal(uuid, uuid, uuid, uuid) TO authenticated, service_role;
+
+-- Wrapper: SECURITY INVOKER
+CREATE OR REPLACE FUNCTION public.accept_offer(
+    p_request_id  UUID,
+    p_offer_id    UUID,
+    p_borrower_id UUID
+)
+RETURNS UUID
+LANGUAGE sql SECURITY INVOKER
+SET search_path = public AS $$
+    SELECT private.accept_offer_internal(p_request_id, p_offer_id, p_borrower_id, auth.uid());
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, anon;
+GRANT  EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.accept_offer IS
 'Atomically accepts an offer, rejects others, marks listing contracted, creates pending contact_reveal.
  Returns reveal_id. Contact details are not exposed until reveal_contact() is called.
  Platform never holds or moves funds.';
@@ -1032,104 +1034,98 @@ COMMENT ON FUNCTION accept_offer IS
 
 -- ============================================
 -- RPC: reveal_contact
--- Called by the borrower after accepting an offer.
--- Sets contact_reveal status to revealed and notifies both parties.
--- Enforced at the API layer — not just the UI.
 -- ============================================
 
-CREATE OR REPLACE FUNCTION reveal_contact(
+CREATE OR REPLACE FUNCTION private.reveal_contact_internal(
     p_reveal_id   UUID,
-    p_borrower_id UUID
+    p_borrower_id UUID,
+    p_caller_id   UUID
 )
-RETURNS JSONB   -- returns { borrower: {...}, lender: {...} }
+RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = '' AS $$
 DECLARE
-    v_reveal      contact_reveals%ROWTYPE;
-    v_offer       loan_offers%ROWTYPE;
-    v_borrower    profiles%ROWTYPE;
-    v_lender      profiles%ROWTYPE;
+    v_reveal        public.contact_reveals%ROWTYPE;
+    v_offer         public.loan_offers%ROWTYPE;
+    v_borrower      public.profiles%ROWTYPE;
+    v_lender        public.profiles%ROWTYPE;
     v_borrower_auth RECORD;
     v_lender_auth   RECORD;
-    v_result      JSONB;
+    v_result        JSONB;
 BEGIN
-    SELECT * INTO v_reveal FROM contact_reveals WHERE id = p_reveal_id FOR UPDATE;
+    -- Caller validation (must be the borrower)
+    IF p_caller_id IS NULL OR p_caller_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Caller is not the borrower.'
+            USING ERRCODE = 'P0031';
+    END IF;
+
+    SELECT * INTO v_reveal FROM public.contact_reveals WHERE id = p_reveal_id FOR UPDATE;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'NIPANZE_REVEAL_NOT_FOUND' USING ERRCODE = 'P0030';
     END IF;
     IF v_reveal.revealed_by != p_borrower_id THEN
-        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the borrower who accepted can trigger contact reveal.'
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the borrower who accepted can trigger reveal.'
             USING ERRCODE = 'P0031';
     END IF;
     IF v_reveal.status = 'revealed' THEN
-        -- Idempotent — return existing data without re-logging
-        RAISE EXCEPTION 'NIPANZE_ALREADY_REVEALED: Contact details have already been revealed.'
+        RAISE EXCEPTION 'NIPANZE_ALREADY_REVEALED: Contact details already revealed.'
             USING ERRCODE = 'P0032';
     END IF;
 
-    SELECT * INTO v_offer    FROM loan_offers WHERE id = v_reveal.offer_id;
-    SELECT * INTO v_borrower FROM profiles    WHERE id = p_borrower_id;
-    SELECT * INTO v_lender   FROM profiles    WHERE id = v_offer.lender_id;
+    SELECT * INTO v_offer    FROM public.loan_offers WHERE id = v_reveal.offer_id;
+    SELECT * INTO v_borrower FROM public.profiles    WHERE id = p_borrower_id;
+    SELECT * INTO v_lender   FROM public.profiles    WHERE id = v_offer.lender_id;
 
-    -- Fetch emails from auth.users (service-role context only)
+    -- auth.users requires service-role — SECURITY DEFINER gives this
     SELECT email INTO v_borrower_auth FROM auth.users WHERE id = p_borrower_id;
     SELECT email INTO v_lender_auth   FROM auth.users WHERE id = v_offer.lender_id;
 
-    -- Mark revealed
-    UPDATE contact_reveals
-       SET status = 'revealed', revealed_at = NOW()
-     WHERE id = p_reveal_id;
+    UPDATE public.contact_reveals SET status = 'revealed', revealed_at = NOW() WHERE id = p_reveal_id;
 
     v_result := JSONB_BUILD_OBJECT(
         'borrower', JSONB_BUILD_OBJECT(
-            'full_name', v_borrower.full_name,
-            'phone',     v_borrower.phone,
-            'email',     v_borrower_auth.email
-        ),
+            'full_name', v_borrower.full_name, 'phone', v_borrower.phone, 'email', v_borrower_auth.email),
         'lender', JSONB_BUILD_OBJECT(
-            'full_name', v_lender.full_name,
-            'phone',     v_lender.phone,
-            'email',     v_lender_auth.email
-        )
+            'full_name', v_lender.full_name, 'phone', v_lender.phone, 'email', v_lender_auth.email)
     );
 
-    -- Notify both parties
-    INSERT INTO notifications (user_id, type, title, body, request_id, offer_id)
+    INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
     VALUES
-        (p_borrower_id,
-         'contact_revealed',
-         'Contact details revealed',
-         'You can now connect with your lender directly.',
-         v_reveal.request_id, v_reveal.offer_id),
-        (v_offer.lender_id,
-         'contact_revealed',
-         'Contact details revealed',
-         'The borrower has accepted your offer. You can now connect directly.',
-         v_reveal.request_id, v_reveal.offer_id);
+        (p_borrower_id, 'contact_revealed', 'Contact details revealed',
+         'You can now connect with your lender directly.', v_reveal.request_id, v_reveal.offer_id),
+        (v_offer.lender_id, 'contact_revealed', 'Contact details revealed',
+         'The borrower accepted your offer. You can now connect directly.', v_reveal.request_id, v_reveal.offer_id);
 
-    -- Audit (immutable)
-    INSERT INTO audit_logs (
-        user_id, event_type, entity_type, entity_id, action, new_values
-    )
-    VALUES (
-        p_borrower_id,
-        'contact_revealed',
-        'contact_reveals',
-        p_reveal_id,
-        'reveal_contact',
+    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES (p_borrower_id, 'contact_revealed', 'contact_reveals', p_reveal_id, 'reveal_contact',
         JSONB_BUILD_OBJECT(
-            'offer_id',    v_reveal.offer_id,
-            'request_id',  v_reveal.request_id,
-            'lender_id',   v_offer.lender_id,
+            'offer_id',   v_reveal.offer_id,
+            'request_id', v_reveal.request_id,
+            'lender_id',  v_offer.lender_id,
             'revealed_at', NOW()
-        )
-    );
+        ));
 
     RETURN v_result;
 END;
 $$;
 
-COMMENT ON FUNCTION reveal_contact IS
+GRANT EXECUTE ON FUNCTION private.reveal_contact_internal(uuid, uuid, uuid) TO authenticated, service_role;
+
+-- Wrapper: SECURITY INVOKER
+CREATE OR REPLACE FUNCTION public.reveal_contact(
+    p_reveal_id   UUID,
+    p_borrower_id UUID
+)
+RETURNS JSONB
+LANGUAGE sql SECURITY INVOKER
+SET search_path = public AS $$
+    SELECT private.reveal_contact_internal(p_reveal_id, p_borrower_id, auth.uid());
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) FROM public, anon;
+GRANT  EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.reveal_contact IS
 'Reveals legal name, phone, and email of both borrower and lender after an offer is accepted.
  Enforced at API layer. Irreversible. Returns contact JSONB to the calling client.
  Platform never stores or retransmits these details after this point.';
