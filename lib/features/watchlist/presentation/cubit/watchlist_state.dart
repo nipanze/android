@@ -17,12 +17,12 @@ class WatchlistLoading extends WatchlistState {
 }
 
 class WatchlistLoaded extends WatchlistState {
-  const WatchlistLoaded({required this.requestIds});
+  const WatchlistLoaded({required this.listings});
 
-  final List<String> requestIds;
+  final List<LoanListing> listings;
 
   @override
-  List<Object?> get props => [requestIds];
+  List<Object?> get props => [listings];
 }
 
 class WatchlistError extends WatchlistState {

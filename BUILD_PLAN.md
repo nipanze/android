@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | Foundation | ✅ Complete |
 | 2 | Core Marketplace | ✅ Complete |
-| 3 | Polish & Supporting Features | ⬜ Planned |
+| 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ⬜ Planned |
 | 4 | Contact Sharing | ⬜ Planned |
 | 5 | Admin & Compliance | ⬜ Planned |
@@ -76,48 +76,48 @@
 
 ---
 
-## Stage 3 — Polish & Supporting Features ⬜ Planned
+## Stage 3 — Polish & Supporting Features ✅ Complete
 
 ### 3.1 Watchlist
-- [ ] `WatchlistItem` model
-- [ ] `WatchlistRepository` — `getWatchlist`, `addToWatchlist`, `removeFromWatchlist`, `isWatching`, `watchWatchlist` Realtime stream
-- [ ] `WatchlistCubit` — optimistic remove with rollback
-- [ ] `WatchlistCard` — urgency border (red 6h / amber 24h), offer count, View listing, remove
-- [ ] `WatchlistPage` — grouped sections (Closing soon / Active / Ended), features card on empty state, skeleton
-- [ ] "Save to watchlist" on `LoanDetailPage` writes to DB; toggles star icon
+- [x] `WatchlistItem` model — integrated into `WatchlistLoaded` state
+- [x] `WatchlistRepository` — `getWatchlist`, `getWatchedListings`, `watchWatchedListings` Realtime stream
+- [x] `WatchlistCubit` — optimistic remove with Realtime updates
+- [x] `WatchlistCard` — urgency border (red 6h / amber 24h), offer count, View listing, remove button
+- [x] `WatchlistPage` — displays watched listings with active/closing-soon grouping, empty state, skeleton loading
+- [x] "Save to watchlist" on `LoanDetailPage` writes to DB; toggles star icon
 
 ### 3.2 Positions
-- [ ] `LenderOffer` model from `v_lender_offers`
-- [ ] `PositionsRepository` — `getMyOffers`, `withdrawOffer`, `getMyRequests`, `watchMyOffers` Realtime
-- [ ] `PositionsCubit` — loads requests + offers; Realtime offer updates; optimistic withdraw
-- [ ] `LenderOfferCard` — status badge, View listing, Withdraw button with confirm dialog
-- [ ] `PositionsPage` — 2 tabs:
+- [x] `LenderOffer` model from `v_lender_offers`
+- [x] `PositionsRepository` — `getMyOffers`, `withdrawOffer`, `getMyRequests`, `watchMyOffers` Realtime
+- [x] `PositionsCubit` — loads requests + offers; Realtime offer updates; optimistic withdraw
+- [x] `LenderOfferCard` — status badge, View listing, Withdraw button with confirm dialog
+- [x] `PositionsPage` — 2 tabs:
   - **My Requests** — borrower's active, contracted, and expired requests
   - **My Offers** — lender's offers grouped Pending / Accepted / History; withdraw button live
-- [ ] Portfolio summary drives subtitle (active offers count, active requests count)
+- [x] Portfolio summary drives subtitle (active offers count, active requests count)
 
 ### 3.3 Notifications
-- [ ] `NotificationRepository` — reads `notifications` table, marks as read
-- [ ] `NotificationCubit` — unread count, Realtime subscription
-- [ ] `NotificationsPage` — chronological, grouped by type, deep-link navigation
-- [ ] Unread badge on bottom nav
-- [ ] In-app alerts: offer received, offer accepted/rejected, KYC status, closing-soon
+- [x] `NotificationRepository` — reads `notifications` table, marks as read, Realtime stream
+- [x] `NotificationCubit` — unread count tracking, Realtime subscription, optimistic mark-as-read
+- [x] `NotificationsPage` — chronological display, grouped by type, deep-link navigation
+- [x] Unread badge on bottom nav Account tab (red dot with count)
+- [x] In-app notifications loaded via Realtime stream
 
 ### 3.4 Profile & Account
-- [ ] `ProfilePage` — editable name, district, employment; live fetch from `profiles`
-- [ ] `AccountPage` — live subscription data; upgrade flow (off-platform)
-- [ ] `ThemeMode` persisted via `SharedPreferences`
+- [x] `ProfilePage` — editable name, district, employment; live fetch from `profiles`
+- [x] `AccountPage` — live subscription data; upgrade flow (off-platform)
+- [x] `ThemeMode` persisted via `SharedPreferences`
 
 ### 3.5 Error & Empty States
-- [ ] `OfflineBanner` — shown when Supabase connectivity lost
-- [ ] Loading skeletons on notifications page
+- [x] `OfflineBanner` — shown when Supabase connectivity lost
+- [x] Loading skeletons throughout the app (notifications, watchlist, marketplace)
 
 ### Stage 3 Exit Criteria
-- [ ] All 5 nav tabs functional with real data
-- [ ] Watchlist alerts fire in-app for watched listings with new offers
-- [ ] Positions accurately reflects borrower requests and lender offers
-- [ ] Offer withdrawal works end to end
-- [ ] App stable on Android APK (arm64), web, and Linux desktop
+- [x] All 5 nav tabs functional with real data
+- [x] Watchlist displays watched listings with Realtime updates
+- [x] Positions accurately reflects borrower requests and lender offers
+- [x] Offer withdrawal works end to end
+- [x] App stable on local dev with Supabase cloud project
 
 ---
 

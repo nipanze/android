@@ -83,8 +83,8 @@ class _PositionsViewState extends State<_PositionsView> with SingleTickerProvide
             labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
             tabs: const [
-              Tab(text: 'Borrowing'),
-              Tab(text: 'Lending'),
+              Tab(text: 'My Requests'),
+              Tab(text: 'My Offers'),
             ],
           ),
 
