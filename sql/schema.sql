@@ -1168,14 +1168,14 @@ GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
 -- system_settings
 CREATE POLICY "system_settings: authenticated read"
-    ON system_settings FOR SELECT TO authenticated USING (is_public = TRUE OR is_admin());
+    ON system_settings FOR SELECT TO authenticated USING (is_public = TRUE OR private.is_admin());
 CREATE POLICY "system_settings: admin write"
-    ON system_settings FOR ALL TO authenticated USING (is_admin());
+    ON system_settings FOR ALL TO authenticated USING (private.is_admin());
 
 -- profiles
 CREATE POLICY "profiles: own or admin read"
     ON profiles FOR SELECT TO authenticated
-    USING (id = auth.uid() OR is_admin());
+    USING (id = auth.uid() OR private.is_admin());
 CREATE POLICY "profiles: own update"
     ON profiles FOR UPDATE TO authenticated
     USING (id = auth.uid()) WITH CHECK (id = auth.uid());
@@ -1183,33 +1183,33 @@ CREATE POLICY "profiles: own update"
 -- subscriptions
 CREATE POLICY "subscriptions: own or admin read"
     ON subscriptions FOR SELECT TO authenticated
-    USING (user_id = auth.uid() OR is_admin());
+    USING (user_id = auth.uid() OR private.is_admin());
 CREATE POLICY "subscriptions: admin write"
-    ON subscriptions FOR ALL TO authenticated USING (is_admin());
+    ON subscriptions FOR ALL TO authenticated USING (private.is_admin());
 
 -- kyc_verifications
 CREATE POLICY "kyc: own or admin read"
     ON kyc_verifications FOR SELECT TO authenticated
-    USING (user_id = auth.uid() OR is_admin());
+    USING (user_id = auth.uid() OR private.is_admin());
 CREATE POLICY "kyc: own insert"
     ON kyc_verifications FOR INSERT TO authenticated
     WITH CHECK (user_id = auth.uid());
 CREATE POLICY "kyc: own or admin update"
     ON kyc_verifications FOR UPDATE TO authenticated
-    USING (user_id = auth.uid() OR is_admin());
+    USING (user_id = auth.uid() OR private.is_admin());
 
 -- loan_requests
 CREATE POLICY "loan_requests: marketplace read"
     ON loan_requests FOR SELECT TO authenticated
-    USING (status = 'active' OR borrower_id = auth.uid() OR is_admin());
+    USING (status = 'active' OR borrower_id = auth.uid() OR private.is_admin());
 CREATE POLICY "loan_requests: own insert"
     ON loan_requests FOR INSERT TO authenticated
     WITH CHECK (borrower_id = auth.uid());
 CREATE POLICY "loan_requests: own or admin update"
     ON loan_requests FOR UPDATE TO authenticated
-    USING (borrower_id = auth.uid() OR is_admin());
+    USING (borrower_id = auth.uid() OR private.is_admin());
 CREATE POLICY "loan_requests: admin delete"
-    ON loan_requests FOR DELETE TO authenticated USING (is_admin());
+    ON loan_requests FOR DELETE TO authenticated USING (private.is_admin());
 
 -- loan_offers
 -- Borrowers see offers on their own listings; lenders see their own offers; admins see all.
@@ -1221,7 +1221,7 @@ CREATE POLICY "loan_offers: relevant parties read"
             SELECT 1 FROM loan_requests lr
              WHERE lr.id = loan_offers.request_id AND lr.borrower_id = auth.uid()
         )
-        OR is_admin()
+        OR private.is_admin()
     );
 CREATE POLICY "loan_offers: lender insert"
     ON loan_offers FOR INSERT TO authenticated
@@ -1230,7 +1230,7 @@ CREATE POLICY "loan_offers: lender withdraw or admin"
     ON loan_offers FOR UPDATE TO authenticated
     USING (
         (lender_id = auth.uid() AND status = 'pending')
-        OR is_admin()
+        OR private.is_admin()
     );
 
 -- watchlist
@@ -1248,13 +1248,13 @@ CREATE POLICY "contact_reveals: matched parties read"
             SELECT 1 FROM loan_offers lo
              WHERE lo.id = contact_reveals.offer_id AND lo.lender_id = auth.uid()
         )
-        OR is_admin()
+        OR private.is_admin()
     );
 CREATE POLICY "contact_reveals: own insert"
     ON contact_reveals FOR INSERT TO authenticated
     WITH CHECK (revealed_by = auth.uid());
 CREATE POLICY "contact_reveals: admin write"
-    ON contact_reveals FOR ALL TO authenticated USING (is_admin());
+    ON contact_reveals FOR ALL TO authenticated USING (private.is_admin());
 
 -- notifications
 CREATE POLICY "notifications: own rows"
@@ -1263,12 +1263,12 @@ CREATE POLICY "notifications: own mark read"
     ON notifications FOR UPDATE TO authenticated
     USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 CREATE POLICY "notifications: admin write"
-    ON notifications FOR ALL TO authenticated USING (is_admin());
+    ON notifications FOR ALL TO authenticated USING (private.is_admin());
 
 -- audit_logs  (append-only — UPDATE and DELETE are blocked)
 CREATE POLICY "audit_logs: own or admin read"
     ON audit_logs FOR SELECT TO authenticated
-    USING (user_id = auth.uid() OR is_admin());
+    USING (user_id = auth.uid() OR private.is_admin());
 CREATE POLICY "audit_logs: insert only"
     ON audit_logs FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 CREATE POLICY "audit_logs: no update"
@@ -1279,7 +1279,7 @@ CREATE POLICY "audit_logs: no delete"
 -- refresh_tokens
 CREATE POLICY "refresh_tokens: own or admin read"
     ON refresh_tokens FOR SELECT TO authenticated
-    USING (user_id = auth.uid() OR is_admin());
+    USING (user_id = auth.uid() OR private.is_admin());
 CREATE POLICY "refresh_tokens: own insert"
     ON refresh_tokens FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 CREATE POLICY "refresh_tokens: own update"
@@ -1288,11 +1288,11 @@ CREATE POLICY "refresh_tokens: own update"
 -- referrals
 CREATE POLICY "referrals: own or admin read"
     ON referrals FOR SELECT TO authenticated
-    USING (referrer_id = auth.uid() OR is_admin());
+    USING (referrer_id = auth.uid() OR private.is_admin());
 CREATE POLICY "referrals: own insert"
     ON referrals FOR INSERT TO authenticated WITH CHECK (referrer_id = auth.uid());
 CREATE POLICY "referrals: admin write"
-    ON referrals FOR ALL TO authenticated USING (is_admin());
+    ON referrals FOR ALL TO authenticated USING (private.is_admin());
 
 
 -- ============================================
