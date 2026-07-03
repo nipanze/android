@@ -89,16 +89,18 @@ AppException _parsePostgrestError(String code, String message) {
   if (message.contains('NIPANZE_ACCOUNT_INACTIVE')) {
     return const PermissionException('Your account is not active.');
   }
-  if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED')) {
+  if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED') ||
+      message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
     return const SubscriptionRequiredException('Lender');
   }
   if (message.contains('NIPANZE_MAX_REQUESTS')) {
     return const DatabaseException(
         'You have reached the maximum number of active listings.');
   }
-  if (message.contains('NIPANZE_SELF_OFFER')) {
+  if (message.contains('NIPANZE_SELF_OFFER') ||
+      message.contains('NIPANZE_SELF_BID')) {
     return const ValidationException(
-        'You cannot make an offer on your own listing.');
+        'You cannot make an offer on your own request.');
   }
   if (message.contains('NIPANZE_MIN_OFFER')) {
     return const ValidationException('Offer amount is below the platform minimum.');
@@ -110,8 +112,13 @@ AppException _parsePostgrestError(String code, String message) {
   if (message.contains('NIPANZE_ALREADY_REVEALED')) {
     return const DatabaseException('Contact details have already been revealed.');
   }
-  if (message.contains('NIPANZE_LISTING_NOT_ACTIVE') || message.contains('NIPANZE_LISTING_EXPIRED')) {
+  if (message.contains('NIPANZE_LISTING_NOT_ACTIVE') ||
+      message.contains('NIPANZE_LISTING_EXPIRED')) {
     return const DatabaseException('This listing is no longer accepting offers.');
+  }
+  if (message.contains('NIPANZE_CONTACT_NOT_ALLOWED')) {
+    return const PermissionException(
+        'Contact details are only available after an offer is accepted.');
   }
 
   // Generic Postgres codes

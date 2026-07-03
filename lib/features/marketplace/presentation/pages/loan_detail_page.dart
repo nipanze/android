@@ -30,6 +30,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   String? _error;
   bool _showOfferSheet = false;
   bool _newOfferFlash = false;
+  bool _isOwnerValue = false;
 
   final _repo = getIt<MarketplaceRepository>();
   StreamSubscription<List<LoanOffer>>? _offersSub;
@@ -56,9 +57,24 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         _repo.getOffers(widget.requestId),
       ]);
       if (!mounted) return;
+
+      final listing = results[0] as LoanListing;
+      final offers = results[1] as List<LoanOffer>;
+
+      bool isOwner = false;
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        isOwner = await _repo.isListingOwner(
+          requestId: widget.requestId,
+          userId: authState.user.id,
+        );
+      }
+
+      if (!mounted) return;
       setState(() {
-        _listing = results[0] as LoanListing;
-        _offers  = results[1] as List<LoanOffer>;
+        _listing = listing;
+        _offers  = offers;
+        _isOwnerValue = isOwner;
         _loading = false;
       });
       _subscribeRealtime();
@@ -149,7 +165,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     final listing = _listing!;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
-    final isOwner = user?.id == null ? false : _isOwner(listing, user!.id);
+    final isOwner = _isOwnerValue;
 
     return Scaffold(
       appBar: AppBar(
@@ -248,8 +264,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
           : null,
     );
   }
-
-  bool _isOwner(LoanListing listing, String userId) => false; // Logic to be refined with v_user_activity
 }
 
 class _DescriptionSection extends StatelessWidget {

@@ -465,7 +465,7 @@ INSERT INTO loan_requests (
  450000,
  '12 months starting March 2024',
  'Central',
- 'contracted', '2024-02-01 09:00:00', '2024-02-08 09:00:00', '2024-02-06 14:30:00',
+ 'contracted', '2024-02-01 09:00:00', NOW() + INTERVAL '10 days', '2024-02-06 14:30:00',
  2, 87, '2024-02-01 08:45:00'),
 
 -- Sarah Namukasa — contracted (offer accepted, contact pending reveal)
@@ -479,7 +479,7 @@ INSERT INTO loan_requests (
  320000,
  '12 months starting April 2024',
  'Central',
- 'contracted', '2024-03-01 10:00:00', '2024-03-08 10:00:00', '2024-03-05 11:00:00',
+ 'contracted', '2024-03-01 10:00:00', NOW() + INTERVAL '12 days', '2024-03-05 11:00:00',
  1, 54, '2024-03-01 09:45:00'),
 
 -- James Okello — active, two pending offers
@@ -494,7 +494,7 @@ INSERT INTO loan_requests (
  '18 months starting February 2026',
  'Central',
  'active',
- NOW() - INTERVAL '2 days', NOW() + INTERVAL '5 days', NULL,
+ NOW() - INTERVAL '2 days', NOW() + INTERVAL '15 days', NULL,
  2, 112, NOW() - INTERVAL '2 days 15 minutes'),
 
 -- Maria Nakato — active, one pending offer
@@ -509,7 +509,7 @@ INSERT INTO loan_requests (
  '12 months starting February 2026',
  'Central',
  'active',
- NOW() - INTERVAL '3 days', NOW() + INTERVAL '4 days', NULL,
+ NOW() - INTERVAL '3 days', NOW() + INTERVAL '14 days', NULL,
  1, 35, NOW() - INTERVAL '3 days 15 minutes'),
 
 -- Frank Omondi — active, one pending offer
@@ -524,7 +524,7 @@ INSERT INTO loan_requests (
  '18 months starting February 2026',
  'Eastern',
  'active',
- NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 days', NULL,
+ NOW() - INTERVAL '1 day', NOW() + INTERVAL '16 days', NULL,
  1, 41, NOW() - INTERVAL '1 day 15 minutes'),
 
 -- Lucy Nambi — active, no offers yet
@@ -539,10 +539,10 @@ INSERT INTO loan_requests (
  '24 months starting February 2026',
  'Central',
  'active',
- NOW() - INTERVAL '4 days', NOW() + INTERVAL '3 days', NULL,
+ NOW() - INTERVAL '4 days', NOW() + INTERVAL '13 days', NULL,
  0, 18, NOW() - INTERVAL '4 days 15 minutes'),
 
--- Charles Mwesigwa — expired
+-- Charles Mwesigwa — active (converted from expired)
 ('c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000013',
  'Vehicle Purchase — Delivery Van',
@@ -553,10 +553,10 @@ INSERT INTO loan_requests (
  420000,
  '24 months starting January 2026',
  'Western',
- 'expired', '2025-12-10 11:00:00', '2025-12-17 11:00:00', NULL,
- 1, 67, '2025-12-10 10:45:00'),
+ 'active', NOW() - INTERVAL '5 days', NOW() + INTERVAL '15 days', NULL,
+ 1, 67, NOW() - INTERVAL '5 days 15 minutes'),
 
--- Robert Ssemwanga — active, closing soon (expires in ~4 hours from seed time)
+-- Robert Ssemwanga — active (expires in 14 days)
 ('c1000000-0000-0000-0000-000000000008',
  '10000000-0000-0000-0000-000000000005',
  'Business Working Capital',
@@ -569,7 +569,7 @@ INSERT INTO loan_requests (
  'Central',
  'active',
  NOW() - INTERVAL '6 days 20 hours',
- NOW() + INTERVAL '4 hours',
+ NOW() + INTERVAL '14 days',
  NULL, 1, 29, NOW() - INTERVAL '6 days 21 hours');
 
 SET session_replication_role = 'origin';
@@ -643,13 +643,13 @@ INSERT INTO loan_offers (
  'Prepared to lend the full amount at 14.5% per annum given the medical urgency.',
  'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
 
--- Charles Mwesigwa's expired listing — one expired offer
+-- Charles Mwesigwa's active listing — one pending offer (converted from expired)
 ('d1000000-0000-0000-0000-000000000008',
  'c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000006',
  9000000,
  'Happy to fund the full van purchase. Expecting 11% per annum over 24 months.',
- 'expired', '2025-12-11 10:00:00', NULL, '2025-12-11 10:00:00'),
+ 'pending', NOW() - INTERVAL '4 days 23 hours', NULL, NOW() - INTERVAL '4 days 23 hours'),
 
 -- Robert Ssemwanga's closing-soon listing — one pending offer
 ('d1000000-0000-0000-0000-000000000009',

@@ -134,4 +134,23 @@ class MarketplaceRepository {
         .eq('request_id', requestId)
         .asyncMap((_) => getOffers(requestId));
   }
+
+  /// Check if the user is the borrower of a given listing.
+  Future<bool> isListingOwner({
+    required String requestId,
+    required String userId,
+  }) async {
+    try {
+      final res = await _client
+          .from(TableNames.loanRequests)
+          .select('id')
+          .eq('id', requestId)
+          .eq('borrower_id', userId)
+          .maybeSingle();
+      return res != null;
+    } catch (_) {
+      return false;
+    }
+  }
 }
+
