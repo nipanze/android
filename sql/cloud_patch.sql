@@ -27,6 +27,29 @@
 
 
 -- ============================================================
+-- HELPER FUNCTION: is_admin() — Used by RLS policies
+-- ============================================================
+-- This function checks if the current user has admin role.
+-- Must be created BEFORE the RLS policies that reference it.
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM profiles
+        WHERE id = auth.uid()
+          AND role = 'admin'
+    );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role;
+
+
+-- ============================================================
 -- STEP 1: GRANT TABLE & SEQUENCE ACCESS TO authenticated ROLE
 -- This was the missing piece that caused the permission errors.
 -- ============================================================
