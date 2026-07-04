@@ -7,4 +7,13 @@ remember am working from supabase cloud
 
 if ### Verification is complete show ✅ in buildplan
 then go to ### App Testing
+
+
+The tests ran but there's a systematic issue: '!inTest': is not true — this means app.main() is being called inside an already-running test context (the IntegrationTestWidgetsFlutterBinding doesn't support calling app.main() multiple times across tests without stopping the app between tests). The old integration test suite had the same problem but it worked because it only called app.main() once per test run on local.
+
+Let me see the full results to understand how many actually passed:
+
+1
+integration_test.dart
+
  

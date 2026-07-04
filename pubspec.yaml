@@ -66,6 +66,8 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  flutter_driver:
+    sdk: flutter
   build_runner: ^2.4.11
   freezed: ^3.2.5
   json_serializable: ^6.8.0
