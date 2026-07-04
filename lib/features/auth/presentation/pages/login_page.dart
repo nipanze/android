@@ -130,6 +130,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     // Email
                     TextFormField(
+                      key: const Key('email_field'),
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -147,6 +148,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     // Password
                     TextFormField(
+                      key: const Key('password_field'),
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
