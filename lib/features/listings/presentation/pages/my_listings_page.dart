@@ -30,39 +30,42 @@ class _MyListingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MyListingsCubit, MyListingsState>(
-      listener: (context, state) {
-        if (state is MyListingsError) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.message),
-            backgroundColor: AppColors.danger,
-          ));
-        }
-      },
-      builder: (context, state) {
-        if (state is MyListingsInitial || state is MyListingsLoading) {
-          return _LoadingSkeleton();
-        }
-        if (state is MyListingsError) {
-          return ErrorState(
-            message: state.message,
-            onRetry: () => context.read<MyListingsCubit>().refresh(),
-          );
-        }
-        if (state is MyListingsLoaded) {
-          final active = state.listings.where((l) => l.isActive).toList();
-          final closed = state.listings
-              .where((l) => l.isExpired || l.isCancelled)
-              .toList();
-
-          // Show empty state if nothing visible (contracted-only listings hidden)
-          if (active.isEmpty && closed.isEmpty) {
-            return _EmptyRequestState();
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Requests')),
+      body: BlocConsumer<MyListingsCubit, MyListingsState>(
+        listener: (context, state) {
+          if (state is MyListingsError) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.danger,
+            ));
           }
-          return _ListingsBody(listings: state.listings);
-        }
-        return const SizedBox.shrink();
-      },
+        },
+        builder: (context, state) {
+          if (state is MyListingsInitial || state is MyListingsLoading) {
+            return _LoadingSkeleton();
+          }
+          if (state is MyListingsError) {
+            return ErrorState(
+              message: state.message,
+              onRetry: () => context.read<MyListingsCubit>().refresh(),
+            );
+          }
+          if (state is MyListingsLoaded) {
+            final active = state.listings.where((l) => l.isActive).toList();
+            final closed = state.listings
+                .where((l) => l.isExpired || l.isCancelled)
+                .toList();
+
+            // Show empty state if nothing visible (contracted-only listings hidden)
+            if (active.isEmpty && closed.isEmpty) {
+              return _EmptyRequestState();
+            }
+            return _ListingsBody(listings: state.listings);
+          }
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 }

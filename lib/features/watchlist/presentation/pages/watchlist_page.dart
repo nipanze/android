@@ -4,24 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../cubit/watchlist_cubit.dart';
 import '../widgets/watchlist_card.dart';
 
-class WatchlistPage extends StatefulWidget {
+/// Outer shell — provides [WatchlistCubit] so descendants can read it safely.
+class WatchlistPage extends StatelessWidget {
   const WatchlistPage({super.key});
 
   @override
-  State<WatchlistPage> createState() => _WatchlistPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<WatchlistCubit>()..load(),
+      child: const _WatchlistView(),
+    );
+  }
 }
 
-class _WatchlistPageState extends State<WatchlistPage> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<WatchlistCubit>().load();
-  }
+/// Inner view — consumes [WatchlistCubit]; safe to call context.read in build.
+class _WatchlistView extends StatelessWidget {
+  const _WatchlistView();
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +86,7 @@ class _WatchlistPageState extends State<WatchlistPage> {
               ),
             ),
             Expanded(
-              child:
-                  BlocBuilder<WatchlistCubit, WatchlistState>(
+              child: BlocBuilder<WatchlistCubit, WatchlistState>(
                 builder: (context, state) {
                   if (state is WatchlistLoading) {
                     return Center(
@@ -166,10 +169,8 @@ class _WatchlistPageState extends State<WatchlistPage> {
                                   .remove(listing.requestId);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                      'Removed from watchlist'),
-                                  duration:
-                                      const Duration(seconds: 2),
+                                  content: const Text('Removed from watchlist'),
+                                  duration: const Duration(seconds: 2),
                                   action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () {
@@ -205,4 +206,3 @@ class _WatchlistPageState extends State<WatchlistPage> {
     );
   }
 }
-

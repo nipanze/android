@@ -33,9 +33,6 @@ const _kPassword = 'Test1234!';
 // Borrower (Both/Pro) — active request with 2 pending offers
 const _kBorrowerBoth = 'james.okello@outlook.com';
 
-// Borrower (Free) — active request, 1 pending offer
-const _kBorrowerFree = 'maria.nakato@gmail.com';
-
 // Lender (Pro) — offer accepted, contact revealed (contracted)
 const _kLenderPro = 'invest@pearlcapital.ug';
 
