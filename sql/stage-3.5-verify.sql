@@ -244,19 +244,39 @@ FROM public.v_loan_listings;
 
 -- ============================================================
 -- SECTION 11: RLS ON audit_logs (append-only check)
--- Expected: no UPDATE or DELETE policy exists for authenticated
+--
+-- Correct state:
+--   UPDATE / DELETE policies for authenticated MUST exist with
+--   USING (false) — they block all mutations.  That is the
+--   append-only enforcement pattern.
+--
+-- A ✅ result = policy exists AND its qual (USING clause) is 'false'
+--              (i.e. it correctly blocks every row)
+-- A ❌ result = policy grants real UPDATE/DELETE access (qual ≠ 'false')
 -- ============================================================
 
 SELECT
     policyname,
     cmd,
+    COALESCE(qual, with_check) AS policy_condition,
     CASE
+        -- UPDATE/DELETE for authenticated: only ok when USING (false)
         WHEN cmd IN ('UPDATE', 'DELETE')
           AND roles::text LIKE '%authenticated%'
-            THEN '⚠️  Authenticated role can ' || cmd || ' audit_logs!'
-        WHEN cmd IN ('SELECT', 'INSERT')
-            THEN '✅ ' || cmd || ' policy — ok'
-        ELSE     'ℹ️  ' || cmd || ' policy (service_role only)'
+          AND (qual = 'false' OR qual = 'FALSE')
+            THEN '✅ Blocks all ' || cmd || ' — append-only enforced'
+        WHEN cmd IN ('UPDATE', 'DELETE')
+          AND roles::text LIKE '%authenticated%'
+          AND qual IS DISTINCT FROM 'false'
+            THEN '❌ SECURITY RISK: authenticated can ' || cmd || ' audit_logs!'
+        -- Service-role INSERT is expected (RPCs write audit logs)
+        WHEN cmd = 'INSERT' AND roles::text NOT LIKE '%authenticated%'
+            THEN '✅ INSERT for service_role — ok (RPC writes)'
+        WHEN cmd = 'INSERT'
+            THEN '✅ INSERT policy — ok'
+        WHEN cmd = 'SELECT'
+            THEN '✅ SELECT policy — ok'
+        ELSE     'ℹ️  ' || cmd || ' policy'
     END AS result
 FROM pg_policies
 WHERE schemaname = 'public'
@@ -279,7 +299,7 @@ ORDER BY cmd, policyname;
    Section 8:  3 private schema functions
    Section 9:  5 tables in Realtime publication
    Section 10: visible_listings >= 0 (no error)
-   Section 11: No UPDATE/DELETE policies for authenticated on audit_logs
+   Section 11: UPDATE/DELETE policies for authenticated exist with USING(false) — shows ✅ Blocks all
 
 ⚠️  WARNINGS — remediation:
    Views missing security_invoker  → re-run cloud_patch.sql
