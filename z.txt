@@ -3,3 +3,8 @@ donot consider this file its for personal use
 if stage 3 is done
 check the missing implementations in Stage 3.5 then implement it according to the buildplan and readme
 remember am working from supabase cloud 
+
+
+if ### Verification is complete show ✅ in buildplan
+then go to ### App Testing
+ 

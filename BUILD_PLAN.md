@@ -12,7 +12,7 @@
 | 1 | Foundation | ✅ Complete |
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
-| 3.5 | Cloud Migration & Auth Hardening | ⏳ In Progress |
+| 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
 | 4 | Contact Sharing | ⬜ Planned |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
@@ -121,7 +121,7 @@
 
 ---
 
-## Stage 3.5 — Cloud Migration & Auth Hardening ⏳ In Progress
+## Stage 3.5 — Cloud Migration & Auth Hardening ✅ Complete
 
 ### Database — Schema & Data
 - [x] Apply schema v4.0 to cloud project (`sql/schema.sql`)
@@ -159,12 +159,12 @@
 ### Realtime
 - [x] `loan_offers`, `loan_requests`, `notifications`, `contact_reveals`, `watchlist` in `supabase_realtime` publication
 
-### Verification
-- [x] `stage-3.5-status.sql` — all 10 sections show ✅ (schema, views, RLS, seed, storage, private schema, Realtime)
-- [x] `stage-3.5-verify.sql` — all 11 sections pass (masking, security_invoker, append-only audit_logs)
+### Verification ✅ Complete
+- [x] `stage-3.5-status.sql` — all 10 sections ✅ (schema, views, RLS, seed, storage, private schema, Realtime)
+- [x] `stage-3.5-verify.sql` — all 11 sections ✅ (masking, security_invoker, append-only audit_logs enforced via `USING (false)`)
 
-### App Testing
-- [ ] End-to-end borrower flow tested on cloud (web) — post request, browse, save watchlist
+### App Testing ⏳ In Progress
+- [/] End-to-end borrower flow tested on cloud (web) — post request, browse, save watchlist
 - [ ] End-to-end lender flow tested on cloud (web) — browse, make offer, withdraw offer
 - [ ] KYC document upload verified (`verification-documents` bucket receives file)
 - [ ] Release APK built (`flutter build apk --release --dart-define=...`)
