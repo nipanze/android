@@ -12,7 +12,7 @@
 | 1 | Foundation | ✅ Complete |
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
-| 3.5 | Cloud Migration & Auth Hardening | ⬜ Planned |
+| 3.5 | Cloud Migration & Auth Hardening | ⏳ In Progress |
 | 4 | Contact Sharing | ⬜ Planned |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
@@ -121,16 +121,54 @@
 
 ---
 
-## Stage 3.5 — Cloud Migration & Auth Hardening ⬜ Planned
+## Stage 3.5 — Cloud Migration & Auth Hardening ⏳ In Progress
 
-- [ ] Apply schema v4.0 to cloud project
-- [ ] Apply seed v2.0 to cloud project
-- [ ] Create storage buckets in cloud (`verification-documents`)
-- [ ] RLS audit — no row reachable by wrong user
-- [ ] Confirm `v_loan_listings` never exposes `borrower_id`, phone, or email
-- [ ] Confirm `v_lender_offers` never exposes borrower contact details before reveal
-- [ ] Verify refresh token rotation chain
-- [ ] Release APK tested on physical Android device
+### Database — Schema & Data
+- [x] Apply schema v4.0 to cloud project (`sql/schema.sql`)
+- [x] Apply seed v2.0 to cloud project (`sql/seed.sql`) — 17 test accounts
+- [x] Apply cloud patch (`sql/cloud_patch.sql`) — RLS + views + grants
+- [x] Apply function security fix (`sql/fix_functions.sql`) — private schema wrapper pattern
+
+### Storage
+- [x] Create `verification-documents` bucket (private, 10 MB limit)
+- [x] RLS on `storage.objects` — path-based ownership (`{user_id}/{filename}`)
+- [x] Admins can read all KYC documents for review (Stage 5 ready)
+
+### Security Hardening
+- [x] `private` schema created; `private.is_admin()` isolated from API exposure
+- [x] `accept_offer` and `reveal_contact` moved to SECURITY INVOKER wrappers (Security Advisor clean)
+- [x] All 4 views recreated with `security_invoker = true` (`cloud_patch.sql`)
+- [x] Append-only `audit_logs` enforced — no UPDATE/DELETE for `authenticated` role
+- [x] `verification-documents` bucket is private — KYC docs never public
+- [x] Service role key stays out of Flutter client — only in Edge Functions (Stage 5)
+
+### RLS Audit (README field masking rules)
+- [x] `v_loan_listings` — `borrower_id` NOT exposed ✅
+- [x] `v_loan_listings` — `income_source` NOT exposed (stays in `loan_requests` table) ✅
+- [x] `v_loan_listings` — `phone`, `email`, `full_name`, `national_id` NOT exposed ✅
+- [x] `v_lender_offers` — `lender_phone`, `lender_email`, `lender_name` NOT exposed pre-reveal ✅
+- [x] RLS on all 9 core tables — no row reachable by wrong user
+- [x] `contact_reveals` accessible only to matched parties + admin
+
+### Auth Hardening
+- [x] Refresh token rotation enabled (Supabase Dashboard → Authentication → Settings)
+- [x] JWT expiry: 3600 seconds; refresh token reuse interval: 10 seconds
+- [x] "Prevent use of leaked passwords" enabled (Supabase Dashboard)
+- [x] Refresh token rotation chain verified via `refresh_tokens` table (`replaced_by` column)
+
+### Realtime
+- [x] `loan_offers`, `loan_requests`, `notifications`, `contact_reveals`, `watchlist` in `supabase_realtime` publication
+
+### Verification
+- [x] `stage-3.5-status.sql` — all 10 sections show ✅ (schema, views, RLS, seed, storage, private schema, Realtime)
+- [x] `stage-3.5-verify.sql` — all 11 sections pass (masking, security_invoker, append-only audit_logs)
+
+### App Testing
+- [ ] End-to-end borrower flow tested on cloud (web) — post request, browse, save watchlist
+- [ ] End-to-end lender flow tested on cloud (web) — browse, make offer, withdraw offer
+- [ ] KYC document upload verified (`verification-documents` bucket receives file)
+- [ ] Release APK built (`flutter build apk --release --dart-define=...`)
+- [ ] APK installed and tested on physical Android device (no crashes, logcat clean)
 
 ---
 
