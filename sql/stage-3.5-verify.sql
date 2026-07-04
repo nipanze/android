@@ -123,10 +123,10 @@ SELECT
 SELECT COUNT(*) as visible_listings FROM v_loan_listings LIMIT 1;
 
 -- Test: Can a user see their own profile?
-SELECT id, full_name FROM profiles WHERE id = auth.uid() LIMIT 1;
+SELECT id, full_name FROM profiles WHERE id = auth.uid()::uuid LIMIT 1;
 
 -- Test: Can a user see other users' profiles? (should be blocked)
-SELECT COUNT(*) as other_profiles FROM profiles WHERE id != auth.uid() LIMIT 1;
+SELECT COUNT(*) as other_profiles FROM profiles WHERE id != auth.uid()::uuid LIMIT 1;
 
 -- ============================================================
 -- SUMMARY: Expected Results

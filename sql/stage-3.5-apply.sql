@@ -38,7 +38,7 @@ CREATE POLICY "Authenticated users can upload their own KYC docs"
 ON storage.objects FOR INSERT WITH CHECK (
     bucket_id = 'verification-documents'
     AND auth.role() = 'authenticated'
-    AND owner_id = auth.uid()::uuid
+    AND owner_id = auth.uid()
 );
 
 CREATE POLICY "Users can read only their own verification documents"
@@ -47,10 +47,10 @@ ON storage.objects FOR SELECT USING (
     AND auth.role() = 'authenticated'
     AND (
         -- owner_id matches current user (their own files)
-        owner_id = auth.uid()::uuid
+        owner_id::text = auth.uid()
         OR
         -- Admins can view all (optional — add if admin KYC review needed)
-        auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin')
+        auth.uid() IN (SELECT id::text FROM public.profiles WHERE role = 'admin')
     )
 );
 
@@ -58,7 +58,7 @@ CREATE POLICY "Users can delete only their own verification documents"
 ON storage.objects FOR DELETE USING (
     bucket_id = 'verification-documents'
     AND auth.role() = 'authenticated'
-    AND owner_id = auth.uid()::uuid
+    AND owner_id::text = auth.uid()
 );
 
 -- ============================================================
