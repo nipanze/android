@@ -13,7 +13,7 @@
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
-| 4 | Contact Sharing | ⬜ Planned |
+| 4 | Contact Sharing & Deal Agreement | ⬜ Planned |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
 
@@ -172,26 +172,192 @@
 
 ---
 
-## Stage 4 — Contact Sharing ⬜ Planned
+## Stage 4 — Contact Sharing & Deal Agreement ⬜ Planned
 
-- [ ] `ContactRevealRepository` — fetch reveal record, call `reveal_contact` RPC
-- [ ] `ContactRevealCubit` — reveal state, error handling
-- [ ] Contact reveal flow on Positions → My Requests → accepted request:
-  - Blurred contact card shown with "Reveal contact details" button
-  - Confirm dialog: irreversible action warning
-  - Animated unblur on confirm
-  - Reveals legal name, phone, and email of both parties
-- [ ] `reveal_contact` RPC called client-side; enforced at API layer, not just UI
-- [ ] Contact card shown to lender after borrower triggers reveal
-- [ ] Notification sent to both parties on reveal (`contact_revealed` type)
-- [ ] Profile improvements — verification badge shown on borrower listing card
+Stage 4 introduces a **structured deal agreement system combined with controlled contact sharing**.
+The goal is to **speed up negotiations, increase trust, and standardize loan terms** before users connect outside the platform.
 
-### Stage 4 Exit Criteria
-- [ ] Borrower can trigger contact reveal from accepted request
-- [ ] Both borrower and lender see each other's legal name, phone, and email post-reveal
-- [ ] Reveal is irreversible; second trigger returns an error gracefully
-- [ ] Audit log entry written for every reveal event
-- [ ] Contact details never accessible before reveal via any API query
+---
+
+## 🎯 Objective
+
+To move from:
+
+> “Just revealing contact details”
+
+To:
+
+> **“Unlocking a complete deal — agreement + contact”**
+
+This ensures that both borrower and lender:
+
+- Clearly understand the terms
+- Agree before communicating
+- Reduce back-and-forth negotiation
+
+---
+
+## 🧾 Deal Agreement System
+
+Once a borrower **accepts an offer**, the system automatically generates a **loan agreement template**.
+
+This template is:
+
+- Pre-filled using offer details
+- Editable before confirmation
+- Locked after both parties agree
+
+---
+
+## 📄 Agreement Contents
+
+### 1. Loan Summary
+
+- Loan amount
+- Interest rate
+- Total repayment amount
+- Duration
+
+---
+
+### 2. Repayment Plan
+
+Users select a repayment structure:
+
+- Monthly
+- Weekly
+- One-time payment
+
+The system auto-calculates:
+
+- Installment amount
+- Payment schedule
+
+---
+
+### 3. Late Payment Rule (Key Feature)
+
+A penalty is applied **only on missed installments**, not on the total loan.
+
+> Example:
+> “A 2% penalty applies only to the missed payment amount.”
+
+### ✅ Benefits:
+
+- Fair to borrowers
+- Prevents excessive debt growth
+- Builds platform trust
+- Encourages realistic agreements
+
+---
+
+### 4. Editable Terms
+
+Before confirming, both parties can:
+
+- Adjust repayment frequency
+- Modify installment amounts
+- Change or remove penalty percentage
+
+---
+
+### 5. Legal Disclaimer
+
+A clear disclaimer is shown:
+
+> “Nipanze provides this agreement template for convenience. The final agreement is solely between the borrower and lender.”
+
+This ensures the platform remains:
+
+- Non-custodial
+- Not legally responsible for transactions
+
+---
+
+## 🤝 Agreement Confirmation Flow
+
+To proceed:
+
+1. Borrower reviews and clicks **“I Agree”**
+2. Lender reviews and clicks **“I Agree”**
+
+Once both confirm:
+
+- Agreement becomes **locked (read-only)**
+- Timestamp is recorded
+- Audit log entry is created
+
+---
+
+## 🔓 Contact Reveal Flow (Enhanced)
+
+After agreement confirmation (or during unlock flow):
+
+- A blurred **Deal + Contact Card** is shown
+- User clicks **“Unlock Deal & Contact”**
+- Confirmation dialog warns:
+
+  - Action is irreversible
+
+---
+
+### After Unlock:
+
+- Contact details are revealed:
+
+  - Legal name
+  - Phone number
+  - Email
+
+- Agreement becomes fully visible
+- Notifications sent to both parties (`deal_unlocked`)
+
+---
+
+## 📞 Final Step (Offline Completion)
+
+After unlocking:
+
+- Users communicate directly
+- Meet physically or call
+- Complete the transaction outside the platform
+
+---
+
+## 🛡️ Compliance & Security
+
+- Contact details are **never accessible before unlock**
+- `reveal_contact` RPC enforced at API level
+- All actions recorded in **append-only audit logs**
+- Agreement snapshots stored for traceability
+
+---
+
+## 🚀 Value Added in Stage 4
+
+This stage transforms Nipanze into:
+
+👉 A **structured deal marketplace**, not just a listing platform
+
+Key improvements:
+
+- Faster deal-making
+- Reduced negotiation friction
+- Increased user confidence
+- Standardized agreements
+
+---
+
+## ✅ Stage 4 Exit Criteria
+
+- [ ] Agreement auto-generated after offer acceptance
+- [ ] Users can edit terms before confirmation
+- [ ] Late fee applies only to missed installment
+- [ ] Both parties must accept agreement before locking
+- [ ] Contact reveal only happens after unlock flow
+- [ ] Agreement becomes read-only after confirmation
+- [ ] Audit logs capture full agreement lifecycle
+- [ ] Contact details never accessible before unlock
 
 ---
 

@@ -575,8 +575,9 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 3.5 — Cloud Migration & Auth Hardening
 - Supabase Cloud, RLS audit, token rotation, APK release build
 
-### Stage 4 — Contact Sharing
-- Post-acceptance contact sharing, notifications, profile improvements
+### Stage 4 — Contact Sharing & Deal Agreement
+- Structured deal agreement system with controlled contact sharing after offer acceptance
+- Agreement template generation, editable terms, locked confirmation, and unrevealable contact reveal
 
 ### Stage 5 — Admin & Compliance
 - Admin dashboard, verification review, audit trails, SMS
