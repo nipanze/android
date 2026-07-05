@@ -13,6 +13,8 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
 import '../../features/listings/presentation/pages/my_listings_page.dart';
+import '../../features/marketplace/presentation/pages/agreement_review_page.dart';
+import '../../features/marketplace/presentation/pages/deal_unlock_page.dart';
 import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -30,6 +32,8 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String marketplace = '/marketplace';
   static const String marketplaceDetail = '/marketplace/:requestId';
+  static const String agreement = '/marketplace/agreement/:agreementId';
+  static const String dealUnlock = '/marketplace/deal-unlock/:agreementId';
   static const String watchlist = '/watchlist';
   static const String positions = '/positions';
   static const String myListings = '/listings/my-listings';
@@ -132,6 +136,26 @@ class AppRouter {
       ),
 
       // ── Non-shell authenticated routes ─────────────────────────────
+      GoRoute(
+        path: AppRoutes.agreement,
+        name: 'agreement',
+        pageBuilder: (_, state) => _slide(
+          state,
+          AgreementReviewPage(
+            agreementId: state.pathParameters['agreementId']!,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.dealUnlock,
+        name: 'dealUnlock',
+        pageBuilder: (_, state) => _slide(
+          state,
+          DealUnlockPage(
+            agreementId: state.pathParameters['agreementId']!,
+          ),
+        ),
+      ),
       GoRoute(
         path: AppRoutes.revealContact,
         name: 'revealContact',

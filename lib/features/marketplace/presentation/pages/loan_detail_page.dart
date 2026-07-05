@@ -123,15 +123,15 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
   Future<void> _acceptOffer(LoanOffer offer) async {
     try {
-      final revealId = await _repo.acceptOffer(
+      final agreementId = await _repo.acceptOffer(
         requestId: widget.requestId,
         offerId: offer.id,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Offer accepted — contact details revealed.')));
-      // Note: Reveal handling page to be implemented in Stage 2.4
-      context.go('/marketplace/reveal/$revealId');
+          content: Text('Offer accepted — review the deal agreement.')));
+      // Navigate to agreement review page
+      context.go('/marketplace/agreement/$agreementId');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -113,6 +113,9 @@ class MarketplaceRepository {
   }
 
   /// Accept an offer. Calls the accept_offer RPC atomically.
+  /// Returns agreement_id (Stage 4+: no longer returns reveal_id).
+  /// The app should navigate to the agreement review page, where both
+  /// parties must confirm before contact details can be revealed.
   Future<String> acceptOffer({
     required String requestId,
     required String offerId,
@@ -123,7 +126,7 @@ class MarketplaceRepository {
         'p_offer_id': offerId,
         'p_borrower_id': _client.auth.currentUser!.id,
       });
-      return result as String; // Returns reveal_id
+      return result as String; // Returns agreement_id
     } catch (e) {
       throw parseSupabaseError(e);
     }

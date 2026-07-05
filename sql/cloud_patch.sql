@@ -66,6 +66,7 @@ GRANT SELECT ON subscriptions      TO authenticated;
 GRANT SELECT ON kyc_verifications  TO authenticated;
 GRANT SELECT ON loan_requests      TO authenticated;
 GRANT SELECT ON loan_offers        TO authenticated;
+GRANT SELECT ON agreements         TO authenticated;
 GRANT SELECT ON contact_reveals    TO authenticated;
 
 

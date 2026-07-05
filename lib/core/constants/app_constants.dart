@@ -6,6 +6,7 @@ class TableNames {
   static const String kycVerifications = 'kyc_verifications';
   static const String loanRequests = 'loan_requests';
   static const String loanOffers = 'loan_offers';
+  static const String agreements = 'agreements';
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';
   static const String notifications = 'notifications';
@@ -29,6 +30,8 @@ class RpcNames {
 
   static const String acceptOffer = 'accept_offer';
   static const String getPublicListingOffers = 'get_public_listing_offers';
+  static const String confirmAgreement = 'confirm_agreement';
+  static const String unlockContact = 'unlock_contact';
   static const String revealContact = 'reveal_contact';
 }
 
