@@ -42,20 +42,6 @@ class AgreementRepository {
     }
   }
 
-  /// Confirm agreement as current user (borrower or lender).
-  /// Returns updated agreement status JSON.
-  Future<Map<String, dynamic>> confirmAgreement(String agreementId) async {
-    try {
-      final result = await _client.rpc(
-        RpcNames.confirmAgreement,
-        params: {'p_agreement_id': agreementId},
-      );
-      return result as Map<String, dynamic>;
-    } catch (e) {
-      throw parseSupabaseError(e);
-    }
-  }
-
   /// Borrower unlocks contact details after agreement is locked.
   /// Returns contact reveal data (both parties' contact info).
   Future<ContactRevealData> unlockContact(String agreementId) async {
@@ -77,9 +63,9 @@ class AgreementRepository {
         .stream(primaryKey: ['id'])
         .eq('id', agreementId)
         .map((rows) {
-      if (rows.isEmpty) return null;
-      return Agreement.fromMap(rows.first);
-    });
+          if (rows.isEmpty) return null;
+          return Agreement.fromMap(rows.first);
+        });
   }
 
   /// Update agreement (edit repayment terms before locking).

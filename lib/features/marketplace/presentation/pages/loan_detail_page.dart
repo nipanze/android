@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -128,8 +129,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         offerId: offer.id,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Offer accepted — review the deal agreement.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bid accepted — contract generated.')));
       // Navigate to agreement review page
       context.go('/marketplace/agreement/$agreementId');
     } catch (e) {
@@ -204,6 +205,25 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                 title: 'Proposed Repayment Plan',
                 body:
                     '${listing.preferredRepaymentPlan}\n${listing.repaymentTimeline}'),
+            if (listing.suggestedInterestRatePct != null ||
+                listing.suggestedLateFeePct != null ||
+                listing.suggestedRepaymentFrequency != null ||
+                listing.suggestedInstallmentAmount != null) ...[
+              const SizedBox(height: 12),
+              _DescriptionSection(
+                title: 'Borrower Suggested Terms',
+                body: [
+                  if (listing.suggestedInterestRatePct != null)
+                    '${listing.suggestedInterestRatePct!.toStringAsFixed(2)}% interest',
+                  if (listing.suggestedLateFeePct != null)
+                    '${listing.suggestedLateFeePct!.toStringAsFixed(2)}% late fee on missed installment',
+                  if (listing.suggestedRepaymentFrequency != null)
+                    listing.suggestedRepaymentFrequency!,
+                  if (listing.suggestedInstallmentAmount != null)
+                    'UGX ${listing.suggestedInstallmentAmount} installment',
+                ].join('\n'),
+              ),
+            ],
             const SizedBox(height: 12),
             _DescriptionSection(
                 title: 'Purpose of Loan', body: listing.purpose),
@@ -219,7 +239,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               mainAxisSpacing: 8,
               childAspectRatio: 2.2,
               children: [
-                _StatBox(label: 'Offers', value: '${listing.numberOfOffers}'),
+                _StatBox(label: 'Bids', value: '${listing.numberOfOffers}'),
                 _StatBox(
                     label: 'Repayment',
                     value:
@@ -236,9 +256,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             ),
             const SizedBox(height: 24),
 
-            // Live order book (Offers)
+            // Live order book (Bids)
             const Row(children: [
-              SectionHeader('Current Offers'),
+              SectionHeader('Current Bids'),
               SizedBox(width: 8),
               LiveDot(),
             ]),
@@ -275,13 +295,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   if (!user.canLend) {
                     _showSubscriptionGate(
                       requiredPlan: 'Lender',
-                      reason: 'A subscription is required to make offers.',
+                      reason: 'A subscription is required to make bids.',
                     );
                     return;
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: const Text('Make an Offer'),
+                child: const Text('Make a Bid'),
               ),
           ]),
         ),
@@ -334,7 +354,7 @@ class _OfferList extends StatelessWidget {
         decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12)),
-        child: const Text('No offers yet.', textAlign: TextAlign.center),
+        child: const Text('No bids yet.', textAlign: TextAlign.center),
       );
     }
     return ListView.separated(
@@ -351,8 +371,8 @@ class _OfferList extends StatelessWidget {
             ? 0
             : ((offer.offerAmount / requestedAmount) * 100).round();
         final offerType = offer.offerAmount >= requestedAmount
-            ? 'Full offer'
-            : 'Partial offer · $coverage%';
+            ? 'Full bid'
+            : 'Partial bid · $coverage%';
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -392,13 +412,20 @@ class _OfferList extends StatelessWidget {
               Text(offer.proposedExpectations!,
                   style: Theme.of(context).textTheme.bodySmall),
             ],
+            const SizedBox(height: 8),
+            Text(
+              '${offer.interestRatePct.toStringAsFixed(2)}% interest · '
+              '${offer.lateFeePct.toStringAsFixed(2)}% late fee · '
+              '${offer.repaymentFrequency} · UGX ${offer.installmentAmount} installment',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             if (isOwner) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => onAccept(offer),
-                  child: const Text('Accept Offer'),
+                  child: const Text('Accept Bid'),
                 ),
               ),
             ],
@@ -477,13 +504,20 @@ class _MakeOfferSheet extends StatefulWidget {
 class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   final _amountController = TextEditingController();
   final _expController = TextEditingController();
+  final _interestController = TextEditingController();
+  final _lateFeeController = TextEditingController();
+  final _installmentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String _repaymentFrequency = 'monthly';
   bool _loading = false;
 
   @override
   void dispose() {
     _amountController.dispose();
     _expController.dispose();
+    _interestController.dispose();
+    _lateFeeController.dispose();
+    _installmentController.dispose();
     super.dispose();
   }
 
@@ -494,12 +528,17 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       await getIt<MarketplaceRepository>().makeOffer(
         requestId: widget.listing.requestId,
         amount: int.parse(_amountController.text.replaceAll(',', '')),
+        interestRatePct: double.parse(_interestController.text),
+        lateFeePct: double.parse(_lateFeeController.text),
+        repaymentFrequency: _repaymentFrequency,
+        installmentAmount:
+            int.parse(_installmentController.text.replaceAll(',', '')),
         expectations: _expController.text,
       );
       widget.onOfferPlaced();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Offer sent successfully.')));
+            const SnackBar(content: Text('Bid sent successfully.')));
       }
     } catch (e) {
       if (mounted) {
@@ -520,46 +559,118 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             border:
                 Border(top: BorderSide(color: Theme.of(context).dividerColor))),
-        child: Form(
-            key: _formKey,
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Text('Make an Offer',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const Spacer(),
-                    IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: widget.onClose)
-                  ]),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        labelText: 'Amount (UGX)',
-                        prefixIcon: Icon(Icons.payments_outlined)),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Enter amount' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _expController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                        labelText: 'Proposed Expectations',
-                        hintText:
-                            'Explain your terms, e.g. "To be paid back in 3 monthly installments starting April"',
-                        alignLabelWithHint: true),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const CircularProgressIndicator()
-                          : const Text('Send Offer')),
-                ])),
+        child: SingleChildScrollView(
+          child: Form(
+              key: _formKey,
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Text('Make a Bid',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const Spacer(),
+                      IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: widget.onClose)
+                    ]),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                          labelText: 'Amount (UGX)',
+                          prefixIcon: Icon(Icons.payments_outlined)),
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Enter amount' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _interestController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      decoration: const InputDecoration(
+                          labelText: 'Interest rate (%)',
+                          prefixIcon: Icon(Icons.percent_rounded)),
+                      validator: (v) {
+                        final n = double.tryParse(v ?? '');
+                        if (n == null || n < 0 || n > 100) {
+                          return 'Use 0 to 100';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _lateFeeController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      decoration: const InputDecoration(
+                          labelText: 'Late payment fee (%)',
+                          prefixIcon: Icon(Icons.warning_amber_rounded)),
+                      validator: (v) {
+                        final n = double.tryParse(v ?? '');
+                        if (n == null || n < 0 || n > 100) {
+                          return 'Use 0 to 100';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _repaymentFrequency,
+                      decoration: const InputDecoration(
+                        labelText: 'Repayment schedule',
+                        prefixIcon: Icon(Icons.event_repeat_outlined),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'monthly', child: Text('Monthly')),
+                        DropdownMenuItem(
+                            value: 'weekly', child: Text('Weekly')),
+                        DropdownMenuItem(
+                            value: 'one_time', child: Text('One-time payment')),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          setState(() => _repaymentFrequency = v);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _installmentController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                          labelText: 'Installment amount (UGX)',
+                          prefixIcon: Icon(Icons.price_check_outlined)),
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Enter amount' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _expController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                          labelText: 'Additional expectations',
+                          hintText: 'Optional notes for the borrower',
+                          alignLabelWithHint: true),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                        onPressed: _loading ? null : _submit,
+                        child: _loading
+                            ? const CircularProgressIndicator()
+                            : const Text('Send Bid')),
+                  ])),
+        ),
       );
 }

@@ -21,7 +21,9 @@ class ListingRepository {
           .select(
             'id, title, purpose, district, duration_months, requested_amount, '
             'income_source, preferred_repayment_plan, repayment_amount_per_period, '
-            'repayment_timeline, status, number_of_offers, '
+            'repayment_timeline, suggested_interest_rate_pct, suggested_late_fee_pct, '
+            'suggested_repayment_frequency, suggested_installment_amount, terms_locked_at, '
+            'status, number_of_offers, '
             'listed_at, expires_at, contracted_at, cancelled_at',
           )
           .eq('borrower_id', _uid)
@@ -45,6 +47,10 @@ class ListingRepository {
     required String preferredRepaymentPlan,
     required int repaymentAmountPerPeriod,
     required String repaymentTimeline,
+    double? suggestedInterestRatePct,
+    double? suggestedLateFeePct,
+    String? suggestedRepaymentFrequency,
+    int? suggestedInstallmentAmount,
   }) async {
     try {
       final data = await _client
@@ -60,6 +66,14 @@ class ListingRepository {
             'preferred_repayment_plan': preferredRepaymentPlan,
             'repayment_amount_per_period': repaymentAmountPerPeriod,
             'repayment_timeline': repaymentTimeline,
+            if (suggestedInterestRatePct != null)
+              'suggested_interest_rate_pct': suggestedInterestRatePct,
+            if (suggestedLateFeePct != null)
+              'suggested_late_fee_pct': suggestedLateFeePct,
+            if (suggestedRepaymentFrequency != null)
+              'suggested_repayment_frequency': suggestedRepaymentFrequency,
+            if (suggestedInstallmentAmount != null)
+              'suggested_installment_amount': suggestedInstallmentAmount,
           })
           .select('id')
           .single();

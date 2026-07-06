@@ -29,10 +29,16 @@ enum AgreementStatus {
       this == AgreementStatus.locked;
 
   static AgreementStatus fromString(String value) {
-    return AgreementStatus.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => AgreementStatus.pending,
-    );
+    switch (value) {
+      case 'borrower_agreed':
+        return AgreementStatus.borrowerAgreed;
+      case 'lender_agreed':
+        return AgreementStatus.lenderAgreed;
+      case 'locked':
+        return AgreementStatus.locked;
+      default:
+        return AgreementStatus.pending;
+    }
   }
 }
 
@@ -53,10 +59,14 @@ enum RepaymentFrequency {
   }
 
   static RepaymentFrequency fromString(String value) {
-    return RepaymentFrequency.values.firstWhere(
-      (e) => e.name == value.replaceAll('_', '').toLowerCase(),
-      orElse: () => RepaymentFrequency.monthly,
-    );
+    switch (value) {
+      case 'weekly':
+        return RepaymentFrequency.weekly;
+      case 'one_time':
+        return RepaymentFrequency.oneTime;
+      default:
+        return RepaymentFrequency.monthly;
+    }
   }
 }
 
@@ -136,7 +146,9 @@ class Agreement extends Equatable {
       'id': id,
       'offer_id': offerId,
       'request_id': requestId,
-      'repayment_frequency': repaymentFrequency.name.replaceFirst('one', 'one_'),
+      'repayment_frequency': repaymentFrequency == RepaymentFrequency.oneTime
+          ? 'one_time'
+          : repaymentFrequency.name,
       'repayment_amount': repaymentAmount,
       'late_payment_penalty_pct': latePenaltyPercentage,
       'agreement_text': agreementText,
@@ -175,7 +187,8 @@ class Agreement extends Equatable {
       requestId: requestId ?? this.requestId,
       repaymentFrequency: repaymentFrequency ?? this.repaymentFrequency,
       repaymentAmount: repaymentAmount ?? this.repaymentAmount,
-      latePenaltyPercentage: latePenaltyPercentage ?? this.latePenaltyPercentage,
+      latePenaltyPercentage:
+          latePenaltyPercentage ?? this.latePenaltyPercentage,
       agreementText: agreementText ?? this.agreementText,
       agreementSnapshot: agreementSnapshot ?? this.agreementSnapshot,
       status: status ?? this.status,
@@ -189,13 +202,13 @@ class Agreement extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    offerId,
-    status,
-    borrowerAgreedAt,
-    lenderAgreedAt,
-    lockedAt,
-  ];
+        id,
+        offerId,
+        status,
+        borrowerAgreedAt,
+        lenderAgreedAt,
+        lockedAt,
+      ];
 }
 
 // ─── ContactRevealData ─────────────────────────────────────────────────────────
@@ -238,9 +251,9 @@ class ContactRevealData extends Equatable {
 
   @override
   List<Object?> get props => [
-    agreementId,
-    borrowerEmail,
-    lenderEmail,
-    revealedAt,
-  ];
+        agreementId,
+        borrowerEmail,
+        lenderEmail,
+        revealedAt,
+      ];
 }

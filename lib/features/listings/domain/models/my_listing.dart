@@ -14,6 +14,11 @@ class MyListing extends Equatable {
     required this.preferredRepaymentPlan,
     required this.repaymentAmountPerPeriod,
     required this.repaymentTimeline,
+    this.suggestedInterestRatePct,
+    this.suggestedLateFeePct,
+    this.suggestedRepaymentFrequency,
+    this.suggestedInstallmentAmount,
+    this.termsLockedAt,
     required this.status,
     required this.numberOfOffers,
     required this.listedAt,
@@ -32,6 +37,11 @@ class MyListing extends Equatable {
   final String preferredRepaymentPlan;
   final int repaymentAmountPerPeriod;
   final String repaymentTimeline;
+  final double? suggestedInterestRatePct;
+  final double? suggestedLateFeePct;
+  final String? suggestedRepaymentFrequency;
+  final int? suggestedInstallmentAmount;
+  final DateTime? termsLockedAt;
   final ListingStatus status;
   final int numberOfOffers;
   final DateTime listedAt;
@@ -45,7 +55,8 @@ class MyListing extends Equatable {
   bool get isCancelled => status == ListingStatus.cancelled;
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
-  bool get isClosingSoon => timeRemaining.inHours < 24 && !timeRemaining.isNegative;
+  bool get isClosingSoon =>
+      timeRemaining.inHours < 24 && !timeRemaining.isNegative;
   bool get hasExpired => timeRemaining.isNegative;
 
   String get timeRemainingLabel {
@@ -66,12 +77,25 @@ class MyListing extends Equatable {
       requestedAmount: (map['requested_amount'] as num?)?.toInt() ?? 0,
       incomeSource: map['income_source'] as String? ?? '',
       preferredRepaymentPlan: map['preferred_repayment_plan'] as String? ?? '',
-      repaymentAmountPerPeriod: (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
+      repaymentAmountPerPeriod:
+          (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
       repaymentTimeline: map['repayment_timeline'] as String? ?? '',
+      suggestedInterestRatePct:
+          (map['suggested_interest_rate_pct'] as num?)?.toDouble(),
+      suggestedLateFeePct: (map['suggested_late_fee_pct'] as num?)?.toDouble(),
+      suggestedRepaymentFrequency:
+          map['suggested_repayment_frequency'] as String?,
+      suggestedInstallmentAmount:
+          (map['suggested_installment_amount'] as num?)?.toInt(),
+      termsLockedAt: map['terms_locked_at'] != null
+          ? DateTime.tryParse(map['terms_locked_at'] as String)
+          : null,
       status: _statusFromString(map['status'] as String? ?? 'active'),
       numberOfOffers: map['number_of_offers'] as int? ?? 0,
-      listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ?? DateTime.now(),
-      expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ?? DateTime.now(),
+      listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
+          DateTime.now(),
+      expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ??
+          DateTime.now(),
       contractedAt: map['contracted_at'] != null
           ? DateTime.tryParse(map['contracted_at'] as String)
           : null,
@@ -83,11 +107,16 @@ class MyListing extends Equatable {
 
   static ListingStatus _statusFromString(String s) {
     switch (s) {
-      case 'pending_kyc':  return ListingStatus.pendingKyc;
-      case 'contracted':   return ListingStatus.contracted;
-      case 'expired':      return ListingStatus.expired;
-      case 'cancelled':    return ListingStatus.cancelled;
-      default:             return ListingStatus.active;
+      case 'pending_kyc':
+        return ListingStatus.pendingKyc;
+      case 'contracted':
+        return ListingStatus.contracted;
+      case 'expired':
+        return ListingStatus.expired;
+      case 'cancelled':
+        return ListingStatus.cancelled;
+      default:
+        return ListingStatus.active;
     }
   }
 

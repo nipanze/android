@@ -15,6 +15,11 @@ class LoanListing extends Equatable {
     required this.preferredRepaymentPlan,
     required this.repaymentAmountPerPeriod,
     required this.repaymentTimeline,
+    this.suggestedInterestRatePct,
+    this.suggestedLateFeePct,
+    this.suggestedRepaymentFrequency,
+    this.suggestedInstallmentAmount,
+    this.termsLockedAt,
     required this.status,
     required this.listedAt,
     required this.expiresAt,
@@ -32,6 +37,11 @@ class LoanListing extends Equatable {
   final String preferredRepaymentPlan;
   final int repaymentAmountPerPeriod;
   final String repaymentTimeline;
+  final double? suggestedInterestRatePct;
+  final double? suggestedLateFeePct;
+  final String? suggestedRepaymentFrequency;
+  final int? suggestedInstallmentAmount;
+  final DateTime? termsLockedAt;
   final String status;
   final DateTime listedAt;
   final DateTime expiresAt;
@@ -66,6 +76,16 @@ class LoanListing extends Equatable {
       repaymentAmountPerPeriod:
           (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
       repaymentTimeline: map['repayment_timeline'] as String? ?? '',
+      suggestedInterestRatePct:
+          (map['suggested_interest_rate_pct'] as num?)?.toDouble(),
+      suggestedLateFeePct: (map['suggested_late_fee_pct'] as num?)?.toDouble(),
+      suggestedRepaymentFrequency:
+          map['suggested_repayment_frequency'] as String?,
+      suggestedInstallmentAmount:
+          (map['suggested_installment_amount'] as num?)?.toInt(),
+      termsLockedAt: map['terms_locked_at'] != null
+          ? DateTime.tryParse(map['terms_locked_at'] as String)
+          : null,
       status: map['status'] as String? ?? 'active',
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
           DateTime.now(),
@@ -88,7 +108,12 @@ class LoanOffer extends Equatable {
     required this.requestId,
     required this.lenderId,
     required this.offerAmount,
+    required this.interestRatePct,
+    required this.lateFeePct,
+    required this.repaymentFrequency,
+    required this.installmentAmount,
     this.proposedExpectations,
+    this.termsLockedAt,
     required this.status,
     required this.offeredAt,
     this.acceptedAt,
@@ -98,7 +123,12 @@ class LoanOffer extends Equatable {
   final String requestId;
   final String lenderId;
   final int offerAmount;
+  final double interestRatePct;
+  final double lateFeePct;
+  final String repaymentFrequency;
+  final int installmentAmount;
   final String? proposedExpectations;
+  final DateTime? termsLockedAt;
   final String status;
   final DateTime offeredAt;
   final DateTime? acceptedAt;
@@ -111,7 +141,14 @@ class LoanOffer extends Equatable {
       requestId: map['request_id'] as String,
       lenderId: map['lender_id'] as String,
       offerAmount: (map['offer_amount'] as num?)?.toInt() ?? 0,
+      interestRatePct: (map['interest_rate_pct'] as num?)?.toDouble() ?? 0,
+      lateFeePct: (map['late_fee_pct'] as num?)?.toDouble() ?? 0,
+      repaymentFrequency: map['repayment_frequency'] as String? ?? 'monthly',
+      installmentAmount: (map['installment_amount'] as num?)?.toInt() ?? 0,
       proposedExpectations: map['proposed_expectations'] as String?,
+      termsLockedAt: map['terms_locked_at'] != null
+          ? DateTime.tryParse(map['terms_locked_at'] as String)
+          : null,
       status: map['status'] as String? ?? 'pending',
       offeredAt: DateTime.tryParse(map['offered_at'] as String? ?? '') ??
           DateTime.now(),

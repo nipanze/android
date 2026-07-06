@@ -92,6 +92,10 @@ class MarketplaceRepository {
   Future<String> makeOffer({
     required String requestId,
     required int amount,
+    required double interestRatePct,
+    required double lateFeePct,
+    required String repaymentFrequency,
+    required int installmentAmount,
     String? expectations,
   }) async {
     try {
@@ -100,6 +104,10 @@ class MarketplaceRepository {
           .insert({
             'request_id': requestId,
             'offer_amount': amount,
+            'interest_rate_pct': interestRatePct,
+            'late_fee_pct': lateFeePct,
+            'repayment_frequency': repaymentFrequency,
+            'installment_amount': installmentAmount,
             'proposed_expectations': expectations,
             'lender_id': _client.auth.currentUser!.id,
           })

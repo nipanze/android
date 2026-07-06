@@ -47,7 +47,7 @@ Nipanze is a **peer-to-peer financial marketplace** that connects people who nee
 
 Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, guarantee repayment, track repayments, or act as a financial institution. It simply helps financial requests and offers meet through structured discovery, matching, and controlled connection.
 
-Users operate from one account and can act as both borrower and lender. Borrowing is free, marketplace viewing is free, and making lending offers requires a subscription. Contact details remain hidden until an offer is accepted.
+Users operate from one account and can act as both borrower and lender. Basic borrowing is free, marketplace viewing is free, and making lending bids requires a subscription. Premium borrowers can also subscribe to suggest preferred loan terms on their requests. Contact details remain hidden until an offer is accepted.
 
 **Core Principle:** One marketplace. One account. Multiple financial opportunities.
 
@@ -92,39 +92,44 @@ Nipanze provides a simple marketplace structure where:
 - **Free access** — post loan requests without paying to list
 - **Structured requests** — explain title, amount, duration, purpose, district, income source, and repayment ability
 - **Repayment visibility** — show lenders how the loan will be repaid
-- **Flexible options** — receive and compare offers from multiple lenders
+- **Flexible options** — receive and compare bids from multiple lenders
 - **My Requests** — track borrowing activity and lender responses in one place
-- **Controlled contact** — personal contact details stay hidden until an offer is accepted
+- **Controlled contact** — personal contact details stay hidden until a bid is accepted
+- **Premium** — subscribe to suggest preferred interest rate, late payment fee, and repayment schedule on your request (locked on publish; gives negotiating leverage)
 
 ### For Lenders
 
 - **Free browsing** — review borrower requests before subscribing
 - **Repayment context** — assess loan purpose, requested amount, duration, and repayment plan
 - **My Offers** — manage lending activity using simple, human, trustworthy language
-- **Custom terms** — make offers with your own amount, interest/return expectation, and conditions
+- **Custom terms** — make bids with your own amount, interest rate, late payment fee, and repayment schedule (locked on submit)
 - **Borrower context** — use profile, purpose, and repayment-plan details to compare opportunities
 - **Return potential** — lend directly to selected borrowers for profit
 
 ### Platform Features
 
 - **Free borrower posting** — borrowers can create requests without a listing fee
+- **Premium borrower terms** — premium borrowers suggest interest rate, late fee, and repayment schedule (locked on publish)
 - **Free lender browsing** — lenders can browse requests before subscribing
-- **Subscription-gated offers** — making lending offers requires an active subscription
+- **Subscription-gated bids** — making lending bids requires an active subscription
+- **Locked bidding** — both borrower suggestions and lender bids are locked on submission; no post-publish edits
+- **Contract generation** — a digital contract is auto-generated when a borrower accepts a bid
 - **Single account, multiple roles** — each user can borrow and lend from one account
 - **Marketplace main screen** — live feed of borrower requests with amount, purpose, district, and repayment plan
 - **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
-- **Controlled contact sharing** — contact details are revealed only after acceptance
+- **Controlled contact sharing** — contact details are revealed only after a contract is generated
 - **Compliance built-in** — append-only audit trail from day one
 
 ---
 
 ## Business Model
 
-Nipanze generates revenue through lender subscriptions for making offers — not interest spreads.
+Nipanze generates revenue through subscriptions — not interest spreads.
 
 | Revenue Stream | Description |
 |---|---|
-| Lender subscriptions | Paid access for lenders who want to make offers |
+| Lender subscriptions | Paid access for lenders who want to make bids |
+| Borrower Premium subscriptions | Paid access for borrowers who want to suggest interest rate, late payment fee, and repayment schedule on their post |
 
 Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance.
 
@@ -145,9 +150,11 @@ Each borrower request must include:
 - **Repayment preference:** weekly, monthly, or one-time payment
 - **Repayment ability:** amount payable per period and repayment timeline
 
-Example: “I earn 800,000 UGX monthly and can repay 200,000 UGX per month.”
+Example: "I earn 800,000 UGX monthly and can repay 200,000 UGX per month."
 
-Borrowers do **not** set the binding interest rate on the request. Lenders propose the offer amount, interest/return expectation, and conditions when they make an offer.
+Free borrowers do **not** set interest rate, late payment fee, or repayment schedule on the request — lenders set all terms in their bids.
+
+Premium borrowers can suggest a preferred interest rate, late payment fee, and repayment schedule. These are **locked on publish** and give the borrower negotiating leverage when lenders review the request.
 
 ### Field Masking Rules
 
@@ -157,11 +164,11 @@ Borrowers do **not** set the binding interest rate on the request. Lenders propo
 
 **Masked before acceptance:** `borrower_id`, income source, employer/salary details, email, phone, full name, national ID, and private verification documents
 
-#### Lender → Offers
+#### Lender → Bids
 
-**Exposed:** offer amount, proposed expectations or terms, including any lender-stated interest/return expectation, timestamp
+**Exposed:** bid amount, interest rate, late payment fee, repayment schedule, timestamp
 
-Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different lenders.
+Bid amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M bid, a UGX 5M bid, and a UGX 3M bid from different lenders.
 
 **Masked before acceptance:** lender name, email, phone, and private verification documents
 
@@ -180,10 +187,10 @@ Nipanze helps participants discover each other and make informed matching decisi
 ```
 1. POST       → Borrower posts a structured loan request for free
 2. BROWSE     → Lenders browse borrower requests for free
-3. OFFER      → Lenders subscribe to propose amount, interest/return, and terms
-4. REVIEW     → Borrower compares available offers
-5. ACCEPT     → Borrower selects one offer
-6. REVEAL     → Contact details are revealed only after acceptance
+3. BID        → Lenders subscribe to bid with their own amount, interest rate, late fee, and repayment schedule
+4. REVIEW     → Borrower compares available bids
+5. ACCEPT     → Borrower selects one bid; contract is auto-generated
+6. UNLOCK     → Contact details are revealed only after contract unlock
 7. CONNECT    → Parties proceed independently outside the platform
 ```
 
@@ -555,7 +562,7 @@ All accounts are pre-loaded by `sql/seed.sql` v1.0 with fixed UUIDs and `email_c
 
 **We DO:** Provide marketplace infrastructure, show borrower-provided request information, manage controlled contact sharing, and facilitate discovery.
 
-**We DO NOT:** Accept deposits, hold or pool user funds, issue loans or set interest rates, guarantee returns, act as a bank or financial institution, process payments.
+**We DO NOT:** Accept deposits, hold or pool user funds, issue loans, set interest rates, guarantee returns, act as a bank or financial institution, process payments, or track repayments.
 
 All money movement, loan documentation, and repayment tracking happen directly between matched participants outside the platform.
 
@@ -577,9 +584,10 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 3.5 — Cloud Migration & Auth Hardening
 - Supabase Cloud, RLS audit, token rotation, APK release build
 
-### Stage 4 — Contact Sharing & Deal Agreement
-- Structured deal agreement system with controlled contact sharing after offer acceptance
-- Agreement template generation, editable terms, locked confirmation, and unrevealable contact reveal
+### Stage 4 — Structured Deal Agreement & Contact Sharing
+- Locked-term bidding: borrowers (premium) suggest interest rate, late fee, and repayment schedule at posting; lenders set their own terms at bid time; both locked on submission
+- Contract auto-generated after bid acceptance with all agreed terms + legal disclaimer
+- Contact reveal only after contract is generated and unlock is confirmed
 
 ### Stage 5 — Admin & Compliance
 - Admin dashboard, verification review, audit trails, SMS

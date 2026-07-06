@@ -22,9 +22,6 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
   Agreement? _agreement;
   bool _loading = true;
   String? _error;
-  bool _borrowerConfirmed = false;
-  bool _lenderConfirmed = false;
-  bool _isConfirming = false;
 
   @override
   void initState() {
@@ -44,8 +41,6 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
 
       setState(() {
         _agreement = agreement;
-        _borrowerConfirmed = agreement.borrowerAgreedAt != null;
-        _lenderConfirmed = agreement.lenderAgreedAt != null;
         _loading = false;
       });
 
@@ -54,19 +49,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
         if (mounted && updated != null) {
           setState(() {
             _agreement = updated;
-            _borrowerConfirmed = updated.borrowerAgreedAt != null;
-            _lenderConfirmed = updated.lenderAgreedAt != null;
           });
-
-          // If locked, show completion message
-          if (updated.isFullyLocked && !_isConfirming) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Deal agreement locked! Ready to unlock contact.'),
-                backgroundColor: AppColors.success,
-              ),
-            );
-          }
         }
       });
     } catch (e) {
@@ -75,28 +58,6 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
         _error = e.toString();
         _loading = false;
       });
-    }
-  }
-
-  Future<void> _confirmAgreement() async {
-    setState(() => _isConfirming = true);
-    try {
-      await _repo.confirmAgreement(widget.agreementId);
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You confirmed the agreement.')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isConfirming = false);
     }
   }
 
@@ -142,13 +103,6 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
               _StatusBanner(agreement: agreement),
               const SizedBox(height: 24),
 
-              // Agreement status
-              _AgreementStatusIndicator(
-                borrowerAgreed: _borrowerConfirmed,
-                lenderAgreed: _lenderConfirmed,
-              ),
-              const SizedBox(height: 24),
-
               // Agreement text
               Card(
                 child: Padding(
@@ -171,38 +125,20 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
               ),
               const SizedBox(height: 24),
 
-              // Action buttons
-              if (!agreement.isFullyLocked) ...[
-                if (!_borrowerConfirmed || !_lenderConfirmed)
-                  ElevatedButton(
-                    onPressed: _isConfirming ? null : _confirmAgreement,
-                    child: _isConfirming
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('I Agree to This Deal'),
-                  ),
-              ] else ...[
-                // Locked - show unlock button
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    context.go('/marketplace/deal-unlock/${agreement.id}');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                  ),
-                  child: const Text('Unlock Deal & Contact'),
+              ElevatedButton(
+                onPressed: agreement.isFullyLocked
+                    ? () =>
+                        context.go('/marketplace/deal-unlock/${agreement.id}')
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.success,
                 ),
-              ],
+                child: const Text('Unlock Deal & Contact'),
+              ),
               const SizedBox(height: 16),
               Center(
                 child: Text(
-                  'This is a template agreement provided by Nipanze.\n'
+                  'Contact details are only revealed after unlock.\n'
                   'Final terms are solely between borrower and lender.',
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.center,
@@ -224,7 +160,8 @@ class _StatusBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = agreement.isFullyLocked ? AppColors.success : AppColors.warning;
+    final statusColor =
+        agreement.isFullyLocked ? AppColors.success : AppColors.warning;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -242,82 +179,13 @@ class _StatusBanner extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            agreement.status.displayName,
+            agreement.isFullyLocked
+                ? 'Contract locked'
+                : agreement.status.displayName,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: statusColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AgreementStatusIndicator extends StatelessWidget {
-  const _AgreementStatusIndicator({
-    required this.borrowerAgreed,
-    required this.lenderAgreed,
-  });
-
-  final bool borrowerAgreed;
-  final bool lenderAgreed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Confirmation Status',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 12),
-        _PartyStatus(label: 'Borrower', confirmed: borrowerAgreed),
-        const SizedBox(height: 8),
-        _PartyStatus(label: 'Lender', confirmed: lenderAgreed),
-      ],
-    );
-  }
-}
-
-class _PartyStatus extends StatelessWidget {
-  const _PartyStatus({
-    required this.label,
-    required this.confirmed,
-  });
-
-  final String label;
-  final bool confirmed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: confirmed
-            ? AppColors.success.withValues(alpha: 0.1)
-            : AppColors.bg3Light,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: confirmed
-              ? AppColors.success.withValues(alpha: 0.3)
-              : AppColors.borderLight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            confirmed ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 18,
-            color: confirmed ? AppColors.success : AppColors.text2Light,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: confirmed ? AppColors.success : AppColors.text2Light,
-            ),
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),

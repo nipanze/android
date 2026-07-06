@@ -13,7 +13,7 @@
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
-| 4 | Contact Sharing & Deal Agreement | ⬜ Planned |
+| 4 | Structured Deal Agreement & Contact Sharing | ⬜ Planned |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
 
@@ -174,192 +174,163 @@
 
 ---
 
-## Stage 4 — Contact Sharing & Deal Agreement ⬜ Planned
+## Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned
 
-Stage 4 introduces a **structured deal agreement system combined with controlled contact sharing**.
-The goal is to **speed up negotiations, increase trust, and standardize loan terms** before users connect outside the platform.
+Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both borrower and lender commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated.
 
 ---
 
 ## 🎯 Objective
 
-To move from:
+> **"We connect borrower and lender, help them agree on terms, then generate a contract — everything else happens offline."**
 
-> “Just revealing contact details”
-
-To:
-
-> **“Unlocking a complete deal — agreement + contact”**
-
-This ensures that both borrower and lender:
-
-- Clearly understand the terms
-- Agree before communicating
-- Reduce back-and-forth negotiation
+Core principles:
+- Terms are **locked at the point of posting / bidding** — no editing after publish
+- Both parties commit to their position independently
+- A contract is generated when their terms match via acceptance
+- Contact is revealed only after the contract is locked
 
 ---
 
-## 🧾 Deal Agreement System
+## 🔁 Flow Overview
 
-Once a borrower **accepts an offer**, the system automatically generates a **loan agreement template**.
+```
+BORROWER POSTS (locked on publish)
+──────────────────────────────────────────
+Amount needed
+Duration
+Purpose (optional)
+[PREMIUM] Suggested interest rate
+[PREMIUM] Suggested late payment fee (%)
+[PREMIUM] Suggested repayment schedule
+──────────────────────────────────────────
 
-This template is:
+LENDER BIDS (locked on submit — free)
+──────────────────────────────────────────
+Amount offered
+Lender's interest rate
+Lender's late payment fee (%)
+Lender's repayment schedule
+──────────────────────────────────────────
 
-- Pre-filled using the accepted lender offer details and borrower repayment context
-- Editable before confirmation
-- Locked after both parties agree
+CONTRACT GENERATED (after borrower accepts a bid)
+──────────────────────────────────────────
+Final terms locked
+Digital contract created
+Contact revealed to both parties
+──────────────────────────────────────────
+```
 
 ---
 
-## 📄 Agreement Contents
+## 📋 Borrower Post — Term Suggestions (Premium Feature)
 
-### 1. Loan Summary
+Premium borrowers can suggest preferred loan terms **at the time of posting**. Once published, these terms are **locked**.
 
+| Field | Free | Premium |
+|---|---|---|
+| Amount needed | ✅ | ✅ |
+| Duration | ✅ | ✅ |
+| Purpose | ✅ | ✅ |
+| Suggested interest rate | ❌ | ✅ |
+| Suggested late payment fee | ❌ | ✅ |
+| Suggested repayment schedule | ❌ | ✅ |
+
+> **Why premium?** Borrowers with suggested terms have negotiating leverage — they attract lenders who are already aligned with their preferred terms. This is the core value of the Premium Borrower subscription.
+
+---
+
+## 🏷️ Lender Bid — Term Setting (Free)
+
+When a lender submits a bid, they set their own terms. They may align with the borrower's suggestions or propose different ones. Once submitted, the bid is **locked**.
+
+| Field | Description |
+|---|---|
+| Amount offered | Full or partial of the requested amount |
+| Interest rate | Lender's required return |
+| Late payment fee | % applied only to missed installment |
+| Repayment schedule | Monthly / Weekly / One-time + installment amount |
+
+> Lender bidding is **always free**. Maximising lender supply is essential for platform value.
+
+---
+
+## 📄 Contract Contents
+
+Once the borrower accepts a bid, the system auto-generates a locked contract:
+
+- Borrower & lender identity (post-reveal)
 - Loan amount
-- Interest rate / return expectation from the accepted lender offer
+- Agreed interest rate
 - Total repayment amount
-- Duration
+- Repayment schedule (frequency + installment amount)
+- Late payment fee (% on missed installment only — **not the total balance**)
+- Start & end dates
+- Legal disclaimer
+- Audit timestamp
+
+### Late Payment Rule
+
+> "A [X]% penalty applies only to the missed payment amount — not the total loan balance."
+
+This keeps penalties fair, prevents compounding debt, and builds platform trust.
+
+### Legal Disclaimer
+
+> "Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds."
 
 ---
 
-### 2. Repayment Plan
+## 🔓 Contact Reveal Flow
 
-Users select a repayment structure:
+After contract generation:
 
-- Monthly
-- Weekly
-- One-time payment
+1. A blurred **Deal + Contact Card** is shown to both parties
+2. User clicks **"Unlock Deal & Contact"**
+3. Confirmation dialog: action is irreversible
+4. Contact details revealed: legal name, phone, email
+5. Notifications sent to both parties (`deal_unlocked`)
+6. Full contract becomes visible
 
-The system auto-calculates:
-
-- Installment amount
-- Payment schedule
-
----
-
-### 3. Late Payment Rule (Key Feature)
-
-A penalty is applied **only on missed installments**, not on the total loan.
-
-> Example:
-> “A 2% penalty applies only to the missed payment amount.”
-
-### ✅ Benefits:
-
-- Fair to borrowers
-- Prevents excessive debt growth
-- Builds platform trust
-- Encourages realistic agreements
+Contact details are **never accessible before this step** — enforced at API level via `reveal_contact` RPC.
 
 ---
 
-### 4. Editable Terms
+## 💰 Revenue — Dual Subscription Model
 
-Before confirming, both parties can:
+| Plan | Access |
+|---|---|
+| Free Borrower | Post basic request (amount + duration + purpose only) |
+| **Premium Borrower** *(subscription)* | Suggest interest rate, late fee, and repayment schedule on posts |
+| Free Lender | Browse only |
+| **Lender** *(subscription)* | Make bids with full terms |
 
-- Adjust repayment frequency
-- Modify installment amounts
-- Change or remove penalty percentage
-
----
-
-### 5. Legal Disclaimer
-
-A clear disclaimer is shown:
-
-> “Nipanze provides this agreement template for convenience. The final agreement is solely between the borrower and lender.”
-
-This ensures the platform remains:
-
-- Non-custodial
-- Not legally responsible for transactions
-
----
-
-## 🤝 Agreement Confirmation Flow
-
-To proceed:
-
-1. Borrower reviews and clicks **“I Agree”**
-2. Lender reviews and clicks **“I Agree”**
-
-Once both confirm:
-
-- Agreement becomes **locked (read-only)**
-- Timestamp is recorded
-- Audit log entry is created
-
----
-
-## 🔓 Contact Reveal Flow (Enhanced)
-
-After agreement confirmation (or during unlock flow):
-
-- A blurred **Deal + Contact Card** is shown
-- User clicks **“Unlock Deal & Contact”**
-- Confirmation dialog warns:
-
-  - Action is irreversible
-
----
-
-### After Unlock:
-
-- Contact details are revealed:
-
-  - Legal name
-  - Phone number
-  - Email
-
-- Agreement becomes fully visible
-- Notifications sent to both parties (`deal_unlocked`)
-
----
-
-## 📞 Final Step (Offline Completion)
-
-After unlocking:
-
-- Users communicate directly
-- Meet physically or call
-- Complete the transaction outside the platform
+> Platform earns from both sides: lenders pay to offer, borrowers pay to have negotiating leverage.
 
 ---
 
 ## 🛡️ Compliance & Security
 
-- Contact details are **never accessible before unlock**
+- Terms locked at post/bid time — no post-publish edits
 - `reveal_contact` RPC enforced at API level
 - All actions recorded in **append-only audit logs**
-- Agreement snapshots stored for traceability
-
----
-
-## 🚀 Value Added in Stage 4
-
-This stage transforms Nipanze into:
-
-👉 A **structured deal marketplace**, not just a listing platform
-
-Key improvements:
-
-- Faster deal-making
-- Reduced negotiation friction
-- Increased user confidence
-- Standardized agreements
+- Contract snapshot stored for traceability
+- Platform never tracks repayments or enforces obligations
 
 ---
 
 ## ✅ Stage 4 Exit Criteria
 
-- [ ] Agreement auto-generated after offer acceptance
-- [ ] Users can edit terms before confirmation
-- [ ] Late fee applies only to missed installment
-- [ ] Both parties must accept agreement before locking
-- [ ] Contact reveal only happens after unlock flow
-- [ ] Agreement becomes read-only after confirmation
-- [ ] Audit logs capture full agreement lifecycle
-- [ ] Contact details never accessible before unlock
+- [ ] Premium borrower subscription gate on interest/late fee/repayment fields in request form
+- [ ] Borrower terms locked on publish (`terms_locked_at` set; no further edits)
+- [ ] Lender bid terms locked on submit
+- [ ] Contract auto-generated after borrower accepts a bid
+- [ ] Contract includes all agreed fields + legal disclaimer
+- [ ] Late fee applies only to missed installment (not total balance)
+- [ ] Contact reveal only after contract is generated
+- [ ] Contact details never accessible before reveal via any query
+- [ ] Audit logs capture full contract lifecycle
+- [ ] Both parties receive `deal_unlocked` notification
 
 ---
 
@@ -401,12 +372,12 @@ Key improvements:
 | 5-tab nav, Request in centre | ✅ |
 | Browse marketplace with filters | ✅ Stage 2 |
 | Live feed Realtime refresh | ✅ Stage 2 |
-| Post a structured loan request (free, no borrower-set interest) | ✅ Stage 2 |
+| Post a structured loan request (free — amount, duration, purpose only) | ✅ Stage 2 |
 | Form limits from DB (system_settings) | ✅ Stage 2 |
-| Browse and make an offer with lender-proposed terms (subscription) | ✅ Stage 2 |
+| Browse and make a bid with lender terms (subscription) | ✅ Stage 2 |
 | Subscription gate modal | ✅ Stage 2 |
-| Borrower accepts an offer | ✅ Stage 2 |
-| Losing offers auto-rejected | ✅ Stage 2 |
+| Borrower accepts a bid | ✅ Stage 2 |
+| Losing bids auto-rejected | ✅ Stage 2 |
 | Live offers panel Realtime + flash | ✅ Stage 2 |
 | KYC upload (camera/gallery, 3 docs) | ✅ Stage 2 |
 | Save to watchlist (toggles star) | ❌ Stage 3 |
@@ -417,6 +388,10 @@ Key improvements:
 | Notifications | ❌ Stage 3 |
 | Profile/Account live data | ❌ Stage 3 |
 | OfflineBanner | ❌ Stage 3 |
+| Premium borrower suggests interest rate / late fee / repayment | ⬜ Stage 4 |
+| Borrower terms locked on publish | ⬜ Stage 4 |
+| Lender bid terms locked on submit | ⬜ Stage 4 |
+| Contract auto-generated after bid acceptance | ⬜ Stage 4 |
 | Contact reveal flow (blurred → unblur) | ⬜ Stage 4 |
 | Admin KYC review | ⬜ Stage 5 |
 | Admin KPI dashboard | ⬜ Stage 5 |

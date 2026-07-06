@@ -76,7 +76,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   final _incomeSourceController = TextEditingController();
   final _repaymentAmountController = TextEditingController();
   final _repaymentTimelineController = TextEditingController();
+  final _suggestedInterestController = TextEditingController();
+  final _suggestedLateFeeController = TextEditingController();
+  final _suggestedInstallmentController = TextEditingController();
   String? _preferredRepaymentPlan;
+  String? _suggestedRepaymentPlan;
 
   final _loanDetailsFormKey = GlobalKey<FormState>();
   final _repaymentFormKey = GlobalKey<FormState>();
@@ -109,6 +113,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     _incomeSourceController.dispose();
     _repaymentAmountController.dispose();
     _repaymentTimelineController.dispose();
+    _suggestedInterestController.dispose();
+    _suggestedLateFeeController.dispose();
+    _suggestedInstallmentController.dispose();
     super.dispose();
   }
 
@@ -177,11 +184,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       return;
     }
     if (!authState.user.canBorrow) {
-      _showGate(
-          'A Borrower or Pro subscription is required to post a listing.');
+      _showGate('Your account is not allowed to post a listing.');
       return;
     }
 
+    final canSuggestTerms = authState.user.canSuggestBorrowerTerms;
     setState(() => _submitting = true);
     try {
       await getIt<ListingRepository>().createListing(
@@ -194,6 +201,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         preferredRepaymentPlan: _preferredRepaymentPlan!,
         repaymentAmountPerPeriod: int.parse(_repaymentAmountController.text),
         repaymentTimeline: _repaymentTimelineController.text.trim(),
+        suggestedInterestRatePct: canSuggestTerms
+            ? double.tryParse(_suggestedInterestController.text)
+            : null,
+        suggestedLateFeePct: canSuggestTerms
+            ? double.tryParse(_suggestedLateFeeController.text)
+            : null,
+        suggestedRepaymentFrequency:
+            canSuggestTerms ? _suggestedRepaymentPlan : null,
+        suggestedInstallmentAmount: canSuggestTerms
+            ? int.tryParse(_suggestedInstallmentController.text)
+            : null,
       );
     } catch (e) {
       if (!mounted) return;
@@ -211,7 +229,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       builder: (_) => AlertDialog(
         title: const Text('Request submitted'),
         content: const Text(
-          'Your loan request is now live on the marketplace. Lenders can review it and make offers.',
+          'Your loan request is now live on the marketplace. Lenders can review it and make bids.',
         ),
         actions: [
           TextButton(
@@ -301,7 +319,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Requests: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Lenders propose offer terms',
+                  'Requests: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Terms lock on publish',
                   style: const TextStyle(fontSize: 11, color: AppColors.accent),
                 ),
               ),
@@ -445,6 +463,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   // ─── Step 2: Income & repayment ─────────────────────────────────────────────
 
   Widget _buildStep2() {
+    final authState = context.watch<AuthBloc>().state;
+    final canSuggestTerms = authState is AuthAuthenticated &&
+        authState.user.canSuggestBorrowerTerms;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Form(
@@ -525,6 +547,88 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               return null;
             },
           ),
+          const SizedBox(height: 18),
+          Text('Preferred terms',
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Text(
+            canSuggestTerms
+                ? 'These suggestions are locked when the request is published.'
+                : 'Upgrade to Pro to suggest interest, late fee, and repayment terms.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _suggestedInterestController,
+            enabled: canSuggestTerms,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            decoration: const InputDecoration(
+              labelText: 'Suggested interest rate (%)',
+              prefixIcon: Icon(Icons.percent_rounded, size: 20),
+            ),
+            validator: (v) {
+              if (!canSuggestTerms || v == null || v.isEmpty) return null;
+              final n = double.tryParse(v);
+              if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _suggestedLateFeeController,
+            enabled: canSuggestTerms,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            decoration: const InputDecoration(
+              labelText: 'Suggested late payment fee (%)',
+              prefixIcon: Icon(Icons.warning_amber_rounded, size: 20),
+            ),
+            validator: (v) {
+              if (!canSuggestTerms || v == null || v.isEmpty) return null;
+              final n = double.tryParse(v);
+              if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<String>(
+            initialValue: _suggestedRepaymentPlan,
+            decoration: const InputDecoration(
+              labelText: 'Suggested repayment schedule',
+              prefixIcon: Icon(Icons.event_available_outlined, size: 20),
+            ),
+            items: _repaymentPlans
+                .map((p) => DropdownMenuItem(
+                      value: p['value'],
+                      child: Text(p['label']!),
+                    ))
+                .toList(),
+            onChanged: canSuggestTerms
+                ? (v) => setState(() => _suggestedRepaymentPlan = v)
+                : null,
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _suggestedInstallmentController,
+            enabled: canSuggestTerms,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Suggested installment amount (UGX)',
+              prefixIcon: Icon(Icons.price_check_outlined, size: 20),
+            ),
+            validator: (v) {
+              if (!canSuggestTerms || v == null || v.isEmpty) return null;
+              final n = int.tryParse(v);
+              if (n == null || n <= 0) return 'Enter a valid amount';
+              return null;
+            },
+          ),
         ]),
       ),
     );
@@ -537,6 +641,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final duration = _durationController.text;
     final repaymentAmount = int.tryParse(_repaymentAmountController.text) ?? 0;
     final description = _descriptionController.text.trim();
+    final authState = context.watch<AuthBloc>().state;
+    final canSuggestTerms = authState is AuthAuthenticated &&
+        authState.user.canSuggestBorrowerTerms;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -618,6 +725,27 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 value: description,
               ),
             ],
+            if (canSuggestTerms &&
+                (_suggestedInterestController.text.isNotEmpty ||
+                    _suggestedLateFeeController.text.isNotEmpty ||
+                    _suggestedRepaymentPlan != null ||
+                    _suggestedInstallmentController.text.isNotEmpty)) ...[
+              _divider(),
+              _ReviewRow(
+                icon: Icons.lock_outline_rounded,
+                label: 'Locked preferred terms',
+                value: [
+                  if (_suggestedInterestController.text.isNotEmpty)
+                    '${_suggestedInterestController.text}% interest',
+                  if (_suggestedLateFeeController.text.isNotEmpty)
+                    '${_suggestedLateFeeController.text}% late fee on missed installment',
+                  if (_suggestedRepaymentPlan != null)
+                    _planLabel(_suggestedRepaymentPlan),
+                  if (_suggestedInstallmentController.text.isNotEmpty)
+                    'UGX ${_fmtAmount(int.tryParse(_suggestedInstallmentController.text) ?? 0)} installment',
+                ].join(' · '),
+              ),
+            ],
           ]),
         ),
 
@@ -636,7 +764,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Your contact details stay hidden until an offer is accepted and the unlock flow is completed.',
+                'Your contact details stay hidden until a bid is accepted and the unlock flow is completed.',
                 style: TextStyle(fontSize: 11, color: AppColors.success),
               ),
             ),

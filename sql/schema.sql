@@ -4,9 +4,10 @@
 -- PostgreSQL 14+ · Flutter + Supabase
 --
 -- Non-custodial peer-to-peer loan listing marketplace.
--- Uganda-first. Borrowing is free. Lender offers require a subscription.
+-- Uganda-first. Basic borrowing is free. Premium borrowers can suggest terms.
+-- Lender bids require a subscription.
 -- Platform NEVER holds, tracks, or processes money.
--- Contact details are revealed only after a borrower accepts an offer.
+-- Contact details are revealed only after a locked contract is generated.
 -- ============================================
 
 
@@ -68,8 +69,6 @@ CREATE TYPE notification_type_enum AS ENUM (
     'offer_rejected',
     'offer_withdrawn',
     'contact_revealed',
-    'agreement_generated',
-    'agreement_accepted',
     'agreement_locked',
     'kyc_approved',
     'kyc_rejected',
@@ -86,7 +85,7 @@ CREATE TYPE audit_event_type_enum AS ENUM (
     'kyc_submitted', 'kyc_approved', 'kyc_rejected',
     'listing_created', 'listing_cancelled',
     'offer_placed', 'offer_withdrawn', 'offer_accepted',
-    'agreement_generated', 'agreement_borrower_agreed', 'agreement_lender_agreed', 'agreement_locked',
+    'agreement_locked',
     'contact_revealed',
     'subscription_changed',
     'admin_action'
@@ -294,6 +293,25 @@ CREATE TABLE loan_requests (
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
 
+    -- Premium borrower term suggestions. These are optional, public, and
+    -- locked by trigger at publish time.
+    suggested_interest_rate_pct NUMERIC(5,2)
+                                    CONSTRAINT chk_lr_suggested_interest_rate_range
+                                    CHECK (suggested_interest_rate_pct IS NULL OR
+                                           (suggested_interest_rate_pct >= 0 AND suggested_interest_rate_pct <= 100)),
+    suggested_late_fee_pct      NUMERIC(5,2)
+                                    CONSTRAINT chk_lr_suggested_late_fee_range
+                                    CHECK (suggested_late_fee_pct IS NULL OR
+                                           (suggested_late_fee_pct >= 0 AND suggested_late_fee_pct <= 100)),
+    suggested_repayment_frequency TEXT
+                                    CONSTRAINT chk_lr_suggested_repayment_frequency
+                                    CHECK (suggested_repayment_frequency IS NULL OR
+                                           suggested_repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+    suggested_installment_amount BIGINT
+                                    CONSTRAINT chk_lr_suggested_installment_positive
+                                    CHECK (suggested_installment_amount IS NULL OR suggested_installment_amount > 0),
+    terms_locked_at             TIMESTAMP,
+
     district                    TEXT NOT NULL,
 
     -- Offer count only — no monetary aggregates (platform never tracks fund totals)
@@ -314,7 +332,8 @@ CREATE TABLE loan_requests (
 
 COMMENT ON TABLE  loan_requests IS
 'Borrower funding requests. Free to post. borrower_id masked on all public views.
- Income and repayment fields give lenders enough context to make an informed offer.';
+ Income and repayment fields give lenders enough context to make an informed bid.
+ Premium borrower term suggestions are locked on publish.';
 COMMENT ON COLUMN loan_requests.borrower_id IS
 'NEVER exposed in v_loan_listings or any marketplace query. Contact revealed only post-acceptance.';
 COMMENT ON COLUMN loan_requests.number_of_offers IS
@@ -333,7 +352,16 @@ CREATE TABLE loan_offers (
     lender_id            UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
 
     offer_amount         BIGINT NOT NULL CONSTRAINT chk_lo_amount_positive CHECK (offer_amount > 0),
-    proposed_expectations TEXT,   -- optional: lender's proposed terms or expectations
+    interest_rate_pct    NUMERIC(5,2) NOT NULL
+                            CONSTRAINT chk_lo_interest_rate_range CHECK (interest_rate_pct >= 0 AND interest_rate_pct <= 100),
+    late_fee_pct         NUMERIC(5,2) NOT NULL
+                            CONSTRAINT chk_lo_late_fee_range CHECK (late_fee_pct >= 0 AND late_fee_pct <= 100),
+    repayment_frequency  TEXT NOT NULL
+                            CONSTRAINT chk_lo_repayment_frequency CHECK (repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+    installment_amount   BIGINT NOT NULL
+                            CONSTRAINT chk_lo_installment_positive CHECK (installment_amount > 0),
+    proposed_expectations TEXT,   -- optional: lender's additional terms or expectations
+    terms_locked_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     status               offer_status_enum NOT NULL DEFAULT 'pending',
 
@@ -353,6 +381,8 @@ COMMENT ON COLUMN loan_offers.lender_id IS
 'Internal FK. Lender identity hidden from borrower until the offer is accepted.';
 COMMENT ON COLUMN loan_offers.offer_amount IS
 'Proposed lending amount stated by lender. Platform never holds or moves this money.';
+COMMENT ON COLUMN loan_offers.terms_locked_at IS
+'Stage 4: lender bid terms are locked when the bid is submitted.';
 
 
 -- ============================================
@@ -404,10 +434,9 @@ COMMENT ON TABLE contact_reveals IS
 
 -- ============================================
 -- TABLE: agreements
--- Structured loan agreement template + confirmation workflow.
--- Auto-generated after offer acceptance.
--- Both parties must agree before contact reveal.
--- Locked (read-only) after mutual confirmation.
+-- Structured locked loan agreement.
+-- Auto-generated and locked after bid acceptance.
+-- Contact reveal is available only after the contract is locked.
 -- ============================================
 
 CREATE TABLE agreements (
@@ -415,7 +444,7 @@ CREATE TABLE agreements (
     offer_id                    UUID NOT NULL UNIQUE REFERENCES loan_offers(id) ON DELETE CASCADE,
     request_id                  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
 
-    -- Repayment terms (editable before both parties lock)
+    -- Locked repayment terms copied from the accepted lender bid
     repayment_frequency         repayment_frequency_enum NOT NULL,
     repayment_amount            BIGINT NOT NULL CONSTRAINT chk_agr_repayment_positive CHECK (repayment_amount > 0),
     late_payment_penalty_pct    NUMERIC(5,2) NOT NULL DEFAULT 0 CONSTRAINT chk_agr_penalty_range CHECK (late_payment_penalty_pct >= 0 AND late_payment_penalty_pct <= 100),
@@ -424,8 +453,8 @@ CREATE TABLE agreements (
     agreement_text              TEXT NOT NULL,
     agreement_snapshot          JSONB,  -- Full snapshot at lock time for immutability
 
-    -- Confirmation tracking
-    status                      agreement_status_enum NOT NULL DEFAULT 'pending',
+    -- Contract is generated locked by accept_offer.
+    status                      agreement_status_enum NOT NULL DEFAULT 'locked',
     borrower_agreed_at          TIMESTAMP,
     lender_agreed_at            TIMESTAMP,
     locked_at                   TIMESTAMP,
@@ -438,10 +467,9 @@ CREATE TABLE agreements (
 );
 
 COMMENT ON TABLE agreements IS
-'Loan agreement template & confirmation workflow. Auto-generated after offer acceptance.
- Both borrower and lender must agree before the agreement locks and contact details can be revealed.
+'Locked loan agreement. Auto-generated after bid acceptance.
  Late payment penalty applies only to missed installments, not the total loan.
- Agreement becomes read-only (snapshot captured) after both parties confirm.
+ Agreement is read-only after generation (snapshot captured immediately).
  All agreement events are logged in audit_logs for traceability.';
 
 -- Indexes  
@@ -629,6 +657,11 @@ SELECT
     lr.preferred_repayment_plan,
     lr.repayment_amount_per_period,
     lr.repayment_timeline,
+    lr.suggested_interest_rate_pct,
+    lr.suggested_late_fee_pct,
+    lr.suggested_repayment_frequency,
+    lr.suggested_installment_amount,
+    lr.terms_locked_at,
     lr.status,
     lr.number_of_offers,
     lr.listed_at,
@@ -645,7 +678,7 @@ WHERE lr.status = 'active';
 
 COMMENT ON VIEW v_loan_listings IS
 'Anonymised marketplace feed. borrower_id, contact details, and private documents are never present.
- Repayment fields give lenders enough context to make an informed offer without exposing income source.';
+ Repayment fields and premium borrower suggestions help lenders make an informed bid without exposing income source.';
 
 
 -- --------------------------------------------
@@ -708,7 +741,12 @@ SELECT
     lr.duration_months,
     lr.requested_amount,
     lo.offer_amount,
+    lo.interest_rate_pct,
+    lo.late_fee_pct,
+    lo.repayment_frequency,
+    lo.installment_amount,
     lo.proposed_expectations,
+    lo.terms_locked_at,
     lo.status                                                                 AS offer_status,
     lo.offered_at,
     lo.accepted_at,
@@ -761,7 +799,12 @@ RETURNS TABLE (
     request_id UUID,
     lender_id TEXT,
     offer_amount BIGINT,
+    interest_rate_pct NUMERIC,
+    late_fee_pct NUMERIC,
+    repayment_frequency TEXT,
+    installment_amount BIGINT,
     proposed_expectations TEXT,
+    terms_locked_at TIMESTAMP,
     status TEXT,
     offered_at TIMESTAMP,
     accepted_at TIMESTAMP
@@ -776,7 +819,12 @@ AS $$
         lo.request_id,
         ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
         lo.offer_amount,
+        lo.interest_rate_pct,
+        lo.late_fee_pct,
+        lo.repayment_frequency,
+        lo.installment_amount,
         lo.proposed_expectations,
+        lo.terms_locked_at,
         lo.status::TEXT,
         lo.offered_at,
         lo.accepted_at
@@ -789,7 +837,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
-'Public anonymized offer book for active listings. Does not expose lender_id or borrower details.';
+'Public anonymized bid book for active listings. Does not expose lender_id or borrower details.';
 
 
 -- ============================================
@@ -805,53 +853,55 @@ BEGIN
 END;
 $$;
 
--- Generate default agreement text from offer and loan request data
-CREATE OR REPLACE FUNCTION fn_generate_agreement_text(
+-- Generate locked contract text from accepted bid terms.
+CREATE OR REPLACE FUNCTION fn_generate_locked_contract_text(
     p_borrower_name TEXT,
     p_lender_name TEXT,
     p_loan_amount BIGINT,
+    p_interest_rate_pct NUMERIC,
+    p_total_repayment BIGINT,
     p_repayment_frequency TEXT,
-    p_repayment_amount BIGINT,
+    p_installment_amount BIGINT,
     p_duration_months INT,
-    p_penalty_pct NUMERIC
+    p_late_fee_pct NUMERIC
 )
-RETURNS TEXT LANGUAGE plpgsql IMMUTABLE AS $$
+RETURNS TEXT LANGUAGE plpgsql STABLE AS $$
 BEGIN
     RETURN FORMAT(
-        '
-LOAN AGREEMENT TEMPLATE
+'LOAN AGREEMENT
 
-This document is a non-binding template provided by Nipanze for convenience.
-The final agreement and all legal obligations are solely between the borrower and lender.
+PARTIES
+Borrower: %s
+Lender: %s
 
-PARTIES:
-- Borrower: %s
-- Lender: %s
+LOCKED TERMS
+Loan amount: UGX %s
+Interest rate: %s%%
+Total repayment amount: UGX %s
+Repayment schedule: %s
+Installment amount: UGX %s
+Duration: %s months
+Start date: %s
+End date: %s
 
-LOAN TERMS:
-- Principal Amount: UGX %s
-- Repayment Frequency: %s
-- Repayment Amount Per Period: UGX %s
-- Total Loan Duration: %s months
+LATE PAYMENT RULE
+A %s%% penalty applies only to a missed installment amount, not to the total loan balance.
 
-LATE PAYMENT PENALTY:
-A penalty of %s%% applies ONLY to the amount of a missed installment, NOT to the total loan.
-This ensures fair treatment and prevents excessive debt growth.
+DISCLAIMER
+Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds.
 
-DISCLAIMER:
-Nipanze does not hold or move funds. Both parties agree to complete all financial transactions
-directly and outside this platform. This agreement is for reference only. The parties alone are
-responsible for all repayment obligations and dispute resolution.
-
-Generated on: %s
-',
-        p_borrower_name,
-        p_lender_name,
+Audit timestamp: %s',
+        COALESCE(p_borrower_name, 'Borrower'),
+        COALESCE(p_lender_name, 'Lender'),
         p_loan_amount,
+        p_interest_rate_pct,
+        p_total_repayment,
         p_repayment_frequency,
-        p_repayment_amount,
+        p_installment_amount,
         p_duration_months,
-        p_penalty_pct,
+        CURRENT_DATE,
+        CURRENT_DATE + (p_duration_months || ' months')::INTERVAL,
+        p_late_fee_pct,
         NOW()
     );
 END;
@@ -919,6 +969,58 @@ END;
 $$;
 
 
+-- Validate optional premium borrower term suggestions before insert.
+CREATE OR REPLACE FUNCTION trg_fn_validate_request_terms()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+DECLARE
+    v_plan subscription_plan_enum;
+    v_has_suggestions BOOLEAN;
+BEGIN
+    v_has_suggestions :=
+        NEW.suggested_interest_rate_pct IS NOT NULL OR
+        NEW.suggested_late_fee_pct IS NOT NULL OR
+        NEW.suggested_repayment_frequency IS NOT NULL OR
+        NEW.suggested_installment_amount IS NOT NULL;
+
+    IF v_has_suggestions THEN
+        SELECT plan INTO v_plan
+        FROM subscriptions
+        WHERE user_id = NEW.borrower_id AND status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 1;
+
+        IF v_plan IS DISTINCT FROM 'pro'::subscription_plan_enum THEN
+            RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: A Pro borrower subscription is required to suggest interest, late fee, or repayment terms.'
+                USING ERRCODE = 'P0004';
+        END IF;
+    END IF;
+
+    NEW.terms_locked_at := COALESCE(NEW.terms_locked_at, NOW());
+    RETURN NEW;
+END;
+$$;
+
+
+-- Lock borrower suggestions after publish.
+CREATE OR REPLACE FUNCTION trg_fn_lock_request_terms()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF OLD.terms_locked_at IS NOT NULL AND (
+        OLD.suggested_interest_rate_pct IS DISTINCT FROM NEW.suggested_interest_rate_pct OR
+        OLD.suggested_late_fee_pct IS DISTINCT FROM NEW.suggested_late_fee_pct OR
+        OLD.suggested_repayment_frequency IS DISTINCT FROM NEW.suggested_repayment_frequency OR
+        OLD.suggested_installment_amount IS DISTINCT FROM NEW.suggested_installment_amount
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_REQUEST_TERMS_LOCKED: Borrower terms cannot be edited after publish.'
+            USING ERRCODE = 'P0005';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
 -- Validate a lender offer before insert
 CREATE OR REPLACE FUNCTION trg_fn_validate_offer()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
@@ -932,7 +1034,7 @@ BEGIN
     SELECT * INTO v_listing FROM loan_requests WHERE id = NEW.request_id;
 
     IF v_listing.status != 'active' THEN
-        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE: This listing is no longer accepting offers.'
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE: This listing is no longer accepting bids.'
             USING ERRCODE = 'P0010';
     END IF;
 
@@ -943,7 +1045,7 @@ BEGIN
 
     -- Lenders cannot offer on their own request
     IF v_listing.borrower_id = NEW.lender_id THEN
-        RAISE EXCEPTION 'NIPANZE_SELF_OFFER: You cannot make an offer on your own listing.'
+        RAISE EXCEPTION 'NIPANZE_SELF_OFFER: You cannot make a bid on your own listing.'
             USING ERRCODE = 'P0012';
     END IF;
 
@@ -952,20 +1054,27 @@ BEGIN
     FROM system_settings WHERE setting_key = 'min_offer_amount';
 
     IF NEW.offer_amount < v_min_offer THEN
-        RAISE EXCEPTION 'NIPANZE_MIN_OFFER: Offer amount must be at least UGX %.', v_min_offer
+        RAISE EXCEPTION 'NIPANZE_MIN_OFFER: Bid amount must be at least UGX %.', v_min_offer
             USING ERRCODE = 'P0013';
     END IF;
 
-    -- Lender or Pro subscription required to make offers
+    -- Lender or Pro subscription required to make bids
     SELECT plan INTO v_plan
     FROM subscriptions
     WHERE user_id = NEW.lender_id AND status = 'active';
 
     IF v_plan NOT IN ('lender', 'pro') THEN
-        RAISE EXCEPTION 'NIPANZE_SUBSCRIPTION_REQUIRED: A Lender or Pro subscription is required to make offers.'
+        RAISE EXCEPTION 'NIPANZE_SUBSCRIPTION_REQUIRED: A Lender or Pro subscription is required to make bids.'
             USING ERRCODE = 'P0014';
     END IF;
 
+    IF NEW.interest_rate_pct IS NULL OR NEW.late_fee_pct IS NULL OR
+       NEW.repayment_frequency IS NULL OR NEW.installment_amount IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_BID_TERMS_REQUIRED: Interest, late fee, repayment schedule, and installment amount are required.'
+            USING ERRCODE = 'P0016';
+    END IF;
+
+    NEW.terms_locked_at := COALESCE(NEW.terms_locked_at, NOW());
     RETURN NEW;
 END;
 $$;
@@ -979,6 +1088,27 @@ BEGIN
     IF OLD.status = 'accepted' THEN
         RAISE EXCEPTION 'NIPANZE_OFFER_LOCKED: An accepted offer cannot be modified.'
             USING ERRCODE = 'P0015';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Lock bid terms after submit. Status-only updates are still allowed.
+CREATE OR REPLACE FUNCTION trg_fn_lock_offer_terms()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF OLD.terms_locked_at IS NOT NULL AND (
+        OLD.offer_amount IS DISTINCT FROM NEW.offer_amount OR
+        OLD.interest_rate_pct IS DISTINCT FROM NEW.interest_rate_pct OR
+        OLD.late_fee_pct IS DISTINCT FROM NEW.late_fee_pct OR
+        OLD.repayment_frequency IS DISTINCT FROM NEW.repayment_frequency OR
+        OLD.installment_amount IS DISTINCT FROM NEW.installment_amount OR
+        OLD.proposed_expectations IS DISTINCT FROM NEW.proposed_expectations
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_BID_TERMS_LOCKED: Bid terms cannot be edited after submit.'
+            USING ERRCODE = 'P0017';
     END IF;
     RETURN NEW;
 END;
@@ -1058,6 +1188,14 @@ CREATE TRIGGER trg_set_listing_expiry
     BEFORE INSERT ON loan_requests
     FOR EACH ROW EXECUTE FUNCTION trg_fn_set_listing_expiry();
 
+CREATE TRIGGER trg_validate_request_terms
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_validate_request_terms();
+
+CREATE TRIGGER trg_lock_request_terms
+    BEFORE UPDATE ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_lock_request_terms();
+
 CREATE TRIGGER trg_loan_requests_updated_at
     BEFORE UPDATE ON loan_requests
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
@@ -1077,6 +1215,10 @@ CREATE TRIGGER trg_lock_accepted_offer
     WHEN (OLD.status = 'accepted')
     EXECUTE FUNCTION trg_fn_lock_accepted_offer();
 
+CREATE TRIGGER trg_lock_offer_terms
+    BEFORE UPDATE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_lock_offer_terms();
+
 CREATE TRIGGER trg_sync_offer_count
     AFTER INSERT OR UPDATE OR DELETE ON loan_offers
     FOR EACH ROW EXECUTE FUNCTION trg_fn_sync_offer_count();
@@ -1087,12 +1229,12 @@ CREATE TRIGGER trg_loan_offers_updated_at
 
 
 -- ============================================
--- RPC: accept_offer  (Stage 4+: Creates agreement)
--- Atomic: marks offer accepted, rejects all other pending offers
--- on the same request, sets listing to contracted, creates an
--- agreement record (structured deal agreement), and notifies both parties.
--- Contact details are NOT revealed here — that happens after both
--- parties confirm the agreement and borrower calls unlock_contact.
+-- RPC: accept_offer  (Stage 4: Creates locked agreement)
+-- Atomic: accepts the chosen bid, rejects competing pending bids,
+-- marks listing contracted, creates a locked agreement snapshot,
+-- and notifies both parties.
+-- Contact details are NOT returned here — unlock_contact is the only
+-- API that reveals contact details after the contract is locked.
 -- ============================================
 
 CREATE OR REPLACE FUNCTION private.accept_offer_internal(
@@ -1105,15 +1247,15 @@ RETURNS UUID
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = '' AS $$
 DECLARE
-    v_listing       public.loan_requests%ROWTYPE;
-    v_offer         public.loan_offers%ROWTYPE;
-    v_borrower      public.profiles%ROWTYPE;
-    v_lender        public.profiles%ROWTYPE;
-    v_agreement_id  UUID;
+    v_listing public.loan_requests%ROWTYPE;
+    v_offer public.loan_offers%ROWTYPE;
+    v_borrower public.profiles%ROWTYPE;
+    v_lender public.profiles%ROWTYPE;
+    v_agreement_id UUID;
+    v_total_repayment BIGINT;
     v_agreement_text TEXT;
-    v_penalty_pct   NUMERIC;
+    v_snapshot JSONB;
 BEGIN
-    -- Caller validation (must be the borrower)
     IF p_caller_id IS NULL OR p_caller_id != p_borrower_id THEN
         RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Caller is not the borrower.'
             USING ERRCODE = 'P0021';
@@ -1124,7 +1266,7 @@ BEGIN
         RAISE EXCEPTION 'NIPANZE_LISTING_NOT_FOUND' USING ERRCODE = 'P0020';
     END IF;
     IF v_listing.borrower_id != p_borrower_id THEN
-        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the listing owner can accept an offer.'
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the listing owner can accept a bid.'
             USING ERRCODE = 'P0021';
     END IF;
     IF v_listing.status != 'active' THEN
@@ -1137,75 +1279,103 @@ BEGIN
         RAISE EXCEPTION 'NIPANZE_OFFER_NOT_FOUND' USING ERRCODE = 'P0023';
     END IF;
     IF v_offer.status != 'pending' THEN
-        RAISE EXCEPTION 'NIPANZE_OFFER_NOT_PENDING: This offer is no longer available.'
+        RAISE EXCEPTION 'NIPANZE_OFFER_NOT_PENDING: This bid is no longer available.'
             USING ERRCODE = 'P0024';
     END IF;
 
-    -- Get party profiles
     SELECT * INTO v_borrower FROM public.profiles WHERE id = p_borrower_id;
     SELECT * INTO v_lender FROM public.profiles WHERE id = v_offer.lender_id;
 
-    -- Accept chosen offer
+    v_total_repayment := ROUND(v_offer.offer_amount * (1 + (v_offer.interest_rate_pct / 100.0)))::BIGINT;
+
+    v_snapshot := JSONB_BUILD_OBJECT(
+        'request_id', p_request_id,
+        'offer_id', p_offer_id,
+        'borrower_id', p_borrower_id,
+        'lender_id', v_offer.lender_id,
+        'loan_amount', v_offer.offer_amount,
+        'interest_rate_pct', v_offer.interest_rate_pct,
+        'total_repayment_amount', v_total_repayment,
+        'repayment_frequency', v_offer.repayment_frequency,
+        'installment_amount', v_offer.installment_amount,
+        'late_fee_pct', v_offer.late_fee_pct,
+        'late_fee_rule', 'Late fee applies only to missed installment amount, not total balance.',
+        'start_date', CURRENT_DATE,
+        'end_date', CURRENT_DATE + (v_listing.duration_months || ' months')::INTERVAL,
+        'duration_months', v_listing.duration_months,
+        'legal_disclaimer', 'Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds.',
+        'locked_at', NOW()
+    );
+
+    v_agreement_text := public.fn_generate_locked_contract_text(
+        v_borrower.full_name,
+        v_lender.full_name,
+        v_offer.offer_amount,
+        v_offer.interest_rate_pct,
+        v_total_repayment,
+        v_offer.repayment_frequency,
+        v_offer.installment_amount,
+        v_listing.duration_months,
+        v_offer.late_fee_pct
+    );
+
     UPDATE public.loan_offers SET status = 'accepted', accepted_at = NOW() WHERE id = p_offer_id;
 
-    -- Reject all other pending offers
     UPDATE public.loan_offers
        SET status = 'rejected', updated_at = NOW()
      WHERE request_id = p_request_id AND id != p_offer_id AND status = 'pending';
 
-    -- Mark listing contracted
     UPDATE public.loan_requests
        SET status = 'contracted', contracted_at = NOW() WHERE id = p_request_id;
 
-    -- Default penalty is 0% (will be editable by parties)
-    v_penalty_pct := 0;
-
-    -- Generate default agreement text
-    v_agreement_text := public.fn_generate_agreement_text(
-        v_borrower.full_name,
-        v_lender.full_name,
-        v_offer.offer_amount,
-        v_listing.preferred_repayment_plan,
-        v_listing.repayment_amount_per_period,
-        v_listing.duration_months,
-        v_penalty_pct
-    );
-
-    -- Create agreement (in 'pending' status — both parties must confirm)
     INSERT INTO public.agreements (
-        offer_id, request_id,
-        repayment_frequency, repayment_amount, late_payment_penalty_pct,
-        agreement_text
+        offer_id,
+        request_id,
+        repayment_frequency,
+        repayment_amount,
+        late_payment_penalty_pct,
+        agreement_text,
+        agreement_snapshot,
+        status,
+        borrower_agreed_at,
+        lender_agreed_at,
+        locked_at
     )
     VALUES (
-        p_offer_id, p_request_id,
-        v_listing.preferred_repayment_plan::public.repayment_frequency_enum,
-        v_listing.repayment_amount_per_period,
-        v_penalty_pct,
-        v_agreement_text
+        p_offer_id,
+        p_request_id,
+        v_offer.repayment_frequency::public.repayment_frequency_enum,
+        v_offer.installment_amount,
+        v_offer.late_fee_pct,
+        v_agreement_text,
+        v_snapshot,
+        'locked'::public.agreement_status_enum,
+        NOW(),
+        NOW(),
+        NOW()
     )
+    ON CONFLICT (offer_id) DO UPDATE
+       SET agreement_text = EXCLUDED.agreement_text,
+           agreement_snapshot = EXCLUDED.agreement_snapshot,
+           status = 'locked'::public.agreement_status_enum,
+           borrower_agreed_at = COALESCE(public.agreements.borrower_agreed_at, NOW()),
+           lender_agreed_at = COALESCE(public.agreements.lender_agreed_at, NOW()),
+           locked_at = COALESCE(public.agreements.locked_at, NOW())
     RETURNING id INTO v_agreement_id;
 
-    -- Notify both parties
     INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
     VALUES
-        (p_borrower_id, 'agreement_generated', 'Deal agreement ready',
-         'Review and confirm the structured loan agreement to unlock contact details.',
+        (p_borrower_id, 'agreement_locked', 'Contract generated',
+         'Your selected bid is locked into a contract. Unlock contact details to connect.',
          p_request_id, p_offer_id),
-        (v_offer.lender_id, 'agreement_generated', 'Deal agreement ready',
-         'Review and confirm the structured loan agreement to connect with the borrower.',
+        (v_offer.lender_id, 'agreement_locked', 'Contract generated',
+         'Your bid was accepted and locked into a contract. Contact unlock is now available.',
          p_request_id, p_offer_id);
 
-    -- Audit
     INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
-    VALUES (p_borrower_id, 'offer_accepted', 'loan_offers', p_offer_id, 'accept_offer',
-        JSONB_BUILD_OBJECT(
-            'request_id',  p_request_id,
-            'offer_id',    p_offer_id,
-            'agreement_id', v_agreement_id,
-            'lender_id',   v_offer.lender_id,
-            'accepted_at', NOW()
-        ));
+    VALUES
+        (p_borrower_id, 'offer_accepted', 'loan_offers', p_offer_id, 'accept_offer', v_snapshot),
+        (p_borrower_id, 'agreement_locked', 'agreements', v_agreement_id, 'generate_locked_contract', v_snapshot);
 
     RETURN v_agreement_id;
 END;
@@ -1229,8 +1399,8 @@ REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, an
 GRANT  EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
 
 COMMENT ON FUNCTION public.accept_offer IS
-'Atomically accepts an offer, rejects others, marks listing contracted, creates pending contact_reveal.
- Returns reveal_id. Contact details are not exposed until reveal_contact() is called.
+'Atomically accepts a bid, rejects others, marks listing contracted, and creates a locked agreement.
+ Returns agreement_id. Contact details are not exposed until unlock_contact() is called.
  Platform never holds or moves funds.';
 
 
@@ -1334,172 +1504,8 @@ COMMENT ON FUNCTION public.reveal_contact IS
 
 
 -- ============================================
--- RPC: confirm_agreement (Stage 4)
--- Each party (borrower or lender) confirms the agreement.
--- Once both have agreed, agreement locks and contact_reveal is created.
--- ============================================
-
-CREATE OR REPLACE FUNCTION private.confirm_agreement_internal(
-    p_agreement_id UUID,
-    p_caller_id    UUID
-)
-RETURNS JSONB
-LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = '' AS $$
-DECLARE
-    v_agreement  public.agreements%ROWTYPE;
-    v_offer      public.loan_offers%ROWTYPE;
-    v_borrower_id UUID;
-    v_lender_id  UUID;
-    v_result     JSONB;
-BEGIN
-    SELECT * INTO v_agreement FROM public.agreements WHERE id = p_agreement_id FOR UPDATE;
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'NIPANZE_AGREEMENT_NOT_FOUND' USING ERRCODE = 'P0041';
-    END IF;
-   
-    IF v_agreement.status = 'locked' THEN
-        RAISE EXCEPTION 'NIPANZE_AGREEMENT_LOCKED: This agreement has already been locked.'
-            USING ERRCODE = 'P0042';
-    END IF;
-
-    SELECT * INTO v_offer FROM public.loan_offers WHERE id = v_agreement.offer_id;
-    
-    SELECT borrower_id INTO v_borrower_id FROM public.loan_requests WHERE id = v_agreement.request_id;
-    v_lender_id := v_offer.lender_id;
-
-    -- Determine who is confirming
-    IF p_caller_id = v_borrower_id THEN
-        -- Borrower confirming
-        IF v_agreement.status IN ('pending', 'lender_agreed') THEN
-            UPDATE public.agreements
-               SET status = CASE
-                       WHEN status = 'pending' THEN 'borrower_agreed'::public.agreement_status_enum
-                       WHEN status = 'lender_agreed' THEN 'locked'::public.agreement_status_enum
-                   END,
-                   borrower_agreed_at = COALESCE(borrower_agreed_at, NOW()),
-                   locked_at = CASE WHEN status = 'lender_agreed' THEN NOW() ELSE NULL END,
-                   agreement_snapshot = CASE WHEN status = 'lender_agreed' THEN JSONB_BUILD_OBJECT(
-                       'payment_frequency', repayment_frequency::TEXT,
-                       'payment_amount', repayment_amount,
-                       'penalty_pct', late_payment_penalty_pct,
-                       'locked_at', NOW()
-                   ) ELSE NULL END
-             WHERE id = p_agreement_id;
-        ELSE
-            RAISE EXCEPTION 'NIPANZE_AGREEMENT_INVALID_STATE: Cannot confirm agreement in this state.'
-                USING ERRCODE = 'P0043';
-        END IF;
-    ELSIF p_caller_id = v_lender_id THEN
-        -- Lender confirming
-        IF v_agreement.status IN ('pending', 'borrower_agreed') THEN
-            UPDATE public.agreements
-               SET status = CASE
-                       WHEN status = 'pending' THEN 'lender_agreed'::public.agreement_status_enum
-                       WHEN status = 'borrower_agreed' THEN 'locked'::public.agreement_status_enum
-                   END,
-                   lender_agreed_at = COALESCE(lender_agreed_at, NOW()),
-                   locked_at = CASE WHEN status = 'borrower_agreed' THEN NOW() ELSE NULL END,
-                   agreement_snapshot = CASE WHEN status = 'borrower_agreed' THEN JSONB_BUILD_OBJECT(
-                       'payment_frequency', repayment_frequency::TEXT,
-                       'payment_amount', repayment_amount,
-                       'penalty_pct', late_payment_penalty_pct,
-                       'locked_at', NOW()
-                   ) ELSE NULL END
-             WHERE id = p_agreement_id;
-        ELSE
-            RAISE EXCEPTION 'NIPANZE_AGREEMENT_INVALID_STATE: Cannot confirm agreement in this state.'
-                USING ERRCODE = 'P0043';
-        END IF;
-    ELSE
-        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only borrower or lender can confirm this agreement.'
-            USING ERRCODE = 'P0044';
-    END IF;
-
-    -- Re-fetch to get updated state
-    SELECT * INTO v_agreement FROM public.agreements WHERE id = p_agreement_id;
-
-    -- If now locked, create contact_reveal record
-    IF v_agreement.status = 'locked' THEN
-        INSERT INTO public.contact_reveals (offer_id, request_id, revealed_by)
-        VALUES (v_agreement.offer_id, v_agreement.request_id, v_borrower_id)
-        ON CONFLICT DO NOTHING;
-
-        -- Notify both parties that agreement is locked
-        INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
-        VALUES
-            (v_borrower_id, 'agreement_locked', 'Deal agreement locked',
-             'Both parties confirmed the agreement. You can now unlock contact details to connect.',
-             v_agreement.request_id, v_agreement.offer_id),
-            (v_lender_id, 'agreement_locked', 'Deal agreement locked',
-             'Both parties confirmed the agreement. Waiting for contact details to be unlocked.',
-             v_agreement.request_id, v_agreement.offer_id);
-
-        -- Audit
-        INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
-        VALUES (p_caller_id, 'agreement_locked', 'agreements', p_agreement_id, 'confirm_agreement',
-            JSONB_BUILD_OBJECT(
-                'agreement_id', p_agreement_id,
-                'locked_at', NOW()
-            ));
-    ELSE
-        -- Notify the other party that one party has agreed
-        IF p_caller_id = v_borrower_id THEN
-            INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
-            VALUES
-                (v_lender_id, 'agreement_accepted', 'Borrower confirmed agreement',
-                 'The borrower confirmed the deal agreement. Please review and confirm to proceed.',
-                 v_agreement.request_id, v_agreement.offer_id);
-        ELSE
-            INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
-            VALUES
-                (v_borrower_id, 'agreement_accepted', 'Lender confirmed agreement',
-                 'The lender confirmed the deal agreement. Please review and confirm to proceed.',
-                 v_agreement.request_id, v_agreement.offer_id);
-        END IF;
-
-        -- Audit
-        INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
-        VALUES (p_caller_id,
-            CASE WHEN p_caller_id = v_borrower_id THEN 'agreement_borrower_agreed' ELSE 'agreement_lender_agreed' END,
-            'agreements', p_agreement_id, 'confirm_agreement',
-            JSONB_BUILD_OBJECT('caller_id', p_caller_id, 'agreed_at', NOW()));
-    END IF;
-
-    v_result := JSONB_BUILD_OBJECT(
-        'agreement_id', v_agreement.id,
-        'status', v_agreement.status::TEXT,
-        'borrower_agreed', (v_agreement.borrower_agreed_at IS NOT NULL),
-        'lender_agreed', (v_agreement.lender_agreed_at IS NOT NULL),
-        'locked', (v_agreement.status = 'locked')
-    );
-
-    RETURN v_result;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION private.confirm_agreement_internal(uuid, uuid) TO authenticated, service_role;
-
--- Wrapper: SECURITY INVOKER
-CREATE OR REPLACE FUNCTION public.confirm_agreement(p_agreement_id UUID)
-RETURNS JSONB
-LANGUAGE sql SECURITY INVOKER
-SET search_path = public AS $$
-    SELECT private.confirm_agreement_internal(p_agreement_id, auth.uid());
-$$;
-
-REVOKE EXECUTE ON FUNCTION public.confirm_agreement(uuid) FROM public, anon;
-GRANT  EXECUTE ON FUNCTION public.confirm_agreement(uuid) TO authenticated, service_role;
-
-COMMENT ON FUNCTION public.confirm_agreement IS
-'Party (borrower or lender) confirms they agree to the structured loan agreement.
- Once both parties confirm, the agreement locks and a contact_reveal record is created.
- Returns agreement status. Contact reveal happens via unlock_contact only after lock.';
-
-
--- ============================================
 -- RPC: unlock_contact (Stage 4)
--- After agreement is locked, borrower unlocks contact details.
+-- After contract generation, borrower unlocks contact details.
 -- Creates contact_reveal record (or updates existing one to ''revealed'').
 -- ============================================
 
@@ -1616,7 +1622,7 @@ REVOKE EXECUTE ON FUNCTION public.unlock_contact(uuid) FROM public, anon;
 GRANT  EXECUTE ON FUNCTION public.unlock_contact(uuid) TO authenticated, service_role;
 
 COMMENT ON FUNCTION public.unlock_contact IS
-'Borrower unlocks contact details after agreement is locked and both parties have confirmed.
+'Borrower unlocks contact details after agreement is locked by bid acceptance.
  Reveals legal name, phone, and email of both parties. Irreversible. Returns contact JSONB.
  Platform never stores or retransmits these details after this point.';
 
@@ -1730,7 +1736,7 @@ CREATE POLICY "watchlist: own rows"
     USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
 -- agreements
--- Only the matched parties (borrower / lender) can see and update the agreement.
+-- Only the matched parties (borrower / lender) can see the locked agreement.
 CREATE POLICY "agreements: matched parties read"
     ON agreements FOR SELECT TO authenticated
     USING (
@@ -1744,23 +1750,10 @@ CREATE POLICY "agreements: matched parties read"
         )
         OR private.is_admin()
     );
-CREATE POLICY "agreements: matched parties update"
-    ON agreements FOR UPDATE TO authenticated
-    USING (
-        (
-            EXISTS (
-                SELECT 1 FROM loan_requests lr
-                 WHERE lr.id = agreements.request_id AND lr.borrower_id = auth.uid()
-            )
-            OR EXISTS (
-                SELECT 1 FROM loan_offers lo
-                 WHERE lo.id = agreements.offer_id AND lo.lender_id = auth.uid()
-            )
-        )
-        AND status != 'locked'  -- Locked agreements cannot be updated
-    );
 CREATE POLICY "agreements: service role insert"
     ON agreements FOR INSERT TO service_role WITH CHECK (TRUE);
+CREATE POLICY "agreements: service role update"
+    ON agreements FOR UPDATE TO service_role USING (TRUE) WITH CHECK (TRUE);
 CREATE POLICY "agreements: admin all"
     ON agreements FOR ALL TO authenticated USING (private.is_admin());
 
