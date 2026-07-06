@@ -40,12 +40,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            context.go(AppRoutes.marketplace);
-          }
-        },
+      body: BlocBuilder<AuthBloc, AuthState>(
+        // NOTE: Do NOT call context.go() here on AuthAuthenticated.
+        // GoRouterRefreshStream already triggers _redirect() → /marketplace
+        // when AuthBloc emits AuthAuthenticated. Adding a second context.go()
+        // causes Navigator to build /marketplace with duplicate pageKeys,
+        // triggering the !keyReservation.contains(key) assertion crash.
         builder: (context, state) {
           final isLoading = state is AuthLoading;
           final errorMessage = state is AuthError ? state.message : null;
