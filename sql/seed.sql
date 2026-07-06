@@ -1,20 +1,17 @@
 -- ============================================
 -- NIPANZE Seed Data
--- Version: 2.0 (Schema v4.0 Aligned)
+-- Version: 4.1 (Schema v4.0 + Stage 4 Aligned)
 -- ============================================
 --
--- Aligned to schema v4.0:
---   • profiles: removed credit_score, reputation_tier, lender_token
---   • subscriptions: borrower plan removed — borrowing is free (plan = 'free')
---   • loan_requests: removed max_interest_rate, risk_category, credit_score_band
---     Added: income_source, preferred_repayment_plan,
---            repayment_amount_per_period, repayment_timeline
---   • loan_bids → loan_offers: offer_amount, proposed_expectations
---   • negotiators, contracts, repayment_schedules,
---     negotiator_assignments removed (not in schema v4.0)
---   • contact_reveals added (tied to offer_id, not contract_id)
---   • notifications: bid_id → offer_id; updated enum values
---   • Notification types aligned to v4.0 enum
+-- Stage 4 additions vs v2.0:
+--   • loan_offers: added interest_rate_pct, late_fee_pct,
+--     repayment_frequency, installment_amount, terms_locked_at (NOT NULL)
+--   • agreements: added 2 locked agreements for contracted offers
+--   • Frank Omondi's offer lender fixed to user 000011 (was 000007)
+--
+-- Stage 4 was a schema delta only — seed rows now satisfy all constraints.
+-- All triggers temporarily disabled via session_replication_role = 'replica'
+-- for back-dated rows, then re-enabled after each INSERT block.
 --
 -- Password for ALL accounts: Test1234!
 --
@@ -577,7 +574,8 @@ SET session_replication_role = 'origin';
 
 -- ============================================
 -- STEP 6: LOAN OFFERS
--- Replaces loan_bids. Columns: offer_amount, proposed_expectations.
+-- Stage 4 aligned: added interest_rate_pct, late_fee_pct,
+--   repayment_frequency, installment_amount, terms_locked_at (all NOT NULL).
 -- Bypasses triggers for historical/non-active rows.
 -- ============================================
 
@@ -585,129 +583,149 @@ SET session_replication_role = 'replica';
 
 INSERT INTO loan_offers (
     id, request_id, lender_id,
-    offer_amount, proposed_expectations,
-    status, offered_at, accepted_at, created_at
+    offer_amount, interest_rate_pct, late_fee_pct,
+    repayment_frequency, installment_amount, proposed_expectations,
+    terms_locked_at, status, offered_at, accepted_at, created_at
 ) VALUES
 
 -- David Mukasa's contracted listing — two offers, one accepted
 ('d1000000-0000-0000-0000-000000000001',
  'c1000000-0000-0000-0000-000000000001',
  '10000000-0000-0000-0000-000000000008',
- 5000000,
+ 5000000, 11.0, 2.0, 'monthly', 462500,
  'I can provide the full amount at 11% per annum. Monthly instalments work for me.',
- 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
+ '2024-02-02 10:30:00', 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
 
 ('d1000000-0000-0000-0000-000000000002',
  'c1000000-0000-0000-0000-000000000001',
  '10000000-0000-0000-0000-000000000009',
- 5000000,
+ 5000000, 11.5, 2.0, 'monthly', 464583,
  'Happy to lend the full amount. Expecting 11.5% per annum with monthly repayments.',
- 'rejected', '2024-02-03 09:00:00', NULL, '2024-02-03 09:00:00'),
+ '2024-02-03 09:00:00', 'rejected', '2024-02-03 09:00:00', NULL, '2024-02-03 09:00:00'),
 
 -- Sarah Namukasa's contracted listing — one offer, accepted
 ('d1000000-0000-0000-0000-000000000003',
  'c1000000-0000-0000-0000-000000000002',
  '10000000-0000-0000-0000-000000000009',
- 3500000,
+ 3500000, 14.0, 2.0, 'monthly', 332500,
  'Willing to fund the full amount at 14% per annum. Monthly repayments as proposed.',
- 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
+ '2024-03-02 11:00:00', 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
 
 -- James Okello's active listing — two pending offers
 ('d1000000-0000-0000-0000-000000000004',
  'c1000000-0000-0000-0000-000000000003',
  '10000000-0000-0000-0000-000000000008',
- 8000000,
+ 8000000, 10.0, 2.0, 'monthly', 488888,
  'Can cover the full amount at 10% per annum. Happy with 18-month monthly instalments.',
- 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
+ '2026-01-21 11:20:00', 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
 
 ('d1000000-0000-0000-0000-000000000005',
  'c1000000-0000-0000-0000-000000000003',
  '10000000-0000-0000-0000-000000000010',
- 8000000,
+ 8000000, 10.5, 2.0, 'monthly', 491111,
  'Offering full amount at 10.5% per annum. Monthly instalments over 18 months.',
- 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
+ '2026-01-23 13:15:00', 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
 
 ('d1000000-0000-0000-0000-000000000010',
  'c1000000-0000-0000-0000-000000000003',
  '10000000-0000-0000-0000-000000000009',
- 3000000,
+ 3000000, 9.5, 2.0, 'monthly', 182500,
  'Can contribute UGX 3M toward the equipment purchase at 9.5% per annum, repayable monthly.',
- 'pending', '2026-01-24 08:40:00', NULL, '2026-01-24 08:40:00'),
+ '2026-01-24 08:40:00', 'pending', '2026-01-24 08:40:00', NULL, '2026-01-24 08:40:00'),
 
 -- Maria Nakato's active listing — one pending offer
 ('d1000000-0000-0000-0000-000000000006',
  'c1000000-0000-0000-0000-000000000004',
  '10000000-0000-0000-0000-000000000006',
- 3500000,
+ 3500000, 14.0, 2.0, 'monthly', 332500,
  'Can fund the full requested amount at 14% per annum. Monthly repayments as stated.',
- 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
+ '2026-01-27 10:30:00', 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
 
 -- Frank Omondi's active listing — one pending offer
 ('d1000000-0000-0000-0000-000000000007',
  'c1000000-0000-0000-0000-000000000005',
- '10000000-0000-0000-0000-000000000007',
- 4500000,
+ '10000000-0000-0000-0000-000000000011',
+ 4500000, 14.5, 1.5, 'monthly', 286250,
  'Prepared to lend the full amount at 14.5% per annum given the medical urgency.',
- 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
+ '2026-01-28 09:15:00', 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
 
 -- Lucy Nambi's active listing — multiple pending offers (partial + full)
 ('d1000000-0000-0000-0000-000000000011',
  'c1000000-0000-0000-0000-000000000006',
  '10000000-0000-0000-0000-000000000006',
- 3000000,
+ 3000000, 12.0, 2.0, 'monthly', 140000,
  'Can fund UGX 3M now for the pump purchase. Comfortable with the 24-month repayment timeline.',
- 'pending', NOW() - INTERVAL '3 days 7 hours', NULL, NOW() - INTERVAL '3 days 7 hours'),
+ NOW() - INTERVAL '3 days 7 hours', 'pending', NOW() - INTERVAL '3 days 7 hours', NULL, NOW() - INTERVAL '3 days 7 hours'),
 
 ('d1000000-0000-0000-0000-000000000012',
  'c1000000-0000-0000-0000-000000000006',
  '10000000-0000-0000-0000-000000000008',
- 6000000,
+ 6000000, 13.0, 2.0, 'monthly', 282500,
  'Can fund the full equipment amount if repayments begin as proposed in February.',
- 'pending', NOW() - INTERVAL '2 days 18 hours', NULL, NOW() - INTERVAL '2 days 18 hours'),
+ NOW() - INTERVAL '2 days 18 hours', 'pending', NOW() - INTERVAL '2 days 18 hours', NULL, NOW() - INTERVAL '2 days 18 hours'),
 
 ('d1000000-0000-0000-0000-000000000013',
  'c1000000-0000-0000-0000-000000000006',
  '10000000-0000-0000-0000-000000000010',
- 4000000,
+ 4000000, 11.5, 2.0, 'monthly', 185833,
  'Can cover UGX 4M for the tilling equipment, with monthly payments over 24 months.',
- 'pending', NOW() - INTERVAL '1 day 9 hours', NULL, NOW() - INTERVAL '1 day 9 hours'),
+ NOW() - INTERVAL '1 day 9 hours', 'pending', NOW() - INTERVAL '1 day 9 hours', NULL, NOW() - INTERVAL '1 day 9 hours'),
 
 -- Charles Mwesigwa's active listing — multiple pending offers (partial + full)
 ('d1000000-0000-0000-0000-000000000008',
  'c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000006',
- 9000000,
+ 9000000, 11.0, 2.0, 'monthly', 416250,
  'Happy to fund the full van purchase. Expecting 11% per annum over 24 months.',
- 'pending', NOW() - INTERVAL '4 days 23 hours', NULL, NOW() - INTERVAL '4 days 23 hours'),
+ NOW() - INTERVAL '4 days 23 hours', 'pending', NOW() - INTERVAL '4 days 23 hours', NULL, NOW() - INTERVAL '4 days 23 hours'),
 
 ('d1000000-0000-0000-0000-000000000014',
  'c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000008',
- 3000000,
+ 3000000, 12.5, 2.0, 'monthly', 140625,
  'Can offer UGX 3M as partial funding for the van deposit and initial repairs.',
- 'pending', NOW() - INTERVAL '3 days 12 hours', NULL, NOW() - INTERVAL '3 days 12 hours'),
+ NOW() - INTERVAL '3 days 12 hours', 'pending', NOW() - INTERVAL '3 days 12 hours', NULL, NOW() - INTERVAL '3 days 12 hours'),
 
 ('d1000000-0000-0000-0000-000000000015',
  'c1000000-0000-0000-0000-000000000007',
  '10000000-0000-0000-0000-000000000009',
- 5000000,
+ 5000000, 11.5, 2.0, 'monthly', 232291,
  'Can fund UGX 5M toward the van purchase with slightly faster monthly repayment preferred.',
- 'pending', NOW() - INTERVAL '2 days 6 hours', NULL, NOW() - INTERVAL '2 days 6 hours'),
+ NOW() - INTERVAL '2 days 6 hours', 'pending', NOW() - INTERVAL '2 days 6 hours', NULL, NOW() - INTERVAL '2 days 6 hours'),
 
 -- Robert Ssemwanga's closing-soon listing — two pending offers
 ('d1000000-0000-0000-0000-000000000009',
  'c1000000-0000-0000-0000-000000000008',
  '10000000-0000-0000-0000-000000000010',
- 7000000,
+ 7000000, 9.5, 2.0, 'monthly', 1277500,
  'Can provide full working capital at 9.5% per annum. Six monthly repayments.',
- 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours'),
+ NOW() - INTERVAL '2 hours', 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours'),
 
 ('d1000000-0000-0000-0000-000000000016',
  'c1000000-0000-0000-0000-000000000008',
  '10000000-0000-0000-0000-000000000008',
- 3000000,
+ 3000000, 10.0, 2.0, 'monthly', 550000,
  'Can cover UGX 3M of the working capital need if the supplier contract is confirmed.',
- 'pending', NOW() - INTERVAL '45 minutes', NULL, NOW() - INTERVAL '45 minutes');
+ NOW() - INTERVAL '45 minutes', 'pending', NOW() - INTERVAL '45 minutes', NULL, NOW() - INTERVAL '45 minutes');
+
+
+INSERT INTO public.agreements (
+    id, offer_id, request_id,
+    repayment_frequency, repayment_amount, late_payment_penalty_pct,
+    agreement_text, agreement_snapshot, status,
+    borrower_agreed_at, lender_agreed_at, locked_at
+) VALUES
+('g1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
+ 'monthly'::public.repayment_frequency_enum, 462500, 2.00,
+ 'LOAN AGREEMENT between David Mukasa and William Kasujja. Principal: UGX 5,000,000 at 11% interest. Repayments: Monthly UGX 462,500.',
+ '{"payment_frequency": "monthly", "payment_amount": 462500, "penalty_pct": 2.00}'::jsonb, 'locked'::public.agreement_status_enum,
+ '2024-02-06 14:30:00', '2024-02-06 14:30:00', '2024-02-06 14:30:00'),
+
+('g1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
+ 'monthly'::public.repayment_frequency_enum, 332500, 2.00,
+ 'LOAN AGREEMENT between Sarah Namukasa and Catherine Namboze. Principal: UGX 3,500,000 at 14% interest. Repayments: Monthly UGX 332,500.',
+ '{"payment_frequency": "monthly", "payment_amount": 332500, "penalty_pct": 2.00}'::jsonb, 'locked'::public.agreement_status_enum,
+ '2024-03-05 11:00:00', '2024-03-05 11:00:00', '2024-03-05 11:00:00');
 
 SET session_replication_role = 'origin';
 
@@ -876,6 +894,7 @@ SELECT table_name, record_count FROM (
     UNION ALL SELECT 'kyc_verifications',        COUNT(*) FROM kyc_verifications
     UNION ALL SELECT 'loan_requests',            COUNT(*) FROM loan_requests
     UNION ALL SELECT 'loan_offers',              COUNT(*) FROM loan_offers
+    UNION ALL SELECT 'agreements',               COUNT(*) FROM agreements
     UNION ALL SELECT 'contact_reveals',          COUNT(*) FROM contact_reveals
     UNION ALL SELECT 'watchlist',                COUNT(*) FROM watchlist
     UNION ALL SELECT 'notifications',            COUNT(*) FROM notifications
@@ -912,4 +931,4 @@ LEFT JOIN contact_reveals cr ON cr.offer_id = lo.id
 ORDER BY lo.offered_at;
 
 
-SELECT '✅ Nipanze seed v2.0 inserted successfully' AS status;
+SELECT '✅ Nipanze seed v4.1 inserted successfully (Stage 4 aligned)' AS status;
