@@ -196,111 +196,184 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         onRefresh: _loadOnce,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(listing.title,
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            UgxAmount(listing.requestedAmount, fontSize: 26),
+            // ── Main listing card ────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title + time badge
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          listing.title,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontSize: 12.5),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7C1F1F),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time_rounded,
+                                size: 11, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              listing.timeRemainingLabel,
+                              style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // Amount
+                  UgxAmount(listing.requestedAmount, fontSize: 28),
+                  const SizedBox(height: 6),
+                  // Purpose description
+                  Text(
+                    listing.purpose,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.accent),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ── Funded progress bar ──────────────────────────────────
+                  _FundedProgressBar(
+                    offers: _offers,
+                    requestedAmount: listing.requestedAmount,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ── Preferred terms badges row ───────────────────────────
+                  Row(
+                    children: [
+                      _TermBadge('${listing.durationMonths} months'),
+                      const SizedBox(width: 8),
+                      _TermBadge(
+                          'UGX ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
+                      const SizedBox(width: 8),
+                      _TermBadge(
+                          '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest'),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Bids header ──────────────────────────────────────────
+                  Row(
+                    children: [
+                      Text(
+                        'BIDS',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.45),
+                            ),
+                      ),
+                      const SizedBox(width: 6),
+                      LiveDot(),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // ── Bid tiles ──────────────────────────────────────────
+                  if (_offers.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text(
+                          'No bids yet.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    )
+                  else
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: _newOfferFlash
+                            ? [
+                                BoxShadow(
+                                    color:
+                                        AppColors.success.withValues(alpha: 0.2),
+                                    blurRadius: 8)
+                              ]
+                            : [],
+                      ),
+                      child: _OfferList(
+                        offers: _offers,
+                        requestedAmount: listing.requestedAmount,
+                        isOwner: isOwner,
+                        onAccept: _acceptOffer,
+                        durationMonths: listing.durationMonths,
+                        isProBorrower: isProBorrower,
+                        suggestedInterestRatePct:
+                            listing.suggestedInterestRatePct,
+                        suggestedLateFeePct: listing.suggestedLateFeePct,
+                        suggestedRepaymentFrequency:
+                            listing.suggestedRepaymentFrequency,
+                        suggestedInstallmentAmount:
+                            listing.suggestedInstallmentAmount,
+                        onUpgrade: () => _showSubscriptionGate(
+                          requiredPlan: 'Pro',
+                          reason:
+                              'Unlock relative comparison arrows and cost deltas with a PRO borrower subscription.',
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 16),
 
-            _DescriptionSection(
-                title: 'Proposed Repayment Plan',
-                body:
-                    '${listing.preferredRepaymentPlan}\n${listing.repaymentTimeline}'),
+            // ── Additional details card ──────────────────────────────────────
             if (listing.suggestedInterestRatePct != null ||
-                listing.suggestedLateFeePct != null ||
-                listing.suggestedRepaymentFrequency != null ||
-                listing.suggestedInstallmentAmount != null) ...[
-              const SizedBox(height: 12),
-              _DescriptionSection(
-                title: 'Borrower Suggested Terms',
-                body: [
-                  if (listing.suggestedInterestRatePct != null)
-                    '${listing.suggestedInterestRatePct!.toStringAsFixed(2)}% interest',
-                  if (listing.suggestedLateFeePct != null)
-                    '${listing.suggestedLateFeePct!.toStringAsFixed(2)}% late fee on missed installment',
-                  if (listing.suggestedRepaymentFrequency != null)
-                    listing.suggestedRepaymentFrequency!,
-                  if (listing.suggestedInstallmentAmount != null)
-                    'UGX ${listing.suggestedInstallmentAmount} installment',
-                ].join('\n'),
-              ),
-            ],
-            const SizedBox(height: 12),
-            _DescriptionSection(
-                title: 'Purpose of Loan', body: listing.purpose),
-
-            const SizedBox(height: 24),
-
-            // Stats grid
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 2.2,
-              children: [
-                _StatBox(label: 'Bids', value: '${listing.numberOfOffers}'),
-                _StatBox(
-                    label: 'Repayment',
-                    value:
-                        'UGX ${listing.repaymentAmountPerPeriod.toString()}'),
-                _StatBox(
-                    label: 'Duration',
-                    value: '${listing.durationMonths} Months'),
-                _StatBox(
-                  label: 'Time left',
-                  value: listing.timeRemainingLabel,
-                  valueColor: listing.isClosingSoon6h ? AppColors.danger : null,
-                ),
+                listing.suggestedLateFeePct != null) ...
+              [
+                _DescriptionSection(
+                    title: 'Proposed Repayment Plan',
+                    body:
+                        '${listing.preferredRepaymentPlan}  ·  ${listing.repaymentTimeline}'),
+                const SizedBox(height: 12),
               ],
-            ),
-            const SizedBox(height: 24),
 
-            // Live order book (Bids)
-            const Row(children: [
-              SectionHeader('Current Bids'),
-              SizedBox(width: 8),
-              LiveDot(),
-            ]),
             const SizedBox(height: 8),
-
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: _newOfferFlash
-                    ? [
-                        BoxShadow(
-                            color: AppColors.success.withValues(alpha: 0.2),
-                            blurRadius: 8)
-                      ]
-                    : [],
-              ),
-              child: _OfferList(
-                offers: _offers,
-                requestedAmount: listing.requestedAmount,
-                isOwner: isOwner,
-                onAccept: _acceptOffer,
-                durationMonths: listing.durationMonths,
-                isProBorrower: isProBorrower,
-                suggestedInterestRatePct: listing.suggestedInterestRatePct,
-                suggestedLateFeePct: listing.suggestedLateFeePct,
-                suggestedRepaymentFrequency:
-                    listing.suggestedRepaymentFrequency,
-                suggestedInstallmentAmount: listing.suggestedInstallmentAmount,
-                onUpgrade: () => _showSubscriptionGate(
-                  requiredPlan: 'Pro',
-                  reason:
-                      'Unlock relative comparison arrows and cost deltas with a PRO borrower subscription.',
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
 
             if (!isOwner)
               ElevatedButton(
@@ -351,6 +424,132 @@ class _DescriptionSection extends StatelessWidget {
       );
 }
 
+// ─── Funded Progress Bar ─────────────────────────────────────────────────────
+
+const List<Color> _kBidColors = [
+  Color(0xFF3B82F6), // blue
+  Color(0xFF60A5FA), // light blue
+  Color(0xFF10B981), // green
+  Color(0xFFF59E0B), // amber
+  Color(0xFF8B5CF6), // purple
+];
+
+Class _FundedProgressBar extends StatelessWidget {
+  const _FundedProgressBar({
+    required this.offers,
+    required this.requestedAmount,
+  });
+
+  final List<LoanOffer> offers;
+  final int requestedAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    final totalFunded = offers.fold<int>(0, (s, o) => s + o.offerAmount);
+    final pct =
+        requestedAmount > 0 ? (totalFunded / requestedAmount).clamp(0.0, 1.0) : 0.0;
+    final pctInt = (pct * 100).round();
+    final bidsLabel =
+        offers.isEmpty ? 'No bids' : '${offers.length} bid${offers.length > 1 ? 's' : ''}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Funded',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
+            ),
+            const Spacer(),
+            Text(
+              '$pctInt%  · $bidsLabel',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox(
+            height: 6,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (offers.isEmpty) {
+                  return Container(
+                    color: Theme.of(context).dividerColor,
+                  );
+                }
+                final total = offers.fold<int>(0, (s, o) => s + o.offerAmount);
+                return Row(
+                  children: [
+                    for (int i = 0; i < offers.length; i++) ...[
+                      Flexible(
+                        flex: requestedAmount > 0
+                            ? (offers[i].offerAmount /
+                                    requestedAmount *
+                                    1000)
+                                .round()
+                            : 1,
+                        child: Container(
+                          color: _kBidColors[i % _kBidColors.length],
+                        ),
+                      ),
+                      if (i < offers.length - 1)
+                        const SizedBox(width: 2),
+                    ],
+                    if (total < requestedAmount)
+                      Flexible(
+                        flex: ((1 - total / requestedAmount) * 1000).round(),
+                        child: Container(
+                          color: Theme.of(context).dividerColor,
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Term Badge ───────────────────────────────────────────────────────────────
+
+class _TermBadge extends StatelessWidget {
+  const _TermBadge(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).colorScheme.brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1E29) : const Color(0xFFF0F2F7),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+      ),
+    );
+  }
+}
+
 // ─── Offer list ─────────────────────────────────────────────────────────────
 
 class _OfferList extends StatelessWidget {
@@ -374,7 +573,6 @@ class _OfferList extends StatelessWidget {
   final Function(LoanOffer) onAccept;
   final int durationMonths;
   final VoidCallback onUpgrade;
-  // Borrower's suggested terms (Pro only comparison)
   final double? suggestedInterestRatePct;
   final double? suggestedLateFeePct;
   final String? suggestedRepaymentFrequency;
@@ -383,21 +581,11 @@ class _OfferList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (offers.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12)),
-        child: const Text('No bids yet.', textAlign: TextAlign.center),
-      );
-    }
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: offers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 0),
       itemBuilder: (context, index) => _OfferCard(
         offer: offers[index],
         index: index,
@@ -411,6 +599,7 @@ class _OfferList extends StatelessWidget {
         suggestedRepaymentFrequency: suggestedRepaymentFrequency,
         isProBorrower: isProBorrower,
         onUpgrade: onUpgrade,
+        dotColor: _kBidColors[index % _kBidColors.length],
       ),
     );
   }
@@ -427,6 +616,7 @@ class _OfferCard extends StatefulWidget {
     required this.onAccept,
     required this.durationMonths,
     required this.onUpgrade,
+    required this.dotColor,
     this.suggestedInterestRatePct,
     this.suggestedLateFeePct,
     this.suggestedInstallmentAmount,
@@ -441,6 +631,7 @@ class _OfferCard extends StatefulWidget {
   final Function(LoanOffer) onAccept;
   final int durationMonths;
   final VoidCallback onUpgrade;
+  final Color dotColor;
   final double? suggestedInterestRatePct;
   final double? suggestedLateFeePct;
   final int? suggestedInstallmentAmount;
@@ -486,322 +677,200 @@ class _OfferCardState extends State<_OfferCard>
         ? 0
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
     final isFull = offer.offerAmount >= widget.requestedAmount;
-    final offerType = isFull ? 'Full bid' : 'Partial bid · $coverage%';
+    final offerType = isFull ? 'Full bid' : 'Partial · $coverage%';
+    final dotColor = widget.dotColor;
+    final rowBg = isFull
+        ? AppColors.success.withValues(alpha: 0.08)
+        : Colors.transparent;
 
-    final isComparing = widget.isOwner &&
-        (widget.suggestedInterestRatePct != null ||
-            widget.suggestedLateFeePct != null ||
-            widget.suggestedInstallmentAmount != null);
+    return Column(
+      children: [
+        // ── Divider above each row except first ──────────────────────────────
+        if (widget.index > 0)
+          Divider(
+            height: 1,
+            color: Theme.of(context).dividerColor,
+          ),
 
-    // ── Comparison calculations ──
-    double? interestDiff;
-    double? interestDiffPct;
-    bool? isInterestFavorable;
-    if (widget.suggestedInterestRatePct != null) {
-      interestDiff = offer.interestRatePct - widget.suggestedInterestRatePct!;
-      if (widget.suggestedInterestRatePct! > 0) {
-        interestDiffPct =
-            (interestDiff / widget.suggestedInterestRatePct!) * 100;
-      } else {
-        interestDiffPct = 0.0;
-      }
-      if (interestDiff.abs() < 0.005) {
-        isInterestFavorable = null; // flat
-      } else if (interestDiff < 0) {
-        isInterestFavorable = true; // lower is better
-      } else {
-        isInterestFavorable = false; // higher is worse
-      }
-    }
-
-    double? lateFeeDiff;
-    double? lateFeeDiffPct;
-    bool? isLateFeeFavorable;
-    if (widget.suggestedLateFeePct != null) {
-      lateFeeDiff = offer.lateFeePct - widget.suggestedLateFeePct!;
-      if (widget.suggestedLateFeePct! > 0) {
-        lateFeeDiffPct = (lateFeeDiff / widget.suggestedLateFeePct!) * 100;
-      } else {
-        lateFeeDiffPct = 0.0;
-      }
-      if (lateFeeDiff.abs() < 0.005) {
-        isLateFeeFavorable = null; // flat
-      } else if (lateFeeDiff < 0) {
-        isLateFeeFavorable = true; // lower is better
-      } else {
-        isLateFeeFavorable = false; // higher is worse
-      }
-    }
-
-    int? installmentDiff;
-    double? installmentDiffPct;
-    bool? isInstallmentFavorable;
-    if (widget.suggestedInstallmentAmount != null) {
-      installmentDiff =
-          offer.installmentAmount - widget.suggestedInstallmentAmount!;
-      if (widget.suggestedInstallmentAmount! > 0) {
-        installmentDiffPct =
-            (installmentDiff / widget.suggestedInstallmentAmount!) * 100;
-      } else {
-        installmentDiffPct = 0.0;
-      }
-      if (installmentDiff == 0) {
-        isInstallmentFavorable = null; // flat
-      } else if (installmentDiff < 0) {
-        isInstallmentFavorable = true; // lower is better
-      } else {
-        isInstallmentFavorable = false; // higher is worse
-      }
-    }
-
-    final String interestDiffValText =
-        interestDiff != null ? '${interestDiff.abs().toStringAsFixed(2)}%' : '';
-    final String interestDiffPctText = interestDiffPct != null
-        ? '${interestDiffPct.abs().toStringAsFixed(1)}%'
-        : '';
-
-    final String lateFeeDiffValText =
-        lateFeeDiff != null ? '${lateFeeDiff.abs().toStringAsFixed(2)}%' : '';
-    final String lateFeeDiffPctText = lateFeeDiffPct != null
-        ? '${lateFeeDiffPct.abs().toStringAsFixed(1)}%'
-        : '';
-
-    final String installmentDiffValText =
-        installmentDiff != null ? 'UGX ${_fmt(installmentDiff.abs())}' : '';
-    final String installmentDiffPctText = installmentDiffPct != null
-        ? '${installmentDiffPct.abs().toStringAsFixed(1)}%'
-        : '';
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: _expanded
-              ? AppColors.accent.withValues(alpha: 0.4)
-              : Theme.of(context).dividerColor,
-        ),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // ── Header row ───────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-          child: Row(children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person_outline,
-                  size: 14, color: AppColors.accent),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(lenderLabel,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 13)),
-                    const SizedBox(height: 2),
-                    Text(
-                      offerType,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color:
-                                isFull ? AppColors.success : AppColors.accent,
-                            fontWeight: FontWeight.bold,
-                          ),
+        // ── Bid row ──────────────────────────────────────────────────────────
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          color: rowBg,
+          child: InkWell(
+            onTap: _toggle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child: Row(
+                children: [
+                  // Colored dot
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: dotColor,
+                      shape: BoxShape.circle,
                     ),
-                  ]),
+                  ),
+                  const SizedBox(width: 10),
+                  // Lender label
+                  Text(
+                    lenderLabel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isFull ? AppColors.success : null,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Bid type badge
+                  Text(
+                    offerType,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isFull
+                          ? AppColors.success.withValues(alpha: 0.75)
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.45),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Amount
+                  Text(
+                    _fmtAmount(offer.offerAmount),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: isFull ? AppColors.success : null,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Chevron
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: isFull
+                          ? AppColors.success.withValues(alpha: 0.7)
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 8),
-            UgxAmount(offer.offerAmount, fontSize: 15),
-          ]),
-        ),
-
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.0),
-          child: Divider(height: 1),
-        ),
-
-        // ── Stock Ticker Comparison Rows ─────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-          child: Column(
-            children: [
-              _StockTermRow(
-                label: 'Interest Rate',
-                value: '${offer.interestRatePct.toStringAsFixed(2)}%',
-                diffValueText: interestDiffValText,
-                diffPercentText: interestDiffPctText,
-                isPositiveTrend: isInterestFavorable,
-                isComparing: widget.suggestedInterestRatePct != null,
-                isPro: widget.isProBorrower,
-                suggestedText: widget.suggestedInterestRatePct != null
-                    ? '${widget.suggestedInterestRatePct!.toStringAsFixed(2)}%'
-                    : null,
-                onUpgrade: widget.onUpgrade,
-              ),
-              const Divider(height: 1, indent: 4, endIndent: 4),
-              _StockTermRow(
-                label: 'Late Payment Fine',
-                value: '${offer.lateFeePct.toStringAsFixed(2)}%',
-                diffValueText: lateFeeDiffValText,
-                diffPercentText: lateFeeDiffPctText,
-                isPositiveTrend: isLateFeeFavorable,
-                isComparing: widget.suggestedLateFeePct != null,
-                isPro: widget.isProBorrower,
-                suggestedText: widget.suggestedLateFeePct != null
-                    ? '${widget.suggestedLateFeePct!.toStringAsFixed(2)}%'
-                    : null,
-                onUpgrade: widget.onUpgrade,
-              ),
-              const Divider(height: 1, indent: 4, endIndent: 4),
-              _StockTermRow(
-                label: 'Installment Amount',
-                value: 'UGX ${_fmt(offer.installmentAmount)}',
-                diffValueText: installmentDiffValText,
-                diffPercentText: installmentDiffPctText,
-                isPositiveTrend: isInstallmentFavorable,
-                isComparing: widget.suggestedInstallmentAmount != null,
-                isPro: widget.isProBorrower,
-                suggestedText: widget.suggestedInstallmentAmount != null
-                    ? 'UGX ${_fmt(widget.suggestedInstallmentAmount!)}'
-                    : null,
-                onUpgrade: widget.onUpgrade,
-              ),
-              const Divider(height: 1, indent: 4, endIndent: 4),
-              _StockTermRow(
-                label: 'Repayment Schedule',
-                value: _freqLabel(offer.repaymentFrequency),
-                isComparing: widget.suggestedRepaymentFrequency != null,
-                isPro: widget.isProBorrower,
-                isPositiveTrend: null,
-                suggestedText: widget.suggestedRepaymentFrequency != null
-                    ? _freqLabel(widget.suggestedRepaymentFrequency!)
-                    : null,
-                onUpgrade: widget.onUpgrade,
-              ),
-            ],
-          ),
-        ),
-
-        // ── Pro comparison legend ────────────────────────────────────────────
-        if (isComparing && widget.isProBorrower) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
-            child: Row(children: [
-              const Icon(Icons.info_outline_rounded,
-                  size: 11, color: AppColors.accent),
-              const SizedBox(width: 4),
-              Text(
-                'Indicators compare bid terms side-by-side with your original suggestions',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: AppColors.accent, fontSize: 10),
-              ),
-            ]),
-          ),
-        ],
-
-        // ── More / Less toggle ───────────────────────────────────────────────
-        GestureDetector(
-          onTap: _toggle,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
-            child: Row(children: [
-              Text(
-                _expanded ? 'Less details' : 'More details',
-                style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.accent),
-              ),
-              const SizedBox(width: 2),
-              AnimatedRotation(
-                turns: _expanded ? 0.5 : 0,
-                duration: const Duration(milliseconds: 200),
-                child: const Icon(Icons.expand_more_rounded,
-                    size: 14, color: AppColors.accent),
-              ),
-            ]),
           ),
         ),
 
         // ── Expanded details ─────────────────────────────────────────────────
         SizeTransition(
           sizeFactor: _expandAnim,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Divider(height: 1, color: Theme.of(context).dividerColor),
-              const SizedBox(height: 12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            color: isFull
+                ? AppColors.success.withValues(alpha: 0.05)
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Simple term rows
+                _BidDetailRow(
+                  label: 'Interest rate',
+                  value: '${offer.interestRatePct.toStringAsFixed(2)}%',
+                  valueColor: isFull ? AppColors.success : null,
+                ),
+                _BidDetailRow(
+                  label: 'Late fine',
+                  value: '${offer.lateFeePct.toStringAsFixed(2)}%',
+                  valueColor: isFull ? AppColors.success : null,
+                ),
+                _BidDetailRow(
+                  label: 'Installment',
+                  value:
+                      'UGX ${_fmt(offer.installmentAmount)} ${_freqLabel(offer.repaymentFrequency).toLowerCase()}',
+                  valueColor: isFull ? AppColors.success : null,
+                ),
 
-              // Installment Math breakdown ("How this number came about")
-              _CalculatorRowDetailPanel(
-                offer: offer,
-                durationMonths: widget.durationMonths,
-              ),
+                // Pro comparison analytics (owner only)
+                if (widget.isOwner) ...[
+                  if (widget.isProBorrower) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _ProAnalysisPanel(
+                        interestDiff: widget.suggestedInterestRatePct != null
+                            ? offer.interestRatePct -
+                                widget.suggestedInterestRatePct!
+                            : null,
+                        lateFeeDiff: widget.suggestedLateFeePct != null
+                            ? offer.lateFeePct - widget.suggestedLateFeePct!
+                            : null,
+                        installmentDiff: widget.suggestedInstallmentAmount !=
+                                null
+                            ? offer.installmentAmount -
+                                widget.suggestedInstallmentAmount!
+                            : null,
+                        suggestedInterest: widget.suggestedInterestRatePct,
+                        suggestedLateFee: widget.suggestedLateFeePct,
+                        suggestedInstallment: widget.suggestedInstallmentAmount,
+                        offeredInterest: offer.interestRatePct,
+                        offeredLateFee: offer.lateFeePct,
+                        offeredInstallment: offer.installmentAmount,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ] else ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _ProUpgradePanel(onUpgrade: widget.onUpgrade),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                ],
 
-              // Deal Comparison Analytics or Upgrade Lock Banner
-              if (widget.isOwner) ...[
-                if (widget.isProBorrower)
-                  _ProAnalysisPanel(
-                    interestDiff: interestDiff,
-                    lateFeeDiff: lateFeeDiff,
-                    installmentDiff: installmentDiff,
-                    suggestedInterest: widget.suggestedInterestRatePct,
-                    suggestedLateFee: widget.suggestedLateFeePct,
-                    suggestedInstallment: widget.suggestedInstallmentAmount,
-                    offeredInterest: offer.interestRatePct,
-                    offeredLateFee: offer.lateFeePct,
-                    offeredInstallment: offer.installmentAmount,
-                  )
-                else
-                  _ProUpgradePanel(onUpgrade: widget.onUpgrade),
+                if (offer.proposedExpectations != null &&
+                    offer.proposedExpectations!.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Text(
+                      'Lender notes',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accent),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+                    child: Text(offer.proposedExpectations!,
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                ],
+
+                // Accept button (owner only)
+                if (widget.isOwner) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => widget.onAccept(offer),
+                        child: const Text('Accept Bid'),
+                      ),
+                    ),
+                  ),
+                ] else
+                  const SizedBox(height: 12),
               ],
-
-              const SizedBox(height: 12),
-              if (offer.termsLockedAt != null)
-                _DetailRow(
-                    label: 'Terms locked',
-                    value: _dateLabel(offer.termsLockedAt!)),
-              if (offer.proposedExpectations != null &&
-                  offer.proposedExpectations!.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text('Lender notes',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold, color: AppColors.accent)),
-                const SizedBox(height: 4),
-                Text(offer.proposedExpectations!,
-                    style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 8),
-              ],
-            ]),
-          ),
-        ),
-
-        // ── Accept button (owner only) ───────────────────────────────────────
-        if (widget.isOwner) ...[
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => widget.onAccept(offer),
-                child: const Text('Accept Bid'),
-              ),
             ),
           ),
-        ] else
-          const SizedBox(height: 12),
-      ]),
+        ),
+      ],
     );
   }
 }
