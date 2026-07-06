@@ -94,9 +94,9 @@ class _WatchlistView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
                           3,
-                          (i) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: const SkeletonBox(
+                          (i) => const Padding(
+                            padding: EdgeInsets.only(bottom: 12),
+                            child: SkeletonBox(
                               height: 180,
                               width: double.infinity,
                               radius: 14,

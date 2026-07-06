@@ -14,7 +14,7 @@
 //   Lender (Lender):     lending@equatorfinance.ug
 //   KYC pending:         alice.namuli@gmail.com
 
-// ignore_for_file: unused_local_variable, directives_ordering
+// ignore_for_file: unused_local_variable, directives_ordering, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

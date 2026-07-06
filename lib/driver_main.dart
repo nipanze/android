@@ -2,6 +2,7 @@
 // Driver entrypoint — enables flutter_driver extension for integration tests.
 // Run: flutter run -d chrome --target=lib/driver_main.dart ...
 
+// ignore: depend_on_referenced_packages
 import 'package:flutter_driver/driver_extension.dart';
 import 'main.dart' as app;
 

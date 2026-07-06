@@ -216,19 +216,19 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            _InfoStep(
+            const _InfoStep(
               number: 1,
               title: 'Contact Details Revealed',
               description: 'Legal name, phone, and email of both parties will be shared.',
             ),
             const SizedBox(height: 8),
-            _InfoStep(
+            const _InfoStep(
               number: 2,
               title: 'Direct Connection',
               description: 'You can now contact your partner outside the Nipanze platform.',
             ),
             const SizedBox(height: 8),
-            _InfoStep(
+            const _InfoStep(
               number: 3,
               title: 'Complete Transaction',
               description: 'Finalize the loan agreement and exchange funds directly.',
