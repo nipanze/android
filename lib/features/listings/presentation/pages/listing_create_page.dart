@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
+import '../../data/listing_repository.dart';
 
 // ─── Purpose options ──────────────────────────────────────────────────────────
 const _purposes = [
@@ -29,8 +31,26 @@ const _purposes = [
 
 // ─── Districts ────────────────────────────────────────────────────────────────
 const _districts = [
-  'Kampala', 'Wakiso', 'Mukono', 'Jinja', 'Mbale', 'Gulu', 'Mbarara',
-  'Masaka', 'Lira', 'Soroti', 'Arua', 'Fort Portal', 'Kabale', 'Other',
+  'Kampala',
+  'Wakiso',
+  'Mukono',
+  'Jinja',
+  'Mbale',
+  'Gulu',
+  'Mbarara',
+  'Masaka',
+  'Lira',
+  'Soroti',
+  'Arua',
+  'Fort Portal',
+  'Kabale',
+  'Other',
+];
+
+const _repaymentPlans = [
+  {'value': 'monthly', 'label': 'Monthly'},
+  {'value': 'weekly', 'label': 'Weekly'},
+  {'value': 'one_time', 'label': 'One-time payment'},
 ];
 
 class ListingCreatePage extends StatefulWidget {
@@ -41,20 +61,27 @@ class ListingCreatePage extends StatefulWidget {
 
 class _ListingCreatePageState extends State<ListingCreatePage> {
   final _pageController = PageController();
-  int _step = 0; // 0 = loan details, 1 = review & publish
+  int _step = 0; // 0 = loan details, 1 = repayment context, 2 = review
 
   // Step 1 fields
+  final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   final _durationController = TextEditingController();
-  final _rateController = TextEditingController();
   final _descriptionController = TextEditingController();
   String? _selectedPurpose;
   String? _customPurpose;
   String _district = 'Kampala';
-  final _formKey = GlobalKey<FormState>();
+
+  // Step 2 fields
+  final _incomeSourceController = TextEditingController();
+  final _repaymentAmountController = TextEditingController();
+  final _repaymentTimelineController = TextEditingController();
+  String? _preferredRepaymentPlan;
+
+  final _loanDetailsFormKey = GlobalKey<FormState>();
+  final _repaymentFormKey = GlobalKey<FormState>();
 
   bool _submitting = false;
-  bool _savingDraft = false;
   PlatformLimits _limits = PlatformLimits.defaults;
 
   @override
@@ -65,24 +92,32 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
 
   Future<void> _loadLimits() async {
     final limits = await getIt<SystemSettingsRepository>().getLimits();
-    if (mounted) setState(() { _limits = limits; });
+    if (mounted) {
+      setState(() {
+        _limits = limits;
+      });
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _titleController.dispose();
     _amountController.dispose();
     _durationController.dispose();
-    _rateController.dispose();
     _descriptionController.dispose();
+    _incomeSourceController.dispose();
+    _repaymentAmountController.dispose();
+    _repaymentTimelineController.dispose();
     super.dispose();
   }
 
-  String get _purposeValue =>
-      _selectedPurpose == 'Other' ? (_customPurpose ?? '') : (_selectedPurpose ?? '');
+  String get _purposeValue => _selectedPurpose == 'Other'
+      ? (_customPurpose ?? '')
+      : (_selectedPurpose ?? '');
 
-  bool get _step1Valid {
-    if (!_formKey.currentState!.validate()) return false;
+  bool get _loanDetailsValid {
+    if (!_loanDetailsFormKey.currentState!.validate()) return false;
     if (_selectedPurpose == null) return false;
     if (_selectedPurpose == 'Other' &&
         (_customPurpose == null || _customPurpose!.trim().isEmpty)) {
@@ -91,9 +126,15 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     return true;
   }
 
+  bool get _repaymentValid {
+    if (!_repaymentFormKey.currentState!.validate()) return false;
+    if (_preferredRepaymentPlan == null) return false;
+    return true;
+  }
+
   void _next() {
-    if (!_step1Valid) {
-      _formKey.currentState!.validate();
+    if (_step == 0 && !_loanDetailsValid) {
+      _loanDetailsFormKey.currentState!.validate();
       if (_selectedPurpose == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select a purpose.')),
@@ -101,12 +142,33 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       }
       return;
     }
-    setState(() => _step = 1);
+    if (_step == 1 && !_repaymentValid) {
+      _repaymentFormKey.currentState!.validate();
+      if (_preferredRepaymentPlan == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a repayment plan.')),
+        );
+      }
+      return;
+    }
+    if (_step >= 2) return;
+    setState(() => _step += 1);
     _pageController.nextPage(
         duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
   }
 
-  Future<void> _submit({bool draft = false}) async {
+  void _back() {
+    if (_step == 0) return;
+    setState(() => _step -= 1);
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_loanDetailsValid || !_repaymentValid) return;
+
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
 
@@ -115,22 +177,42 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       return;
     }
     if (!authState.user.canBorrow) {
-      _showGate('A Borrower or Pro subscription is required to post a listing.');
+      _showGate(
+          'A Borrower or Pro subscription is required to post a listing.');
       return;
     }
 
-    setState(() => draft ? _savingDraft = true : _submitting = true);
-    await Future.delayed(const Duration(milliseconds: 800)); // replace with real insert
+    setState(() => _submitting = true);
+    try {
+      await getIt<ListingRepository>().createListing(
+        title: _titleController.text.trim(),
+        purpose: _purposeValue.trim(),
+        requestedAmount: int.parse(_amountController.text),
+        durationMonths: int.parse(_durationController.text),
+        district: _district,
+        incomeSource: _incomeSourceController.text.trim(),
+        preferredRepaymentPlan: _preferredRepaymentPlan!,
+        repaymentAmountPerPeriod: int.parse(_repaymentAmountController.text),
+        repaymentTimeline: _repaymentTimelineController.text.trim(),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      _showGate(e is AppException
+          ? e.message
+          : 'Could not publish this request. Please try again.');
+      return;
+    }
     if (!mounted) return;
-    setState(() => draft ? _savingDraft = false : _submitting = false);
+    setState(() => _submitting = false);
 
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(draft ? 'Draft saved' : 'Request submitted'),
-        content: Text(draft
-            ? 'Your loan request has been saved as a draft. You can publish it from My Requests.'
-            : 'Your loan request is now live on the marketplace. Lenders will start bidding shortly.'),
+        title: const Text('Request submitted'),
+        content: const Text(
+          'Your loan request is now live on the marketplace. Lenders can review it and make offers.',
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -162,19 +244,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         leading: _step > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                onPressed: () {
-                  setState(() => _step = 0);
-                  _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut);
-                },
+                onPressed: _back,
               )
             : null,
-        title: Text(_step == 0 ? 'Request a loan' : 'Review & publish'),
+        title: Text(_titleForStep()),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: LinearProgressIndicator(
-            value: (_step + 1) / 2,
+            value: (_step + 1) / 3,
             backgroundColor: Theme.of(context).dividerColor,
             valueColor: const AlwaysStoppedAnimation(AppColors.accent),
             minHeight: 3,
@@ -184,10 +261,21 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [_buildStep1(), _buildStep2()],
+        children: [_buildStep1(), _buildStep2(), _buildStep3()],
       ),
       bottomNavigationBar: _buildBottomBar(),
     );
+  }
+
+  String _titleForStep() {
+    switch (_step) {
+      case 1:
+        return 'Income & repayment';
+      case 2:
+        return 'Review & publish';
+      default:
+        return 'Request a loan';
+    }
   }
 
   // ─── Step 1: Loan details ───────────────────────────────────────────────────
@@ -196,7 +284,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Form(
-        key: _formKey,
+        key: _loanDetailsFormKey,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Info banner
           Container(
@@ -204,7 +292,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             decoration: BoxDecoration(
               color: AppColors.accent.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
             ),
             child: Row(children: [
               const Icon(Icons.info_outline_rounded,
@@ -212,13 +301,31 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Loans: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Max ${_limits.maxInterestRate.toStringAsFixed(0)}% interest',
+                  'Requests: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Lenders propose offer terms',
                   style: const TextStyle(fontSize: 11, color: AppColors.accent),
                 ),
               ),
             ]),
           ),
           const SizedBox(height: 20),
+
+          // Title
+          TextFormField(
+            controller: _titleController,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              labelText: 'Request Title *',
+              hintText: 'e.g. Farm equipment purchase',
+              prefixIcon: Icon(Icons.title_rounded, size: 20),
+            ),
+            validator: (v) {
+              final value = v?.trim() ?? '';
+              if (value.isEmpty) return 'Enter a title';
+              if (value.length < 4) return 'Use at least 4 characters';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
 
           // Amount
           TextFormField(
@@ -234,8 +341,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               if (v == null || v.isEmpty) return 'Enter an amount';
               final n = int.tryParse(v);
               if (n == null) return 'Enter a valid number';
-              if (n < _limits.minLoanAmount) return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
-              if (n > _limits.maxLoanAmount) return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
+              if (n < _limits.minLoanAmount) {
+                return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
+              }
+              if (n > _limits.maxLoanAmount) {
+                return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
+              }
               return null;
             },
           ),
@@ -255,25 +366,6 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               if (v == null || v.isEmpty) return 'Enter duration';
               final n = int.tryParse(v);
               if (n == null || n < 1 || n > 60) return '1 to 60 months';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // Max interest rate
-          TextFormField(
-            controller: _rateController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Max Interest Rate (%) *',
-              hintText: 'e.g. 15 (max ${_limits.maxInterestRate.toStringAsFixed(0)}%)',
-              prefixIcon: const Icon(Icons.percent_rounded, size: 20),
-              suffixText: '%',
-            ),
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Enter a rate';
-              final r = double.tryParse(v);
-              if (r == null || r < _limits.minInterestRate || r > _limits.maxInterestRate) return '${_limits.minInterestRate.toStringAsFixed(0)}% to ${_limits.maxInterestRate.toStringAsFixed(0)}%';
               return null;
             },
           ),
@@ -350,12 +442,100 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
-  // ─── Step 2: Review & publish ───────────────────────────────────────────────
+  // ─── Step 2: Income & repayment ─────────────────────────────────────────────
 
   Widget _buildStep2() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Form(
+        key: _repaymentFormKey,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          TextFormField(
+            controller: _incomeSourceController,
+            textCapitalization: TextCapitalization.sentences,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Income Source *',
+              hintText: 'e.g. Salary, shop income, farming, side work',
+              alignLabelWithHint: true,
+              prefixIcon: Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Icon(Icons.work_outline_rounded, size: 20),
+              ),
+            ),
+            validator: (v) {
+              final value = v?.trim() ?? '';
+              if (value.isEmpty) return 'Enter your repayment source';
+              if (value.length < 6) return 'Add a little more detail';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<String>(
+            initialValue: _preferredRepaymentPlan,
+            decoration: const InputDecoration(
+              labelText: 'Preferred Repayment Plan *',
+              prefixIcon: Icon(Icons.payments_outlined, size: 20),
+            ),
+            hint: const Text('Select repayment plan'),
+            items: _repaymentPlans
+                .map((p) => DropdownMenuItem(
+                      value: p['value'],
+                      child: Text(p['label']!),
+                    ))
+                .toList(),
+            onChanged: (v) => setState(() => _preferredRepaymentPlan = v),
+            validator: (v) => v == null ? 'Select a repayment plan' : null,
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _repaymentAmountController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Repayment Amount Per Period (UGX) *',
+              hintText: 'e.g. 250000',
+              prefixIcon: Icon(Icons.savings_outlined, size: 20),
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Enter repayment amount';
+              final n = int.tryParse(v);
+              if (n == null || n <= 0) return 'Enter a valid amount';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+          TextFormField(
+            controller: _repaymentTimelineController,
+            textCapitalization: TextCapitalization.sentences,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Repayment Timeline *',
+              hintText: 'e.g. Paid by the 5th of every month for 8 months',
+              alignLabelWithHint: true,
+              prefixIcon: Padding(
+                padding: EdgeInsets.only(bottom: 48),
+                child: Icon(Icons.event_repeat_outlined, size: 20),
+              ),
+            ),
+            validator: (v) {
+              final value = v?.trim() ?? '';
+              if (value.isEmpty) return 'Enter repayment timeline';
+              if (value.length < 10) return 'Add a clearer timeline';
+              return null;
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+
+  // ─── Step 3: Review & publish ───────────────────────────────────────────────
+
+  Widget _buildStep3() {
     final amount = int.tryParse(_amountController.text) ?? 0;
     final duration = _durationController.text;
-    final rate = _rateController.text;
+    final repaymentAmount = int.tryParse(_repaymentAmountController.text) ?? 0;
     final description = _descriptionController.text.trim();
 
     return SingleChildScrollView(
@@ -377,6 +557,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           ),
           child: Column(children: [
             _ReviewRow(
+              icon: Icons.title_rounded,
+              label: 'Title',
+              value: _titleController.text.trim(),
+            ),
+            _divider(),
+            _ReviewRow(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Amount',
               value: 'UGX ${_fmtAmount(amount)}',
@@ -390,12 +576,6 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             ),
             _divider(),
             _ReviewRow(
-              icon: Icons.percent_rounded,
-              label: 'Max interest rate',
-              value: '$rate% per annum',
-            ),
-            _divider(),
-            _ReviewRow(
               icon: Icons.category_outlined,
               label: 'Purpose',
               value: _purposeValue,
@@ -405,6 +585,30 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               icon: Icons.location_on_outlined,
               label: 'District',
               value: _district,
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.work_outline_rounded,
+              label: 'Income source',
+              value: _incomeSourceController.text.trim(),
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.payments_outlined,
+              label: 'Preferred repayment plan',
+              value: _planLabel(_preferredRepaymentPlan),
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.savings_outlined,
+              label: 'Repayment amount',
+              value: 'UGX ${_fmtAmount(repaymentAmount)} per period',
+            ),
+            _divider(),
+            _ReviewRow(
+              icon: Icons.event_repeat_outlined,
+              label: 'Repayment timeline',
+              value: _repaymentTimelineController.text.trim(),
             ),
             if (description.isNotEmpty) ...[
               _divider(),
@@ -425,15 +629,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           decoration: BoxDecoration(
             color: AppColors.success.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-                color: AppColors.success.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
           ),
           child: const Row(children: [
             Icon(Icons.verified_outlined, size: 14, color: AppColors.success),
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Your identity is never shown to lenders. Risk grading is assigned by Nipanze after review.',
+                'Your contact details stay hidden until an offer is accepted and the unlock flow is completed.',
                 style: TextStyle(fontSize: 11, color: AppColors.success),
               ),
             ),
@@ -443,8 +646,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
-  Widget _divider() => Divider(height: 1,
-      color: Theme.of(context).dividerColor);
+  Widget _divider() =>
+      Divider(height: 1, color: Theme.of(context).dividerColor);
 
   // ─── Bottom bar ─────────────────────────────────────────────────────────────
 
@@ -452,37 +655,25 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-        child: _step == 0
-            ? ElevatedButton(
-                onPressed: _next,
-                child: const Text('Continue'),
-              )
-            : Column(mainAxisSize: MainAxisSize.min, children: [
-                ElevatedButton(
-                  onPressed: _submitting ? null : _submit,
-                  child: _submitting
-                      ? const SizedBox(
-                          height: 20, width: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Text('Publish to marketplace'),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: _savingDraft ? null : () => _submit(draft: true),
-                  child: _savingDraft
-                      ? const SizedBox(
-                          height: 18, width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Save as draft'),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Saved as draft first. Review and publish when ready.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ]),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ElevatedButton(
+            onPressed: _submitting ? null : (_step < 2 ? _next : _submit),
+            child: _submitting
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
+                : Text(_step < 2 ? 'Continue' : 'Publish to marketplace'),
+          ),
+          if (_step > 0) ...[
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _submitting ? null : _back,
+              child: const Text('Back'),
+            ),
+          ],
+        ]),
       ),
     );
   }
@@ -497,6 +688,13 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       buf.write(s[i]);
     }
     return buf.toString();
+  }
+
+  String _planLabel(String? value) {
+    for (final plan in _repaymentPlans) {
+      if (plan['value'] == value) return plan['label']!;
+    }
+    return '';
   }
 }
 
@@ -521,11 +719,11 @@ class _ReviewRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon,
-            size: 16,
-            color: Theme.of(context).colorScheme.onSurfaceVariant),
+            size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 2),
             Text(
