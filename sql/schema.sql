@@ -287,7 +287,9 @@ CREATE TABLE loan_requests (
     -- Borrower's income context. Stored for request review, but not exposed
     -- through the public marketplace listing view.
     income_source               TEXT NOT NULL,          -- e.g. 'Monthly salary from Kampala City Council'
-    preferred_repayment_plan    TEXT NOT NULL,          -- e.g. 'Monthly instalments'
+    preferred_repayment_plan    TEXT NOT NULL           -- weekly, monthly, one_time
+                                    CONSTRAINT chk_lr_repayment_plan
+                                    CHECK (preferred_repayment_plan IN ('weekly', 'monthly', 'one_time')),
     repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000 UGX per month
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
