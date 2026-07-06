@@ -73,10 +73,10 @@ Many lending options still focus on collateral and institutional gatekeeping ins
 Nipanze provides a simple marketplace structure where:
 
 - Borrowers publish structured funding requests for free
-- Every request includes loan details, source of income, loan purpose, and repayment plan
+- Every request includes loan details, source of income, loan purpose, and repayment ability
 - Lenders browse listed requests for free
-- Lenders subscribe when they want to make offers
-- Borrowers review available offers and select the one that fits
+- Lenders subscribe when they want to make offers with their own amount, interest/return expectation, and terms
+- Borrowers review available lender offers and select the one that fits
 - Contact details are revealed only after a borrower accepts an offer
 - Both parties connect outside the platform
 - The platform supports discovery, matching, and controlled contact sharing
@@ -90,7 +90,7 @@ Nipanze provides a simple marketplace structure where:
 ### For Borrowers
 
 - **Free access** — post loan requests without paying to list
-- **Structured requests** — explain amount, duration, repayment plan, income source, and purpose
+- **Structured requests** — explain title, amount, duration, purpose, district, income source, and repayment ability
 - **Repayment visibility** — show lenders how the loan will be repaid
 - **Flexible options** — receive and compare offers from multiple lenders
 - **My Requests** — track borrowing activity and lender responses in one place
@@ -101,7 +101,7 @@ Nipanze provides a simple marketplace structure where:
 - **Free browsing** — review borrower requests before subscribing
 - **Repayment context** — assess loan purpose, requested amount, duration, and repayment plan
 - **My Offers** — manage lending activity using simple, human, trustworthy language
-- **Custom terms** — make offers with your own amount and expectations
+- **Custom terms** — make offers with your own amount, interest/return expectation, and conditions
 - **Borrower context** — use profile, purpose, and repayment-plan details to compare opportunities
 - **Return potential** — lend directly to selected borrowers for profit
 
@@ -111,7 +111,7 @@ Nipanze provides a simple marketplace structure where:
 - **Free lender browsing** — lenders can browse requests before subscribing
 - **Subscription-gated offers** — making lending offers requires an active subscription
 - **Single account, multiple roles** — each user can borrow and lend from one account
-- **Marketplace main screen** — live feed of borrower requests with amount, purpose, profile, and repayment plan
+- **Marketplace main screen** — live feed of borrower requests with amount, purpose, district, and repayment plan
 - **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
 - **Controlled contact sharing** — contact details are revealed only after acceptance
 - **Compliance built-in** — append-only audit trail from day one
@@ -140,12 +140,14 @@ Contact details are revealed **only after an offer is accepted** — enforced at
 
 Each borrower request must include:
 
-- **Loan details:** amount needed, duration, and preferred repayment plan
+- **Loan details:** request title, amount needed, duration, purpose, and district
 - **Source of income:** salary, business income, side income, or other repayment source
-- **Purpose of the loan:** what the money will be used for
-- **Repayment plan:** amount payable per period and repayment timeline
+- **Repayment preference:** weekly, monthly, or one-time payment
+- **Repayment ability:** amount payable per period and repayment timeline
 
 Example: “I earn 800,000 UGX monthly and can repay 200,000 UGX per month.”
+
+Borrowers do **not** set the binding interest rate on the request. Lenders propose the offer amount, interest/return expectation, and conditions when they make an offer.
 
 ### Field Masking Rules
 
@@ -157,7 +159,7 @@ Example: “I earn 800,000 UGX monthly and can repay 200,000 UGX per month.”
 
 #### Lender → Offers
 
-**Exposed:** offer amount, proposed expectations or terms, timestamp
+**Exposed:** offer amount, proposed expectations or terms, including any lender-stated interest/return expectation, timestamp
 
 Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different lenders.
 
@@ -178,8 +180,8 @@ Nipanze helps participants discover each other and make informed matching decisi
 ```
 1. POST       → Borrower posts a structured loan request for free
 2. BROWSE     → Lenders browse borrower requests for free
-3. OFFER      → Lenders subscribe to make offers
-4. REVIEW     → Borrower reviews available offers
+3. OFFER      → Lenders subscribe to propose amount, interest/return, and terms
+4. REVIEW     → Borrower compares available offers
 5. ACCEPT     → Borrower selects one offer
 6. REVEAL     → Contact details are revealed only after acceptance
 7. CONNECT    → Parties proceed independently outside the platform
@@ -452,7 +454,7 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 | `animate_do ^3.x` | FadeIn/SlideIn animations | 1 |
 | `lottie ^3.x` | Loading and empty state animations | 2 |
 | `shimmer ^3.x` | Skeleton loading screens | 2 |
-| `percent_indicator ^4.x` | Request interest and offer coverage indicators | 2 |
+| `percent_indicator ^4.x` | Request progress and offer coverage indicators | 2 |
 | `fl_chart ^0.69.x` | Portfolio and analytics charts | 3 |
 | `local_auth ^2.x` | Biometric login | 3 |
 | `flutter_local_notifications ^17.x` | In-app notification banners | 3 |
@@ -566,8 +568,8 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 1 — Foundation ✅ Complete
 - Schema v4.0, seed data, Flutter scaffold, auth, navigation, onboarding, unit + integration tests
 
-### Stage 2 — Core Marketplace *(in progress)*
-- Live marketplace feed, structured borrower requests, free browsing, subscription-gated offers, offer acceptance
+### Stage 2 — Core Marketplace ✅ Complete
+- Live marketplace feed, structured borrower requests, free browsing, lender-proposed offer terms, subscription-gated offers, offer acceptance
 
 ### Stage 3 — Polish & Supporting Features
 - Watchlist alerts, positions, notifications, analytics, profile, error/empty states

@@ -45,8 +45,9 @@
 - [x] `LoanDetailPage` — listing detail, income + repayment plan display, offers panel
 
 ### 2.2 Loan Requests (Borrower — Free)
-- [x] `ListingCreatePage` — 2-step form: loan details + income/repayment context
-- [x] Form fields: title, purpose, amount, duration, district, income source, preferred repayment plan, repayment amount per period, repayment timeline
+- [x] `ListingCreatePage` — 3-step form: loan details → income/repayment context → review & publish
+- [x] Form fields: title, purpose, amount, duration, district, income source, preferred repayment plan (`weekly`, `monthly`, `one_time`), repayment amount per period, repayment timeline
+- [x] Borrower request form does not require interest rate; lenders propose interest/return expectations in offers
 - [x] `SystemSettingsRepository` — fetches public limits from DB; cached singleton; form validators use live values
 - [x] `MyRequestsPage` + `MyRequestsCubit` + `RequestRepository` — real data, Realtime, cancel with confirm
 - [x] Contracted request banner redirects to Positions tab
@@ -54,6 +55,7 @@
 
 ### 2.3 Loan Offers (Lender — Subscription Required)
 - [x] `OfferRepository` — `makeOffer`, `withdrawOffer`, Realtime stream on offers for a listing
+- [x] Lender offer terms carry offer amount and proposed expectations, including any interest/return expectation
 - [x] `LoanDetailPage` — live Realtime offers panel, glow flash on new offer
 - [x] Subscription gate modal — plan cards (Free / Lender / Pro), upgrade navigates to Account
 - [x] `KycVerification` model + `KycRepository` — Storage uploads, `submitForReview`
@@ -68,7 +70,7 @@
 
 ### Stage 2 Exit Criteria
 - [x] Borrower can post a free request and receive offers
-- [x] Lender with active subscription can browse and make offers
+- [x] Lender with active subscription can browse and make offers with their own amount and terms
 - [x] Borrower can accept one offer; all others auto-rejected
 - [x] Live feed and offers panel refresh via Realtime
 - [x] Subscription gate blocks offer placement for free-plan users
@@ -203,7 +205,7 @@ Once a borrower **accepts an offer**, the system automatically generates a **loa
 
 This template is:
 
-- Pre-filled using offer details
+- Pre-filled using the accepted lender offer details and borrower repayment context
 - Editable before confirmation
 - Locked after both parties agree
 
@@ -214,7 +216,7 @@ This template is:
 ### 1. Loan Summary
 
 - Loan amount
-- Interest rate
+- Interest rate / return expectation from the accepted lender offer
 - Total repayment amount
 - Duration
 
@@ -399,9 +401,9 @@ Key improvements:
 | 5-tab nav, Request in centre | ✅ |
 | Browse marketplace with filters | ✅ Stage 2 |
 | Live feed Realtime refresh | ✅ Stage 2 |
-| Post a loan request (free) | ✅ Stage 2 |
+| Post a structured loan request (free, no borrower-set interest) | ✅ Stage 2 |
 | Form limits from DB (system_settings) | ✅ Stage 2 |
-| Browse and make an offer (lender subscription) | ✅ Stage 2 |
+| Browse and make an offer with lender-proposed terms (subscription) | ✅ Stage 2 |
 | Subscription gate modal | ✅ Stage 2 |
 | Borrower accepts an offer | ✅ Stage 2 |
 | Losing offers auto-rejected | ✅ Stage 2 |
