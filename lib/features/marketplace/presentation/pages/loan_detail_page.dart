@@ -287,16 +287,15 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                 onAccept: _acceptOffer,
                 durationMonths: listing.durationMonths,
                 isProBorrower: isProBorrower,
-                suggestedInterestRatePct:
-                    listing.suggestedInterestRatePct,
+                suggestedInterestRatePct: listing.suggestedInterestRatePct,
                 suggestedLateFeePct: listing.suggestedLateFeePct,
                 suggestedRepaymentFrequency:
                     listing.suggestedRepaymentFrequency,
-                suggestedInstallmentAmount:
-                    listing.suggestedInstallmentAmount,
+                suggestedInstallmentAmount: listing.suggestedInstallmentAmount,
                 onUpgrade: () => _showSubscriptionGate(
                   requiredPlan: 'Pro',
-                  reason: 'Unlock relative comparison arrows and cost deltas with a PRO borrower subscription.',
+                  reason:
+                      'Unlock relative comparison arrows and cost deltas with a PRO borrower subscription.',
                 ),
               ),
             ),
@@ -501,7 +500,8 @@ class _OfferCardState extends State<_OfferCard>
     if (widget.suggestedInterestRatePct != null) {
       interestDiff = offer.interestRatePct - widget.suggestedInterestRatePct!;
       if (widget.suggestedInterestRatePct! > 0) {
-        interestDiffPct = (interestDiff / widget.suggestedInterestRatePct!) * 100;
+        interestDiffPct =
+            (interestDiff / widget.suggestedInterestRatePct!) * 100;
       } else {
         interestDiffPct = 0.0;
       }
@@ -537,9 +537,11 @@ class _OfferCardState extends State<_OfferCard>
     double? installmentDiffPct;
     bool? isInstallmentFavorable;
     if (widget.suggestedInstallmentAmount != null) {
-      installmentDiff = offer.installmentAmount - widget.suggestedInstallmentAmount!;
+      installmentDiff =
+          offer.installmentAmount - widget.suggestedInstallmentAmount!;
       if (widget.suggestedInstallmentAmount! > 0) {
-        installmentDiffPct = (installmentDiff / widget.suggestedInstallmentAmount!) * 100;
+        installmentDiffPct =
+            (installmentDiff / widget.suggestedInstallmentAmount!) * 100;
       } else {
         installmentDiffPct = 0.0;
       }
@@ -552,26 +554,23 @@ class _OfferCardState extends State<_OfferCard>
       }
     }
 
-    final String interestDiffValText = interestDiff != null 
-        ? "${interestDiff.abs().toStringAsFixed(2)}%" 
-        : "";
-    final String interestDiffPctText = interestDiffPct != null 
-        ? "${interestDiffPct.abs().toStringAsFixed(1)}%" 
-        : "";
+    final String interestDiffValText =
+        interestDiff != null ? '${interestDiff.abs().toStringAsFixed(2)}%' : '';
+    final String interestDiffPctText = interestDiffPct != null
+        ? '${interestDiffPct.abs().toStringAsFixed(1)}%'
+        : '';
 
-    final String lateFeeDiffValText = lateFeeDiff != null 
-        ? "${lateFeeDiff.abs().toStringAsFixed(2)}%" 
-        : "";
-    final String lateFeeDiffPctText = lateFeeDiffPct != null 
-        ? "${lateFeeDiffPct.abs().toStringAsFixed(1)}%" 
-        : "";
+    final String lateFeeDiffValText =
+        lateFeeDiff != null ? '${lateFeeDiff.abs().toStringAsFixed(2)}%' : '';
+    final String lateFeeDiffPctText = lateFeeDiffPct != null
+        ? '${lateFeeDiffPct.abs().toStringAsFixed(1)}%'
+        : '';
 
-    final String installmentDiffValText = installmentDiff != null 
-        ? "UGX ${_fmt(installmentDiff.abs())}" 
-        : "";
-    final String installmentDiffPctText = installmentDiffPct != null 
-        ? "${installmentDiffPct.abs().toStringAsFixed(1)}%" 
-        : "";
+    final String installmentDiffValText =
+        installmentDiff != null ? 'UGX ${_fmt(installmentDiff.abs())}' : '';
+    final String installmentDiffPctText = installmentDiffPct != null
+        ? '${installmentDiffPct.abs().toStringAsFixed(1)}%'
+        : '';
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -611,9 +610,8 @@ class _OfferCardState extends State<_OfferCard>
                     Text(
                       offerType,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isFull
-                                ? AppColors.success
-                                : AppColors.accent,
+                            color:
+                                isFull ? AppColors.success : AppColors.accent,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -739,59 +737,52 @@ class _OfferCardState extends State<_OfferCard>
           sizeFactor: _expandAnim,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                      height: 1,
-                      color: Theme.of(context).dividerColor),
-                  const SizedBox(height: 12),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Divider(height: 1, color: Theme.of(context).dividerColor),
+              const SizedBox(height: 12),
 
-                  // Installment Math breakdown ("How this number came about")
-                  _CalculatorRowDetailPanel(
-                    offer: offer,
-                    durationMonths: widget.durationMonths,
-                  ),
+              // Installment Math breakdown ("How this number came about")
+              _CalculatorRowDetailPanel(
+                offer: offer,
+                durationMonths: widget.durationMonths,
+              ),
 
-                  // Deal Comparison Analytics or Upgrade Lock Banner
-                  if (widget.isOwner) ...[
-                    if (widget.isProBorrower)
-                      _ProAnalysisPanel(
-                        interestDiff: interestDiff,
-                        lateFeeDiff: lateFeeDiff,
-                        installmentDiff: installmentDiff,
-                        suggestedInterest: widget.suggestedInterestRatePct,
-                        suggestedLateFee: widget.suggestedLateFeePct,
-                        suggestedInstallment: widget.suggestedInstallmentAmount,
-                        offeredInterest: offer.interestRatePct,
-                        offeredLateFee: offer.lateFeePct,
-                        offeredInstallment: offer.installmentAmount,
-                      )
-                    else
-                      _ProUpgradePanel(onUpgrade: widget.onUpgrade),
-                  ],
+              // Deal Comparison Analytics or Upgrade Lock Banner
+              if (widget.isOwner) ...[
+                if (widget.isProBorrower)
+                  _ProAnalysisPanel(
+                    interestDiff: interestDiff,
+                    lateFeeDiff: lateFeeDiff,
+                    installmentDiff: installmentDiff,
+                    suggestedInterest: widget.suggestedInterestRatePct,
+                    suggestedLateFee: widget.suggestedLateFeePct,
+                    suggestedInstallment: widget.suggestedInstallmentAmount,
+                    offeredInterest: offer.interestRatePct,
+                    offeredLateFee: offer.lateFeePct,
+                    offeredInstallment: offer.installmentAmount,
+                  )
+                else
+                  _ProUpgradePanel(onUpgrade: widget.onUpgrade),
+              ],
 
-                  const SizedBox(height: 12),
-                  if (offer.termsLockedAt != null)
-                    _DetailRow(
-                        label: 'Terms locked',
-                        value: _dateLabel(offer.termsLockedAt!)),
-                  if (offer.proposedExpectations != null &&
-                      offer.proposedExpectations!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text('Lender notes',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.accent)),
-                    const SizedBox(height: 4),
-                    Text(offer.proposedExpectations!,
-                        style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 8),
-                  ],
-                ]),
+              const SizedBox(height: 12),
+              if (offer.termsLockedAt != null)
+                _DetailRow(
+                    label: 'Terms locked',
+                    value: _dateLabel(offer.termsLockedAt!)),
+              if (offer.proposedExpectations != null &&
+                  offer.proposedExpectations!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text('Lender notes',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold, color: AppColors.accent)),
+                const SizedBox(height: 4),
+                Text(offer.proposedExpectations!,
+                    style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 8),
+              ],
+            ]),
           ),
         ),
 
@@ -827,8 +818,8 @@ class _SparklineWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isPositive == null
-        ? (Theme.of(context).colorScheme.brightness == Brightness.dark 
-            ? AppColors.text3Dark 
+        ? (Theme.of(context).colorScheme.brightness == Brightness.dark
+            ? AppColors.text3Dark
             : AppColors.text3Light)
         : (isPositive! ? AppColors.success : AppColors.danger);
 
@@ -869,7 +860,7 @@ class _SparklinePainter extends CustomPainter {
 
     final points = <Offset>[];
     final step = size.width / 5;
-    
+
     if (isPositive == null) {
       points.add(Offset(0, size.height * 0.5));
       points.add(Offset(step, size.height * 0.46));
@@ -951,8 +942,8 @@ class _StockTermRow extends StatelessWidget {
     final IconData trendIcon;
     final String sign;
     if (isPositiveTrend == null) {
-      trendColor = Theme.of(context).colorScheme.brightness == Brightness.dark 
-          ? AppColors.text2Dark 
+      trendColor = Theme.of(context).colorScheme.brightness == Brightness.dark
+          ? AppColors.text2Dark
           : AppColors.text2Light;
       trendIcon = Icons.trending_flat_rounded;
       sign = '';
@@ -988,7 +979,10 @@ class _StockTermRow extends StatelessWidget {
                   Text(
                     'Suggested: $suggestedText',
                     style: textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
                       fontSize: 10.5,
                     ),
                   ),
@@ -1007,12 +1001,16 @@ class _StockTermRow extends StatelessWidget {
                             children: [
                               Opacity(
                                 opacity: 0.16,
-                                child: _SparklineWidget(isPositive: isPositiveTrend),
+                                child: _SparklineWidget(
+                                    isPositive: isPositiveTrend),
                               ),
                               Icon(
                                 Icons.lock_outline_rounded,
                                 size: 12,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.35),
                               ),
                             ],
                           ),
@@ -1055,7 +1053,8 @@ class _StockTermRow extends StatelessWidget {
                       : GestureDetector(
                           onTap: onUpgrade,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: AppColors.purple.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
@@ -1063,7 +1062,8 @@ class _StockTermRow extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.lock_rounded, size: 8, color: AppColors.purple),
+                                const Icon(Icons.lock_rounded,
+                                    size: 8, color: AppColors.purple),
                                 const SizedBox(width: 2),
                                 Text(
                                   'PRO DELTA',
@@ -1104,16 +1104,17 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
     final frequencyText = _freqLabel(offer.repaymentFrequency);
     final periods = offer.repaymentFrequency == 'monthly'
         ? durationMonths
-        : (offer.repaymentFrequency == 'weekly'
-            ? durationMonths * 4
-            : 1);
+        : (offer.repaymentFrequency == 'weekly' ? durationMonths * 4 : 1);
     final totalRepayable = offer.installmentAmount * periods;
     final totalInterest = totalRepayable - offer.offerAmount;
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
@@ -1122,15 +1123,16 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.calculate_outlined, size: 15, color: AppColors.accent),
+              const Icon(Icons.calculate_outlined,
+                  size: 15, color: AppColors.accent),
               const SizedBox(width: 6),
               Text(
                 'Installment Cost Breakdown',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: AppColors.accent,
-                ),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: AppColors.accent,
+                    ),
               ),
             ],
           ),
@@ -1138,10 +1140,14 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           Text(
             'Formula: Installment × RepaymentsCount = Total Payback',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontStyle: FontStyle.italic,
-              fontSize: 10,
-              color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.65),
-            ),
+                  fontStyle: FontStyle.italic,
+                  fontSize: 10,
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.color
+                      ?.withValues(alpha: 0.65),
+                ),
           ),
           const SizedBox(height: 8),
           _CalculatorRow(
@@ -1256,9 +1262,11 @@ class _ProAnalysisPanel extends StatelessWidget {
       if (interestDiff!.abs() < 0.005) {
         notes.write('• Interest rate matches your requested rate.\n');
       } else if (interestDiff! < 0) {
-        notes.write('• Interest is LOWER by ${interestDiff!.abs().toStringAsFixed(2)}% (reduces cost).\n');
+        notes.write(
+            '• Interest is LOWER by ${interestDiff!.abs().toStringAsFixed(2)}% (reduces cost).\n');
       } else {
-        notes.write('• Interest is HIGHER by ${interestDiff!.abs().toStringAsFixed(2)}% (increases cost).\n');
+        notes.write(
+            '• Interest is HIGHER by ${interestDiff!.abs().toStringAsFixed(2)}% (increases cost).\n');
       }
     }
 
@@ -1267,9 +1275,11 @@ class _ProAnalysisPanel extends StatelessWidget {
       if (lateFeeDiff!.abs() < 0.005) {
         notes.write('• Late payment penalty matches your suggested rate.\n');
       } else if (lateFeeDiff! < 0) {
-        notes.write('• Penalty charge fine: LOWER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (safer payment guard).\n');
+        notes.write(
+            '• Penalty charge fine: LOWER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (safer payment guard).\n');
       } else {
-        notes.write('• Penalty fine is HIGHER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (higher penalty risk).\n');
+        notes.write(
+            '• Penalty fine is HIGHER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (higher penalty risk).\n');
       }
     }
 
@@ -1278,18 +1288,26 @@ class _ProAnalysisPanel extends StatelessWidget {
       if (installmentDiff == 0) {
         notes.write('• Period installment matches your expectations.\n');
       } else if (installmentDiff! < 0) {
-        notes.write('• Installment payment is LOWER by UGX ${_fmt(installmentDiff!.abs())}.\n');
+        notes.write(
+            '• Installment payment is LOWER by UGX ${_fmt(installmentDiff!.abs())}.\n');
       } else {
-        notes.write('• Installment cost is HIGHER by UGX ${_fmt(installmentDiff!.abs())}.\n');
+        notes.write(
+            '• Installment cost is HIGHER by UGX ${_fmt(installmentDiff!.abs())}.\n');
       }
     }
 
-    final analysisText = parsedAny ? notes.toString().trim() : 'Bid matches your proposed expectations.';
+    final analysisText = parsedAny
+        ? notes.toString().trim()
+        : 'Bid matches your proposed expectations.';
 
     final Color trendColor;
-    if ((interestDiff ?? 0) < 0 || (lateFeeDiff ?? 0) < 0 || (installmentDiff ?? 0) < 0) {
+    if ((interestDiff ?? 0) < 0 ||
+        (lateFeeDiff ?? 0) < 0 ||
+        (installmentDiff ?? 0) < 0) {
       trendColor = AppColors.success;
-    } else if ((interestDiff ?? 0) > 0 || (lateFeeDiff ?? 0) > 0 || (installmentDiff ?? 0) > 0) {
+    } else if ((interestDiff ?? 0) > 0 ||
+        (lateFeeDiff ?? 0) > 0 ||
+        (installmentDiff ?? 0) > 0) {
       trendColor = AppColors.danger;
     } else {
       trendColor = AppColors.accent;
@@ -1314,10 +1332,10 @@ class _ProAnalysisPanel extends StatelessWidget {
               Text(
                 'PRO Comparison Analysis',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                  color: trendColor,
-                ),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      color: trendColor,
+                    ),
               ),
             ],
           ),
@@ -1325,10 +1343,10 @@ class _ProAnalysisPanel extends StatelessWidget {
           Text(
             analysisText,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-              height: 1.35,
-              fontSize: 11,
-            ),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  height: 1.35,
+                  fontSize: 11,
+                ),
           ),
         ],
       ),
@@ -1356,15 +1374,16 @@ class _ProUpgradePanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.lock_person_outlined, size: 15, color: AppColors.purple),
+              const Icon(Icons.lock_person_outlined,
+                  size: 15, color: AppColors.purple),
               const SizedBox(width: 6),
               Text(
                 'Unlock Deal Comparison',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                  color: AppColors.purple,
-                ),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      color: AppColors.purple,
+                    ),
               ),
             ],
           ),
@@ -1372,10 +1391,13 @@ class _ProUpgradePanel extends StatelessWidget {
           Text(
             'Upgrade to a PRO borrower subscription to see how interest rates, payment fines, and installments stack up against your goals with comparative sparklines and instant delta calculations.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-              height: 1.35,
-              fontSize: 11,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.8),
+                  height: 1.35,
+                  fontSize: 11,
+                ),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -1384,13 +1406,17 @@ class _ProUpgradePanel extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.purple,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
               ),
               onPressed: onUpgrade,
               child: const Text(
                 'Upgrade to PRO',
-                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
             ),
           ),
@@ -1417,7 +1443,10 @@ class _DetailRow extends StatelessWidget {
               width: 150,
               child: Text(label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
                           ?.withValues(alpha: 0.6))),
             ),
             Expanded(
@@ -1457,7 +1486,6 @@ String _freqLabel(String f) {
 String _dateLabel(DateTime dt) {
   return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
-
 
 class _StatBox extends StatelessWidget {
   const _StatBox({required this.label, required this.value, this.valueColor});
