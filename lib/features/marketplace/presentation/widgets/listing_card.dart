@@ -1,9 +1,6 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/shared_widgets.dart';
 import '../../domain/models/loan_listing.dart';
 
 class ListingCard extends StatelessWidget {
@@ -15,23 +12,25 @@ class ListingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasOffers = listing.numberOfOffers > 0;
-    final borderColor = hasOffers
-        ? AppColors.accent.withOpacity(0.6)
-        : Theme.of(context).dividerColor;
+    final fundedFraction = _fundedFraction(listing);
+    final fundedLabel = fundedFraction >= 1
+        ? 'Fully funded'
+        : '${(fundedFraction * 100).round()}% funded';
+    final progressColor =
+        fundedFraction >= 1 ? AppColors.success : AppColors.accent;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(13, 12, 13, 10),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -41,14 +40,11 @@ class ListingCard extends StatelessWidget {
                     children: [
                       Text(
                         listing.title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
                         '${listing.district} · ${listing.durationMonths} months',
                         style: Theme.of(context).textTheme.bodySmall,
@@ -57,65 +53,47 @@ class ListingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                if (listing.kycStatus != null)
-                   Badge(
-                    label: Text(listing.kycStatus!.toUpperCase()),
-                    backgroundColor: listing.kycStatus == 'verified' ? AppColors.success : AppColors.warning,
-                   ),
+                _OfferChip(offerCount: listing.numberOfOffers),
               ],
             ),
-
             const SizedBox(height: 8),
-
-            // Amount
-            UgxAmount(listing.requestedAmount, fontSize: 20),
-
-            const SizedBox(height: 8),
-
-            // Offer row
+            Text(
+              'UGX ${_fmtAmount(listing.requestedAmount)}',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontFamily: AppFonts.body,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              listing.purpose,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.76),
+                  ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 7),
+            _FundedBar(
+              fraction: fundedFraction,
+              color: progressColor,
+            ),
+            const SizedBox(height: 4),
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    listing.purpose,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                Text(
+                  hasOffers ? fundedLabel : 'No bids yet',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: progressColor,
+                      ),
                 ),
-                const SizedBox(width: 8),
-                if (hasOffers)
-                  Text(
-                    '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.success,
-                    ),
-                  )
-                else
-                  Text(
-                    'No offers yet',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            // Activity bar
-            _OfferActivityBar(offerCount: listing.numberOfOffers),
-
-            const SizedBox(height: 5),
-
-            // Footer row
-            Row(
-              children: [
                 const Spacer(),
                 Text(
-                  listing.timeRemainingLabel,
+                  _shortTimeLabel(listing),
                   style: TextStyle(
                     fontSize: 10,
                     color: listing.isClosingSoon6h
@@ -132,30 +110,79 @@ class ListingCard extends StatelessWidget {
       ),
     );
   }
+
+  double _fundedFraction(LoanListing listing) {
+    if (listing.numberOfOffers >= 3) return 1;
+    if (listing.numberOfOffers <= 0) return 0;
+    return (listing.numberOfOffers / 6).clamp(0.0, 0.9);
+  }
+
+  String _shortTimeLabel(LoanListing listing) {
+    if (listing.isExpired) return 'Expired';
+    final days = listing.timeRemaining.inDays;
+    if (days > 0) return '${days}d left';
+    final hours = listing.timeRemaining.inHours;
+    if (hours > 0) return '${hours}h left';
+    return '${listing.timeRemaining.inMinutes}m left';
+  }
+
+  String _fmtAmount(int amount) {
+    final s = amount.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(s[i]);
+    }
+    return buffer.toString();
+  }
 }
 
-class _OfferActivityBar extends StatelessWidget {
-  const _OfferActivityBar({required this.offerCount});
+class _OfferChip extends StatelessWidget {
+  const _OfferChip({required this.offerCount});
 
   final int offerCount;
 
-  static const _maxOffersForFullBar = 5;
+  @override
+  Widget build(BuildContext context) {
+    final hasOffers = offerCount > 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: hasOffers
+            ? const Color(0xFF053A08)
+            : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        hasOffers
+            ? '$offerCount offer${offerCount == 1 ? '' : 's'}'
+            : '0 offers',
+        style: TextStyle(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w600,
+          color: hasOffers
+              ? AppColors.success
+              : Theme.of(context).textTheme.bodySmall?.color,
+        ),
+      ),
+    );
+  }
+}
+
+class _FundedBar extends StatelessWidget {
+  const _FundedBar({required this.fraction, required this.color});
+
+  final double fraction;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final fraction = (offerCount / _maxOffersForFullBar).clamp(0.0, 1.0);
-    final color = offerCount >= 4
-        ? AppColors.success
-        : offerCount >= 2
-            ? AppColors.warning
-            : AppColors.text2Dark;
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(2),
       child: LinearProgressIndicator(
         value: fraction,
         minHeight: 3,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );

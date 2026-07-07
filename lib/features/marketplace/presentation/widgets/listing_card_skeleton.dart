@@ -7,10 +7,10 @@ class ListingCardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(13, 12, 13, 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: const Column(
@@ -20,21 +20,23 @@ class ListingCardSkeleton extends StatelessWidget {
             children: [
               SkeletonBox(width: 140, height: 14),
               Spacer(),
-              SkeletonBox(width: 60, height: 20, radius: 10),
+              SkeletonBox(width: 48, height: 16, radius: 8),
             ],
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 3),
           SkeletonBox(width: 80, height: 11),
-          SizedBox(height: 10),
-          SkeletonBox(width: 160, height: 22),
-          SizedBox(height: 10),
-          SkeletonBox(width: double.infinity, height: 3, radius: 2),
           SizedBox(height: 8),
+          SkeletonBox(width: 150, height: 22),
+          SizedBox(height: 7),
+          SkeletonBox(width: 210, height: 10),
+          SizedBox(height: 7),
+          SkeletonBox(width: double.infinity, height: 3, radius: 2),
+          SizedBox(height: 4),
           Row(
             children: [
-              SkeletonBox(width: 90, height: 10),
+              SkeletonBox(width: 70, height: 10),
               Spacer(),
-              SkeletonBox(width: 60, height: 10),
+              SkeletonBox(width: 42, height: 10),
             ],
           ),
         ],

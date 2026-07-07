@@ -29,60 +29,81 @@ class MarketplacePage extends StatelessWidget {
 class _MarketplaceView extends StatelessWidget {
   const _MarketplaceView();
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
               child: Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Marketplace',
-                          style: Theme.of(context).textTheme.headlineMedium),
-                      BlocBuilder<MarketplaceCubit, MarketplaceState>(
-                        builder: (context, state) {
-                          final count = state is MarketplaceLoaded
-                              ? state.listings.length
-                              : 0;
-                          return Row(
-                            children: [
-                              const LiveDot(),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$count listings · live',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Marketplace',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(fontSize: 22),
+                        ),
+                        const SizedBox(height: 2),
+                        BlocBuilder<MarketplaceCubit, MarketplaceState>(
+                          builder: (context, state) {
+                            final count = state is MarketplaceLoaded
+                                ? state.listings.length
+                                : 0;
+                            return Row(
+                              children: [
+                                const LiveDot(),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '$count listings · live',
+                                  style: const TextStyle(
+                                    color: AppColors.success,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
-                      final unread = state is NotificationLoaded
-                          ? state.unreadCount : 0;
+                      final unread =
+                          state is NotificationLoaded ? state.unreadCount : 0;
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.notifications_outlined),
-                            onPressed: () => context.push(AppRoutes.notifications),
+                          SizedBox(
+                            width: 34,
+                            height: 34,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(
+                                Icons.notifications_none_rounded,
+                                size: 18,
+                              ),
+                              onPressed: () =>
+                                  context.push(AppRoutes.notifications),
+                            ),
                           ),
                           if (unread > 0)
                             Positioned(
-                              right: 8, top: 8,
+                              right: 8,
+                              top: 8,
                               child: Container(
-                                width: 8, height: 8,
+                                width: 7,
+                                height: 7,
                                 decoration: const BoxDecoration(
                                   color: AppColors.danger,
                                   shape: BoxShape.circle,
@@ -96,60 +117,67 @@ class _MarketplaceView extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 8),
-
-            const SizedBox(height: 8),
-
-            // Feed
             Expanded(
-              child: BlocBuilder<MarketplaceCubit, MarketplaceState>(
-                builder: (context, state) {
-                  if (state is MarketplaceLoading || state is MarketplaceInitial) {
-                    return ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      itemCount: 4,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, __) => const ListingCardSkeleton(),
-                    );
-                  }
-
-                  if (state is MarketplaceError) {
-                    return ErrorState(
-                      message: state.message,
-                      onRetry: () => context.read<MarketplaceCubit>().refresh(),
-                    );
-                  }
-
-                  if (state is MarketplaceLoaded) {
-                    if (state.listings.isEmpty) {
-                      return const EmptyState(
-                        icon: Icons.show_chart_rounded,
-                        title: 'No listings found',
-                        subtitle: 'Check back soon — new listings appear in real time.',
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(8)),
+                ),
+                child: BlocBuilder<MarketplaceCubit, MarketplaceState>(
+                  builder: (context, state) {
+                    if (state is MarketplaceLoading ||
+                        state is MarketplaceInitial) {
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(13, 0, 13, 14),
+                        itemCount: 4,
+                        separatorBuilder: (_, __) => const SizedBox(height: 7),
+                        itemBuilder: (_, __) => const ListingCardSkeleton(),
                       );
                     }
 
-                    return RefreshIndicator(
-                      onRefresh: () => context.read<MarketplaceCubit>().refresh(),
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
-                        itemCount: state.listings.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          return ListingCard(
-                            listing: state.listings[index],
-                            onTap: () => context.push(
-                              '/marketplace/${state.listings[index].requestId}',
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }
+                    if (state is MarketplaceError) {
+                      return ErrorState(
+                        message: state.message,
+                        onRetry: () =>
+                            context.read<MarketplaceCubit>().refresh(),
+                      );
+                    }
 
-                  return const SizedBox.shrink();
-                },
+                    if (state is MarketplaceLoaded) {
+                      if (state.listings.isEmpty) {
+                        return const EmptyState(
+                          icon: Icons.show_chart_rounded,
+                          title: 'No listings found',
+                          subtitle:
+                              'Check back soon — new listings appear in real time.',
+                        );
+                      }
+
+                      return RefreshIndicator(
+                        onRefresh: () =>
+                            context.read<MarketplaceCubit>().refresh(),
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(13, 0, 13, 14),
+                          itemCount: state.listings.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 7),
+                          itemBuilder: (context, index) {
+                            return ListingCard(
+                              listing: state.listings[index],
+                              onTap: () => context.push(
+                                '/marketplace/${state.listings[index].requestId}',
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
               ),
             ),
           ],
