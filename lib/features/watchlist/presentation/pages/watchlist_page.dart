@@ -1,3 +1,4 @@
+// lib/features/watchlist/presentation/pages/watchlist_page.dart
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
