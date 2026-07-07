@@ -121,7 +121,10 @@ class _MarketplaceView extends StatelessWidget {
               child: Container(
                 margin: const EdgeInsets.fromLTRB(6, 0, 6, 0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surface
+                      .withValues(alpha: 0.72),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
@@ -130,9 +133,9 @@ class _MarketplaceView extends StatelessWidget {
                     if (state is MarketplaceLoading ||
                         state is MarketplaceInitial) {
                       return ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(13, 0, 13, 14),
+                        padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                         itemCount: 4,
-                        separatorBuilder: (_, __) => const SizedBox(height: 7),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (_, __) => const ListingCardSkeleton(),
                       );
                     }
@@ -159,10 +162,10 @@ class _MarketplaceView extends StatelessWidget {
                         onRefresh: () =>
                             context.read<MarketplaceCubit>().refresh(),
                         child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(13, 0, 13, 14),
+                          padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                           itemCount: state.listings.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 7),
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             return ListingCard(
                               listing: state.listings[index],

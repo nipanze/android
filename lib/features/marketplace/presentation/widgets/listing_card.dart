@@ -1,10 +1,17 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/models/loan_listing.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../marketplace/domain/models/loan_listing.dart';
 
 class ListingCard extends StatelessWidget {
-  const ListingCard({super.key, required this.listing, required this.onTap});
+  const ListingCard({
+    super.key,
+    required this.listing,
+    required this.onTap,
+  });
 
   final LoanListing listing;
   final VoidCallback onTap;
@@ -13,20 +20,32 @@ class ListingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasOffers = listing.numberOfOffers > 0;
     final fundedFraction = _fundedFraction(listing);
-    final fundedLabel = fundedFraction >= 1
-        ? 'Fully funded'
-        : '${(fundedFraction * 100).round()}% funded';
-    final progressColor =
-        fundedFraction >= 1 ? AppColors.success : AppColors.accent;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final progressColor = hasOffers ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant;
+    final fundedLabel = hasOffers ? '${listing.numberOfOffers} offer${listing.numberOfOffers == 1 ? '' : 's'}' : 'No bids yet';
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(13, 12, 13, 10),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          color: isDark ? const Color(0xFF2A2A28) : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Theme.of(context).dividerColor),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : const Color(0xFFE1E1DD),
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.035),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +79,6 @@ class ListingCard extends StatelessWidget {
             Text(
               'UGX ${_fmtAmount(listing.requestedAmount)}',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontFamily: AppFonts.body,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
@@ -69,10 +87,7 @@ class ListingCard extends StatelessWidget {
             Text(
               listing.purpose,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.76),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.76),
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -145,24 +160,29 @@ class _OfferChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasOffers = offerCount > 0;
+    final scheme = Theme.of(context).colorScheme;
+    // Muted, low-contrast pill for both light and dark themes.
+    final bgColor = hasOffers
+        ? scheme.surfaceVariant.withValues(alpha: 0.10)
+        : scheme.surface;
+    final borderColor = hasOffers
+        ? scheme.onSurfaceVariant.withValues(alpha: 0.10)
+        : scheme.onSurface.withValues(alpha: 0.08);
+    final textColor = scheme.onSurfaceVariant;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: hasOffers
-            ? const Color(0xFF053A08)
-            : Theme.of(context).colorScheme.surface,
+        color: bgColor,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
       ),
       child: Text(
-        hasOffers
-            ? '$offerCount offer${offerCount == 1 ? '' : 's'}'
-            : '0 offers',
+        hasOffers ? '$offerCount offer${offerCount == 1 ? '' : 's'}' : '0 offers',
         style: TextStyle(
           fontSize: 9.5,
           fontWeight: FontWeight.w600,
-          color: hasOffers
-              ? AppColors.success
-              : Theme.of(context).textTheme.bodySmall?.color,
+          color: textColor,
         ),
       ),
     );
