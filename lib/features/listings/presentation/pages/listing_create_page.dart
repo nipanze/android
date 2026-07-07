@@ -1,3 +1,4 @@
+// lib/features/listings/presentation/pages/listing_create_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -144,7 +145,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       _loanDetailsFormKey.currentState!.validate();
       if (_selectedPurpose == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a purpose.')),
+          const SnackBar(content: Text('Select a purpose to continue.')),
         );
       }
       return;
@@ -153,7 +154,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       _repaymentFormKey.currentState!.validate();
       if (_preferredRepaymentPlan == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a repayment plan.')),
+          const SnackBar(content: Text('Select a repayment plan to continue.')),
         );
       }
       return;
@@ -218,7 +219,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       setState(() => _submitting = false);
       _showGate(e is AppException
           ? e.message
-          : 'Could not publish this request. Please try again.');
+          : 'Could not publish this request. Try again.');
       return;
     }
     if (!mounted) return;
@@ -257,29 +258,24 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: _step > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                onPressed: _back,
-              )
-            : null,
-        title: Text(_titleForStep()),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(3),
-          child: LinearProgressIndicator(
-            value: (_step + 1) / 3,
-            backgroundColor: Theme.of(context).dividerColor,
-            valueColor: const AlwaysStoppedAnimation(AppColors.accent),
-            minHeight: 3,
-          ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _TemplateHeader(
+              title: _titleForStep(),
+              subtitle: 'Step ${_step + 1} of 3 · ${_subtitleForStep()}',
+              progress: (_step + 1) / 3,
+              onBack: _step > 0 ? _back : null,
+            ),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [_buildStep1(), _buildStep2(), _buildStep3()],
+              ),
+            ),
+          ],
         ),
-      ),
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [_buildStep1(), _buildStep2(), _buildStep3()],
       ),
       bottomNavigationBar: _buildBottomBar(),
     );
@@ -296,6 +292,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     }
   }
 
+  String _subtitleForStep() {
+    switch (_step) {
+      case 1:
+        return 'repayment context';
+      case 2:
+        return 'review';
+      default:
+        return 'loan details';
+    }
+  }
+
   // ─── Step 1: Loan details ───────────────────────────────────────────────────
 
   Widget _buildStep1() {
@@ -304,156 +311,137 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       child: Form(
         key: _loanDetailsFormKey,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // Info banner
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
-            ),
-            child: Row(children: [
-              const Icon(Icons.info_outline_rounded,
-                  size: 16, color: AppColors.accent),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Requests: UGX ${_fmt(_limits.minLoanAmount)} – ${_fmt(_limits.maxLoanAmount)} · Up to 60 months · Terms lock on publish',
-                  style: const TextStyle(fontSize: 11, color: AppColors.accent),
+          _InfoBanner(
+            text:
+                'UGX ${_fmt(_limits.minLoanAmount)}-${_fmt(_limits.maxLoanAmount)} · Up to 60 months · terms lock on publish',
+          ),
+          const SizedBox(height: 14),
+          _FormPanel(
+            title: 'The basics',
+            children: [
+              TextFormField(
+                controller: _titleController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Request title',
+                  hintText: 'e.g. Delivery van for Kampala route',
+                ),
+                validator: (v) {
+                  final value = v?.trim() ?? '';
+                  if (value.isEmpty) return 'Enter a title';
+                  if (value.length < 4) return 'Use at least 4 characters';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedPurpose,
+                decoration: const InputDecoration(labelText: 'Purpose'),
+                hint: const Text('Select purpose'),
+                items: _purposes
+                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                    .toList(),
+                onChanged: (v) => setState(() {
+                  _selectedPurpose = v;
+                  if (v != 'Other') _customPurpose = null;
+                }),
+                validator: (v) => v == null ? 'Select a purpose' : null,
+              ),
+              if (_selectedPurpose == 'Other') ...[
+                const SizedBox(height: 12),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Describe your purpose',
+                  ),
+                  onChanged: (v) => _customPurpose = v,
+                  validator: (v) {
+                    if (_selectedPurpose == 'Other' &&
+                        (v == null || v.trim().isEmpty)) {
+                      return 'Describe your purpose';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          _FormPanel(
+            title: 'The numbers',
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'Amount (UGX)',
+                        hintText: '7,000,000',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Enter an amount';
+                        final n = int.tryParse(v);
+                        if (n == null) return 'Enter a valid number';
+                        if (n < _limits.minLoanAmount) {
+                          return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
+                        }
+                        if (n > _limits.maxLoanAmount) {
+                          return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _durationController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        labelText: 'Duration',
+                        hintText: '6 months',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Enter duration';
+                        final n = int.tryParse(v);
+                        if (n == null || n < 1 || n > 60) {
+                          return '1 to 60 months';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _FormPanel(
+            title: 'Location and details',
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: _district,
+                decoration: const InputDecoration(labelText: 'District'),
+                items: _districts
+                    .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                    .toList(),
+                onChanged: (v) => setState(() => _district = v ?? 'Kampala'),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 4,
+                maxLength: 500,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                  hintText: 'Add any context lenders should know',
+                  alignLabelWithHint: true,
                 ),
               ),
-            ]),
-          ),
-          const SizedBox(height: 20),
-
-          // Title
-          TextFormField(
-            controller: _titleController,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Request Title *',
-              hintText: 'e.g. Farm equipment purchase',
-              prefixIcon: Icon(Icons.title_rounded, size: 20),
-            ),
-            validator: (v) {
-              final value = v?.trim() ?? '';
-              if (value.isEmpty) return 'Enter a title';
-              if (value.length < 4) return 'Use at least 4 characters';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // Amount
-          TextFormField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Loan Amount (UGX) *',
-              hintText: 'e.g. 2000000',
-              prefixIcon: Icon(Icons.account_balance_wallet_outlined, size: 20),
-            ),
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Enter an amount';
-              final n = int.tryParse(v);
-              if (n == null) return 'Enter a valid number';
-              if (n < _limits.minLoanAmount) {
-                return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
-              }
-              if (n > _limits.maxLoanAmount) {
-                return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // Duration
-          TextFormField(
-            controller: _durationController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Duration (months) *',
-              hintText: '1 – 60',
-              prefixIcon: Icon(Icons.calendar_month_outlined, size: 20),
-            ),
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Enter duration';
-              final n = int.tryParse(v);
-              if (n == null || n < 1 || n > 60) return '1 to 60 months';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // Purpose dropdown
-          DropdownButtonFormField<String>(
-            initialValue: _selectedPurpose,
-            decoration: const InputDecoration(
-              labelText: 'Purpose *',
-              prefixIcon: Icon(Icons.category_outlined, size: 20),
-            ),
-            hint: const Text('Select purpose'),
-            items: _purposes
-                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                .toList(),
-            onChanged: (v) => setState(() {
-              _selectedPurpose = v;
-              if (v != 'Other') _customPurpose = null;
-            }),
-            validator: (v) => v == null ? 'Select a purpose' : null,
-          ),
-
-          // Custom purpose field when Other selected
-          if (_selectedPurpose == 'Other') ...[
-            const SizedBox(height: 14),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: 'Describe your purpose *',
-                prefixIcon: Icon(Icons.edit_outlined, size: 20),
-              ),
-              onChanged: (v) => _customPurpose = v,
-              validator: (v) {
-                if (_selectedPurpose == 'Other' &&
-                    (v == null || v.trim().isEmpty)) {
-                  return 'Please describe your purpose';
-                }
-                return null;
-              },
-            ),
-          ],
-          const SizedBox(height: 14),
-
-          // District
-          DropdownButtonFormField<String>(
-            initialValue: _district,
-            decoration: const InputDecoration(
-              labelText: 'District *',
-              prefixIcon: Icon(Icons.location_on_outlined, size: 20),
-            ),
-            items: _districts
-                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                .toList(),
-            onChanged: (v) => setState(() => _district = v ?? 'Kampala'),
-          ),
-          const SizedBox(height: 14),
-
-          // Description (optional)
-          TextFormField(
-            controller: _descriptionController,
-            maxLines: 4,
-            maxLength: 500,
-            decoration: const InputDecoration(
-              labelText: 'Description (optional)',
-              alignLabelWithHint: true,
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(bottom: 60),
-                child: Icon(Icons.notes_rounded, size: 20),
-              ),
-            ),
+            ],
           ),
         ]),
       ),
@@ -472,162 +460,164 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       child: Form(
         key: _repaymentFormKey,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          TextFormField(
-            controller: _incomeSourceController,
-            textCapitalization: TextCapitalization.sentences,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Income Source *',
-              hintText: 'e.g. Salary, shop income, farming, side work',
-              alignLabelWithHint: true,
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(bottom: 24),
-                child: Icon(Icons.work_outline_rounded, size: 20),
+          _FormPanel(
+            title: 'Repayment source',
+            children: [
+              TextFormField(
+                controller: _incomeSourceController,
+                textCapitalization: TextCapitalization.sentences,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Income source',
+                  hintText: 'e.g. Salary, shop income, farming, side work',
+                  alignLabelWithHint: true,
+                  prefixIcon: Icon(Icons.work_outline_rounded, size: 20),
+                ),
+                validator: (v) {
+                  final value = v?.trim() ?? '';
+                  if (value.isEmpty) return 'Enter your repayment source';
+                  if (value.length < 6) return 'Add a little more detail';
+                  return null;
+                },
               ),
-            ),
-            validator: (v) {
-              final value = v?.trim() ?? '';
-              if (value.isEmpty) return 'Enter your repayment source';
-              if (value.length < 6) return 'Add a little more detail';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-          DropdownButtonFormField<String>(
-            initialValue: _preferredRepaymentPlan,
-            decoration: const InputDecoration(
-              labelText: 'Preferred Repayment Plan *',
-              prefixIcon: Icon(Icons.payments_outlined, size: 20),
-            ),
-            hint: const Text('Select repayment plan'),
-            items: _repaymentPlans
-                .map((p) => DropdownMenuItem(
-                      value: p['value'],
-                      child: Text(p['label']!),
-                    ))
-                .toList(),
-            onChanged: (v) => setState(() => _preferredRepaymentPlan = v),
-            validator: (v) => v == null ? 'Select a repayment plan' : null,
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _repaymentAmountController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Repayment Amount Per Period (UGX) *',
-              hintText: 'e.g. 250000',
-              prefixIcon: Icon(Icons.savings_outlined, size: 20),
-            ),
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Enter repayment amount';
-              final n = int.tryParse(v);
-              if (n == null || n <= 0) return 'Enter a valid amount';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _repaymentTimelineController,
-            textCapitalization: TextCapitalization.sentences,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Repayment Timeline *',
-              hintText: 'e.g. Paid by the 5th of every month for 8 months',
-              alignLabelWithHint: true,
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(bottom: 48),
-                child: Icon(Icons.event_repeat_outlined, size: 20),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _preferredRepaymentPlan,
+                decoration: const InputDecoration(
+                  labelText: 'Preferred repayment plan',
+                  prefixIcon: Icon(Icons.payments_outlined, size: 20),
+                ),
+                hint: const Text('Select repayment plan'),
+                items: _repaymentPlans
+                    .map((p) => DropdownMenuItem(
+                          value: p['value'],
+                          child: Text(p['label']!),
+                        ))
+                    .toList(),
+                onChanged: (v) => setState(() => _preferredRepaymentPlan = v),
+                validator: (v) => v == null ? 'Select a repayment plan' : null,
               ),
-            ),
-            validator: (v) {
-              final value = v?.trim() ?? '';
-              if (value.isEmpty) return 'Enter repayment timeline';
-              if (value.length < 10) return 'Add a clearer timeline';
-              return null;
-            },
+            ],
           ),
-          const SizedBox(height: 18),
-          Text('Preferred terms',
-              style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 6),
-          Text(
-            canSuggestTerms
-                ? 'These suggestions are locked when the request is published.'
+          const SizedBox(height: 10),
+          _FormPanel(
+            title: 'Ability to repay',
+            children: [
+              TextFormField(
+                controller: _repaymentAmountController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Repayment amount per period (UGX)',
+                  hintText: 'e.g. 250,000',
+                  prefixIcon: Icon(Icons.savings_outlined, size: 20),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Enter repayment amount';
+                  final n = int.tryParse(v);
+                  if (n == null || n <= 0) return 'Enter a valid amount';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _repaymentTimelineController,
+                textCapitalization: TextCapitalization.sentences,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Repayment timeline',
+                  hintText: 'e.g. Paid by the 5th of every month for 8 months',
+                  alignLabelWithHint: true,
+                  prefixIcon: Icon(Icons.event_repeat_outlined, size: 20),
+                ),
+                validator: (v) {
+                  final value = v?.trim() ?? '';
+                  if (value.isEmpty) return 'Enter repayment timeline';
+                  if (value.length < 10) return 'Add a clearer timeline';
+                  return null;
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _FormPanel(
+            title: 'Preferred terms',
+            subtitle: canSuggestTerms
+                ? 'Locked when the request is published.'
                 : 'Upgrade to Pro to suggest interest, late fee, and repayment terms.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _suggestedInterestController,
-            enabled: canSuggestTerms,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            children: [
+              TextFormField(
+                controller: _suggestedInterestController,
+                enabled: canSuggestTerms,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Suggested interest rate (%)',
+                  prefixIcon: Icon(Icons.percent_rounded, size: 20),
+                ),
+                validator: (v) {
+                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
+                  final n = double.tryParse(v);
+                  if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _suggestedLateFeeController,
+                enabled: canSuggestTerms,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Suggested late payment fee (%)',
+                  prefixIcon: Icon(Icons.warning_amber_rounded, size: 20),
+                ),
+                validator: (v) {
+                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
+                  final n = double.tryParse(v);
+                  if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _suggestedRepaymentPlan,
+                decoration: const InputDecoration(
+                  labelText: 'Suggested repayment schedule',
+                  prefixIcon: Icon(Icons.event_available_outlined, size: 20),
+                ),
+                items: _repaymentPlans
+                    .map((p) => DropdownMenuItem(
+                          value: p['value'],
+                          child: Text(p['label']!),
+                        ))
+                    .toList(),
+                onChanged: canSuggestTerms
+                    ? (v) => setState(() => _suggestedRepaymentPlan = v)
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _suggestedInstallmentController,
+                enabled: canSuggestTerms,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Suggested installment amount (UGX)',
+                  prefixIcon: Icon(Icons.price_check_outlined, size: 20),
+                ),
+                validator: (v) {
+                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
+                  final n = int.tryParse(v);
+                  if (n == null || n <= 0) return 'Enter a valid amount';
+                  return null;
+                },
+              ),
             ],
-            decoration: const InputDecoration(
-              labelText: 'Suggested interest rate (%)',
-              prefixIcon: Icon(Icons.percent_rounded, size: 20),
-            ),
-            validator: (v) {
-              if (!canSuggestTerms || v == null || v.isEmpty) return null;
-              final n = double.tryParse(v);
-              if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _suggestedLateFeeController,
-            enabled: canSuggestTerms,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-            ],
-            decoration: const InputDecoration(
-              labelText: 'Suggested late payment fee (%)',
-              prefixIcon: Icon(Icons.warning_amber_rounded, size: 20),
-            ),
-            validator: (v) {
-              if (!canSuggestTerms || v == null || v.isEmpty) return null;
-              final n = double.tryParse(v);
-              if (n == null || n < 0 || n > 100) return 'Use 0 to 100';
-              return null;
-            },
-          ),
-          const SizedBox(height: 14),
-          DropdownButtonFormField<String>(
-            initialValue: _suggestedRepaymentPlan,
-            decoration: const InputDecoration(
-              labelText: 'Suggested repayment schedule',
-              prefixIcon: Icon(Icons.event_available_outlined, size: 20),
-            ),
-            items: _repaymentPlans
-                .map((p) => DropdownMenuItem(
-                      value: p['value'],
-                      child: Text(p['label']!),
-                    ))
-                .toList(),
-            onChanged: canSuggestTerms
-                ? (v) => setState(() => _suggestedRepaymentPlan = v)
-                : null,
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _suggestedInstallmentController,
-            enabled: canSuggestTerms,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Suggested installment amount (UGX)',
-              prefixIcon: Icon(Icons.price_check_outlined, size: 20),
-            ),
-            validator: (v) {
-              if (!canSuggestTerms || v == null || v.isEmpty) return null;
-              final n = int.tryParse(v);
-              if (n == null || n <= 0) return 'Enter a valid amount';
-              return null;
-            },
           ),
         ]),
       ),
@@ -826,7 +816,162 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   }
 }
 
+// ─── Header with step progress ───────────────────────────────────────────────
+
+class _TemplateHeader extends StatelessWidget {
+  const _TemplateHeader({
+    required this.title,
+    required this.subtitle,
+    required this.progress,
+    this.onBack,
+  });
+
+  final String title;
+  final String subtitle;
+  final double progress;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (onBack != null) ...[
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon:
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+                    onPressed: onBack,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                // Screen title uses Sora (heading font) per app_theme.dart —
+                // headlineSmall already carries AppFonts.heading, no override needed.
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Theme.of(context).dividerColor,
+              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+              minHeight: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Info banner ──────────────────────────────────────────────────────────────
+// Theme fix: previously hardcoded Color(0xFF062B57)/Color(0xFF7DB7FF), which
+// only look correct in dark mode and never adapt. Now derived from
+// AppColors.accent so it reads correctly in both light and dark themes.
+
+class _InfoBanner extends StatelessWidget {
+  const _InfoBanner({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 10.5,
+          color: AppColors.accentDark,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Grouped form panel ───────────────────────────────────────────────────────
+// Groups related fields under one labeled panel instead of one long flat list,
+// so the form reads as a handful of short sections rather than a wall of inputs.
+
+class _FormPanel extends StatelessWidget {
+  const _FormPanel({
+    required this.title,
+    required this.children,
+    this.subtitle,
+  });
+
+  final String title;
+  final String? subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.48),
+                  fontSize: 10,
+                  letterSpacing: 0.6,
+                ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+          const SizedBox(height: 10),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Review row ───────────────────────────────────────────────────────────────
+// Theme fix: previously used raw 'DM Mono'/'DM Sans' font-family strings that
+// don't exist in this theme (AppTheme registers Sora/Inter via AppFonts).
+// Hero numeric values now correctly use AppFonts.heading (Sora), matching the
+// "hero numbers" rule in app_theme.dart's doc comment.
 
 class _ReviewRow extends StatelessWidget {
   const _ReviewRow({
@@ -859,7 +1004,7 @@ class _ReviewRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: highlight ? 18 : 13,
                 fontWeight: FontWeight.w600,
-                fontFamily: highlight ? 'DM Mono' : 'DM Sans',
+                fontFamily: highlight ? AppFonts.heading : AppFonts.body,
                 color: highlight ? AppColors.accent : null,
               ),
             ),

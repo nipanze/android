@@ -6,21 +6,21 @@ class AppColors {
   AppColors._();
 
   // Brand
-  static const Color accent = Color(0xFF3B82F6);       // blue
+  static const Color accent = Color(0xFF3B82F6); // blue
   static const Color accentDark = Color(0xFF2563EB);
-  static const Color success = Color(0xFF10B981);      // green
-  static const Color warning = Color(0xFFF59E0B);      // amber
-  static const Color danger = Color(0xFFEF4444);       // red
+  static const Color success = Color(0xFF10B981); // green
+  static const Color warning = Color(0xFFF59E0B); // amber
+  static const Color danger = Color(0xFFEF4444); // red
   static const Color purple = Color(0xFF8B5CF6);
 
   // Dark theme surfaces
-  static const Color bgDark = Color(0xFF0A0C10);
-  static const Color bg2Dark = Color(0xFF111318);
-  static const Color bg3Dark = Color(0xFF181B22);
-  static const Color borderDark = Color(0xFF1E222C);
-  static const Color textDark = Color(0xFFE8EAF0);
-  static const Color text2Dark = Color(0xFF8892A4);
-  static const Color text3Dark = Color(0xFF4A5265);
+  static const Color bgDark = Color(0xFF191917);
+  static const Color bg2Dark = Color(0xFF242422);
+  static const Color bg3Dark = Color(0xFF2C2C2A);
+  static const Color borderDark = Color(0xFF474744);
+  static const Color textDark = Color(0xFFF5F5F1);
+  static const Color text2Dark = Color(0xFFB7B5AE);
+  static const Color text3Dark = Color(0xFF8A8881);
 
   // Light theme surfaces
   static const Color bgLight = Color(0xFFF8F9FC);
@@ -77,7 +77,7 @@ class AppTheme {
       fontFamily: AppFonts.body,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        backgroundColor: isDark ? AppColors.bgDark : AppColors.bg2Light,
         foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
         elevation: 0,
         centerTitle: false,
@@ -92,7 +92,8 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
         selectedItemColor: AppColors.accent,
-        unselectedItemColor: isDark ? AppColors.text3Dark : AppColors.text3Light,
+        unselectedItemColor:
+            isDark ? AppColors.text3Dark : AppColors.text3Light,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         selectedLabelStyle: const TextStyle(
@@ -111,7 +112,7 @@ class AppTheme {
         color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           side: BorderSide(
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
@@ -122,23 +123,23 @@ class AppTheme {
         filled: true,
         fillColor: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(6),
           borderSide: BorderSide(
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(6),
           borderSide: const BorderSide(color: AppColors.danger),
         ),
         labelStyle: TextStyle(
@@ -149,7 +150,8 @@ class AppTheme {
           fontFamily: AppFonts.body,
           color: isDark ? AppColors.text3Dark : AppColors.text3Light,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -157,7 +159,7 @@ class AppTheme {
           backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           textStyle: const TextStyle(
             fontFamily: AppFonts.body,
             fontSize: 14,
@@ -173,7 +175,7 @@ class AppTheme {
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
           minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           textStyle: const TextStyle(
             fontFamily: AppFonts.body,
             fontSize: 14,

@@ -58,7 +58,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unlock Contact Details?'),
+        title: const Text('Unlock contact details?'),
         content: const Text(
           'This action is irreversible. Contact details will be revealed to both parties and you can then connect directly outside the platform.',
         ),
@@ -114,14 +114,14 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock Deal')),
+        appBar: AppBar(title: const Text('Unlock deal')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null || _agreement == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock Deal')),
+        appBar: AppBar(title: const Text('Unlock deal')),
         body: ErrorState(
           message: _error ?? 'Agreement not found',
           onRetry: _loadAgreement,
@@ -133,7 +133,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
 
     if (!agreement.isFullyLocked) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock Deal')),
+        appBar: AppBar(title: const Text('Unlock deal')),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -143,7 +143,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                 const Icon(Icons.info_outline, size: 48, color: AppColors.warning),
                 const SizedBox(height: 16),
                 Text(
-                  'Deal Not Yet Ready',
+                  'Deal not yet ready',
                   style: Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -166,7 +166,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Unlock Deal & Contact'),
+        title: const Text('Unlock deal & contact'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -191,7 +191,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       const Icon(Icons.lock, size: 20, color: AppColors.success),
                       const SizedBox(width: 8),
                       Text(
-                        'Deal Agreement Locked',
+                        'Deal agreement locked',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: AppColors.success,
                           fontWeight: FontWeight.bold,
@@ -212,40 +212,61 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
 
             // What happens next
             Text(
-              'What Happens Next',
+              'What happens next',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             const _InfoStep(
               number: 1,
-              title: 'Contact Details Revealed',
+              title: 'Contact details revealed',
               description: 'Legal name, phone, and email of both parties will be shared.',
             ),
             const SizedBox(height: 8),
             const _InfoStep(
               number: 2,
-              title: 'Direct Connection',
+              title: 'Direct connection',
               description: 'You can now contact your partner outside the Nipanze platform.',
             ),
             const SizedBox(height: 8),
             const _InfoStep(
               number: 3,
-              title: 'Complete Transaction',
+              title: 'Complete transaction',
               description: 'Finalize the loan agreement and exchange funds directly.',
             ),
             const SizedBox(height: 32),
 
             // Disclaimer
+            // Theme fix: was hardcoded AppColors.bg3Light, which stayed light
+            // even in dark mode. surfaceContainerHighest already resolves to
+            // bg3Dark/bg3Light correctly per the active theme. The emoji
+            // prefix is also replaced with a proper Icon, consistent with the
+            // "no emoji, use icon font" rule the rest of the app follows.
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bg3Light,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                '⚠️ Nipanze does not hold or move any funds. You and your partner are '
-                'solely responsible for all financial transactions and dispute resolution.',
-                style: Theme.of(context).textTheme.bodySmall,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.error_outline_rounded,
+                      size: 16,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withValues(alpha: 0.8)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Nipanze does not hold or move any funds. You and your '
+                      'partner are solely responsible for all financial '
+                      'transactions and dispute resolution.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 32),
@@ -264,7 +285,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text('Unlock Contact Details'),
+                  : const Text('Unlock contact details'),
             ),
           ],
         ),
@@ -352,14 +373,14 @@ class _ContactRevealDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Contact Details Revealed'),
+      title: const Text('Contact details revealed'),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Connection successful! Here are the contact details:',
+              'Connection successful. Here are the contact details:',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
@@ -380,7 +401,7 @@ class _ContactRevealDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.bg3Light,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -419,7 +440,7 @@ class _ContactCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: Theme.of(context).dividerColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -428,7 +449,7 @@ class _ContactCard extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.text2Light,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -454,7 +475,9 @@ class _ContactDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.text2Light),
+        Icon(icon,
+            size: 14,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

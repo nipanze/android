@@ -1,5 +1,5 @@
 // lib/features/marketplace/presentation/pages/loan_detail_page.dart
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, unused_element, unused_element_parameter
 
 import 'dart:async';
 
@@ -190,24 +190,24 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Listing Detail'),
+        title: const Text('Listing detail'),
       ),
       body: RefreshIndicator(
         onRefresh: _loadOnce,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: const EdgeInsets.fromLTRB(12, 14, 12, 32),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // ── Main listing card ────────────────────────────────────────────
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Theme.of(context).dividerColor),
               ),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -225,25 +225,30 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      // Theme fix: was a hardcoded Color(0xFF6E1717) box that
+                      // never adapted to light mode. Now built from
+                      // AppColors.danger so both themes read as an urgency tag,
+                      // consistent with the success/warning tint pattern used
+                      // elsewhere on this screen.
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF7C1F1F),
+                          color: AppColors.danger.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.access_time_rounded,
-                                size: 11, color: Colors.white),
+                                size: 11, color: AppColors.danger),
                             const SizedBox(width: 4),
                             Text(
                               listing.timeRemainingLabel,
                               style: const TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white),
+                                  color: AppColors.danger),
                             ),
                           ],
                         ),
@@ -251,15 +256,22 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // Amount
-                  UgxAmount(listing.requestedAmount, fontSize: 28),
+                  // Amount — hero number, rendered in Sora via UgxAmount
+                  UgxAmount(
+                    listing.requestedAmount,
+                    fontSize: 27,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   const SizedBox(height: 6),
                   // Purpose description
                   Text(
                     listing.purpose,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.accent),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.76),
+                        ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -277,13 +289,20 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   // ── Preferred terms badges row ───────────────────────────
                   Row(
                     children: [
-                      _TermBadge('${listing.durationMonths} months'),
+                      Expanded(
+                          child:
+                              _TermBadge('${listing.durationMonths} months')),
                       const SizedBox(width: 8),
-                      _TermBadge(
-                          'UGX ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
+                      Expanded(
+                        flex: 2,
+                        child: _TermBadge(
+                            'UGX ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
+                      ),
                       const SizedBox(width: 8),
-                      _TermBadge(
-                          '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest'),
+                      Expanded(
+                        child: _TermBadge(
+                            '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest'),
+                      ),
                     ],
                   ),
 
@@ -304,7 +323,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                             ),
                       ),
                       const SizedBox(width: 6),
-                      LiveDot(),
+                      const LiveDot(),
                     ],
                   ),
 
@@ -329,8 +348,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         boxShadow: _newOfferFlash
                             ? [
                                 BoxShadow(
-                                    color:
-                                        AppColors.success.withValues(alpha: 0.2),
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.2),
                                     blurRadius: 8)
                               ]
                             : [],
@@ -364,14 +383,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
             // ── Additional details card ──────────────────────────────────────
             if (listing.suggestedInterestRatePct != null ||
-                listing.suggestedLateFeePct != null) ...
-              [
-                _DescriptionSection(
-                    title: 'Proposed Repayment Plan',
-                    body:
-                        '${listing.preferredRepaymentPlan}  ·  ${listing.repaymentTimeline}'),
-                const SizedBox(height: 12),
-              ],
+                listing.suggestedLateFeePct != null) ...[
+              _DescriptionSection(
+                  title: 'Proposed repayment plan',
+                  body:
+                      '${listing.preferredRepaymentPlan}  ·  ${listing.repaymentTimeline}'),
+              const SizedBox(height: 12),
+            ],
 
             const SizedBox(height: 8),
 
@@ -391,7 +409,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: const Text('Make a Bid'),
+                child: const Text('Make a bid'),
               ),
           ]),
         ),
@@ -434,7 +452,7 @@ const List<Color> _kBidColors = [
   Color(0xFF8B5CF6), // purple
 ];
 
-Class _FundedProgressBar extends StatelessWidget {
+class _FundedProgressBar extends StatelessWidget {
   const _FundedProgressBar({
     required this.offers,
     required this.requestedAmount,
@@ -446,11 +464,13 @@ Class _FundedProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalFunded = offers.fold<int>(0, (s, o) => s + o.offerAmount);
-    final pct =
-        requestedAmount > 0 ? (totalFunded / requestedAmount).clamp(0.0, 1.0) : 0.0;
+    final pct = requestedAmount > 0
+        ? (totalFunded / requestedAmount).clamp(0.0, 1.0)
+        : 0.0;
     final pctInt = (pct * 100).round();
-    final bidsLabel =
-        offers.isEmpty ? 'No bids' : '${offers.length} bid${offers.length > 1 ? 's' : ''}';
+    final bidsLabel = offers.isEmpty
+        ? 'No bids'
+        : '${offers.length} bid${offers.length > 1 ? 's' : ''}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +499,7 @@ Class _FundedProgressBar extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: SizedBox(
-            height: 6,
+            height: 7,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 if (offers.isEmpty) {
@@ -493,17 +513,14 @@ Class _FundedProgressBar extends StatelessWidget {
                     for (int i = 0; i < offers.length; i++) ...[
                       Flexible(
                         flex: requestedAmount > 0
-                            ? (offers[i].offerAmount /
-                                    requestedAmount *
-                                    1000)
+                            ? (offers[i].offerAmount / requestedAmount * 1000)
                                 .round()
                             : 1,
                         child: Container(
                           color: _kBidColors[i % _kBidColors.length],
                         ),
                       ),
-                      if (i < offers.length - 1)
-                        const SizedBox(width: 2),
+                      if (i < offers.length - 1) const SizedBox(width: 2),
                     ],
                     if (total < requestedAmount)
                       Flexible(
@@ -524,6 +541,11 @@ Class _FundedProgressBar extends StatelessWidget {
 }
 
 // ─── Term Badge ───────────────────────────────────────────────────────────────
+// Theme fix: previously branched on Theme.of(context).colorScheme.brightness
+// to pick between two hardcoded hex values that happened to (almost)
+// duplicate bg3Dark/bg3Light from AppColors. Using surfaceContainerHighest
+// directly removes the duplicated logic and stays correct if the theme's
+// surface tokens ever change.
 
 class _TermBadge extends StatelessWidget {
   const _TermBadge(this.label);
@@ -531,20 +553,20 @@ class _TermBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).colorScheme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1E29) : const Color(0xFFF0F2F7),
-        borderRadius: BorderRadius.circular(8),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.w500,
-              fontSize: 11,
+              fontSize: 12,
             ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -585,7 +607,7 @@ class _OfferList extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: offers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 0),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) => _OfferCard(
         offer: offers[index],
         index: index,
@@ -679,27 +701,35 @@ class _OfferCardState extends State<_OfferCard>
     final isFull = offer.offerAmount >= widget.requestedAmount;
     final offerType = isFull ? 'Full bid' : 'Partial · $coverage%';
     final dotColor = widget.dotColor;
+
+    // Theme fix: previously Color(0xFF07340A)/Color(0xFF082F0B), two
+    // hand-picked dark greens that only worked against a near-black
+    // background and broke in light mode. A translucent tint of
+    // AppColors.success reads correctly against both surface colors.
     final rowBg = isFull
         ? AppColors.success.withValues(alpha: 0.08)
-        : Colors.transparent;
+        : Theme.of(context).colorScheme.surface;
+    final expandedBg = isFull
+        ? AppColors.success.withValues(alpha: 0.05)
+        : rowBg;
+    final borderColor = isFull
+        ? AppColors.success.withValues(alpha: 0.35)
+        : Theme.of(context).dividerColor;
 
-    return Column(
-      children: [
-        // ── Divider above each row except first ──────────────────────────────
-        if (widget.index > 0)
-          Divider(
-            height: 1,
-            color: Theme.of(context).dividerColor,
-          ),
-
-        // ── Bid row ──────────────────────────────────────────────────────────
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          color: rowBg,
-          child: InkWell(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: rowBg,
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          InkWell(
             onTap: _toggle,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Row(
                 children: [
                   // Colored dot
@@ -713,12 +743,16 @@ class _OfferCardState extends State<_OfferCard>
                   ),
                   const SizedBox(width: 10),
                   // Lender label
-                  Text(
-                    lenderLabel,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isFull ? AppColors.success : null,
+                  Flexible(
+                    child: Text(
+                      lenderLabel,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isFull ? AppColors.success : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -726,7 +760,7 @@ class _OfferCardState extends State<_OfferCard>
                   Text(
                     offerType,
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       color: isFull
                           ? AppColors.success.withValues(alpha: 0.75)
                           : Theme.of(context)
@@ -735,12 +769,13 @@ class _OfferCardState extends State<_OfferCard>
                               .withValues(alpha: 0.45),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   const Spacer(),
                   // Amount
                   Text(
-                    _fmtAmount(offer.offerAmount),
+                    _fmt(offer.offerAmount),
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isFull ? AppColors.success : null,
                     ),
@@ -765,112 +800,117 @@ class _OfferCardState extends State<_OfferCard>
               ),
             ),
           ),
-        ),
 
-        // ── Expanded details ─────────────────────────────────────────────────
-        SizeTransition(
-          sizeFactor: _expandAnim,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            color: isFull
-                ? AppColors.success.withValues(alpha: 0.05)
-                : Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Simple term rows
-                _BidDetailRow(
-                  label: 'Interest rate',
-                  value: '${offer.interestRatePct.toStringAsFixed(2)}%',
-                  valueColor: isFull ? AppColors.success : null,
-                ),
-                _BidDetailRow(
-                  label: 'Late fine',
-                  value: '${offer.lateFeePct.toStringAsFixed(2)}%',
-                  valueColor: isFull ? AppColors.success : null,
-                ),
-                _BidDetailRow(
-                  label: 'Installment',
-                  value:
-                      'UGX ${_fmt(offer.installmentAmount)} ${_freqLabel(offer.repaymentFrequency).toLowerCase()}',
-                  valueColor: isFull ? AppColors.success : null,
-                ),
+          // ── Expanded details ───────────────────────────────────────────────
+          SizeTransition(
+            sizeFactor: _expandAnim,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              color: expandedBg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(
+                    height: 1,
+                    indent: 12,
+                    endIndent: 12,
+                    color: borderColor,
+                  ),
+                  // Simple term rows
+                  _BidDetailRow(
+                    label: 'Interest rate',
+                    value: '${offer.interestRatePct.toStringAsFixed(2)}%',
+                    valueColor: isFull ? AppColors.success : null,
+                  ),
+                  _BidDetailRow(
+                    label: 'Late fine',
+                    value: '${offer.lateFeePct.toStringAsFixed(2)}%',
+                    valueColor: isFull ? AppColors.success : null,
+                  ),
+                  _BidDetailRow(
+                    label: 'Installment',
+                    value:
+                        'UGX ${_fmt(offer.installmentAmount)} ${_freqLabel(offer.repaymentFrequency).toLowerCase()}',
+                    valueColor: isFull ? AppColors.success : null,
+                  ),
 
-                // Pro comparison analytics (owner only)
-                if (widget.isOwner) ...[
-                  if (widget.isProBorrower) ...[
-                    const SizedBox(height: 4),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _ProAnalysisPanel(
-                        interestDiff: widget.suggestedInterestRatePct != null
-                            ? offer.interestRatePct -
-                                widget.suggestedInterestRatePct!
-                            : null,
-                        lateFeeDiff: widget.suggestedLateFeePct != null
-                            ? offer.lateFeePct - widget.suggestedLateFeePct!
-                            : null,
-                        installmentDiff: widget.suggestedInstallmentAmount !=
-                                null
-                            ? offer.installmentAmount -
-                                widget.suggestedInstallmentAmount!
-                            : null,
-                        suggestedInterest: widget.suggestedInterestRatePct,
-                        suggestedLateFee: widget.suggestedLateFeePct,
-                        suggestedInstallment: widget.suggestedInstallmentAmount,
-                        offeredInterest: offer.interestRatePct,
-                        offeredLateFee: offer.lateFeePct,
-                        offeredInstallment: offer.installmentAmount,
+                  // Pro comparison analytics (owner only)
+                  if (widget.isOwner) ...[
+                    if (widget.isProBorrower) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _ProAnalysisPanel(
+                          interestDiff: widget.suggestedInterestRatePct != null
+                              ? offer.interestRatePct -
+                                  widget.suggestedInterestRatePct!
+                              : null,
+                          lateFeeDiff: widget.suggestedLateFeePct != null
+                              ? offer.lateFeePct - widget.suggestedLateFeePct!
+                              : null,
+                          installmentDiff:
+                              widget.suggestedInstallmentAmount != null
+                                  ? offer.installmentAmount -
+                                      widget.suggestedInstallmentAmount!
+                                  : null,
+                          suggestedInterest: widget.suggestedInterestRatePct,
+                          suggestedLateFee: widget.suggestedLateFeePct,
+                          suggestedInstallment:
+                              widget.suggestedInstallmentAmount,
+                          offeredInterest: offer.interestRatePct,
+                          offeredLateFee: offer.lateFeePct,
+                          offeredInstallment: offer.installmentAmount,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                  ] else ...[
-                    const SizedBox(height: 4),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _ProUpgradePanel(onUpgrade: widget.onUpgrade),
-                    ),
-                    const SizedBox(height: 4),
+                      const SizedBox(height: 4),
+                    ] else ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _ProUpgradePanel(onUpgrade: widget.onUpgrade),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                   ],
-                ],
 
-                if (offer.proposedExpectations != null &&
-                    offer.proposedExpectations!.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                    child: Text(
-                      'Lender notes',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accent),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-                    child: Text(offer.proposedExpectations!,
-                        style: Theme.of(context).textTheme.bodySmall),
-                  ),
-                ],
-
-                // Accept button (owner only)
-                if (widget.isOwner) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => widget.onAccept(offer),
-                        child: const Text('Accept Bid'),
+                  if (offer.proposedExpectations != null &&
+                      offer.proposedExpectations!.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                      child: Text(
+                        'Lender notes',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.accent),
                       ),
                     ),
-                  ),
-                ] else
-                  const SizedBox(height: 12),
-              ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+                      child: Text(offer.proposedExpectations!,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                  ],
+
+                  // Accept button (owner only)
+                  if (widget.isOwner) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => widget.onAccept(offer),
+                          child: const Text('Accept bid'),
+                        ),
+                      ),
+                    ),
+                  ] else
+                    const SizedBox(height: 12),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -895,6 +935,52 @@ class _SparklineWidget extends StatelessWidget {
     return CustomPaint(
       size: const Size(55, 18),
       painter: _SparklinePainter(isPositive: isPositive, color: color),
+    );
+  }
+}
+
+class _BidDetailRow extends StatelessWidget {
+  const _BidDetailRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: valueColor ??
+                        Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.72),
+                  ),
+            ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor ??
+                      Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.72),
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1196,7 +1282,7 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
                   size: 15, color: AppColors.accent),
               const SizedBox(width: 6),
               Text(
-                'Installment Cost Breakdown',
+                'Installment cost breakdown',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -1207,7 +1293,7 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Formula: Installment × RepaymentsCount = Total Payback',
+            'Formula: installment × repayments count = total payback',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   fontSize: 10,
@@ -1220,11 +1306,11 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _CalculatorRow(
-            label: 'Offered Installment',
+            label: 'Offered installment',
             value: 'UGX ${_fmt(offer.installmentAmount)}',
           ),
           _CalculatorRow(
-            label: 'Repayments Plan',
+            label: 'Repayments plan',
             value: '× $periods $frequencyText payments',
           ),
           const Padding(
@@ -1232,17 +1318,17 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
             child: Divider(height: 1),
           ),
           _CalculatorRow(
-            label: 'Total Payback Amount',
+            label: 'Total payback amount',
             value: 'UGX ${_fmt(totalRepayable)}',
             isBold: true,
           ),
           _CalculatorRow(
-            label: 'Principal Borrowed',
+            label: 'Principal borrowed',
             value: 'UGX ${_fmt(offer.offerAmount)}',
             subtle: true,
           ),
           _CalculatorRow(
-            label: 'Borrowing Cost (Total Interest)',
+            label: 'Borrowing cost (total interest)',
             value: 'UGX ${_fmt(totalInterest.clamp(0, totalInterest))}',
             valueColor: AppColors.success,
             isBold: true,
@@ -1332,10 +1418,10 @@ class _ProAnalysisPanel extends StatelessWidget {
         notes.write('• Interest rate matches your requested rate.\n');
       } else if (interestDiff! < 0) {
         notes.write(
-            '• Interest is LOWER by ${interestDiff!.abs().toStringAsFixed(2)}% (reduces cost).\n');
+            '• Interest is lower by ${interestDiff!.abs().toStringAsFixed(2)}% (reduces cost).\n');
       } else {
         notes.write(
-            '• Interest is HIGHER by ${interestDiff!.abs().toStringAsFixed(2)}% (increases cost).\n');
+            '• Interest is higher by ${interestDiff!.abs().toStringAsFixed(2)}% (increases cost).\n');
       }
     }
 
@@ -1345,10 +1431,10 @@ class _ProAnalysisPanel extends StatelessWidget {
         notes.write('• Late payment penalty matches your suggested rate.\n');
       } else if (lateFeeDiff! < 0) {
         notes.write(
-            '• Penalty charge fine: LOWER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (safer payment guard).\n');
+            '• Penalty charge fine: lower by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (safer payment guard).\n');
       } else {
         notes.write(
-            '• Penalty fine is HIGHER by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (higher penalty risk).\n');
+            '• Penalty fine is higher by ${lateFeeDiff!.abs().toStringAsFixed(2)}% (higher penalty risk).\n');
       }
     }
 
@@ -1358,10 +1444,10 @@ class _ProAnalysisPanel extends StatelessWidget {
         notes.write('• Period installment matches your expectations.\n');
       } else if (installmentDiff! < 0) {
         notes.write(
-            '• Installment payment is LOWER by UGX ${_fmt(installmentDiff!.abs())}.\n');
+            '• Installment payment is lower by UGX ${_fmt(installmentDiff!.abs())}.\n');
       } else {
         notes.write(
-            '• Installment cost is HIGHER by UGX ${_fmt(installmentDiff!.abs())}.\n');
+            '• Installment cost is higher by UGX ${_fmt(installmentDiff!.abs())}.\n');
       }
     }
 
@@ -1399,7 +1485,7 @@ class _ProAnalysisPanel extends StatelessWidget {
               Icon(Icons.query_stats_rounded, size: 15, color: trendColor),
               const SizedBox(width: 6),
               Text(
-                'PRO Comparison Analysis',
+                'Pro comparison analysis',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
@@ -1447,7 +1533,7 @@ class _ProUpgradePanel extends StatelessWidget {
                   size: 15, color: AppColors.purple),
               const SizedBox(width: 6),
               Text(
-                'Unlock Deal Comparison',
+                'Unlock deal comparison',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
@@ -1458,7 +1544,7 @@ class _ProUpgradePanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Upgrade to a PRO borrower subscription to see how interest rates, payment fines, and installments stack up against your goals with comparative sparklines and instant delta calculations.',
+            'Upgrade to a Pro borrower subscription to see how interest rates, payment fines, and installments stack up against your goals with comparative sparklines and instant delta calculations.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context)
                       .colorScheme
@@ -1481,7 +1567,7 @@ class _ProUpgradePanel extends StatelessWidget {
               ),
               onPressed: onUpgrade,
               child: const Text(
-                'Upgrade to PRO',
+                'Upgrade to Pro',
                 style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.bold,
@@ -1598,7 +1684,7 @@ class _SubscriptionGateSheet extends StatelessWidget {
           const Icon(Icons.lock_person_outlined,
               size: 48, color: AppColors.accent),
           const SizedBox(height: 16),
-          Text('Upgrade Required',
+          Text('Upgrade required',
               style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(reason, textAlign: TextAlign.center),
@@ -1687,7 +1773,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      Text('Make a Bid',
+                      Text('Make a bid',
                           style: Theme.of(context).textTheme.titleMedium),
                       const Spacer(),
                       IconButton(
@@ -1789,7 +1875,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                         onPressed: _loading ? null : _submit,
                         child: _loading
                             ? const CircularProgressIndicator()
-                            : const Text('Send Bid')),
+                            : const Text('Send bid')),
                   ])),
         ),
       );
