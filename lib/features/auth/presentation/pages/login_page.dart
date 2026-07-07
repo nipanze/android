@@ -1,6 +1,4 @@
 // lib/features/auth/presentation/pages/login_page.dart
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/auth_widgets.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -58,59 +57,30 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 48),
-                    // Logo / wordmark
-                    Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1E40AF), Color(0xFF7C3AED)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'N',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Nipanze',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
+                    const AuthBrandMark(),
+                    const SizedBox(height: 10),
+                    const AuthStatusPill(label: 'Non-custodial marketplace'),
+                    const SizedBox(height: 28),
                     Text(
                       'Welcome back',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 26),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Sign in to your account',
+                      'Sign in to browse requests and bids',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Error banner
                     if (errorMessage != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.1),
+                          color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
@@ -129,15 +99,13 @@ class _LoginPageState extends State<LoginPage> {
                     ],
 
                     // Email
-                    TextFormField(
-                      key: const Key('email_field'),
+                    AuthField(
+                      fieldKey: const Key('email_field'),
+                      label: 'Email',
                       controller: _emailController,
+                      icon: Icons.mail_outline_rounded,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined, size: 18),
-                      ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter your email';
                         if (!v.contains('@')) return 'Enter a valid email';
@@ -147,22 +115,20 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 14),
 
                     // Password
-                    TextFormField(
-                      key: const Key('password_field'),
+                    AuthField(
+                      fieldKey: const Key('password_field'),
+                      label: 'Password',
                       controller: _passwordController,
+                      icon: Icons.lock_outline_rounded,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _submit(),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outlined, size: 18),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                            size: 18,
-                          ),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 17,
                         ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter your password';
@@ -178,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text('Forgot password?'),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
 
                     // Sign in button
                     ElevatedButton(
@@ -191,23 +157,27 @@ class _LoginPageState extends State<LoginPage> {
                             )
                           : const Text('Sign in'),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
 
-                    // Register link
+                    // "new here" divider
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Don't have an account? ",
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('new here', style: Theme.of(context).textTheme.bodySmall),
                         ),
-                        TextButton(
-                          onPressed: () => context.push(AppRoutes.register),
-                          child: const Text('Register'),
-                        ),
+                        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
                       ],
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 18),
+
+                    // Register — equal visual weight to sign in, not a small link
+                    AuthSecondaryButton(
+                      label: 'Create an account',
+                      onPressed: () => context.push(AppRoutes.register),
+                    ),
+                    const SizedBox(height: 28),
 
                     // Disclaimer
                     Text(

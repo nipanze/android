@@ -1,6 +1,4 @@
 // lib/features/auth/presentation/pages/register_page.dart
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/auth_widgets.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -70,13 +69,19 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'Join the marketplace, free to browse',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 20),
+
                     if (errorMessage != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.1),
+                          color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           errorMessage,
@@ -86,13 +91,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 20),
                     ],
 
-                    TextFormField(
+                    AuthField(
+                      label: 'Full name',
                       controller: _nameController,
+                      icon: Icons.person_outline_rounded,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Full name',
-                        prefixIcon: Icon(Icons.person_outline, size: 18),
-                      ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return 'Enter your full name';
                         return null;
@@ -100,14 +103,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 14),
 
-                    TextFormField(
+                    AuthField(
+                      label: 'Email',
                       controller: _emailController,
+                      icon: Icons.mail_outline_rounded,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined, size: 18),
-                      ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter your email';
                         if (!v.contains('@')) return 'Enter a valid email';
@@ -116,20 +117,18 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 14),
 
-                    TextFormField(
+                    AuthField(
+                      label: 'Password',
                       controller: _passwordController,
+                      icon: Icons.lock_outline_rounded,
                       obscureText: _obscurePassword,
                       textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outlined, size: 18),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                            size: 18,
-                          ),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 17,
                         ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) {
                         if (v == null || v.length < 8) return 'Password must be at least 8 characters';
@@ -138,15 +137,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 14),
 
-                    TextFormField(
+                    AuthField(
+                      label: 'Confirm password',
                       controller: _confirmController,
+                      icon: Icons.lock_outline_rounded,
                       obscureText: true,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _submit(),
-                      decoration: const InputDecoration(
-                        labelText: 'Confirm password',
-                        prefixIcon: Icon(Icons.lock_outlined, size: 18),
-                      ),
                       validator: (v) {
                         if (v != _passwordController.text) return 'Passwords do not match';
                         return null;

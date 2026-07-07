@@ -1,12 +1,11 @@
 // lib/features/auth/presentation/pages/reset_password_page.dart
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/auth_widgets.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -48,11 +47,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(Icons.check_circle_outline,
-                          color: AppColors.success, size: 32),
+                      child: const Icon(Icons.mark_email_read_outlined,
+                          color: AppColors.success, size: 30),
                     ),
                     const SizedBox(height: 24),
                     Text('Email sent',
@@ -64,9 +63,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 32),
-                    OutlinedButton(
+                    // Equal-weight secondary button, matching login/register
+                    // instead of a plain OutlinedButton with default styling.
+                    AuthSecondaryButton(
+                      label: 'Back to sign in',
                       onPressed: () => context.pop(),
-                      child: const Text('Back to sign in'),
                     ),
                   ],
                 ),
@@ -93,7 +94,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.1),
+                          color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(errorMessage,
@@ -101,13 +102,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    TextFormField(
+                    AuthField(
+                      label: 'Email address',
                       controller: _emailController,
+                      icon: Icons.mail_outline_rounded,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Email address',
-                        prefixIcon: Icon(Icons.email_outlined, size: 18),
-                      ),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) {
+                        if (_formKey.currentState!.validate()) {
+                          context.read<AuthBloc>().add(
+                            AuthPasswordResetRequested(_emailController.text.trim()),
+                          );
+                        }
+                      },
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter your email';
                         if (!v.contains('@')) return 'Enter a valid email';
