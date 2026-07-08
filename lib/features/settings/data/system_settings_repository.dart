@@ -11,22 +11,22 @@ import '../../../core/errors/app_exception.dart';
 /// These are the only fields exposed to the client (is_public = TRUE).
 class PlatformLimits {
   const PlatformLimits({
-    this.minLoanAmount    = 100000,
-    this.maxLoanAmount    = 50000000,
-    this.minInterestRate  = 5,
-    this.maxInterestRate  = 30,
+    this.minLoanAmount = 100000,
+    this.maxLoanAmount = 50000000,
+    this.minInterestRate = 5,
+    this.maxInterestRate = 30,
     this.minLenderInvestment = 100000,
-    this.maxConcurrentLoans  = 3,
+    this.maxConcurrentLoans = 3,
     this.listingDurationDays = 7,
   });
 
-  final int    minLoanAmount;
-  final int    maxLoanAmount;
+  final int minLoanAmount;
+  final int maxLoanAmount;
   final double minInterestRate;
   final double maxInterestRate;
-  final int    minLenderInvestment;
-  final int    maxConcurrentLoans;
-  final int    listingDurationDays;
+  final int minLenderInvestment;
+  final int maxConcurrentLoans;
+  final int listingDurationDays;
 
   /// Fallback defaults match the schema v5.0 seed values.
   static const PlatformLimits defaults = PlatformLimits();
@@ -58,13 +58,16 @@ class SystemSettingsRepository {
       }
 
       _cached = PlatformLimits(
-        minLoanAmount:       int.tryParse(map['min_loan_amount']       ?? '') ?? 100000,
-        maxLoanAmount:       int.tryParse(map['max_loan_amount']       ?? '') ?? 50000000,
-        minInterestRate:     double.tryParse(map['min_interest_rate']  ?? '') ?? 5,
-        maxInterestRate:     double.tryParse(map['max_interest_rate']  ?? '') ?? 30,
-        minLenderInvestment: int.tryParse(map['min_lender_investment'] ?? '') ?? 100000,
-        maxConcurrentLoans:  int.tryParse(map['max_concurrent_loans']  ?? '') ?? 3,
-        listingDurationDays: int.tryParse(map['listing_duration_days'] ?? '') ?? 7,
+        minLoanAmount: int.tryParse(map['min_loan_amount'] ?? '') ?? 100000,
+        maxLoanAmount: int.tryParse(map['max_loan_amount'] ?? '') ?? 50000000,
+        minInterestRate: double.tryParse(map['min_interest_rate'] ?? '') ?? 5,
+        maxInterestRate: double.tryParse(map['max_interest_rate'] ?? '') ?? 30,
+        minLenderInvestment:
+            int.tryParse(map['min_lender_investment'] ?? '') ?? 100000,
+        maxConcurrentLoans:
+            int.tryParse(map['max_concurrent_loans'] ?? '') ?? 3,
+        listingDurationDays:
+            int.tryParse(map['listing_duration_days'] ?? '') ?? 7,
       );
 
       return _cached!;

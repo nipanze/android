@@ -82,7 +82,8 @@ Future<void> _launchApp(WidgetTester tester) async {
 
 // ─── Common helpers ───────────────────────────────────────────────────────────
 
-Future<void> _enterText(WidgetTester tester, Finder fieldFinder, String text) async {
+Future<void> _enterText(
+    WidgetTester tester, Finder fieldFinder, String text) async {
   expect(fieldFinder, findsOneWidget);
   final topLeft = tester.getTopLeft(fieldFinder);
   await tester.tapAt(topLeft + const Offset(30, 20));
@@ -149,7 +150,8 @@ void main() {
 
   testWidgets('Nipanze End-to-End E2E Integration Suite', (tester) async {
     // 1. Initial Launch
-    print('[START] Restructured Nipanze E2E Integration Suite running sequentially');
+    print(
+        '[START] Restructured Nipanze E2E Integration Suite running sequentially');
     await _launchApp(tester);
 
     // ==========================================================================
@@ -193,7 +195,9 @@ void main() {
     await _enterText(tester, pwdField, 'wrongpassword');
     await tester.pump();
     await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
-    await _pump(tester, total: const Duration(seconds: 10)); // wait for network roundtrip + error render
+    await _pump(tester,
+        total: const Duration(
+            seconds: 10)); // wait for network roundtrip + error render
     expect(find.byIcon(Icons.error_outline), findsOneWidget);
 
     print('[TEST] A06. Register link navigates to create-account');
@@ -244,7 +248,7 @@ void main() {
         await tester.tap(bookmarkIcon.first);
         await _pump(tester, total: const Duration(seconds: 3));
       }
-      
+
       // Tap back button to exit detail page
       final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
       if (backBtn.evaluate().isNotEmpty) {
@@ -296,7 +300,7 @@ void main() {
       await tester.tap(lenderCards.first);
       await _pump(tester, total: const Duration(seconds: 4));
       expect(find.byType(Scaffold), findsWidgets);
-      
+
       // Navigate back
       final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
       if (backBtn.evaluate().isNotEmpty) {
@@ -305,21 +309,22 @@ void main() {
       }
     }
 
-    print('[TEST] C04-C05. Lender Positions check and withdraw offer cancel choice');
+    print(
+        '[TEST] C04-C05. Lender Positions check and withdraw offer cancel choice');
     await _tapNav(tester, 'Positions');
     await _pump(tester, total: const Duration(seconds: 4));
-    
+
     final lenderOffersTab = find.text('My Offers');
     if (lenderOffersTab.evaluate().isNotEmpty) {
       await tester.tap(lenderOffersTab.first);
       await _pump(tester, total: const Duration(seconds: 4));
       expect(find.byType(LenderOfferCard), findsWidgets);
-      
+
       final withdrawBtn = find.widgetWithText(OutlinedButton, 'Withdraw');
       if (withdrawBtn.evaluate().isNotEmpty) {
         await tester.tap(withdrawBtn.first);
         await _pump(tester, total: const Duration(seconds: 2));
-        
+
         expect(find.byType(AlertDialog), findsOneWidget);
         final cancelBtn = find.widgetWithText(TextButton, 'Keep Offer');
         if (cancelBtn.evaluate().isNotEmpty) {
@@ -351,7 +356,7 @@ void main() {
     print('[TEST] D02-D03. KYC-pending user account check and page navigation');
     await _goAccount(tester);
     expect(find.text('Account'), findsWidgets);
-    
+
     final kycBtn = find.textContaining('KYC');
     final verifyBtn = find.textContaining('Verification');
     if (kycBtn.evaluate().isNotEmpty) {
@@ -390,7 +395,7 @@ void main() {
       await tester.tap(notifIcon.first);
       await _pump(tester);
       expect(find.text('Notifications'), findsWidgets);
-      
+
       // Tap back button from notifications
       final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
       if (backBtn.evaluate().isNotEmpty) {
@@ -398,7 +403,7 @@ void main() {
         await _pump(tester, total: const Duration(seconds: 3));
       }
     }
-    
+
     // Sign out James
     await _signOut(tester);
     expect(find.text('Welcome back'), findsOneWidget);
@@ -410,7 +415,7 @@ void main() {
       await tester.tap(proNotifIcon.first);
       await _pump(tester, total: const Duration(seconds: 3));
       expect(find.text('Notifications'), findsWidgets);
-      
+
       // Tap back button from notifications
       final backBtn = find.byIcon(Icons.arrow_back_ios_new_rounded);
       if (backBtn.evaluate().isNotEmpty) {
@@ -418,11 +423,11 @@ void main() {
         await _pump(tester, total: const Duration(seconds: 3));
       }
     }
-    
+
     // Sign out Pearl capital
     await _signOut(tester);
     expect(find.text('Welcome back'), findsOneWidget);
-    
+
     print('[SUCCESS] All Nipanze integration tests passed successfully!');
   });
 }

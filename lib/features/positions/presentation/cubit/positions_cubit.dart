@@ -26,7 +26,7 @@ class PositionsCubit extends Cubit<PositionsState> {
       ]);
 
       emit(PositionsLoaded(
-        offers:   results[0] as List<LenderOffer>,
+        offers: results[0] as List<LenderOffer>,
         activity: results[1] as Map<String, dynamic>?,
       ));
 

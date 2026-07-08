@@ -33,7 +33,8 @@ class _PositionsView extends StatefulWidget {
   State<_PositionsView> createState() => _PositionsViewState();
 }
 
-class _PositionsViewState extends State<_PositionsView> with SingleTickerProviderStateMixin {
+class _PositionsViewState extends State<_PositionsView>
+    with SingleTickerProviderStateMixin {
   late final TabController _tc;
 
   @override
@@ -58,14 +59,18 @@ class _PositionsViewState extends State<_PositionsView> with SingleTickerProvide
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('My Activity', style: Theme.of(context).textTheme.headlineMedium),
+                Text('My Activity',
+                    style: Theme.of(context).textTheme.headlineMedium),
                 BlocBuilder<PositionsCubit, PositionsState>(
                   builder: (context, state) {
                     if (state is! PositionsLoaded) {
-                      return Text('Manage your listings and offers', style: Theme.of(context).textTheme.bodySmall);
+                      return Text('Manage your listings and offers',
+                          style: Theme.of(context).textTheme.bodySmall);
                     }
                     final activity = state.activity;
-                    final activeOffers = state.offers.where((o) => o.status == OfferStatus.pending).length;
+                    final activeOffers = state.offers
+                        .where((o) => o.status == OfferStatus.pending)
+                        .length;
                     return Text(
                       '${activity?['active_listings'] ?? 0} Listings · $activeOffers Active Offers',
                       style: Theme.of(context).textTheme.bodySmall,
@@ -80,7 +85,8 @@ class _PositionsViewState extends State<_PositionsView> with SingleTickerProvide
           TabBar(
             controller: _tc,
             indicatorColor: AppColors.accent,
-            labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            labelStyle:
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
             tabs: const [
               Tab(text: 'My Requests'),
@@ -93,7 +99,9 @@ class _PositionsViewState extends State<_PositionsView> with SingleTickerProvide
             child: BlocConsumer<PositionsCubit, PositionsState>(
               listener: (context, state) {
                 if (state is PositionsError) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.danger));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: AppColors.danger));
                 }
               },
               builder: (context, state) {
@@ -123,7 +131,9 @@ class _LenderTab extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (state is PositionsError) {
-      return ErrorState(message: (state as PositionsError).message, onRetry: () => context.read<PositionsCubit>().refresh());
+      return ErrorState(
+          message: (state as PositionsError).message,
+          onRetry: () => context.read<PositionsCubit>().refresh());
     }
     if (state is! PositionsLoaded) return const SizedBox.shrink();
 
@@ -133,13 +143,20 @@ class _LenderTab extends StatelessWidget {
         icon: Icons.payments_outlined,
         title: 'No offers yet',
         subtitle: 'Bids you place on marketplace listings will appear here.',
-        action: ElevatedButton(onPressed: () => context.go('/marketplace'), child: const Text('Browse Marketplace')),
+        action: ElevatedButton(
+            onPressed: () => context.go('/marketplace'),
+            child: const Text('Browse Marketplace')),
       );
     }
 
-    final pending = offers.where((o) => o.status == OfferStatus.pending).toList();
-    final accepted = offers.where((o) => o.status == OfferStatus.accepted).toList();
-    final history = offers.where((o) => o.status != OfferStatus.pending && o.status != OfferStatus.accepted).toList();
+    final pending =
+        offers.where((o) => o.status == OfferStatus.pending).toList();
+    final accepted =
+        offers.where((o) => o.status == OfferStatus.accepted).toList();
+    final history = offers
+        .where((o) =>
+            o.status != OfferStatus.pending && o.status != OfferStatus.accepted)
+        .toList();
 
     return RefreshIndicator(
       onRefresh: () => context.read<PositionsCubit>().refresh(),
@@ -149,23 +166,24 @@ class _LenderTab extends StatelessWidget {
           if (pending.isNotEmpty) ...[
             const SectionHeader('Active Offers'),
             ...pending.map((o) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: LenderOfferCard(offer: o, onWithdraw: () => _confirmWithdraw(context, o)),
-            )),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: LenderOfferCard(
+                      offer: o, onWithdraw: () => _confirmWithdraw(context, o)),
+                )),
           ],
           if (accepted.isNotEmpty) ...[
-             const SectionHeader('Matched / Accepted'),
+            const SectionHeader('Matched / Accepted'),
             ...accepted.map((o) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: LenderOfferCard(offer: o, onWithdraw: () {}),
-            )),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: LenderOfferCard(offer: o, onWithdraw: () {}),
+                )),
           ],
-           if (history.isNotEmpty) ...[
-             const SectionHeader('History'),
+          if (history.isNotEmpty) ...[
+            const SectionHeader('History'),
             ...history.map((o) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: LenderOfferCard(offer: o, onWithdraw: () {}),
-            )),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: LenderOfferCard(offer: o, onWithdraw: () {}),
+                )),
           ],
         ],
       ),
@@ -177,9 +195,12 @@ class _LenderTab extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Withdraw Offer?'),
-        content: Text('Are you sure you want to withdraw your offer for UGX ${offer.offerAmount}?'),
+        content: Text(
+            'Are you sure you want to withdraw your offer for UGX ${offer.offerAmount}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Keep Offer')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Keep Offer')),
           TextButton(
             onPressed: () {
               Navigator.pop(context);

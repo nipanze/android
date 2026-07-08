@@ -33,7 +33,8 @@ class VerifyEmailPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.accent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                    border:
+                        Border.all(color: AppColors.accent.withOpacity(0.3)),
                   ),
                   child: const Icon(Icons.mark_email_unread_outlined,
                       color: AppColors.accent, size: 32),
@@ -45,7 +46,10 @@ class VerifyEmailPage extends StatelessWidget {
                 Text(
                   'We\'ve sent a verification link to your email address. Click the link to activate your account.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 32),
                 OutlinedButton(
@@ -60,7 +64,8 @@ class VerifyEmailPage extends StatelessWidget {
                     context.read<AuthBloc>();
                     // Resend via repository — access through BLoC in real implementation
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Verification email resent.')),
+                      const SnackBar(
+                          content: Text('Verification email resent.')),
                     );
                   },
                   child: const Text('Resend email'),
@@ -73,7 +78,8 @@ class VerifyEmailPage extends StatelessWidget {
                   },
                   child: Text(
                     'Sign out',
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
               ],

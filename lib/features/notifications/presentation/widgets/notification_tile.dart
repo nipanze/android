@@ -65,7 +65,9 @@ class NotificationTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       _timeAgo(notification.createdAt),
-                      style: Theme.of(context).textTheme.bodySmall
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
                           ?.copyWith(fontSize: 10),
                     ),
                     if (!notification.isRead) ...[
@@ -140,10 +142,10 @@ class NotificationTile extends StatelessWidget {
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1)  return 'just now';
+    if (diff.inMinutes < 1) return 'just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-    if (diff.inHours   < 24) return '${diff.inHours}h';
-    if (diff.inDays    < 7)  return '${diff.inDays}d';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    if (diff.inDays < 7) return '${diff.inDays}d';
     return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

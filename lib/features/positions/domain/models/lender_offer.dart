@@ -46,22 +46,23 @@ class LenderOffer extends Equatable {
   LenderOffer copyWith({
     OfferStatus? status,
     String? revealStatus,
-  }) => LenderOffer(
-    offerId: offerId,
-    requestId: requestId,
-    listingTitle: listingTitle,
-    listingPurpose: listingPurpose,
-    district: district,
-    durationMonths: durationMonths,
-    requestedAmount: requestedAmount,
-    offerAmount: offerAmount,
-    proposedExpectations: proposedExpectations,
-    status: status ?? this.status,
-    offeredAt: offeredAt,
-    acceptedAt: acceptedAt,
-    revealStatus: revealStatus ?? this.revealStatus,
-    revealedAt: revealedAt,
-  );
+  }) =>
+      LenderOffer(
+        offerId: offerId,
+        requestId: requestId,
+        listingTitle: listingTitle,
+        listingPurpose: listingPurpose,
+        district: district,
+        durationMonths: durationMonths,
+        requestedAmount: requestedAmount,
+        offerAmount: offerAmount,
+        proposedExpectations: proposedExpectations,
+        status: status ?? this.status,
+        offeredAt: offeredAt,
+        acceptedAt: acceptedAt,
+        revealStatus: revealStatus ?? this.revealStatus,
+        revealedAt: revealedAt,
+      );
 
   factory LenderOffer.fromMap(Map<String, dynamic> map) {
     return LenderOffer(
@@ -75,24 +76,30 @@ class LenderOffer extends Equatable {
       offerAmount: (map['offer_amount'] as num?)?.toInt() ?? 0,
       proposedExpectations: map['proposed_expectations'] as String?,
       status: _statusFromString(map['offer_status'] as String? ?? 'pending'),
-      offeredAt: DateTime.tryParse(map['offered_at'] as String? ?? '') ?? DateTime.now(),
-      acceptedAt: map['accepted_at'] != null 
-          ? DateTime.tryParse(map['accepted_at'] as String) 
+      offeredAt: DateTime.tryParse(map['offered_at'] as String? ?? '') ??
+          DateTime.now(),
+      acceptedAt: map['accepted_at'] != null
+          ? DateTime.tryParse(map['accepted_at'] as String)
           : null,
       revealStatus: map['reveal_status'] as String?,
-      revealedAt: map['revealed_at'] != null 
-          ? DateTime.tryParse(map['revealed_at'] as String) 
+      revealedAt: map['revealed_at'] != null
+          ? DateTime.tryParse(map['revealed_at'] as String)
           : null,
     );
   }
 
   static OfferStatus _statusFromString(String s) {
     switch (s) {
-      case 'accepted': return OfferStatus.accepted;
-      case 'rejected': return OfferStatus.rejected;
-      case 'withdrawn': return OfferStatus.withdrawn;
-      case 'expired': return OfferStatus.expired;
-      default: return OfferStatus.pending;
+      case 'accepted':
+        return OfferStatus.accepted;
+      case 'rejected':
+        return OfferStatus.rejected;
+      case 'withdrawn':
+        return OfferStatus.withdrawn;
+      case 'expired':
+        return OfferStatus.expired;
+      default:
+        return OfferStatus.pending;
     }
   }
 

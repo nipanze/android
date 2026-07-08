@@ -24,9 +24,7 @@ class NotificationRepository {
           .order('created_at', ascending: false)
           .limit(50);
 
-      return (data as List)
-          .map((e) => AppNotification.fromMap(e))
-          .toList();
+      return (data as List).map((e) => AppNotification.fromMap(e)).toList();
     } catch (e) {
       throw parseSupabaseError(e);
     }
@@ -52,7 +50,8 @@ class NotificationRepository {
     try {
       await _client
           .from(TableNames.notifications)
-          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .update(
+              {'is_read': true, 'read_at': DateTime.now().toIso8601String()})
           .eq('id', notificationId)
           .eq('user_id', _uid);
     } catch (e) {
@@ -65,7 +64,8 @@ class NotificationRepository {
     try {
       await _client
           .from(TableNames.notifications)
-          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .update(
+              {'is_read': true, 'read_at': DateTime.now().toIso8601String()})
           .eq('user_id', _uid)
           .eq('is_read', false);
     } catch (e) {

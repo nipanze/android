@@ -18,9 +18,7 @@ class WatchlistRepository {
           .from('watchlist')
           .select('request_id')
           .eq('user_id', userId);
-      return (data as List)
-          .map((e) => e['request_id'] as String)
-          .toList();
+      return (data as List).map((e) => e['request_id'] as String).toList();
     } catch (_) {
       return [];
     }
@@ -38,8 +36,9 @@ class WatchlistRepository {
           .select('request_id')
           .eq('user_id', userId);
 
-      final requestIds =
-          (watchlistData as List).map((e) => e['request_id'] as String).toList();
+      final requestIds = (watchlistData as List)
+          .map((e) => e['request_id'] as String)
+          .toList();
 
       if (requestIds.isEmpty) return [];
 

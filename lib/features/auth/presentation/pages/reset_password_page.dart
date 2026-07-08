@@ -88,7 +88,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   children: [
                     const SizedBox(height: 16),
                     Text('Enter your email and we\'ll send you a reset link.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(height: 1.6)),
                     const SizedBox(height: 24),
                     if (errorMessage != null) ...[
                       Container(
@@ -98,7 +101,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(errorMessage,
-                            style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                            style: const TextStyle(
+                                color: AppColors.danger, fontSize: 12)),
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -111,8 +115,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       onFieldSubmitted: (_) {
                         if (_formKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(
-                            AuthPasswordResetRequested(_emailController.text.trim()),
-                          );
+                                AuthPasswordResetRequested(
+                                    _emailController.text.trim()),
+                              );
                         }
                       },
                       validator: (v) {
@@ -128,15 +133,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           : () {
                               if (_formKey.currentState!.validate()) {
                                 context.read<AuthBloc>().add(
-                                  AuthPasswordResetRequested(_emailController.text.trim()),
-                                );
+                                      AuthPasswordResetRequested(
+                                          _emailController.text.trim()),
+                                    );
                               }
                             },
                       child: isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Send reset link'),
                     ),

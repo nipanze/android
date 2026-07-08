@@ -24,7 +24,8 @@ class AuthRepository {
     return NipanzeUser(id: user.id, email: user.email ?? '');
   }
 
-  bool get isEmailVerified => _client.auth.currentUser?.emailConfirmedAt != null;
+  bool get isEmailVerified =>
+      _client.auth.currentUser?.emailConfirmedAt != null;
 
   Future<NipanzeUser> signIn({
     required String email,
@@ -36,7 +37,9 @@ class AuthRepository {
         password: password,
       );
       final user = response.user;
-      if (user == null) throw const AuthException('Sign in failed. Please try again.');
+      if (user == null) {
+        throw const AuthException('Sign in failed. Please try again.');
+      }
       return await _fetchProfile(user.id, user.email ?? email);
     } on AuthException {
       rethrow;
@@ -89,15 +92,11 @@ class AuthRepository {
 
   Future<NipanzeUser> _fetchProfile(String id, String email) async {
     try {
-      final data = await _client
-          .from('profiles')
-          .select('''
+      final data = await _client.from('profiles').select('''
             id, full_name, phone, district, credit_score, reputation_tier, lender_token, role,
             subscriptions!inner(plan),
             kyc_verifications(status)
-          ''')
-          .eq('id', id)
-          .maybeSingle();
+          ''').eq('id', id).maybeSingle();
 
       if (data == null) {
         return NipanzeUser(
@@ -107,8 +106,11 @@ class AuthRepository {
         );
       }
 
-      final subPlan = (data['subscriptions'] as List?)?.firstOrNull?['plan'] ?? 'watchlist';
-      final kycStatus = (data['kyc_verifications'] as List?)?.firstOrNull?['status'] ?? 'not_submitted';
+      final subPlan =
+          (data['subscriptions'] as List?)?.firstOrNull?['plan'] ?? 'watchlist';
+      final kycStatus =
+          (data['kyc_verifications'] as List?)?.firstOrNull?['status'] ??
+              'not_submitted';
 
       return NipanzeUser.fromMap({
         ...data,

@@ -45,8 +45,8 @@ class _NotificationsView extends StatelessWidget {
               return TextButton(
                 onPressed: () =>
                     context.read<NotificationCubit>().markAllAsRead(),
-                child: const Text('Mark all read',
-                    style: TextStyle(fontSize: 12)),
+                child:
+                    const Text('Mark all read', style: TextStyle(fontSize: 12)),
               );
             },
           ),
@@ -70,8 +70,7 @@ class _NotificationsView extends StatelessWidget {
               return const EmptyState(
                 icon: Icons.notifications_outlined,
                 title: 'No notifications yet',
-                subtitle:
-                    'You\'ll be notified here when bids arrive, '
+                subtitle: 'You\'ll be notified here when bids arrive, '
                     'rates change, or contracts are ready.',
               );
             }
@@ -80,8 +79,7 @@ class _NotificationsView extends StatelessWidget {
             final groups = _groupByDate(state.notifications);
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<NotificationCubit>().refresh(),
+              onRefresh: () => context.read<NotificationCubit>().refresh(),
               child: ListView.builder(
                 itemCount: groups.length,
                 itemBuilder: (context, i) {
@@ -97,9 +95,8 @@ class _NotificationsView extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -130,30 +127,28 @@ class _NotificationsView extends StatelessWidget {
   }
 
   List<_NotifGroup> _groupByDate(List<AppNotification> items) {
-    final now   = DateTime.now();
+    final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
 
-    final todayItems     = <AppNotification>[];
+    final todayItems = <AppNotification>[];
     final yesterdayItems = <AppNotification>[];
-    final olderItems     = <AppNotification>[];
+    final olderItems = <AppNotification>[];
 
     for (final n in items) {
-      final d = DateTime(
-          n.createdAt.year, n.createdAt.month, n.createdAt.day);
+      final d = DateTime(n.createdAt.year, n.createdAt.month, n.createdAt.day);
       if (d == today) {
         todayItems.add(n);
-      } else if (d == yesterday) yesterdayItems.add(n);
-      else                    olderItems.add(n);
+      } else if (d == yesterday)
+        yesterdayItems.add(n);
+      else
+        olderItems.add(n);
     }
 
     return [
-      if (todayItems.isNotEmpty)
-        _NotifGroup('TODAY', todayItems),
-      if (yesterdayItems.isNotEmpty)
-        _NotifGroup('YESTERDAY', yesterdayItems),
-      if (olderItems.isNotEmpty)
-        _NotifGroup('EARLIER', olderItems),
+      if (todayItems.isNotEmpty) _NotifGroup('TODAY', todayItems),
+      if (yesterdayItems.isNotEmpty) _NotifGroup('YESTERDAY', yesterdayItems),
+      if (olderItems.isNotEmpty) _NotifGroup('EARLIER', olderItems),
     ];
   }
 }
@@ -179,8 +174,8 @@ class _LoadingSkeleton extends StatelessWidget {
           SkeletonBox(width: 36, height: 36, radius: 10),
           SizedBox(width: 12),
           Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 SkeletonBox(width: 140, height: 13),
                 Spacer(),

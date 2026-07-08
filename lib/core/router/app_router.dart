@@ -37,7 +37,8 @@ class AppRoutes {
   static const String watchlist = '/watchlist';
   static const String positions = '/positions';
   static const String myListings = '/listings/my-listings';
-  static const String listingCreate = '/listings/create';  // ← top-level, not nested
+  static const String listingCreate =
+      '/listings/create'; // ← top-level, not nested
   static const String revealContact = '/marketplace/reveal/:revealId';
   static const String notifications = '/notifications';
   static const String kyc = '/kyc';
@@ -162,7 +163,9 @@ class AppRouter {
         pageBuilder: (_, state) => _slide(
           state,
           // Placeholder for RevealContactPage — to be implemented in Stage 2.4
-          Scaffold(appBar: AppBar(title: const Text('Contact Details')), body: const Center(child: Text('Revealed Contact Details'))),
+          Scaffold(
+              appBar: AppBar(title: const Text('Contact Details')),
+              body: const Center(child: Text('Revealed Contact Details'))),
         ),
       ),
       GoRoute(

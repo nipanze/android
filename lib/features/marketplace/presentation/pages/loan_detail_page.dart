@@ -282,6 +282,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   _FundedProgressBar(
                     offers: _offers,
                     requestedAmount: listing.requestedAmount,
+                    kycStatus: listing.kycStatus,
                   ),
 
                   const SizedBox(height: 12),
@@ -456,10 +457,12 @@ class _FundedProgressBar extends StatelessWidget {
   const _FundedProgressBar({
     required this.offers,
     required this.requestedAmount,
+    this.kycStatus,
   });
 
   final List<LoanOffer> offers;
   final int requestedAmount;
+  final String? kycStatus;
 
   @override
   Widget build(BuildContext context) {
@@ -468,9 +471,11 @@ class _FundedProgressBar extends StatelessWidget {
         ? (totalFunded / requestedAmount).clamp(0.0, 1.0)
         : 0.0;
     final pctInt = (pct * 100).round();
-    final bidsLabel = offers.isEmpty
-        ? 'No bids'
-        : '${offers.length} bid${offers.length > 1 ? 's' : ''}';
+    final bidsLabel = kycStatus != null
+        ? 'User verification status: ${kycStatus!.toUpperCase()}'
+        : (offers.isEmpty
+            ? 'No bids'
+            : '${offers.length} bid${offers.length > 1 ? 's' : ''}');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,9 +714,8 @@ class _OfferCardState extends State<_OfferCard>
     final rowBg = isFull
         ? AppColors.success.withValues(alpha: 0.08)
         : Theme.of(context).colorScheme.surface;
-    final expandedBg = isFull
-        ? AppColors.success.withValues(alpha: 0.05)
-        : rowBg;
+    final expandedBg =
+        isFull ? AppColors.success.withValues(alpha: 0.05) : rowBg;
     final borderColor = isFull
         ? AppColors.success.withValues(alpha: 0.35)
         : Theme.of(context).dividerColor;
@@ -731,6 +735,7 @@ class _OfferCardState extends State<_OfferCard>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Colored dot
                   Container(
@@ -771,29 +776,48 @@ class _OfferCardState extends State<_OfferCard>
                   ),
                   const SizedBox(width: 8),
                   const Spacer(),
-                  // Amount
-                  Text(
-                    _fmt(offer.offerAmount),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isFull ? AppColors.success : null,
+                  // Amount + chevron.
+                  // Fix: these two used to sit directly in the row as a bare
+                  // Text and a bare Icon. Text's layout box follows the
+                  // font's line-height metrics while Icon's follows its
+                  // literal `size`, so even with the Row's default
+                  // crossAxisAlignment.center the two visually sat a couple
+                  // pixels off from each other. Giving both a matching
+                  // fixed-height SizedBox + Center pins them to the same
+                  // box, so centering is exact regardless of font metrics.
+                  SizedBox(
+                    height: 20,
+                    child: Center(
+                      child: Text(
+                        _fmt(offer.offerAmount),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.0,
+                          color: isFull ? AppColors.success : null,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 6),
-                  // Chevron
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: isFull
-                          ? AppColors.success.withValues(alpha: 0.7)
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.4),
+                  SizedBox(
+                    height: 20,
+                    width: 18,
+                    child: Center(
+                      child: AnimatedRotation(
+                        turns: _expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 18,
+                          color: isFull
+                              ? AppColors.success.withValues(alpha: 0.7)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
                   ),
                 ],

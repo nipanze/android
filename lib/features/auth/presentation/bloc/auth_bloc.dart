@@ -42,7 +42,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignIn(AuthSignInRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignIn(
+      AuthSignInRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       final user = await _authRepository.signIn(
@@ -58,7 +59,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignUp(AuthSignUpRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignUp(
+      AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       await _authRepository.signUp(
@@ -72,7 +74,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onSignOut(AuthSignOutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignOut(
+      AuthSignOutRequested event, Emitter<AuthState> emit) async {
     await _authRepository.signOut();
     emit(const AuthUnauthenticated());
   }

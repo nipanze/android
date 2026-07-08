@@ -54,10 +54,17 @@ class NotificationCubit extends Cubit<NotificationState> {
     final updated = current.notifications
         .map((n) => n.id == notificationId
             ? AppNotification(
-                id: n.id, userId: n.userId, type: n.type,
-                title: n.title, body: n.body, isRead: true,
-                createdAt: n.createdAt, requestId: n.requestId,
-                contractId: n.contractId, bidId: n.bidId, data: n.data)
+                id: n.id,
+                userId: n.userId,
+                type: n.type,
+                title: n.title,
+                body: n.body,
+                isRead: true,
+                createdAt: n.createdAt,
+                requestId: n.requestId,
+                contractId: n.contractId,
+                bidId: n.bidId,
+                data: n.data)
             : n)
         .toList();
     final unread = updated.where((n) => !n.isRead).length;
@@ -76,10 +83,17 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     final updated = current.notifications
         .map((n) => AppNotification(
-            id: n.id, userId: n.userId, type: n.type,
-            title: n.title, body: n.body, isRead: true,
-            createdAt: n.createdAt, requestId: n.requestId,
-            contractId: n.contractId, bidId: n.bidId, data: n.data))
+            id: n.id,
+            userId: n.userId,
+            type: n.type,
+            title: n.title,
+            body: n.body,
+            isRead: true,
+            createdAt: n.createdAt,
+            requestId: n.requestId,
+            contractId: n.contractId,
+            bidId: n.bidId,
+            data: n.data))
         .toList();
     emit(NotificationLoaded(notifications: updated, unreadCount: 0));
 

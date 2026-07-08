@@ -17,18 +17,19 @@ class ContractCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final id            = contract['id'] as String;
-    final status        = contract['status'] as String? ?? 'draft';
-    final amount        = (contract['amount'] as num?)?.toInt() ?? 0;
-    final rate          = (contract['interest_rate'] as num?)?.toDouble() ?? 0;
-    final months        = contract['duration_months'] as int? ?? 0;
-    final district      = contract['district'] as String? ?? '';
-    final title         = (contract['loan_requests'] as Map?)?['title']
-                            as String? ?? 'Untitled';
-    final monthly       = (contract['indicative_monthly_payment_ugx'] as num?)?.toInt();
-    final borrowerId    = contract['borrower_id'] as String? ?? '';
-    final isBorrower    = borrowerId == currentUserId;
-    final role          = isBorrower ? 'Borrower' : 'Lender';
+    final id = contract['id'] as String;
+    final status = contract['status'] as String? ?? 'draft';
+    final amount = (contract['amount'] as num?)?.toInt() ?? 0;
+    final rate = (contract['interest_rate'] as num?)?.toDouble() ?? 0;
+    final months = contract['duration_months'] as int? ?? 0;
+    final district = contract['district'] as String? ?? '';
+    final title =
+        (contract['loan_requests'] as Map?)?['title'] as String? ?? 'Untitled';
+    final monthly =
+        (contract['indicative_monthly_payment_ugx'] as num?)?.toInt();
+    final borrowerId = contract['borrower_id'] as String? ?? '';
+    final isBorrower = borrowerId == currentUserId;
+    final role = isBorrower ? 'Borrower' : 'Lender';
 
     return GestureDetector(
       onTap: () => context.push('/contracts/$id'),
@@ -43,15 +44,18 @@ class ContractCard extends StatelessWidget {
           // Header
           Row(children: [
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text('$district · $months months · as $role',
-                    style: Theme.of(context).textTheme.bodySmall),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text('$district · $months months · as $role',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ]),
             ),
             const SizedBox(width: 8),
             _ContractStatusBadge(status),
@@ -94,7 +98,9 @@ class ContractCard extends StatelessWidget {
             Expanded(
               child: Text(
                 'Settlement off-platform · indicative figures only',
-                style: Theme.of(context).textTheme.bodySmall
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
                     ?.copyWith(fontSize: 9),
               ),
             ),
@@ -107,11 +113,16 @@ class ContractCard extends StatelessWidget {
 
   Color _borderColor(String status, BuildContext context) {
     switch (status) {
-      case 'in_execution': return AppColors.success.withValues(alpha: 0.5);
-      case 'completed':    return AppColors.accent.withValues(alpha: 0.4);
-      case 'defaulted':    return AppColors.danger.withValues(alpha: 0.5);
-      case 'disputed':     return AppColors.warning.withValues(alpha: 0.5);
-      default:             return Theme.of(context).dividerColor;
+      case 'in_execution':
+        return AppColors.success.withValues(alpha: 0.5);
+      case 'completed':
+        return AppColors.accent.withValues(alpha: 0.4);
+      case 'defaulted':
+        return AppColors.danger.withValues(alpha: 0.5);
+      case 'disputed':
+        return AppColors.warning.withValues(alpha: 0.5);
+      default:
+        return Theme.of(context).dividerColor;
     }
   }
 
@@ -133,11 +144,11 @@ class _ContractStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      'in_execution' => ('Active',     AppColors.success),
-      'completed'    => ('Completed',  AppColors.accent),
-      'defaulted'    => ('Defaulted',  AppColors.danger),
-      'disputed'     => ('Disputed',   AppColors.warning),
-      _              => ('Draft',      AppColors.purple),
+      'in_execution' => ('Active', AppColors.success),
+      'completed' => ('Completed', AppColors.accent),
+      'defaulted' => ('Defaulted', AppColors.danger),
+      'disputed' => ('Disputed', AppColors.warning),
+      _ => ('Draft', AppColors.purple),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

@@ -29,10 +29,13 @@ class LenderOfferCard extends StatelessWidget {
         // Header
         Row(children: [
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(offer.listingTitle,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
               Text('${offer.district} · ${offer.durationMonths} months',
                   style: Theme.of(context).textTheme.bodySmall),
@@ -47,17 +50,23 @@ class LenderOfferCard extends StatelessWidget {
         // Offer details
         Row(children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Offered Amount', style: Theme.of(context).textTheme.bodySmall),
+            Text('Offered Amount',
+                style: Theme.of(context).textTheme.bodySmall),
             UgxAmount(offer.offerAmount, fontSize: 16),
           ]),
           const Spacer(),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-             Text('Status', style: Theme.of(context).textTheme.bodySmall),
-             Text(offer.status.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.accent)),
+            Text('Status', style: Theme.of(context).textTheme.bodySmall),
+            Text(offer.status.name.toUpperCase(),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: AppColors.accent)),
           ]),
         ]),
 
-        if (offer.proposedExpectations != null && offer.proposedExpectations!.isNotEmpty) ...[
+        if (offer.proposedExpectations != null &&
+            offer.proposedExpectations!.isNotEmpty) ...[
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(8),
@@ -68,7 +77,10 @@ class LenderOfferCard extends StatelessWidget {
             ),
             child: Text(
               offer.proposedExpectations!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontStyle: FontStyle.italic),
             ),
           ),
         ],
@@ -98,7 +110,8 @@ class LenderOfferCard extends StatelessWidget {
             OutlinedButton(
               onPressed: onWithdraw,
               style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   foregroundColor: AppColors.danger,
                   side: const BorderSide(color: AppColors.danger),
                   textStyle: const TextStyle(fontSize: 11),
@@ -113,9 +126,12 @@ class LenderOfferCard extends StatelessWidget {
 
   Color _borderColor(BuildContext context) {
     switch (offer.status) {
-      case OfferStatus.accepted: return AppColors.success.withValues(alpha: 0.5);
-      case OfferStatus.pending:  return AppColors.accent.withValues(alpha: 0.4);
-      default:         return Theme.of(context).dividerColor;
+      case OfferStatus.accepted:
+        return AppColors.success.withValues(alpha: 0.5);
+      case OfferStatus.pending:
+        return AppColors.accent.withValues(alpha: 0.4);
+      default:
+        return Theme.of(context).dividerColor;
     }
   }
 
@@ -130,10 +146,10 @@ class _OfferStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (status) {
-      OfferStatus.pending   => AppColors.accent,
-      OfferStatus.accepted  => AppColors.success,
-      OfferStatus.rejected  => AppColors.danger,
-      _                     => AppColors.text2Dark,
+      OfferStatus.pending => AppColors.accent,
+      OfferStatus.accepted => AppColors.success,
+      OfferStatus.rejected => AppColors.danger,
+      _ => AppColors.text2Dark,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -142,7 +158,8 @@ class _OfferStatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(status.name.toUpperCase(),
-          style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color)),
+          style: TextStyle(
+              fontSize: 9, fontWeight: FontWeight.bold, color: color)),
     );
   }
 }

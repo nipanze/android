@@ -33,10 +33,13 @@ class _AccountView extends StatelessWidget {
         child: BlocConsumer<ProfileCubit, ProfileCubitState>(
           listener: (context, state) {
             if (state is ProfileCubitLoaded && state.justSaved) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated.')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile updated.')));
             }
             if (state is ProfileCubitError) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.danger));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.danger));
             }
           },
           builder: (context, state) {
@@ -56,7 +59,8 @@ class _AccountView extends StatelessWidget {
 
                   // Avatar
                   Container(
-                    width: 64, height: 64,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF1E40AF), Color(0xFF7C3AED)],
@@ -65,14 +69,20 @@ class _AccountView extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(32),
                     ),
-                    child: Center(child: Text(
+                    child: Center(
+                        child: Text(
                       profile?.initials ?? 'U',
-                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700),
                     )),
                   ),
                   const SizedBox(height: 10),
-                  Text(profile?.displayName ?? 'User', style: Theme.of(context).textTheme.titleMedium),
-                  Text(profile?.email ?? '', style: Theme.of(context).textTheme.bodySmall),
+                  Text(profile?.displayName ?? 'User',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  Text(profile?.email ?? '',
+                      style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 20),
 
                   // Quick stats
@@ -125,7 +135,8 @@ class _AccountView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(14),
                       child: Column(children: [
-                        _InfoRow('Account Status', profile?.accountStatus.toUpperCase()),
+                        _InfoRow('Account Status',
+                            profile?.accountStatus.toUpperCase()),
                         const Divider(height: 16),
                         _InfoRow('District', profile?.district),
                         if (profile?.employmentType != null) ...[
@@ -140,10 +151,14 @@ class _AccountView extends StatelessWidget {
                   // Sign out
                   OutlinedButton(
                     onPressed: () {
-                      context.read<AuthBloc>().add(const AuthSignOutRequested());
+                      context
+                          .read<AuthBloc>()
+                          .add(const AuthSignOutRequested());
                       context.go(AppRoutes.login);
                     },
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger, side: const BorderSide(color: AppColors.danger)),
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.danger,
+                        side: const BorderSide(color: AppColors.danger)),
                     child: const Text('Sign Out'),
                   ),
                   const SizedBox(height: 32),
@@ -152,7 +167,8 @@ class _AccountView extends StatelessWidget {
                   const Text(
                     'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 10, color: AppColors.text3Dark, height: 1.5),
+                    style: TextStyle(
+                        fontSize: 10, color: AppColors.text3Dark, height: 1.5),
                   ),
                 ]),
               ),
@@ -167,13 +183,17 @@ class _AccountView extends StatelessWidget {
     if (status == null) return null;
     final (label, color) = switch (status) {
       'approved' => ('Verified', AppColors.success),
-      'pending'  => ('Pending',  AppColors.warning),
-      _          => ('Incomplete', AppColors.text2Dark),
+      'pending' => ('Pending', AppColors.warning),
+      _ => ('Incomplete', AppColors.text2Dark),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20)),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 10, fontWeight: FontWeight.w600, color: color)),
     );
   }
 }
@@ -184,7 +204,7 @@ class _SubscriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final plan   = profile?.subscriptionPlan ?? 'watchlist';
+    final plan = profile?.subscriptionPlan ?? 'watchlist';
     final status = profile?.subscriptionStatus ?? 'active';
 
     return Container(
@@ -192,78 +212,111 @@ class _SubscriptionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _planColor(plan).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _planColor(plan).withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(
+            color: _planColor(plan).withValues(alpha: 0.3), width: 1.5),
       ),
       child: Row(children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${_planLabel(plan)} plan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _planColor(plan))),
+          Text('${_planLabel(plan)} plan',
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _planColor(plan))),
           const Text('Non-custodial access', style: TextStyle(fontSize: 11)),
         ]),
         const Spacer(),
-        Text(status.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _planColor(plan))),
+        Text(status.toUpperCase(),
+            style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: _planColor(plan))),
       ]),
     );
   }
 
   Color _planColor(String plan) {
     switch (plan) {
-      case 'lender': return AppColors.accent;
-      case 'pro':    return AppColors.purple;
-      default:       return AppColors.success;
+      case 'lender':
+        return AppColors.accent;
+      case 'pro':
+        return AppColors.purple;
+      default:
+        return AppColors.success;
     }
   }
 
   String _planLabel(String plan) {
     switch (plan) {
-      case 'lender': return 'Lender';
-      case 'pro':    return 'Pro';
-      default:       return 'Standard';
+      case 'lender':
+        return 'Lender';
+      case 'pro':
+        return 'Pro';
+      default:
+        return 'Standard';
     }
   }
 }
 
 class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label, required this.value, required this.color});
-  final String label; final String value; final Color color;
+  const _StatChip(
+      {required this.label, required this.value, required this.color});
+  final String label;
+  final String value;
+  final Color color;
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(10)),
-      child: Column(children: [
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: const TextStyle(fontSize: 9)),
-      ]),
-    ),
-  );
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(10)),
+          child: Column(children: [
+            Text(value,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(label, style: const TextStyle(fontSize: 9)),
+          ]),
+        ),
+      );
 }
 
 class _ActionRow extends StatelessWidget {
-  const _ActionRow({required this.icon, required this.label, required this.onTap, this.trailing});
-  final IconData icon; final String label; final VoidCallback onTap; final Widget? trailing;
+  const _ActionRow(
+      {required this.icon,
+      required this.label,
+      required this.onTap,
+      this.trailing});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Widget? trailing;
   @override
   Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(children: [
-        Icon(icon, size: 20, color: AppColors.text2Dark),
-        const SizedBox(width: 12),
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-        if (trailing != null) trailing!,
-        const Icon(Icons.chevron_right, size: 16, color: AppColors.text3Dark),
-      ]),
-    ),
-  );
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(children: [
+            Icon(icon, size: 20, color: AppColors.text2Dark),
+            const SizedBox(width: 12),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+            if (trailing != null) trailing!,
+            const Icon(Icons.chevron_right,
+                size: 16, color: AppColors.text3Dark),
+          ]),
+        ),
+      );
 }
 
 class _InfoRow extends StatelessWidget {
   const _InfoRow(this.label, this.value);
-  final String label; final String? value;
+  final String label;
+  final String? value;
   @override
   Widget build(BuildContext context) => Row(children: [
-    Text(label, style: const TextStyle(fontSize: 13, color: AppColors.text2Dark)),
-    const Spacer(),
-    Text(value ?? '—', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-  ]);
+        Text(label,
+            style: const TextStyle(fontSize: 13, color: AppColors.text2Dark)),
+        const Spacer(),
+        Text(value ?? '—',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+      ]);
 }

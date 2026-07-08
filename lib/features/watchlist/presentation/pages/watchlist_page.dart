@@ -51,9 +51,8 @@ class _WatchlistView extends StatelessWidget {
                   const Spacer(),
                   BlocBuilder<WatchlistCubit, WatchlistState>(
                     builder: (context, state) {
-                      final count = state is WatchlistLoaded
-                          ? state.listings.length
-                          : 0;
+                      final count =
+                          state is WatchlistLoaded ? state.listings.length : 0;
                       return Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
@@ -62,8 +61,8 @@ class _WatchlistView extends StatelessWidget {
                               .colorScheme
                               .surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: Theme.of(context).dividerColor),
+                          border:
+                              Border.all(color: Theme.of(context).dividerColor),
                         ),
                         child: Text('$count saved',
                             style: const TextStyle(fontSize: 10)),
@@ -116,9 +115,8 @@ class _WatchlistView extends StatelessWidget {
                           Icon(
                             Icons.error_outline_rounded,
                             size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: 12),
                           Text(

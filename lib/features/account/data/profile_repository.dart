@@ -27,7 +27,8 @@ class ProfileRepository {
       // Fetch raw profile fields
       final profile = await _client
           .from(TableNames.profiles)
-          .select('full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status')
+          .select(
+              'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status')
           .eq('id', _uid)
           .maybeSingle();
 
@@ -36,26 +37,26 @@ class ProfileRepository {
       final email = _client.auth.currentUser?.email ?? '';
 
       return UserProfile(
-        id:             _uid,
-        email:          email,
-        fullName:       profile?['full_name']       as String?,
-        phone:          profile?['phone']           as String?,
-        district:       profile?['district']        as String?,
+        id: _uid,
+        email: email,
+        fullName: profile?['full_name'] as String?,
+        phone: profile?['phone'] as String?,
+        district: profile?['district'] as String?,
         employmentType: profile?['employment_type'] as String?,
-        employerName:   profile?['employer_name']   as String?,
+        employerName: profile?['employer_name'] as String?,
         monthlyIncomeUgx: (profile?['monthly_income_ugx'] as num?)?.toInt(),
-        accountStatus:  profile?['account_status']  as String?  ?? 'active',
-        subscriptionPlan:    activity?['subscription_plan']       as String?,
-        subscriptionStatus:  activity?['subscription_status']     as String?,
+        accountStatus: profile?['account_status'] as String? ?? 'active',
+        subscriptionPlan: activity?['subscription_plan'] as String?,
+        subscriptionStatus: activity?['subscription_status'] as String?,
         subscriptionExpiresAt: activity?['subscription_expires_at'] != null
             ? DateTime.tryParse(activity!['subscription_expires_at'] as String)
             : null,
-        kycStatus:    activity?['kyc_status']    as String?,
+        kycStatus: activity?['kyc_status'] as String?,
         kycExpiresAt: activity?['kyc_expires_at'] != null
             ? DateTime.tryParse(activity!['kyc_expires_at'] as String)
             : null,
-        activeListings:   (activity?['active_listings']   as int?) ?? 0,
-        activeOffers:     (activity?['active_offers']     as int?) ?? 0,
+        activeListings: (activity?['active_listings'] as int?) ?? 0,
+        activeOffers: (activity?['active_offers'] as int?) ?? 0,
         revealedContacts: (activity?['revealed_contacts'] as int?) ?? 0,
       );
     } catch (e) {
@@ -70,23 +71,22 @@ class ProfileRepository {
     String? district,
     String? employmentType,
     String? employerName,
-    int?    monthlyIncomeUgx,
+    int? monthlyIncomeUgx,
   }) async {
     try {
       final updates = <String, dynamic>{};
-      if (fullName        != null) updates['full_name']         = fullName;
-      if (phone           != null) updates['phone']             = phone;
-      if (district        != null) updates['district']          = district;
-      if (employmentType  != null) updates['employment_type']   = employmentType;
-      if (employerName    != null) updates['employer_name']     = employerName;
-      if (monthlyIncomeUgx != null) updates['monthly_income_ugx'] = monthlyIncomeUgx;
+      if (fullName != null) updates['full_name'] = fullName;
+      if (phone != null) updates['phone'] = phone;
+      if (district != null) updates['district'] = district;
+      if (employmentType != null) updates['employment_type'] = employmentType;
+      if (employerName != null) updates['employer_name'] = employerName;
+      if (monthlyIncomeUgx != null) {
+        updates['monthly_income_ugx'] = monthlyIncomeUgx;
+      }
 
       if (updates.isEmpty) return;
 
-      await _client
-          .from(TableNames.profiles)
-          .update(updates)
-          .eq('id', _uid);
+      await _client.from(TableNames.profiles).update(updates).eq('id', _uid);
     } catch (e) {
       throw parseSupabaseError(e);
     }

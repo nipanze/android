@@ -29,12 +29,12 @@ class KycCubit extends Cubit<KycState> {
   /// Upload a file for a given doc type and save the URL to the DB.
   Future<void> uploadDocument(File file, String docType) async {
     final current = state;
-    emit(KycUploading(docType: docType,
-        kyc: current is KycLoaded ? current.kyc : null));
+    emit(KycUploading(
+        docType: docType, kyc: current is KycLoaded ? current.kyc : null));
     try {
       final url = await _repository.uploadDocument(file, docType);
-      final updated = await _repository.saveDocumentUrl(
-          docType: docType, url: url);
+      final updated =
+          await _repository.saveDocumentUrl(docType: docType, url: url);
       emit(KycLoaded(updated));
     } catch (e) {
       // Restore previous state with error

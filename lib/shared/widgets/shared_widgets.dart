@@ -206,7 +206,8 @@ class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
 // ─── Loading Skeleton ─────────────────────────────────────────────────────────
 
 class SkeletonBox extends StatefulWidget {
-  const SkeletonBox({super.key, required this.width, required this.height, this.radius = 8});
+  const SkeletonBox(
+      {super.key, required this.width, required this.height, this.radius = 8});
 
   final double width;
   final double height;
@@ -216,7 +217,8 @@ class SkeletonBox extends StatefulWidget {
   State<SkeletonBox> createState() => _SkeletonBoxState();
 }
 
-class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
+class _SkeletonBoxState extends State<SkeletonBox>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _opacity;
 
@@ -276,7 +278,9 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(icon,
+                size: 48,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -314,7 +318,8 @@ class ErrorState extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
             const SizedBox(height: 16),
-            Text('Something went wrong', style: Theme.of(context).textTheme.titleMedium),
+            Text('Something went wrong',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
               message,
@@ -357,7 +362,8 @@ class SubscriptionGateCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Icon(Icons.lock_outline_rounded, size: 32, color: AppColors.purple),
+            const Icon(Icons.lock_outline_rounded,
+                size: 32, color: AppColors.purple),
             const SizedBox(height: 12),
             Text(
               'Subscription required',
@@ -372,7 +378,8 @@ class SubscriptionGateCard extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onUpgrade,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.purple),
               child: Text('Upgrade to $requiredPlan'),
             ),
           ],

@@ -30,7 +30,11 @@ class WatchlistCard extends StatelessWidget {
             : null;
 
     // Urgency border: thick red for 6h, amber for 24h, normal otherwise
-    final borderWidth = isDanger ? 2.0 : isWarning ? 1.5 : 1.0;
+    final borderWidth = isDanger
+        ? 2.0
+        : isWarning
+            ? 1.5
+            : 1.0;
     final borderColor = urgencyColor ??
         (hasOffers
             ? AppColors.accent.withOpacity(0.6)
@@ -105,7 +109,16 @@ class WatchlistCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                if (hasOffers)
+                if (listing.kycStatus != null)
+                  Text(
+                    'User verification status: ${listing.kycStatus!.toUpperCase()}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                    ),
+                  )
+                else if (hasOffers)
                   Text(
                     '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
                     style: const TextStyle(

@@ -35,10 +35,10 @@ class _RegisterPageState extends State<RegisterPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(AuthSignUpRequested(
-      fullName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    ));
+          fullName: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ));
   }
 
   @override
@@ -74,35 +74,36 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 20),
-
                     if (errorMessage != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: AppColors.danger.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           errorMessage,
-                          style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                          style: const TextStyle(
+                              color: AppColors.danger, fontSize: 12),
                         ),
                       ),
                       const SizedBox(height: 20),
                     ],
-
                     AuthField(
                       label: 'Full name',
                       controller: _nameController,
                       icon: Icons.person_outline_rounded,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Enter your full name';
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Enter your full name';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 14),
-
                     AuthField(
                       label: 'Email',
                       controller: _emailController,
@@ -116,7 +117,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                     const SizedBox(height: 14),
-
                     AuthField(
                       label: 'Password',
                       controller: _passwordController,
@@ -125,18 +125,22 @@ class _RegisterPageState extends State<RegisterPage> {
                       textInputAction: TextInputAction.next,
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 17,
                         ),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) {
-                        if (v == null || v.length < 8) return 'Password must be at least 8 characters';
+                        if (v == null || v.length < 8) {
+                          return 'Password must be at least 8 characters';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 14),
-
                     AuthField(
                       label: 'Confirm password',
                       controller: _confirmController,
@@ -145,28 +149,32 @@ class _RegisterPageState extends State<RegisterPage> {
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _submit(),
                       validator: (v) {
-                        if (v != _passwordController.text) return 'Passwords do not match';
+                        if (v != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
-
                     ElevatedButton(
                       onPressed: isLoading ? null : _submit,
                       child: isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Create account'),
                     ),
                     const SizedBox(height: 20),
-
                     Text(
                       'By registering you agree that Nipanze is a technology marketplace and does not hold or move funds.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(height: 1.6),
                     ),
                   ],
                 ),

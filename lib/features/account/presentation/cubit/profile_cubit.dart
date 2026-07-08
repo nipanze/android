@@ -20,7 +20,8 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       // getProfile() returns UserProfile? — treat null as "profile not found"
       final profile = await _repository.getProfile();
       if (profile == null) {
-        emit(const ProfileCubitError('Profile not found. Please contact support.'));
+        emit(const ProfileCubitError(
+            'Profile not found. Please contact support.'));
         return;
       }
       emit(ProfileCubitLoaded(profile));
@@ -35,18 +36,18 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
     String? district,
     String? employmentType,
     String? employerName,
-    int?    monthlyIncomeUgx,
+    int? monthlyIncomeUgx,
   }) async {
     if (state is! ProfileCubitLoaded) return;
     final current = state as ProfileCubitLoaded;
     emit(const ProfileCubitSaving());
     try {
       await _repository.updateProfile(
-        fullName:         fullName,
-        phone:            phone,
-        district:         district,
-        employmentType:   employmentType,
-        employerName:     employerName,
+        fullName: fullName,
+        phone: phone,
+        district: district,
+        employmentType: employmentType,
+        employerName: employerName,
         monthlyIncomeUgx: monthlyIncomeUgx,
       );
       // Reload fresh from DB

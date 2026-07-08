@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../marketplace/domain/models/loan_listing.dart';
 
 class ListingCard extends StatelessWidget {
@@ -22,15 +21,21 @@ class ListingCard extends StatelessWidget {
     final fundedFraction = _fundedFraction(listing);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final progressColor = hasOffers ? AppColors.accent : Theme.of(context).colorScheme.onSurfaceVariant;
-    final fundedLabel = hasOffers ? '${listing.numberOfOffers} offer${listing.numberOfOffers == 1 ? '' : 's'}' : 'No bids yet';
+    final progressColor = hasOffers
+        ? AppColors.accent
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final fundedLabel = hasOffers
+        ? '${listing.numberOfOffers} offer${listing.numberOfOffers == 1 ? '' : 's'}'
+        : 'No bids yet';
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A28) : Theme.of(context).colorScheme.surface,
+          color: isDark
+              ? const Color(0xFF2A2A28)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isDark
@@ -87,7 +92,10 @@ class ListingCard extends StatelessWidget {
             Text(
               listing.purpose,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.76),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.76),
                   ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -178,7 +186,9 @@ class _OfferChip extends StatelessWidget {
         border: Border.all(color: borderColor),
       ),
       child: Text(
-        hasOffers ? '$offerCount offer${offerCount == 1 ? '' : 's'}' : '0 offers',
+        hasOffers
+            ? '$offerCount offer${offerCount == 1 ? '' : 's'}'
+            : '0 offers',
         style: TextStyle(
           fontSize: 9.5,
           fontWeight: FontWeight.w600,

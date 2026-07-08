@@ -90,20 +90,21 @@ class _ListingsBody extends StatelessWidget {
           if (_active.isNotEmpty) ...[
             SectionHeader('Active · ${_active.length}'),
             ..._active.map((l) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: MyListingCard(
-                listing: l,
-                onTap: () => context.push('/marketplace/${l.id}'),
-                onCancel: () => _confirmCancel(context, l),
-              ),
-            )),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: MyListingCard(
+                    listing: l,
+                    onTap: () => context.push('/marketplace/${l.id}'),
+                    onCancel: () => _confirmCancel(context, l),
+                  ),
+                )),
           ],
           if (_closed.isNotEmpty) ...[
             SectionHeader('Closed · ${_closed.length}'),
             ..._closed.map((l) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: MyListingCard(listing: l, onTap: () {}, onCancel: () {}),
-            )),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child:
+                      MyListingCard(listing: l, onTap: () {}, onCancel: () {}),
+                )),
           ],
         ],
       ),
@@ -117,7 +118,7 @@ class _ListingsBody extends StatelessWidget {
         title: const Text('Cancel listing?'),
         content: Text(
           'This will remove "${listing.title}" from the marketplace. '
-              'Any pending bids will be rejected. This cannot be undone.',
+          'Any pending bids will be rejected. This cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -147,7 +148,7 @@ class _EmptyRequestState extends StatelessWidget {
       icon: Icons.request_page_outlined,
       title: 'No loan requests yet',
       subtitle:
-      'Post a request and lenders will compete to offer you the best rate.',
+          'Post a request and lenders will compete to offer you the best rate.',
       action: ElevatedButton(
         onPressed: () => context.go(AppRoutes.listingCreate),
         child: const Text('Create a loan request'),

@@ -24,7 +24,7 @@ final class ProfileCubitSaving extends ProfileCubitState {
 /// instead if the repository returns null.
 final class ProfileCubitLoaded extends ProfileCubitState {
   const ProfileCubitLoaded(this.profile, {this.justSaved = false});
-  final UserProfile profile;  // non-null: guaranteed by cubit
+  final UserProfile profile; // non-null: guaranteed by cubit
   final bool justSaved;
 
   @override

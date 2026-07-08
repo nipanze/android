@@ -33,16 +33,16 @@ class AppNotification extends Equatable {
     this.data,
   });
 
-  final String           id;
-  final String           userId;
+  final String id;
+  final String userId;
   final NotificationType type;
-  final String           title;
-  final String           body;
-  final bool             isRead;
-  final DateTime         createdAt;
-  final String?          requestId;
-  final String?          contractId;
-  final String?          bidId;
+  final String title;
+  final String body;
+  final bool isRead;
+  final DateTime createdAt;
+  final String? requestId;
+  final String? contractId;
+  final String? bidId;
   final Map<String, dynamic>? data;
 
   bool get hasDeepLink =>
@@ -51,23 +51,23 @@ class AppNotification extends Equatable {
   /// Deep link route — used to navigate on tap.
   String? get deepLinkRoute {
     if (contractId != null) return '/contracts/$contractId';
-    if (requestId  != null) return '/marketplace/$requestId';
+    if (requestId != null) return '/marketplace/$requestId';
     return null;
   }
 
   factory AppNotification.fromMap(Map<String, dynamic> map) {
     return AppNotification(
-      id:         map['id']      as String,
-      userId:     map['user_id'] as String,
-      type:       _typeFromString(map['type'] as String? ?? 'system'),
-      title:      map['title']   as String? ?? '',
-      body:       map['body']    as String? ?? '',
-      isRead:     map['is_read'] as bool?   ?? false,
-      createdAt:  DateTime.tryParse(map['created_at'] as String? ?? '')
-                      ?? DateTime.now(),
-      requestId:  map['request_id']  as String?,
+      id: map['id'] as String,
+      userId: map['user_id'] as String,
+      type: _typeFromString(map['type'] as String? ?? 'system'),
+      title: map['title'] as String? ?? '',
+      body: map['body'] as String? ?? '',
+      isRead: map['is_read'] as bool? ?? false,
+      createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      requestId: map['request_id'] as String?,
       contractId: map['contract_id'] as String?,
-      bidId:      map['bid_id']      as String?,
+      bidId: map['bid_id'] as String?,
       data: map['data'] != null
           ? Map<String, dynamic>.from(map['data'] as Map)
           : null,
@@ -76,20 +76,34 @@ class AppNotification extends Equatable {
 
   static NotificationType _typeFromString(String s) {
     switch (s) {
-      case 'bid_received':            return NotificationType.bidReceived;
-      case 'bid_accepted':            return NotificationType.bidAccepted;
-      case 'bid_rejected':            return NotificationType.bidRejected;
-      case 'bid_withdrawn':           return NotificationType.bidWithdrawn;
-      case 'negotiator_assigned':     return NotificationType.negotiatorAssigned;
-      case 'contract_draft_available':return NotificationType.contractDraftAvailable;
-      case 'kyc_approved':            return NotificationType.kycApproved;
-      case 'kyc_rejected':            return NotificationType.kycRejected;
-      case 'closing_soon_24h':        return NotificationType.closingSoon24h;
-      case 'closing_soon_6h':         return NotificationType.closingSoon6h;
-      case 'watchlist_new_bid':       return NotificationType.watchlistNewBid;
-      case 'watchlist_rate_change':   return NotificationType.watchlistRateChange;
-      case 'contact_revealed':        return NotificationType.contactRevealed;
-      default:                        return NotificationType.system;
+      case 'bid_received':
+        return NotificationType.bidReceived;
+      case 'bid_accepted':
+        return NotificationType.bidAccepted;
+      case 'bid_rejected':
+        return NotificationType.bidRejected;
+      case 'bid_withdrawn':
+        return NotificationType.bidWithdrawn;
+      case 'negotiator_assigned':
+        return NotificationType.negotiatorAssigned;
+      case 'contract_draft_available':
+        return NotificationType.contractDraftAvailable;
+      case 'kyc_approved':
+        return NotificationType.kycApproved;
+      case 'kyc_rejected':
+        return NotificationType.kycRejected;
+      case 'closing_soon_24h':
+        return NotificationType.closingSoon24h;
+      case 'closing_soon_6h':
+        return NotificationType.closingSoon6h;
+      case 'watchlist_new_bid':
+        return NotificationType.watchlistNewBid;
+      case 'watchlist_rate_change':
+        return NotificationType.watchlistRateChange;
+      case 'contact_revealed':
+        return NotificationType.contactRevealed;
+      default:
+        return NotificationType.system;
     }
   }
 

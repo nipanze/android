@@ -25,7 +25,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         district: district,
       );
       if (isClosed) return;
-      emit(MarketplaceLoaded(listings: listings, activeFilter: district ?? 'all'));
+      emit(MarketplaceLoaded(
+          listings: listings, activeFilter: district ?? 'all'));
       _subscribeRealtime();
     } catch (e) {
       if (isClosed) return;
@@ -38,7 +39,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _realtimeSub = _repository.watchListings().listen(
       (listings) {
         if (!isClosed) {
-          // Note: watchListings returns all, but we might want to apply the current filter locally 
+          // Note: watchListings returns all, but we might want to apply the current filter locally
           // or re-fetch properly. For MVP, we'll just emit since Realtime usually handles single row updates.
           emit(MarketplaceLoaded(
             listings: listings,

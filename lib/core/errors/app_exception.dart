@@ -103,18 +103,21 @@ AppException _parsePostgrestError(String code, String message) {
         'You cannot make an offer on your own request.');
   }
   if (message.contains('NIPANZE_MIN_OFFER')) {
-    return const ValidationException('Offer amount is below the platform minimum.');
+    return const ValidationException(
+        'Offer amount is below the platform minimum.');
   }
   if (message.contains('NIPANZE_OFFER_LOCKED')) {
     return const DatabaseException(
         'This offer has already been accepted and cannot be modified.');
   }
   if (message.contains('NIPANZE_ALREADY_REVEALED')) {
-    return const DatabaseException('Contact details have already been revealed.');
+    return const DatabaseException(
+        'Contact details have already been revealed.');
   }
   if (message.contains('NIPANZE_LISTING_NOT_ACTIVE') ||
       message.contains('NIPANZE_LISTING_EXPIRED')) {
-    return const DatabaseException('This listing is no longer accepting offers.');
+    return const DatabaseException(
+        'This listing is no longer accepting offers.');
   }
   if (message.contains('NIPANZE_CONTACT_NOT_ALLOWED')) {
     return const PermissionException(

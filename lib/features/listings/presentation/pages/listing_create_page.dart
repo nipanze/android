@@ -549,7 +549,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               TextFormField(
                 controller: _suggestedInterestController,
                 enabled: canSuggestTerms,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                 ],
@@ -568,7 +569,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               TextFormField(
                 controller: _suggestedLateFeeController,
                 enabled: canSuggestTerms,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                 ],

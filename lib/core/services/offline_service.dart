@@ -12,9 +12,9 @@ class OfflineService {
 
   /// Returns true if the device currently has network access.
   Future<bool> get isOnline async {
-   final results = await _connectivity.checkConnectivity();
-   return !results.contains(ConnectivityResult.none) && results.isNotEmpty;
- }
+    final results = await _connectivity.checkConnectivity();
+    return !results.contains(ConnectivityResult.none) && results.isNotEmpty;
+  }
 
   /// Returns true if the device is offline.
   Future<bool> get isOffline async => !(await isOnline);

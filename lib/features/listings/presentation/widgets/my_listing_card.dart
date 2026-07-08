@@ -86,7 +86,8 @@ class MyListingCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '${listing.durationMonths} months',
-                  style: const TextStyle(fontFamily: AppFonts.body, fontSize: 10),
+                  style:
+                      const TextStyle(fontFamily: AppFonts.body, fontSize: 10),
                 ),
               ],
             ),
@@ -134,8 +135,8 @@ class MyListingCard extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: onCancel,
                     style: OutlinedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       foregroundColor: AppColors.danger,
                       side: const BorderSide(color: AppColors.danger),
                       textStyle: const TextStyle(fontSize: 11),
@@ -166,10 +167,10 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      ListingStatus.active     => ('Active',      AppColors.success),
-      ListingStatus.contracted => ('Contracted',  AppColors.accent),
-      ListingStatus.expired    => ('Expired',     AppColors.text2Dark),
-      ListingStatus.cancelled  => ('Cancelled',   AppColors.danger),
+      ListingStatus.active => ('Active', AppColors.success),
+      ListingStatus.contracted => ('Contracted', AppColors.accent),
+      ListingStatus.expired => ('Expired', AppColors.text2Dark),
+      ListingStatus.cancelled => ('Cancelled', AppColors.danger),
       ListingStatus.pendingKyc => ('Pending KYC', AppColors.warning),
     };
 
@@ -181,8 +182,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-            fontSize: 10, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }

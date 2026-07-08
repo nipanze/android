@@ -17,11 +17,26 @@ class MainScaffold extends StatelessWidget {
   final Widget child;
 
   static const _tabs = [
-    _TabItem(label: 'Markets',   icon: Icons.show_chart_rounded,    route: AppRoutes.marketplace),
-    _TabItem(label: 'Watchlist', icon: Icons.star_outline_rounded,  route: AppRoutes.watchlist),
-    _TabItem(label: 'Request',   icon: Icons.add_circle_rounded,    route: AppRoutes.listingCreate),
-    _TabItem(label: 'Positions', icon: Icons.receipt_long_outlined, route: AppRoutes.positions),
-    _TabItem(label: 'Account',   icon: Icons.person_outline_rounded, route: AppRoutes.account),
+    _TabItem(
+        label: 'Markets',
+        icon: Icons.show_chart_rounded,
+        route: AppRoutes.marketplace),
+    _TabItem(
+        label: 'Watchlist',
+        icon: Icons.star_outline_rounded,
+        route: AppRoutes.watchlist),
+    _TabItem(
+        label: 'Request',
+        icon: Icons.add_circle_rounded,
+        route: AppRoutes.listingCreate),
+    _TabItem(
+        label: 'Positions',
+        icon: Icons.receipt_long_outlined,
+        route: AppRoutes.positions),
+    _TabItem(
+        label: 'Account',
+        icon: Icons.person_outline_rounded,
+        route: AppRoutes.account),
   ];
 
   int _currentIndex(BuildContext context) {
@@ -46,8 +61,7 @@ class MainScaffold extends StatelessWidget {
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(
-                  color: Theme.of(context).dividerColor, width: 1),
+              top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
             ),
           ),
           child: BottomNavigationBar(
@@ -66,8 +80,7 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon(
-      BuildContext context, _TabItem tab, int currentIndex) {
+  Widget _buildIcon(BuildContext context, _TabItem tab, int currentIndex) {
     final isRequest = tab.label == 'Request';
 
     Widget icon = Icon(
@@ -82,8 +95,7 @@ class MainScaffold extends StatelessWidget {
     if (tab.label == 'Account') {
       return BlocBuilder<NotificationCubit, NotificationState>(
         builder: (context, state) {
-          final unread = state is NotificationLoaded
-              ? state.unreadCount : 0;
+          final unread = state is NotificationLoaded ? state.unreadCount : 0;
           if (unread == 0) return icon;
           return Stack(
             clipBehavior: Clip.none,
@@ -126,10 +138,8 @@ class MainScaffold extends StatelessWidget {
 
 class _TabItem {
   const _TabItem(
-      {required this.label,
-      required this.icon,
-      required this.route});
-  final String   label;
+      {required this.label, required this.icon, required this.route});
+  final String label;
   final IconData icon;
-  final String   route;
+  final String route;
 }

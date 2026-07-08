@@ -23,16 +23,17 @@ class PositionsLoaded extends PositionsState {
 
   // Renamed from bids to offers to match v4.0.
   // Contracts removed - non-custodial matching only.
-  final List<LenderOffer>          offers;
-  final Map<String, dynamic>?      activity;
+  final List<LenderOffer> offers;
+  final Map<String, dynamic>? activity;
 
   PositionsLoaded copyWith({
-    List<LenderOffer>?          offers,
-    Map<String, dynamic>?       activity,
-  }) => PositionsLoaded(
-    offers:      offers      ?? this.offers,
-    activity:    activity    ?? this.activity,
-  );
+    List<LenderOffer>? offers,
+    Map<String, dynamic>? activity,
+  }) =>
+      PositionsLoaded(
+        offers: offers ?? this.offers,
+        activity: activity ?? this.activity,
+      );
 
   @override
   List<Object?> get props => [offers, activity];

@@ -140,7 +140,8 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.info_outline, size: 48, color: AppColors.warning),
+                const Icon(Icons.info_outline,
+                    size: 48, color: AppColors.warning),
                 const SizedBox(height: 16),
                 Text(
                   'Deal not yet ready',
@@ -188,14 +189,15 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.lock, size: 20, color: AppColors.success),
+                      const Icon(Icons.lock,
+                          size: 20, color: AppColors.success),
                       const SizedBox(width: 8),
                       Text(
                         'Deal agreement locked',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppColors.success,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ],
                   ),
@@ -219,19 +221,22 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
             const _InfoStep(
               number: 1,
               title: 'Contact details revealed',
-              description: 'Legal name, phone, and email of both parties will be shared.',
+              description:
+                  'Legal name, phone, and email of both parties will be shared.',
             ),
             const SizedBox(height: 8),
             const _InfoStep(
               number: 2,
               title: 'Direct connection',
-              description: 'You can now contact your partner outside the Nipanze platform.',
+              description:
+                  'You can now contact your partner outside the Nipanze platform.',
             ),
             const SizedBox(height: 8),
             const _InfoStep(
               number: 3,
               title: 'Complete transaction',
-              description: 'Finalize the loan agreement and exchange funds directly.',
+              description:
+                  'Finalize the loan agreement and exchange funds directly.',
             ),
             const SizedBox(height: 32),
 
@@ -321,9 +326,9 @@ class _InfoStep extends StatelessWidget {
             child: Text(
               '$number',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ),
         ),
@@ -335,8 +340,8 @@ class _InfoStep extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -449,9 +454,12 @@ class _ContactCard extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 8),
           _ContactDetail(icon: Icons.person, value: name),
@@ -477,7 +485,8 @@ class _ContactDetail extends StatelessWidget {
       children: [
         Icon(icon,
             size: 14,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

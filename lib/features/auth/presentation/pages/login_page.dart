@@ -31,9 +31,9 @@ class _LoginPageState extends State<LoginPage> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(AuthSignInRequested(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    ));
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ));
   }
 
   @override
@@ -64,7 +64,10 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 28),
                     Text(
                       'Welcome back',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 26),
+                      style: Theme.of(context)
+                          .textTheme
+                          .displayLarge
+                          ?.copyWith(fontSize: 26),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -80,16 +83,19 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: BoxDecoration(
                           color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: AppColors.danger.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline, color: AppColors.danger, size: 16),
+                            const Icon(Icons.error_outline,
+                                color: AppColors.danger, size: 16),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 errorMessage,
-                                style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                                style: const TextStyle(
+                                    color: AppColors.danger, fontSize: 12),
                               ),
                             ),
                           ],
@@ -125,13 +131,18 @@ class _LoginPageState extends State<LoginPage> {
                       onFieldSubmitted: (_) => _submit(),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           size: 17,
                         ),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Enter your password';
+                        if (v == null || v.isEmpty) {
+                          return 'Enter your password';
+                        }
                         return null;
                       },
                     ),
@@ -153,7 +164,8 @@ class _LoginPageState extends State<LoginPage> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Sign in'),
                     ),
@@ -162,12 +174,17 @@ class _LoginPageState extends State<LoginPage> {
                     // "new here" divider
                     Row(
                       children: [
-                        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+                        Expanded(
+                            child:
+                                Divider(color: Theme.of(context).dividerColor)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('new here', style: Theme.of(context).textTheme.bodySmall),
+                          child: Text('new here',
+                              style: Theme.of(context).textTheme.bodySmall),
                         ),
-                        Expanded(child: Divider(color: Theme.of(context).dividerColor)),
+                        Expanded(
+                            child:
+                                Divider(color: Theme.of(context).dividerColor)),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -183,7 +200,10 @@ class _LoginPageState extends State<LoginPage> {
                     Text(
                       'Nipanze is a technology marketplace. We do not hold, pool, or move your funds. All deals are arranged directly between matched participants.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(height: 1.6),
                     ),
                   ],
                 ),

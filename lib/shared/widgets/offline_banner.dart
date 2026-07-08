@@ -29,14 +29,11 @@ class _OfflineBannerState extends State<OfflineBanner>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
-    _height = Tween<double>(begin: 0, end: 36).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _height = Tween<double>(begin: 0, end: 36)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
-    _sub = Supabase.instance.client
-        .getChannels()
-        .firstOrNull
-        ?.onBroadcast(event: 'system',
-            callback: (_) {}) // keep channel alive
+    _sub = Supabase.instance.client.getChannels().firstOrNull?.onBroadcast(
+            event: 'system', callback: (_) {}) // keep channel alive
         as StreamSubscription?;
 
     // Simple connectivity check via a lightweight auth ping
@@ -85,8 +82,7 @@ class _OfflineBannerState extends State<OfflineBanner>
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.wifi_off_rounded,
-                        size: 14, color: Colors.white),
+                    Icon(Icons.wifi_off_rounded, size: 14, color: Colors.white),
                     SizedBox(width: 6),
                     Text(
                       'No connection — some data may be outdated',

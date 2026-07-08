@@ -130,7 +130,8 @@ class AuthField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45);
+    final muted =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +141,10 @@ class AuthField extends StatelessWidget {
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontSize: 10.5,
                 letterSpacing: 0.3,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.55),
               ),
         ),
         const SizedBox(height: 6),
@@ -168,9 +172,8 @@ class AuthField extends StatelessWidget {
               isDense: true,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-              prefixIcon: icon != null
-                  ? Icon(icon, size: 17, color: muted)
-                  : null,
+              prefixIcon:
+                  icon != null ? Icon(icon, size: 17, color: muted) : null,
               prefixIconConstraints:
                   const BoxConstraints(minWidth: 40, minHeight: 0),
               suffixIcon: suffixIcon,

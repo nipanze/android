@@ -11,7 +11,8 @@ class AuthLoading extends AuthState {
 }
 
 class AuthAuthenticated extends AuthState {
-  const AuthAuthenticated({required this.user, this.needsEmailVerification = false});
+  const AuthAuthenticated(
+      {required this.user, this.needsEmailVerification = false});
   final NipanzeUser user;
   final bool needsEmailVerification;
   @override

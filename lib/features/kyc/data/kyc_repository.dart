@@ -38,12 +38,12 @@ class KycRepository {
   Future<String> uploadDocument(File file, String docType) async {
     try {
       final ext = file.path.split('.').last.toLowerCase();
-      final path = '$_uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final path =
+          '$_uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       await _client.storage
           .from(StorageBuckets.kycDocuments)
-          .upload(path, file,
-              fileOptions: const FileOptions(upsert: true));
+          .upload(path, file, fileOptions: const FileOptions(upsert: true));
 
       // Return signed URL valid for 1 year (admin review window)
       final url = await _client.storage
@@ -58,7 +58,8 @@ class KycRepository {
 
   /// Create or update the KYC record with uploaded document URLs.
   Future<KycVerification> saveDocumentUrl({
-    required String docType, // 'national_id_front' | 'national_id_back' | 'selfie'
+    required String
+        docType, // 'national_id_front' | 'national_id_back' | 'selfie'
     required String url,
   }) async {
     try {
