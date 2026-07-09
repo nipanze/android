@@ -840,22 +840,52 @@ class _OfferCardState extends State<_OfferCard>
                     endIndent: 12,
                     color: borderColor,
                   ),
-                  // Simple term rows
-                  _BidDetailRow(
+                  // Enhanced term rows with trend arrows
+                  _BidTermRow(
                     label: 'Interest rate',
                     value: '${offer.interestRatePct.toStringAsFixed(2)}%',
-                    valueColor: isFull ? AppColors.success : null,
+                    diff: widget.suggestedInterestRatePct != null
+                        ? offer.interestRatePct -
+                            widget.suggestedInterestRatePct!
+                        : null,
+                    diffLabel: widget.suggestedInterestRatePct != null
+                        ? '${offer.interestRatePct.toStringAsFixed(1)} vs ${widget.suggestedInterestRatePct!.toStringAsFixed(1)}%'
+                        : null,
+                    lowerIsBetter: true,
+                    baseColor: isFull ? AppColors.success : null,
                   ),
-                  _BidDetailRow(
-                    label: 'Late fine',
+                  _BidTermRow(
+                    label: 'Monthly fine',
                     value: '${offer.lateFeePct.toStringAsFixed(2)}%',
-                    valueColor: isFull ? AppColors.success : null,
+                    diff: widget.suggestedLateFeePct != null
+                        ? offer.lateFeePct - widget.suggestedLateFeePct!
+                        : null,
+                    diffLabel: widget.suggestedLateFeePct != null
+                        ? 'penalty on late payment'
+                        : null,
+                    lowerIsBetter: true,
+                    baseColor: isFull ? AppColors.success : null,
                   ),
-                  _BidDetailRow(
-                    label: 'Installment',
+                  _BidTermRow(
+                    label: 'Monthly installment',
                     value:
                         'UGX ${_fmt(offer.installmentAmount)} ${_freqLabel(offer.repaymentFrequency).toLowerCase()}',
-                    valueColor: isFull ? AppColors.success : null,
+                    diff: widget.suggestedInstallmentAmount != null
+                        ? (offer.installmentAmount -
+                                widget.suggestedInstallmentAmount!)
+                            .toDouble()
+                        : null,
+                    diffLabel: widget.suggestedInstallmentAmount != null
+                        ? 'UGX ${_fmt((offer.installmentAmount - widget.suggestedInstallmentAmount!).abs())} difference'
+                        : null,
+                    lowerIsBetter: true,
+                    baseColor: isFull ? AppColors.success : null,
+                  ),
+                  // ── Total payable summary row ──────────────────────────────
+                  _TotalPayableRow(
+                    offer: offer,
+                    durationMonths: widget.durationMonths,
+                    isFull: isFull,
                   ),
 
                   // Pro comparison analytics (owner only)
@@ -1004,6 +1034,197 @@ class _BidDetailRow extends StatelessWidget {
                 ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Enhanced bid term row with trend arrow ───────────────────────────────────
+
+class _BidTermRow extends StatelessWidget {
+  const _BidTermRow({
+    required this.label,
+    required this.value,
+    this.diff,
+    this.diffLabel,
+    this.lowerIsBetter = true,
+    this.baseColor,
+  });
+
+  final String label;
+  final String value;
+  final double? diff; // positive = higher than suggested
+  final String? diffLabel;
+  final bool lowerIsBetter;
+  final Color? baseColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDiff = diff != null;
+    final bool? isGood = hasDiff
+        ? (diff!.abs() < 0.01
+            ? null
+            : (lowerIsBetter ? diff! < 0 : diff! > 0))
+        : null;
+
+    final Color arrowColor;
+    final IconData arrowIcon;
+    if (!hasDiff || diff!.abs() < 0.01) {
+      arrowColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35);
+      arrowIcon = Icons.remove_rounded;
+    } else if (isGood == true) {
+      arrowColor = AppColors.success;
+      arrowIcon = Icons.arrow_drop_down_rounded;
+    } else {
+      arrowColor = AppColors.danger;
+      arrowIcon = Icons.arrow_drop_up_rounded;
+    }
+
+    final labelColor = baseColor ??
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.72);
+    final valueColor = baseColor ??
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.88);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: labelColor, fontSize: 13),
+                ),
+                if (hasDiff && diffLabel != null) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    diffLabel!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: arrowColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Trend arrow (like a stock ticker)
+          Icon(arrowIcon, size: 20, color: arrowColor),
+          const SizedBox(width: 2),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: valueColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Total payable summary row ────────────────────────────────────────────────
+
+class _TotalPayableRow extends StatelessWidget {
+  const _TotalPayableRow({
+    required this.offer,
+    required this.durationMonths,
+    required this.isFull,
+  });
+
+  final LoanOffer offer;
+  final int durationMonths;
+  final bool isFull;
+
+  @override
+  Widget build(BuildContext context) {
+    final periods = offer.repaymentFrequency == 'monthly'
+        ? durationMonths
+        : (offer.repaymentFrequency == 'weekly' ? durationMonths * 4 : 1);
+    final totalPayable = offer.installmentAmount * periods;
+    final totalCost = totalPayable - offer.offerAmount;
+    final isZeroCost = totalCost <= 0;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: (isFull ? AppColors.success : AppColors.accent)
+              .withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: (isFull ? AppColors.success : AppColors.accent)
+                .withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Total payable headline
+            Row(
+              children: [
+                Icon(
+                  Icons.payments_outlined,
+                  size: 13,
+                  color: isFull ? AppColors.success : AppColors.accent,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'Total payable ($periods payments)',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: isFull ? AppColors.success : AppColors.accent,
+                      ),
+                ),
+                const Spacer(),
+                Text(
+                  'UGX ${_fmt(totalPayable)}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                        color: isFull ? AppColors.success : AppColors.accent,
+                      ),
+                ),
+              ],
+            ),
+            if (!isZeroCost) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 11,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Borrowing cost: UGX ${_fmt(totalCost)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 10.5,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.55),
+                        ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
