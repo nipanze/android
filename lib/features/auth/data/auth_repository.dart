@@ -94,7 +94,7 @@ class AuthRepository {
     try {
       final data = await _client.from('profiles').select('''
             id, full_name, phone, district, credit_score, reputation_tier, lender_token, role,
-            subscriptions!inner(plan),
+            subscriptions(plan, status),
             kyc_verifications(status)
           ''').eq('id', id).maybeSingle();
 
@@ -106,8 +106,14 @@ class AuthRepository {
         );
       }
 
-      final subPlan =
-          (data['subscriptions'] as List?)?.firstOrNull?['plan'] ?? 'watchlist';
+      // Pick the active subscription row — the unique index guarantees at most
+      // one active row per user, but the list may also contain expired rows.
+      final subs = (data['subscriptions'] as List?) ?? [];
+      final activeSub = subs.firstWhere(
+        (s) => s['status'] == 'active',
+        orElse: () => subs.firstOrNull ?? {},
+      );
+      final subPlan = activeSub['plan'] ?? 'watchlist';
       final kycStatus =
           (data['kyc_verifications'] as List?)?.firstOrNull?['status'] ??
               'not_submitted';
