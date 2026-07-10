@@ -22,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOutRequested>(_onSignOut);
     on<AuthPasswordResetRequested>(_onPasswordReset);
     on<AuthUserChanged>(_onUserChanged);
+    on<AuthProfileRefreshRequested>(_onProfileRefresh); // ← add this
 
     _subscription = _authRepository.authStateChanges.listen(
       (user) => add(AuthUserChanged(user)),
@@ -114,6 +115,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } else {
       emit(const AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onProfileRefresh(
+    AuthProfileRefreshRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final current = state;
+    if (current is! AuthAuthenticated) return;
+    try {
+      final fullUser = await _authRepository.fetchCurrentProfile();
+      emit(AuthAuthenticated(
+        user: fullUser,
+        needsEmailVerification: current.needsEmailVerification,
+      ));
+    } catch (e) {
+      debugPrint('Error refreshing user profile: $e');
     }
   }
 

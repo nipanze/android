@@ -55,6 +55,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       _loading = true;
       _error = null;
     });
+
+    // Force-refresh subscription plan in case it changed since login
+    context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+
     try {
       final listing = await _repo.getListingDetail(widget.requestId);
       if (!mounted) return;

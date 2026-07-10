@@ -48,3 +48,10 @@ class AuthUserChanged extends AuthEvent {
   @override
   List<Object?> get props => [user];
 }
+
+/// Forces a re-fetch of the current user's profile (including
+/// subscription_plan) from the DB, without signing out/in.
+/// Fire this whenever a screen depends on up-to-date plan/KYC state.
+class AuthProfileRefreshRequested extends AuthEvent {
+  const AuthProfileRefreshRequested();
+}

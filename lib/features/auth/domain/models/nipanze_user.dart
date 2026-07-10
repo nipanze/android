@@ -1,3 +1,4 @@
+// lib/features/auth/domain/models/nipanze_user.dart
 import 'package:equatable/equatable.dart';
 
 enum RepTier { platinum, gold, silver, bronze, restricted }
