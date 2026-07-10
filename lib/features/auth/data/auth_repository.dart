@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../domain/models/nipanze_user.dart';
 
@@ -103,7 +102,7 @@ class AuthRepository {
           .eq('id', id)
           .maybeSingle();
     } catch (e) {
-      print('DEBUG: profiles fetch error: $e');
+      debugPrint('DEBUG: profiles fetch error: $e');
       return NipanzeUser(
         id: id,
         email: email,
@@ -131,7 +130,7 @@ class AuthRepository {
         kycStatus = (kycData['status'] as String?) ?? 'not_submitted';
       }
     } catch (e) {
-      print('DEBUG: KYC fetch error: $e');
+      debugPrint('DEBUG: KYC fetch error: $e');
     }
 
     // ── 3. Subscription via SECURITY DEFINER RPC ─────────────────────────────
@@ -141,9 +140,9 @@ class AuthRepository {
       if (result != null) {
         subPlan = result.toString();
       }
-      print('DEBUG: get_my_subscription_plan result: $result');
+      debugPrint('DEBUG: get_my_subscription_plan result: $result');
     } catch (e) {
-      print('DEBUG: get_my_subscription_plan error: $e');
+      debugPrint('DEBUG: get_my_subscription_plan error: $e');
     }
 
     return NipanzeUser.fromMap({
