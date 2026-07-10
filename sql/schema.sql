@@ -1678,6 +1678,32 @@ ALTER TABLE refresh_tokens      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
 
 
+-- Helper function to safely fetch the current active user's subscription plan.
+CREATE OR REPLACE FUNCTION public.get_my_subscription_plan()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_plan TEXT;
+BEGIN
+    SELECT plan::TEXT INTO v_plan
+    FROM public.subscriptions
+    WHERE user_id = auth.uid()
+      AND status = 'active'
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF v_plan IS NULL THEN
+        RETURN 'free';
+    END IF;
+    RETURN v_plan;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated;
+
+
 -- is_admin() lives in the `private` schema so it is NOT exposed
 -- via the PostgREST REST API (/rpc/is_admin) but is still
 -- callable by RLS policies and other SECURITY DEFINER functions.
@@ -1906,6 +1932,9 @@ GRANT EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated
 
 REVOKE EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) FROM public, anon;
 GRANT EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.get_my_subscription_plan() FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated, service_role;
 
 
 -- ============================================

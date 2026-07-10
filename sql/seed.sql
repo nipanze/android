@@ -461,17 +461,17 @@ ON CONFLICT (user_id) DO NOTHING;
 -- ============================================
 
 -- Lenders — upgrade from free to lender/pro
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-18 10:00:00', expires_at='2025-02-18 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000006';
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-20 12:00:00', expires_at='2025-02-20 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000007';
-UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-01 11:00:00', expires_at='2025-03-01 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000008';
-UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-03 13:00:00', expires_at='2025-03-03 13:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000009';
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-03-05 10:00:00', expires_at='2025-03-05 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000010';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-18 10:00:00', expires_at='2028-02-18 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000006';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-02-20 12:00:00', expires_at='2028-02-20 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000007';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-01 11:00:00', expires_at='2028-03-01 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000008';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-03-03 13:00:00', expires_at='2028-03-03 13:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000009';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-03-05 10:00:00', expires_at='2028-03-05 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000010';
 
 -- James Okello acts as both borrower and lender — upgrade to pro
-UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-01-20 15:00:00', expires_at='2025-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
+UPDATE subscriptions SET plan='pro',    status='active', amount_ugx=150000, started_at='2024-01-20 15:00:00', expires_at='2028-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
 
 -- Robert Ssemwanga acts as both — upgrade to lender
-UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-01-25 12:00:00', expires_at='2025-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
+UPDATE subscriptions SET plan='lender', status='active', amount_ugx=35000,  started_at='2024-01-25 12:00:00', expires_at='2028-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
 
 -- All remaining borrowers (001, 002, 004, 011, 012, 013, 014, 017)
 -- stay on the auto-provisioned free plan. No update required.

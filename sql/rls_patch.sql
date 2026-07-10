@@ -433,6 +433,34 @@ GRANT ALL ON ALL TABLES    IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
 
 -- ============================================================
+-- 16. HELPER FUNCTION: get_my_subscription_plan
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.get_my_subscription_plan()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_plan TEXT;
+BEGIN
+    SELECT plan::TEXT INTO v_plan
+    FROM public.subscriptions
+    WHERE user_id = auth.uid()
+      AND status = 'active'
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF v_plan IS NULL THEN
+        RETURN 'free';
+    END IF;
+    RETURN v_plan;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated;
+
+-- ============================================================
 -- DONE
 -- ============================================================
 SELECT 'RLS patch applied successfully ✓' AS result;

@@ -134,15 +134,40 @@ class AuthRepository {
     }
 
     // ── 3. Subscription via SECURITY DEFINER RPC ─────────────────────────────
-    String subPlan = 'watchlist';
+    String subPlan = 'free';
     try {
       final result = await _client.rpc('get_my_subscription_plan');
       if (result != null) {
         subPlan = result.toString();
+      } else {
+        // Fallback: query subscriptions table directly
+        final subData = await _client
+            .from('subscriptions')
+            .select('plan')
+            .eq('user_id', id)
+            .eq('status', 'active')
+            .maybeSingle();
+        if (subData != null) {
+          subPlan = (subData['plan'] as String?) ?? 'free';
+        }
       }
       debugPrint('DEBUG: get_my_subscription_plan result: $result');
     } catch (e) {
       debugPrint('DEBUG: get_my_subscription_plan error: $e');
+      // Fallback: query subscriptions table directly
+      try {
+        final subData = await _client
+            .from('subscriptions')
+            .select('plan')
+            .eq('user_id', id)
+            .eq('status', 'active')
+            .maybeSingle();
+        if (subData != null) {
+          subPlan = (subData['plan'] as String?) ?? 'free';
+        }
+      } catch (fallbackErr) {
+        debugPrint('DEBUG: subscriptions fallback query error: $fallbackErr');
+      }
     }
 
     return NipanzeUser.fromMap({
