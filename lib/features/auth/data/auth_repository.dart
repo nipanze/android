@@ -93,17 +93,17 @@ class AuthRepository {
   }
 
   Future<NipanzeUser> _fetchProfile(String id, String email) async {
-    // ── 1. Profile + KYC ────────────────────────────────────────────────────
+    // ── 1. Profile ──────────────────────────────────────────────────────────
     Map<String, dynamic>? data;
     try {
       data = await _client
           .from('profiles')
           .select(
-              'id, full_name, phone, district, credit_score, reputation_tier, lender_token, role, kyc_verifications(status)')
+              'id, full_name, phone, district, credit_score, reputation_tier, lender_token, role')
           .eq('id', id)
           .maybeSingle();
-    } catch (_) {
-      // If profile fetch fails entirely, return a bare user
+    } catch (e) {
+      print('DEBUG: profiles fetch error: $e');
       return NipanzeUser(
         id: id,
         email: email,
@@ -119,45 +119,32 @@ class AuthRepository {
       );
     }
 
-    // ── 2. Subscription via SECURITY DEFINER RPC ─────────────────────────────
-    // Prefer the RPC since it bypasses RLS, but fall back to the
-    // `v_user_marketplace_activity` view if the RPC returns NULL.
+    // ── 2. KYC Status (isolated query) ───────────────────────────────────────
+    String kycStatus = 'not_submitted';
+    try {
+      final kycData = await _client
+          .from('kyc_verifications')
+          .select('status')
+          .eq('user_id', id)
+          .maybeSingle();
+      if (kycData != null) {
+        kycStatus = (kycData['status'] as String?) ?? 'not_submitted';
+      }
+    } catch (e) {
+      print('DEBUG: KYC fetch error: $e');
+    }
+
+    // ── 3. Subscription via SECURITY DEFINER RPC ─────────────────────────────
     String subPlan = 'watchlist';
     try {
       final result = await _client.rpc('get_my_subscription_plan');
       if (result != null) {
         subPlan = result.toString();
-      } else {
-        // RPC returned NULL when executed from some environments —
-        // fall back to querying the view (authenticated caller).
-        try {
-          // The view is `security_invoker=true` and RLS on `profiles`
-          // already restricts results to the calling user. Call the
-          // view without an explicit `user_id` filter so the DB-side
-          // RLS can apply `auth.uid()` correctly for the authenticated
-          // client session.
-          final row = await _client
-              .from(ViewNames.userMarketplaceActivity)
-              .select('subscription_plan')
-              .maybeSingle();
-          debugPrint('DEBUG: fallback view row: $row');
-          if (row != null && row['subscription_plan'] != null) {
-            subPlan = row['subscription_plan'] as String;
-          }
-        } catch (e) {
-          debugPrint('DEBUG: fallback view error: $e');
-          // ignore fallback errors; keep default plan
-        }
       }
-      debugPrint('DEBUG: get_my_subscription_plan result: $result');
+      print('DEBUG: get_my_subscription_plan result: $result');
     } catch (e) {
-      debugPrint('DEBUG: get_my_subscription_plan error: $e');
+      print('DEBUG: get_my_subscription_plan error: $e');
     }
-
-    // ── 3. KYC status ────────────────────────────────────────────────────────
-    final kycStatus =
-        (data['kyc_verifications'] as List?)?.firstOrNull?['status'] ??
-            'not_submitted';
 
     return NipanzeUser.fromMap({
       ...data,
