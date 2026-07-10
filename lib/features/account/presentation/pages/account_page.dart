@@ -255,7 +255,7 @@ class _SubscriptionCard extends StatelessWidget {
       case 'pro':
         return 'Pro';
       default:
-        return 'Standard';
+        return 'Free';
     }
   }
 }

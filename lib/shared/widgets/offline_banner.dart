@@ -18,7 +18,6 @@ class OfflineBanner extends StatefulWidget {
 class _OfflineBannerState extends State<OfflineBanner>
     with SingleTickerProviderStateMixin {
   bool _isOffline = false;
-  StreamSubscription? _sub;
   late final AnimationController _controller;
   late final Animation<double> _height;
 
@@ -31,10 +30,6 @@ class _OfflineBannerState extends State<OfflineBanner>
     );
     _height = Tween<double>(begin: 0, end: 36)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-
-    _sub = Supabase.instance.client.getChannels().firstOrNull?.onBroadcast(
-            event: 'system', callback: (_) {}) // keep channel alive
-        as StreamSubscription?;
 
     // Simple connectivity check via a lightweight auth ping
     _startMonitoring();
@@ -64,7 +59,6 @@ class _OfflineBannerState extends State<OfflineBanner>
 
   @override
   void dispose() {
-    _sub?.cancel();
     _controller.dispose();
     super.dispose();
   }
