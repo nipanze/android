@@ -1,7 +1,9 @@
 # BUILD_PLAN.md — Nipanze
 
 > **Flutter + Supabase** · Digital loan listing matchmaking marketplace for Uganda and emerging economies
-> Last updated: March 2026 · Schema v4.0 · Seed v2.0
+> Last updated: July 2026 · Schema v4.1 · Seed v2.1
+
+> **⚡ v4.1 Architecture Change:** Nipanze has moved from a **role-based** model (borrower / lender) to a **unified, subscription-based, action-based** model. There is no "I am a borrower" or "I am a lender" — every user sees one marketplace and performs borrower actions (Post Request) or lender actions (Make Offer) depending on what they click. Access to actions is gated purely by `subscription_plan`. See "Unified Marketplace Model" below before reading Stage 4.
 
 ---
 
@@ -13,9 +15,102 @@
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
-| 4 | Structured Deal Agreement & Contact Sharing | ⬜ Planned |
+| 4 | Structured Deal Agreement & Contact Sharing | ⬜ Planned (revised for unified model) |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
+
+---
+
+## 🧠 Unified Marketplace Model (New — supersedes role-based framing)
+
+### The decision
+
+- ✅ One interface for every user — no separate borrower/lender screens
+- ✅ No "borrower vs lender" role stored on the account
+- ✅ Users choose a **subscription plan**, not a role
+- ✅ The same person can post a request *and* make offers, any time, with the same login
+
+### Mental model shift
+
+| Old model | New model |
+|---|---|
+| "User *is* a borrower or a lender" | "User *performs* borrower or lender actions depending on what they click" |
+| Role determines what's visible | Subscription plan determines what's clickable |
+| Separate flows/screens per role | One dashboard, one marketplace, action buttons gated by plan |
+
+### How it behaves
+
+**Single entry point after login** — every user lands on the same dashboard:
+
+1. **📢 Marketplace** — all loan listings, same feed for everyone
+2. **➕ Post Request** — always visible from Free tier upward
+3. **💼 Offers Panel** — shows offers *received* on your requests, and (if your plan allows) offers *you've made* on others' requests
+
+There is no "select your role" step at signup or login. A user simply acts:
+
+- Clicks **"Post Request"** → acting as a borrower for that listing
+- Clicks **"Make Offer"** → acting as a lender for that listing
+
+### Feature access by plan
+
+| Plan | Access |
+|---|---|
+| 🟢 **Free** | Post basic loan requests (amount, duration, purpose) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · ❌ Cannot make offers · ❌ Cannot suggest terms when posting |
+| 🔵 **Lender Plan** | Everything in Free, **plus**: Make offers on any listing · Set interest rate, late payment fee, repayment schedule on offers |
+| 🟣 **Pro** | Everything in Lender, **plus**: Suggest terms when posting a request (interest rate, late fee, repayment schedule) · Priority visibility for posted requests · Improved matching |
+
+> No plan is ever labeled "Borrower Plan" or "Lender-only." The plan name describes the *unlocked capability*, not the person.
+
+### Feature gating logic
+
+```
+IF subscription_plan == "free"
+  disable "Make Offer"
+  disable term-suggestion fields on Post Request
+
+IF subscription_plan == "lender"
+  enable "Make Offer"
+  enable lender term fields (interest, late fee, schedule) on offers
+  keep term-suggestion fields on Post Request disabled
+
+IF subscription_plan == "pro"
+  enable everything above
+  enable term-suggestion fields on Post Request
+  enable priority visibility / improved matching
+```
+
+### Why this is the right call
+
+1. **Simpler UX** — no "am I a borrower or a lender?" confusion at signup
+2. **Higher conversion** — users aren't boxed into one identity, so upgrading feels natural rather than like switching accounts
+3. **More revenue paths** — a Free user who only ever posted requests can upgrade to Lender the moment they want to fund someone else's listing, same account, no re-registration
+
+### What this removes from the data model
+
+- ❌ `role` column (`borrower` / `lender` / `both`) — **no longer needed**
+- ❌ Role-based RLS branching — **replaced with plan-based checks**
+
+### What this replaces it with
+
+```sql
+-- users / profiles table (conceptual)
+id
+email
+subscription_plan   -- 'free' | 'lender' | 'pro'
+is_admin            -- boolean, unaffected by this change
+```
+
+`is_admin` is the **one exception** — admin remains a true role, separate from the subscription plan, since it governs platform moderation rather than marketplace participation.
+
+### Migration impact (Stage 4 dependency)
+
+Because Stage 4 (deal agreement + contact sharing) was originally scoped around a "Premium Borrower" vs "Lender" dual-subscription split, it must be re-read through the unified model:
+
+- "Premium Borrower" features (suggested interest/late fee/schedule on post) are now simply **Pro-tier posting capability** — not a separate subscription product
+- "Lender" subscription features (making offers with full terms) are now the **Lender-tier capability** — available without needing Pro
+- A single user can hold only **one** `subscription_plan` at a time (`free | lender | pro`), and Pro is a strict superset of Lender, which is a strict superset of Free — there is no "buy just the posting add-on" product
+
+This keeps subscription logic to one enum column and one gating function, rather than two independent entitlement flags — simpler RLS, simpler billing, simpler UI.
 
 ---
 
@@ -44,18 +139,18 @@
 - [x] `MarketplacePage` — filter pills, `ListingCard`, skeleton, live dot
 - [x] `LoanDetailPage` — listing detail, income + repayment plan display, offers panel
 
-### 2.2 Loan Requests (Borrower — Free)
+### 2.2 Loan Requests (Free tier and above)
 - [x] `ListingCreatePage` — 3-step form: loan details → income/repayment context → review & publish
 - [x] Form fields: title, purpose, amount, duration, district, income source, preferred repayment plan (`weekly`, `monthly`, `one_time`), repayment amount per period, repayment timeline
-- [x] Borrower request form does not require interest rate; lenders propose interest/return expectations in offers
+- [x] Basic request form does not require interest rate; lenders propose interest/return expectations in offers
 - [x] `SystemSettingsRepository` — fetches public limits from DB; cached singleton; form validators use live values
 - [x] `MyRequestsPage` + `MyRequestsCubit` + `RequestRepository` — real data, Realtime, cancel with confirm
 - [x] Contracted request banner redirects to Positions tab
 - [x] Request tab → direct to `ListingCreatePage` (no intermediate page)
 
-### 2.3 Loan Offers (Lender — Subscription Required)
+### 2.3 Loan Offers (Lender tier and above — Subscription Required)
 - [x] `OfferRepository` — `makeOffer`, `withdrawOffer`, Realtime stream on offers for a listing
-- [x] Lender offer terms carry offer amount and proposed expectations, including any interest/return expectation
+- [x] Offer terms carry offer amount and proposed expectations, including any interest/return expectation
 - [x] `LoanDetailPage` — live Realtime offers panel, glow flash on new offer
 - [x] Subscription gate modal — plan cards (Free / Lender / Pro), upgrade navigates to Account
 - [x] `KycVerification` model + `KycRepository` — Storage uploads, `submitForReview`
@@ -63,17 +158,17 @@
 - [x] `KycPage` — camera/gallery picker, 3 doc tiles, submit gating, rejection reason banner
 
 ### 2.4 Offer Acceptance
-- [x] `accept_offer` RPC called from borrower side on `LoanDetailPage`
-- [x] Rejected offers notified to losing lenders
+- [x] `accept_offer` RPC called from the request-owner side on `LoanDetailPage`
+- [x] Rejected offers notified to losing offer-makers
 - [x] Listing moves to `contracted` status; removed from live feed
 - [x] `WatchlistButton` on detail page — toggles DB save, filled star when saved
 
 ### Stage 2 Exit Criteria
-- [x] Borrower can post a free request and receive offers
-- [x] Lender with active subscription can browse and make offers with their own amount and terms
-- [x] Borrower can accept one offer; all others auto-rejected
+- [x] Any user (Free+) can post a free request and receive offers
+- [x] Any user with an active Lender/Pro plan can browse and make offers with their own amount and terms
+- [x] Request owner can accept one offer; all others auto-rejected
 - [x] Live feed and offers panel refresh via Realtime
-- [x] Subscription gate blocks offer placement for free-plan users
+- [x] Subscription gate blocks offer placement for Free-plan users
 - [x] App stable on Android APK (arm64), web, and Linux desktop
 
 ---
@@ -94,9 +189,11 @@
 - [x] `PositionsCubit` — loads requests + offers; Realtime offer updates; optimistic withdraw
 - [x] `LenderOfferCard` — status badge, View listing, Withdraw button with confirm dialog
 - [x] `PositionsPage` — 2 tabs:
-  - **My Requests** — borrower's active, contracted, and expired requests
-  - **My Offers** — lender's offers grouped Pending / Accepted / History; withdraw button live
+  - **My Requests** — requests you've posted: active, contracted, and expired
+  - **My Offers** — offers you've made, grouped Pending / Accepted / History; withdraw button live
 - [x] Portfolio summary drives subtitle (active offers count, active requests count)
+
+> Note: "My Requests" and "My Offers" are simply two views of the same account's activity — not two roles. A single user can have entries in both tabs simultaneously.
 
 ### 3.3 Notifications
 - [x] `NotificationRepository` — reads `notifications` table, marks as read, Realtime stream
@@ -117,7 +214,7 @@
 ### Stage 3 Exit Criteria
 - [x] All 5 nav tabs functional with real data
 - [x] Watchlist displays watched listings with Realtime updates
-- [x] Positions accurately reflects borrower requests and lender offers
+- [x] Positions accurately reflects requests posted and offers made by the account
 - [x] Offer withdrawal works end to end
 - [x] App stable on local dev with Supabase cloud project
 
@@ -145,10 +242,10 @@
 - [x] Service role key stays out of Flutter client — only in Edge Functions (Stage 5)
 
 ### RLS Audit (README field masking rules)
-- [x] `v_loan_listings` — `borrower_id` NOT exposed ✅
+- [x] `v_loan_listings` — `borrower_id` (request-owner id) NOT exposed ✅
 - [x] `v_loan_listings` — `income_source` NOT exposed (stays in `loan_requests` table) ✅
 - [x] `v_loan_listings` — `phone`, `email`, `full_name`, `national_id` NOT exposed ✅
-- [x] `v_lender_offers` — `lender_phone`, `lender_email`, `lender_name` NOT exposed pre-reveal ✅
+- [x] `v_lender_offers` — offer-maker's `phone`, `email`, `name` NOT exposed pre-reveal ✅
 - [x] RLS on all 9 core tables — no row reachable by wrong user
 - [x] `contact_reveals` accessible only to matched parties + admin
 
@@ -166,54 +263,55 @@
 - [x] `stage-3.5-verify.sql` — all 11 sections ✅ (masking, security_invoker, append-only audit_logs enforced via `USING (false)`)
 
 ### App Testing ⏳ In Progress
-- [/] End-to-end borrower flow tested on cloud (web) — post request, browse, save watchlist
-- [ ] End-to-end lender flow tested on cloud (web) — browse, make offer, withdraw offer
+- [/] End-to-end request-posting flow tested on cloud (web) — post request, browse, save watchlist
+- [ ] End-to-end offer-making flow tested on cloud (web) — browse, make offer, withdraw offer
 - [ ] KYC document upload verified (`verification-documents` bucket receives file)
 - [ ] Release APK built (`flutter build apk --release --dart-define=...`)
 - [ ] APK installed and tested on physical Android device (no crashes, logcat clean)
 
 ---
 
-## Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned
+## Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned (revised for unified model)
 
-Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both borrower and lender commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated.
+Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated.
 
 ---
 
 ## 🎯 Objective
 
-> **"We connect borrower and lender, help them agree on terms, then generate a contract — everything else happens offline."**
+> **"We connect the two sides of a deal, help them agree on terms, then generate a contract — everything else happens offline."**
 
 Core principles:
 - Terms are **locked at the point of posting / bidding** — no editing after publish
 - Both parties commit to their position independently
 - A contract is generated when their terms match via acceptance
 - Contact is revealed only after the contract is locked
+- Neither party is a fixed "role" in the schema — capability comes entirely from `subscription_plan`
 
 ---
 
 ## 🔁 Flow Overview
 
 ```
-BORROWER POSTS (locked on publish)
+REQUEST POSTED (locked on publish)
 ──────────────────────────────────────────
 Amount needed
 Duration
 Purpose (optional)
-[PREMIUM] Suggested interest rate
-[PREMIUM] Suggested late payment fee (%)
-[PREMIUM] Suggested repayment schedule
+[PRO ONLY] Suggested interest rate
+[PRO ONLY] Suggested late payment fee (%)
+[PRO ONLY] Suggested repayment schedule
 ──────────────────────────────────────────
 
-LENDER BIDS (locked on submit — free)
+OFFER SUBMITTED (locked on submit — requires Lender or Pro plan)
 ──────────────────────────────────────────
 Amount offered
-Lender's interest rate
-Lender's late payment fee (%)
-Lender's repayment schedule
+Offered interest rate
+Offered late payment fee (%)
+Offered repayment schedule
 ──────────────────────────────────────────
 
-CONTRACT GENERATED (after borrower accepts a bid)
+CONTRACT GENERATED (after request owner accepts an offer)
 ──────────────────────────────────────────
 Final terms locked
 Digital contract created
@@ -223,43 +321,43 @@ Contact revealed to both parties
 
 ---
 
-## 📋 Borrower Post — Term Suggestions (Premium Feature)
+## 📋 Request Posting — Term Suggestions (Pro-tier feature)
 
-Premium borrowers can suggest preferred loan terms **at the time of posting**. Once published, these terms are **locked**.
+Pro-plan users can suggest preferred loan terms **at the time of posting**. Once published, these terms are **locked**.
 
-| Field | Free | Premium |
-|---|---|---|
-| Amount needed | ✅ | ✅ |
-| Duration | ✅ | ✅ |
-| Purpose | ✅ | ✅ |
-| Suggested interest rate | ❌ | ✅ |
-| Suggested late payment fee | ❌ | ✅ |
-| Suggested repayment schedule | ❌ | ✅ |
+| Field | Free | Lender | Pro |
+|---|---|---|---|
+| Amount needed | ✅ | ✅ | ✅ |
+| Duration | ✅ | ✅ | ✅ |
+| Purpose | ✅ | ✅ | ✅ |
+| Suggested interest rate | ❌ | ❌ | ✅ |
+| Suggested late payment fee | ❌ | ❌ | ✅ |
+| Suggested repayment schedule | ❌ | ❌ | ✅ |
 
-> **Why premium?** Borrowers with suggested terms have negotiating leverage — they attract lenders who are already aligned with their preferred terms. This is the core value of the Premium Borrower subscription.
+> **Why Pro?** A request with suggested terms carries negotiating leverage — it attracts offers already aligned with the poster's preferred terms. This is the core value of the Pro tier, available to anyone regardless of whether they've ever made an offer themselves.
 
 ---
 
-## 🏷️ Lender Bid — Term Setting (Free)
+## 🏷️ Offer Submission — Term Setting (Lender plan and above)
 
-When a lender submits a bid, they set their own terms. They may align with the borrower's suggestions or propose different ones. Once submitted, the bid is **locked**.
+When a user submits an offer, they set their own terms. They may align with the posted suggestions or propose different ones. Once submitted, the offer is **locked**.
 
 | Field | Description |
 |---|---|
 | Amount offered | Full or partial of the requested amount |
-| Interest rate | Lender's required return |
+| Interest rate | Offer-maker's required return |
 | Late payment fee | % applied only to missed installment |
 | Repayment schedule | Monthly / Weekly / One-time + installment amount |
 
-> Lender bidding is **always free**. Maximising lender supply is essential for platform value.
+> Offer-making requires at least the **Lender plan**. Maximising the pool of people who can make offers is essential for platform value, so Lender-tier pricing should stay accessible.
 
 ---
 
 ## 📄 Contract Contents
 
-Once the borrower accepts a bid, the system auto-generates a locked contract:
+Once the request owner accepts an offer, the system auto-generates a locked contract:
 
-- Borrower & lender identity (post-reveal)
+- Both parties' identity (post-reveal)
 - Loan amount
 - Agreed interest rate
 - Total repayment amount
@@ -277,7 +375,7 @@ This keeps penalties fair, prevents compounding debt, and builds platform trust.
 
 ### Legal Disclaimer
 
-> "Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds."
+> "Nipanze provides this agreement for convenience only. The final obligation is solely between the two parties. Nipanze does not enforce repayment or hold funds."
 
 ---
 
@@ -296,41 +394,42 @@ Contact details are **never accessible before this step** — enforced at API le
 
 ---
 
-## 💰 Revenue — Dual Subscription Model
+## 💰 Revenue — Unified Subscription Model (replaces "Dual Subscription Model")
 
-| Plan | Access |
+| Plan | Unlocks |
 |---|---|
-| Free Borrower | Post basic request (amount + duration + purpose only) |
-| **Premium Borrower** *(subscription)* | Suggest interest rate, late fee, and repayment schedule on posts |
-| Free Lender | Browse only |
-| **Lender** *(subscription)* | Make bids with full terms |
+| 🟢 **Free** | Post basic requests (amount + duration + purpose only) · Browse · Accept offers received |
+| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms (amount, interest, late fee, schedule) |
+| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (interest, late fee, schedule) + priority visibility + improved matching |
 
-> Platform earns from both sides: lenders pay to offer, borrowers pay to have negotiating leverage.
+> Platform earns from one upgrade path, not two parallel ones: users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage (Pro). A single `subscription_plan` enum drives all of it — no separate "Premium Borrower" product to maintain.
 
 ---
 
 ## 🛡️ Compliance & Security
 
-- Terms locked at post/bid time — no post-publish edits
+- Terms locked at post/offer time — no post-publish edits
 - `reveal_contact` RPC enforced at API level
 - All actions recorded in **append-only audit logs**
 - Contract snapshot stored for traceability
 - Platform never tracks repayments or enforces obligations
+- Subscription plan checked server-side (RLS / RPC), never trusted from client
 
 ---
 
 ## ✅ Stage 4 Exit Criteria
 
-- [ ] Premium borrower subscription gate on interest/late fee/repayment fields in request form
-- [ ] Borrower terms locked on publish (`terms_locked_at` set; no further edits)
-- [ ] Lender bid terms locked on submit
-- [ ] Contract auto-generated after borrower accepts a bid
+- [ ] Pro-tier subscription gate on interest/late fee/repayment fields in the request form
+- [ ] Request terms locked on publish (`terms_locked_at` set; no further edits)
+- [ ] Offer terms locked on submit
+- [ ] Contract auto-generated after request owner accepts an offer
 - [ ] Contract includes all agreed fields + legal disclaimer
 - [ ] Late fee applies only to missed installment (not total balance)
 - [ ] Contact reveal only after contract is generated
 - [ ] Contact details never accessible before reveal via any query
 - [ ] Audit logs capture full contract lifecycle
 - [ ] Both parties receive `deal_unlocked` notification
+- [ ] `role` column fully removed from schema; all gating reads `subscription_plan` only
 
 ---
 
@@ -342,7 +441,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] SMS notifications via Africa's Talking
 - [ ] `system_settings` editable from admin panel
 - [ ] Audit log viewer — filterable by event type, user, date range
-- [ ] User management — account status, subscription, KYC status
+- [ ] User management — account status, subscription plan, KYC status
 
 ### Stage 5 Exit Criteria
 - [ ] Admin can review and approve/reject KYC submissions
@@ -356,11 +455,10 @@ Contact details are **never accessible before this step** — enforced at API le
 
 - [ ] Play Store AAB + App Store IPA
 - [ ] Privacy policy + terms of service
-- [ ] 3-screen onboarding carousel
-- [ ] Role selection at registration (borrow / lend / both)
+- [ ] 3-screen onboarding carousel — **no role selection step**; onboarding introduces the unified marketplace and subscription tiers instead
 - [ ] Crash reporting (Firebase Crashlytics or Sentry)
 - [ ] Referral programme (`referrals` table in schema v4.0)
-- [ ] Lender subscription growth — in-app upgrade prompts
+- [ ] Subscription upgrade prompts — contextual (e.g., prompt to upgrade to Lender the moment a Free user taps "Make Offer")
 
 ---
 
@@ -372,27 +470,28 @@ Contact details are **never accessible before this step** — enforced at API le
 | 5-tab nav, Request in centre | ✅ |
 | Browse marketplace with filters | ✅ Stage 2 |
 | Live feed Realtime refresh | ✅ Stage 2 |
-| Post a structured loan request (free — amount, duration, purpose only) | ✅ Stage 2 |
+| Post a structured loan request (Free — amount, duration, purpose only) | ✅ Stage 2 |
 | Form limits from DB (system_settings) | ✅ Stage 2 |
-| Browse and make a bid with lender terms (subscription) | ✅ Stage 2 |
+| Browse and make an offer with full terms (Lender/Pro) | ✅ Stage 2 |
 | Subscription gate modal | ✅ Stage 2 |
-| Borrower accepts a bid | ✅ Stage 2 |
-| Losing bids auto-rejected | ✅ Stage 2 |
+| Request owner accepts an offer | ✅ Stage 2 |
+| Losing offers auto-rejected | ✅ Stage 2 |
 | Live offers panel Realtime + flash | ✅ Stage 2 |
 | KYC upload (camera/gallery, 3 docs) | ✅ Stage 2 |
-| Save to watchlist (toggles star) | ❌ Stage 3 |
-| Watchlist — real data, grouped, urgency | ❌ Stage 3 |
-| Positions — My Requests tab | ❌ Stage 3 |
-| Positions — My Offers tab with withdraw | ❌ Stage 3 |
-| Offer withdrawal with confirm dialog | ❌ Stage 3 |
-| Notifications | ❌ Stage 3 |
-| Profile/Account live data | ❌ Stage 3 |
-| OfflineBanner | ❌ Stage 3 |
-| Premium borrower suggests interest rate / late fee / repayment | ⬜ Stage 4 |
-| Borrower terms locked on publish | ⬜ Stage 4 |
-| Lender bid terms locked on submit | ⬜ Stage 4 |
-| Contract auto-generated after bid acceptance | ⬜ Stage 4 |
+| Save to watchlist (toggles star) | ✅ Stage 3 |
+| Watchlist — real data, grouped, urgency | ✅ Stage 3 |
+| Positions — My Requests tab | ✅ Stage 3 |
+| Positions — My Offers tab with withdraw | ✅ Stage 3 |
+| Offer withdrawal with confirm dialog | ✅ Stage 3 |
+| Notifications | ✅ Stage 3 |
+| Profile/Account live data | ✅ Stage 3 |
+| OfflineBanner | ✅ Stage 3 |
+| Pro-tier: suggest interest rate / late fee / repayment on post | ⬜ Stage 4 |
+| Request terms locked on publish | ⬜ Stage 4 |
+| Offer terms locked on submit | ⬜ Stage 4 |
+| Contract auto-generated after offer acceptance | ⬜ Stage 4 |
 | Contact reveal flow (blurred → unblur) | ⬜ Stage 4 |
+| Remove `role` column; subscription-only gating | ⬜ Stage 4 |
 | Admin KYC review | ⬜ Stage 5 |
 | Admin KPI dashboard | ⬜ Stage 5 |
 | SMS alerts | ⬜ Stage 5 |
@@ -401,32 +500,35 @@ Contact details are **never accessible before this step** — enforced at API le
 
 ## Test Accounts (password: `Test1234!`)
 
-| Email | Role | Subscription | Best for testing |
-|---|---|---|---|
-| `david.mukasa@gmail.com` | Borrower | Free | Contracted request; contact reveal triggered |
-| `sarah.namukasa@yahoo.com` | Borrower | Free | Contracted request; contact reveal pending |
-| `james.okello@outlook.com` | Both | Pro | Active request with two pending offers; can also make offers |
-| `maria.nakato@gmail.com` | Borrower | Free | Active request, one pending offer |
-| `robert.ssemwanga@gmail.com` | Both | Lender | Closing-soon request; pending offer on another listing |
-| `invest@pearlcapital.ug` | Lender | Pro | Offer accepted on David's request; contact revealed |
-| `funds@victoriainvest.co.ug` | Lender | Pro | Offer accepted on Sarah's request; contact reveal pending |
-| `lending@equatorfinance.ug` | Lender | Lender | Pending offer on James's request |
-| `info@greenleafagro.co.ug` | Lender | Lender | Pending offer on Maria's request; expired offer on Charles's |
-| `contact@kampalatech.ug` | Lender | Lender | Pending offer on Frank's request |
-| `alice.namuli@gmail.com` | Borrower | Free | KYC pending — test KYC badge; `account_status = pending_verification` |
-| `admin1@nipanze.ug` | Admin | Free | Full admin dashboard access |
-| `test.user@gmail.com` | Borrower | Free | No prior activity — test onboarding gates |
+> `Role` column removed — accounts are now described purely by activity + subscription plan, matching the unified model.
+
+| Email | Subscription | Best for testing |
+|---|---|---|
+| `david.mukasa@gmail.com` | Free | Contracted request; contact reveal triggered |
+| `sarah.namukasa@yahoo.com` | Free | Contracted request; contact reveal pending |
+| `james.okello@outlook.com` | Pro | Active request with two pending offers; also has offers out on other listings |
+| `maria.nakato@gmail.com` | Free | Active request, one pending offer |
+| `robert.ssemwanga@gmail.com` | Lender | Closing-soon request; pending offer on another listing |
+| `invest@pearlcapital.ug` | Pro | Offer accepted on David's request; contact revealed |
+| `funds@victoriainvest.co.ug` | Pro | Offer accepted on Sarah's request; contact reveal pending |
+| `lending@equatorfinance.ug` | Lender | Pending offer on James's request |
+| `info@greenleafagro.co.ug` | Lender | Pending offer on Maria's request; expired offer on Charles's |
+| `contact@kampalatech.ug` | Lender | Pending offer on Frank's request |
+| `alice.namuli@gmail.com` | Free | KYC pending — test KYC badge; `account_status = pending_verification` |
+| `admin1@nipanze.ug` | Free (`is_admin = true`) | Full admin dashboard access |
+| `test.user@gmail.com` | Free | No prior activity — test onboarding gates |
 
 ---
 
 ## Architecture Constraints
 
 1. **No fund movement** — platform never initiates, processes, records, or tracks financial transactions
-2. **Anonymity by default** — `borrower_id` never in marketplace queries; lender identity hidden until offer is accepted and contact is revealed
-3. **DB is the gate** — triggers + RLS enforce all rules; client validation is UX only
+2. **Anonymity by default** — request-owner id never in marketplace queries; offer-maker identity hidden until offer is accepted and contact is revealed
+3. **DB is the gate** — triggers + RLS enforce all rules based on `subscription_plan`; client validation is UX only
 4. **Controlled contact sharing** — `reveal_contact` RPC enforced at API layer; contact details never accessible before reveal via any query
 5. **Friendly errors** — `parseSupabaseError()` everywhere; raw trigger codes never reach the user
 6. **Append-only audit log** — `audit_logs` never writable via UPDATE or DELETE
+7. **No stored role** — the only role in the system is `is_admin`; all marketplace capability comes from `subscription_plan` (`free | lender | pro`)
 
 ---
 

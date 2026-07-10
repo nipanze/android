@@ -1,7 +1,13 @@
 -- ============================================
 -- NIPANZE Seed Data
--- Version: 4.1 (Schema v4.0 + Stage 4 Aligned)
+-- Version: 4.1 (Schema v4.1 Aligned)
 -- ============================================
+--
+-- v4.1 fix vs prior seed draft:
+--   • profiles has NO `role` column in schema v4.1 (role-based model was
+--     removed). The only role concept is `is_admin` (boolean). Admin
+--     UPDATE statements and the verification SELECT now use is_admin
+--     instead of role='admin'.
 --
 -- Stage 4 additions vs v2.0:
 --   • loan_offers: added interest_rate_pct, late_fee_pct,
@@ -246,6 +252,8 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================
 -- STEP 2: UPDATE public.profiles
 -- NOTE: credit_score, reputation_tier, lender_token removed in v4.0.
+-- NOTE (v4.1): profiles has no `role` column — the only role concept is
+--              the boolean `is_admin`, used below for the two admin rows.
 -- ============================================
 
 -- Borrowers
@@ -350,16 +358,16 @@ UPDATE profiles SET
     created_at='2026-01-25 09:15:00'
 WHERE id='10000000-0000-0000-0000-000000000014';
 
--- Admins
+-- Admins (v4.1: is_admin boolean is the only role concept — no `role` column)
 UPDATE profiles SET
     full_name='Admin One', phone='+256700000001', district='Central',
-    account_status='active', role='admin',
+    account_status='active', is_admin=TRUE,
     created_at='2024-01-01 08:00:00'
 WHERE id='10000000-0000-0000-0000-000000000015';
 
 UPDATE profiles SET
     full_name='Admin Two', phone='+256700000002', district='Central',
-    account_status='active', role='admin',
+    account_status='active', is_admin=TRUE,
     created_at='2024-01-01 08:00:00'
 WHERE id='10000000-0000-0000-0000-000000000016';
 
@@ -904,7 +912,7 @@ SELECT table_name, record_count FROM (
 
 SELECT p.full_name, au.email,
        au.email_confirmed_at IS NOT NULL AS confirmed,
-       p.account_status, p.role,
+       p.account_status, p.is_admin,
        s.plan AS subscription_plan, s.status AS subscription_status
 FROM profiles p
 LEFT JOIN auth.users  au ON au.id = p.id
@@ -931,4 +939,4 @@ LEFT JOIN contact_reveals cr ON cr.offer_id = lo.id
 ORDER BY lo.offered_at;
 
 
-SELECT '✅ Nipanze seed v4.1 inserted successfully (Stage 4 aligned)' AS status;
+SELECT '✅ Nipanze seed v4.1 inserted successfully (Stage 4 aligned, is_admin-based roles)' AS status;

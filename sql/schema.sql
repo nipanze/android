@@ -1,6 +1,6 @@
 -- ============================================
 -- NIPANZE Database Schema
--- Version: 4.0 (Non-Custodial Matchmaking Marketplace)
+-- Version: 4.1 (Unified Marketplace Model — Non-Custodial Matchmaking Marketplace)
 -- PostgreSQL 14+ · Flutter + Supabase
 --
 -- Non-custodial peer-to-peer loan listing marketplace.
@@ -8,6 +8,11 @@
 -- Lender bids require a subscription.
 -- Platform NEVER holds, tracks, or processes money.
 -- Contact details are revealed only after a locked contract is generated.
+--
+-- v4.1 change: removed role-based model. There is no stored borrower/lender
+-- role. All marketplace capability comes from subscription_plan. The only
+-- remaining role concept is is_admin (boolean), which governs platform
+-- moderation and is unrelated to marketplace participation.
 -- ============================================
 
 
@@ -110,13 +115,13 @@ SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.profiles (
-        id, full_name, account_status, role
+        id, full_name, account_status, is_admin
     )
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', SPLIT_PART(NEW.email, '@', 1)),
         'pending_verification',
-        'user'
+        FALSE
     )
     ON CONFLICT (id) DO NOTHING;
 
@@ -141,6 +146,8 @@ COMMENT ON FUNCTION public.handle_new_auth_user IS
 
 -- ============================================
 -- TABLE: profiles  (extends auth.users 1-to-1)
+-- v4.1: no stored borrower/lender role. is_admin is the only role concept,
+-- and it governs platform moderation only — never marketplace capability.
 -- ============================================
 
 CREATE TABLE profiles (
@@ -154,8 +161,7 @@ CREATE TABLE profiles (
     monthly_income_ugx BIGINT,
 
     account_status   account_status_enum NOT NULL DEFAULT 'pending_verification',
-    role             TEXT NOT NULL DEFAULT 'user'
-                         CONSTRAINT chk_role CHECK (role IN ('user', 'admin')),
+    is_admin         BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -163,6 +169,9 @@ CREATE TABLE profiles (
 
 COMMENT ON TABLE  profiles IS 'Core user profile. Extends auth.users 1-to-1. One account supports both borrower and lender activity.';
 COMMENT ON COLUMN profiles.phone IS 'Masked until contact reveal is triggered post-offer-acceptance.';
+COMMENT ON COLUMN profiles.is_admin IS
+'The only role in the system. Governs platform moderation access, unrelated to marketplace
+ capability, which comes entirely from subscription_plan on the subscriptions table.';
 
 
 -- ============================================
@@ -293,7 +302,7 @@ CREATE TABLE loan_requests (
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
 
-    -- Premium borrower term suggestions. These are optional, public, and
+    -- Pro-tier term suggestions. These are optional, public, and
     -- locked by trigger at publish time.
     suggested_interest_rate_pct NUMERIC(5,2)
                                     CONSTRAINT chk_lr_suggested_interest_rate_range
@@ -333,7 +342,7 @@ CREATE TABLE loan_requests (
 COMMENT ON TABLE  loan_requests IS
 'Borrower funding requests. Free to post. borrower_id masked on all public views.
  Income and repayment fields give lenders enough context to make an informed bid.
- Premium borrower term suggestions are locked on publish.';
+ Pro-tier term suggestions are locked on publish.';
 COMMENT ON COLUMN loan_requests.borrower_id IS
 'NEVER exposed in v_loan_listings or any marketplace query. Contact revealed only post-acceptance.';
 COMMENT ON COLUMN loan_requests.number_of_offers IS
@@ -583,7 +592,7 @@ CREATE TABLE referrals (
 -- ============================================
 
 -- profiles
-CREATE INDEX idx_profiles_role           ON profiles (role);
+CREATE INDEX idx_profiles_is_admin       ON profiles (is_admin) WHERE is_admin = TRUE;
 CREATE INDEX idx_profiles_account_status ON profiles (account_status);
 
 -- subscriptions
@@ -678,7 +687,7 @@ WHERE lr.status = 'active';
 
 COMMENT ON VIEW v_loan_listings IS
 'Anonymised marketplace feed. borrower_id, contact details, and private documents are never present.
- Repayment fields and premium borrower suggestions help lenders make an informed bid without exposing income source.';
+ Repayment fields and Pro-tier suggestions help lenders make an informed bid without exposing income source.';
 
 
 -- --------------------------------------------
@@ -969,7 +978,7 @@ END;
 $$;
 
 
--- Validate optional premium borrower term suggestions before insert.
+-- Validate optional Pro-tier term suggestions before insert.
 CREATE OR REPLACE FUNCTION trg_fn_validate_request_terms()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
@@ -991,7 +1000,7 @@ BEGIN
         LIMIT 1;
 
         IF v_plan IS DISTINCT FROM 'pro'::subscription_plan_enum THEN
-            RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: A Pro borrower subscription is required to suggest interest, late fee, or repayment terms.'
+            RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: A Pro subscription is required to suggest interest, late fee, or repayment terms.'
                 USING ERRCODE = 'P0004';
         END IF;
     END IF;
@@ -1002,7 +1011,7 @@ END;
 $$;
 
 
--- Lock borrower suggestions after publish.
+-- Lock request term suggestions after publish.
 CREATE OR REPLACE FUNCTION trg_fn_lock_request_terms()
 RETURNS TRIGGER LANGUAGE plpgsql
 SET search_path = public AS $$
@@ -1013,7 +1022,7 @@ BEGIN
         OLD.suggested_repayment_frequency IS DISTINCT FROM NEW.suggested_repayment_frequency OR
         OLD.suggested_installment_amount IS DISTINCT FROM NEW.suggested_installment_amount
     ) THEN
-        RAISE EXCEPTION 'NIPANZE_REQUEST_TERMS_LOCKED: Borrower terms cannot be edited after publish.'
+        RAISE EXCEPTION 'NIPANZE_REQUEST_TERMS_LOCKED: Terms cannot be edited after publish.'
             USING ERRCODE = 'P0005';
     END IF;
     RETURN NEW;
@@ -1043,7 +1052,7 @@ BEGIN
             USING ERRCODE = 'P0011';
     END IF;
 
-    -- Lenders cannot offer on their own request
+    -- Cannot offer on your own request
     IF v_listing.borrower_id = NEW.lender_id THEN
         RAISE EXCEPTION 'NIPANZE_SELF_OFFER: You cannot make a bid on your own listing.'
             USING ERRCODE = 'P0012';
@@ -1506,7 +1515,7 @@ COMMENT ON FUNCTION public.reveal_contact IS
 -- ============================================
 -- RPC: unlock_contact (Stage 4)
 -- After contract generation, borrower unlocks contact details.
--- Creates contact_reveal record (or updates existing one to ''revealed'').
+-- Creates contact_reveal record (or updates existing one to 'revealed').
 -- ============================================
 
 CREATE OR REPLACE FUNCTION private.unlock_contact_internal(
@@ -1646,7 +1655,7 @@ ALTER TABLE refresh_tokens      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
 
 
--- is_admin lives in the `private` schema so it is NOT exposed
+-- is_admin() lives in the `private` schema so it is NOT exposed
 -- via the PostgREST REST API (/rpc/is_admin) but is still
 -- callable by RLS policies and other SECURITY DEFINER functions.
 CREATE SCHEMA IF NOT EXISTS private;
@@ -1655,7 +1664,7 @@ CREATE OR REPLACE FUNCTION private.is_admin()
 RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
 SET search_path = public AS $$
     SELECT EXISTS (
-        SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
+        SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE
     );
 $$;
 
@@ -1841,7 +1850,8 @@ DECLARE db TEXT;
 BEGIN
     SELECT current_database() INTO db;
     EXECUTE FORMAT('COMMENT ON DATABASE %I IS %L', db,
-        'Nipanze v4.0 — Non-custodial loan listing matchmaking marketplace. Uganda-first. '
+        'Nipanze v4.1 — Non-custodial loan listing matchmaking marketplace. Uganda-first. '
+        'Unified marketplace: no stored borrower/lender role, capability comes from subscription_plan. '
         'Borrowing is free. Lender offers require a subscription. '
         'Contact revealed only after offer acceptance. Platform never holds or tracks funds.');
 END $$;
@@ -1864,7 +1874,7 @@ REVOKE EXECUTE ON FUNCTION public.trg_fn_max_concurrent_requests() FROM public, 
 REVOKE EXECUTE ON FUNCTION public.trg_fn_validate_offer() FROM public, authenticated, anon;
 
 -- Revoke public/anon access on client-facing RPCs and restrict to authenticated/service_role
--- is_admin is now in private schema — only grant to authenticated for RLS use
+-- is_admin is in the private schema — only grant to authenticated for RLS use
 REVOKE EXECUTE ON FUNCTION private.is_admin() FROM public, anon;
 GRANT  EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
@@ -1876,7 +1886,7 @@ GRANT EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, se
 
 
 -- ============================================
--- END OF SCHEMA v4.0
+-- END OF SCHEMA v4.1
 -- ============================================
 -- Grants for views
 GRANT SELECT ON v_loan_listings TO authenticated, anon;
