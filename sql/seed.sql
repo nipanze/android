@@ -1,7 +1,25 @@
 -- ============================================
 -- NIPANZE Seed Data
--- Version: 4.1 (Schema v4.1 Aligned)
+-- Version: 4.1.1 (Schema v4.1 Aligned + FK-safety fix)
 -- ============================================
+--
+-- v4.1.1 fix vs prior seed draft:
+--   • auth.users lives in the `auth` schema, which a `DROP SCHEMA public
+--     CASCADE; CREATE SCHEMA public;` reset does NOT touch. If this seed
+--     has ever been run before, those 17 auth.users rows already exist,
+--     so `INSERT ... ON CONFLICT (id) DO NOTHING` silently skips them —
+--     and because no row is actually inserted, the `on_auth_user_created`
+--     AFTER INSERT trigger never fires. That leaves the freshly-recreated
+--     public.profiles / public.subscriptions tables with NO rows for
+--     these users, which is exactly the
+--     `insert or update on table "kyc_verifications" violates foreign key
+--     constraint "kyc_verifications_user_id_fkey"` failure seen above.
+--
+--     Fix: right after seeding auth.users, explicitly seed
+--     public.profiles and public.subscriptions ourselves (ON CONFLICT DO
+--     NOTHING) instead of relying purely on the trigger firing. This
+--     makes the seed idempotent and safe whether or not auth.users
+--     already existed.
 --
 -- v4.1 fix vs prior seed draft:
 --   • profiles has NO `role` column in schema v4.1 (role-based model was
@@ -245,8 +263,32 @@ INSERT INTO auth.users (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- handle_new_auth_user trigger has now fired for each row above,
--- creating public.profiles rows and free subscriptions automatically.
+-- ============================================
+-- STEP 1B: EXPLICITLY PROVISION profiles + subscriptions
+-- Do NOT rely solely on the on_auth_user_created trigger. If any of the
+-- auth.users rows above already existed (e.g. auth schema survived a
+-- `DROP SCHEMA public CASCADE` reset), the INSERT above was a no-op for
+-- them and the AFTER INSERT trigger never fired — leaving public.profiles
+-- and public.subscriptions empty for those ids. This block guarantees
+-- both tables are populated for every one of the 17 seed users,
+-- regardless of whether the trigger fired.
+-- ============================================
+
+INSERT INTO public.profiles (id, full_name, account_status, is_admin)
+SELECT
+    au.id,
+    COALESCE(au.raw_user_meta_data->>'full_name', SPLIT_PART(au.email, '@', 1)),
+    'pending_verification',
+    FALSE
+FROM auth.users au
+WHERE au.id::text LIKE '10000000%'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
+SELECT au.id, 'free', 'active', 0
+FROM auth.users au
+WHERE au.id::text LIKE '10000000%'
+ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
 
 
 -- ============================================
@@ -723,13 +765,13 @@ INSERT INTO public.agreements (
     agreement_text, agreement_snapshot, status,
     borrower_agreed_at, lender_agreed_at, locked_at
 ) VALUES
-('g1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
+('a9000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
  'monthly'::public.repayment_frequency_enum, 462500, 2.00,
  'LOAN AGREEMENT between David Mukasa and William Kasujja. Principal: UGX 5,000,000 at 11% interest. Repayments: Monthly UGX 462,500.',
  '{"payment_frequency": "monthly", "payment_amount": 462500, "penalty_pct": 2.00}'::jsonb, 'locked'::public.agreement_status_enum,
  '2024-02-06 14:30:00', '2024-02-06 14:30:00', '2024-02-06 14:30:00'),
 
-('g1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
+('a9000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
  'monthly'::public.repayment_frequency_enum, 332500, 2.00,
  'LOAN AGREEMENT between Sarah Namukasa and Catherine Namboze. Principal: UGX 3,500,000 at 14% interest. Repayments: Monthly UGX 332,500.',
  '{"payment_frequency": "monthly", "payment_amount": 332500, "penalty_pct": 2.00}'::jsonb, 'locked'::public.agreement_status_enum,
@@ -939,4 +981,4 @@ LEFT JOIN contact_reveals cr ON cr.offer_id = lo.id
 ORDER BY lo.offered_at;
 
 
-SELECT '✅ Nipanze seed v4.1 inserted successfully (Stage 4 aligned, is_admin-based roles)' AS status;
+SELECT '✅ Nipanze seed v4.1.1 inserted successfully (Stage 4 aligned, is_admin-based roles, FK-safe profile provisioning)' AS status;

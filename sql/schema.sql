@@ -13,6 +13,14 @@
 -- role. All marketplace capability comes from subscription_plan. The only
 -- remaining role concept is is_admin (boolean), which governs platform
 -- moderation and is unrelated to marketplace participation.
+--
+-- v4.1.1 fix: reordered two blocks that referenced objects before they
+-- were defined (fixed as ordering bugs found during clean-schema replay):
+--   1) CREATE SCHEMA IF NOT EXISTS private; moved to top of file, before
+--      any private.* function definition.
+--   2) trg_agreements_updated_at trigger moved from right after the
+--      agreements table into the TRIGGERS section, after fn_set_updated_at()
+--      is defined.
 -- ============================================
 
 
@@ -22,6 +30,17 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
+-- ============================================
+-- SCHEMAS
+-- private schema created early so any private.* function definition
+-- later in this file (e.g. private.accept_offer_internal,
+-- private.reveal_contact_internal, private.unlock_contact_internal,
+-- private.is_admin) has somewhere to live.
+-- ============================================
+
+CREATE SCHEMA IF NOT EXISTS private;
 
 
 -- ============================================
@@ -481,15 +500,13 @@ COMMENT ON TABLE agreements IS
  Agreement is read-only after generation (snapshot captured immediately).
  All agreement events are logged in audit_logs for traceability.';
 
--- Indexes  
+-- Indexes
 CREATE INDEX idx_agr_offer_id    ON agreements (offer_id);
 CREATE INDEX idx_agr_request_id  ON agreements (request_id);
 CREATE INDEX idx_agr_status      ON agreements (status);
 
--- Auto-trigger updated_at
-CREATE TRIGGER trg_agreements_updated_at
-    BEFORE UPDATE ON agreements
-    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+-- NOTE: trg_agreements_updated_at trigger moved to the TRIGGERS section
+-- below (after fn_set_updated_at() is defined) — see "-- agreements" there.
 
 
 -- ============================================
@@ -1236,6 +1253,12 @@ CREATE TRIGGER trg_loan_offers_updated_at
     BEFORE UPDATE ON loan_offers
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
+-- agreements (moved here from right after CREATE TABLE agreements —
+-- fn_set_updated_at() must exist first)
+CREATE TRIGGER trg_agreements_updated_at
+    BEFORE UPDATE ON agreements
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
 
 -- ============================================
 -- RPC: accept_offer  (Stage 4: Creates locked agreement)
@@ -1658,7 +1681,7 @@ ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
 -- is_admin() lives in the `private` schema so it is NOT exposed
 -- via the PostgREST REST API (/rpc/is_admin) but is still
 -- callable by RLS policies and other SECURITY DEFINER functions.
-CREATE SCHEMA IF NOT EXISTS private;
+-- (schema itself already created near the top of this file)
 
 CREATE OR REPLACE FUNCTION private.is_admin()
 RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
