@@ -11,16 +11,18 @@ class MyListingCard extends StatelessWidget {
     required this.listing,
     required this.onTap,
     required this.onCancel,
+    this.onViewAgreement,
   });
 
   final MyListing listing;
   final VoidCallback onTap;
   final VoidCallback onCancel;
+  final VoidCallback? onViewAgreement;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: listing.isContracted ? onViewAgreement : onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -116,7 +118,7 @@ class MyListingCard extends StatelessWidget {
               ]),
             ],
 
-            // Actions (active only — contracted listings not shown here)
+            // Actions
             if (listing.isActive) ...[
               const SizedBox(height: 10),
               Row(children: [
@@ -146,6 +148,24 @@ class MyListingCard extends StatelessWidget {
                 ),
               ]),
             ],
+
+            // Contracted — show View Contract button
+            if (listing.isContracted && onViewAgreement != null) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: onViewAgreement,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    foregroundColor: AppColors.success,
+                    side: const BorderSide(color: AppColors.success),
+                    textStyle: const TextStyle(fontSize: 11),
+                  ),
+                  child: const Text('View Contract'),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -155,6 +175,9 @@ class MyListingCard extends StatelessWidget {
   Color _borderColor(BuildContext context) {
     if (listing.isActive && listing.numberOfOffers > 0) {
       return AppColors.accent.withValues(alpha: 0.5);
+    }
+    if (listing.isContracted) {
+      return AppColors.success.withValues(alpha: 0.5);
     }
     return Theme.of(context).dividerColor;
   }

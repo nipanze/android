@@ -37,7 +37,7 @@ serve(async (req: Request) => {
       user_id: payload.userId,
       type: payload.type,
       title: payload.title,
-      message: payload.message,
+      body: payload.message,
       data: payload.data ?? null,
     });
 

@@ -30,7 +30,6 @@ class RpcNames {
 
   static const String acceptOffer = 'accept_offer';
   static const String getPublicListingOffers = 'get_public_listing_offers';
-  static const String confirmAgreement = 'confirm_agreement';
   static const String unlockContact = 'unlock_contact';
   static const String revealContact = 'reveal_contact';
 }

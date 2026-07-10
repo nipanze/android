@@ -42,6 +42,22 @@ class AgreementRepository {
     }
   }
 
+  /// Fetch agreement by request (loan listing) ID.
+  Future<Agreement?> getAgreementByRequestId(String requestId) async {
+    try {
+      final data = await _client
+          .from(TableNames.agreements)
+          .select()
+          .eq('request_id', requestId)
+          .order('created_at', ascending: false)
+          .maybeSingle();
+
+      return data != null ? Agreement.fromMap(data) : null;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   /// Borrower unlocks contact details after agreement is locked.
   /// Returns contact reveal data (both parties' contact info).
   Future<ContactRevealData> unlockContact(String agreementId) async {

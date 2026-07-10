@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -37,6 +38,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         user: user,
         needsEmailVerification: !_authRepository.isEmailVerified,
       ));
+      // Asynchronously fetch complete profile to update subscription plan
+      try {
+        final fullUser = await _authRepository.fetchCurrentProfile();
+        emit(AuthAuthenticated(
+          user: fullUser,
+          needsEmailVerification: !_authRepository.isEmailVerified,
+        ));
+      } catch (e) {
+        // Log error and keep current user details
+        debugPrint('Error fetching user profile at start: $e');
+      }
     } else {
       emit(const AuthUnauthenticated());
     }

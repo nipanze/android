@@ -91,6 +91,14 @@ class AuthRepository {
     }
   }
 
+  Future<NipanzeUser> fetchCurrentProfile() async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('No current user authenticated.');
+    }
+    return _fetchProfile(user.id, user.email ?? '');
+  }
+
   Future<NipanzeUser> _fetchProfile(String id, String email) async {
     // ── 1. Profile ──────────────────────────────────────────────────────────
     Map<String, dynamic>? data;

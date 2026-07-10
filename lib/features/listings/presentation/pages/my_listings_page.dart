@@ -9,6 +9,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/my_listing.dart';
 import '../cubit/my_listings_cubit.dart';
 import '../widgets/my_listing_card.dart';
@@ -56,9 +57,11 @@ class _MyListingsView extends StatelessWidget {
             final closed = state.listings
                 .where((l) => l.isExpired || l.isCancelled)
                 .toList();
+            final contracted =
+                state.listings.where((l) => l.isContracted).toList();
 
-            // Show empty state if nothing visible (contracted-only listings hidden)
-            if (active.isEmpty && closed.isEmpty) {
+            // Show empty state if nothing visible
+            if (active.isEmpty && closed.isEmpty && contracted.isEmpty) {
               return _EmptyRequestState();
             }
             return _ListingsBody(listings: state.listings);
@@ -79,6 +82,8 @@ class _ListingsBody extends StatelessWidget {
   List<MyListing> get _active => listings.where((l) => l.isActive).toList();
   List<MyListing> get _closed =>
       listings.where((l) => l.isExpired || l.isCancelled).toList();
+  List<MyListing> get _contracted =>
+      listings.where((l) => l.isContracted).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +103,18 @@ class _ListingsBody extends StatelessWidget {
                   ),
                 )),
           ],
+          if (_contracted.isNotEmpty) ...[
+            SectionHeader('Contracted · ${_contracted.length}'),
+            ..._contracted.map((l) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: MyListingCard(
+                    listing: l,
+                    onTap: () {},
+                    onCancel: () {},
+                    onViewAgreement: () => _openAgreement(context, l),
+                  ),
+                )),
+          ],
           if (_closed.isNotEmpty) ...[
             SectionHeader('Closed · ${_closed.length}'),
             ..._closed.map((l) => Padding(
@@ -109,6 +126,29 @@ class _ListingsBody extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openAgreement(BuildContext context, MyListing listing) async {
+    try {
+      final repo = getIt<AgreementRepository>();
+      final agreement = await repo.getAgreementByRequestId(listing.id);
+      if (!context.mounted) return;
+      if (agreement != null) {
+        await context.push('/marketplace/agreement/${agreement.id}');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contract not yet generated.')),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading contract: $e'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
   }
 
   void _confirmCancel(BuildContext context, MyListing listing) {

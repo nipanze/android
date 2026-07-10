@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/lender_offer.dart';
 
 class LenderOfferCard extends StatelessWidget {
@@ -47,7 +49,7 @@ class LenderOfferCard extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Offer details
+        // Offer amount
         Row(children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Offered Amount',
@@ -64,6 +66,33 @@ class LenderOfferCard extends StatelessWidget {
                     color: AppColors.accent)),
           ]),
         ]),
+
+        // Structured terms (Stage 4)
+        const SizedBox(height: 10),
+        _TermRow(
+          icon: Icons.percent,
+          label: 'Interest',
+          value: '${offer.interestRatePct.toStringAsFixed(1)}%',
+        ),
+        const SizedBox(height: 4),
+        _TermRow(
+          icon: Icons.gavel_outlined,
+          label: 'Late fee',
+          value: '${offer.lateFeePct.toStringAsFixed(1)}% per missed installment',
+        ),
+        const SizedBox(height: 4),
+        _TermRow(
+          icon: Icons.calendar_today,
+          label: 'Repayment',
+          value:
+              'UGX ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
+        ),
+        const SizedBox(height: 4),
+        _TermRow(
+          icon: Icons.account_balance_wallet,
+          label: 'Total payable',
+          value: 'UGX ${_fmt(offer.totalRepayment)}',
+        ),
 
         if (offer.proposedExpectations != null &&
             offer.proposedExpectations!.isNotEmpty) ...[
@@ -105,6 +134,21 @@ class LenderOfferCard extends StatelessWidget {
               child: const Text('View Listing'),
             ),
           ),
+          if (offer.isAccepted) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => _viewContract(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  foregroundColor: AppColors.success,
+                  side: const BorderSide(color: AppColors.success),
+                  textStyle: const TextStyle(fontSize: 11),
+                ),
+                child: const Text('View Contract'),
+              ),
+            ),
+          ],
           if (offer.canWithdraw) ...[
             const SizedBox(width: 8),
             OutlinedButton(
@@ -124,6 +168,31 @@ class LenderOfferCard extends StatelessWidget {
     );
   }
 
+  Future<void> _viewContract(BuildContext context) async {
+    try {
+      final repo = getIt<AgreementRepository>();
+      final agreement = await repo.getAgreementByOfferId(offer.offerId);
+      if (!context.mounted) return;
+      if (agreement != null) {
+        await context.push('/marketplace/agreement/${agreement.id}');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Contract not yet generated.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading contract: $e'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
   Color _borderColor(BuildContext context) {
     switch (offer.status) {
       case OfferStatus.accepted:
@@ -135,8 +204,51 @@ class LenderOfferCard extends StatelessWidget {
     }
   }
 
+  String _fmt(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
   String _fmtDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+class _TermRow extends StatelessWidget {
+  const _TermRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: AppColors.accent),
+        const SizedBox(width: 6),
+        Text('$label: ', style: Theme.of(context).textTheme.bodySmall),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _OfferStatusBadge extends StatelessWidget {
