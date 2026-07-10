@@ -98,7 +98,7 @@ class AuthRepository {
       data = await _client
           .from('profiles')
           .select(
-              'id, full_name, phone, district, credit_score, reputation_tier, lender_token, role')
+              'id, full_name, phone, district, credit_score, reputation_tier, lender_token, is_admin')
           .eq('id', id)
           .maybeSingle();
     } catch (e) {

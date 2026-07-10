@@ -2,7 +2,9 @@ import 'package:equatable/equatable.dart';
 
 enum RepTier { platinum, gold, silver, bronze, restricted }
 
-enum SubscriptionPlan { watchlist, borrower, lender, pro }
+/// Mirrors subscription_plan_enum in schema.sql (free | lender | pro).
+/// 'watchlist' and 'borrower' no longer exist in the v4.1 DB schema.
+enum SubscriptionPlan { free, lender, pro }
 
 enum KycStatus { notSubmitted, pending, approved, rejected, expired }
 
@@ -16,9 +18,9 @@ class NipanzeUser extends Equatable {
     this.creditScore = 50,
     this.repTier = RepTier.bronze,
     this.lenderToken,
-    this.subscriptionPlan = SubscriptionPlan.watchlist,
+    this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
-    this.role = 'user',
+    this.isAdmin = false,
     this.isEmailVerified = false,
   });
 
@@ -32,11 +34,10 @@ class NipanzeUser extends Equatable {
   final String? lenderToken;
   final SubscriptionPlan subscriptionPlan;
   final KycStatus kycStatus;
-  final String role;
+  /// Mirrors profiles.is_admin — governs platform moderation, not marketplace access.
+  final bool isAdmin;
   final bool isEmailVerified;
 
-  bool get isAdmin => role == 'admin';
-  bool get isNegotiator => role == 'negotiator';
   bool get canBorrow => true;
   bool get canSuggestBorrowerTerms => subscriptionPlan == SubscriptionPlan.pro;
   bool get canLend =>
@@ -56,10 +57,10 @@ class NipanzeUser extends Equatable {
           _repTierFromString(map['reputation_tier'] as String? ?? 'bronze'),
       lenderToken: map['lender_token'] as String?,
       subscriptionPlan:
-          _planFromString(map['subscription_plan'] as String? ?? 'watchlist'),
+          _planFromString(map['subscription_plan'] as String? ?? 'free'),
       kycStatus:
           _kycFromString(map['kyc_status'] as String? ?? 'not_submitted'),
-      role: map['role'] as String? ?? 'user',
+      isAdmin: map['is_admin'] as bool? ?? false,
       isEmailVerified: map['is_email_verified'] as bool? ?? false,
     );
   }
@@ -81,14 +82,12 @@ class NipanzeUser extends Equatable {
 
   static SubscriptionPlan _planFromString(String s) {
     switch (s) {
-      case 'borrower':
-        return SubscriptionPlan.borrower;
       case 'lender':
         return SubscriptionPlan.lender;
       case 'pro':
         return SubscriptionPlan.pro;
-      default:
-        return SubscriptionPlan.watchlist;
+      default: // 'free' and any unknown value → free
+        return SubscriptionPlan.free;
     }
   }
 
@@ -109,5 +108,5 @@ class NipanzeUser extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, repTier, subscriptionPlan, kycStatus, role];
+      [id, email, repTier, subscriptionPlan, kycStatus, isAdmin];
 }
