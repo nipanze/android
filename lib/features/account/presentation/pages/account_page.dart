@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -116,6 +117,8 @@ class _AccountView extends StatelessWidget {
                     onTap: () => context.push(AppRoutes.profile),
                   ),
                   const Divider(height: 1),
+                  _ThemeToggleRow(),
+                  const Divider(height: 1),
                   _ActionRow(
                     icon: Icons.verified_user_outlined,
                     label: 'KYC Verification',
@@ -204,7 +207,7 @@ class _SubscriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final plan = profile?.subscriptionPlan ?? 'watchlist';
+    final plan = profile?.subscriptionPlan ?? 'free';
     final status = profile?.subscriptionStatus ?? 'active';
 
     return Container(
@@ -319,4 +322,48 @@ class _InfoRow extends StatelessWidget {
         Text(value ?? '—',
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
       ]);
+}
+
+class _ThemeToggleRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeService.instance.notifier,
+      builder: (context, mode, _) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(children: [
+            const Icon(Icons.brightness_6_outlined,
+                size: 20, color: AppColors.text2Dark),
+            const SizedBox(width: 12),
+            const Expanded(
+                child: Text('Appearance', style: TextStyle(fontSize: 13))),
+            SegmentedButton<ThemeMode>(
+              style: SegmentedButton.styleFrom(
+                textStyle:
+                    const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                visualDensity: VisualDensity.compact,
+              ),
+              segments: const [
+                ButtonSegment(
+                    value: ThemeMode.system,
+                    label: Text('Auto'),
+                    icon: Icon(Icons.brightness_auto_outlined, size: 14)),
+                ButtonSegment(
+                    value: ThemeMode.light,
+                    label: Text('Light'),
+                    icon: Icon(Icons.light_mode_outlined, size: 14)),
+                ButtonSegment(
+                    value: ThemeMode.dark,
+                    label: Text('Dark'),
+                    icon: Icon(Icons.dark_mode_outlined, size: 14)),
+              ],
+              selected: {mode},
+              onSelectionChanged: (s) => ThemeService.instance.setMode(s.first),
+            ),
+          ]),
+        );
+      },
+    );
+  }
 }
