@@ -11,9 +11,6 @@ class UserProfile extends Equatable {
     this.employmentType,
     this.employerName,
     this.monthlyIncomeUgx,
-    required this.creditScore,
-    required this.reputationTier,
-    this.lenderToken, // String? — may be absent from the view
     required this.accountStatus,
     // subscription
     this.subscriptionPlan,
@@ -37,9 +34,6 @@ class UserProfile extends Equatable {
   final String? employmentType;
   final String? employerName;
   final int? monthlyIncomeUgx;
-  final int creditScore;
-  final String reputationTier;
-  final String? lenderToken; // nullable — not always present
   final String accountStatus;
   final String? subscriptionPlan;
   final String? subscriptionStatus;
@@ -50,8 +44,6 @@ class UserProfile extends Equatable {
   final int contractedAsBorrower;
   final int activeBids;
   final int contractedAsLender;
-
-  // ── Computed helpers ───────────────────────────────────────────────────────
 
   String get displayName => fullName?.isNotEmpty == true ? fullName! : email;
 
@@ -73,12 +65,9 @@ class UserProfile extends Equatable {
 
   bool get canLend => subscriptionPlan == 'lender' || subscriptionPlan == 'pro';
 
-  // ── Factory ────────────────────────────────────────────────────────────────
-
   factory UserProfile.fromMap(Map<String, dynamic> map) {
     return UserProfile(
       id: map['user_id'] as String,
-      // Fix: was incorrectly reading 'full_name' for email
       email: map['email'] as String? ?? '',
       fullName: map['full_name'] as String?,
       phone: map['phone'] as String?,
@@ -86,9 +75,6 @@ class UserProfile extends Equatable {
       employmentType: map['employment_type'] as String?,
       employerName: map['employer_name'] as String?,
       monthlyIncomeUgx: map['monthly_income_ugx'] as int?,
-      creditScore: map['credit_score'] as int? ?? 50,
-      reputationTier: map['reputation_tier'] as String? ?? 'bronze',
-      lenderToken: map['lender_token'] as String?,
       accountStatus: map['account_status'] as String? ?? 'active',
       subscriptionPlan: map['subscription_plan'] as String?,
       subscriptionStatus: map['subscription_status'] as String?,
@@ -106,8 +92,6 @@ class UserProfile extends Equatable {
     );
   }
 
-  // ── CopyWith ───────────────────────────────────────────────────────────────
-
   UserProfile copyWith({
     String? id,
     String? email,
@@ -117,9 +101,6 @@ class UserProfile extends Equatable {
     String? employmentType,
     String? employerName,
     int? monthlyIncomeUgx,
-    int? creditScore,
-    String? reputationTier,
-    String? lenderToken,
     String? accountStatus,
     String? subscriptionPlan,
     String? subscriptionStatus,
@@ -140,9 +121,6 @@ class UserProfile extends Equatable {
       employmentType: employmentType ?? this.employmentType,
       employerName: employerName ?? this.employerName,
       monthlyIncomeUgx: monthlyIncomeUgx ?? this.monthlyIncomeUgx,
-      creditScore: creditScore ?? this.creditScore,
-      reputationTier: reputationTier ?? this.reputationTier,
-      lenderToken: lenderToken ?? this.lenderToken,
       accountStatus: accountStatus ?? this.accountStatus,
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
@@ -160,9 +138,7 @@ class UserProfile extends Equatable {
   @override
   List<Object?> get props => [
         id,
-        creditScore,
         subscriptionPlan,
         kycStatus,
-        lenderToken,
       ];
 }

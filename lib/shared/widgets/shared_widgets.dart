@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../features/auth/domain/models/nipanze_user.dart';
 
 // ─── Risk Badge ────────────────────────────────────────────────────────────────
 
@@ -44,42 +43,6 @@ class RiskBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: color,
           letterSpacing: 0.2,
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Reputation Tier Badge ─────────────────────────────────────────────────────
-
-class RepTierBadge extends StatelessWidget {
-  const RepTierBadge(this.tier, {super.key});
-
-  final RepTier tier;
-
-  @override
-  Widget build(BuildContext context) {
-    final (label, color) = switch (tier) {
-      RepTier.platinum => ('★ Platinum', AppColors.accent),
-      RepTier.gold => ('★ Gold', const Color(0xFFD97706)),
-      RepTier.silver => ('★ Silver', AppColors.text2Dark),
-      RepTier.bronze => ('★ Bronze', AppColors.warning),
-      RepTier.restricted => ('Restricted', AppColors.danger),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: color,
         ),
       ),
     );

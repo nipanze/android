@@ -1,8 +1,6 @@
 // lib/features/auth/domain/models/nipanze_user.dart
 import 'package:equatable/equatable.dart';
 
-enum RepTier { platinum, gold, silver, bronze, restricted }
-
 /// Mirrors subscription_plan_enum in schema.sql (free | lender | pro).
 /// 'watchlist' and 'borrower' no longer exist in the v4.1 DB schema.
 enum SubscriptionPlan { free, lender, pro }
@@ -16,9 +14,6 @@ class NipanzeUser extends Equatable {
     this.fullName,
     this.phone,
     this.district,
-    this.creditScore = 50,
-    this.repTier = RepTier.bronze,
-    this.lenderToken,
     this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
     this.isAdmin = false,
@@ -30,12 +25,8 @@ class NipanzeUser extends Equatable {
   final String? fullName;
   final String? phone;
   final String? district;
-  final int creditScore;
-  final RepTier repTier;
-  final String? lenderToken;
   final SubscriptionPlan subscriptionPlan;
   final KycStatus kycStatus;
-  /// Mirrors profiles.is_admin — governs platform moderation, not marketplace access.
   final bool isAdmin;
   final bool isEmailVerified;
 
@@ -53,10 +44,6 @@ class NipanzeUser extends Equatable {
       fullName: map['full_name'] as String?,
       phone: map['phone'] as String?,
       district: map['district'] as String?,
-      creditScore: map['credit_score'] as int? ?? 50,
-      repTier:
-          _repTierFromString(map['reputation_tier'] as String? ?? 'bronze'),
-      lenderToken: map['lender_token'] as String?,
       subscriptionPlan:
           _planFromString(map['subscription_plan'] as String? ?? 'free'),
       kycStatus:
@@ -66,28 +53,13 @@ class NipanzeUser extends Equatable {
     );
   }
 
-  static RepTier _repTierFromString(String s) {
-    switch (s) {
-      case 'platinum':
-        return RepTier.platinum;
-      case 'gold':
-        return RepTier.gold;
-      case 'silver':
-        return RepTier.silver;
-      case 'restricted':
-        return RepTier.restricted;
-      default:
-        return RepTier.bronze;
-    }
-  }
-
   static SubscriptionPlan _planFromString(String s) {
     switch (s) {
       case 'lender':
         return SubscriptionPlan.lender;
       case 'pro':
         return SubscriptionPlan.pro;
-      default: // 'free' and any unknown value → free
+      default:
         return SubscriptionPlan.free;
     }
   }
@@ -109,5 +81,5 @@ class NipanzeUser extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, repTier, subscriptionPlan, kycStatus, isAdmin];
+      [id, email, subscriptionPlan, kycStatus, isAdmin];
 }

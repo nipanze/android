@@ -49,7 +49,6 @@ class ProfilePage extends StatelessWidget {
             Text(user?.email ?? '',
                 style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 8),
-            if (user != null) RepTierBadge(user.repTier),
             const SizedBox(height: 20),
             SectionHeader('Details'),
             Card(
@@ -59,10 +58,6 @@ class ProfilePage extends StatelessWidget {
                       _Row('Email', user?.email ?? '—'),
                       const Divider(height: 16),
                       _Row('District', user?.district ?? '—'),
-                      const Divider(height: 16),
-                      _Row('Lender token', user?.lenderToken ?? '—'),
-                      const Divider(height: 16),
-                      _Row('Credit score', '${user?.creditScore ?? 50}/100'),
                     ]))),
           ])),
     );

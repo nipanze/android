@@ -28,7 +28,6 @@ class DashboardPage extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineMedium),
               ]),
               const Spacer(),
-              if (user != null) RepTierBadge(user.repTier),
             ]),
             const SizedBox(height: 20),
             GridView.count(
@@ -70,8 +69,6 @@ class DashboardPage extends StatelessWidget {
                 _InfoRow('Subscription', user?.subscriptionPlan.name ?? '—'),
                 const Divider(height: 16),
                 _InfoRow('KYC status', user?.kycStatus.name ?? '—'),
-                const Divider(height: 16),
-                _InfoRow('Lender token', user?.lenderToken ?? '—'),
               ]),
             )),
           ]),
