@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../../shared/widgets/ticker_card.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/marketplace_repository.dart';
@@ -678,6 +679,8 @@ class _OfferCardState extends State<_OfferCard>
   bool _expanded = false;
   late final AnimationController _anim;
   late final Animation<double> _expandAnim;
+  List<double>? _rateHistory;
+  bool _loadingHistory = false;
 
   @override
   void initState() {
@@ -696,6 +699,24 @@ class _OfferCardState extends State<_OfferCard>
   void _toggle() {
     setState(() => _expanded = !_expanded);
     _expanded ? _anim.forward() : _anim.reverse();
+    if (_expanded &&
+        widget.isOwner &&
+        widget.isProBorrower &&
+        _rateHistory == null &&
+        !_loadingHistory) {
+      _loadHistory();
+    }
+  }
+
+  Future<void> _loadHistory() async {
+    setState(() => _loadingHistory = true);
+    final history = await getIt<MarketplaceRepository>()
+        .getLenderInterestHistory(widget.offer.lenderId);
+    if (!mounted) return;
+    setState(() {
+      _rateHistory = history;
+      _loadingHistory = false;
+    });
   }
 
   @override
@@ -844,46 +865,53 @@ class _OfferCardState extends State<_OfferCard>
                     endIndent: 12,
                     color: borderColor,
                   ),
-                  // Enhanced term rows with trend arrows
-                  _BidTermRow(
-                    label: 'Interest rate',
-                    value: '${offer.interestRatePct.toStringAsFixed(2)}%',
-                    diff: widget.suggestedInterestRatePct != null
-                        ? offer.interestRatePct -
-                            widget.suggestedInterestRatePct!
-                        : null,
-                    diffLabel: widget.suggestedInterestRatePct != null
-                        ? '${offer.interestRatePct.toStringAsFixed(1)} vs ${widget.suggestedInterestRatePct!.toStringAsFixed(1)}%'
-                        : null,
-                    lowerIsBetter: true,
-                    baseColor: isFull ? AppColors.success : null,
-                  ),
-                  _BidTermRow(
-                    label: 'Monthly fine',
-                    value: '${offer.lateFeePct.toStringAsFixed(2)}%',
-                    diff: widget.suggestedLateFeePct != null
-                        ? offer.lateFeePct - widget.suggestedLateFeePct!
-                        : null,
-                    diffLabel: widget.suggestedLateFeePct != null
-                        ? 'penalty on late payment'
-                        : null,
-                    lowerIsBetter: true,
-                    baseColor: isFull ? AppColors.success : null,
-                  ),
-                  _BidTermRow(
-                    label: 'Monthly installment',
-                    value:
-                        'UGX ${_fmt(offer.installmentAmount)} ${_freqLabel(offer.repaymentFrequency).toLowerCase()}',
-                    diff: widget.suggestedInstallmentAmount != null
-                        ? (offer.installmentAmount -
-                                widget.suggestedInstallmentAmount!)
-                            .toDouble()
-                        : null,
-                    diffLabel: widget.suggestedInstallmentAmount != null
-                        ? 'UGX ${_fmt((offer.installmentAmount - widget.suggestedInstallmentAmount!).abs())} difference'
-                        : null,
-                    lowerIsBetter: true,
-                    baseColor: isFull ? AppColors.success : null,
+                  // Enhanced term rows with sparkline tickers
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TickerCard(
+                            label: 'Interest',
+                            value:
+                                '${offer.interestRatePct.toStringAsFixed(1)}%',
+                            deltaLabel: widget.suggestedInterestRatePct != null
+                                ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
+                                : '—',
+                            isPositive:
+                                widget.suggestedInterestRatePct == null ||
+                                    offer.interestRatePct <=
+                                        widget.suggestedInterestRatePct!,
+                            sparklineValues:
+                                (_rateHistory != null && _rateHistory!.length >= 3)
+                                    ? _rateHistory!
+                                    : [
+                                        widget.suggestedInterestRatePct ??
+                                            offer.interestRatePct,
+                                        offer.interestRatePct,
+                                      ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TickerCard(
+                            label: 'Late fee',
+                            value: '${offer.lateFeePct.toStringAsFixed(1)}%',
+                            deltaLabel: widget.suggestedLateFeePct != null
+                                ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
+                                : '—',
+                            isPositive: widget.suggestedLateFeePct == null ||
+                                offer.lateFeePct <=
+                                    widget.suggestedLateFeePct!,
+                            sparklineValues: [
+                              widget.suggestedLateFeePct ?? offer.lateFeePct,
+                              offer.lateFeePct,
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   // ── Total payable summary row ──────────────────────────────
                   _TotalPayableRow(
@@ -1035,98 +1063,6 @@ class _BidDetailRow extends StatelessWidget {
                           .onSurface
                           .withValues(alpha: 0.72),
                   fontWeight: FontWeight.w500,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Enhanced bid term row with trend arrow ───────────────────────────────────
-
-class _BidTermRow extends StatelessWidget {
-  const _BidTermRow({
-    required this.label,
-    required this.value,
-    this.diff,
-    this.diffLabel,
-    this.lowerIsBetter = true,
-    this.baseColor,
-  });
-
-  final String label;
-  final String value;
-  final double? diff; // positive = higher than suggested
-  final String? diffLabel;
-  final bool lowerIsBetter;
-  final Color? baseColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasDiff = diff != null;
-    final bool? isGood = hasDiff
-        ? (diff!.abs() < 0.01
-            ? null
-            : (lowerIsBetter ? diff! < 0 : diff! > 0))
-        : null;
-
-    final Color arrowColor;
-    final IconData arrowIcon;
-    if (!hasDiff || diff!.abs() < 0.01) {
-      arrowColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35);
-      arrowIcon = Icons.remove_rounded;
-    } else if (isGood == true) {
-      arrowColor = AppColors.success;
-      arrowIcon = Icons.arrow_drop_down_rounded;
-    } else {
-      arrowColor = AppColors.danger;
-      arrowIcon = Icons.arrow_drop_up_rounded;
-    }
-
-    final labelColor = baseColor ??
-        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.72);
-    final valueColor = baseColor ??
-        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.88);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: labelColor, fontSize: 13),
-                ),
-                if (hasDiff && diffLabel != null) ...[
-                  const SizedBox(height: 1),
-                  Text(
-                    diffLabel!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: arrowColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          // Trend arrow (like a stock ticker)
-          Icon(arrowIcon, size: 20, color: arrowColor),
-          const SizedBox(width: 2),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: valueColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
                 ),
           ),
         ],

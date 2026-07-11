@@ -190,4 +190,27 @@ class MarketplaceRepository {
       return false;
     }
   }
+
+  /// Fetch a lender's recent interest rate history for sparkline display.
+  /// Returns rate values ordered chronologically (oldest first).
+  /// Falls back to empty list on any error — callers use 2-point fallback.
+  Future<List<double>> getLenderInterestHistory(
+    String lenderId, {
+    int limit = 6,
+  }) async {
+    try {
+      final data = await _client
+          .from('v_lender_rate_history')
+          .select('interest_rate_pct, offered_at')
+          .eq('lender_id', lenderId)
+          .order('offered_at', ascending: true)
+          .limit(limit);
+
+      return (data as List)
+          .map((row) => (row['interest_rate_pct'] as num).toDouble())
+          .toList();
+    } catch (e) {
+      return const [];
+    }
+  }
 }
