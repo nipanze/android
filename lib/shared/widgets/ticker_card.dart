@@ -9,7 +9,7 @@ class TickerCard extends StatelessWidget {
     required this.value,
     required this.deltaLabel,
     required this.isPositive,
-    required this.sparklineValues, // e.g. [24,22,23,17,19,10,12,4]
+    required this.sparklineValues,
   });
 
   final String label;
@@ -21,50 +21,40 @@ class TickerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isPositive ? AppColors.success : AppColors.danger;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6))),
-              const SizedBox(height: 2),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 2),
-              Text(deltaLabel,
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                      color: color)),
-            ],
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 64,
-            height: 28,
-            child: CustomPaint(
-              painter: _SparklinePainter(
-                  values: sparklineValues, color: color),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.55))),
+        const SizedBox(height: 3),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w600)),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 46,
+              height: 18,
+              child: CustomPaint(
+                painter:
+                    _SparklinePainter(values: sparklineValues, color: color),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(deltaLabel,
+            style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w500, color: color)),
+      ],
     );
   }
 }
@@ -95,7 +85,7 @@ class _SparklinePainter extends CustomPainter {
       Paint()
         ..color = color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
+        ..strokeWidth = 1.6
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
     );
@@ -103,7 +93,7 @@ class _SparklinePainter extends CustomPainter {
     final lastX = (values.length - 1) * stepX;
     final lastY = size.height -
         (((values.last - minV) / range) * size.height);
-    canvas.drawCircle(Offset(lastX, lastY), 2.5, Paint()..color = color);
+    canvas.drawCircle(Offset(lastX, lastY), 2, Paint()..color = color);
   }
 
   @override

@@ -868,47 +868,50 @@ class _OfferCardState extends State<_OfferCard>
                   // Enhanced term rows with sparkline tickers
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                        horizontal: 12, vertical: 6),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: TickerCard(
-                            label: 'Interest',
-                            value:
-                                '${offer.interestRatePct.toStringAsFixed(1)}%',
-                            deltaLabel: widget.suggestedInterestRatePct != null
-                                ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
-                                : '—',
-                            isPositive:
-                                widget.suggestedInterestRatePct == null ||
-                                    offer.interestRatePct <=
-                                        widget.suggestedInterestRatePct!,
-                            sparklineValues:
-                                (_rateHistory != null && _rateHistory!.length >= 3)
-                                    ? _rateHistory!
-                                    : [
-                                        widget.suggestedInterestRatePct ??
-                                            offer.interestRatePct,
-                                        offer.interestRatePct,
-                                      ],
-                          ),
+                        TickerCard(
+                          label: 'Interest',
+                          value:
+                              '${offer.interestRatePct.toStringAsFixed(1)}%',
+                          deltaLabel: widget.suggestedInterestRatePct != null
+                              ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
+                              : '—',
+                          isPositive:
+                              widget.suggestedInterestRatePct == null ||
+                                  offer.interestRatePct <=
+                                      widget.suggestedInterestRatePct!,
+                          sparklineValues:
+                              (_rateHistory != null && _rateHistory!.length >= 3)
+                                  ? _rateHistory!
+                                  : [
+                                      widget.suggestedInterestRatePct ??
+                                          offer.interestRatePct,
+                                      offer.interestRatePct,
+                                    ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TickerCard(
-                            label: 'Late fee',
-                            value: '${offer.lateFeePct.toStringAsFixed(1)}%',
-                            deltaLabel: widget.suggestedLateFeePct != null
-                                ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
-                                : '—',
-                            isPositive: widget.suggestedLateFeePct == null ||
-                                offer.lateFeePct <=
-                                    widget.suggestedLateFeePct!,
-                            sparklineValues: [
-                              widget.suggestedLateFeePct ?? offer.lateFeePct,
-                              offer.lateFeePct,
-                            ],
-                          ),
+                        const SizedBox(width: 20),
+                        Container(
+                            width: 1,
+                            height: 40,
+                            color: Theme.of(context).dividerColor),
+                        const SizedBox(width: 20),
+                        TickerCard(
+                          label: 'Late fee',
+                          value:
+                              '${offer.lateFeePct.toStringAsFixed(1)}%',
+                          deltaLabel: widget.suggestedLateFeePct != null
+                              ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
+                              : '—',
+                          isPositive: widget.suggestedLateFeePct == null ||
+                              offer.lateFeePct <=
+                                  widget.suggestedLateFeePct!,
+                          sparklineValues: [
+                            widget.suggestedLateFeePct ?? offer.lateFeePct,
+                            offer.lateFeePct,
+                          ],
                         ),
                       ],
                     ),
