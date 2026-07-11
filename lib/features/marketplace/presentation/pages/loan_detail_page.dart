@@ -870,7 +870,7 @@ class _OfferCardState extends State<_OfferCard>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 6),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TickerCard(
                           label: 'Interest',
@@ -892,12 +892,12 @@ class _OfferCardState extends State<_OfferCard>
                                       offer.interestRatePct,
                                     ],
                         ),
-                        const SizedBox(width: 20),
+                        const SizedBox(width: 70),
                         Container(
                             width: 1,
                             height: 40,
                             color: Theme.of(context).dividerColor),
-                        const SizedBox(width: 20),
+                        const SizedBox(width: 70),
                         TickerCard(
                           label: 'Late fee',
                           value:
