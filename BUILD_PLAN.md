@@ -4,6 +4,8 @@
 > Last updated: July 2026 · Schema v4.1 · Seed v2.1
 
 > **⚡ v4.1 Architecture Change:** Nipanze has moved from a **role-based** model (borrower / lender) to a **unified, subscription-based, action-based** model. There is no "I am a borrower" or "I am a lender" — every user sees one marketplace and performs borrower actions (Post Request) or lender actions (Make Offer) depending on what they click. Access to actions is gated purely by `subscription_plan`. See "Unified Marketplace Model" below before reading Stage 4.
+>
+> **⚡ Stage 4 addition:** Listing detail visibility is now **tiered, not binary**. See "Selective Transparency Model" below before reading the Stage 4 flow — it changes what `v_lender_offers` and `get_public_listing_offers` return depending on who's asking.
 
 ---
 
@@ -114,6 +116,75 @@ This keeps subscription logic to one enum column and one gating function, rather
 
 ---
 
+## 🔍 Selective Transparency Model (New — governs listing detail visibility)
+
+Stage 2 shipped a fully public offer book on `LoanDetailPage`: every visitor could see every offer's exact amount and terms. Stage 4 replaces that with **tiered visibility**, keyed off participation rather than role.
+
+### The decision
+
+- ✅ Marketplace feed (`v_loan_listings`) stays exactly as-is — funded %, offer count, time left, all public
+- ✅ Listing detail becomes tiered: aggregate signals for everyone, exact offer terms only for participants
+- ❌ No full lock-down — visitors and non-participating Lender/Pro users still see enough to gauge how competitive a request is
+- ❌ No permanent full exposure — copying another offer-maker's exact price without doing your own risk assessment is no longer possible without first placing a bid
+
+### Mental model shift
+
+| Old model (Stage 2) | New model (Stage 4) |
+|---|---|
+| "Anyone viewing a listing sees every offer's exact terms" | "Anyone viewing a listing sees the shape of the market; only participants see exact terms" |
+| Transparency = fully public | Transparency = **selective**, tied to participation |
+| Offer detail is a UI concern | Offer detail is an RLS/RPC concern — enforced at the data layer |
+
+### Visibility tiers
+
+| Viewer | Sees on `LoanDetailPage` |
+|---|---|
+| **Visitor / any logged-in user, not yet bid** | Funded % progress bar, `number_of_offers`, `offer_coverage_tier` (`low` / `medium` / `high`), full request summary (amount, purpose, district, duration, repayment plan) |
+| **Lender/Pro-plan holder browsing, has not offered on *this* listing** | Same as a visitor — plan alone does not unlock offer detail; placing an offer does |
+| **Offer-maker who has placed an offer on this listing** | Everything above, **plus** exact amount, interest rate, late fee, and repayment schedule for every offer on this listing |
+| **Request owner** | Full detail on every offer received: exact amount, interest rate, late fee, repayment schedule, timestamp |
+
+Contact details are a separate boundary and stay locked for **everyone**, at every tier, until contract generation + unlock — this model only changes *offer-term* visibility, not identity.
+
+### Why tiered, not fully public or fully locked
+
+1. **Fully public exact terms** let offer-makers copy-price off each other (undercut by a token amount without doing their own risk assessment) and let outsiders read a request owner's negotiating position without ever participating
+2. **Fully locked terms** remove the market signal lenders need to decide whether a listing is worth competing on, which suppresses offer volume
+3. **Participation-gated detail** rewards engagement, keeps competition on substance rather than copying, and creates a natural in-product nudge toward the Lender plan ("Place an offer to see full bid detail on this listing")
+
+### Gating logic
+
+```
+listing = get_listing(request_id)
+
+IF viewer == listing.owner
+  return full_offer_detail(all offers on this request)
+
+ELSE IF viewer has an offer on this request
+  return full_offer_detail(all offers on this request)   -- includes viewer's own offer
+
+ELSE
+  return {
+    number_of_offers: count(offers),
+    offer_coverage_tier: compute_tier(offers)   -- low / medium / high, anonymized aggregate
+  }
+```
+
+This logic lives in `get_public_listing_offers(request_id)` and the `v_lender_offers` view (RLS-scoped), **not** in the Flutter client — a non-participant calling the RPC directly gets the same reduced payload as one browsing the UI.
+
+### Data model impact
+
+- `v_loan_listings` gains a derived `offer_coverage_tier` column (public, anonymized, computed from the same request's `loan_offers` rows) alongside the existing `number_of_offers`
+- `v_lender_offers` becomes participant-scoped via `security_invoker` + RLS: a row is only returned to the request owner or to an account with an offer on that `request_id`
+- `get_public_listing_offers(request_id)` RPC is updated to branch on caller identity (owner / participant / neither) using the same logic as above, so Edge Functions and direct RPC callers can't bypass the tiering that the UI enforces
+
+### What stays unchanged
+
+- Marketplace feed fields and public request summary fields (title, amount, duration, purpose, district, repayment plan) — unaffected by this model
+- Contact-reveal flow and its RPC-level enforcement — unaffected; still gated strictly behind contract generation
+
+---
+
 ## Stage 1 — Foundation ✅ Complete
 
 - [x] Project bootstrap, package name `ug.nipanze.app`
@@ -157,6 +228,8 @@ This keeps subscription logic to one enum column and one gating function, rather
 - [x] `KycCubit` — per-doc upload state, error preserves data
 - [x] `KycPage` — camera/gallery picker, 3 doc tiles, submit gating, rejection reason banner
 
+> Note: in Stage 2 the offers panel on `LoanDetailPage` showed every offer's exact terms to any viewer. Stage 4 replaces this with the **Selective Transparency Model** above — full exact-term detail becomes participant-gated, while the aggregate signal (offer count + coverage tier) stays visible to everyone.
+
 ### 2.4 Offer Acceptance
 - [x] `accept_offer` RPC called from the request-owner side on `LoanDetailPage`
 - [x] Rejected offers notified to losing offer-makers
@@ -193,7 +266,7 @@ This keeps subscription logic to one enum column and one gating function, rather
   - **My Offers** — offers you've made, grouped Pending / Accepted / History; withdraw button live
 - [x] Portfolio summary drives subtitle (active offers count, active requests count)
 
-> Note: "My Requests" and "My Offers" are simply two views of the same account's activity — not two roles. A single user can have entries in both tabs simultaneously.
+> Note: "My Requests" and "My Offers" are simply two views of the same account's activity — not two roles. A single user can have entries in both tabs simultaneously. Positions is always a **participant** view, so it's unaffected by the Stage 4 selective-transparency tiering — a user always sees full detail on their own requests and their own offers.
 
 ### 3.3 Notifications
 - [x] `NotificationRepository` — reads `notifications` table, marks as read, Realtime stream
@@ -273,7 +346,7 @@ This keeps subscription logic to one enum column and one gating function, rather
 
 ## Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned (revised for unified model)
 
-Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated.
+Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated. It also introduces the **Selective Transparency Model** (above), replacing Stage 2's fully public offer book with participation-gated detail.
 
 ---
 
@@ -286,6 +359,7 @@ Core principles:
 - Both parties commit to their position independently
 - A contract is generated when their terms match via acceptance
 - Contact is revealed only after the contract is locked
+- Exact offer terms are visible only to the request owner and to offer-makers who have bid on that listing; everyone else sees an aggregate coverage signal
 - Neither party is a fixed "role" in the schema — capability comes entirely from `subscription_plan`
 
 ---
@@ -303,12 +377,19 @@ Purpose (optional)
 [PRO ONLY] Suggested repayment schedule
 ──────────────────────────────────────────
 
+LISTING DETAIL VIEWED (tiered — see Selective Transparency Model)
+──────────────────────────────────────────
+Everyone: funded %, offer count, offer_coverage_tier
+Owner / participants only: exact offer amounts + terms
+──────────────────────────────────────────
+
 OFFER SUBMITTED (locked on submit — requires Lender or Pro plan)
 ──────────────────────────────────────────
 Amount offered
 Offered interest rate
 Offered late payment fee (%)
 Offered repayment schedule
+→ submitting unlocks full offer detail on this listing for the offer-maker
 ──────────────────────────────────────────
 
 CONTRACT GENERATED (after request owner accepts an offer)
@@ -351,6 +432,20 @@ When a user submits an offer, they set their own terms. They may align with the 
 
 > Offer-making requires at least the **Lender plan**. Maximising the pool of people who can make offers is essential for platform value, so Lender-tier pricing should stay accessible.
 
+> Placing an offer on a listing also unlocks full offer-level detail (all offers' exact terms) on that same listing for the offer-maker — see Selective Transparency Model.
+
+---
+
+## 🔍 Selective Transparency — Implementation Checklist
+
+- [ ] `offer_coverage_tier` computed column/function added to `v_loan_listings` (derived from `loan_offers` for that `request_id`; `low` / `medium` / `high`)
+- [ ] `v_lender_offers` scoped via RLS + `security_invoker` so a row returns only to the request owner or to an account with an offer on that `request_id`
+- [ ] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → full detail; everyone else → `number_of_offers` + `offer_coverage_tier` only
+- [ ] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
+- [ ] Placing an offer triggers a client-side refetch of the listing detail so the offer-maker immediately sees the unlocked, full-detail view
+- [ ] Withdrawing an offer re-locks detail on that listing for that user (no offer on the request → back to aggregate-only view)
+- [ ] Unit/integration tests: non-participant querying `v_lender_offers` or the RPC directly (bypassing UI) receives only the aggregate payload
+
 ---
 
 ## 📄 Contract Contents
@@ -390,7 +485,7 @@ After contract generation:
 5. Notifications sent to both parties (`deal_unlocked`)
 6. Full contract becomes visible
 
-Contact details are **never accessible before this step** — enforced at API level via `reveal_contact` RPC.
+Contact details are **never accessible before this step** — enforced at API level via `reveal_contact` RPC. This is a separate boundary from the Selective Transparency Model above: offer-term visibility can be participant-gated well before a deal is struck, but identity stays locked until this step regardless of participation.
 
 ---
 
@@ -399,10 +494,10 @@ Contact details are **never accessible before this step** — enforced at API le
 | Plan | Unlocks |
 |---|---|
 | 🟢 **Free** | Post basic requests (amount + duration + purpose only) · Browse · Accept offers received |
-| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms (amount, interest, late fee, schedule) |
+| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms (amount, interest, late fee, schedule) + unlocks full offer-detail view on any listing you've bid on |
 | 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (interest, late fee, schedule) + priority visibility + improved matching |
 
-> Platform earns from one upgrade path, not two parallel ones: users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage (Pro). A single `subscription_plan` enum drives all of it — no separate "Premium Borrower" product to maintain.
+> Platform earns from one upgrade path, not two parallel ones: users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage (Pro). A single `subscription_plan` enum drives all of it — no separate "Premium Borrower" product to maintain. Selective transparency adds a natural, low-pressure upgrade nudge: a Free user who wants to see full bid detail on a listing sees a prompt to upgrade to Lender and place an offer, rather than a paywall on browsing itself.
 
 ---
 
@@ -410,6 +505,7 @@ Contact details are **never accessible before this step** — enforced at API le
 
 - Terms locked at post/offer time — no post-publish edits
 - `reveal_contact` RPC enforced at API level
+- Offer-term detail scoped to the request owner and offer-makers on that request, enforced via RLS/RPC — not the Flutter client
 - All actions recorded in **append-only audit logs**
 - Contract snapshot stored for traceability
 - Platform never tracks repayments or enforces obligations
@@ -422,6 +518,9 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] Pro-tier subscription gate on interest/late fee/repayment fields in the request form
 - [ ] Request terms locked on publish (`terms_locked_at` set; no further edits)
 - [ ] Offer terms locked on submit
+- [ ] `offer_coverage_tier` visible on every listing to every viewer (public, anonymized)
+- [ ] Exact offer-term detail visible only to the request owner and to offer-makers who have bid on that listing (Selective Transparency Model)
+- [ ] Non-participant calling `v_lender_offers` or `get_public_listing_offers` directly cannot retrieve exact offer terms
 - [ ] Contract auto-generated after request owner accepts an offer
 - [ ] Contract includes all agreed fields + legal disclaimer
 - [ ] Late fee applies only to missed installment (not total balance)
@@ -442,6 +541,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] `system_settings` editable from admin panel
 - [ ] Audit log viewer — filterable by event type, user, date range
 - [ ] User management — account status, subscription plan, KYC status
+- [ ] Admin view bypasses selective-transparency tiering for moderation purposes only (full offer detail on any listing), logged to `audit_logs` like any other privileged read
 
 ### Stage 5 Exit Criteria
 - [ ] Admin can review and approve/reject KYC submissions
@@ -458,7 +558,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] 3-screen onboarding carousel — **no role selection step**; onboarding introduces the unified marketplace and subscription tiers instead
 - [ ] Crash reporting (Firebase Crashlytics or Sentry)
 - [ ] Referral programme (`referrals` table in schema v4.0)
-- [ ] Subscription upgrade prompts — contextual (e.g., prompt to upgrade to Lender the moment a Free user taps "Make Offer")
+- [ ] Subscription upgrade prompts — contextual (e.g., prompt to upgrade to Lender the moment a Free user taps "Make Offer", or taps "See full bid detail" on a listing)
 
 ---
 
@@ -489,6 +589,7 @@ Contact details are **never accessible before this step** — enforced at API le
 | Pro-tier: suggest interest rate / late fee / repayment on post | ⬜ Stage 4 |
 | Request terms locked on publish | ⬜ Stage 4 |
 | Offer terms locked on submit | ⬜ Stage 4 |
+| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ⬜ Stage 4 |
 | Contract auto-generated after offer acceptance | ⬜ Stage 4 |
 | Contact reveal flow (blurred → unblur) | ⬜ Stage 4 |
 | Remove `role` column; subscription-only gating | ⬜ Stage 4 |
@@ -518,6 +619,8 @@ Contact details are **never accessible before this step** — enforced at API le
 | `admin1@nipanze.ug` | Free (`is_admin = true`) | Full admin dashboard access |
 | `test.user@gmail.com` | Free | No prior activity — test onboarding gates |
 
+> For Stage 4 selective-transparency testing: view a contested listing (e.g. James Okello's active request, which has two pending offers) while logged in as a non-participant account like `test.user@gmail.com` to confirm only the aggregate `offer_coverage_tier` is visible, then log in as `lending@equatorfinance.ug` (which has a pending offer on James's request) to confirm full offer detail unlocks.
+
 ---
 
 ## Architecture Constraints
@@ -529,6 +632,7 @@ Contact details are **never accessible before this step** — enforced at API le
 5. **Friendly errors** — `parseSupabaseError()` everywhere; raw trigger codes never reach the user
 6. **Append-only audit log** — `audit_logs` never writable via UPDATE or DELETE
 7. **No stored role** — the only role in the system is `is_admin`; all marketplace capability comes from `subscription_plan` (`free | lender | pro`)
+8. **Selective transparency** — exact offer-level terms (amount, interest rate, late fee, schedule) are visible only to the request owner and to offer-makers with a live offer on that same request; every other viewer, regardless of subscription plan, sees only the aggregate `offer_coverage_tier` and offer count. Enforced via RLS/RPC, never trusted from the client.
 
 ---
 

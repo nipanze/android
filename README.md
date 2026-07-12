@@ -48,7 +48,7 @@ Nipanze is a **peer-to-peer financial marketplace** built on a single, unified a
 
 Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, guarantee repayment, track repayments, or act as a financial institution. It simply helps financial requests and offers meet through structured discovery, matching, and controlled connection.
 
-Posting a request is free for everyone. Making offers requires the **Lender** plan. Suggesting preferred terms on a posted request requires the **Pro** plan. Contact details remain hidden until a contract is generated after an offer is accepted.
+Posting a request is free for everyone. Making offers requires the **Lender** plan. Suggesting preferred terms on a posted request requires the **Pro** plan. Contact details remain hidden until a contract is generated after an offer is accepted. Beyond contact, listing detail itself uses **tiered visibility** — see [Transparency & Controlled Contact](#transparency--controlled-contact) — so exact offer terms are only visible to the request owner and to other offer-makers competing on that same listing.
 
 **Core Principle:** One marketplace. One account. One dashboard. Capability comes from your subscription plan, not from a fixed identity.
 
@@ -161,6 +161,7 @@ No plan is ever labeled "Borrower Plan" or "Lender-only." Each plan name describ
 - **Marketplace main screen** — live feed of requests with amount, purpose, district, and repayment plan
 - **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
 - **Controlled contact sharing** — contact details are revealed only after a contract is generated
+- **Selective transparency** — listing detail shows aggregate signals (funded %, offer count, coverage tier) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
 - **Compliance built-in** — append-only audit trail from day one
 
 ---
@@ -183,7 +184,7 @@ Nipanze does **not** earn interest margins, custody fees, lending spreads, or an
 
 ## Transparency & Controlled Contact
 
-Nipanze is **transparent before matching and controlled by design**. Requests show enough structured information for potential lenders to make informed decisions, while personal contact details remain protected until the request owner accepts an offer.
+Nipanze is **transparent before matching and controlled by design**. Requests show enough structured information for potential lenders to make informed decisions, while personal contact details remain protected until the request owner accepts an offer, and exact offer terms remain protected until a viewer has skin in that specific deal.
 
 Contact details are revealed **only after an offer is accepted** — enforced at the API layer, not just the UI.
 
@@ -202,21 +203,46 @@ Free-plan requests do **not** carry interest rate, late payment fee, or repaymen
 
 Pro-plan requests can additionally suggest a preferred interest rate, late payment fee, and repayment schedule. These are **locked on publish** and give the request extra negotiating leverage when offers come in.
 
+### Selective Transparency Model
+
+Listing detail pages use **tiered visibility**, not a single public/private split. Every visitor sees enough to gauge how competitive a request is; only people with skin in that specific deal see its exact offer terms.
+
+| Viewer | What they see on a listing |
+|---|---|
+| **Visitor / any logged-in user browsing** | Funded % (progress bar), number of offers, an aggregate coverage tier (e.g. "high interest" for many/large offers vs "low interest" for few/small ones), and the full request summary (amount needed, purpose, district, duration, income source category, repayment plan) |
+| **Lender/Pro-plan holder who has not offered on this listing** | Same as a visitor — full offer-level detail stays locked until they place an offer on this specific request |
+| **Offer-maker who has placed an offer on this listing** | Everything a visitor sees, **plus** the exact amount, interest rate, late fee, and repayment schedule of every offer on this listing — their competitive position against other offer-makers |
+| **Request owner** | Full detail on every offer submitted to their request: exact amount, interest rate, late fee, repayment schedule, and offer timestamp |
+
+Contact details stay locked for everyone, at every tier, until a contract is generated and unlock is confirmed — that boundary is unchanged by this model; selective transparency only governs *offer terms*, not identity.
+
+**Why tiered instead of fully public or fully locked:**
+
+- **Fully public exact terms** invite copy-bidding — offer-makers underpricing each other by a token amount without doing their own risk assessment — and lets outside parties reverse-engineer a request owner's negotiating position without ever participating
+- **Fully locked terms** remove the transparency lenders need to size up how competitive a listing already is, which discourages offers entirely
+- **Tying full offer detail to participation** (having bid, or owning the request) rewards engagement, keeps competition healthy, and gives the platform a natural nudge toward the Lender plan — "Place an offer to see full bid detail on this listing"
+
+This is enforced at the RPC/RLS layer (see [`get_public_listing_offers`](#key-functions-and-triggers) and the `v_lender_offers` view below), not just hidden in the UI.
+
 ### Field Masking Rules
 
 #### Public Loan Listing (`v_loan_listings` view)
 
-**Exposed:** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `listed_at`, `expires_at`
+**Exposed:** `request_id`, `title`, `purpose`, `district`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `offer_coverage_tier`, `listed_at`, `expires_at`
 
 **Masked before acceptance:** request-owner id, income source, employer/salary details, email, phone, full name, national ID, and private verification documents
 
-#### Offers (`v_lender_offers` view)
+`offer_coverage_tier` is a derived, anonymized signal (e.g. `low` / `medium` / `high`) computed server-side from the number and size of offers on a listing — it lets any visitor gauge how competitive a request is without exposing any individual offer's exact terms.
 
-**Exposed:** offer amount, interest rate, late payment fee, repayment schedule, timestamp
+#### Offers (`v_lender_offers` view) — participant-gated detail
 
-Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different offer-makers.
+**Exposed only to the request owner and to offer-makers who have themselves placed an offer on that same request:** offer amount, interest rate, late payment fee, repayment schedule, timestamp
 
-**Masked before acceptance:** offer-maker's name, email, phone, and private verification documents
+**Exposed to everyone, including non-participants:** total number of offers on the listing, and the aggregate `offer_coverage_tier` described above
+
+Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different offer-makers — but a non-participant viewing that listing only sees "3 offers, high coverage," not the individual figures.
+
+**Masked before acceptance, for everyone:** offer-maker's name, email, phone, and private verification documents
 
 #### Post-Acceptance Contact Sharing
 
@@ -232,9 +258,10 @@ Nipanze helps participants discover each other and make informed matching decisi
 
 ```
 1. POST       → Anyone posts a structured loan request for free
-2. BROWSE     → Anyone browses requests for free
+2. BROWSE     → Anyone browses requests for free; sees funded %, offer count, and coverage tier
 3. OFFER      → Lender/Pro plan holders make offers with their own amount, interest rate, late fee, and repayment schedule
-4. REVIEW     → Request owner compares available offers
+                 → Placing an offer unlocks full offer-level detail on that listing for that offer-maker
+4. REVIEW     → Request owner compares available offers with full exact-term detail
 5. ACCEPT     → Request owner selects one offer; contract is auto-generated
 6. UNLOCK     → Contact details are revealed only after contract unlock
 7. CONNECT    → Parties proceed independently outside the platform
@@ -347,7 +374,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | `subscriptions` | `subscription_plan` enum (`free` \| `lender` \| `pro`) — gates offer-making and term-suggestion. Posting and browsing remain free. |
 | `kyc_verifications` | Optional verification and admin review. |
 | `loan_requests` | Structured funding requests with amount, duration, purpose, income source, and repayment plan. |
-| `loan_offers` | Offers made on requests. Contact details stay hidden until acceptance. |
+| `loan_offers` | Offers made on requests. Exact terms visible only to the request owner and to other offer-makers on the same request; contact details stay hidden until acceptance. |
 | `watchlist` | User-saved listings. |
 | `contact_reveals` | Post-acceptance contact sharing. Logged in `audit_logs`. |
 | `notifications` | In-app notification feed. |
@@ -363,15 +390,15 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | --- | --- | --- |
 | `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles` |
 | `accept_offer(request_id, offer_id, owner_id)` | RPC | Atomic offer acceptance + contact eligibility |
-| `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active listings |
+| `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active listings — returns aggregate coverage tier and offer count only; exact per-offer terms are omitted unless the caller is the request owner or has an offer on that request |
 
 ### Key Views
 
 | View | Purpose |
 | --- | --- |
-| `v_loan_listings` | Public marketplace listings with request-owner contact details excluded |
+| `v_loan_listings` | Public marketplace listings with request-owner contact details excluded, offer detail rolled up into `number_of_offers` + `offer_coverage_tier` |
 | `v_user_marketplace_activity` | Dashboard — requests posted and offers made, in one query |
-| `v_lender_offers` | Offer activity for the current account |
+| `v_lender_offers` | Offer activity for the current account, and — when the account is the request owner or an offer-maker on that request — the exact terms of every offer on that listing |
 | `v_marketplace_activity` | Marketplace request and offer KPIs |
 
 ---
@@ -602,6 +629,7 @@ The `role` column has been removed — accounts below are described purely by ac
 - **JWT auth** — Supabase issues short-lived JWTs; sessions auto-refresh
 - **Service role key never in client** — only used inside Edge Functions
 - **Controlled contact sharing** — contact details stay hidden until acceptance
+- **Selective offer-term transparency** — exact offer amounts, rates, and fees are gated to the request owner and to offer-makers who have bid on that listing; everyone else sees an aggregate coverage tier only
 - **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
 - **Private documents** — verification documents are never exposed in marketplace listings
 - **Refresh token rotation** — reuse attack detection via `replaced_by` chain
@@ -639,6 +667,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 
 ### Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned (revised for unified model)
 - Locked-term bidding: Pro-plan users suggest interest rate, late fee, and repayment schedule at posting; Lender/Pro-plan users set their own terms at offer time; both locked on submission
+- Selective transparency: listing detail shows funded %, offer count, and coverage tier to everyone; exact offer terms unlock only for the request owner and for offer-makers who have bid on that listing
 - Contract auto-generated after offer acceptance with all agreed terms + legal disclaimer
 - Contact reveal only after contract is generated and unlock is confirmed
 - `role` column fully removed from schema; all gating reads `subscription_plan` only

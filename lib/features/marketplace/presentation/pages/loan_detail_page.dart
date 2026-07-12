@@ -33,6 +33,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   bool _showOfferSheet = false;
   bool _newOfferFlash = false;
   bool _isOwnerValue = false;
+  bool _isParticipant = false;
 
   final _repo = getIt<MarketplaceRepository>();
   StreamSubscription<List<LoanOffer>>? _offersSub;
@@ -79,10 +80,14 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       );
 
       if (!mounted) return;
+      final userId =
+          authState is AuthAuthenticated ? authState.user.id : null;
       setState(() {
         _listing = listing;
         _offers = offers;
         _isOwnerValue = isOwner;
+        _isParticipant =
+            userId != null && offers.any((o) => o.lenderId == userId);
         _loading = false;
       });
       _subscribeRealtime();
@@ -364,6 +369,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         offers: _offers,
                         requestedAmount: listing.requestedAmount,
                         isOwner: isOwner,
+                        isParticipant: _isParticipant,
                         onAccept: _acceptOffer,
                         durationMonths: listing.durationMonths,
                         isProBorrower: isProBorrower,
@@ -496,12 +502,19 @@ class _FundedProgressBar extends StatelessWidget {
                         .withValues(alpha: 0.5),
                   ),
             ),
-            const Spacer(),
-            Text(
-              '$pctInt%  · $bidsLabel',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '$pctInt%  · $bidsLabel',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
         ),
@@ -589,6 +602,7 @@ class _OfferList extends StatelessWidget {
     required this.offers,
     required this.requestedAmount,
     required this.isOwner,
+    required this.isParticipant,
     required this.onAccept,
     required this.durationMonths,
     required this.onUpgrade,
@@ -602,6 +616,7 @@ class _OfferList extends StatelessWidget {
   final List<LoanOffer> offers;
   final int requestedAmount;
   final bool isOwner;
+  final bool isParticipant;
   final Function(LoanOffer) onAccept;
   final int durationMonths;
   final VoidCallback onUpgrade;
@@ -623,6 +638,7 @@ class _OfferList extends StatelessWidget {
         index: index,
         requestedAmount: requestedAmount,
         isOwner: isOwner,
+        isParticipant: isParticipant,
         onAccept: onAccept,
         durationMonths: durationMonths,
         suggestedInterestRatePct: suggestedInterestRatePct,
@@ -645,6 +661,7 @@ class _OfferCard extends StatefulWidget {
     required this.index,
     required this.requestedAmount,
     required this.isOwner,
+    required this.isParticipant,
     required this.onAccept,
     required this.durationMonths,
     required this.onUpgrade,
@@ -660,6 +677,7 @@ class _OfferCard extends StatefulWidget {
   final int index;
   final int requestedAmount;
   final bool isOwner;
+  final bool isParticipant;
   final Function(LoanOffer) onAccept;
   final int durationMonths;
   final VoidCallback onUpgrade;
@@ -731,6 +749,7 @@ class _OfferCardState extends State<_OfferCard>
     final isFull = offer.offerAmount >= widget.requestedAmount;
     final offerType = isFull ? 'Full bid' : 'Partial · $coverage%';
     final dotColor = widget.dotColor;
+    final isActiveParticipant = widget.isOwner || widget.isParticipant;
 
     // Theme fix: previously Color(0xFF07340A)/Color(0xFF082F0B), two
     // hand-picked dark greens that only worked against a near-black
@@ -758,7 +777,7 @@ class _OfferCardState extends State<_OfferCard>
           InkWell(
             onTap: _toggle,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -800,48 +819,71 @@ class _OfferCardState extends State<_OfferCard>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Spacer(),
-                  // Amount + chevron.
-                  // Fix: these two used to sit directly in the row as a bare
-                  // Text and a bare Icon. Text's layout box follows the
-                  // font's line-height metrics while Icon's follows its
-                  // literal `size`, so even with the Row's default
-                  // crossAxisAlignment.center the two visually sat a couple
-                  // pixels off from each other. Giving both a matching
-                  // fixed-height SizedBox + Center pins them to the same
-                  // box, so centering is exact regardless of font metrics.
-                  SizedBox(
-                    height: 20,
-                    child: Center(
-                      child: Text(
-                        _fmt(offer.offerAmount),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          height: 1.0,
-                          color: isFull ? AppColors.success : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  SizedBox(
-                    height: 20,
-                    width: 18,
-                    child: Center(
-                      child: AnimatedRotation(
-                        turns: _expanded ? 0.5 : 0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 18,
-                          color: isFull
-                              ? AppColors.success.withValues(alpha: 0.7)
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.4),
-                        ),
+                  // Amount + chevron, pinned to the true right edge.
+                  // Fix: this used to rely on `const Spacer()` to push the
+                  // trailing group right, which only works if this Row is
+                  // the sole width-determining child of its ancestors. Any
+                  // ancestor that lets the Row shrink-wrap (e.g. an
+                  // IntrinsicWidth, a Wrap, or a scroll view that measures
+                  // children at their natural size) collapses the Spacer to
+                  // zero and the trailing group ends up sitting right after
+                  // the label instead of at the edge. Wrapping the trailing
+                  // group in Expanded + Align(centerRight) guarantees it's
+                  // flush against the row's actual right edge regardless of
+                  // how the ancestor chain measures this Row.
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Fix: these two used to sit directly in the row as
+                          // a bare Text and a bare Icon. Text's layout box
+                          // follows the font's line-height metrics while
+                          // Icon's follows its literal `size`, so even with
+                          // the Row's default crossAxisAlignment.center the
+                          // two visually sat a couple pixels off from each
+                          // other. Giving both a matching fixed-height
+                          // SizedBox + Center pins them to the same box, so
+                          // centering is exact regardless of font metrics.
+                          SizedBox(
+                            height: 20,
+                            child: Center(
+                              child: Text(
+                                isActiveParticipant
+                                    ? _fmt(offer.offerAmount)
+                                    : '≈$coverage%',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.0,
+                                  color: isFull ? AppColors.success : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            height: 20,
+                            width: 18,
+                            child: Center(
+                              child: AnimatedRotation(
+                                turns: _expanded ? 0.5 : 0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 18,
+                                  color: isFull
+                                      ? AppColors.success.withValues(alpha: 0.7)
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -865,135 +907,229 @@ class _OfferCardState extends State<_OfferCard>
                     endIndent: 12,
                     color: borderColor,
                   ),
-                  // Enhanced term rows with sparkline tickers
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TickerCard(
-                          label: 'Interest',
-                          value:
-                              '${offer.interestRatePct.toStringAsFixed(1)}%',
-                          deltaLabel: widget.suggestedInterestRatePct != null
-                              ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
-                              : '—',
-                          isPositive:
-                              widget.suggestedInterestRatePct == null ||
-                                  offer.interestRatePct <=
-                                      widget.suggestedInterestRatePct!,
-                          sparklineValues:
-                              (_rateHistory != null && _rateHistory!.length >= 3)
-                                  ? _rateHistory!
-                                  : [
-                                      widget.suggestedInterestRatePct ??
-                                          offer.interestRatePct,
-                                      offer.interestRatePct,
-                                    ],
+                  if (isActiveParticipant) ...[
+                    // Full details for owner / bidder
+                    // Enhanced term rows with sparkline tickers
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TickerCard(
+                            label: 'Interest',
+                            value:
+                                '${offer.interestRatePct.toStringAsFixed(1)}%',
+                            deltaLabel: widget.suggestedInterestRatePct != null
+                                ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
+                                : '—',
+                            isPositive:
+                                widget.suggestedInterestRatePct == null ||
+                                    offer.interestRatePct <=
+                                        widget.suggestedInterestRatePct!,
+                            sparklineValues: (_rateHistory != null &&
+                                    _rateHistory!.length >= 3)
+                                ? _rateHistory!
+                                : [
+                                    widget.suggestedInterestRatePct ??
+                                        offer.interestRatePct,
+                                    offer.interestRatePct,
+                                  ],
+                          ),
+                          const SizedBox(width: 70),
+                          Container(
+                              width: 1,
+                              height: 40,
+                              color: Theme.of(context).dividerColor),
+                          const SizedBox(width: 70),
+                          TickerCard(
+                            label: 'Late fee',
+                            value:
+                                '${offer.lateFeePct.toStringAsFixed(1)}%',
+                            deltaLabel: widget.suggestedLateFeePct != null
+                                ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
+                                : '—',
+                            isPositive: widget.suggestedLateFeePct == null ||
+                                offer.lateFeePct <=
+                                    widget.suggestedLateFeePct!,
+                            sparklineValues: [
+                              widget.suggestedLateFeePct ?? offer.lateFeePct,
+                              offer.lateFeePct,
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ── Total payable summary row ──
+                    _TotalPayableRow(
+                      offer: offer,
+                      durationMonths: widget.durationMonths,
+                      isFull: isFull,
+                    ),
+
+                    // Pro comparison analytics (owner only)
+                    if (widget.isOwner) ...[
+                      if (widget.isProBorrower) ...[
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          child: _ProAnalysisPanel(
+                            interestDiff:
+                                widget.suggestedInterestRatePct != null
+                                    ? offer.interestRatePct -
+                                        widget.suggestedInterestRatePct!
+                                    : null,
+                            lateFeeDiff:
+                                widget.suggestedLateFeePct != null
+                                    ? offer.lateFeePct -
+                                        widget.suggestedLateFeePct!
+                                    : null,
+                            installmentDiff:
+                                widget.suggestedInstallmentAmount != null
+                                    ? offer.installmentAmount -
+                                        widget.suggestedInstallmentAmount!
+                                    : null,
+                            suggestedInterest:
+                                widget.suggestedInterestRatePct,
+                            suggestedLateFee: widget.suggestedLateFeePct,
+                            suggestedInstallment:
+                                widget.suggestedInstallmentAmount,
+                            offeredInterest: offer.interestRatePct,
+                            offeredLateFee: offer.lateFeePct,
+                            offeredInstallment: offer.installmentAmount,
+                          ),
                         ),
-                        const SizedBox(width: 70),
-                        Container(
-                            width: 1,
-                            height: 40,
-                            color: Theme.of(context).dividerColor),
-                        const SizedBox(width: 70),
-                        TickerCard(
-                          label: 'Late fee',
-                          value:
-                              '${offer.lateFeePct.toStringAsFixed(1)}%',
-                          deltaLabel: widget.suggestedLateFeePct != null
-                              ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
-                              : '—',
-                          isPositive: widget.suggestedLateFeePct == null ||
-                              offer.lateFeePct <=
-                                  widget.suggestedLateFeePct!,
-                          sparklineValues: [
-                            widget.suggestedLateFeePct ?? offer.lateFeePct,
-                            offer.lateFeePct,
-                          ],
+                        const SizedBox(height: 4),
+                      ] else ...[
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16),
+                          child: _ProUpgradePanel(
+                              onUpgrade: widget.onUpgrade),
                         ),
+                        const SizedBox(height: 4),
                       ],
-                    ),
-                  ),
-                  // ── Total payable summary row ──────────────────────────────
-                  _TotalPayableRow(
-                    offer: offer,
-                    durationMonths: widget.durationMonths,
-                    isFull: isFull,
-                  ),
-
-                  // Pro comparison analytics (owner only)
-                  if (widget.isOwner) ...[
-                    if (widget.isProBorrower) ...[
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _ProAnalysisPanel(
-                          interestDiff: widget.suggestedInterestRatePct != null
-                              ? offer.interestRatePct -
-                                  widget.suggestedInterestRatePct!
-                              : null,
-                          lateFeeDiff: widget.suggestedLateFeePct != null
-                              ? offer.lateFeePct - widget.suggestedLateFeePct!
-                              : null,
-                          installmentDiff:
-                              widget.suggestedInstallmentAmount != null
-                                  ? offer.installmentAmount -
-                                      widget.suggestedInstallmentAmount!
-                                  : null,
-                          suggestedInterest: widget.suggestedInterestRatePct,
-                          suggestedLateFee: widget.suggestedLateFeePct,
-                          suggestedInstallment:
-                              widget.suggestedInstallmentAmount,
-                          offeredInterest: offer.interestRatePct,
-                          offeredLateFee: offer.lateFeePct,
-                          offeredInstallment: offer.installmentAmount,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ] else ...[
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _ProUpgradePanel(onUpgrade: widget.onUpgrade),
-                      ),
-                      const SizedBox(height: 4),
                     ],
-                  ],
 
-                  if (offer.proposedExpectations != null &&
-                      offer.proposedExpectations!.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                      child: Text(
-                        'Lender notes',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.accent),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-                      child: Text(offer.proposedExpectations!,
-                          style: Theme.of(context).textTheme.bodySmall),
-                    ),
-                  ],
-
-                  // Accept button (owner only)
-                  if (widget.isOwner) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () => widget.onAccept(offer),
-                          child: const Text('Accept bid'),
+                    if (offer.proposedExpectations != null &&
+                        offer.proposedExpectations!.isNotEmpty) ...[
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                        child: Text(
+                          'Lender notes',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.accent),
                         ),
                       ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 2, 16, 0),
+                        child: Text(offer.proposedExpectations!,
+                            style:
+                                Theme.of(context).textTheme.bodySmall),
+                      ),
+                    ],
+
+                    // Accept button (owner only)
+                    if (widget.isOwner) ...[
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () => widget.onAccept(offer),
+                            child: const Text('Accept bid'),
+                          ),
+                        ),
+                      ),
+                    ] else
+                      const SizedBox(height: 12),
+                  ] else ...[
+                    // ── Non-participant: summary + CTA ──
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                isFull
+                                    ? Icons.check_circle_outline
+                                    : Icons.pie_chart_outline,
+                                size: 18,
+                                color: isFull
+                                    ? AppColors.success
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isFull
+                                    ? 'Full coverage offer'
+                                    : 'Partial coverage · $coverage%',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isFull
+                                      ? AppColors.success
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 16,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.45),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Place a bid to unlock full details',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.55),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
                     ),
-                  ] else
-                    const SizedBox(height: 12),
+                  ],
                 ],
               ),
             ),
