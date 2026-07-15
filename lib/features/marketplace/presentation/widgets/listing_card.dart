@@ -11,10 +11,14 @@ class ListingCard extends StatelessWidget {
     super.key,
     required this.listing,
     required this.onTap,
+    required this.isSaved,
+    required this.onWatchlistToggle,
   });
 
   final LoanListing listing;
   final VoidCallback onTap;
+  final bool isSaved;
+  final VoidCallback onWatchlistToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +81,18 @@ class ListingCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                _OfferChip(offerCount: listing.numberOfOffers),
+                IconButton(
+                  tooltip:
+                      isSaved ? 'Remove from watchlist' : 'Save to watchlist',
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    isSaved ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: isSaved
+                        ? AppColors.accent
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: onWatchlistToggle,
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -158,45 +172,6 @@ class ListingCard extends StatelessWidget {
       buffer.write(s[i]);
     }
     return buffer.toString();
-  }
-}
-
-class _OfferChip extends StatelessWidget {
-  const _OfferChip({required this.offerCount});
-
-  final int offerCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasOffers = offerCount > 0;
-    final scheme = Theme.of(context).colorScheme;
-    // Muted, low-contrast pill for both light and dark themes.
-    final bgColor = hasOffers
-        ? scheme.surfaceVariant.withValues(alpha: 0.10)
-        : scheme.surface;
-    final borderColor = hasOffers
-        ? scheme.onSurfaceVariant.withValues(alpha: 0.10)
-        : scheme.onSurface.withValues(alpha: 0.08);
-    final textColor = scheme.onSurfaceVariant;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-      ),
-      child: Text(
-        hasOffers
-            ? '$offerCount offer${offerCount == 1 ? '' : 's'}'
-            : '0 offers',
-        style: TextStyle(
-          fontSize: 9.5,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
-      ),
-    );
   }
 }
 

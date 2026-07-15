@@ -58,6 +58,20 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     }
   }
 
+  Future<void> add(LoanListing listing) async {
+    try {
+      await _repository.add(listing.requestId);
+      final current = state;
+      if (current is WatchlistLoaded &&
+          !current.listings
+              .any((item) => item.requestId == listing.requestId)) {
+        emit(WatchlistLoaded(listings: [...current.listings, listing]));
+      }
+    } catch (e) {
+      emit(WatchlistError(e.toString()));
+    }
+  }
+
   bool isWatched(String requestId) {
     final current = state;
     if (current is WatchlistLoaded) {

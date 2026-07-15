@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
+import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -19,8 +20,11 @@ class MarketplacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<MarketplaceCubit>()..load(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<MarketplaceCubit>()..load()),
+        BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
+      ],
       child: const _MarketplaceView(),
     );
   }
@@ -167,11 +171,28 @@ class _MarketplaceView extends StatelessWidget {
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
                           itemBuilder: (context, index) {
-                            return ListingCard(
-                              listing: state.listings[index],
-                              onTap: () => context.push(
-                                '/marketplace/${state.listings[index].requestId}',
-                              ),
+                            final listing = state.listings[index];
+                            return BlocBuilder<WatchlistCubit, WatchlistState>(
+                              builder: (context, _) {
+                                final watchlist =
+                                    context.read<WatchlistCubit>();
+                                final isSaved =
+                                    watchlist.isWatched(listing.requestId);
+                                return ListingCard(
+                                  listing: listing,
+                                  onTap: () => context.push(
+                                    '/marketplace/${listing.requestId}',
+                                  ),
+                                  isSaved: isSaved,
+                                  onWatchlistToggle: () {
+                                    if (isSaved) {
+                                      watchlist.remove(listing.requestId);
+                                    } else {
+                                      watchlist.add(listing);
+                                    }
+                                  },
+                                );
+                              },
                             );
                           },
                         ),

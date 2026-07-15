@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../cubit/watchlist_cubit.dart';
 import '../widgets/watchlist_card.dart';
 
@@ -30,6 +32,10 @@ class _WatchlistView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final isSubscribed = user != null && user.subscriptionPlan != SubscriptionPlan.free;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -80,9 +86,11 @@ class _WatchlistView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.accent.withOpacity(0.2)),
               ),
-              child: const Text(
-                'Free for all users. Get notified when bids change, rates improve, or a listing is closing. Subscribe to bid.',
-                style: TextStyle(fontSize: 11),
+              child: Text(
+                isSubscribed
+                    ? 'Free for all users. Get notified when bids change, rates improve, or a listing is closing.'
+                    : 'Free for all users. Get notified when bids change, rates improve, or a listing is closing. Subscribe to bid.',
+                style: const TextStyle(fontSize: 11),
               ),
             ),
             Expanded(
@@ -142,7 +150,10 @@ class _WatchlistView extends StatelessWidget {
                         subtitle:
                             'Browse the marketplace and tap "Save to watchlist" on any listing.',
                         action: ElevatedButton(
-                          onPressed: () => context.go('/marketplace'),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            context.go('/marketplace');
+                          },
                           child: const Text('Browse marketplace'),
                         ),
                       );
@@ -158,23 +169,29 @@ class _WatchlistView extends StatelessWidget {
                           child: WatchlistCard(
                             listing: listing,
                             onTap: () {
+                              ScaffoldMessenger.of(context).clearSnackBars();
                               context.push(
-                                '/listing/${listing.requestId}',
+                                '/marketplace/${listing.requestId}',
                               );
                             },
                             onRemove: () {
                               context
                                   .read<WatchlistCubit>()
                                   .remove(listing.requestId);
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              
+                              final scaffoldMessenger = ScaffoldMessenger.of(context);
+                              scaffoldMessenger.clearSnackBars();
+                              scaffoldMessenger.showSnackBar(
                                 SnackBar(
                                   content: const Text('Removed from watchlist'),
                                   duration: const Duration(seconds: 2),
                                   action: SnackBarAction(
                                     label: 'Undo',
+                                    textColor: AppColors.accent,
                                     onPressed: () {
-                                      // Re-add would require calling add() on repository
-                                      // For now, user can re-add from marketplace
+                                      context
+                                          .read<WatchlistCubit>()
+                                          .add(listing);
                                     },
                                   ),
                                 ),
@@ -192,7 +209,10 @@ class _WatchlistView extends StatelessWidget {
                     subtitle:
                         'Browse the marketplace and tap "Save to watchlist" on any listing.',
                     action: ElevatedButton(
-                      onPressed: () => context.go('/marketplace'),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        context.go('/marketplace');
+                      },
                       child: const Text('Browse marketplace'),
                     ),
                   );
