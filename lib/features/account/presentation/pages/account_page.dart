@@ -8,6 +8,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/models/user_profile.dart';
 import '../cubit/profile_cubit.dart';
@@ -108,6 +109,49 @@ class _AccountView extends StatelessWidget {
                       ),
                     ]),
                     const SizedBox(height: 20),
+                    const SectionHeader('Trust & reputation'),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Public trust signals',
+                              style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Based only on activity completed through Nipanze.',
+                              style: TextStyle(fontSize: 11),
+                            ),
+                            const SizedBox(height: 12),
+                            TrustBadgeRow(
+                              ratingAvg: profile.trustRatingAvg,
+                              reviewCount: profile.trustReviewCount,
+                              completedDealsCount:
+                                  profile.trustCompletedDealsCount,
+                              isRepeatParticipant:
+                                  profile.trustIsRepeatParticipant,
+                              phoneVerified: profile.trustPhoneVerified,
+                              responseTimeBucket:
+                                  profile.trustResponseTimeBucket,
+                              isVerified: profile.trustIsVerified,
+                              showProVerification: profile.hasActiveProPlan,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (profile.hasActiveProPlan) ...[
+                      const SizedBox(height: 10),
+                      AdvancedTrustPanel(
+                        successRate: profile.trustSuccessRate,
+                        reliabilityScore: profile.trustReliabilityScore,
+                      ),
+                    ],
+                    const SizedBox(height: 4),
                   ],
 
                   // Shortcuts

@@ -23,6 +23,8 @@ class ViewNames {
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
   static const String marketplaceActivity = 'v_marketplace_activity';
+  static const String trustProfilePublic = 'v_trust_profile_public';
+  static const String trustProfilePro = 'v_trust_profile_pro';
 }
 
 class RpcNames {

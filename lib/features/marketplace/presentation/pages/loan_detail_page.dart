@@ -12,6 +12,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/ticker_card.dart';
+import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/marketplace_repository.dart';
@@ -139,8 +140,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         offerId: offer.id,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offer accepted — contract generated.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Offer accepted — contract generated.')));
       // Navigate to agreement review page
       context.go('/marketplace/agreement/$agreementId');
     } catch (e) {
@@ -891,6 +892,20 @@ class _OfferCardState extends State<_OfferCard>
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(30, 0, 12, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TrustBadgeRow(
+                ratingAvg: offer.trustRatingAvg,
+                reviewCount: offer.trustReviewCount,
+                completedDealsCount: offer.trustCompletedDealsCount,
+                isRepeatParticipant: offer.trustIsRepeatParticipant,
+                phoneVerified: offer.trustPhoneVerified,
+                responseTimeBucket: offer.trustResponseTimeBucket,
               ),
             ),
           ),

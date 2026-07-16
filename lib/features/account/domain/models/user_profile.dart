@@ -19,6 +19,17 @@ class UserProfile extends Equatable {
     // kyc
     this.kycStatus,
     this.kycExpiresAt,
+    // public trust signals
+    this.trustRatingAvg,
+    this.trustReviewCount = 0,
+    this.trustCompletedDealsCount = 0,
+    this.trustIsRepeatParticipant = false,
+    this.trustPhoneVerified = false,
+    this.trustResponseTimeBucket,
+    // Pro-only trust insights
+    this.trustIsVerified = false,
+    this.trustSuccessRate,
+    this.trustReliabilityScore,
     // marketplace activity
     this.activeListings = 0,
     this.activeOffers = 0,
@@ -42,6 +53,16 @@ class UserProfile extends Equatable {
   final String? kycStatus;
   final DateTime? kycExpiresAt;
 
+  final double? trustRatingAvg;
+  final int trustReviewCount;
+  final int trustCompletedDealsCount;
+  final bool trustIsRepeatParticipant;
+  final bool trustPhoneVerified;
+  final String? trustResponseTimeBucket;
+  final bool trustIsVerified;
+  final double? trustSuccessRate;
+  final int? trustReliabilityScore;
+
   final int activeListings;
   final int activeOffers;
   final int revealedContacts;
@@ -59,6 +80,8 @@ class UserProfile extends Equatable {
   }
 
   bool get isKycApproved => kycStatus == 'approved';
+  bool get hasActiveProPlan =>
+      subscriptionPlan == 'pro' && subscriptionStatus == 'active';
 
   // Borrowing is free for everyone in v4.0 (but check status)
   bool get canBorrow => accountStatus == 'active';
@@ -69,5 +92,20 @@ class UserProfile extends Equatable {
       subscriptionStatus == 'active';
 
   @override
-  List<Object?> get props => [id, subscriptionPlan, kycStatus, accountStatus];
+  List<Object?> get props => [
+        id,
+        subscriptionPlan,
+        subscriptionStatus,
+        kycStatus,
+        accountStatus,
+        trustRatingAvg,
+        trustReviewCount,
+        trustCompletedDealsCount,
+        trustIsRepeatParticipant,
+        trustPhoneVerified,
+        trustResponseTimeBucket,
+        trustIsVerified,
+        trustSuccessRate,
+        trustReliabilityScore,
+      ];
 }

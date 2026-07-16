@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/trust_badges.dart';
 import '../../../marketplace/domain/models/loan_listing.dart';
 
 class ListingCard extends StatelessWidget {
@@ -142,6 +143,15 @@ class ListingCard extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            TrustBadgeRow(
+              ratingAvg: listing.trustRatingAvg,
+              reviewCount: listing.trustReviewCount,
+              completedDealsCount: listing.trustCompletedDealsCount,
+              isRepeatParticipant: listing.trustIsRepeatParticipant,
+              phoneVerified: listing.trustPhoneVerified,
+              responseTimeBucket: listing.trustResponseTimeBucket,
             ),
           ],
         ),
