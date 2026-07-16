@@ -130,6 +130,15 @@ class _AccountView extends StatelessWidget {
                   // Subscription card
                   const SectionHeader('Subscription'),
                   _SubscriptionCard(profile: profile),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(AppRoutes.pricing),
+                      icon: const Icon(Icons.workspace_premium_outlined),
+                      label: const Text('View plans & upgrade'),
+                    ),
+                  ),
                   const SizedBox(height: 20),
 
                   // Identity panel
@@ -149,6 +158,17 @@ class _AccountView extends StatelessWidget {
                       ]),
                     ),
                   ),
+                  if (context.read<AuthBloc>().state is AuthAuthenticated &&
+                      (context.read<AuthBloc>().state as AuthAuthenticated)
+                          .user
+                          .isAdmin) ...[
+                    const SizedBox(height: 20),
+                    _ActionRow(
+                      icon: Icons.admin_panel_settings_outlined,
+                      label: 'Admin dashboard',
+                      onTap: () => context.push(AppRoutes.admin),
+                    ),
+                  ],
                   const SizedBox(height: 24),
 
                   // Sign out

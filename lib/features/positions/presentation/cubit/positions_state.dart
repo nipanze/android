@@ -21,7 +21,7 @@ class PositionsLoaded extends PositionsState {
     this.activity,
   });
 
-  // Renamed from bids to offers to match v4.0.
+  // Offers match the unified marketplace terminology in v4.0.
   // Contracts removed - non-custodial matching only.
   final List<LenderOffer> offers;
   final Map<String, dynamic>? activity;

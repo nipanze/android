@@ -31,7 +31,7 @@ class ListingCard extends StatelessWidget {
         : Theme.of(context).colorScheme.onSurfaceVariant;
     final fundedLabel = hasOffers
         ? '${listing.numberOfOffers} offer${listing.numberOfOffers == 1 ? '' : 's'}'
-        : 'No bids yet';
+        : 'No offers yet';
 
     return GestureDetector(
       onTap: onTap,
@@ -124,7 +124,7 @@ class ListingCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  hasOffers ? fundedLabel : 'No bids yet',
+                  hasOffers ? fundedLabel : 'No offers yet',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: progressColor,
                       ),

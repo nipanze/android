@@ -88,8 +88,8 @@ class _WatchlistView extends StatelessWidget {
               ),
               child: Text(
                 isSubscribed
-                    ? 'Free for all users. Get notified when bids change, rates improve, or a listing is closing.'
-                    : 'Free for all users. Get notified when bids change, rates improve, or a listing is closing. Subscribe to bid.',
+                    ? 'Free for all users. Get notified when offers change, rates improve, or a listing is closing.'
+                    : 'Free for all users. Get notified when offers change, rates improve, or a listing is closing. Subscribe to make offers.',
                 style: const TextStyle(fontSize: 11),
               ),
             ),

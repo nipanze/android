@@ -158,7 +158,7 @@ class _ListingsBody extends StatelessWidget {
         title: const Text('Cancel listing?'),
         content: Text(
           'This will remove "${listing.title}" from the marketplace. '
-          'Any pending bids will be rejected. This cannot be undone.',
+          'Any pending offers will be rejected. This cannot be undone.',
         ),
         actions: [
           TextButton(

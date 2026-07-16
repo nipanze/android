@@ -142,7 +142,7 @@ class _LenderTab extends StatelessWidget {
       return EmptyState(
         icon: Icons.payments_outlined,
         title: 'No offers yet',
-        subtitle: 'Bids you place on marketplace listings will appear here.',
+        subtitle: 'Offers you place on marketplace listings will appear here.',
         action: ElevatedButton(
             onPressed: () => context.go('/marketplace'),
             child: const Text('Browse Marketplace')),

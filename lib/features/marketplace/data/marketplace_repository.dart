@@ -60,7 +60,10 @@ class MarketplaceRepository {
     String requestId, {
     bool includePrivate = false,
   }) async {
-    if (includePrivate) return _getPrivateOffers(requestId);
+    // RLS returns full terms for the request owner and for the current
+    // offer-maker. Participation is determined server-side, not by a flag.
+    final privateOffers = await _getPrivateOffers(requestId);
+    if (includePrivate || privateOffers.isNotEmpty) return privateOffers;
 
     try {
       final data = await _client.rpc(RpcNames.getPublicListingOffers, params: {
@@ -69,7 +72,7 @@ class MarketplaceRepository {
 
       return (data as List).map((e) => LoanOffer.fromMap(e)).toList();
     } catch (_) {
-      return _getPrivateOffers(requestId);
+      return const [];
     }
   }
 

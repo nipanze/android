@@ -80,14 +80,14 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       );
 
       if (!mounted) return;
-      final userId =
-          authState is AuthAuthenticated ? authState.user.id : null;
+      final userId = authState is AuthAuthenticated ? authState.user.id : null;
       setState(() {
         _listing = listing;
         _offers = offers;
         _isOwnerValue = isOwner;
-        _isParticipant =
-            userId != null && offers.any((o) => o.lenderId == userId);
+        _isParticipant = !isOwner &&
+            userId != null &&
+            offers.any((o) => o.lenderId == userId);
         _loading = false;
       });
       _subscribeRealtime();
@@ -140,7 +140,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bid accepted — contract generated.')));
+          const SnackBar(content: Text('Offer accepted — contract generated.')));
       // Navigate to agreement review page
       context.go('/marketplace/agreement/$agreementId');
     } catch (e) {
@@ -163,7 +163,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         reason: reason,
         onUpgrade: () {
           Navigator.pop(context);
-          context.go('/account');
+          context.push('/pricing');
         },
       ),
     );
@@ -189,7 +189,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     final isOwner = _isOwnerValue;
-    // Pro borrowers see term-comparison arrows on each bid card
+    // Pro borrowers see term-comparison arrows on each offer card
     final isProBorrower = isOwner &&
         authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
@@ -319,11 +319,11 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
                   const SizedBox(height: 20),
 
-                  // ── Bids header ──────────────────────────────────────────
+                  // ── Offers header ────────────────────────────────────────
                   Row(
                     children: [
                       Text(
-                        'BIDS',
+                        'OFFERS',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               letterSpacing: 1.2,
                               fontWeight: FontWeight.bold,
@@ -340,13 +340,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
                   const SizedBox(height: 4),
 
-                  // ── Bid tiles ──────────────────────────────────────────
+                  // ── Offer tiles ──────────────────────────────────────────
                   if (_offers.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Center(
                         child: Text(
-                          'No bids yet.',
+                          'No offers yet.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -415,13 +415,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   if (!user.canLend) {
                     _showSubscriptionGate(
                       requiredPlan: 'Lender',
-                      reason: 'A subscription is required to make bids.',
+                      reason: 'A subscription is required to make offers.',
                     );
                     return;
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: const Text('Make a bid'),
+                child: const Text('Make an offer'),
               ),
           ]),
         ),
@@ -430,7 +430,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
           ? _MakeOfferSheet(
               listing: listing,
               onClose: () => setState(() => _showOfferSheet = false),
-              onOfferPlaced: () => setState(() => _showOfferSheet = false),
+              onOfferPlaced: () {
+                setState(() => _showOfferSheet = false);
+                _loadOnce();
+              },
             )
           : null,
     );
@@ -485,8 +488,8 @@ class _FundedProgressBar extends StatelessWidget {
     final bidsLabel = kycStatus != null
         ? 'User verification status: ${kycStatus!.toUpperCase()}'
         : (offers.isEmpty
-            ? 'No bids'
-            : '${offers.length} bid${offers.length > 1 ? 's' : ''}');
+            ? 'No offers'
+            : '${offers.length} offer${offers.length > 1 ? 's' : ''}');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -747,7 +750,7 @@ class _OfferCardState extends State<_OfferCard>
         ? 0
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
     final isFull = offer.offerAmount >= widget.requestedAmount;
-    final offerType = isFull ? 'Full bid' : 'Partial · $coverage%';
+    final offerType = isFull ? 'Full offer' : 'Partial · $coverage%';
     final dotColor = widget.dotColor;
     final isActiveParticipant = widget.isOwner || widget.isParticipant;
 
@@ -805,7 +808,7 @@ class _OfferCardState extends State<_OfferCard>
                     ),
                   ),
                   const SizedBox(width: 6),
-                  // Bid type badge
+                  // Offer type badge
                   Text(
                     offerType,
                     style: TextStyle(
@@ -944,14 +947,12 @@ class _OfferCardState extends State<_OfferCard>
                           const SizedBox(width: 70),
                           TickerCard(
                             label: 'Late fee',
-                            value:
-                                '${offer.lateFeePct.toStringAsFixed(1)}%',
+                            value: '${offer.lateFeePct.toStringAsFixed(1)}%',
                             deltaLabel: widget.suggestedLateFeePct != null
                                 ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
                                 : '—',
                             isPositive: widget.suggestedLateFeePct == null ||
-                                offer.lateFeePct <=
-                                    widget.suggestedLateFeePct!,
+                                offer.lateFeePct <= widget.suggestedLateFeePct!,
                             sparklineValues: [
                               widget.suggestedLateFeePct ?? offer.lateFeePct,
                               offer.lateFeePct,
@@ -972,26 +973,22 @@ class _OfferCardState extends State<_OfferCard>
                       if (widget.isProBorrower) ...[
                         const SizedBox(height: 4),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: _ProAnalysisPanel(
                             interestDiff:
                                 widget.suggestedInterestRatePct != null
                                     ? offer.interestRatePct -
                                         widget.suggestedInterestRatePct!
                                     : null,
-                            lateFeeDiff:
-                                widget.suggestedLateFeePct != null
-                                    ? offer.lateFeePct -
-                                        widget.suggestedLateFeePct!
-                                    : null,
+                            lateFeeDiff: widget.suggestedLateFeePct != null
+                                ? offer.lateFeePct - widget.suggestedLateFeePct!
+                                : null,
                             installmentDiff:
                                 widget.suggestedInstallmentAmount != null
                                     ? offer.installmentAmount -
                                         widget.suggestedInstallmentAmount!
                                     : null,
-                            suggestedInterest:
-                                widget.suggestedInterestRatePct,
+                            suggestedInterest: widget.suggestedInterestRatePct,
                             suggestedLateFee: widget.suggestedLateFeePct,
                             suggestedInstallment:
                                 widget.suggestedInstallmentAmount,
@@ -1004,10 +1001,8 @@ class _OfferCardState extends State<_OfferCard>
                       ] else ...[
                         const SizedBox(height: 4),
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16),
-                          child: _ProUpgradePanel(
-                              onUpgrade: widget.onUpgrade),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _ProUpgradePanel(onUpgrade: widget.onUpgrade),
                         ),
                         const SizedBox(height: 4),
                       ],
@@ -1016,8 +1011,7 @@ class _OfferCardState extends State<_OfferCard>
                     if (offer.proposedExpectations != null &&
                         offer.proposedExpectations!.isNotEmpty) ...[
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                         child: Text(
                           'Lender notes',
                           style: Theme.of(context)
@@ -1029,24 +1023,21 @@ class _OfferCardState extends State<_OfferCard>
                         ),
                       ),
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(16, 2, 16, 0),
+                        padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
                         child: Text(offer.proposedExpectations!,
-                            style:
-                                Theme.of(context).textTheme.bodySmall),
+                            style: Theme.of(context).textTheme.bodySmall),
                       ),
                     ],
 
                     // Accept button (owner only)
                     if (widget.isOwner) ...[
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                         child: SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
                             onPressed: () => widget.onAccept(offer),
-                            child: const Text('Accept bid'),
+                            child: const Text('Accept offer'),
                           ),
                         ),
                       ),
@@ -1081,9 +1072,7 @@ class _OfferCardState extends State<_OfferCard>
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: isFull
-                                      ? AppColors.success
-                                      : null,
+                                  color: isFull ? AppColors.success : null,
                                 ),
                               ),
                             ],
@@ -1112,7 +1101,7 @@ class _OfferCardState extends State<_OfferCard>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Place a bid to unlock full details',
+                                    'Make an offer to unlock full details',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Theme.of(context)
@@ -1777,7 +1766,7 @@ class _ProAnalysisPanel extends StatelessWidget {
 
     final analysisText = parsedAny
         ? notes.toString().trim()
-        : 'Bid matches your proposed expectations.';
+        : 'Offer matches your proposed expectations.';
 
     final Color trendColor;
     if ((interestDiff ?? 0) < 0 ||
@@ -2068,7 +2057,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       widget.onOfferPlaced();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Bid sent successfully.')));
+            const SnackBar(content: Text('Offer sent successfully.')));
       }
     } catch (e) {
       if (mounted) {
@@ -2097,7 +2086,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      Text('Make a bid',
+                      Text('Make an offer',
                           style: Theme.of(context).textTheme.titleMedium),
                       const Spacer(),
                       IconButton(
@@ -2199,7 +2188,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                         onPressed: _loading ? null : _submit,
                         child: _loading
                             ? const CircularProgressIndicator()
-                            : const Text('Send bid')),
+                            : const Text('Send offer')),
                   ])),
         ),
       );

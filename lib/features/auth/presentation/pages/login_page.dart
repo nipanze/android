@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Sign in to browse requests and bids',
+                      'Sign in to browse requests and offers',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 28),

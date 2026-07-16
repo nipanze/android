@@ -70,7 +70,7 @@ class _NotificationsView extends StatelessWidget {
               return const EmptyState(
                 icon: Icons.notifications_outlined,
                 title: 'No notifications yet',
-                subtitle: 'You\'ll be notified here when bids arrive, '
+                subtitle: 'You\'ll be notified here when offers arrive, '
                     'rates change, or contracts are ready.',
               );
             }

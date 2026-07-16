@@ -230,7 +230,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       builder: (_) => AlertDialog(
         title: const Text('Request submitted'),
         content: const Text(
-          'Your loan request is now live on the marketplace. Lenders can review it and make bids.',
+          'Your loan request is now live on the marketplace. Lenders can review it and make offers.',
         ),
         actions: [
           TextButton(
@@ -756,7 +756,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Your contact details stay hidden until a bid is accepted and the unlock flow is completed.',
+                'Your contact details stay hidden until an offer is accepted and the unlock flow is completed.',
                 style: TextStyle(fontSize: 11, color: AppColors.success),
               ),
             ),

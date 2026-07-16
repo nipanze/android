@@ -37,7 +37,7 @@ class AppFonts {
   AppFonts._();
 
   /// Inter — body text, labels, form fields, buttons, data tables.
-  /// Excellent for small sizes and numeric data (loan amounts, rates, bids).
+  /// Excellent for small sizes and numeric data (loan amounts, rates, offers).
   static const String body = 'Inter';
 
   /// Sora — screen titles, section headings, hero numbers (e.g. "UGX 5,000,000").
@@ -294,7 +294,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: isDark ? AppColors.text2Dark : AppColors.text2Light,
         ),
-        // labelSmall — numeric values: loan amounts, rates, bids (Inter tabular)
+        // labelSmall — numeric values: loan amounts, rates, offers (Inter tabular)
         labelSmall: TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 11,

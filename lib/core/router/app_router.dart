@@ -19,6 +19,7 @@ import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/positions/presentation/pages/positions_page.dart';
+import '../../features/pricing/presentation/pages/pricing_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
@@ -45,6 +46,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String account = '/account';
   static const String admin = '/admin';
+  static const String pricing = '/pricing';
 }
 
 class AppRouter {
@@ -188,6 +190,11 @@ class AppRouter {
         name: 'admin',
         pageBuilder: (_, state) => _slide(state, const AdminDashboardPage()),
       ),
+      GoRoute(
+        path: AppRoutes.pricing,
+        name: 'pricing',
+        pageBuilder: (_, state) => _slide(state, const PricingPage()),
+      ),
     ],
   );
 
@@ -204,6 +211,9 @@ class AppRouter {
     if (authState is AuthAuthenticated) {
       if (onAuth) return AppRoutes.marketplace;
       if (authState.needsEmailVerification) return AppRoutes.verifyEmail;
+      if (state.matchedLocation == AppRoutes.admin && !authState.user.isAdmin) {
+        return AppRoutes.marketplace;
+      }
     }
 
     return null;
