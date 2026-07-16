@@ -1,7 +1,7 @@
 # BUILD_PLAN.md — Nipanze
 
 > **Flutter + Supabase** · Digital loan listing matchmaking marketplace for Uganda and emerging economies
-> Last updated: July 2026 · Schema v4.1 · Seed v2.1 · Stage 4 DB ✅
+> Last updated: July 2026 · Schema v4.1 · Seed v2.1 · Stage 4 DB ✅ · Selective Transparency UI ✅
 
 > **⚡ v4.1 Architecture Change:** Nipanze has moved from a **role-based** model (borrower / lender) to a **unified, subscription-based, action-based** model. There is no "I am a borrower" or "I am a lender" — every user sees one marketplace and performs borrower actions (Post Request) or lender actions (Make Offer) depending on what they click. Access to actions is gated purely by `subscription_plan`. See "Unified Marketplace Model" below before reading Stage 4.
 >
@@ -19,7 +19,7 @@
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
-| 4 | Structured Deal Agreement, Contact Sharing & Trust System | 🔵 DB layer ✅ — UI in progress |
+| 4 | Structured Deal Agreement, Contact Sharing & Trust System | 🔵 DB ✅ · Selective Transparency UI ✅ · Trust UI pending |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
 
@@ -444,7 +444,7 @@ Product feedback separately suggested the (previously undocumented) Pro price po
 
 Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated. It also introduces the **Selective Transparency Model** and the **Trust & Reputation System** (both above), replacing Stage 2's fully public offer book with participation-gated deal detail plus an always-public reputation layer.
 
-> **Implementation status (July 2026):** The schema, agreement review page, and request-owner contact-unlock page are implemented. Apply the updated `sql/cloud_patch_stage4_final.sql` before cloud testing: the participant bid-book must use its guarded `SECURITY DEFINER` RPC because ordinary bidder RLS permits only that bidder's own offer. Remaining UI work is the aggregate-only offer state, trust badges/insights, and reviews.
+> **Implementation status (July 2026):** The schema, agreement review page, request-owner contact-unlock page, and selective transparency UI are implemented. Apply the updated `sql/cloud_patch_stage4_final.sql` before cloud testing. The `v_loan_listings` view must **not** use `security_invoker = true` — profiles RLS would then filter out other users' listings. Remaining UI work: trust badges/insights, post-contract review prompt, offer-place refetch, offer-withdraw re-lock.
 
 ---
 
@@ -546,7 +546,7 @@ When a user submits an offer, they set their own terms. They may align with the 
 - [x] `offer_coverage_tier` computed column added to `v_loan_listings` (`low` / `medium` / `high` based on `number_of_offers`)
 - [x] `v_lender_offers` scoped via RLS + `security_invoker` — row returns only to request owner or an account with an offer on that `request_id`
 - [x] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → complete anonymised detail; everyone else → empty result (aggregate via `v_loan_listings` only). Its participant check is the access boundary; `SECURITY DEFINER` is needed to return competing offers beyond the bidder's own RLS row.
-- [ ] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
+- [x] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
 - [ ] Placing an offer triggers a client-side refetch of the listing detail so the offer-maker immediately sees the unlocked, full-detail view
 - [ ] Withdrawing an offer re-locks detail on that listing for that user (no offer on the request → back to aggregate-only view)
 - [ ] Unit/integration tests: non-participant querying `v_lender_offers` or the RPC directly (bypassing UI) receives only the aggregate payload
@@ -660,7 +660,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [x] ✅ Audit logs capture full contract lifecycle, including review submissions (append-only)
 - [x] ✅ Both parties receive `agreement_locked` notification on contract generation; `deal_unlocked` on contact reveal
 - [x] ✅ `role` column fully removed from schema; all gating reads `subscription_plan` only
-- [ ] 🎨 `LoanDetailPage` renders tiered offer view (aggregate for non-participants, full detail for owner/bidders)
+- [x] 🎨 `LoanDetailPage` renders tiered offer view (aggregate for non-participants, full detail for owner/bidders)
 - [ ] 🎨 `TrustBadgeRow` widget rendered on listing cards, offer rows, and profile pages
 - [ ] 🎨 Pro-only `AdvancedTrustPanel` widget (success rate + reliability score)
 - [ ] 🎨 Post-contract review flow ("Leave a review" prompt on `PositionsPage`)
@@ -730,7 +730,8 @@ Contact details are **never accessible before this step** — enforced at API le
 | Pro-tier: suggest interest rate / late fee / repayment on post | ✅ DB · 🎨 UI Stage 4 |
 | Request terms locked on publish | ✅ DB (trigger) |
 | Offer terms locked on submit | ✅ DB (trigger) |
-| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ✅ DB · 🎨 UI Stage 4 |
+| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ✅ DB · ✅ UI |
+| Lender rate history sparkline (`v_lender_rate_history` + lazy fetch on expand) | ✅ DB · ✅ UI |
 | Public trust badge row (rating, reviews, deals, repeat, phone-verified, response time) | ✅ DB · 🎨 UI Stage 4 |
 | Pro-tier Verified badge + advanced trust insights | ✅ DB · 🎨 UI Stage 4 |
 | Post-contract review flow | ✅ DB · 🎨 UI Stage 4 |
