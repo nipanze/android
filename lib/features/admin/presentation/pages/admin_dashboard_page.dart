@@ -73,11 +73,13 @@ class _Overview extends StatelessWidget {
       FutureBuilder<List<Map<String, dynamic>>>(
         future: activity,
         builder: (_, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done)
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return ErrorState(
                 message: snapshot.error.toString(), onRetry: onRefresh);
+          }
           final rows = snapshot.data ?? [];
           final total = <String, num>{};
           for (final row in rows) {
@@ -94,7 +96,7 @@ class _Overview extends StatelessWidget {
           return RefreshIndicator(
               onRefresh: onRefresh,
               child: ListView(padding: const EdgeInsets.all(16), children: [
-                Row(children: const [
+                const Row(children: [
                   LiveDot(),
                   SizedBox(width: 6),
                   Text('Live marketplace activity')
@@ -201,16 +203,19 @@ class _KycReviewState extends State<_KycReview> {
           List<Map<String, dynamic>>>(
       future: _items,
       builder: (_, s) {
-        if (s.connectionState != ConnectionState.done)
+        if (s.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
-        if (s.hasError)
+        }
+        if (s.hasError) {
           return ErrorState(
               message: s.error.toString(),
               onRetry: () async => setState(() => _items = _load()));
+        }
         final items = s.data ?? [];
-        if (items.isEmpty)
+        if (items.isEmpty) {
           return const Center(
               child: Text('No KYC submissions awaiting review.'));
+        }
         return RefreshIndicator(
             onRefresh: () async => setState(() => _items = _load()),
             child: ListView.builder(
@@ -301,12 +306,14 @@ class _UsersState extends State<_Users> {
       FutureBuilder<List<Map<String, dynamic>>>(
           future: _rows,
           builder: (_, s) {
-            if (s.connectionState != ConnectionState.done)
+            if (s.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(
                   message: s.error.toString(),
                   onRetry: () async => setState(() => _rows = _load()));
+            }
             return RefreshIndicator(
                 onRefresh: () async => setState(() => _rows = _load()),
                 child: ListView(children: [
@@ -378,12 +385,14 @@ class _AdminListState extends State<_AdminList> {
       FutureBuilder<List<Map<String, dynamic>>>(
           future: _rows,
           builder: (_, s) {
-            if (s.connectionState != ConnectionState.done)
+            if (s.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(
                   message: s.error.toString(),
                   onRetry: () async => setState(() => _rows = _load()));
+            }
             return RefreshIndicator(
                 onRefresh: () async => setState(() => _rows = _load()),
                 child: ListView(children: [
@@ -452,12 +461,14 @@ class _SettingsState extends State<_Settings> {
       FutureBuilder<List<Map<String, dynamic>>>(
           future: _rows,
           builder: (_, s) {
-            if (s.connectionState != ConnectionState.done)
+            if (s.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
-            if (s.hasError)
+            }
+            if (s.hasError) {
               return ErrorState(
                   message: s.error.toString(),
                   onRetry: () async => setState(() => _rows = _load()));
+            }
             return ListView(
                 children: (s.data ?? [])
                     .map((r) => ListTile(

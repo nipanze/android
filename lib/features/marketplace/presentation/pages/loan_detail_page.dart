@@ -80,14 +80,14 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       );
 
       if (!mounted) return;
-      final userId = authState is AuthAuthenticated ? authState.user.id : null;
       setState(() {
         _listing = listing;
         _offers = offers;
         _isOwnerValue = isOwner;
-        _isParticipant = !isOwner &&
-            userId != null &&
-            offers.any((o) => o.lenderId == userId);
+        // The RPC only returns rows after it has confirmed participation. Its
+        // lender labels are deliberately anonymised, so never compare them to
+        // the authenticated user's ID in the client.
+        _isParticipant = !isOwner && offers.isNotEmpty;
         _loading = false;
       });
       _subscribeRealtime();

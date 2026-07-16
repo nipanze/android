@@ -55,15 +55,12 @@ class MarketplaceRepository {
   /// Get live offers for a listing.
   ///
   /// Owners need private table rows so they can accept a specific offer.
-  /// Everyone else reads the anonymized public order-book RPC.
+  /// Everyone else uses the participant-gated anonymized order-book RPC.
   Future<List<LoanOffer>> getOffers(
     String requestId, {
     bool includePrivate = false,
   }) async {
-    // RLS returns full terms for the request owner and for the current
-    // offer-maker. Participation is determined server-side, not by a flag.
-    final privateOffers = await _getPrivateOffers(requestId);
-    if (includePrivate || privateOffers.isNotEmpty) return privateOffers;
+    if (includePrivate) return _getPrivateOffers(requestId);
 
     try {
       final data = await _client.rpc(RpcNames.getPublicListingOffers, params: {

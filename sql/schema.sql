@@ -715,7 +715,7 @@ CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoke
 -- borrower_id, phone, email, full_name, and national ID are intentionally excluded.
 -- Exposes enough structured context for lenders to make informed offers.
 -- --------------------------------------------
-CREATE VIEW v_loan_listings WITH (security_invoker = true) AS
+CREATE VIEW v_loan_listings AS
 SELECT
     lr.id                                                                     AS request_id,
     lr.title,
@@ -937,18 +937,18 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
     v_can_view_terms BOOLEAN;
 BEGIN
     SELECT lr.borrower_id = auth.uid()
         OR EXISTS (
-            SELECT 1 FROM loan_offers own_offer
+            SELECT 1 FROM public.loan_offers own_offer
             WHERE own_offer.request_id = lr.id AND own_offer.lender_id = auth.uid()
         )
     INTO v_can_view_terms
-    FROM loan_requests lr
+    FROM public.loan_requests lr
     WHERE lr.id = p_request_id;
 
     -- Non-participants receive their aggregate signal through v_loan_listings.
@@ -971,8 +971,8 @@ BEGIN
         lo.status::TEXT,
         lo.offered_at,
         lo.accepted_at
-    FROM loan_offers lo
-    JOIN loan_requests lr ON lr.id = lo.request_id
+    FROM public.loan_offers lo
+    JOIN public.loan_requests lr ON lr.id = lo.request_id
     WHERE lo.request_id = p_request_id
       AND lo.status = 'pending'
       AND (lr.status = 'active' OR lr.borrower_id = auth.uid())

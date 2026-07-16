@@ -440,11 +440,11 @@ Product feedback separately suggested the (previously undocumented) Pro price po
 
 ---
 
-## Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System 🔵 DB layer ✅ — UI in progress
+## Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System 🔵 In progress
 
 Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated. It also introduces the **Selective Transparency Model** and the **Trust & Reputation System** (both above), replacing Stage 2's fully public offer book with participation-gated deal detail plus an always-public reputation layer.
 
-> **Database status (July 2026):** All Stage 4 schema additions, RPC functions, views, RLS policies and triggers are implemented in `schema.sql` and deployed via `sql/cloud_patch_stage4_final.sql`. The remaining work is Flutter/UI: wiring the tiered payload into `LoanDetailPage`, the `TrustBadgeRow` widget, the contract/contact-reveal screens, and the review flow.
+> **Implementation status (July 2026):** The schema, agreement review page, and request-owner contact-unlock page are implemented. Apply the updated `sql/cloud_patch_stage4_final.sql` before cloud testing: the participant bid-book must use its guarded `SECURITY DEFINER` RPC because ordinary bidder RLS permits only that bidder's own offer. Remaining UI work is the aggregate-only offer state, trust badges/insights, and reviews.
 
 ---
 
@@ -495,7 +495,7 @@ CONTRACT GENERATED (after request owner accepts an offer)
 ──────────────────────────────────────────
 Final terms locked
 Digital contract created
-Contact revealed to both parties
+Borrower can unlock contact details for both parties
 ──────────────────────────────────────────
 
 DEAL COMPLETES (off-platform)
@@ -545,7 +545,7 @@ When a user submits an offer, they set their own terms. They may align with the 
 
 - [x] `offer_coverage_tier` computed column added to `v_loan_listings` (`low` / `medium` / `high` based on `number_of_offers`)
 - [x] `v_lender_offers` scoped via RLS + `security_invoker` — row returns only to request owner or an account with an offer on that `request_id`
-- [x] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → full detail; everyone else → empty result (aggregate via `v_loan_listings` only)
+- [x] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → complete anonymised detail; everyone else → empty result (aggregate via `v_loan_listings` only). Its participant check is the access boundary; `SECURITY DEFINER` is needed to return competing offers beyond the bidder's own RLS row.
 - [ ] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
 - [ ] Placing an offer triggers a client-side refetch of the listing detail so the offer-maker immediately sees the unlocked, full-detail view
 - [ ] Withdrawing an offer re-locks detail on that listing for that user (no offer on the request → back to aggregate-only view)
@@ -664,7 +664,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] 🎨 `TrustBadgeRow` widget rendered on listing cards, offer rows, and profile pages
 - [ ] 🎨 Pro-only `AdvancedTrustPanel` widget (success rate + reliability score)
 - [ ] 🎨 Post-contract review flow ("Leave a review" prompt on `PositionsPage`)
-- [ ] 🎨 Contact reveal screen (blurred card → unlock → reveal)
+- [x] 🎨 Contact reveal screen: `AgreementReviewPage` → `DealUnlockPage`; only the request owner can complete the irreversible unlock
 - [ ] ⚖️ Contact-unlock fee: explicit go/no-go decision before any payment-flow work begins
 
 ---
@@ -735,7 +735,7 @@ Contact details are **never accessible before this step** — enforced at API le
 | Pro-tier Verified badge + advanced trust insights | ✅ DB · 🎨 UI Stage 4 |
 | Post-contract review flow | ✅ DB · 🎨 UI Stage 4 |
 | Contract auto-generated after offer acceptance | ✅ DB (accept_offer RPC) |
-| Contact reveal flow (blurred → unblur) | ✅ DB · 🎨 UI Stage 4 |
+| Contact reveal flow (blurred → unblur) | ✅ DB · ✅ UI |
 | Contact-unlock fee (open decision) | ⚖️ Not yet committed |
 | Remove `role` column; subscription-only gating | ✅ Complete |
 | Admin KYC review | ⬜ Stage 5 |

@@ -279,20 +279,23 @@ RETURNS TABLE (
     offered_at          TIMESTAMP,
     accepted_at         TIMESTAMP
 )
-LANGUAGE plpgsql SECURITY INVOKER
-SET search_path = public
+-- A bidder's ordinary RLS rule permits only their own offer. This function
+-- deliberately bypasses that row filter *after* the participant check so an
+-- eligible bidder can see the complete anonymised bid book for this request.
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
     v_can_view_terms BOOLEAN;
 BEGIN
     SELECT lr.borrower_id = auth.uid()
         OR EXISTS (
-            SELECT 1 FROM loan_offers own_offer
+            SELECT 1 FROM public.loan_offers own_offer
             WHERE own_offer.request_id = lr.id
               AND own_offer.lender_id  = auth.uid()
         )
     INTO v_can_view_terms
-    FROM loan_requests lr
+    FROM public.loan_requests lr
     WHERE lr.id = p_request_id;
 
     -- Non-participants get nothing from this function —
@@ -316,8 +319,8 @@ BEGIN
         lo.status::TEXT,
         lo.offered_at,
         lo.accepted_at
-    FROM loan_offers  lo
-    JOIN loan_requests lr ON lr.id = lo.request_id
+    FROM public.loan_offers  lo
+    JOIN public.loan_requests lr ON lr.id = lo.request_id
     WHERE lo.request_id = p_request_id
       AND lo.status     = 'pending'
       AND (lr.status = 'active' OR lr.borrower_id = auth.uid())
@@ -343,7 +346,7 @@ DROP VIEW IF EXISTS public.v_trust_profile_pro     CASCADE;
 DROP VIEW IF EXISTS public.v_trust_profile_public  CASCADE;
 DROP VIEW IF EXISTS public.v_loan_listings         CASCADE;
 
-CREATE VIEW public.v_loan_listings WITH (security_invoker = true) AS
+CREATE VIEW public.v_loan_listings AS
 SELECT
     lr.id                                                                    AS request_id,
     lr.title,
