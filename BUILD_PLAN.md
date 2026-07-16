@@ -1,7 +1,7 @@
 # BUILD_PLAN.md — Nipanze
 
 > **Flutter + Supabase** · Digital loan listing matchmaking marketplace for Uganda and emerging economies
-> Last updated: July 2026 · Schema v4.1 · Seed v2.1 · Stage 4 DB ✅ · Selective Transparency UI ✅
+> Last updated: July 2026 · Schema v4.1 · Seed v2.1
 
 > **⚡ v4.1 Architecture Change:** Nipanze has moved from a **role-based** model (borrower / lender) to a **unified, subscription-based, action-based** model. There is no "I am a borrower" or "I am a lender" — every user sees one marketplace and performs borrower actions (Post Request) or lender actions (Make Offer) depending on what they click. Access to actions is gated purely by `subscription_plan`. See "Unified Marketplace Model" below before reading Stage 4.
 >
@@ -19,7 +19,7 @@
 | 2 | Core Marketplace | ✅ Complete |
 | 3 | Polish & Supporting Features | ✅ Complete |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete |
-| 4 | Structured Deal Agreement, Contact Sharing & Trust System | 🔵 DB ✅ · Selective Transparency UI ✅ · Trust UI pending |
+| 4 | Structured Deal Agreement, Contact Sharing & Trust System | ⬜ Planned (revised for unified model) |
 | 5 | Admin & Compliance | ⬜ Planned |
 | 6 | Launch & Growth | ⬜ Planned |
 
@@ -440,11 +440,9 @@ Product feedback separately suggested the (previously undocumented) Pro price po
 
 ---
 
-## Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System 🔵 In progress
+## Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System ⬜ Planned (revised for unified model)
 
 Stage 4 redesigns how terms are agreed upon and introduces a **locked bidding system** where both the request owner and the offer-maker commit to terms upfront — eliminating unstructured back-and-forth before a contract is generated. It also introduces the **Selective Transparency Model** and the **Trust & Reputation System** (both above), replacing Stage 2's fully public offer book with participation-gated deal detail plus an always-public reputation layer.
-
-> **Implementation status (July 2026):** The schema, agreement review page, request-owner contact-unlock page, and selective transparency UI are implemented. Apply the updated `sql/cloud_patch_stage4_final.sql` before cloud testing. The `v_loan_listings` view must **not** use `security_invoker = true` — profiles RLS would then filter out other users' listings. Remaining UI work: trust badges/insights, post-contract review prompt, offer-place refetch, offer-withdraw re-lock.
 
 ---
 
@@ -495,7 +493,7 @@ CONTRACT GENERATED (after request owner accepts an offer)
 ──────────────────────────────────────────
 Final terms locked
 Digital contract created
-Borrower can unlock contact details for both parties
+Contact revealed to both parties
 ──────────────────────────────────────────
 
 DEAL COMPLETES (off-platform)
@@ -543,10 +541,10 @@ When a user submits an offer, they set their own terms. They may align with the 
 
 ## 🔍 Selective Transparency — Implementation Checklist
 
-- [x] `offer_coverage_tier` computed column added to `v_loan_listings` (`low` / `medium` / `high` based on `number_of_offers`)
-- [x] `v_lender_offers` scoped via RLS + `security_invoker` — row returns only to request owner or an account with an offer on that `request_id`
-- [x] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → complete anonymised detail; everyone else → empty result (aggregate via `v_loan_listings` only). Its participant check is the access boundary; `SECURITY DEFINER` is needed to return competing offers beyond the bidder's own RLS row.
-- [x] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
+- [ ] `offer_coverage_tier` computed column/function added to `v_loan_listings` (derived from `loan_offers` for that `request_id`; `low` / `medium` / `high`)
+- [ ] `v_lender_offers` scoped via RLS + `security_invoker` so a row returns only to the request owner or to an account with an offer on that `request_id`
+- [ ] `get_public_listing_offers(request_id)` RPC branches on caller identity: owner/participant → full detail; everyone else → `number_of_offers` + `offer_coverage_tier` only
+- [ ] `LoanDetailPage` UI reads the tiered payload and renders either the full offers panel or the aggregate summary + "Place an offer to see full bid detail" prompt
 - [ ] Placing an offer triggers a client-side refetch of the listing detail so the offer-maker immediately sees the unlocked, full-detail view
 - [ ] Withdrawing an offer re-locks detail on that listing for that user (no offer on the request → back to aggregate-only view)
 - [ ] Unit/integration tests: non-participant querying `v_lender_offers` or the RPC directly (bypassing UI) receives only the aggregate payload
@@ -555,15 +553,14 @@ When a user submits an offer, they set their own terms. They may align with the 
 
 ## 🌟 Trust & Reputation System — Implementation Checklist
 
-- [x] `reviews` table created: `id`, `contract_id`, `reviewer_id`, `reviewee_id`, `rating` (1–5), `comment`, `created_at`; unique on `(contract_id, reviewer_id)`
-- [x] `profiles.phone_verified_at` present; drives the free "phone verified" trust badge
-- [x] `submit_review(contract_id, rating, comment)` RPC — validates caller was a party to a contact-revealed contract, enforces one review per direction, writes to `reviews`, logs to `audit_logs`
-- [x] `recompute_trust_aggregates(user_id)` function — recalculates `rating_avg`, `review_count`, `completed_deals_count`, `is_repeat_participant`, `response_time_bucket`, `success_rate`, `reliability_score`; fired on new review and on contact reveal (`trg_refresh_trust_on_reveal` trigger)
-- [x] `v_trust_profile_public` view — public signal set, readable by any user (authenticated or anon), keyed on `user_id`
-- [x] `v_trust_profile_pro` view — RLS-scoped to callers with an active Pro subscription; adds `success_rate` and `reliability_score`
-- [x] Trust signal columns embedded in `v_loan_listings` for every listing row (no extra query needed for marketplace feed)
+- [ ] `reviews` table created: `id`, `contract_id`, `reviewer_id`, `reviewee_id`, `rating` (1–5), `comment`, `created_at`; unique on `(contract_id, reviewer_id)`
+- [ ] `profiles.phone_verified_at` added; set by the existing OTP verification step at signup (no new verification flow needed for this badge)
+- [ ] `submit_review(contract_id, rating, comment)` RPC — validates caller was a party to the contract, enforces one review per contract per direction, writes to `reviews`, logs to `audit_logs`
+- [ ] `recompute_trust_aggregates(user_id)` trigger fn — recalculates `rating_avg`, `review_count`, `completed_deals_count`, `is_repeat_participant`, `response_time_bucket`, fired on new review / new completed contract
+- [ ] `v_trust_profile_public` view — public signal set, readable by any authenticated user, keyed on `user_id`
+- [ ] `v_trust_profile_pro` view — RLS-scoped to callers on Pro, adds `success_rate` and `reliability_score`
 - [ ] `TrustBadgeRow` shared widget — renders the public badge set consistently on `ListingCard`, offers panel rows, and `ProfilePage`
-- [ ] Pro-only `AdvancedTrustPanel` widget — renders success rate + reliability score, gated on the current user's `subscription_plan`
+- [ ] Pro-only `AdvancedTrustPanel` widget — renders success rate + reliability score, gated on the current user's own `subscription_plan`, only shown when viewing a counterparty
 - [ ] `UserReviewsPage` (`/profile/:userId/reviews`) — full review list with star + text, paginated
 - [ ] "Leave a review" prompt surfaced on `PositionsPage` for any contract without an existing review from the current user
 - [ ] Unit/integration tests: non-Pro caller cannot read `v_trust_profile_pro` rows; non-participant on a contract cannot call `submit_review` for it; a second review attempt on the same `(contract_id, reviewer_id)` is rejected
@@ -641,31 +638,24 @@ Contact details are **never accessible before this step** — enforced at API le
 
 ## ✅ Stage 4 Exit Criteria
 
-**Legend: ✅ = DB enforced | 🎨 = UI remaining | ⚖️ = open decision**
-
-- [x] ✅ Pro-tier subscription gate on interest/late fee/repayment fields — `trg_fn_validate_request_terms` trigger enforces at DB level
-- [x] ✅ Request terms locked on publish (`terms_locked_at` set; `trg_lock_request_terms` trigger; no further edits allowed)
-- [x] ✅ Offer terms locked on submit (`trg_lock_offer_terms` trigger)
-- [x] ✅ `offer_coverage_tier` present in `v_loan_listings` for every listing (public, anonymized, computed from `number_of_offers`)
-- [x] ✅ Exact offer-term detail scoped to request owner + offer-makers via `get_public_listing_offers` RPC (non-participants receive empty result)
-- [x] ✅ Non-participant calling `v_lender_offers` or `get_public_listing_offers` directly cannot retrieve exact offer terms (enforced via RLS/SECURITY INVOKER)
-- [x] ✅ Public trust badge row data available on every profile row via `v_trust_profile_public` and embedded in `v_loan_listings`
-- [x] ✅ Pro-only `success_rate` + `reliability_score` gated behind `v_trust_profile_pro` (RLS requires active Pro subscription)
-- [x] ✅ Reviews gated to parties of a contact-revealed contract, one per direction, enforced in `submit_review` RPC
-- [x] ✅ Contract auto-generated after offer acceptance via `accept_offer` RPC (creates locked `agreements` row)
-- [x] ✅ Contract includes all agreed fields + legal disclaimer (JSON snapshot + `fn_generate_locked_contract_text`)
-- [x] ✅ Late fee rule encoded in contract text and snapshot: applies only to missed installment, not total balance
-- [x] ✅ Contact reveal only after contract is generated (`reveal_contact` / `unlock_contact` RPCs check agreement status)
-- [x] ✅ Contact details never accessible before reveal via any query (RLS + SECURITY DEFINER RPCs enforce)
-- [x] ✅ Audit logs capture full contract lifecycle, including review submissions (append-only)
-- [x] ✅ Both parties receive `agreement_locked` notification on contract generation; `deal_unlocked` on contact reveal
-- [x] ✅ `role` column fully removed from schema; all gating reads `subscription_plan` only
-- [x] 🎨 `LoanDetailPage` renders tiered offer view (aggregate for non-participants, full detail for owner/bidders)
-- [ ] 🎨 `TrustBadgeRow` widget rendered on listing cards, offer rows, and profile pages
-- [ ] 🎨 Pro-only `AdvancedTrustPanel` widget (success rate + reliability score)
-- [ ] 🎨 Post-contract review flow ("Leave a review" prompt on `PositionsPage`)
-- [x] 🎨 Contact reveal screen: `AgreementReviewPage` → `DealUnlockPage`; only the request owner can complete the irreversible unlock
-- [ ] ⚖️ Contact-unlock fee: explicit go/no-go decision before any payment-flow work begins
+- [ ] Pro-tier subscription gate on interest/late fee/repayment fields in the request form
+- [ ] Request terms locked on publish (`terms_locked_at` set; no further edits)
+- [ ] Offer terms locked on submit
+- [ ] `offer_coverage_tier` visible on every listing to every viewer (public, anonymized)
+- [ ] Exact offer-term detail visible only to the request owner and to offer-makers who have bid on that listing (Selective Transparency Model)
+- [ ] Non-participant calling `v_lender_offers` or `get_public_listing_offers` directly cannot retrieve exact offer terms
+- [ ] Public trust badge row (rating, review count, completed deals, repeat badge, phone-verified, response time) visible on every profile, listing card, and offer row to every viewer regardless of plan
+- [ ] Pro-only Verified badge and advanced trust insights (success rate, reliability score) gated to Pro viewers only, and never substitute for or hide the public badge row
+- [ ] Reviews can only be submitted by a verified party to a completed contract, one per contract per direction
+- [ ] Contract auto-generated after request owner accepts an offer
+- [ ] Contract includes all agreed fields + legal disclaimer
+- [ ] Late fee applies only to missed installment (not total balance)
+- [ ] Contact reveal only after contract is generated
+- [ ] Contact details never accessible before reveal via any query
+- [ ] Contact-unlock fee explicitly decided go/no-go before any payment-flow work begins (not assumed)
+- [ ] Audit logs capture full contract lifecycle, including review submissions
+- [ ] Both parties receive `deal_unlocked` notification
+- [ ] `role` column fully removed from schema; all gating reads `subscription_plan` only
 
 ---
 
@@ -727,18 +717,17 @@ Contact details are **never accessible before this step** — enforced at API le
 | Notifications | ✅ Stage 3 |
 | Profile/Account live data | ✅ Stage 3 |
 | OfflineBanner | ✅ Stage 3 |
-| Pro-tier: suggest interest rate / late fee / repayment on post | ✅ DB · 🎨 UI Stage 4 |
-| Request terms locked on publish | ✅ DB (trigger) |
-| Offer terms locked on submit | ✅ DB (trigger) |
-| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ✅ DB · ✅ UI |
-| Lender rate history sparkline (`v_lender_rate_history` + lazy fetch on expand) | ✅ DB · ✅ UI |
-| Public trust badge row (rating, reviews, deals, repeat, phone-verified, response time) | ✅ DB · 🎨 UI Stage 4 |
-| Pro-tier Verified badge + advanced trust insights | ✅ DB · 🎨 UI Stage 4 |
-| Post-contract review flow | ✅ DB · 🎨 UI Stage 4 |
-| Contract auto-generated after offer acceptance | ✅ DB (accept_offer RPC) |
-| Contact reveal flow (blurred → unblur) | ✅ DB · ✅ UI |
-| Contact-unlock fee (open decision) | ⚖️ Not yet committed |
-| Remove `role` column; subscription-only gating | ✅ Complete |
+| Pro-tier: suggest interest rate / late fee / repayment on post | ⬜ Stage 4 |
+| Request terms locked on publish | ⬜ Stage 4 |
+| Offer terms locked on submit | ⬜ Stage 4 |
+| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ⬜ Stage 4 |
+| Public trust badge row (rating, reviews, deals, repeat, phone-verified, response time) | ⬜ Stage 4 |
+| Pro-tier Verified badge + advanced trust insights | ⬜ Stage 4 |
+| Post-contract review flow | ⬜ Stage 4 |
+| Contract auto-generated after offer acceptance | ⬜ Stage 4 |
+| Contact reveal flow (blurred → unblur) | ⬜ Stage 4 |
+| Contact-unlock fee (open decision) | ⬜ Not yet committed |
+| Remove `role` column; subscription-only gating | ⬜ Stage 4 |
 | Admin KYC review | ⬜ Stage 5 |
 | Admin review moderation | ⬜ Stage 5 |
 | Admin KPI dashboard | ⬜ Stage 5 |
