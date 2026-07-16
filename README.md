@@ -21,6 +21,7 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 - [Key Features](#key-features)
 - [Business Model](#business-model)
 - [Transparency & Controlled Contact](#transparency--controlled-contact)
+- [Trust & Reputation Signals](#trust--reputation-signals)
 - [How It Works](#how-it-works)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -162,23 +163,24 @@ No plan is ever labeled "Borrower Plan" or "Lender-only." Each plan name describ
 - **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds
 - **Controlled contact sharing** — contact details are revealed only after a contract is generated
 - **Selective transparency** — listing detail shows aggregate signals (funded %, offer count, coverage tier) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
+- **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan — see [Trust & Reputation Signals](#trust--reputation-signals)
 - **Compliance built-in** — append-only audit trail from day one
 
 ---
 
 ## Business Model
 
-Nipanze generates revenue through subscriptions — not interest spreads — via a single upgrade path.
+Nipanze generates revenue primarily through subscriptions — not interest spreads — via a single upgrade path. A small, clearly-disclosed contact-unlock fee is under consideration as a secondary revenue lever; see [Trust & Reputation Signals](#trust--reputation-signals) for how it would fit alongside subscriptions without becoming a fee tied to loan performance.
 
 | Plan | Unlocks |
 |---|---|
-| 🟢 **Free** | Post basic requests (amount, duration, purpose) · browse · accept offers received |
+| 🟢 **Free** | Post basic requests (amount, duration, purpose) · browse · accept offers received · full visibility into every counterparty's public trust signals |
 | 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms (amount, interest, late fee, schedule) |
-| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (interest, late fee, schedule) + priority visibility + improved matching |
+| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (interest, late fee, schedule) + priority visibility + improved matching + verified badge + advanced trust insights |
 
-Users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage (Pro). A single `subscription_plan` enum drives all of it — there is no separate "Premium Borrower" product, and no "posting add-on" sold independently of a plan.
+Users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage and stronger trust signaling (Pro). A single `subscription_plan` enum drives all of it — there is no separate "Premium Borrower" product, and no "posting add-on" sold independently of a plan.
 
-Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance.
+Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance. Any future contact-unlock fee is a flat, disclosed marketplace-access fee — never priced off a deal's interest rate, amount, or outcome.
 
 ---
 
@@ -215,6 +217,8 @@ Listing detail pages use **tiered visibility**, not a single public/private spli
 | **Request owner** | Full detail on every offer submitted to their request: exact amount, interest rate, late fee, repayment schedule, and offer timestamp |
 
 Contact details stay locked for everyone, at every tier, until a contract is generated and unlock is confirmed — that boundary is unchanged by this model; selective transparency only governs *offer terms*, not identity.
+
+Public trust signals (rating, review count, deal count, badges) are a separate, always-public layer that sits on top of this model — see below. They are not gated by participation the way exact offer terms are, because withholding basic reputation information would undermine trust marketplace-wide rather than protect any one deal.
 
 **Why tiered instead of fully public or fully locked:**
 
@@ -254,17 +258,71 @@ Nipanze helps participants discover each other and make informed matching decisi
 
 ---
 
+## Trust & Reputation Signals
+
+Selective transparency (above) governs *deal terms*. Trust & reputation signals are a separate, always-public layer that governs *counterparty credibility* — they exist so a request owner or offer-maker can gauge who they're dealing with before ever placing an offer or accepting one, without waiting on participation.
+
+**Design rule: reputation is public infrastructure, verification and insight depth are monetized.** Hiding basic trust signals behind a paywall would suppress activity marketplace-wide — new users need to see that a marketplace has real, credible participants before they'll post a request or risk an offer. So the baseline signals below are visible on every profile to every viewer, on every plan, including logged-out browsing of the public marketplace feed where applicable.
+
+### What Nipanze can and cannot show
+
+Because Nipanze does not track repayments or hold funds (see [Regulatory Compliance](#regulatory-compliance)), every trust signal below is built only from **events that happen on-platform** — requests posted, offers made, contracts generated, and reviews left by a counterparty after a deal — never from off-platform financial behavior Nipanze has no visibility into. Nipanze does not claim to know, measure, or display whether a loan was actually repaid.
+
+### Public trust signals (Free — visible to everyone, on every profile)
+
+| Signal | Source | Notes |
+|---|---|---|
+| ⭐ Rating average + review count | Post-deal reviews left by the other party to a completed contract | Only the counterparty on a completed deal can leave a review; one review per contract |
+| 📊 Completed deals count | Count of contracts the account has been a party to (as owner or offer-maker) | Reflects on-platform activity, not repayment outcome |
+| 🔁 Repeat participant badge | Awarded after a second completed deal | Signals an account is an active, returning marketplace participant |
+| 📱 Phone verified badge | OTP verification at signup, tracked in `profiles.phone_verified_at` | Free, lightweight — distinct from full KYC |
+| ⏱️ Typical response time | Rolling median time-to-first-action on offers/requests received | Computed server-side; shown as a bucket (e.g. "Responds quickly"), never an exact timestamp pattern |
+
+These render as compact badges on `ListingCard`, the offers panel, and `ProfilePage` — never gated behind a plan check, and never listed as a pricing-table line item, so a Free user browsing the marketplace never has to guess whether a badge is locked.
+
+### Pro-tier trust enhancements (monetized layer)
+
+Pro does not create new trust data that Free users can't see the shape of — it adds **verification weight** and **analytical depth** on top of the same public signals:
+
+| Enhancement | Plan | Description |
+|---|---|---|
+| 🟦 Verified badge | Pro | Awarded after full KYC review (existing `kyc_verifications` flow), distinct from and stronger than the free phone-verified badge |
+| 📊 Offer/request success rate | Pro (on their own profile, and on any counterparty profile they view) | Share of an account's offers accepted, or requests that reached a contract, computed from on-platform events only |
+| 🚀 Priority visibility | Pro | Pro-posted requests and Pro offer-maker profiles get improved placement — already part of the existing Pro tier |
+| 🔍 Reliability score | Pro | A single derived score combining rating, completion count, and response time, shown only to Pro viewers looking at a counterparty |
+
+Advanced insights are explicitly scoped to **on-platform** behavior (ratings, completion counts, response time) rather than claims about real-world repayment, to stay inside the platform boundary in [Regulatory Compliance](#regulatory-compliance). Nipanze does not display or compute anything resembling a "repayment reliability" score based on off-platform loan performance, since that data never reaches the platform.
+
+### Reviews
+
+- A review can only be left by the counterparty on a **completed contract** (one review per contract, per direction)
+- Reviews are a star rating (1–5) plus optional short text
+- Reviews are immutable once submitted and logged to `audit_logs`, consistent with the append-only audit approach used elsewhere
+- Review content is moderated the same way KYC documents are — visible to admins for abuse review, never edited by the platform
+
+### Contact-unlock fee (proposed secondary revenue lever — not yet committed)
+
+Feedback from early product review suggested a small, flat contact-unlock fee (e.g. a few thousand UGX) charged at the moment contact is revealed, on top of the subscription model, with a free or discounted unlock for Pro. This is **not yet part of the committed architecture** described elsewhere in this document, and is flagged here rather than folded silently into the Business Model or contract-reveal flow, because it changes two things that are currently stated as fixed:
+
+1. **"Revenue via subscriptions only"** (see [Business Model](#business-model)) would need to become "subscriptions plus a flat, disclosed contact-unlock fee"
+2. **Contact reveal today is a status-gated action** (request owner accepts → both parties can unlock), not a paid action — adding a fee means `reveal_contact` needs a payment-confirmation step before the existing unlock logic runs
+
+If adopted, the fee must stay flat and disclosed up front (never a percentage of loan amount, interest rate, or any deal-performance figure) to remain consistent with the "no fee tied to loan performance" principle already stated in Business Model and Regulatory Compliance. This is tracked as a Stage 4 decision point in [BUILD_PLAN.md](BUILD_PLAN.md) rather than assumed here.
+
+---
+
 ## How It Works
 
 ```
 1. POST       → Anyone posts a structured loan request for free
-2. BROWSE     → Anyone browses requests for free; sees funded %, offer count, and coverage tier
+2. BROWSE     → Anyone browses requests for free; sees funded %, offer count, coverage tier, and counterparty trust signals
 3. OFFER      → Lender/Pro plan holders make offers with their own amount, interest rate, late fee, and repayment schedule
                  → Placing an offer unlocks full offer-level detail on that listing for that offer-maker
-4. REVIEW     → Request owner compares available offers with full exact-term detail
+4. REVIEW     → Request owner compares available offers with full exact-term detail and each offer-maker's trust signals
 5. ACCEPT     → Request owner selects one offer; contract is auto-generated
 6. UNLOCK     → Contact details are revealed only after contract unlock
 7. CONNECT    → Parties proceed independently outside the platform
+8. RATE       → Both parties may leave a one-time review on the completed contract, feeding future trust signals
 ```
 
 ---
@@ -308,6 +366,7 @@ lib/
 │   ├── offers/                     # My Offers page
 │   ├── notifications/              # Notification centre, unread badge
 │   ├── kyc/                        # Optional verification, status display
+│   ├── trust/                      # Trust badges, ratings, reviews, reputation summary
 │   ├── profile/                    # User profile, edit
 │   └── admin/                      # Verification review, user management, audit logs (admin only)
 │       └── */
@@ -315,19 +374,19 @@ lib/
 │           ├── domain/             # Entities, UseCases, Repository interfaces
 │           └── presentation/       # BLoC + Pages + Widgets
 ├── shared/
-│   ├── models/                     # LoanListingModel, OfferModel, UserModel…
-│   └── widgets/                    # MainScaffold, ProfileSummary, VerificationChip
+│   ├── models/                     # LoanListingModel, OfferModel, UserModel, TrustProfileModel…
+│   └── widgets/                    # MainScaffold, ProfileSummary, VerificationChip, TrustBadgeRow
+supabase/
 sql/
 │   ├── schema.sql                  # Full schema v4.1 — tables, triggers, RPCs, views
 │   └── seed.sql                    # Seed data v2.1 — users, listings, and offers
-supabase/
 │   └── migrations/                 # Incremental migrations applied on top of schema.sql
 assets/
     ├── fonts/                      # DM Sans (body) + DM Mono (numeric values)
     └── images/                     # Onboarding illustrations
 ```
 
-> Note: `features/loans` and `features/offers` are named after the *actions* they support (posting a request, making an offer), not after a stored role — any user with the right plan can reach either.
+> Note: `features/loans` and `features/offers` are named after the *actions* they support (posting a request, making an offer), not after a stored role — any user with the right plan can reach either. `features/trust` is new and cuts across both — it renders the same badge row wherever a counterparty is shown (listing cards, offer rows, profile pages).
 
 ---
 
@@ -352,6 +411,7 @@ assets/
 | `/notifications` | NotificationsPage | Yes |
 | `/kyc` | KycPage | Yes |
 | `/profile` | ProfilePage | Yes |
+| `/profile/:userId/reviews` | UserReviewsPage | Yes |
 | `/admin` | AdminDashboardPage | Yes (`is_admin`) |
 
 ---
@@ -369,15 +429,16 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 
 | Table | Purpose |
 | --- | --- |
-| `profiles` | Core user profile. Extends `auth.users` 1-to-1. One account, no stored role — capability comes from `subscription_plan`. |
+| `profiles` | Core user profile. Extends `auth.users` 1-to-1. One account, no stored role — capability comes from `subscription_plan`. Carries `phone_verified_at` for the free trust badge. |
 | `system_settings` | Platform config. Business limits read from here at runtime. |
 | `subscriptions` | `subscription_plan` enum (`free` \| `lender` \| `pro`) — gates offer-making and term-suggestion. Posting and browsing remain free. |
-| `kyc_verifications` | Optional verification and admin review. |
+| `kyc_verifications` | Optional verification and admin review. Approval here drives the Pro-tier "Verified" badge. |
 | `loan_requests` | Structured funding requests with amount, duration, purpose, income source, and repayment plan. |
 | `loan_offers` | Offers made on requests. Exact terms visible only to the request owner and to other offer-makers on the same request; contact details stay hidden until acceptance. |
 | `watchlist` | User-saved listings. |
 | `contact_reveals` | Post-acceptance contact sharing. Logged in `audit_logs`. |
 | `notifications` | In-app notification feed. |
+| `reviews` | One-time, post-contract star rating + optional text between the two parties to a completed contract. Feeds the public trust signals. |
 | `audit_logs` | **Append-only** compliance trail. Never update or delete rows. |
 | `refresh_tokens` | JWT refresh token store with rotation chain. |
 | `referrals` | Referral programme tracking. |
@@ -391,6 +452,8 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles` |
 | `accept_offer(request_id, offer_id, owner_id)` | RPC | Atomic offer acceptance + contact eligibility |
 | `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active listings — returns aggregate coverage tier and offer count only; exact per-offer terms are omitted unless the caller is the request owner or has an offer on that request |
+| `submit_review(contract_id, rating, comment)` | RPC | Records a one-time post-contract review from the calling account onto the counterparty; refreshes that counterparty's cached trust aggregates |
+| `recompute_trust_aggregates(user_id)` | Trigger fn | Recalculates rating average, review count, completed-deal count, and response-time bucket after a review or contract event |
 
 ### Key Views
 
@@ -400,6 +463,8 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | `v_user_marketplace_activity` | Dashboard — requests posted and offers made, in one query |
 | `v_lender_offers` | Offer activity for the current account, and — when the account is the request owner or an offer-maker on that request — the exact terms of every offer on that listing |
 | `v_marketplace_activity` | Marketplace request and offer KPIs |
+| `v_trust_profile_public` | Public trust signals for any `user_id` — rating average, review count, completed-deal count, repeat-participant flag, phone-verified flag, response-time bucket. Readable by any authenticated user. |
+| `v_trust_profile_pro` | Pro-only extension of the above — adds success rate and reliability score; RLS restricts rows to callers on the Pro plan viewing any profile |
 
 ---
 
@@ -560,6 +625,7 @@ supabase functions deploy accept-offer                         # deploy
 | `accept-offer` | Atomic offer acceptance with server enforcement |
 | `make-offer` | Server-side subscription-plan validation for offers |
 | `reveal-contact` | Post-acceptance contact sharing |
+| `submit-review` | Server-side validation that the caller was a party to the completed contract before writing a review |
 | `send-sms` | Africa's Talking or Twilio SMS alerts |
 
 ---
@@ -605,6 +671,8 @@ The `role` column has been removed — accounts below are described purely by ac
 | `admin1@nipanze.ug` | Free (`is_admin = true`) | Full admin dashboard access |
 | `test.user@gmail.com` | Free | No prior activity — test onboarding gates |
 
+> For trust-signal testing: `invest@pearlcapital.ug` and `david.mukasa@gmail.com` have a completed contract between them and are good candidates for seeding a mutual review pair once the `reviews` table ships.
+
 ---
 
 ## Deployment
@@ -630,6 +698,7 @@ The `role` column has been removed — accounts below are described purely by ac
 - **Service role key never in client** — only used inside Edge Functions
 - **Controlled contact sharing** — contact details stay hidden until acceptance
 - **Selective offer-term transparency** — exact offer amounts, rates, and fees are gated to the request owner and to offer-makers who have bid on that listing; everyone else sees an aggregate coverage tier only
+- **Reviews are participant-gated** — only the counterparty on a completed contract can submit a review, enforced server-side in `submit_review`, not just hidden in the UI
 - **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
 - **Private documents** — verification documents are never exposed in marketplace listings
 - **Refresh token rotation** — reuse attack detection via `replaced_by` chain
@@ -641,9 +710,9 @@ The `role` column has been removed — accounts below are described purely by ac
 
 > Nipanze operates as a technology marketplace. We do not hold funds, accept deposits, issue loans, pool capital, or set interest rates.
 
-**We DO:** Provide marketplace infrastructure, show requester-provided information, manage controlled contact sharing, and facilitate discovery.
+**We DO:** Provide marketplace infrastructure, show requester-provided information, manage controlled contact sharing, facilitate discovery, and surface on-platform trust signals (ratings, review counts, completed-deal counts) so participants can make informed matching decisions.
 
-**We DO NOT:** Accept deposits, hold or pool user funds, issue loans, set interest rates, guarantee returns, act as a bank or financial institution, process payments, or track repayments.
+**We DO NOT:** Accept deposits, hold or pool user funds, issue loans, set interest rates, guarantee returns, act as a bank or financial institution, process payments, track repayments, or claim to measure real-world repayment behavior. Trust signals reflect on-platform activity only — never off-platform financial performance.
 
 All money movement, loan documentation, and repayment tracking happen directly between matched participants outside the platform.
 
@@ -665,15 +734,21 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 3.5 — Cloud Migration & Auth Hardening ✅ Complete
 - Supabase Cloud, RLS audit, token rotation, APK release build
 
-### Stage 4 — Structured Deal Agreement & Contact Sharing ⬜ Planned (revised for unified model)
-- Locked-term bidding: Pro-plan users suggest interest rate, late fee, and repayment schedule at posting; Lender/Pro-plan users set their own terms at offer time; both locked on submission
-- Selective transparency: listing detail shows funded %, offer count, and coverage tier to everyone; exact offer terms unlock only for the request owner and for offer-makers who have bid on that listing
-- Contract auto-generated after offer acceptance with all agreed terms + legal disclaimer
-- Contact reveal only after contract is generated and unlock is confirmed
-- `role` column fully removed from schema; all gating reads `subscription_plan` only
+### Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System 🔵 DB layer ✅ — UI in progress
+
+**Database layer complete (July 2026):** All schema additions, RPCs, views, RLS policies and triggers are live. Apply `sql/cloud_patch_stage4_final.sql` to Supabase to bring any cloud instance up to date.
+
+- ✅ **DB:** Locked-term bidding — `trg_lock_request_terms` / `trg_lock_offer_terms` / `trg_fn_validate_request_terms` triggers enforce immutable terms at the DB layer for Pro posting and Lender/Pro offers
+- ✅ **DB:** Selective transparency — `get_public_listing_offers(request_id)` RPC + `v_lender_offers` (RLS + `security_invoker`) return exact terms only to the request owner or an active offer-maker; `v_loan_listings` exposes `offer_coverage_tier` (`low` / `medium` / `high`) for everyone else
+- ✅ **DB:** Trust & reputation — `reviews` + `trust_aggregates` tables, `submit_review` RPC (participant-gated, one per direction), `recompute_trust_aggregates` (fired on review and contact reveal), `v_trust_profile_public` (any viewer), `v_trust_profile_pro` (Pro subscription required)
+- ✅ **DB:** Contract auto-generated by `accept_offer` RPC with full term snapshot + legal disclaimer + late-fee rule
+- ✅ **DB:** Contact reveal enforced by `reveal_contact` / `unlock_contact` RPCs — contact details inaccessible before this step via any query
+- ✅ **DB:** `role` column fully removed; all gating reads `subscription_plan` only
+- 🎨 **UI remaining:** `LoanDetailPage` tiered offer view · `TrustBadgeRow` widget · `AdvancedTrustPanel` (Pro) · Contact reveal screen · Post-contract review prompt
+- ⚖️ **Open decision:** Contact-unlock fee — go/no-go pending usage data (see [Trust & Reputation Signals](#trust--reputation-signals))
 
 ### Stage 5 — Admin & Compliance ⬜ Planned
-- Admin dashboard, verification review, audit trails, SMS
+- Admin dashboard, verification review, audit trails, SMS, review moderation
 
 ### Stage 6 — Launch & Growth ⬜ Planned
 - Play Store, App Store, referral programme, subscription growth (no role-selection onboarding step)

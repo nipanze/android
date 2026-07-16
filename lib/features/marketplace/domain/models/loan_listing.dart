@@ -25,6 +25,14 @@ class LoanListing extends Equatable {
     required this.expiresAt,
     required this.numberOfOffers,
     this.kycStatus,
+    this.offerCoverageTier,
+    this.trustRatingAvg,
+    this.trustReviewCount = 0,
+    this.trustCompletedDealsCount = 0,
+    this.trustIsRepeatParticipant = false,
+    this.trustPhoneVerified = false,
+    this.trustResponseTimeBucket,
+    this.trustIsVerified = false,
   });
 
   final String requestId;
@@ -47,6 +55,14 @@ class LoanListing extends Equatable {
   final DateTime expiresAt;
   final int numberOfOffers;
   final String? kycStatus;
+  final String? offerCoverageTier;
+  final double? trustRatingAvg;
+  final int trustReviewCount;
+  final int trustCompletedDealsCount;
+  final bool trustIsRepeatParticipant;
+  final bool trustPhoneVerified;
+  final String? trustResponseTimeBucket;
+  final bool trustIsVerified;
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
   bool get isClosingSoon24h =>
@@ -93,6 +109,16 @@ class LoanListing extends Equatable {
           DateTime.now(),
       numberOfOffers: map['number_of_offers'] as int? ?? 0,
       kycStatus: map['kyc_status'] as String?,
+      offerCoverageTier: map['offer_coverage_tier'] as String?,
+      trustRatingAvg: (map['trust_rating_avg'] as num?)?.toDouble(),
+      trustReviewCount: (map['trust_review_count'] as num?)?.toInt() ?? 0,
+      trustCompletedDealsCount:
+          (map['trust_completed_deals_count'] as num?)?.toInt() ?? 0,
+      trustIsRepeatParticipant:
+          map['trust_is_repeat_participant'] as bool? ?? false,
+      trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
+      trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
+      trustIsVerified: map['trust_is_verified'] as bool? ?? false,
     );
   }
 
@@ -117,6 +143,13 @@ class LoanOffer extends Equatable {
     required this.status,
     required this.offeredAt,
     this.acceptedAt,
+    this.trustRatingAvg,
+    this.trustReviewCount = 0,
+    this.trustCompletedDealsCount = 0,
+    this.trustIsRepeatParticipant = false,
+    this.trustPhoneVerified = false,
+    this.trustResponseTimeBucket,
+    this.trustIsVerified = false,
   });
 
   final String id;
@@ -132,6 +165,13 @@ class LoanOffer extends Equatable {
   final String status;
   final DateTime offeredAt;
   final DateTime? acceptedAt;
+  final double? trustRatingAvg;
+  final int trustReviewCount;
+  final int trustCompletedDealsCount;
+  final bool trustIsRepeatParticipant;
+  final bool trustPhoneVerified;
+  final String? trustResponseTimeBucket;
+  final bool trustIsVerified;
 
   bool get hasMaskedLender => lenderId.startsWith('public-offer-');
 
@@ -155,6 +195,15 @@ class LoanOffer extends Equatable {
       acceptedAt: map['accepted_at'] != null
           ? DateTime.tryParse(map['accepted_at'] as String)
           : null,
+      trustRatingAvg: (map['trust_rating_avg'] as num?)?.toDouble(),
+      trustReviewCount: (map['trust_review_count'] as num?)?.toInt() ?? 0,
+      trustCompletedDealsCount:
+          (map['trust_completed_deals_count'] as num?)?.toInt() ?? 0,
+      trustIsRepeatParticipant:
+          map['trust_is_repeat_participant'] as bool? ?? false,
+      trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
+      trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
+      trustIsVerified: map['trust_is_verified'] as bool? ?? false,
     );
   }
 

@@ -110,7 +110,7 @@ CREATE TYPE audit_event_type_enum AS ENUM (
     'listing_created', 'listing_cancelled',
     'offer_placed', 'offer_withdrawn', 'offer_accepted',
     'agreement_locked',
-    'contact_revealed',
+    'contact_revealed', 'review_submitted',
     'subscription_changed',
     'admin_action'
 );
@@ -174,6 +174,8 @@ CREATE TABLE profiles (
 
     full_name        TEXT,
     phone            TEXT UNIQUE,
+    -- Public badge only; the phone number itself remains private until reveal.
+    phone_verified_at TIMESTAMP,
     district         TEXT,
     employment_type  employment_type_enum,
     employer_name    TEXT,
@@ -188,6 +190,8 @@ CREATE TABLE profiles (
 
 COMMENT ON TABLE  profiles IS 'Core user profile. Extends auth.users 1-to-1. One account supports both borrower and lender activity.';
 COMMENT ON COLUMN profiles.phone IS 'Masked until contact reveal is triggered post-offer-acceptance.';
+COMMENT ON COLUMN profiles.phone_verified_at IS
+'Timestamp of OTP verification. Only the verified status is exposed as a trust signal.';
 COMMENT ON COLUMN profiles.is_admin IS
 'The only role in the system. Governs platform moderation access, unrelated to marketplace
  capability, which comes entirely from subscription_plan on the subscriptions table.';
@@ -500,10 +504,49 @@ COMMENT ON TABLE agreements IS
  Agreement is read-only after generation (snapshot captured immediately).
  All agreement events are logged in audit_logs for traceability.';
 
+-- ============================================
+-- TABLES: reviews and trust_aggregates
+-- A "completed deal" means a locked agreement whose contact has been revealed.
+-- It deliberately does not imply repayment, which happens off-platform.
+-- ============================================
+
+CREATE TABLE reviews (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id UUID NOT NULL REFERENCES agreements(id) ON DELETE CASCADE,
+    reviewer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    reviewee_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    rating      SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment     TEXT CHECK (comment IS NULL OR char_length(comment) <= 500),
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (contract_id, reviewer_id),
+    CHECK (reviewer_id <> reviewee_id)
+);
+
+CREATE TABLE trust_aggregates (
+    user_id                    UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+    rating_avg                 NUMERIC(3,2),
+    review_count               INT NOT NULL DEFAULT 0,
+    completed_deals_count      INT NOT NULL DEFAULT 0,
+    is_repeat_participant      BOOLEAN NOT NULL DEFAULT FALSE,
+    response_time_bucket       TEXT,
+    success_rate               NUMERIC(5,2),
+    reliability_score          INT,
+    updated_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (response_time_bucket IN ('responds_quickly', 'responds_within_a_day', 'responds_slowly') OR response_time_bucket IS NULL),
+    CHECK (reliability_score BETWEEN 0 AND 100 OR reliability_score IS NULL)
+);
+
+COMMENT ON TABLE reviews IS
+'Immutable, one-per-party review for a completed on-platform deal. It never represents off-platform repayment behaviour.';
+COMMENT ON TABLE trust_aggregates IS
+'Cached, platform-scoped reputation aggregates. Public fields and Pro-only analytical fields are exposed through separate views.';
+
 -- Indexes
 CREATE INDEX idx_agr_offer_id    ON agreements (offer_id);
 CREATE INDEX idx_agr_request_id  ON agreements (request_id);
 CREATE INDEX idx_agr_status      ON agreements (status);
+CREATE INDEX idx_reviews_reviewee ON reviews (reviewee_id, created_at DESC);
+CREATE INDEX idx_reviews_contract ON reviews (contract_id);
 
 -- NOTE: trg_agreements_updated_at trigger moved to the TRIGGERS section
 -- below (after fn_set_updated_at() is defined) — see "-- agreements" there.
@@ -690,16 +733,31 @@ SELECT
     lr.terms_locked_at,
     lr.status,
     lr.number_of_offers,
+    CASE
+        WHEN lr.number_of_offers = 0 THEN 'low'
+        WHEN lr.number_of_offers <= 2 THEN 'medium'
+        ELSE 'high'
+    END                                                                       AS offer_coverage_tier,
     lr.listed_at,
     lr.expires_at,
     -- KYC badge (status only — no personal verification documents)
     k.status                                                                  AS kyc_status,
+    -- Public, privacy-safe trust signals for the request owner.
+    ta.rating_avg                                                             AS trust_rating_avg,
+    COALESCE(ta.review_count, 0)                                              AS trust_review_count,
+    COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE)                                AS trust_is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL)                                        AS trust_phone_verified,
+    ta.response_time_bucket                                                   AS trust_response_time_bucket,
+    (k.status = 'approved')                                                   AS trust_is_verified,
     -- time-remaining helpers
     GREATEST(lr.expires_at - NOW(), INTERVAL '0')                            AS time_remaining,
     (lr.expires_at < NOW() + INTERVAL '24 hours')                            AS closing_soon_24h,
     (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h
 FROM  loan_requests   lr
+JOIN  profiles p ON p.id = lr.borrower_id
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
 WHERE lr.status = 'active';
 
 COMMENT ON VIEW v_loan_listings IS
@@ -750,6 +808,37 @@ GROUP BY p.id, s.plan, s.status, s.expires_at, k.status;
 COMMENT ON VIEW v_user_marketplace_activity IS
 'Dashboard summary covering both borrower requests and lender offers for a single user account.';
 
+-- --------------------------------------------
+-- Trust profile views
+-- These contain no contact details. The public view is intentionally readable
+-- without marketplace participation; the Pro view adds only derived insights.
+-- --------------------------------------------
+CREATE VIEW v_trust_profile_public AS
+SELECT
+    p.id AS user_id,
+    ta.rating_avg,
+    COALESCE(ta.review_count, 0) AS review_count,
+    COALESCE(ta.completed_deals_count, 0) AS completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE) AS is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL) AS phone_verified,
+    ta.response_time_bucket,
+    (k.status = 'approved') AS is_verified
+FROM profiles p
+LEFT JOIN trust_aggregates ta ON ta.user_id = p.id
+LEFT JOIN kyc_verifications k ON k.user_id = p.id;
+
+CREATE VIEW v_trust_profile_pro AS
+SELECT
+    tp.*,
+    ta.success_rate,
+    ta.reliability_score
+FROM v_trust_profile_public tp
+JOIN trust_aggregates ta ON ta.user_id = tp.user_id
+WHERE EXISTS (
+    SELECT 1 FROM subscriptions s
+    WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+);
+
 
 -- --------------------------------------------
 -- v_lender_offers
@@ -776,11 +865,21 @@ SELECT
     lo.status                                                                 AS offer_status,
     lo.offered_at,
     lo.accepted_at,
+    ta.rating_avg                                                             AS trust_rating_avg,
+    COALESCE(ta.review_count, 0)                                              AS trust_review_count,
+    COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE)                                AS trust_is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL)                                        AS trust_phone_verified,
+    ta.response_time_bucket                                                   AS trust_response_time_bucket,
+    (k.status = 'approved')                                                   AS trust_is_verified,
     -- contact reveal status (only populated after acceptance)
     cr.status                                                                 AS reveal_status,
     cr.revealed_at
 FROM  loan_offers     lo
 JOIN  loan_requests   lr ON lr.id      = lo.request_id
+JOIN  profiles        p  ON p.id       = lo.lender_id
+LEFT  JOIN kyc_verifications k ON k.user_id = lo.lender_id
+LEFT  JOIN trust_aggregates ta ON ta.user_id = lo.lender_id
 LEFT  JOIN contact_reveals cr ON cr.offer_id = lo.id;
 
 COMMENT ON VIEW v_lender_offers IS
@@ -835,12 +934,30 @@ RETURNS TABLE (
     offered_at TIMESTAMP,
     accepted_at TIMESTAMP
 )
-LANGUAGE SQL
+LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
 AS $$
-    SELECT
+DECLARE
+    v_can_view_terms BOOLEAN;
+BEGIN
+    SELECT lr.borrower_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM loan_offers own_offer
+            WHERE own_offer.request_id = lr.id AND own_offer.lender_id = auth.uid()
+        )
+    INTO v_can_view_terms
+    FROM loan_requests lr
+    WHERE lr.id = p_request_id;
+
+    -- Non-participants receive their aggregate signal through v_loan_listings.
+    -- Never return partial rows with exact terms that could be reconstructed.
+    IF NOT COALESCE(v_can_view_terms, FALSE) THEN
+        RETURN;
+    END IF;
+
+    RETURN QUERY SELECT
         lo.id,
         lo.request_id,
         ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
@@ -858,12 +975,152 @@ AS $$
     JOIN loan_requests lr ON lr.id = lo.request_id
     WHERE lo.request_id = p_request_id
       AND lo.status = 'pending'
-      AND lr.status = 'active'
+      AND (lr.status = 'active' OR lr.borrower_id = auth.uid())
     ORDER BY lo.offered_at DESC;
+END;
 $$;
 
 COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
-'Public anonymized bid book for active listings. Does not expose lender_id or borrower details.';
+'Participant-scoped bid book. Listing owners and offer-makers receive exact terms; all other viewers receive only v_loan_listings aggregate coverage.';
+
+-- Rebuild a user's platform-scoped trust summary. This intentionally counts
+-- only agreements that reached contact reveal, never repayment behaviour.
+CREATE OR REPLACE FUNCTION public.recompute_trust_aggregates(p_user_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_rating NUMERIC(3,2);
+    v_reviews INT;
+    v_deals INT;
+    v_response_hours NUMERIC;
+    v_bucket TEXT;
+    v_success_rate NUMERIC(5,2);
+    v_score INT;
+BEGIN
+    SELECT ROUND(AVG(rating)::NUMERIC, 2), COUNT(*)
+      INTO v_rating, v_reviews
+      FROM reviews WHERE reviewee_id = p_user_id;
+
+    SELECT COUNT(*) INTO v_deals
+    FROM agreements a
+    JOIN loan_offers lo ON lo.id = a.offer_id
+    JOIN loan_requests lr ON lr.id = a.request_id
+    JOIN contact_reveals cr ON cr.offer_id = lo.id AND cr.status = 'revealed'
+    WHERE lr.borrower_id = p_user_id OR lo.lender_id = p_user_id;
+
+    SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY response_hours)
+      INTO v_response_hours
+    FROM (
+        SELECT EXTRACT(EPOCH FROM (lo.offered_at - lr.listed_at)) / 3600.0 AS response_hours
+        FROM loan_offers lo JOIN loan_requests lr ON lr.id = lo.request_id
+        WHERE lo.lender_id = p_user_id
+        UNION ALL
+        SELECT EXTRACT(EPOCH FROM (first_offer_at - lr.listed_at)) / 3600.0
+        FROM loan_requests lr
+        JOIN LATERAL (
+            SELECT MIN(lo.offered_at) AS first_offer_at
+            FROM loan_offers lo WHERE lo.request_id = lr.id
+        ) first_offer ON first_offer.first_offer_at IS NOT NULL
+        WHERE lr.borrower_id = p_user_id
+    ) response_times;
+
+    v_bucket := CASE
+        WHEN v_response_hours IS NULL THEN NULL
+        WHEN v_response_hours <= 24 THEN 'responds_quickly'
+        WHEN v_response_hours <= 72 THEN 'responds_within_a_day'
+        ELSE 'responds_slowly'
+    END;
+
+    SELECT ROUND(
+        100.0 * COUNT(*) FILTER (WHERE completed) / NULLIF(COUNT(*), 0), 2
+    ) INTO v_success_rate
+    FROM (
+        SELECT lo.id,
+               EXISTS (SELECT 1 FROM agreements a WHERE a.offer_id = lo.id) AS completed
+        FROM loan_offers lo WHERE lo.lender_id = p_user_id
+        UNION ALL
+        SELECT lr.id,
+               EXISTS (SELECT 1 FROM agreements a WHERE a.request_id = lr.id)
+        FROM loan_requests lr WHERE lr.borrower_id = p_user_id
+    ) participation;
+
+    v_score := CASE WHEN v_rating IS NULL THEN NULL ELSE LEAST(100, ROUND(
+        (v_rating / 5.0) * 60 + LEAST(v_deals, 4) * 5 +
+        CASE v_bucket WHEN 'responds_quickly' THEN 20 WHEN 'responds_within_a_day' THEN 10 ELSE 0 END
+    )::INT) END;
+
+    INSERT INTO trust_aggregates (
+        user_id, rating_avg, review_count, completed_deals_count,
+        is_repeat_participant, response_time_bucket, success_rate, reliability_score, updated_at
+    ) VALUES (
+        p_user_id, v_rating, COALESCE(v_reviews, 0), COALESCE(v_deals, 0),
+        COALESCE(v_deals, 0) >= 2, v_bucket, v_success_rate, v_score, NOW()
+    ) ON CONFLICT (user_id) DO UPDATE SET
+        rating_avg = EXCLUDED.rating_avg,
+        review_count = EXCLUDED.review_count,
+        completed_deals_count = EXCLUDED.completed_deals_count,
+        is_repeat_participant = EXCLUDED.is_repeat_participant,
+        response_time_bucket = EXCLUDED.response_time_bucket,
+        success_rate = EXCLUDED.success_rate,
+        reliability_score = EXCLUDED.reliability_score,
+        updated_at = EXCLUDED.updated_at;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.submit_review(
+    p_contract_id UUID, p_rating SMALLINT, p_comment TEXT DEFAULT NULL
+) RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+    v_reviewer UUID := auth.uid();
+    v_reviewee UUID;
+    v_review_id UUID;
+BEGIN
+    IF v_reviewer IS NULL THEN RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED'; END IF;
+    IF p_rating NOT BETWEEN 1 AND 5 THEN RAISE EXCEPTION 'NIPANZE_INVALID_RATING'; END IF;
+
+    SELECT CASE WHEN lr.borrower_id = v_reviewer THEN lo.lender_id ELSE lr.borrower_id END
+      INTO v_reviewee
+    FROM agreements a
+    JOIN loan_offers lo ON lo.id = a.offer_id
+    JOIN loan_requests lr ON lr.id = a.request_id
+    JOIN contact_reveals cr ON cr.offer_id = lo.id AND cr.status = 'revealed'
+    WHERE a.id = p_contract_id
+      AND (lr.borrower_id = v_reviewer OR lo.lender_id = v_reviewer);
+    IF v_reviewee IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_REVIEW_NOT_ELIGIBLE: Reviews require a completed on-platform deal.';
+    END IF;
+
+    INSERT INTO reviews (contract_id, reviewer_id, reviewee_id, rating, comment)
+    VALUES (p_contract_id, v_reviewer, v_reviewee, p_rating, NULLIF(BTRIM(p_comment), ''))
+    RETURNING id INTO v_review_id;
+    PERFORM recompute_trust_aggregates(v_reviewee);
+    INSERT INTO audit_logs (user_id, event_type, entity_type, entity_id, action)
+    VALUES (v_reviewer, 'review_submitted', 'reviews', v_review_id, 'submit_review');
+    RETURN v_review_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.trg_refresh_trust_from_reveal()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_borrower UUID; v_lender UUID;
+BEGIN
+    IF NEW.status = 'revealed' AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'revealed') THEN
+        SELECT lr.borrower_id, lo.lender_id INTO v_borrower, v_lender
+        FROM loan_offers lo JOIN loan_requests lr ON lr.id = lo.request_id WHERE lo.id = NEW.offer_id;
+        PERFORM recompute_trust_aggregates(v_borrower);
+        PERFORM recompute_trust_aggregates(v_lender);
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_refresh_trust_on_reveal
+AFTER INSERT OR UPDATE OF status ON contact_reveals
+FOR EACH ROW EXECUTE FUNCTION trg_refresh_trust_from_reveal();
 
 
 -- ============================================
@@ -1672,6 +1929,8 @@ ALTER TABLE loan_offers         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE watchlist           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_reveals     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agreements          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trust_aggregates    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refresh_tokens      ENABLE ROW LEVEL SECURITY;
@@ -1815,6 +2074,17 @@ CREATE POLICY "agreements: service role update"
 CREATE POLICY "agreements: admin all"
     ON agreements FOR ALL TO authenticated USING (private.is_admin());
 
+-- Reviews are written only through submit_review(), which validates both
+-- parties and the revealed agreement. Raw review data is readable only by
+-- its author/admin; public reputation is exposed through the safe views.
+CREATE POLICY "reviews: author or admin read"
+    ON reviews FOR SELECT TO authenticated
+    USING (reviewer_id = auth.uid() OR private.is_admin());
+CREATE POLICY "reviews: no direct writes"
+    ON reviews FOR ALL TO authenticated USING (FALSE) WITH CHECK (FALSE);
+CREATE POLICY "trust aggregates: admin only"
+    ON trust_aggregates FOR SELECT TO authenticated USING (private.is_admin());
+
 -- contact_reveals
 -- Only the parties on the matched offer (borrower / lender) can see the reveal record.
 CREATE POLICY "contact_reveals: matched parties read"
@@ -1945,6 +2215,10 @@ GRANT SELECT ON v_loan_listings TO authenticated, anon;
 GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
 GRANT SELECT ON v_lender_offers TO authenticated, anon;
 GRANT SELECT ON v_marketplace_activity TO authenticated, anon;
+GRANT SELECT ON v_trust_profile_public TO authenticated, anon;
+GRANT SELECT ON v_trust_profile_pro TO authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_review(UUID, SMALLINT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.recompute_trust_aggregates(UUID) TO service_role;
 
 -- Explicitly grant privileges on all tables
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
