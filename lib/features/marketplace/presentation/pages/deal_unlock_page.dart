@@ -10,7 +10,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/domain/models/user_profile.dart';
-import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/agreement_repository.dart';
@@ -29,6 +28,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
   late final AgreementRepository _agreementRepo;
   late final ProfileRepository _profileRepo;
   Agreement? _agreement;
+  UserProfile? _profile;
   bool _loading = true;
   String? _error;
   bool _unlocking = false;
@@ -47,10 +47,14 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
       _error = null;
     });
     try {
-      final agreement = await _agreementRepo.getAgreement(widget.agreementId);
+      final results = await Future.wait([
+        _agreementRepo.getAgreement(widget.agreementId),
+        _profileRepo.getProfile(),
+      ]);
       if (!mounted) return;
       setState(() {
-        _agreement = agreement;
+        _agreement = results[0] as Agreement?;
+        _profile = results[1] as UserProfile?;
         _loading = false;
       });
     } catch (e) {
@@ -120,8 +124,12 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
       // we swallow that error so the contact reveal still proceeds.
       if (!isPaid && hasWelcomeCredit) {
         try {
-          await _profileRepo.consumeFreeUnlock();
-          if (mounted) unawaited(context.read<ProfileCubit>().refresh());
+          final newRemaining = await _profileRepo.consumeFreeUnlock();
+          if (mounted && _profile != null) {
+            setState(() {
+              _profile = _profile!.copyWith(freeUnlocksRemaining: newRemaining);
+            });
+          }
         } catch (creditError) {
           // RPC not yet deployed — log and continue.
           debugPrint('[DealUnlock] consumeFreeUnlock failed: $creditError');
@@ -372,10 +380,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
         ? authState.user.subscriptionPlan
         : SubscriptionPlan.free;
 
-    // Read profile cubit for free unlock credit count
-    final profileState = context.watch<ProfileCubit>().state;
-    final profile =
-        profileState is ProfileCubitLoaded ? profileState.profile : null;
+    final profile = _profile;
 
     final isPaid = _isPaidUser(plan);
     final freeLeft = profile?.freeUnlocksRemaining ?? 0;

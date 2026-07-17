@@ -101,6 +101,73 @@ class UserProfile extends Equatable {
           subscriptionStatus == 'active' ||
       freeUnlocksRemaining > 0;
 
+  UserProfile copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? phone,
+    String? district,
+    String? employmentType,
+    String? employerName,
+    int? monthlyIncomeUgx,
+    String? accountStatus,
+    DateTime? memberSince,
+    String? subscriptionPlan,
+    String? subscriptionStatus,
+    DateTime? subscriptionExpiresAt,
+    String? kycStatus,
+    DateTime? kycExpiresAt,
+    double? trustRatingAvg,
+    int? trustReviewCount,
+    int? trustCompletedDealsCount,
+    bool? trustIsRepeatParticipant,
+    bool? trustPhoneVerified,
+    String? trustResponseTimeBucket,
+    bool? trustIsVerified,
+    double? trustSuccessRate,
+    int? trustReliabilityScore,
+    int? activeListings,
+    int? activeOffers,
+    int? revealedContacts,
+    int? freeUnlocksRemaining,
+  }) {
+    return UserProfile(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      phone: phone ?? this.phone,
+      district: district ?? this.district,
+      employmentType: employmentType ?? this.employmentType,
+      employerName: employerName ?? this.employerName,
+      monthlyIncomeUgx: monthlyIncomeUgx ?? this.monthlyIncomeUgx,
+      accountStatus: accountStatus ?? this.accountStatus,
+      memberSince: memberSince ?? this.memberSince,
+      subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      subscriptionExpiresAt:
+          subscriptionExpiresAt ?? this.subscriptionExpiresAt,
+      kycStatus: kycStatus ?? this.kycStatus,
+      kycExpiresAt: kycExpiresAt ?? this.kycExpiresAt,
+      trustRatingAvg: trustRatingAvg ?? this.trustRatingAvg,
+      trustReviewCount: trustReviewCount ?? this.trustReviewCount,
+      trustCompletedDealsCount:
+          trustCompletedDealsCount ?? this.trustCompletedDealsCount,
+      trustIsRepeatParticipant:
+          trustIsRepeatParticipant ?? this.trustIsRepeatParticipant,
+      trustPhoneVerified: trustPhoneVerified ?? this.trustPhoneVerified,
+      trustResponseTimeBucket:
+          trustResponseTimeBucket ?? this.trustResponseTimeBucket,
+      trustIsVerified: trustIsVerified ?? this.trustIsVerified,
+      trustSuccessRate: trustSuccessRate ?? this.trustSuccessRate,
+      trustReliabilityScore:
+          trustReliabilityScore ?? this.trustReliabilityScore,
+      activeListings: activeListings ?? this.activeListings,
+      activeOffers: activeOffers ?? this.activeOffers,
+      revealedContacts: revealedContacts ?? this.revealedContacts,
+      freeUnlocksRemaining: freeUnlocksRemaining ?? this.freeUnlocksRemaining,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,
