@@ -479,6 +479,8 @@ CREATE TABLE agreements (
     -- Locked repayment terms copied from the accepted lender bid
     repayment_frequency         repayment_frequency_enum NOT NULL,
     repayment_amount            BIGINT NOT NULL CONSTRAINT chk_agr_repayment_positive CHECK (repayment_amount > 0),
+    repayment_period            INT NOT NULL CONSTRAINT chk_agr_period_positive CHECK (repayment_period > 0),
+    total_repayment_amount      BIGINT NOT NULL CONSTRAINT chk_agr_total_positive CHECK (total_repayment_amount > 0),
     late_payment_penalty_pct    NUMERIC(5,2) NOT NULL DEFAULT 0 CONSTRAINT chk_agr_penalty_range CHECK (late_payment_penalty_pct >= 0 AND late_payment_penalty_pct <= 100),
 
     -- Agreement text + snapshot (for audit trail)
@@ -1587,6 +1589,7 @@ BEGIN
         'total_repayment_amount', v_total_repayment,
         'repayment_frequency', v_offer.repayment_frequency,
         'installment_amount', v_offer.installment_amount,
+        'repayment_period', v_listing.duration_months,
         'late_fee_pct', v_offer.late_fee_pct,
         'late_fee_rule', 'Late fee applies only to missed installment amount, not total balance.',
         'start_date', CURRENT_DATE,
@@ -1622,6 +1625,8 @@ BEGIN
         request_id,
         repayment_frequency,
         repayment_amount,
+        repayment_period,
+        total_repayment_amount,
         late_payment_penalty_pct,
         agreement_text,
         agreement_snapshot,
@@ -1635,6 +1640,8 @@ BEGIN
         p_request_id,
         v_offer.repayment_frequency::public.repayment_frequency_enum,
         v_offer.installment_amount,
+        v_listing.duration_months,
+        v_total_repayment,
         v_offer.late_fee_pct,
         v_agreement_text,
         v_snapshot,
@@ -1644,7 +1651,9 @@ BEGIN
         NOW()
     )
     ON CONFLICT (offer_id) DO UPDATE
-       SET agreement_text = EXCLUDED.agreement_text,
+       SET repayment_period = EXCLUDED.repayment_period,
+           total_repayment_amount = EXCLUDED.total_repayment_amount,
+           agreement_text = EXCLUDED.agreement_text,
            agreement_snapshot = EXCLUDED.agreement_snapshot,
            status = 'locked'::public.agreement_status_enum,
            borrower_agreed_at = COALESCE(public.agreements.borrower_agreed_at, NOW()),

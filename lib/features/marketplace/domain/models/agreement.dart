@@ -79,6 +79,8 @@ class Agreement extends Equatable {
     required this.requestId,
     required this.repaymentFrequency,
     required this.repaymentAmount,
+    required this.repaymentPeriod,
+    required this.totalRepaymentAmount,
     required this.latePenaltyPercentage,
     required this.agreementText,
     this.agreementSnapshot,
@@ -95,6 +97,8 @@ class Agreement extends Equatable {
   final String requestId;
   final RepaymentFrequency repaymentFrequency;
   final int repaymentAmount;
+  final int repaymentPeriod;
+  final int totalRepaymentAmount;
   final double latePenaltyPercentage;
   final String agreementText;
   final Map<String, dynamic>? agreementSnapshot;
@@ -118,6 +122,8 @@ class Agreement extends Equatable {
         map['repayment_frequency'] as String? ?? 'monthly',
       ),
       repaymentAmount: (map['repayment_amount'] as num?)?.toInt() ?? 0,
+      repaymentPeriod: (map['repayment_period'] as num?)?.toInt() ?? 0,
+      totalRepaymentAmount: (map['total_repayment_amount'] as num?)?.toInt() ?? 0,
       latePenaltyPercentage:
           (map['late_payment_penalty_pct'] as num?)?.toDouble() ?? 0.0,
       agreementText: map['agreement_text'] as String? ?? '',
@@ -150,6 +156,8 @@ class Agreement extends Equatable {
           ? 'one_time'
           : repaymentFrequency.name,
       'repayment_amount': repaymentAmount,
+      'repayment_period': repaymentPeriod,
+      'total_repayment_amount': totalRepaymentAmount,
       'late_payment_penalty_pct': latePenaltyPercentage,
       'agreement_text': agreementText,
       'agreement_snapshot': agreementSnapshot,
@@ -171,6 +179,8 @@ class Agreement extends Equatable {
     String? requestId,
     RepaymentFrequency? repaymentFrequency,
     int? repaymentAmount,
+    int? repaymentPeriod,
+    int? totalRepaymentAmount,
     double? latePenaltyPercentage,
     String? agreementText,
     Map<String, dynamic>? agreementSnapshot,
@@ -187,6 +197,8 @@ class Agreement extends Equatable {
       requestId: requestId ?? this.requestId,
       repaymentFrequency: repaymentFrequency ?? this.repaymentFrequency,
       repaymentAmount: repaymentAmount ?? this.repaymentAmount,
+      repaymentPeriod: repaymentPeriod ?? this.repaymentPeriod,
+      totalRepaymentAmount: totalRepaymentAmount ?? this.totalRepaymentAmount,
       latePenaltyPercentage:
           latePenaltyPercentage ?? this.latePenaltyPercentage,
       agreementText: agreementText ?? this.agreementText,
@@ -204,6 +216,10 @@ class Agreement extends Equatable {
   List<Object?> get props => [
         id,
         offerId,
+        repaymentFrequency,
+        repaymentAmount,
+        repaymentPeriod,
+        totalRepaymentAmount,
         status,
         borrowerAgreedAt,
         lenderAgreedAt,

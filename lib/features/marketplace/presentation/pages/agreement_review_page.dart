@@ -115,6 +115,14 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                       bold: true,
                     ),
                     _TermRow(
+                      label: 'Repayment period',
+                      value: '${a.repaymentPeriod} months',
+                    ),
+                    _TermRow(
+                      label: 'Total repayment',
+                      value: 'UGX ${_fmt(a.totalRepaymentAmount)}',
+                    ),
+                    _TermRow(
                       label: 'Frequency',
                       value: a.repaymentFrequency.displayName,
                     ),
