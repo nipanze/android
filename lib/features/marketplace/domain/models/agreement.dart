@@ -81,6 +81,7 @@ class Agreement extends Equatable {
     required this.repaymentAmount,
     required this.repaymentPeriod,
     required this.totalRepaymentAmount,
+    required this.loanAmount,
     required this.latePenaltyPercentage,
     required this.agreementText,
     this.agreementSnapshot,
@@ -99,6 +100,7 @@ class Agreement extends Equatable {
   final int repaymentAmount;
   final int repaymentPeriod;
   final int totalRepaymentAmount;
+  final int loanAmount;
   final double latePenaltyPercentage;
   final String agreementText;
   final Map<String, dynamic>? agreementSnapshot;
@@ -114,6 +116,7 @@ class Agreement extends Equatable {
   bool get canBeEdited => status == AgreementStatus.pending;
 
   factory Agreement.fromMap(Map<String, dynamic> map) {
+    final snapshot = map['agreement_snapshot'] as Map<String, dynamic>?;
     return Agreement(
       id: map['id'] as String,
       offerId: map['offer_id'] as String,
@@ -124,10 +127,11 @@ class Agreement extends Equatable {
       repaymentAmount: (map['repayment_amount'] as num?)?.toInt() ?? 0,
       repaymentPeriod: (map['repayment_period'] as num?)?.toInt() ?? 0,
       totalRepaymentAmount: (map['total_repayment_amount'] as num?)?.toInt() ?? 0,
+      loanAmount: (snapshot?['loan_amount'] as num?)?.toInt() ?? 0,
       latePenaltyPercentage:
           (map['late_payment_penalty_pct'] as num?)?.toDouble() ?? 0.0,
       agreementText: map['agreement_text'] as String? ?? '',
-      agreementSnapshot: map['agreement_snapshot'] as Map<String, dynamic>?,
+      agreementSnapshot: snapshot,
       status: AgreementStatus.fromString(
         map['status'] as String? ?? 'pending',
       ),
@@ -181,6 +185,7 @@ class Agreement extends Equatable {
     int? repaymentAmount,
     int? repaymentPeriod,
     int? totalRepaymentAmount,
+    int? loanAmount,
     double? latePenaltyPercentage,
     String? agreementText,
     Map<String, dynamic>? agreementSnapshot,
@@ -199,6 +204,7 @@ class Agreement extends Equatable {
       repaymentAmount: repaymentAmount ?? this.repaymentAmount,
       repaymentPeriod: repaymentPeriod ?? this.repaymentPeriod,
       totalRepaymentAmount: totalRepaymentAmount ?? this.totalRepaymentAmount,
+      loanAmount: loanAmount ?? this.loanAmount,
       latePenaltyPercentage:
           latePenaltyPercentage ?? this.latePenaltyPercentage,
       agreementText: agreementText ?? this.agreementText,
@@ -220,6 +226,7 @@ class Agreement extends Equatable {
         repaymentAmount,
         repaymentPeriod,
         totalRepaymentAmount,
+        loanAmount,
         status,
         borrowerAgreedAt,
         lenderAgreedAt,

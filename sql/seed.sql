@@ -769,13 +769,13 @@ INSERT INTO public.agreements (
 ('a9000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
  'monthly'::public.repayment_frequency_enum, 462500, 12, 5550000, 2.00,
  'LOAN AGREEMENT between David Mukasa and William Kasujja. Principal: UGX 5,000,000 at 11% interest. Repayments: Monthly UGX 462,500.',
- '{"payment_frequency": "monthly", "payment_amount": 462500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 5550000, "duration_months": 12}'::jsonb, 'locked'::public.agreement_status_enum,
+ '{"payment_frequency": "monthly", "payment_amount": 462500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 5550000, "duration_months": 12, "loan_amount": 5000000, "interest_rate_pct": 11.0}'::jsonb, 'locked'::public.agreement_status_enum,
  '2024-02-06 14:30:00', '2024-02-06 14:30:00', '2024-02-06 14:30:00'),
 
 ('a9000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
  'monthly'::public.repayment_frequency_enum, 332500, 12, 3990000, 2.00,
  'LOAN AGREEMENT between Sarah Namukasa and Catherine Namboze. Principal: UGX 3,500,000 at 14% interest. Repayments: Monthly UGX 332,500.',
- '{"payment_frequency": "monthly", "payment_amount": 332500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 3990000, "duration_months": 12}'::jsonb, 'locked'::public.agreement_status_enum,
+ '{"payment_frequency": "monthly", "payment_amount": 332500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 3990000, "duration_months": 12, "loan_amount": 3500000, "interest_rate_pct": 14.0}'::jsonb, 'locked'::public.agreement_status_enum,
  '2024-03-05 11:00:00', '2024-03-05 11:00:00', '2024-03-05 11:00:00');
 
 SET session_replication_role = 'origin';
