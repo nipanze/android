@@ -35,6 +35,7 @@ class UserProfile extends Equatable {
     this.activeListings = 0,
     this.activeOffers = 0,
     this.revealedContacts = 0,
+    this.freeUnlocksRemaining = 1,
   });
 
   final String id;
@@ -68,6 +69,7 @@ class UserProfile extends Equatable {
   final int activeListings;
   final int activeOffers;
   final int revealedContacts;
+  final int freeUnlocksRemaining;
 
   String get displayName => fullName?.isNotEmpty == true ? fullName! : email;
   String get initials {
@@ -92,6 +94,12 @@ class UserProfile extends Equatable {
   bool get canLend =>
       (subscriptionPlan == 'lender' || subscriptionPlan == 'pro') &&
       subscriptionStatus == 'active';
+
+  // Whether this user can unlock contacts for free (paid plan or has welcome credits)
+  bool get canUnlockFree =>
+      (subscriptionPlan == 'lender' || subscriptionPlan == 'pro') &&
+          subscriptionStatus == 'active' ||
+      freeUnlocksRemaining > 0;
 
   @override
   List<Object?> get props => [

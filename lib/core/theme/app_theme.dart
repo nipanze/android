@@ -1,3 +1,4 @@
+// lib/core/theme/app_theme.dart
 import 'package:flutter/material.dart';
 
 /// Nipanze brand colours and typography.

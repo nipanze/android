@@ -28,7 +28,7 @@ class ProfileRepository {
         _client
             .from(TableNames.profiles)
             .select(
-                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status, created_at')
+                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status, created_at, free_unlocks_remaining')
             .eq('id', _uid)
             .maybeSingle(),
         _client
@@ -89,6 +89,8 @@ class ProfileRepository {
         activeListings: (activity?['active_listings'] as int?) ?? 0,
         activeOffers: (activity?['active_offers'] as int?) ?? 0,
         revealedContacts: (activity?['revealed_contacts'] as int?) ?? 0,
+        freeUnlocksRemaining:
+            (profile?['free_unlocks_remaining'] as int?) ?? 1,
       );
     } catch (e) {
       throw parseSupabaseError(e);
@@ -118,6 +120,18 @@ class ProfileRepository {
       if (updates.isEmpty) return;
 
       await _client.from(TableNames.profiles).update(updates).eq('id', _uid);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  /// Consume one free unlock credit for a Free plan user.
+  /// Returns the remaining count after decrement.
+  /// Throws if the user has no credits remaining.
+  Future<int> consumeFreeUnlock() async {
+    try {
+      final result = await _client.rpc('consume_free_unlock') as int?;
+      return result ?? 0;
     } catch (e) {
       throw parseSupabaseError(e);
     }

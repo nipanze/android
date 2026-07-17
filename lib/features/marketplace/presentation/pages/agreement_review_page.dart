@@ -81,12 +81,17 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
     }
 
     final agreement = _agreement!;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/positions');
+            }
+          },
         ),
         title: const Text('Deal Agreement'),
         elevation: 0,
