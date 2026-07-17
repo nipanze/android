@@ -114,6 +114,10 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                       valueColor: Theme.of(context).colorScheme.onSurface,
                     ),
                     _TermRow(
+                      label: 'Interest rate',
+                      value: '${a.interestRate.toStringAsFixed(1)}% per annum',
+                    ),
+                    _TermRow(
                       label: 'Repayment amount',
                       value: 'UGX ${_fmt(a.repaymentAmount)}',
                       valueColor: Theme.of(context).colorScheme.onSurface,

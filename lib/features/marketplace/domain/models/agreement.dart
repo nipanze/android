@@ -82,6 +82,7 @@ class Agreement extends Equatable {
     required this.repaymentPeriod,
     required this.totalRepaymentAmount,
     required this.loanAmount,
+    required this.interestRate,
     required this.latePenaltyPercentage,
     required this.agreementText,
     this.agreementSnapshot,
@@ -101,6 +102,7 @@ class Agreement extends Equatable {
   final int repaymentPeriod;
   final int totalRepaymentAmount;
   final int loanAmount;
+  final double interestRate;
   final double latePenaltyPercentage;
   final String agreementText;
   final Map<String, dynamic>? agreementSnapshot;
@@ -128,6 +130,7 @@ class Agreement extends Equatable {
       repaymentPeriod: (map['repayment_period'] as num?)?.toInt() ?? 0,
       totalRepaymentAmount: (map['total_repayment_amount'] as num?)?.toInt() ?? 0,
       loanAmount: (snapshot?['loan_amount'] as num?)?.toInt() ?? 0,
+      interestRate: (snapshot?['interest_rate_pct'] as num?)?.toDouble() ?? 0.0,
       latePenaltyPercentage:
           (map['late_payment_penalty_pct'] as num?)?.toDouble() ?? 0.0,
       agreementText: map['agreement_text'] as String? ?? '',
@@ -186,6 +189,7 @@ class Agreement extends Equatable {
     int? repaymentPeriod,
     int? totalRepaymentAmount,
     int? loanAmount,
+    double? interestRate,
     double? latePenaltyPercentage,
     String? agreementText,
     Map<String, dynamic>? agreementSnapshot,
@@ -205,6 +209,7 @@ class Agreement extends Equatable {
       repaymentPeriod: repaymentPeriod ?? this.repaymentPeriod,
       totalRepaymentAmount: totalRepaymentAmount ?? this.totalRepaymentAmount,
       loanAmount: loanAmount ?? this.loanAmount,
+      interestRate: interestRate ?? this.interestRate,
       latePenaltyPercentage:
           latePenaltyPercentage ?? this.latePenaltyPercentage,
       agreementText: agreementText ?? this.agreementText,
@@ -227,6 +232,7 @@ class Agreement extends Equatable {
         repaymentPeriod,
         totalRepaymentAmount,
         loanAmount,
+        interestRate,
         status,
         borrowerAgreedAt,
         lenderAgreedAt,
