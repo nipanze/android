@@ -109,7 +109,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                 child: Column(
                   children: [
                     _TermRow(
-                      label: 'Loan amount',
+                      label: 'Principal',
                       value: 'UGX ${_fmt(a.loanAmount)}',
                       valueColor: Theme.of(context).colorScheme.onSurface,
                     ),
