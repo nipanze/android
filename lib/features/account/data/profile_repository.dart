@@ -28,7 +28,7 @@ class ProfileRepository {
         _client
             .from(TableNames.profiles)
             .select(
-                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status')
+                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status, created_at')
             .eq('id', _uid)
             .maybeSingle(),
         _client
@@ -62,6 +62,9 @@ class ProfileRepository {
         employerName: profile?['employer_name'] as String?,
         monthlyIncomeUgx: (profile?['monthly_income_ugx'] as num?)?.toInt(),
         accountStatus: profile?['account_status'] as String? ?? 'active',
+        memberSince: profile?['created_at'] != null
+            ? DateTime.tryParse(profile!['created_at'] as String)
+            : null,
         subscriptionPlan: activity?['subscription_plan'] as String?,
         subscriptionStatus: activity?['subscription_status'] as String?,
         subscriptionExpiresAt: activity?['subscription_expires_at'] != null

@@ -12,6 +12,7 @@ class UserProfile extends Equatable {
     this.employerName,
     this.monthlyIncomeUgx,
     required this.accountStatus,
+    this.memberSince,
     // subscription
     this.subscriptionPlan,
     this.subscriptionStatus,
@@ -45,6 +46,7 @@ class UserProfile extends Equatable {
   final String? employerName;
   final int? monthlyIncomeUgx;
   final String accountStatus;
+  final DateTime? memberSince;
 
   final String? subscriptionPlan;
   final String? subscriptionStatus;
