@@ -221,7 +221,7 @@ class AppRouter {
 
   static CustomTransitionPage<void> _fade(GoRouterState state, Widget child) {
     return CustomTransitionPage<void>(
-      key: state.pageKey,
+      key: ValueKey('fade-${state.uri}'),
       child: child,
       transitionsBuilder: (_, animation, __, widget) =>
           FadeTransition(opacity: animation, child: widget),
@@ -230,7 +230,7 @@ class AppRouter {
 
   static CustomTransitionPage<void> _slide(GoRouterState state, Widget child) {
     return CustomTransitionPage<void>(
-      key: state.pageKey,
+      key: ValueKey('slide-${state.uri}'),
       child: child,
       transitionsBuilder: (_, animation, __, widget) => SlideTransition(
         position: Tween<Offset>(
