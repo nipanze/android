@@ -187,8 +187,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               padding: EdgeInsets.only(bottom: 16),
               child: Text(
                 'Unlock contact details',
-                style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
             // Fee info card
@@ -197,8 +196,8 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.08),
-                border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -220,8 +219,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       children: [
                         Text('One-time unlock fee',
                             style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13)),
+                                fontWeight: FontWeight.w600, fontSize: 13)),
                         SizedBox(height: 2),
                         Text(
                           'UGX 5,000',
@@ -271,7 +269,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Upgrade to Lender (UGX 35,000/mo) or Pro (UGX 150,000/mo) to unlock all contacts at no per-deal fee.',
+                      'Upgrade to Lender (UGX 19,900/mo) or Pro (UGX 49,900/mo) to unlock all contacts at no per-deal fee.',
                       style: TextStyle(
                           fontSize: 11,
                           color: AppColors.purple.withValues(alpha: 0.9)),
@@ -426,10 +424,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       const SizedBox(width: 8),
                       Text(
                         'Deal agreement locked',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: AppColors.success,
                               fontWeight: FontWeight.bold,
                             ),
@@ -452,22 +447,26 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               _UnlockCostBanner(
                 icon: Icons.workspace_premium_rounded,
                 color: AppColors.purple,
-                title: 'Included in your ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} plan',
+                title:
+                    'Included in your ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} plan',
                 subtitle: 'Unlimited contact unlocks at no extra fee.',
               )
             else if (hasFreeCredit)
               _UnlockCostBanner(
                 icon: Icons.card_giftcard_rounded,
                 color: AppColors.success,
-                title: '🎁 Welcome gift — $freeLeft free unlock${freeLeft == 1 ? '' : 's'} remaining',
-                subtitle: 'This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.',
+                title:
+                    '🎁 Welcome gift — $freeLeft free unlock${freeLeft == 1 ? '' : 's'} remaining',
+                subtitle:
+                    'This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.',
               )
             else
               const _UnlockCostBanner(
                 icon: Icons.payment_rounded,
                 color: AppColors.warning,
                 title: 'UGX 5,000 unlock fee applies',
-                subtitle: 'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.',
+                subtitle:
+                    'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.',
               ),
 
             const SizedBox(height: 20),
@@ -535,13 +534,11 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _unlocking
-                    ? null
-                    : () => _unlockContact(plan, profile),
+                onPressed:
+                    _unlocking ? null : () => _unlockContact(plan, profile),
                 style: FilledButton.styleFrom(
-                  backgroundColor: needsPayment
-                      ? AppColors.warning
-                      : AppColors.success,
+                  backgroundColor:
+                      needsPayment ? AppColors.warning : AppColors.success,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 icon: _unlocking
@@ -629,8 +626,7 @@ class _UnlockCostBanner extends StatelessWidget {
                         fontSize: 13,
                         color: color)),
                 const SizedBox(height: 2),
-                Text(subtitle,
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -652,9 +648,7 @@ class _FeatureRow extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: AppColors.accent),
             const SizedBox(width: 10),
-            Expanded(
-                child:
-                    Text(text, style: const TextStyle(fontSize: 13))),
+            Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
           ],
         ),
       );
@@ -846,10 +840,8 @@ class _ContactDetail extends StatelessWidget {
       children: [
         Icon(icon,
             size: 14,
-            color: Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: 0.6)),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

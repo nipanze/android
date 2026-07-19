@@ -46,7 +46,7 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.lender,
-            price: 'UGX 35,000 / month',
+            price: 'UGX 19,900 / month',
             subtitle: 'For anyone ready to make structured offers.',
             features: const [
               'Everything in Free',
@@ -59,7 +59,7 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.pro,
-            price: 'UGX 150,000 / month',
+            price: 'UGX 49,900 / month',
             subtitle:
                 'Full marketplace access and stronger request positioning.',
             features: const [
