@@ -159,6 +159,9 @@ class _PlanCard extends StatelessWidget {
             SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: color,
+                    ),
                     onPressed: onChoose,
                     child: Text(plan == SubscriptionPlan.free
                         ? 'Use Free'
