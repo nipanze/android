@@ -164,6 +164,7 @@ No plan is ever labeled "Borrower Plan" or "Lender-only." Each plan name describ
 - **Controlled contact sharing** — contact details are revealed only after a contract is generated
 - **Selective transparency** — listing detail shows aggregate signals (funded %, offer count, coverage tier) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
 - **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan — see [Trust & Reputation Signals](#trust--reputation-signals)
+- **Pro Advanced Filters** — Pro-tier users can use advanced filters (categorical employment type, bucketed income range, suggested-terms, owner KYC verification status) next to the notification bell, with database-level self-gating
 - **Compliance built-in** — append-only audit trail from day one
 
 ---
@@ -463,6 +464,7 @@ psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f sql/seed.sql
 | `v_user_marketplace_activity` | Dashboard — requests posted and offers made, in one query |
 | `v_lender_offers` | Offer activity for the current account, and — when the account is the request owner or an offer-maker on that request — the exact terms of every offer on that listing |
 | `v_marketplace_activity` | Marketplace request and offer KPIs |
+| `v_marketplace_pro_filters` | Pro-only marketplace filter signals (employment type, income bracket, suggested terms, owner verification status); self-gated to Pro subscribers |
 | `v_trust_profile_public` | Public trust signals for any `user_id` — rating average, review count, completed-deal count, repeat-participant flag, phone-verified flag, response-time bucket. Readable by any authenticated user. |
 | `v_trust_profile_pro` | Pro-only extension of the above — adds success rate and reliability score; RLS restricts rows to callers on the Pro plan viewing any profile |
 
@@ -703,6 +705,7 @@ The `role` column has been removed — accounts below are described purely by ac
 - **Private documents** — verification documents are never exposed in marketplace listings
 - **Refresh token rotation** — reuse attack detection via `replaced_by` chain
 - **`--dart-define` credentials** — Supabase keys injected at build time, not hardcoded
+- **Pro Advanced Filters categorical gating** — advanced filters use bucketed income (`fn_income_bracket`) and categorical employment type without ever exposing exact monthly income or employer/bank names. Access to filter details is gated at the DB layer via `v_marketplace_pro_filters` view which checks for the caller's active Pro plan subscription.
 
 ---
 

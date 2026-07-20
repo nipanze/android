@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../../../core/router/app_router.dart';
@@ -14,6 +16,7 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../cubit/marketplace_cubit.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_card_skeleton.dart';
+import '../widgets/pro_filters_sheet.dart';
 
 class MarketplacePage extends StatelessWidget {
   const MarketplacePage({super.key});
@@ -33,6 +36,114 @@ class MarketplacePage extends StatelessWidget {
 class _MarketplaceView extends StatelessWidget {
   const _MarketplaceView();
 
+  // ── Subscription-gate modal ─────────────────────────────────────────────
+
+  void _showUpgradeModal(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Theme.of(ctx).brightness == Brightness.dark
+            ? AppColors.bg2Dark
+            : AppColors.bg2Light,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon badge
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.purple.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: AppColors.purple,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Pro feature',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Advanced Filters are exclusive to the Pro plan.\n'
+                'Upgrade to filter by employment type, income bracket, '
+                'suggested terms, and verified-borrower status.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(ctx).brightness == Brightness.dark
+                      ? AppColors.text2Dark
+                      : AppColors.text2Light,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    context.push(AppRoutes.account);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'View Pro plans',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text(
+                  'Not now',
+                  style: TextStyle(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Pro filter button tap handler ───────────────────────────────────────
+
+  void _onProFilterTap(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final isPro = authState is AuthAuthenticated &&
+        authState.user.subscriptionPlan == SubscriptionPlan.pro;
+
+    if (!isPro) {
+      _showUpgradeModal(context);
+      return;
+    }
+
+    showProFiltersSheet(
+      context,
+      cubit: context.read<MarketplaceCubit>(),
+    );
+  }
+
+  // ── Build ───────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +152,12 @@ class _MarketplaceView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Header row ───────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
               child: Row(
                 children: [
+                  // Title + live count
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,6 +175,8 @@ class _MarketplaceView extends StatelessWidget {
                             final count = state is MarketplaceLoaded
                                 ? state.listings.length
                                 : 0;
+                            final proActive = state is MarketplaceLoaded &&
+                                state.proFilterCriteria.isActive;
                             return Row(
                               children: [
                                 const LiveDot(),
@@ -74,6 +189,27 @@ class _MarketplaceView extends StatelessWidget {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                                if (proActive) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.purple
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'Filtered',
+                                      style: TextStyle(
+                                        color: AppColors.purple,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             );
                           },
@@ -81,10 +217,15 @@ class _MarketplaceView extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // ── Pro filter icon button (Option B) ─────────────────
+                  _ProFilterButton(onTap: () => _onProFilterTap(context)),
+                  const SizedBox(width: 6),
+                  // ── Notification bell ─────────────────────────────────
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
-                      final unread =
-                          state is NotificationLoaded ? state.unreadCount : 0;
+                      final unread = state is NotificationLoaded
+                          ? state.unreadCount
+                          : 0;
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
@@ -121,6 +262,7 @@ class _MarketplaceView extends StatelessWidget {
                 ],
               ),
             ),
+            // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
                 margin: const EdgeInsets.fromLTRB(6, 0, 6, 0),
@@ -139,7 +281,8 @@ class _MarketplaceView extends StatelessWidget {
                       return ListView.separated(
                         padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                         itemCount: 4,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 8),
                         itemBuilder: (_, __) => const ListingCardSkeleton(),
                       );
                     }
@@ -153,7 +296,35 @@ class _MarketplaceView extends StatelessWidget {
                     }
 
                     if (state is MarketplaceLoaded) {
+                      // Subtle loading overlay while Pro filter RPC is in flight.
+                      if (state.proFilterActive) {
+                        return const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.purple,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Applying filters…',
+                                style: TextStyle(
+                                    fontSize: 12.5, color: AppColors.purple),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       if (state.listings.isEmpty) {
+                        if (state.proFilterCriteria.isActive) {
+                          return const _EmptyProFilter();
+                        }
                         return const EmptyState(
                           icon: Icons.show_chart_rounded,
                           title: 'No listings found',
@@ -166,7 +337,8 @@ class _MarketplaceView extends StatelessWidget {
                         onRefresh: () =>
                             context.read<MarketplaceCubit>().refresh(),
                         child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
+                          padding:
+                              const EdgeInsets.fromLTRB(13, 1, 13, 14),
                           itemCount: state.listings.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
@@ -201,6 +373,136 @@ class _MarketplaceView extends StatelessWidget {
 
                     return const SizedBox.shrink();
                   },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Pro filter icon button ────────────────────────────────────────────────────
+
+class _ProFilterButton extends StatelessWidget {
+  const _ProFilterButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MarketplaceCubit, MarketplaceState>(
+      builder: (context, state) {
+        final hasActiveFilters = state is MarketplaceLoaded &&
+            state.proFilterCriteria.isActive;
+
+        return SizedBox(
+          width: 34,
+          height: 34,
+          child: Tooltip(
+            message: 'Pro Advanced Filters',
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: hasActiveFilters
+                          ? AppColors.purple.withValues(alpha: 0.18)
+                          : AppColors.purple.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: hasActiveFilters
+                            ? AppColors.purple
+                            : AppColors.purple.withValues(alpha: 0.35),
+                        width: hasActiveFilters ? 1.3 : 1,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.tune_rounded,
+                      size: 15,
+                      color: AppColors.purple,
+                    ),
+                  ),
+                  // Active-filter dot indicator
+                  if (hasActiveFilters)
+                    Positioned(
+                      right: 3,
+                      top: 3,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: AppColors.purple,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Empty state when Pro filter has no results ────────────────────────────────
+
+class _EmptyProFilter extends StatelessWidget {
+  const _EmptyProFilter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.purple.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.filter_list_off_rounded,
+                color: AppColors.purple,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'No matches',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'No active listings match your Pro filters.\n'
+              'Try adjusting or clearing the filter criteria.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+            const SizedBox(height: 18),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.tune_rounded, size: 14),
+              label: const Text('Adjust filters'),
+              onPressed: () => showProFiltersSheet(
+                context,
+                cubit: context.read<MarketplaceCubit>(),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.purple,
+                side: const BorderSide(color: AppColors.purple),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),

@@ -213,4 +213,35 @@ class MarketplaceRepository {
       return const [];
     }
   }
+
+  /// Call the Pro-gated RPC to fetch the set of request_ids that match the
+  /// supplied filter criteria.
+  ///
+  /// The RPC delegates gating to [v_marketplace_pro_filters]: non-Pro callers
+  /// simply receive an empty list — no error, no plan-leaking exception.
+  ///
+  /// Pass [null] for any parameter to omit that criterion entirely.
+  Future<Set<String>> getProFilteredRequestIds({
+    List<String>? employmentTypes,
+    List<String>? incomeBrackets,
+    bool suggestedTermsOnly = false,
+    bool verifiedOnly = false,
+  }) async {
+    try {
+      final data = await _client.rpc(
+        RpcNames.getMarketplaceProFiltered,
+        params: {
+          if (employmentTypes != null) 'p_employment_types': employmentTypes,
+          if (incomeBrackets != null) 'p_income_brackets': incomeBrackets,
+          'p_suggested_terms_only': suggestedTermsOnly,
+          'p_verified_only': verifiedOnly,
+        },
+      );
+      return {
+        for (final row in (data as List)) row['request_id'] as String,
+      };
+    } catch (_) {
+      return const {};
+    }
+  }
 }

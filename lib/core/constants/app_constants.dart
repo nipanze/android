@@ -25,6 +25,8 @@ class ViewNames {
   static const String marketplaceActivity = 'v_marketplace_activity';
   static const String trustProfilePublic = 'v_trust_profile_public';
   static const String trustProfilePro = 'v_trust_profile_pro';
+  // Pro Advanced Filters (schema v4.2)
+  static const String marketplaceProFilters = 'v_marketplace_pro_filters';
 }
 
 class RpcNames {
@@ -34,6 +36,8 @@ class RpcNames {
   static const String getPublicListingOffers = 'get_public_listing_offers';
   static const String unlockContact = 'unlock_contact';
   static const String revealContact = 'reveal_contact';
+  // Pro Advanced Filters (schema v4.2)
+  static const String getMarketplaceProFiltered = 'get_marketplace_pro_filtered';
 }
 
 class StorageKeys {

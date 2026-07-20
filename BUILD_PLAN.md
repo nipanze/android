@@ -281,6 +281,18 @@ Product feedback separately suggested the (previously undocumented) Pro price po
 
 ---
 
+## 🎯 Pro Advanced Marketplace Filters (v4.2 addition)
+
+Pro-tier users can access advanced filtering controls on the marketplace feed to find listings matching specific borrower profile attributes or listing status details.
+- **Employment type filter:** Filter borrower profiles by categorical type (e.g. `government_employee`, `employed`, `self_employed`, `small_business_owner`, `business_owner`, `student`, `other`).
+- **Income bracket filter:** Filter borrower profiles by a coarse monthly income bracket (using `fn_income_bracket`: `under_2m`, `2m_5m`, `5m_10m`, `over_10m`).
+- **Suggested terms filter:** Limit the feed to requests carrying suggested terms locked by a Pro poster at publish time.
+- **Verified status filter:** Limit the feed to requests from KYC-approved owners.
+
+This capability is gated at the DB layer via the `v_marketplace_pro_filters` view (which checks for an active Pro subscription and returns zero rows if absent) and the `get_marketplace_pro_filtered` RPC. In the UI, the filters are presented via an entry icon button next to the notification bell (Option B) opening a bottom sheet, gated strictly to Pro users.
+
+---
+
 ## Stage 1 — Foundation ✅ Complete
 
 - [x] Project bootstrap, package name `ug.nipanze.app`
@@ -656,6 +668,7 @@ Contact details are **never accessible before this step** — enforced at API le
 - [ ] Audit logs capture full contract lifecycle, including review submissions
 - [ ] Both parties receive `deal_unlocked` notification
 - [ ] `role` column fully removed from schema; all gating reads `subscription_plan` only
+- [ ] Pro Advanced Marketplace Filters: `v_marketplace_pro_filters` view and `get_marketplace_pro_filtered` RPC applied to DB, Pro-gated entry button (Option B) and filter criteria bottom sheet implemented in UI, and client-side stream intersection applied in MarketplaceCubit
 
 ---
 
@@ -728,6 +741,7 @@ Contact details are **never accessible before this step** — enforced at API le
 | Contact reveal flow (blurred → unblur) | ⬜ Stage 4 |
 | Contact-unlock fee (open decision) | ⬜ Not yet committed |
 | Remove `role` column; subscription-only gating | ⬜ Stage 4 |
+| Pro Advanced Marketplace Filters: Pro-only filters (employment type, income bracket, suggested terms, verified status) | ⬜ Stage 4 |
 | Admin KYC review | ⬜ Stage 5 |
 | Admin review moderation | ⬜ Stage 5 |
 | Admin KPI dashboard | ⬜ Stage 5 |
