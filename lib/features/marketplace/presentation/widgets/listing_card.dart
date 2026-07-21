@@ -23,16 +23,12 @@ class ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasOffers = listing.numberOfOffers > 0;
     final fundedFraction = _fundedFraction(listing);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final progressColor = hasOffers
+    final progressColor = listing.numberOfOffers > 0
         ? AppColors.accent
         : Theme.of(context).colorScheme.onSurfaceVariant;
-    final fundedLabel = hasOffers
-        ? '${listing.numberOfOffers} offer${listing.numberOfOffers == 1 ? '' : 's'}'
-        : 'No offers yet';
 
     return GestureDetector(
       onTap: onTap,
@@ -122,27 +118,16 @@ class ListingCard extends StatelessWidget {
               color: progressColor,
             ),
             const SizedBox(height: 4),
-            Row(
-              children: [
-                Text(
-                  hasOffers ? fundedLabel : 'No offers yet',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: progressColor,
-                      ),
-                ),
-                const Spacer(),
-                Text(
-                  _shortTimeLabel(listing),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: listing.isClosingSoon6h
-                        ? AppColors.danger
-                        : listing.isClosingSoon24h
-                            ? AppColors.warning
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            Text(
+              _shortTimeLabel(listing),
+              style: TextStyle(
+                fontSize: 10,
+                color: listing.isClosingSoon6h
+                    ? AppColors.danger
+                    : listing.isClosingSoon24h
+                        ? AppColors.warning
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 10),
             TrustBadgeRow(
