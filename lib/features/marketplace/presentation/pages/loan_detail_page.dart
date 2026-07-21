@@ -341,6 +341,28 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
                   const SizedBox(height: 4),
 
+                  // If the current user is a participant (made an offer) but
+                  // isn't the listing owner, show a short note explaining
+                  // that only their own offer is visible.
+                  if (_isParticipant && !_isOwnerValue)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, size: 16, color: AppColors.accent),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Only your offer is visible here — the full bid book is visible to the borrower.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // ── Offer tiles ──────────────────────────────────────────
                   if (_offers.isEmpty)
                     Padding(
@@ -744,7 +766,9 @@ class _OfferCardState extends State<_OfferCard>
   @override
   Widget build(BuildContext context) {
     final offer = widget.offer;
-    final lenderLabel = offer.hasMaskedLender
+    final lenderLabel = offer.lenderId == 'your-offer'
+      ? 'Your offer'
+      : offer.hasMaskedLender
         ? 'Lender #${widget.index + 1}'
         : 'Lender #${offer.lenderId.substring(0, 5)}';
     final coverage = widget.requestedAmount <= 0

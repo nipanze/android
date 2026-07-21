@@ -28,12 +28,8 @@ SELECT
     lr.suggested_installment_amount,
     lr.terms_locked_at,
     lr.status,
-    lr.number_of_offers,
-    CASE
-        WHEN lr.number_of_offers = 0 THEN 'low'
-        WHEN lr.number_of_offers <= 2 THEN 'medium'
-        ELSE 'high'
-    END                                                                      AS offer_coverage_tier,
+    NULL::INT                                                               AS number_of_offers,
+    NULL::TEXT                                                              AS offer_coverage_tier,
     lr.listed_at,
     lr.expires_at,
     k.status                                                                 AS kyc_status,
@@ -52,6 +48,8 @@ JOIN  profiles p ON p.id = lr.borrower_id
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
 WHERE lr.status = 'active'
+  -- Exclude listings the caller owns (show only other people's listings)
+  AND lr.borrower_id <> auth.uid()
   -- hide listings where calling user has an active offer (pending/accepted)
   AND NOT EXISTS (
     SELECT 1 FROM public.loan_offers lo
