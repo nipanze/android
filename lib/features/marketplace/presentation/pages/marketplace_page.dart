@@ -39,86 +39,44 @@ class _MarketplaceView extends StatelessWidget {
   // ── Subscription-gate modal ─────────────────────────────────────────────
 
   void _showUpgradeModal(BuildContext context) {
-    showDialog<void>(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Theme.of(ctx).brightness == Brightness.dark
-            ? AppColors.bg2Dark
-            : AppColors.bg2Light,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon badge
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.purple.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: AppColors.purple,
-                  size: 28,
-                ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.lock_person_outlined,
+              size: 48,
+              color: AppColors.purple,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Upgrade required',
+              style: Theme.of(ctx).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'A subscription is required to use advanced marketplace filters.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.purple,
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Pro feature',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Advanced Filters are exclusive to the Pro plan.\n'
-                'Upgrade to filter by employment type, income bracket, '
-                'suggested terms, and verified-borrower status.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(ctx).brightness == Brightness.dark
-                      ? AppColors.text2Dark
-                      : AppColors.text2Light,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    context.push(AppRoutes.account);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'View Pro plans',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text(
-                  'Not now',
-                  style: TextStyle(fontSize: 13),
-                ),
-              ),
-            ],
-          ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push(AppRoutes.pricing);
+              },
+              child: const Text('Upgrade to Pro'),
+            ),
+          ],
         ),
       ),
     );
