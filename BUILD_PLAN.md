@@ -733,7 +733,8 @@ Contact details are **never accessible before this step** — enforced at API le
 | Pro-tier: suggest interest rate / late fee / repayment on post | ⬜ Stage 4 |
 | Request terms locked on publish | ⬜ Stage 4 |
 | Offer terms locked on submit | ⬜ Stage 4 |
-| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ⬜ Stage 4 |
+| Selective transparency: aggregate view for non-participants, full detail for owner/offer-makers | ✅ DB · ✅ UI |
+| Marketplace hides listings where user has an active offer (pending/accepted) | ✅ UI |
 | Public trust badge row (rating, reviews, deals, repeat, phone-verified, response time) | ⬜ Stage 4 |
 | Pro-tier Verified badge + advanced trust insights | ⬜ Stage 4 |
 | Post-contract review flow | ⬜ Stage 4 |

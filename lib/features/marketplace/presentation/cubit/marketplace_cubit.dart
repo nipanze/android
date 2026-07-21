@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
 
@@ -21,6 +23,10 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   /// can re-apply a Pro filter client-side without another network fetch).
   List<LoanListing> _allListings = const [];
 
+  /// Request IDs where the current user has an active (pending/accepted) offer.
+  /// Listings matching these are hidden from the marketplace feed.
+  Set<String> _myOfferRequestIds = {};
+
   /// Current Pro filter criteria.
   ProFilterCriteria _proFilter = const ProFilterCriteria();
 
@@ -31,7 +37,10 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _districtFilter = district;
     emit(const MarketplaceLoading());
     try {
-      _allListings = await _repository.getListings(district: district);
+      final listings = await _repository.getListings(district: district);
+      if (isClosed) return;
+      _allListings = listings;
+      _myOfferRequestIds = await _fetchMyOfferRequestIds();
       if (isClosed) return;
       _emitLoaded();
       _subscribeRealtime();
@@ -96,7 +105,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _emitLoaded({List<LoanListing>? overrideListings}) {
-    final listings = overrideListings ?? _allListings;
+    final listings = (overrideListings ?? _allListings)
+        .where((l) => !_myOfferRequestIds.contains(l.requestId))
+        .toList();
     emit(MarketplaceLoaded(
       listings: listings,
       activeFilter: _districtFilter ?? 'all',
@@ -126,5 +137,21 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Future<void> close() {
     _realtimeSub?.cancel();
     return super.close();
+  }
+
+  /// Fetch request IDs where the current user has a pending or accepted offer.
+  Future<Set<String>> _fetchMyOfferRequestIds() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return {};
+      final data = await Supabase.instance.client
+          .from(TableNames.loanOffers)
+          .select('request_id')
+          .eq('lender_id', userId)
+          .inFilter('status', ['pending', 'accepted']);
+      return (data as List).map((r) => r['request_id'] as String).toSet();
+    } catch (_) {
+      return {};
+    }
   }
 }
