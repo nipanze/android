@@ -48,14 +48,18 @@ JOIN  profiles p ON p.id = lr.borrower_id
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
 WHERE lr.status = 'active'
-  -- Exclude listings the caller owns (show only other people's listings)
-  AND lr.borrower_id <> auth.uid()
-  -- hide listings where calling user has an active offer (pending/accepted)
-  AND NOT EXISTS (
-    SELECT 1 FROM public.loan_offers lo
-    WHERE lo.request_id = lr.id
-      AND lo.lender_id = auth.uid()
-      AND lo.status IN ('pending','accepted')
+  -- Exclude listings the caller owns only when authenticated.
+  AND (
+    auth.uid() IS NULL OR lr.borrower_id <> auth.uid()
+  )
+  -- hide listings where the calling user has an active offer only when authenticated.
+  AND (
+    auth.uid() IS NULL OR NOT EXISTS (
+      SELECT 1 FROM public.loan_offers lo
+      WHERE lo.request_id = lr.id
+        AND lo.lender_id = auth.uid()
+        AND lo.status IN ('pending','accepted')
+    )
   );
 
 COMMENT ON VIEW public.v_loan_listings IS
