@@ -91,6 +91,9 @@ class PricingPage extends StatelessWidget {
     ));
   }
 
+  static bool _isUpgrade(SubscriptionPlan from, SubscriptionPlan to) =>
+      to.index > from.index;
+
   static String _label(SubscriptionPlan plan) => switch (plan) {
         SubscriptionPlan.free => 'Free',
         SubscriptionPlan.lender => 'Lender',
@@ -175,7 +178,7 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 )),
-            if (!isCurrent) ...[
+            if (PricingPage._isUpgrade(current, plan)) ...[
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,

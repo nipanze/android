@@ -9,6 +9,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/models/user_profile.dart';
 import '../cubit/profile_cubit.dart';
@@ -49,7 +50,8 @@ class _AccountView extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
-            final profile = state is ProfileCubitLoaded ? state.profile : null;
+             final profile = state is ProfileCubitLoaded ? state.profile : null;
+             final authState = context.read<AuthBloc>().state;
 
             return RefreshIndicator(
               onRefresh: () => context.read<ProfileCubit>().refresh(),
@@ -151,8 +153,15 @@ class _AccountView extends StatelessWidget {
                     const SectionHeader('Subscription'),
                     _SubscriptionCard(profile: profile),
                     const SizedBox(height: 8),
-                    _UpgradeButton(
-                        onTap: () => context.push(AppRoutes.pricing)),
+                    if (authState is AuthAuthenticated &&
+                        authState.user.subscriptionPlan != SubscriptionPlan.pro)
+                      _UpgradeButton(
+                        onTap: () => context.push(AppRoutes.pricing),
+                        label: authState.user.subscriptionPlan ==
+                                SubscriptionPlan.lender
+                            ? 'Upgrade to Pro'
+                            : 'View plans & upgrade',
+                      ),
 
                     if (context.read<AuthBloc>().state is AuthAuthenticated &&
                         (context.read<AuthBloc>().state as AuthAuthenticated)
@@ -1065,8 +1074,12 @@ class _SubscriptionCard extends StatelessWidget {
 // ── Upgrade Button ────────────────────────────────────────────────────────────
 
 class _UpgradeButton extends StatelessWidget {
-  const _UpgradeButton({required this.onTap});
+  const _UpgradeButton({
+    required this.onTap,
+    required this.label,
+  });
   final VoidCallback onTap;
+  final String label;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -1074,9 +1087,10 @@ class _UpgradeButton extends StatelessWidget {
         child: OutlinedButton.icon(
           onPressed: onTap,
           icon: const Icon(Icons.workspace_premium_outlined, size: 16),
-          label: const Text('View plans & upgrade'),
-          style:
-              OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+          label: Text(label),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
         ),
       );
 }
