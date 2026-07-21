@@ -10,8 +10,7 @@ DO $$ BEGIN
   END IF;
 END $$;
 
-CREATE VIEW public.v_loan_listings
-WITH (security_invoker = true) AS
+CREATE VIEW public.v_loan_listings AS
 SELECT
     lr.id                                                                    AS request_id,
     lr.title,
@@ -28,8 +27,12 @@ SELECT
     lr.suggested_installment_amount,
     lr.terms_locked_at,
     lr.status,
-    NULL::INT                                                               AS number_of_offers,
-    NULL::TEXT                                                              AS offer_coverage_tier,
+    lr.number_of_offers,
+    CASE
+        WHEN lr.number_of_offers = 0 THEN 'low'
+        WHEN lr.number_of_offers <= 2 THEN 'medium'
+        ELSE 'high'
+    END                                                                      AS offer_coverage_tier,
     lr.listed_at,
     lr.expires_at,
     k.status                                                                 AS kyc_status,
@@ -52,7 +55,7 @@ WHERE lr.status = 'active'
   AND (
     auth.uid() IS NULL OR lr.borrower_id <> auth.uid()
   )
-  -- hide listings where the calling user has an active offer only when authenticated.
+  -- Hide listings where the calling user has an active offer only when authenticated.
   AND (
     auth.uid() IS NULL OR NOT EXISTS (
       SELECT 1 FROM public.loan_offers lo
@@ -64,6 +67,8 @@ WHERE lr.status = 'active'
 
 COMMENT ON VIEW public.v_loan_listings IS
 'Anonymised marketplace feed. caller-aware: excludes listings the caller has an active offer on.';
+
+GRANT SELECT ON public.v_loan_listings TO authenticated, anon;
 
 
 -- 2) Replace get_public_listing_offers RPC so only listing owners see the full
@@ -133,7 +138,7 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Offer-maker: return only their own offer(s) for this request
+    -- Offer-maker: return only their own active offer(s) for this request.
     RETURN QUERY
     SELECT
         lo.id,
@@ -151,7 +156,8 @@ BEGIN
         lo.accepted_at
     FROM public.loan_offers lo
     WHERE lo.request_id = p_request_id
-      AND lo.lender_id = auth.uid();
+      AND lo.lender_id = auth.uid()
+      AND lo.status IN ('pending', 'accepted');
 END;
 $$;
 

@@ -760,7 +760,18 @@ FROM  loan_requests   lr
 JOIN  profiles p ON p.id = lr.borrower_id
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
-WHERE lr.status = 'active';
+WHERE lr.status = 'active'
+  AND (
+    auth.uid() IS NULL OR lr.borrower_id <> auth.uid()
+  )
+  AND (
+    auth.uid() IS NULL OR NOT EXISTS (
+      SELECT 1 FROM public.loan_offers lo
+      WHERE lo.request_id = lr.id
+        AND lo.lender_id = auth.uid()
+        AND lo.status IN ('pending', 'accepted')
+    )
+  );
 
 COMMENT ON VIEW v_loan_listings IS
 'Anonymised marketplace feed. borrower_id, contact details, and private documents are never present.
@@ -942,27 +953,54 @@ STABLE
 SET search_path = ''
 AS $$
 DECLARE
-    v_can_view_terms BOOLEAN;
+    v_is_owner BOOLEAN := FALSE;
+    v_is_offer_maker BOOLEAN := FALSE;
 BEGIN
-    SELECT lr.borrower_id = auth.uid()
-        OR EXISTS (
-            SELECT 1 FROM public.loan_offers own_offer
-            WHERE own_offer.request_id = lr.id AND own_offer.lender_id = auth.uid()
-        )
-    INTO v_can_view_terms
+    SELECT lr.borrower_id = auth.uid() INTO v_is_owner
     FROM public.loan_requests lr
     WHERE lr.id = p_request_id;
 
-    -- Non-participants receive their aggregate signal through v_loan_listings.
-    -- Never return partial rows with exact terms that could be reconstructed.
-    IF NOT COALESCE(v_can_view_terms, FALSE) THEN
+    SELECT EXISTS (
+        SELECT 1 FROM public.loan_offers own
+        WHERE own.request_id = p_request_id
+          AND own.lender_id = auth.uid()
+          AND own.status IN ('pending', 'accepted')
+    ) INTO v_is_offer_maker;
+
+    IF NOT COALESCE(v_is_owner, FALSE) AND NOT COALESCE(v_is_offer_maker, FALSE) THEN
         RETURN;
     END IF;
 
-    RETURN QUERY SELECT
+    IF COALESCE(v_is_owner, FALSE) THEN
+        RETURN QUERY
+        SELECT
+            lo.id,
+            lo.request_id,
+            ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
+            lo.offer_amount,
+            lo.interest_rate_pct,
+            lo.late_fee_pct,
+            lo.repayment_frequency,
+            lo.installment_amount,
+            lo.proposed_expectations,
+            lo.terms_locked_at,
+            lo.status::TEXT,
+            lo.offered_at,
+            lo.accepted_at
+        FROM public.loan_offers lo
+        JOIN public.loan_requests lr ON lr.id = lo.request_id
+        WHERE lo.request_id = p_request_id
+          AND lo.status = 'pending'
+          AND (lr.status = 'active' OR lr.borrower_id = auth.uid())
+        ORDER BY lo.offered_at DESC;
+        RETURN;
+    END IF;
+
+    RETURN QUERY
+    SELECT
         lo.id,
         lo.request_id,
-        ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
+        ('your-offer')::TEXT AS lender_id,
         lo.offer_amount,
         lo.interest_rate_pct,
         lo.late_fee_pct,
@@ -974,11 +1012,9 @@ BEGIN
         lo.offered_at,
         lo.accepted_at
     FROM public.loan_offers lo
-    JOIN public.loan_requests lr ON lr.id = lo.request_id
     WHERE lo.request_id = p_request_id
-      AND lo.status = 'pending'
-      AND (lr.status = 'active' OR lr.borrower_id = auth.uid())
-    ORDER BY lo.offered_at DESC;
+      AND lo.lender_id = auth.uid()
+      AND lo.status IN ('pending', 'accepted');
 END;
 $$;
 
