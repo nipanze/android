@@ -143,15 +143,15 @@ class _ProRequiredSheet extends StatelessWidget {
                           color: badgeText,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'Pro',
-                          style: TextStyle(
-                            fontFamily: AppFonts.heading,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: textPrimary,
-                          ),
-                        ),
+                         Text(
+                           'Pro',
+                           style: TextStyle(
+                             fontFamily: AppFonts.heading,
+                             fontSize: 17,
+                             fontWeight: FontWeight.w700,
+                             color: textPrimary,
+                           ),
+                         ),
                       ],
                     ),
 
@@ -163,14 +163,14 @@ class _ProRequiredSheet extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'UGX 49,900',
-                          style: TextStyle(
-                            fontFamily: AppFonts.heading,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: textPrimary,
-                            letterSpacing: -0.5,
-                          ),
+                           'UGX 49,900',
+                           style: TextStyle(
+                             fontFamily: AppFonts.heading,
+                             fontSize: 22,
+                             fontWeight: FontWeight.w800,
+                             color: textPrimary,
+                             letterSpacing: -0.5,
+                           ),
                         ),
                         Text(
                           ' / month',
@@ -188,11 +188,11 @@ class _ProRequiredSheet extends StatelessWidget {
                     // Short Card Description
                     Text(
                       'Full marketplace access, advanced filters and strong request positioning.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.4,
-                        color: textSecondary,
-                      ),
+                     style: TextStyle(
+                       fontSize: 12.5,
+                       height: 1.4,
+                       color: textSecondary,
+                     ),
                     ),
 
                     const SizedBox(height: 16),
@@ -292,7 +292,7 @@ class _ProRequiredSheet extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12.5,
               height: 1.35,
               fontWeight: FontWeight.w500,
               color: textColor,

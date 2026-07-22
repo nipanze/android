@@ -143,15 +143,15 @@ class _LenderRequiredSheet extends StatelessWidget {
                           color: badgeText,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'Lender',
-                          style: TextStyle(
-                            fontFamily: AppFonts.heading,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: textPrimary,
-                          ),
-                        ),
+                         Text(
+                           'Lender',
+                           style: TextStyle(
+                             fontFamily: AppFonts.heading,
+                             fontSize: 17,
+                             fontWeight: FontWeight.w700,
+                             color: textPrimary,
+                           ),
+                         ),
                       ],
                     ),
 
@@ -163,14 +163,14 @@ class _LenderRequiredSheet extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'UGX 19,900',
-                          style: TextStyle(
-                            fontFamily: AppFonts.heading,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: textPrimary,
-                            letterSpacing: -0.5,
-                          ),
+                           'UGX 19,900',
+                           style: TextStyle(
+                             fontFamily: AppFonts.heading,
+                             fontSize: 22,
+                             fontWeight: FontWeight.w800,
+                             color: textPrimary,
+                             letterSpacing: -0.5,
+                           ),
                         ),
                         Text(
                           ' / month',
@@ -188,11 +188,11 @@ class _LenderRequiredSheet extends StatelessWidget {
                     // Short Card Description
                     Text(
                       'For anyone ready to make structured offers and earn returns on Nipanze.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.4,
-                        color: textSecondary,
-                      ),
+                     style: TextStyle(
+                       fontSize: 12.5,
+                       height: 1.4,
+                       color: textSecondary,
+                     ),
                     ),
 
                     const SizedBox(height: 16),
@@ -290,7 +290,7 @@ class _LenderRequiredSheet extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12.5,
               height: 1.35,
               fontWeight: FontWeight.w500,
               color: textColor,
