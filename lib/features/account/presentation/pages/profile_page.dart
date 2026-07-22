@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -29,6 +30,7 @@ class _ProfileViewState extends State<_ProfileView> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _employerController = TextEditingController();
+  final _incomeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _district;
   String? _employmentType;
@@ -66,6 +68,7 @@ class _ProfileViewState extends State<_ProfileView> {
     _nameController.dispose();
     _phoneController.dispose();
     _employerController.dispose();
+    _incomeController.dispose();
     super.dispose();
   }
 
@@ -76,6 +79,9 @@ class _ProfileViewState extends State<_ProfileView> {
     _nameController.text = p.fullName ?? '';
     _phoneController.text = p.phone ?? '';
     _employerController.text = p.employerName ?? '';
+    _incomeController.text = p.monthlyIncomeUgx == null
+        ? ''
+        : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
     _district = p.district;
     _employmentType = p.employmentType;
     _populated = true;
@@ -175,12 +181,26 @@ class _ProfileViewState extends State<_ProfileView> {
                       prefixIcon: Icon(Icons.business_outlined, size: 20),
                     ),
                   ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _incomeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Monthly income (UGX)',
+                      hintText: 'e.g. 1,500,000',
+                      prefixIcon: Icon(Icons.currency_exchange_outlined, size: 20),
+                    ),
+                  ),
                   const SizedBox(height: 28),
                   ElevatedButton(
                     onPressed: isSaving
                         ? null
                         : () {
                             if (!_formKey.currentState!.validate()) return;
+                            final incomeText = _incomeController.text.trim();
+                            final monthlyIncomeUgx = incomeText.isEmpty
+                                ? null
+                                : int.tryParse(incomeText.replaceAll(',', ''));
                             context.read<ProfileCubit>().updateProfile(
                                   fullName: _nameController.text.trim(),
                                   phone: _phoneController.text.trim().isEmpty
@@ -192,6 +212,7 @@ class _ProfileViewState extends State<_ProfileView> {
                                       _employerController.text.trim().isEmpty
                                           ? null
                                           : _employerController.text.trim(),
+                                  monthlyIncomeUgx: monthlyIncomeUgx,
                                 );
                           },
                     child: isSaving
