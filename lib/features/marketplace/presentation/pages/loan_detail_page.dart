@@ -17,6 +17,7 @@ import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
+import '../widgets/lender_required_sheet.dart';
 import '../widgets/pro_required_sheet.dart';
 
 class LoanDetailPage extends StatefulWidget {
@@ -415,8 +416,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     context.go('/auth/login');
                     return;
                   }
-                  if (user.subscriptionPlan != SubscriptionPlan.pro) {
-                    showProRequiredSheet(context);
+                  if (!user.canLend) {
+                    showLenderRequiredSheet(context);
                     return;
                   }
                   setState(() => _showOfferSheet = true);
