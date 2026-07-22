@@ -17,6 +17,7 @@ import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
+import '../widgets/pro_required_sheet.dart';
 
 class LoanDetailPage extends StatefulWidget {
   const LoanDetailPage({super.key, required this.requestId});
@@ -151,24 +152,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     }
   }
 
-  void _showSubscriptionGate(
-      {required String requiredPlan, required String reason}) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _SubscriptionGateSheet(
-        requiredPlan: requiredPlan,
-        reason: reason,
-        onUpgrade: () {
-          Navigator.pop(context);
-          context.push('/pricing');
-        },
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -403,11 +387,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                             listing.suggestedRepaymentFrequency,
                         suggestedInstallmentAmount:
                             listing.suggestedInstallmentAmount,
-                        onUpgrade: () => _showSubscriptionGate(
-                          requiredPlan: 'Pro',
-                          reason:
-                              'Unlock relative comparison arrows and cost deltas with a PRO borrower subscription.',
-                        ),
+                        onUpgrade: () => showProRequiredSheet(context),
                       ),
                     ),
                 ],
@@ -435,11 +415,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     context.go('/auth/login');
                     return;
                   }
-                  if (!user.canLend) {
-                    _showSubscriptionGate(
-                      requiredPlan: 'Lender',
-                      reason: 'A subscription is required to make offers.',
-                    );
+                  if (user.subscriptionPlan != SubscriptionPlan.pro) {
+                    showProRequiredSheet(context);
                     return;
                   }
                   setState(() => _showOfferSheet = true);
@@ -2021,31 +1998,7 @@ class _StatBox extends StatelessWidget {
       );
 }
 
-class _SubscriptionGateSheet extends StatelessWidget {
-  const _SubscriptionGateSheet(
-      {required this.requiredPlan,
-      required this.reason,
-      required this.onUpgrade});
-  final String requiredPlan;
-  final String reason;
-  final VoidCallback onUpgrade;
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.lock_person_outlined,
-              size: 48, color: AppColors.accent),
-          const SizedBox(height: 16),
-          Text('Upgrade required',
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(reason, textAlign: TextAlign.center),
-          const SizedBox(height: 24),
-          ElevatedButton(
-              onPressed: onUpgrade, child: Text('Upgrade to $requiredPlan')),
-        ]),
-      );
-}
+
 
 class _MakeOfferSheet extends StatefulWidget {
   const _MakeOfferSheet(
