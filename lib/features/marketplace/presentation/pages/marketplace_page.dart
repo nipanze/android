@@ -17,6 +17,7 @@ import '../cubit/marketplace_cubit.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_card_skeleton.dart';
 import '../widgets/pro_filters_sheet.dart';
+import '../widgets/pro_required_sheet.dart';
 
 class MarketplacePage extends StatelessWidget {
   const MarketplacePage({super.key});
@@ -36,52 +37,6 @@ class MarketplacePage extends StatelessWidget {
 class _MarketplaceView extends StatelessWidget {
   const _MarketplaceView();
 
-  // ── Subscription-gate modal ─────────────────────────────────────────────
-
-  void _showUpgradeModal(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.lock_person_outlined,
-              size: 48,
-              color: AppColors.purple,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Upgrade required',
-              style: Theme.of(ctx).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'A subscription is required to use advanced marketplace filters.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purple,
-              ),
-              onPressed: () {
-                Navigator.pop(ctx);
-                context.push(AppRoutes.pricing);
-              },
-              child: const Text('Upgrade to Pro'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ── Pro filter button tap handler ───────────────────────────────────────
 
   void _onProFilterTap(BuildContext context) {
@@ -90,7 +45,7 @@ class _MarketplaceView extends StatelessWidget {
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
     if (!isPro) {
-      _showUpgradeModal(context);
+      showProRequiredSheet(context);
       return;
     }
 
