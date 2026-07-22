@@ -430,7 +430,10 @@ class _AccountView extends StatelessWidget {
                 label: 'Edit Profile',
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
-                  router.push(AppRoutes.profile);
+                  final currentLocation = GoRouterState.of(context).uri.toString();
+                  if (currentLocation != AppRoutes.profile) {
+                    router.push(AppRoutes.profile);
+                  }
                 },
               ),
               const Divider(height: 1),

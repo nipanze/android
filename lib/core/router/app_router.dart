@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/account/presentation/pages/profile_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
-// Deleted: import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
@@ -20,9 +20,10 @@ import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
+
+// Deleted: import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 
 class AppRoutes {
   static const String login = '/auth/login';
