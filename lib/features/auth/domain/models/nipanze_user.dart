@@ -7,6 +7,16 @@ enum SubscriptionPlan { free, lender, pro }
 
 enum KycStatus { notSubmitted, pending, approved, rejected, expired }
 
+enum EmploymentType {
+  employed,
+  governmentEmployee,
+  selfEmployed,
+  smallBusinessOwner,
+  businessOwner,
+  student,
+  other,
+}
+
 class NipanzeUser extends Equatable {
   const NipanzeUser({
     required this.id,
@@ -14,6 +24,9 @@ class NipanzeUser extends Equatable {
     this.fullName,
     this.phone,
     this.district,
+    this.employmentType,
+    this.employerName,
+    this.monthlyIncomeUgx,
     this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
     this.isAdmin = false,
@@ -25,6 +38,9 @@ class NipanzeUser extends Equatable {
   final String? fullName;
   final String? phone;
   final String? district;
+  final EmploymentType? employmentType;
+  final String? employerName;
+  final int? monthlyIncomeUgx;
   final SubscriptionPlan subscriptionPlan;
   final KycStatus kycStatus;
   final bool isAdmin;
@@ -44,6 +60,9 @@ class NipanzeUser extends Equatable {
       fullName: map['full_name'] as String?,
       phone: map['phone'] as String?,
       district: map['district'] as String?,
+      employmentType: _employmentFromString(map['employment_type'] as String?),
+      employerName: map['employer_name'] as String?,
+      monthlyIncomeUgx: (map['monthly_income_ugx'] as num?)?.toInt(),
       subscriptionPlan:
           _planFromString(map['subscription_plan'] as String? ?? 'free'),
       kycStatus:
@@ -79,7 +98,49 @@ class NipanzeUser extends Equatable {
     }
   }
 
+  static EmploymentType? _employmentFromString(String? s) {
+    switch (s) {
+      case 'employed':
+        return EmploymentType.employed;
+      case 'government_employee':
+        return EmploymentType.governmentEmployee;
+      case 'self_employed':
+        return EmploymentType.selfEmployed;
+      case 'small_business_owner':
+        return EmploymentType.smallBusinessOwner;
+      case 'business_owner':
+        return EmploymentType.businessOwner;
+      case 'student':
+        return EmploymentType.student;
+      case 'other':
+        return EmploymentType.other;
+      default:
+        return null;
+    }
+  }
+
+  static String? employmentToString(EmploymentType? type) {
+    switch (type) {
+      case EmploymentType.employed:
+        return 'employed';
+      case EmploymentType.governmentEmployee:
+        return 'government_employee';
+      case EmploymentType.selfEmployed:
+        return 'self_employed';
+      case EmploymentType.smallBusinessOwner:
+        return 'small_business_owner';
+      case EmploymentType.businessOwner:
+        return 'business_owner';
+      case EmploymentType.student:
+        return 'student';
+      case EmploymentType.other:
+        return 'other';
+      case null:
+        return null;
+    }
+  }
+
   @override
   List<Object?> get props =>
-      [id, email, subscriptionPlan, kycStatus, isAdmin];
+      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType];
 }

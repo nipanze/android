@@ -106,7 +106,7 @@ class AuthRepository {
     try {
       data = await _client
           .from('profiles')
-          .select('id, full_name, phone, district, is_admin')
+          .select('id, full_name, phone, district, employment_type, employer_name, monthly_income_ugx, is_admin')
           .eq('id', id)
           .maybeSingle();
     } catch (e) {
@@ -185,5 +185,25 @@ class AuthRepository {
       'kyc_status': kycStatus,
       'is_email_verified': _client.auth.currentUser?.emailConfirmedAt != null,
     });
+  }
+
+  /// Update the current user's profile fields.
+  Future<void> updateProfile({
+    String? fullName,
+    String? district,
+    String? employmentType,
+    String? employerName,
+    int? monthlyIncomeUgx,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    final updates = <String, dynamic>{};
+    if (fullName != null) updates['full_name'] = fullName;
+    if (district != null) updates['district'] = district;
+    if (employmentType != null) updates['employment_type'] = employmentType;
+    if (employerName != null) updates['employer_name'] = employerName;
+    if (monthlyIncomeUgx != null) updates['monthly_income_ugx'] = monthlyIncomeUgx;
+    if (updates.isEmpty) return;
+    await _client.from('profiles').update(updates).eq('id', userId);
   }
 }
