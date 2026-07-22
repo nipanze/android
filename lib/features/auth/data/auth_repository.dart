@@ -106,7 +106,7 @@ class AuthRepository {
     try {
       data = await _client
           .from('profiles')
-          .select('id, full_name, phone, district, employment_type, employer_name, monthly_income_ugx, is_admin')
+          .select('id, full_name, phone, district, street_address, employment_type, employer_name, monthly_income_ugx, is_admin')
           .eq('id', id)
           .maybeSingle();
     } catch (e) {
@@ -191,6 +191,7 @@ class AuthRepository {
   Future<void> updateProfile({
     String? fullName,
     String? district,
+    String? streetAddress,
     String? employmentType,
     String? employerName,
     int? monthlyIncomeUgx,
@@ -200,6 +201,7 @@ class AuthRepository {
     final updates = <String, dynamic>{};
     if (fullName != null) updates['full_name'] = fullName;
     if (district != null) updates['district'] = district;
+    if (streetAddress != null) updates['street_address'] = streetAddress;
     if (employmentType != null) updates['employment_type'] = employmentType;
     if (employerName != null) updates['employer_name'] = employerName;
     if (monthlyIncomeUgx != null) updates['monthly_income_ugx'] = monthlyIncomeUgx;

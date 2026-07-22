@@ -60,7 +60,11 @@ class ProfilePage extends StatelessWidget {
                     child: Column(children: [
                       _Row('Email', user?.email ?? '—'),
                       const Divider(height: 16),
+                      _Row('Phone', user?.phone ?? '—'),
+                      const Divider(height: 16),
                       _Row('District', user?.district ?? '—'),
+                      const Divider(height: 16),
+                      _Row('Street / road', user?.streetAddress ?? '—'),
                     ]))),
             const SizedBox(height: 16),
             SectionHeader('Employment & Income'),
@@ -156,7 +160,9 @@ class _EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<_EditProfilePage> {
   late final TextEditingController _nameCtrl;
+  late final TextEditingController _phoneCtrl;
   late final TextEditingController _districtCtrl;
+  late final TextEditingController _streetCtrl;
   late final TextEditingController _employerCtrl;
   late final TextEditingController _incomeCtrl;
   EmploymentType? _employmentType;
@@ -176,7 +182,9 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.user.fullName ?? '');
+    _phoneCtrl = TextEditingController(text: widget.user.phone ?? '');
     _districtCtrl = TextEditingController(text: widget.user.district ?? '');
+    _streetCtrl = TextEditingController(text: widget.user.streetAddress ?? '');
     _employerCtrl = TextEditingController(text: widget.user.employerName ?? '');
     _incomeCtrl = TextEditingController(
         text: widget.user.monthlyIncomeUgx != null
@@ -188,7 +196,9 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _phoneCtrl.dispose();
     _districtCtrl.dispose();
+    _streetCtrl.dispose();
     _employerCtrl.dispose();
     _incomeCtrl.dispose();
     super.dispose();
@@ -219,7 +229,11 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         children: [
           _field('Full name', _nameCtrl),
           const SizedBox(height: 14),
+          _field('Phone', _phoneCtrl),
+          const SizedBox(height: 14),
           _field('District', _districtCtrl),
+          const SizedBox(height: 14),
+          _field('Street / road', _streetCtrl),
           const SizedBox(height: 14),
           DropdownButtonFormField<EmploymentType>(
             initialValue: _employmentType,
@@ -282,6 +296,8 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         fullName: _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
         district:
             _districtCtrl.text.trim().isEmpty ? null : _districtCtrl.text.trim(),
+        streetAddress:
+            _streetCtrl.text.trim().isEmpty ? null : _streetCtrl.text.trim(),
         employmentType: NipanzeUser.employmentToString(_employmentType),
         employerName:
             _employerCtrl.text.trim().isEmpty ? null : _employerCtrl.text.trim(),

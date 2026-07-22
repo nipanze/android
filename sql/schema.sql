@@ -177,6 +177,7 @@ CREATE TABLE profiles (
     -- Public badge only; the phone number itself remains private until reveal.
     phone_verified_at TIMESTAMP,
     district         TEXT,
+    street_address   TEXT,
     employment_type  employment_type_enum,
     employer_name    TEXT,
     monthly_income_ugx BIGINT,

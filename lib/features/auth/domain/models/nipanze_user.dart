@@ -24,6 +24,7 @@ class NipanzeUser extends Equatable {
     this.fullName,
     this.phone,
     this.district,
+    this.streetAddress,
     this.employmentType,
     this.employerName,
     this.monthlyIncomeUgx,
@@ -38,6 +39,7 @@ class NipanzeUser extends Equatable {
   final String? fullName;
   final String? phone;
   final String? district;
+  final String? streetAddress;
   final EmploymentType? employmentType;
   final String? employerName;
   final int? monthlyIncomeUgx;
@@ -60,6 +62,7 @@ class NipanzeUser extends Equatable {
       fullName: map['full_name'] as String?,
       phone: map['phone'] as String?,
       district: map['district'] as String?,
+      streetAddress: map['street_address'] as String?,
       employmentType: _employmentFromString(map['employment_type'] as String?),
       employerName: map['employer_name'] as String?,
       monthlyIncomeUgx: (map['monthly_income_ugx'] as num?)?.toInt(),
@@ -142,5 +145,5 @@ class NipanzeUser extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType];
+      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType, streetAddress];
 }
