@@ -280,11 +280,11 @@ class _LenderRequiredSheet extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.check_rounded,
-          size: 17,
-          color: checkColor,
-        ),
+         Icon(
+           Icons.check_circle_outline,
+           size: 16,
+           color: checkColor,
+         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
