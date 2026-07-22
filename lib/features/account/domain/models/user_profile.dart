@@ -11,6 +11,10 @@ class UserProfile extends Equatable {
     this.employmentType,
     this.employerName,
     this.monthlyIncomeUgx,
+    this.preferredEmploymentTypes,
+    this.preferredIncomeBracket,
+    this.prefersSuggestedTerms = false,
+    this.prefersVerifiedOnly = false,
     required this.accountStatus,
     this.memberSince,
     // subscription
@@ -46,6 +50,10 @@ class UserProfile extends Equatable {
   final String? employmentType;
   final String? employerName;
   final int? monthlyIncomeUgx;
+  final List<String>? preferredEmploymentTypes;
+  final String? preferredIncomeBracket;
+  final bool prefersSuggestedTerms;
+  final bool prefersVerifiedOnly;
   final String accountStatus;
   final DateTime? memberSince;
 
@@ -110,6 +118,10 @@ class UserProfile extends Equatable {
     String? employmentType,
     String? employerName,
     int? monthlyIncomeUgx,
+    List<String>? preferredEmploymentTypes,
+    String? preferredIncomeBracket,
+    bool? prefersSuggestedTerms,
+    bool? prefersVerifiedOnly,
     String? accountStatus,
     DateTime? memberSince,
     String? subscriptionPlan,
@@ -140,6 +152,13 @@ class UserProfile extends Equatable {
       employmentType: employmentType ?? this.employmentType,
       employerName: employerName ?? this.employerName,
       monthlyIncomeUgx: monthlyIncomeUgx ?? this.monthlyIncomeUgx,
+      preferredEmploymentTypes:
+          preferredEmploymentTypes ?? this.preferredEmploymentTypes,
+      preferredIncomeBracket:
+          preferredIncomeBracket ?? this.preferredIncomeBracket,
+      prefersSuggestedTerms:
+          prefersSuggestedTerms ?? this.prefersSuggestedTerms,
+      prefersVerifiedOnly: prefersVerifiedOnly ?? this.prefersVerifiedOnly,
       accountStatus: accountStatus ?? this.accountStatus,
       memberSince: memberSince ?? this.memberSince,
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,

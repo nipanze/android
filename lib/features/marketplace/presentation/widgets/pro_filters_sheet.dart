@@ -10,7 +10,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../cubit/marketplace_cubit.dart';
 
@@ -44,6 +46,14 @@ const _kIncomeBracketOptions = [
   _IncomeBracketOption('5m_10m', '5M – 10M UGX / month'),
   _IncomeBracketOption('over_10m', 'Over 10M UGX / month'),
 ];
+
+String? _fnIncomeBracket(int? monthlyIncomeUgx) {
+  if (monthlyIncomeUgx == null) return null;
+  if (monthlyIncomeUgx < 2000000) return 'under_2m';
+  if (monthlyIncomeUgx < 5000000) return '2m_5m';
+  if (monthlyIncomeUgx < 10000000) return '5m_10m';
+  return 'over_10m';
+}
 
 // ── Public entry-point ────────────────────────────────────────────────────────
 
@@ -82,12 +92,69 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   @override
   void initState() {
     super.initState();
-    // Seed from current cubit criteria so re-open shows persisted values.
     final criteria = _currentCriteria(context);
     _selectedEmployment = Set.from(criteria.employmentTypes);
     _selectedIncome = Set.from(criteria.incomeBrackets);
     _suggestedTermsOnly = criteria.suggestedTermsOnly;
     _verifiedOnly = criteria.verifiedOnly;
+
+    if (criteria == const ProFilterCriteria()) {
+      _seedFromProfile();
+    }
+  }
+
+  Future<void> _seedFromProfile() async {
+    try {
+      final client = Supabase.instance.client;
+      final uid = client.auth.currentUser?.id;
+      if (uid == null) return;
+
+      final data = await client
+          .from(TableNames.profiles)
+          .select(
+              'employment_type, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only')
+          .eq('id', uid)
+          .maybeSingle();
+
+      if (!mounted) return;
+
+      final preferredEmploymentTypes =
+          data?['preferred_employment_types'] == null
+              ? null
+              : List<String>.from(data!['preferred_employment_types'] as List);
+      final preferredIncomeBracket =
+          data?['preferred_income_bracket'] as String?;
+      final prefersSuggestedTerms =
+          data?['prefers_suggested_terms'] as bool? ?? false;
+      final prefersVerifiedOnly =
+          data?['prefers_verified_only'] as bool? ?? false;
+
+      final employmentTypes = preferredEmploymentTypes ??
+          (data?['employment_type'] == null
+              ? null
+              : [data!['employment_type'] as String]);
+      final incomeBracket = preferredIncomeBracket ??
+          _fnIncomeBracket(
+            (data?['monthly_income_ugx'] as num?)?.toInt(),
+          );
+
+      if (employmentTypes != null || incomeBracket != null ||
+          prefersSuggestedTerms ||
+          prefersVerifiedOnly) {
+        setState(() {
+          if (employmentTypes != null) {
+            _selectedEmployment = employmentTypes.toSet();
+          }
+          if (incomeBracket != null) {
+            _selectedIncome = {incomeBracket};
+          }
+          _suggestedTermsOnly = prefersSuggestedTerms;
+          _verifiedOnly = prefersVerifiedOnly;
+        });
+      }
+    } catch (_) {
+      // Silently ignore — user simply keeps an empty selection.
+    }
   }
 
   ProFilterCriteria _currentCriteria(BuildContext ctx) {

@@ -28,7 +28,7 @@ class ProfileRepository {
         _client
             .from(TableNames.profiles)
             .select(
-                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, account_status, created_at, free_unlocks_remaining')
+                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only, account_status, created_at, free_unlocks_remaining')
             .eq('id', _uid)
             .maybeSingle(),
         _client
@@ -61,6 +61,15 @@ class ProfileRepository {
         employmentType: profile?['employment_type'] as String?,
         employerName: profile?['employer_name'] as String?,
         monthlyIncomeUgx: (profile?['monthly_income_ugx'] as num?)?.toInt(),
+        preferredEmploymentTypes: profile?['preferred_employment_types'] == null
+            ? null
+            : List<String>.from(profile!['preferred_employment_types'] as List),
+        preferredIncomeBracket:
+            profile?['preferred_income_bracket'] as String?,
+        prefersSuggestedTerms:
+            profile?['prefers_suggested_terms'] as bool? ?? false,
+        prefersVerifiedOnly:
+            profile?['prefers_verified_only'] as bool? ?? false,
         accountStatus: profile?['account_status'] as String? ?? 'active',
         memberSince: profile?['created_at'] != null
             ? DateTime.tryParse(profile!['created_at'] as String)
@@ -105,6 +114,10 @@ class ProfileRepository {
     String? employmentType,
     String? employerName,
     int? monthlyIncomeUgx,
+    List<String>? preferredEmploymentTypes,
+    String? preferredIncomeBracket,
+    bool? prefersSuggestedTerms,
+    bool? prefersVerifiedOnly,
   }) async {
     try {
       final updates = <String, dynamic>{};
@@ -115,6 +128,18 @@ class ProfileRepository {
       if (employerName != null) updates['employer_name'] = employerName;
       if (monthlyIncomeUgx != null) {
         updates['monthly_income_ugx'] = monthlyIncomeUgx;
+      }
+      if (preferredEmploymentTypes != null) {
+        updates['preferred_employment_types'] = preferredEmploymentTypes;
+      }
+      if (preferredIncomeBracket != null) {
+        updates['preferred_income_bracket'] = preferredIncomeBracket;
+      }
+      if (prefersSuggestedTerms != null) {
+        updates['prefers_suggested_terms'] = prefersSuggestedTerms;
+      }
+      if (prefersVerifiedOnly != null) {
+        updates['prefers_verified_only'] = prefersVerifiedOnly;
       }
 
       if (updates.isEmpty) return;

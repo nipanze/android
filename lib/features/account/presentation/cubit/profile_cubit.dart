@@ -37,6 +37,10 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
     String? employmentType,
     String? employerName,
     int? monthlyIncomeUgx,
+    List<String>? preferredEmploymentTypes,
+    String? preferredIncomeBracket,
+    bool? prefersSuggestedTerms,
+    bool? prefersVerifiedOnly,
   }) async {
     if (state is! ProfileCubitLoaded) return;
     final current = state as ProfileCubitLoaded;
@@ -49,6 +53,10 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
         employmentType: employmentType,
         employerName: employerName,
         monthlyIncomeUgx: monthlyIncomeUgx,
+        preferredEmploymentTypes: preferredEmploymentTypes,
+        preferredIncomeBracket: preferredIncomeBracket,
+        prefersSuggestedTerms: prefersSuggestedTerms,
+        prefersVerifiedOnly: prefersVerifiedOnly,
       );
       // Reload fresh from DB
       final updated = await _repository.getProfile();

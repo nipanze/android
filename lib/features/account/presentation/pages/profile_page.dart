@@ -36,6 +36,12 @@ class _ProfileViewState extends State<_ProfileView> {
   String? _employmentType;
   bool _populated = false;
 
+  // Filter preferences
+  final Set<String> _selectedEmploymentTypes = {};
+  String? _selectedIncomeBracket;
+  bool _prefersSuggestedTerms = false;
+  bool _prefersVerifiedOnly = false;
+
   static const _districts = [
     'Kampala',
     'Wakiso',
@@ -63,6 +69,21 @@ class _ProfileViewState extends State<_ProfileView> {
     ('other', 'Other'),
   ];
 
+  static const _incomeBrackets = [
+    ('under_2m', 'Under 2M UGX / month'),
+    ('2m_5m', '2M – 5M UGX / month'),
+    ('5m_10m', '5M – 10M UGX / month'),
+    ('over_10m', 'Over 10M UGX / month'),
+  ];
+
+  String? _fnIncomeBracket(int? monthlyIncomeUgx) {
+    if (monthlyIncomeUgx == null) return null;
+    if (monthlyIncomeUgx < 2000000) return 'under_2m';
+    if (monthlyIncomeUgx < 5000000) return '2m_5m';
+    if (monthlyIncomeUgx < 10000000) return '5m_10m';
+    return 'over_10m';
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -74,7 +95,6 @@ class _ProfileViewState extends State<_ProfileView> {
 
   void _populateIfNeeded(ProfileCubitLoaded state) {
     if (_populated) return;
-    // Fix: state.profile is UserProfile (non-null) — null check removed
     final p = state.profile;
     _nameController.text = p.fullName ?? '';
     _phoneController.text = p.phone ?? '';
@@ -84,6 +104,15 @@ class _ProfileViewState extends State<_ProfileView> {
         : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
     _district = p.district;
     _employmentType = p.employmentType;
+
+    _selectedEmploymentTypes
+      ..clear()
+      ..addAll(p.preferredEmploymentTypes ?? const []);
+    _selectedIncomeBracket = p.preferredIncomeBracket ??
+        _fnIncomeBracket(p.monthlyIncomeUgx);
+    _prefersSuggestedTerms = p.prefersSuggestedTerms;
+    _prefersVerifiedOnly = p.prefersVerifiedOnly;
+
     _populated = true;
   }
 
@@ -192,6 +221,93 @@ class _ProfileViewState extends State<_ProfileView> {
                     ),
                   ),
                   const SizedBox(height: 28),
+
+                  // ── Advanced filter preferences ──────────────────────────
+                  const Text(
+                    'Advanced filter preferences',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'These settings are used as defaults when you open Advanced '
+                    'Filters in the marketplace.',
+                    style: TextStyle(fontSize: 12, color: AppColors.text2Light),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Employment type chips
+                  const Text(
+                    'Employment type',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _employmentTypes.map((opt) {
+                      final selected =
+                          _selectedEmploymentTypes.contains(opt.$1);
+                      return _FilterChip(
+                        label: opt.$2,
+                        selected: selected,
+                        onTap: () => setState(() {
+                          if (selected) {
+                            _selectedEmploymentTypes.remove(opt.$1);
+                          } else {
+                            _selectedEmploymentTypes.add(opt.$1);
+                          }
+                        }),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Income bracket chips
+                  const Text(
+                    'Monthly income range',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _incomeBrackets.map((opt) {
+                      final selected = _selectedIncomeBracket == opt.$1;
+                      return _FilterChip(
+                        label: opt.$2,
+                        selected: selected,
+                        onTap: () => setState(
+                          () => _selectedIncomeBracket = opt.$1,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Boolean toggles
+                  _ToggleTile(
+                    icon: Icons.receipt_long_outlined,
+                    iconColor: AppColors.accent,
+                    title: 'Has suggested terms',
+                    subtitle:
+                        'Prefer Pro-posted listings with locked interest rate, late fee, and repayment schedule',
+                    value: _prefersSuggestedTerms,
+                    onChanged: (v) =>
+                        setState(() => _prefersSuggestedTerms = v),
+                  ),
+                  const SizedBox(height: 10),
+                  _ToggleTile(
+                    icon: Icons.verified_outlined,
+                    iconColor: AppColors.success,
+                    title: 'Verified borrower',
+                    subtitle:
+                        'Prefer listings from KYC-approved account holders',
+                    value: _prefersVerifiedOnly,
+                    onChanged: (v) =>
+                        setState(() => _prefersVerifiedOnly = v),
+                  ),
+                  const SizedBox(height: 28),
+
                   ElevatedButton(
                     onPressed: isSaving
                         ? null
@@ -203,9 +319,10 @@ class _ProfileViewState extends State<_ProfileView> {
                                 : int.tryParse(incomeText.replaceAll(',', ''));
                             context.read<ProfileCubit>().updateProfile(
                                   fullName: _nameController.text.trim(),
-                                  phone: _phoneController.text.trim().isEmpty
-                                      ? null
-                                      : _phoneController.text.trim(),
+                                  phone:
+                                      _phoneController.text.trim().isEmpty
+                                          ? null
+                                          : _phoneController.text.trim(),
                                   district: _district,
                                   employmentType: _employmentType,
                                   employerName:
@@ -213,6 +330,13 @@ class _ProfileViewState extends State<_ProfileView> {
                                           ? null
                                           : _employerController.text.trim(),
                                   monthlyIncomeUgx: monthlyIncomeUgx,
+                                  preferredEmploymentTypes:
+                                      _selectedEmploymentTypes.isNotEmpty
+                                          ? _selectedEmploymentTypes.toList()
+                                          : null,
+                                  preferredIncomeBracket: _selectedIncomeBracket,
+                                  prefersSuggestedTerms: _prefersSuggestedTerms,
+                                  prefersVerifiedOnly: _prefersVerifiedOnly,
                                 );
                           },
                     child: isSaving
@@ -228,6 +352,108 @@ class _ProfileViewState extends State<_ProfileView> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.purple.withValues(alpha: 0.18)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected
+                ? AppColors.purple
+                : AppColors.borderDark.withValues(alpha: 0.5),
+            width: selected ? 1.3 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected ? AppColors.purple : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToggleTile extends StatelessWidget {
+  const _ToggleTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.borderDark.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: iconColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 11.5),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.purple,
+            activeTrackColor: AppColors.purple.withValues(alpha: 0.35),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ],
       ),
     );
   }
