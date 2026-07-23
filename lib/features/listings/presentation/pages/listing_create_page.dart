@@ -32,6 +32,10 @@ const _purposes = [
 
 // ─── Districts ────────────────────────────────────────────────────────────────
 const _districts = [
+  'Central',
+  'Eastern',
+  'Western',
+  'Northern',
   'Kampala',
   'Wakiso',
   'Mukono',

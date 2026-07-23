@@ -43,6 +43,10 @@ class _ProfileViewState extends State<_ProfileView> {
   bool _prefersVerifiedOnly = false;
 
   static const _districts = [
+    'Central',
+    'Eastern',
+    'Western',
+    'Northern',
     'Kampala',
     'Wakiso',
     'Mukono',
@@ -102,8 +106,12 @@ class _ProfileViewState extends State<_ProfileView> {
     _incomeController.text = p.monthlyIncomeUgx == null
         ? ''
         : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
-    _district = p.district;
-    _employmentType = p.employmentType;
+    _district = (p.district != null && _districts.contains(p.district))
+        ? p.district
+        : null;
+    _employmentType = _employmentTypes.any((e) => e.$1 == p.employmentType)
+        ? p.employmentType
+        : null;
 
     _selectedEmploymentTypes
       ..clear()
