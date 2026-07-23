@@ -184,7 +184,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.profile,
         name: 'profile',
-        pageBuilder: (_, state) => _slide(state, const ProfilePage()),
+        pageBuilder: (_, state) => _slide(state, ProfilePage()), // ignore: prefer_const_constructors
       ),
       GoRoute(
         path: AppRoutes.admin,

@@ -131,7 +131,9 @@ class _ProfileViewState extends State<_ProfileView> {
           if (state is ProfileCubitLoaded && state.justSaved) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(const SnackBar(content: Text('Profile saved.')));
-            context.pop();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) context.pop();
+            });
           }
           if (state is ProfileCubitError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
