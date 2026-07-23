@@ -76,7 +76,7 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000023',
     '10000000-0000-0000-0000-000000000024',
     '10000000-0000-0000-0000-000000000025'
-) ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
+) ON CONFLICT DO NOTHING;
 
 -- Create a simple posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.posts (
@@ -98,5 +98,16 @@ VALUES
     ('10000000-0000-0000-0000-000000000022', 'Welcome to Nipanze Rwanda', 'This is a test post for Rwanda user.', TRUE),
     ('10000000-0000-0000-0000-000000000023', 'Welcome to Nipanze South Sudan', 'This is a test post for South Sudan user.', TRUE),
     ('10000000-0000-0000-0000-000000000024', 'Welcome to Nipanze Burundi', 'This is a test post for Burundi user.', TRUE),
-    ('10000000-0000-0000-0000-000000000025', 'Welcome to Nipanze Kenya (example.com)', 'This is a test post for Kenyan example.com user.', TRUE)
-ON CONFLICT DO NOTHING;
+    ('10000000-0000-0000-0000-000000000025', 'Welcome to Nipanze Kenya (example.com)', 'This is a test post for Kenyan example.com user.', TRUE) ON CONFLICT (id) DO NOTHING;
+
+-- Insert sample loan requests for the new users
+INSERT INTO loan_requests (borrower_id, requested_amount, purpose, duration_months, max_interest_rate, status, listed_at)
+VALUES
+    ('10000000-0000-0000-0000-000000000019', 500000, 'Start a small farm', 12, 12.5, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000020', 300000, 'Buy a motorcycle for business', 6, 15.0, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000021', 250000, 'Purchase livestock', 9, 13.0, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000022', 400000, 'Expand market stall', 12, 11.5, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000023', 600000, 'School tuition for child', 24, 10.0, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000024', 350000, 'Buy agricultural tools', 12, 14.0, 'active', CURRENT_TIMESTAMP),
+    ('10000000-0000-0000-0000-000000000025', 200000, 'Home improvement loan', 12, 13.5, 'active', CURRENT_TIMESTAMP);
+
