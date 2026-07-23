@@ -101,13 +101,23 @@ VALUES
     ('10000000-0000-0000-0000-000000000025', 'Welcome to Nipanze Kenya (example.com)', 'This is a test post for Kenyan example.com user.', TRUE) ON CONFLICT (id) DO NOTHING;
 
 -- Insert sample loan requests for the new users
-INSERT INTO loan_requests (borrower_id, requested_amount, purpose, duration_months, max_interest_rate, status, listed_at)
-VALUES
-    ('10000000-0000-0000-0000-000000000019', 500000, 'Start a small farm', 12, 12.5, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000020', 300000, 'Buy a motorcycle for business', 6, 15.0, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000021', 250000, 'Purchase livestock', 9, 13.0, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000022', 400000, 'Expand market stall', 12, 11.5, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000023', 600000, 'School tuition for child', 24, 10.0, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000024', 350000, 'Buy agricultural tools', 12, 14.0, 'active', CURRENT_TIMESTAMP),
-    ('10000000-0000-0000-0000-000000000025', 200000, 'Home improvement loan', 12, 13.5, 'active', CURRENT_TIMESTAMP);
+INSERT INTO loan_requests (
+    borrower_id,
+    title,
+    purpose,
+    requested_amount,
+    duration_months,
+    income_source,
+    preferred_repayment_plan,
+    repayment_amount_per_period,
+    repayment_timeline,
+    district
+) VALUES
+    ('10000000-0000-0000-0000-000000000019', 'Loan request from Uganda', 'Start a small farm', 500000, 12, 'self-employed', 'monthly', 500000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000020', 'Loan request from Kenya', 'Buy a motorcycle for business', 300000, 6, 'self-employed', 'monthly', 300000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000021', 'Loan request from Tanzania', 'Purchase livestock', 250000, 9, 'self-employed', 'monthly', 250000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000022', 'Loan request from Rwanda', 'Expand market stall', 400000, 12, 'self-employed', 'monthly', 400000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000023', 'Loan request from South Sudan', 'School tuition for child', 600000, 24, 'self-employed', 'monthly', 600000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000024', 'Loan request from Burundi', 'Buy agricultural tools', 350000, 12, 'self-employed', 'monthly', 350000, 'N/A', 'Unknown'),
+    ('10000000-0000-0000-0000-000000000025', 'Loan request from Kenya (example.com)', 'Home improvement loan', 200000, 12, 'self-employed', 'monthly', 200000, 'N/A', 'Unknown');
 
