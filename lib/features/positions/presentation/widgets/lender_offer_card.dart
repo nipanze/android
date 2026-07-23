@@ -54,7 +54,7 @@ class LenderOfferCard extends StatelessWidget {
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Offered Amount',
                 style: Theme.of(context).textTheme.bodySmall),
-            UgxAmount(offer.offerAmount, fontSize: 16),
+            CurrencyAmount(offer.offerAmount, currency: offer.currency, fontSize: 16),
           ]),
           const Spacer(),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -85,13 +85,13 @@ class LenderOfferCard extends StatelessWidget {
           icon: Icons.calendar_today,
           label: 'Repayment',
           value:
-              'UGX ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
+              '${offer.currency} ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
         ),
         const SizedBox(height: 4),
         _TermRow(
           icon: Icons.account_balance_wallet,
           label: 'Total payable',
-          value: 'UGX ${_fmt(offer.totalRepayment)}',
+          value: '${offer.currency} ${_fmt(offer.totalRepayment)}',
         ),
 
         if (offer.proposedExpectations != null &&

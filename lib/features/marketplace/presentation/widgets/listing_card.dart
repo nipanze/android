@@ -94,7 +94,7 @@ class ListingCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'UGX ${_fmtAmount(listing.requestedAmount)}',
+              '${listing.currency} ${_fmtAmount(listing.requestedAmount)}',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,

@@ -91,7 +91,7 @@ class WatchlistCard extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Amount
-            UgxAmount(listing.requestedAmount, fontSize: 20),
+            CurrencyAmount(listing.requestedAmount, currency: listing.currency, fontSize: 20),
 
             const SizedBox(height: 8),
 

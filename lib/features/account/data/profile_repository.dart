@@ -74,7 +74,8 @@ class ProfileRepository {
         district: profile?['district'] as String?,
         employmentType: profile?['employment_type'] as String?,
         employerName: profile?['employer_name'] as String?,
-        monthlyIncomeUgx: (profile?['monthly_income_ugx'] as num?)?.toInt(),
+        monthlyIncome: (profile?['monthly_income'] as num?)?.toInt(),
+        incomeCurrency: profile?['income_currency'] as String? ?? 'UGX',
         preferredEmploymentTypes: profile?['preferred_employment_types'] == null
             ? null
             : List<String>.from(profile!['preferred_employment_types'] as List),
@@ -128,7 +129,8 @@ class ProfileRepository {
     String? district,
     String? employmentType,
     String? employerName,
-    int? monthlyIncomeUgx,
+    int? monthlyIncome,
+    String? incomeCurrency,
     List<String>? preferredEmploymentTypes,
     String? preferredIncomeBracket,
     bool? prefersSuggestedTerms,
@@ -141,8 +143,11 @@ class ProfileRepository {
       if (district != null) updates['district'] = district;
       if (employmentType != null) updates['employment_type'] = employmentType;
       if (employerName != null) updates['employer_name'] = employerName;
-      if (monthlyIncomeUgx != null) {
-        updates['monthly_income_ugx'] = monthlyIncomeUgx;
+      if (monthlyIncome != null) {
+        updates['monthly_income'] = monthlyIncome;
+      }
+      if (incomeCurrency != null) {
+        updates['income_currency'] = incomeCurrency;
       }
       if (preferredEmploymentTypes != null) {
         updates['preferred_employment_types'] = preferredEmploymentTypes;

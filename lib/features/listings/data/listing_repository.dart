@@ -23,7 +23,7 @@ class ListingRepository {
             'income_source, preferred_repayment_plan, repayment_amount_per_period, '
             'repayment_timeline, suggested_interest_rate_pct, suggested_late_fee_pct, '
             'suggested_repayment_frequency, suggested_installment_amount, terms_locked_at, '
-            'status, number_of_offers, '
+            'status, number_of_offers, currency, '
             'listed_at, expires_at, contracted_at, cancelled_at',
           )
           .eq('borrower_id', _uid)
@@ -51,6 +51,7 @@ class ListingRepository {
     double? suggestedLateFeePct,
     String? suggestedRepaymentFrequency,
     int? suggestedInstallmentAmount,
+    String currency = 'UGX',
   }) async {
     try {
       final data = await _client
@@ -66,6 +67,7 @@ class ListingRepository {
             'preferred_repayment_plan': preferredRepaymentPlan,
             'repayment_amount_per_period': repaymentAmountPerPeriod,
             'repayment_timeline': repaymentTimeline,
+            'currency': currency,
             if (suggestedInterestRatePct != null)
               'suggested_interest_rate_pct': suggestedInterestRatePct,
             if (suggestedLateFeePct != null)

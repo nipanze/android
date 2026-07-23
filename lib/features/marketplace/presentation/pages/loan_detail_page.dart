@@ -252,9 +252,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  // Amount — hero number, rendered in Sora via UgxAmount
-                  UgxAmount(
+                  // Amount — hero number, rendered in Sora via CurrencyAmount
+                  CurrencyAmount(
                     listing.requestedAmount,
+                    currency: listing.currency,
                     fontSize: 27,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -293,7 +294,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       Expanded(
                         flex: 2,
                         child: _TermBadge(
-                            'UGX ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
+                            '${listing.currency} ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -1012,6 +1013,7 @@ class _OfferCardState extends State<_OfferCard>
                             offeredInterest: offer.interestRatePct,
                             offeredLateFee: offer.lateFeePct,
                             offeredInstallment: offer.installmentAmount,
+                            currency: offer.currency,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -1273,7 +1275,7 @@ class _TotalPayableRow extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  'UGX ${_fmt(totalPayable)}',
+                  '${offer.currency} ${_fmt(totalPayable)}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         fontSize: 13.5,
@@ -1296,7 +1298,7 @@ class _TotalPayableRow extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Borrowing cost: UGX ${_fmt(totalCost)}',
+                    'Borrowing cost: ${offer.currency} ${_fmt(totalCost)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 10.5,
                           color: Theme.of(context)
@@ -1637,7 +1639,7 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           const SizedBox(height: 8),
           _CalculatorRow(
             label: 'Offered installment',
-            value: 'UGX ${_fmt(offer.installmentAmount)}',
+            value: '${offer.currency} ${_fmt(offer.installmentAmount)}',
           ),
           _CalculatorRow(
             label: 'Repayments plan',
@@ -1649,17 +1651,17 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           ),
           _CalculatorRow(
             label: 'Total payback amount',
-            value: 'UGX ${_fmt(totalRepayable)}',
+            value: '${offer.currency} ${_fmt(totalRepayable)}',
             isBold: true,
           ),
           _CalculatorRow(
             label: 'Principal borrowed',
-            value: 'UGX ${_fmt(offer.offerAmount)}',
+            value: '${offer.currency} ${_fmt(offer.offerAmount)}',
             subtle: true,
           ),
           _CalculatorRow(
             label: 'Borrowing cost (total interest)',
-            value: 'UGX ${_fmt(totalInterest.clamp(0, totalInterest))}',
+            value: '${offer.currency} ${_fmt(totalInterest.clamp(0, totalInterest))}',
             valueColor: AppColors.success,
             isBold: true,
           ),
@@ -1725,6 +1727,7 @@ class _ProAnalysisPanel extends StatelessWidget {
     required this.offeredInterest,
     required this.offeredLateFee,
     required this.offeredInstallment,
+    this.currency = 'UGX',
   });
 
   final double? interestDiff;
@@ -1736,6 +1739,7 @@ class _ProAnalysisPanel extends StatelessWidget {
   final double offeredInterest;
   final double offeredLateFee;
   final int offeredInstallment;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -1774,10 +1778,10 @@ class _ProAnalysisPanel extends StatelessWidget {
         notes.write('• Period installment matches your expectations.\n');
       } else if (installmentDiff! < 0) {
         notes.write(
-            '• Installment payment is lower by UGX ${_fmt(installmentDiff!.abs())}.\n');
+            '• Installment payment is lower by $currency ${_fmt(installmentDiff!.abs())}.\n');
       } else {
         notes.write(
-            '• Installment cost is higher by UGX ${_fmt(installmentDiff!.abs())}.\n');
+            '• Installment cost is higher by $currency ${_fmt(installmentDiff!.abs())}.\n');
       }
     }
 
@@ -2091,9 +2095,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                       controller: _amountController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                          labelText: 'Amount (UGX)',
-                          prefixIcon: Icon(Icons.payments_outlined)),
+                      decoration: InputDecoration(
+                          labelText: 'Amount (${widget.listing.currency})',
+                          prefixIcon: const Icon(Icons.payments_outlined)),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Enter amount' : null,
                     ),
@@ -2161,9 +2165,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                       controller: _installmentController,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                          labelText: 'Installment amount (UGX)',
-                          prefixIcon: Icon(Icons.price_check_outlined)),
+                      decoration: InputDecoration(
+                          labelText: 'Installment amount (${widget.listing.currency})',
+                          prefixIcon: const Icon(Icons.price_check_outlined)),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Enter amount' : null,
                     ),

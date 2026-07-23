@@ -33,6 +33,7 @@ class LoanListing extends Equatable {
     this.trustPhoneVerified = false,
     this.trustResponseTimeBucket,
     this.trustIsVerified = false,
+    this.currency = 'UGX',
   });
 
   final String requestId;
@@ -63,6 +64,7 @@ class LoanListing extends Equatable {
   final bool trustPhoneVerified;
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
+  final String currency;
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
   bool get isClosingSoon24h =>
@@ -119,6 +121,7 @@ class LoanListing extends Equatable {
       trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
+      currency: map['currency'] as String? ?? 'UGX',
     );
   }
 
@@ -150,6 +153,7 @@ class LoanOffer extends Equatable {
     this.trustPhoneVerified = false,
     this.trustResponseTimeBucket,
     this.trustIsVerified = false,
+    this.currency = 'UGX',
   });
 
   final String id;
@@ -172,6 +176,7 @@ class LoanOffer extends Equatable {
   final bool trustPhoneVerified;
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
+  final String currency;
 
   bool get hasMaskedLender => lenderId.startsWith('public-offer-');
 
@@ -204,6 +209,7 @@ class LoanOffer extends Equatable {
       trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
+      currency: map['currency'] as String? ?? 'UGX',
     );
   }
 

@@ -27,8 +27,11 @@ class _LenderRequiredSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final authState = context.watch<AuthBloc>().state;
-    final phone = authState is AuthAuthenticated ? authState.user.phone : null;
+    String? phone;
+    try {
+      final authState = context.watch<AuthBloc?>()?.state;
+      if (authState is AuthAuthenticated) phone = authState.user.phone;
+    } catch (_) {}
     final country = EastAfricaCountries.findByPhone(phone);
 
     final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;

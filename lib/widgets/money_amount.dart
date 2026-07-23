@@ -16,10 +16,10 @@ class MoneyAmount extends StatelessWidget {
 
   const MoneyAmount(
     this.amount, {
-    Key? key,
+    super.key,
     this.fontSize,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

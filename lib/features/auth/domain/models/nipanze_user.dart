@@ -27,7 +27,8 @@ class NipanzeUser extends Equatable {
     this.streetAddress,
     this.employmentType,
     this.employerName,
-    this.monthlyIncomeUgx,
+    this.monthlyIncome,
+    this.incomeCurrency = 'UGX',
     this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
     this.isAdmin = false,
@@ -42,7 +43,9 @@ class NipanzeUser extends Equatable {
   final String? streetAddress;
   final EmploymentType? employmentType;
   final String? employerName;
-  final int? monthlyIncomeUgx;
+  final int? monthlyIncome;
+  final String incomeCurrency;
+  int? get monthlyIncomeUgx => monthlyIncome;
   final SubscriptionPlan subscriptionPlan;
   final KycStatus kycStatus;
   final bool isAdmin;
@@ -65,7 +68,8 @@ class NipanzeUser extends Equatable {
       streetAddress: map['street_address'] as String?,
       employmentType: _employmentFromString(map['employment_type'] as String?),
       employerName: map['employer_name'] as String?,
-      monthlyIncomeUgx: (map['monthly_income_ugx'] as num?)?.toInt(),
+      monthlyIncome: (map['monthly_income'] as num?)?.toInt(),
+      incomeCurrency: map['income_currency'] as String? ?? 'UGX',
       subscriptionPlan:
           _planFromString(map['subscription_plan'] as String? ?? 'free'),
       kycStatus:

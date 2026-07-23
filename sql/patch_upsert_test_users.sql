@@ -72,8 +72,8 @@ WHERE au.id IN (
     is_admin = EXCLUDED.is_admin;
 
 -- Upsert subscriptions for the same users
-INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
-SELECT au.id, 'free', 'active', 0
+INSERT INTO public.subscriptions (user_id, plan, status, amount, currency)
+SELECT au.id, 'free', 'active', 0, 'UGX'
 FROM auth.users au
 WHERE au.id IN (
     '10000000-0000-0000-0000-000000000019',
@@ -86,7 +86,8 @@ WHERE au.id IN (
 ) ON CONFLICT (user_id) DO UPDATE SET
     plan = EXCLUDED.plan,
     status = EXCLUDED.status,
-    amount_ugx = EXCLUDED.amount_ugx;
+    amount = EXCLUDED.amount,
+    currency = EXCLUDED.currency;
 
 -- Ensure posts table exists
 CREATE TABLE IF NOT EXISTS public.posts (

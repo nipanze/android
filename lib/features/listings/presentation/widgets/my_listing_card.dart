@@ -64,7 +64,7 @@ class MyListingCard extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Amount
-            UgxAmount(listing.requestedAmount, fontSize: 19),
+            CurrencyAmount(listing.requestedAmount, currency: listing.currency, fontSize: 19),
 
             const SizedBox(height: 8),
 

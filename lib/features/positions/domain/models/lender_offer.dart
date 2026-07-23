@@ -24,6 +24,7 @@ class LenderOffer extends Equatable {
     this.acceptedAt,
     this.revealStatus,
     this.revealedAt,
+    this.currency = 'UGX',
   });
 
   final String offerId;
@@ -45,6 +46,7 @@ class LenderOffer extends Equatable {
   final DateTime? acceptedAt;
   final String? revealStatus;
   final DateTime? revealedAt;
+  final String currency;
 
   DateTime get placedAt => offeredAt;
   bool get canWithdraw => status == OfferStatus.pending;
@@ -123,6 +125,7 @@ class LenderOffer extends Equatable {
       revealedAt: map['revealed_at'] != null
           ? DateTime.tryParse(map['revealed_at'] as String)
           : null,
+      currency: map['currency'] as String? ?? 'UGX',
     );
   }
 

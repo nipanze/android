@@ -10,7 +10,8 @@ class UserProfile extends Equatable {
     this.district,
     this.employmentType,
     this.employerName,
-    this.monthlyIncomeUgx,
+    this.monthlyIncome,
+    this.incomeCurrency = 'UGX',
     this.preferredEmploymentTypes,
     this.preferredIncomeBracket,
     this.prefersSuggestedTerms = false,
@@ -49,7 +50,9 @@ class UserProfile extends Equatable {
   final String? district;
   final String? employmentType;
   final String? employerName;
-  final int? monthlyIncomeUgx;
+  final int? monthlyIncome;
+  final String incomeCurrency;
+  int? get monthlyIncomeUgx => monthlyIncome;
   final List<String>? preferredEmploymentTypes;
   final String? preferredIncomeBracket;
   final bool prefersSuggestedTerms;
@@ -117,7 +120,8 @@ class UserProfile extends Equatable {
     String? district,
     String? employmentType,
     String? employerName,
-    int? monthlyIncomeUgx,
+    int? monthlyIncome,
+    String? incomeCurrency,
     List<String>? preferredEmploymentTypes,
     String? preferredIncomeBracket,
     bool? prefersSuggestedTerms,
@@ -151,7 +155,8 @@ class UserProfile extends Equatable {
       district: district ?? this.district,
       employmentType: employmentType ?? this.employmentType,
       employerName: employerName ?? this.employerName,
-      monthlyIncomeUgx: monthlyIncomeUgx ?? this.monthlyIncomeUgx,
+      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
+      incomeCurrency: incomeCurrency ?? this.incomeCurrency,
       preferredEmploymentTypes:
           preferredEmploymentTypes ?? this.preferredEmploymentTypes,
       preferredIncomeBracket:
@@ -190,6 +195,8 @@ class UserProfile extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        monthlyIncome,
+        incomeCurrency,
         subscriptionPlan,
         subscriptionStatus,
         kycStatus,

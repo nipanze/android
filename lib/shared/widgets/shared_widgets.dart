@@ -121,6 +121,43 @@ class UgxAmount extends StatelessWidget {
   }
 }
 
+// ─── Currency-aware Amount Text ───────────────────────────────────────────────
+/// Displays a formatted monetary amount with the given currency code prefix.
+/// Replaces [UgxAmount] for multi-country listings.
+class CurrencyAmount extends StatelessWidget {
+  const CurrencyAmount(
+    this.amount, {
+    super.key,
+    required this.currency,
+    this.fontSize = 20,
+    this.color,
+  });
+
+  final int amount;
+  final String currency;
+  final double fontSize;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = amount.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(s[i]);
+    }
+    return Text(
+      '$currency $buffer',
+      style: TextStyle(
+        fontFamily: AppFonts.body,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.accent,
+      ),
+    );
+  }
+}
+
 // ─── Live Dot ─────────────────────────────────────────────────────────────────
 
 class LiveDot extends StatefulWidget {

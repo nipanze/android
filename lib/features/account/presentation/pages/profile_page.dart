@@ -104,15 +104,6 @@ class _ProfileViewState extends State<_ProfileView> {
     return '$dial$cleanLocal';
   }
 
-  void _onCountrySelected(CountryInfo country) {
-    setState(() {
-      _selectedCountry = country;
-      if (_district != null && !country.regions.contains(_district)) {
-        _district = null;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -296,7 +287,7 @@ class _ProfileViewState extends State<_ProfileView> {
                                       _employerController.text.trim().isEmpty
                                           ? null
                                           : _employerController.text.trim(),
-                                  monthlyIncomeUgx: monthlyIncome,
+                                  monthlyIncome: monthlyIncome,
                                 );
                           },
                     child: isSaving

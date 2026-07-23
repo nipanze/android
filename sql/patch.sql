@@ -69,8 +69,8 @@ WHERE au.id IN (
 ALTER TABLE public.subscriptions DROP CONSTRAINT IF EXISTS uidx_sub_user;
 ALTER TABLE public.subscriptions ADD CONSTRAINT uidx_sub_user UNIQUE (user_id);
 
-INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
-SELECT au.id, 'free', 'active', 0
+INSERT INTO public.subscriptions (user_id, plan, status, amount, currency)
+SELECT au.id, 'free', 'active', 0, 'UGX'
 FROM auth.users au
 WHERE au.id IN (
     '10000000-0000-0000-0000-000000000019',
@@ -81,7 +81,7 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000024',
     '10000000-0000-0000-0000-000000000025'
 ) ON CONFLICT ON CONSTRAINT uidx_sub_user DO UPDATE
-    SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
+    SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount = EXCLUDED.amount, currency = EXCLUDED.currency;
 
 -- Create a simple posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.posts (

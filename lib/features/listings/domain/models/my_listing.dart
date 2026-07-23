@@ -25,6 +25,7 @@ class MyListing extends Equatable {
     required this.expiresAt,
     this.contractedAt,
     this.cancelledAt,
+    this.currency = 'UGX',
   });
 
   final String id;
@@ -48,6 +49,7 @@ class MyListing extends Equatable {
   final DateTime expiresAt;
   final DateTime? contractedAt;
   final DateTime? cancelledAt;
+  final String currency;
 
   bool get isActive => status == ListingStatus.active;
   bool get isContracted => status == ListingStatus.contracted;
@@ -102,6 +104,7 @@ class MyListing extends Equatable {
       cancelledAt: map['cancelled_at'] != null
           ? DateTime.tryParse(map['cancelled_at'] as String)
           : null,
+      currency: map['currency'] as String? ?? 'UGX',
     );
   }
 
