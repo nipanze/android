@@ -76,7 +76,7 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000023',
     '10000000-0000-0000-0000-000000000024',
     '10000000-0000-0000-0000-000000000025'
-) ON CONFLICT (user_id) WHERE status = 'active' DO UPDATE SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
+) ON CONFLICT (user_id) DO UPDATE SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
 
 -- Create a simple posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.posts (
@@ -90,6 +90,8 @@ CREATE TABLE IF NOT EXISTS public.posts (
 );
 
 -- Insert sample posts for the new users
+SET session_replication_role = 'replica';
+
 INSERT INTO public.posts (author_id, title, content, is_published)
 VALUES
     ('10000000-0000-0000-0000-000000000019', 'Welcome to Nipanze Uganda', 'This is a test post for Uganda user.', TRUE),
@@ -99,6 +101,9 @@ VALUES
     ('10000000-0000-0000-0000-000000000023', 'Welcome to Nipanze South Sudan', 'This is a test post for South Sudan user.', TRUE),
     ('10000000-0000-0000-0000-000000000024', 'Welcome to Nipanze Burundi', 'This is a test post for Burundi user.', TRUE),
     ('10000000-0000-0000-0000-000000000025', 'Welcome to Nipanze Kenya (example.com)', 'This is a test post for Kenyan example.com user.', TRUE) ON CONFLICT (id) DO NOTHING;
+
+SET session_replication_role = 'origin';
+SET session_replication_role = 'replica';
 
 -- Insert sample loan requests for the new users
 INSERT INTO loan_requests (
@@ -120,4 +125,5 @@ INSERT INTO loan_requests (
     ('10000000-0000-0000-0000-000000000023', 'Loan request from South Sudan', 'School tuition for child', 600000, 24, 'self-employed', 'monthly', 600000, 'N/A', 'Unknown'),
     ('10000000-0000-0000-0000-000000000024', 'Loan request from Burundi', 'Buy agricultural tools', 350000, 12, 'self-employed', 'monthly', 350000, 'N/A', 'Unknown'),
     ('10000000-0000-0000-0000-000000000025', 'Loan request from Kenya (example.com)', 'Home improvement loan', 200000, 12, 'self-employed', 'monthly', 200000, 'N/A', 'Unknown');
+SET session_replication_role = 'origin';
 

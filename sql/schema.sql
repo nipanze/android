@@ -261,7 +261,7 @@ COMMENT ON TABLE  subscriptions IS
  lender or pro plan required to make offers.';
 
 -- Only one active subscription per user at a time
-CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active';
+CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active'; ALTER TABLE public.subscriptions ADD CONSTRAINT uidx_sub_user UNIQUE (user_id);
 
 
 -- ============================================
