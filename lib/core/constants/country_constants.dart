@@ -9,15 +9,19 @@ class CountryInfo {
     required this.currency,
     required this.regionsLabel,
     required this.regions,
+    required this.lenderPriceFormatted,
+    required this.proPriceFormatted,
   });
 
-  final String code;        // e.g. 'UG', 'KE'
-  final String name;        // e.g. 'Uganda', 'Kenya'
-  final String flag;        // e.g. '🇺🇬'
-  final String dialCode;    // e.g. '+256'
-  final String currency;    // e.g. 'UGX'
-  final String regionsLabel;// e.g. 'District', 'County'
+  final String code;                  // e.g. 'UG', 'KE'
+  final String name;                  // e.g. 'Uganda', 'Kenya'
+  final String flag;                  // e.g. '🇺🇬'
+  final String dialCode;              // e.g. '+256'
+  final String currency;              // e.g. 'UGX'
+  final String regionsLabel;          // e.g. 'District', 'County'
   final List<String> regions;
+  final String lenderPriceFormatted;  // Charm pricing, e.g. 'UGX 19,900'
+  final String proPriceFormatted;     // Charm pricing, e.g. 'UGX 49,900'
 }
 
 class EastAfricaCountries {
@@ -30,6 +34,8 @@ class EastAfricaCountries {
     dialCode: '+256',
     currency: 'UGX',
     regionsLabel: 'District',
+    lenderPriceFormatted: 'UGX 19,900',
+    proPriceFormatted: 'UGX 49,900',
     regions: [
       'Central',
       'Eastern',
@@ -59,6 +65,8 @@ class EastAfricaCountries {
     dialCode: '+254',
     currency: 'KES',
     regionsLabel: 'County',
+    lenderPriceFormatted: 'KES 690',
+    proPriceFormatted: 'KES 1,790',
     regions: [
       'Nairobi',
       'Mombasa',
@@ -78,6 +86,8 @@ class EastAfricaCountries {
     dialCode: '+255',
     currency: 'TZS',
     regionsLabel: 'Region',
+    lenderPriceFormatted: 'TZS 12,900',
+    proPriceFormatted: 'TZS 32,900',
     regions: [
       'Dar es Salaam',
       'Dodoma',
@@ -96,6 +106,8 @@ class EastAfricaCountries {
     dialCode: '+250',
     currency: 'RWF',
     regionsLabel: 'Province / District',
+    lenderPriceFormatted: 'RWF 6,900',
+    proPriceFormatted: 'RWF 17,900',
     regions: [
       'Kigali',
       'Northern Province',
@@ -113,6 +125,8 @@ class EastAfricaCountries {
     dialCode: '+211',
     currency: 'SSP',
     regionsLabel: 'State',
+    lenderPriceFormatted: 'SSP 7,900',
+    proPriceFormatted: 'SSP 19,900',
     regions: [
       'Juba (Central Equatoria)',
       'Upper Nile',
@@ -131,6 +145,8 @@ class EastAfricaCountries {
     dialCode: '+257',
     currency: 'BIF',
     regionsLabel: 'Province',
+    lenderPriceFormatted: 'BIF 15,900',
+    proPriceFormatted: 'BIF 39,900',
     regions: [
       'Bujumbura',
       'Gitega',

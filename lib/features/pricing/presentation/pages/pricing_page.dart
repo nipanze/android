@@ -2,13 +2,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// The single place where marketplace capability and subscription prices are explained.
-class PricingPage extends StatelessWidget {
+class PricingPage extends StatefulWidget {
   const PricingPage({super.key});
+
+  @override
+  State<PricingPage> createState() => _PricingPageState();
+}
+
+class _PricingPageState extends State<PricingPage> {
+  CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
 
   @override
   Widget build(BuildContext context) {
@@ -18,18 +26,76 @@ class PricingPage extends StatelessWidget {
         : SubscriptionPlan.free;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Plans & pricing')),
+      appBar: AppBar(
+        title: const Text('Plans & pricing'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'Choose the access you need',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'One account can post requests and make offers. Your plan only unlocks capabilities.',
-            style: Theme.of(context).textTheme.bodySmall,
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choose the access you need',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'One account can post requests and make offers.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Country / Currency selector
+              PopupMenuButton<CountryInfo>(
+                onSelected: (country) => setState(() => _selectedCountry = country),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                itemBuilder: (context) => EastAfricaCountries.all
+                    .map(
+                      (c) => PopupMenuItem<CountryInfo>(
+                        value: c,
+                        child: Row(
+                          children: [
+                            Text(c.flag, style: const TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text('${c.name} (${c.currency})'),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.bg2Dark,
+                    border: Border.all(color: AppColors.borderDark),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(_selectedCountry.flag, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        _selectedCountry.currency,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_drop_down, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           _PlanCard(
@@ -47,7 +113,7 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.lender,
-            price: 'UGX 19,900 / month',
+            price: '${_selectedCountry.lenderPriceFormatted} / month',
             subtitle: 'For anyone ready to make structured offers.',
             features: const [
               'Everything in Free',
@@ -60,7 +126,7 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.pro,
-            price: 'UGX 49,900 / month',
+            price: '${_selectedCountry.proPriceFormatted} / month',
             subtitle: 'Full marketplace access, advanced filters and strong request positioning.',
             features: const [
               'Everything in Lender',
@@ -145,7 +211,7 @@ class _PlanCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  PricingPage._label(plan),
+                  _PricingPageState._label(plan),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
                         fontWeight: FontWeight.bold,
@@ -178,7 +244,7 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 )),
-            if (PricingPage._isUpgrade(current, plan)) ...[
+            if (_PricingPageState._isUpgrade(current, plan)) ...[
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
@@ -191,7 +257,7 @@ class _PlanCard extends StatelessWidget {
                   child: Text(
                     plan == SubscriptionPlan.free
                         ? 'Use Free'
-                        : 'Choose ${PricingPage._label(plan)}',
+                        : 'Choose ${_PricingPageState._label(plan)}',
                   ),
                 ),
               ),

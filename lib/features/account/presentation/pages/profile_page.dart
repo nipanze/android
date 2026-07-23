@@ -104,6 +104,15 @@ class _ProfileViewState extends State<_ProfileView> {
     return '$dial$cleanLocal';
   }
 
+  void _onCountrySelected(CountryInfo country) {
+    setState(() {
+      _selectedCountry = country;
+      if (_district != null && !country.regions.contains(_district)) {
+        _district = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,70 +193,76 @@ class _ProfileViewState extends State<_ProfileView> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ── Country Selector ──────────────────────────────────────
-                  DropdownButtonFormField<CountryInfo>(
-                    initialValue: _selectedCountry,
-                    decoration: const InputDecoration(
-                      labelText: 'Country',
-                      prefixIcon: Icon(Icons.public_outlined, size: 20),
-                    ),
-                    items: EastAfricaCountries.all.map((c) {
-                      return DropdownMenuItem<CountryInfo>(
-                        value: c,
-                        child: Row(
-                          children: [
-                            Text(c.flag, style: const TextStyle(fontSize: 18)),
-                            const SizedBox(width: 10),
-                            Text(
-                              '${c.name} (${c.dialCode})',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (country) {
-                      if (country != null) {
-                        setState(() {
-                          _selectedCountry = country;
-                          if (_district != null && !country.regions.contains(_district)) {
-                            _district = null;
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── International Phone Input ──────────────────────────────
+                  // ── WhatsApp-Style Merged Country & Phone Field ───────────
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: 'Phone number',
                       hintText: '7XX XXX XXX',
-                      prefixIcon: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        margin: const EdgeInsets.only(right: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 18)),
-                            const SizedBox(width: 6),
-                            Text(
-                              _selectedCountry.dialCode,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 4, right: 8),
+                        child: PopupMenuButton<CountryInfo>(
+                          tooltip: 'Select country',
+                          onSelected: _onCountrySelected,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          itemBuilder: (context) => EastAfricaCountries.all
+                              .map(
+                                (c) => PopupMenuItem<CountryInfo>(
+                                  value: c,
+                                  child: Row(
+                                    children: [
+                                      Text(c.flag, style: const TextStyle(fontSize: 20)),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          c.name,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        c.dialCode,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.text2Dark,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_selectedCountry.flag, style: const TextStyle(fontSize: 19)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _selectedCountry.dialCode,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(Icons.arrow_drop_down, size: 18, color: AppColors.text2Dark),
+                                const SizedBox(width: 6),
+                                Container(
+                                  height: 20,
+                                  width: 1,
+                                  color: AppColors.borderDark.withValues(alpha: 0.6),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
-                            Container(
-                              height: 18,
-                              width: 1,
-                              color: AppColors.borderDark,
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
