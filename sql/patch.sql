@@ -76,7 +76,7 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000023',
     '10000000-0000-0000-0000-000000000024',
     '10000000-0000-0000-0000-000000000025'
-) ON CONFLICT DO NOTHING;
+) ON CONFLICT (user_id) DO UPDATE SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
 
 -- Create a simple posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.posts (
