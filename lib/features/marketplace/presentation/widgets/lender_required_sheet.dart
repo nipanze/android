@@ -1,10 +1,13 @@
 // lib/features/marketplace/presentation/widgets/lender_required_sheet.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Show the Lender plan required bottom sheet matching the Nipanze paywall design.
 Future<void> showLenderRequiredSheet(BuildContext context) {
@@ -23,6 +26,10 @@ class _LenderRequiredSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    final authState = context.watch<AuthBloc>().state;
+    final phone = authState is AuthAuthenticated ? authState.user.phone : null;
+    final country = EastAfricaCountries.findByPhone(phone);
 
     final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;
     final cardBg = isDark ? const Color(0xFF14171E) : AppColors.bg3Light;
@@ -157,13 +164,13 @@ class _LenderRequiredSheet extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Pricing: UGX 19,900 / month
+                    // Pricing: [Country Currency Price] / month
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                           'UGX 19,900',
+                           country.lenderPriceFormatted,
                            style: TextStyle(
                              fontFamily: AppFonts.heading,
                              fontSize: 22,

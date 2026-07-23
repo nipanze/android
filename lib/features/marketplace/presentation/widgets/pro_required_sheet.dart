@@ -1,10 +1,13 @@
 // lib/features/marketplace/presentation/widgets/pro_required_sheet.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Show the Pro plan required bottom sheet matching the Nipanze paywall design.
 Future<void> showProRequiredSheet(BuildContext context) {
@@ -24,11 +27,15 @@ class _ProRequiredSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final authState = context.watch<AuthBloc>().state;
+    final phone = authState is AuthAuthenticated ? authState.user.phone : null;
+    final country = EastAfricaCountries.findByPhone(phone);
+
     final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;
     final cardBg = isDark ? const Color(0xFF14171E) : AppColors.bg3Light;
-    final cardBorder = isDark ? const Color(0xFF1F4885) : const Color(0xFFBFDBFE);
-    final badgeBg = isDark ? const Color(0xFF0F2C54) : const Color(0xFFDBEAFE);
-    final badgeText = isDark ? const Color(0xFF388DF8) : const Color(0xFF1D4ED8);
+    final cardBorder = isDark ? const Color(0xFF5B21B6) : const Color(0xFFDDD6FE);
+    final badgeBg = isDark ? const Color(0xFF2E1065) : const Color(0xFFEDE9FE);
+    final badgeText = isDark ? const Color(0xFFA78BFA) : const Color(0xFF6D28D9);
     final textPrimary = isDark ? AppColors.textDark : AppColors.textLight;
     final textSecondary = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final textMuted = isDark ? AppColors.text3Dark : AppColors.text3Light;
@@ -65,14 +72,14 @@ class _ProRequiredSheet extends StatelessWidget {
               // ── Title & Lock Icon Header ────────────────────────────────
               Row(
                 children: [
-                  Icon(
-                    Icons.lock_outline_rounded,
+                  const Icon(
+                    Icons.workspace_premium_rounded,
                     size: 22,
-                    color: textPrimary,
+                    color: AppColors.purple,
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Pro required',
+                    'Pro tier required',
                     style: TextStyle(
                       fontFamily: AppFonts.heading,
                       fontSize: 20,
@@ -94,7 +101,7 @@ class _ProRequiredSheet extends StatelessWidget {
 
               // ── Subtitle ────────────────────────────────────────────────
               Text(
-                'This feature is part of the Pro plan. Upgrade to unlock it and everything else Pro includes.',
+                'Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.',
                 style: TextStyle(
                   fontSize: 13.5,
                   height: 1.4,
@@ -115,7 +122,7 @@ class _ProRequiredSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Badge: Most popular
+                    // Badge: Pro tier
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
@@ -123,7 +130,7 @@ class _ProRequiredSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Most popular',
+                        'Pro tier',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -134,11 +141,11 @@ class _ProRequiredSheet extends StatelessWidget {
 
                     const SizedBox(height: 14),
 
-                    // Crown Icon + Pro Title
+                    // Star / Pro Icon + Title
                     Row(
                       children: [
                         Icon(
-                          Icons.workspace_premium_rounded,
+                          Icons.stars_rounded,
                           size: 22,
                           color: badgeText,
                         ),
@@ -157,13 +164,13 @@ class _ProRequiredSheet extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Pricing: UGX 49,900 / month
+                    // Pricing: [Country Currency Price] / month
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                           'UGX 49,900',
+                           country.proPriceFormatted,
                            style: TextStyle(
                              fontFamily: AppFonts.heading,
                              fontSize: 22,

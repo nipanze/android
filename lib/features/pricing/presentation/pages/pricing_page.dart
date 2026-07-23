@@ -8,15 +8,8 @@ import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// The single place where marketplace capability and subscription prices are explained.
-class PricingPage extends StatefulWidget {
+class PricingPage extends StatelessWidget {
   const PricingPage({super.key});
-
-  @override
-  State<PricingPage> createState() => _PricingPageState();
-}
-
-class _PricingPageState extends State<PricingPage> {
-  CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +17,9 @@ class _PricingPageState extends State<PricingPage> {
     final current = state is AuthAuthenticated
         ? state.user.subscriptionPlan
         : SubscriptionPlan.free;
+
+    final phone = state is AuthAuthenticated ? state.user.phone : null;
+    final country = EastAfricaCountries.findByPhone(phone);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,55 +40,32 @@ class _PricingPageState extends State<PricingPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'One account can post requests and make offers.',
+                      'One account can post requests and make offers. Prices match your account region (${country.flag} ${country.name}).',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
-
-              // Country / Currency selector
-              PopupMenuButton<CountryInfo>(
-                onSelected: (country) => setState(() => _selectedCountry = country),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.bg2Dark,
+                  border: Border.all(color: AppColors.borderDark.withValues(alpha: 0.5)),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                itemBuilder: (context) => EastAfricaCountries.all
-                    .map(
-                      (c) => PopupMenuItem<CountryInfo>(
-                        value: c,
-                        child: Row(
-                          children: [
-                            Text(c.flag, style: const TextStyle(fontSize: 18)),
-                            const SizedBox(width: 8),
-                            Text('${c.name} (${c.currency})'),
-                          ],
-                        ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(country.flag, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 6),
+                    Text(
+                      country.currency,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
                       ),
-                    )
-                    .toList(),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.bg2Dark,
-                    border: Border.all(color: AppColors.borderDark),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(_selectedCountry.flag, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 6),
-                      Text(
-                        _selectedCountry.currency,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_drop_down, size: 16),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -113,7 +86,7 @@ class _PricingPageState extends State<PricingPage> {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.lender,
-            price: '${_selectedCountry.lenderPriceFormatted} / month',
+            price: '${country.lenderPriceFormatted} / month',
             subtitle: 'For anyone ready to make structured offers.',
             features: const [
               'Everything in Free',
@@ -126,7 +99,7 @@ class _PricingPageState extends State<PricingPage> {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.pro,
-            price: '${_selectedCountry.proPriceFormatted} / month',
+            price: '${country.proPriceFormatted} / month',
             subtitle: 'Full marketplace access, advanced filters and strong request positioning.',
             features: const [
               'Everything in Lender',
@@ -211,7 +184,7 @@ class _PlanCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  _PricingPageState._label(plan),
+                  PricingPage._label(plan),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
                         fontWeight: FontWeight.bold,
@@ -244,7 +217,7 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 )),
-            if (_PricingPageState._isUpgrade(current, plan)) ...[
+            if (PricingPage._isUpgrade(current, plan)) ...[
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
@@ -257,7 +230,7 @@ class _PlanCard extends StatelessWidget {
                   child: Text(
                     plan == SubscriptionPlan.free
                         ? 'Use Free'
-                        : 'Choose ${_PricingPageState._label(plan)}',
+                        : 'Choose ${PricingPage._label(plan)}',
                   ),
                 ),
               ),
