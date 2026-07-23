@@ -512,7 +512,7 @@ INSERT INTO loan_requests (
  450000,
  '12 months starting March 2024',
  'Central',
- 'contracted', '2024-02-01 09:00:00', NOW() + INTERVAL '10 days', '2024-02-06 14:30:00',
+ 'contracted', '2024-02-01 09:00:00', NOW() + INTERVAL '10 days', NOW() + INTERVAL '10 days',
  2, 87, '2024-02-01 08:45:00'),
 
 -- Sarah Namukasa — contracted (offer accepted, contact pending reveal)
@@ -644,7 +644,7 @@ INSERT INTO loan_offers (
  '10000000-0000-0000-0000-000000000008',
  5000000, 11.0, 2.0, 'monthly', 462500,
  'I can provide the full amount at 11% per annum. Monthly instalments work for me.',
- '2024-02-02 10:30:00', 'accepted', '2024-02-02 10:30:00', '2024-02-06 14:30:00', '2024-02-02 10:30:00'),
+ '2024-02-02 10:30:00', 'accepted', '2024-02-02 10:30:00', NOW() + INTERVAL '10 days', '2024-02-02 10:30:00'),
 
 ('d1000000-0000-0000-0000-000000000002',
  'c1000000-0000-0000-0000-000000000001',
@@ -797,7 +797,7 @@ INSERT INTO contact_reveals (
  'd1000000-0000-0000-0000-000000000001',
  'c1000000-0000-0000-0000-000000000001',
  '10000000-0000-0000-0000-000000000001',
- 'revealed', '2024-02-07 10:00:00', '2024-02-06 14:31:00'),
+ 'revealed', NOW() + INTERVAL '13 days', '2024-02-06 14:31:00'),
 
 -- Sarah Namukasa accepted Victoria's offer — reveal pending
 ('f1000000-0000-0000-0000-000000000002',
@@ -839,14 +839,14 @@ INSERT INTO notifications (
  'offer_accepted', 'Offer accepted',
  'You accepted Pearl Capital''s offer. Contact details have been shared.',
  TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
- '2024-02-06 14:31:00'),
+ NOW() + INTERVAL '11 days'),
 
 ('e4000000-0000-0000-0000-000000000002',
  '10000000-0000-0000-0000-000000000008',
  'offer_accepted', 'Your offer was accepted',
  'David Mukasa accepted your offer. Contact details have been shared.',
  TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001',
- '2024-02-06 14:31:00'),
+ NOW() + INTERVAL '11 days'),
 
 ('e4000000-0000-0000-0000-000000000003',
  '10000000-0000-0000-0000-000000000001',
@@ -914,7 +914,7 @@ INSERT INTO notifications (
  'offer_rejected', 'Your offer was not selected',
  'David Mukasa selected a different offer. Your offer on "Home Renovation Loan" was not chosen.',
  TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000002',
- '2024-02-06 14:32:00')
+ NOW() + INTERVAL '12 days')
 
 ON CONFLICT DO NOTHING;
 
