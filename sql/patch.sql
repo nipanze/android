@@ -65,6 +65,10 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000025'
 ) ON CONFLICT (id) DO NOTHING;
 
+-- Ensure a plain unique constraint exists on user_id so ON CONFLICT works
+ALTER TABLE public.subscriptions DROP CONSTRAINT IF EXISTS uidx_sub_user;
+ALTER TABLE public.subscriptions ADD CONSTRAINT uidx_sub_user UNIQUE (user_id);
+
 INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
 SELECT au.id, 'free', 'active', 0
 FROM auth.users au
@@ -76,7 +80,8 @@ WHERE au.id IN (
     '10000000-0000-0000-0000-000000000023',
     '10000000-0000-0000-0000-000000000024',
     '10000000-0000-0000-0000-000000000025'
-) ON CONFLICT (user_id) DO UPDATE SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
+) ON CONFLICT ON CONSTRAINT uidx_sub_user DO UPDATE
+    SET plan = EXCLUDED.plan, status = EXCLUDED.status, amount_ugx = EXCLUDED.amount_ugx;
 
 -- Create a simple posts table if it doesn't exist
 CREATE TABLE IF NOT EXISTS public.posts (
