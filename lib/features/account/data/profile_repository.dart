@@ -17,30 +17,44 @@ class ProfileRepository {
   /// Full profile from v_user_marketplace_activity joined with profiles.
   Future<UserProfile?> getProfile() async {
     try {
-      // These views are intentionally split: baseline reputation is public,
-      // while the advanced values are returned only to active Pro subscribers.
+      // Run queries independently so a missing view or column (e.g. cloud DB
+      // not yet patched) degrades gracefully instead of failing the whole load.
+      final activityFuture = _client
+          .from(ViewNames.userMarketplaceActivity)
+          .select()
+          .eq('user_id', _uid)
+          .maybeSingle()
+          .catchError((_) => null);
+
+      // Use SELECT * so the query never fails on missing columns — new fields
+      // added in later patches (e.g. preferred_employment_types from v4.5)
+      // will be null-coalesced below when not present.
+      final profileFuture = _client
+          .from(TableNames.profiles)
+          .select()
+          .eq('id', _uid)
+          .maybeSingle()
+          .catchError((_) => null);
+
+      final trustFuture = _client
+          .from(ViewNames.trustProfilePublic)
+          .select()
+          .eq('user_id', _uid)
+          .maybeSingle()
+          .catchError((_) => null);
+
+      final proTrustFuture = _client
+          .from(ViewNames.trustProfilePro)
+          .select()
+          .eq('user_id', _uid)
+          .maybeSingle()
+          .catchError((_) => null);
+
       final results = await Future.wait([
-        _client
-            .from(ViewNames.userMarketplaceActivity)
-            .select()
-            .eq('user_id', _uid)
-            .maybeSingle(),
-        _client
-            .from(TableNames.profiles)
-            .select(
-                'full_name, phone, district, employment_type, employer_name, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only, account_status, created_at, free_unlocks_remaining')
-            .eq('id', _uid)
-            .maybeSingle(),
-        _client
-            .from(ViewNames.trustProfilePublic)
-            .select()
-            .eq('user_id', _uid)
-            .maybeSingle(),
-        _client
-            .from(ViewNames.trustProfilePro)
-            .select()
-            .eq('user_id', _uid)
-            .maybeSingle(),
+        activityFuture,
+        profileFuture,
+        trustFuture,
+        proTrustFuture,
       ]);
 
       final activity = results[0];
@@ -105,6 +119,7 @@ class ProfileRepository {
       throw parseSupabaseError(e);
     }
   }
+
 
   /// Update editable profile fields.
   Future<void> updateProfile({

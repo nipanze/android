@@ -147,6 +147,32 @@ class _ProfileViewState extends State<_ProfileView> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (state is ProfileCubitError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                    const SizedBox(height: 16),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => context.read<ProfileCubit>().load(),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (state is ProfileCubitLoaded) _populateIfNeeded(state);
           final isSaving = state is ProfileCubitSaving;
 
