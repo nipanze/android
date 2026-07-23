@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
@@ -32,36 +33,11 @@ class _ProfileViewState extends State<_ProfileView> {
   final _employerController = TextEditingController();
   final _incomeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
   String? _district;
   String? _employmentType;
   bool _populated = false;
-
-  // Filter preferences
-  final Set<String> _selectedEmploymentTypes = {};
-  String? _selectedIncomeBracket;
-  bool _prefersSuggestedTerms = false;
-  bool _prefersVerifiedOnly = false;
-
-  static const _districts = [
-    'Central',
-    'Eastern',
-    'Western',
-    'Northern',
-    'Kampala',
-    'Wakiso',
-    'Mukono',
-    'Jinja',
-    'Mbale',
-    'Gulu',
-    'Mbarara',
-    'Masaka',
-    'Lira',
-    'Soroti',
-    'Arua',
-    'Fort Portal',
-    'Kabale',
-    'Other',
-  ];
 
   static const _employmentTypes = [
     ('employed', 'Employed'),
@@ -72,21 +48,6 @@ class _ProfileViewState extends State<_ProfileView> {
     ('student', 'Student'),
     ('other', 'Other'),
   ];
-
-  static const _incomeBrackets = [
-    ('under_2m', 'Under 2M UGX / month'),
-    ('2m_5m', '2M – 5M UGX / month'),
-    ('5m_10m', '5M – 10M UGX / month'),
-    ('over_10m', 'Over 10M UGX / month'),
-  ];
-
-  String? _fnIncomeBracket(int? monthlyIncomeUgx) {
-    if (monthlyIncomeUgx == null) return null;
-    if (monthlyIncomeUgx < 2000000) return 'under_2m';
-    if (monthlyIncomeUgx < 5000000) return '2m_5m';
-    if (monthlyIncomeUgx < 10000000) return '5m_10m';
-    return 'over_10m';
-  }
 
   @override
   void dispose() {
@@ -101,27 +62,46 @@ class _ProfileViewState extends State<_ProfileView> {
     if (_populated) return;
     final p = state.profile;
     _nameController.text = p.fullName ?? '';
-    _phoneController.text = p.phone ?? '';
     _employerController.text = p.employerName ?? '';
     _incomeController.text = p.monthlyIncomeUgx == null
         ? ''
         : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
-    _district = (p.district != null && _districts.contains(p.district))
-        ? p.district
-        : null;
+
+    // Auto-detect country from phone prefix or default to Uganda
+    final matchedCountry = EastAfricaCountries.findByPhone(p.phone);
+    _selectedCountry = matchedCountry;
+
+    // Strip dial code for local phone field display
+    final rawPhone = p.phone ?? '';
+    if (rawPhone.startsWith(matchedCountry.dialCode)) {
+      _phoneController.text = rawPhone.substring(matchedCountry.dialCode.length).trim();
+    } else {
+      _phoneController.text = rawPhone;
+    }
+
+    // Validate district against selected country's regions
+    if (p.district != null && matchedCountry.regions.contains(p.district)) {
+      _district = p.district;
+    } else if (p.district != null && EastAfricaCountries.uganda.regions.contains(p.district)) {
+      _district = p.district;
+    } else {
+      _district = null;
+    }
+
     _employmentType = _employmentTypes.any((e) => e.$1 == p.employmentType)
         ? p.employmentType
         : null;
 
-    _selectedEmploymentTypes
-      ..clear()
-      ..addAll(p.preferredEmploymentTypes ?? const []);
-    _selectedIncomeBracket = p.preferredIncomeBracket ??
-        _fnIncomeBracket(p.monthlyIncomeUgx);
-    _prefersSuggestedTerms = p.prefersSuggestedTerms;
-    _prefersVerifiedOnly = p.prefersVerifiedOnly;
-
     _populated = true;
+  }
+
+  String _formatFullPhoneNumber() {
+    final local = _phoneController.text.trim().replaceAll(RegExp(r'\s+'), '');
+    if (local.isEmpty) return '';
+    if (local.startsWith('+')) return local;
+    final dial = _selectedCountry.dialCode;
+    final cleanLocal = local.startsWith('0') ? local.substring(1) : local;
+    return '$dial$cleanLocal';
   }
 
   @override
@@ -191,6 +171,7 @@ class _ProfileViewState extends State<_ProfileView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── Full Name ─────────────────────────────────────────────
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
@@ -202,29 +183,94 @@ class _ProfileViewState extends State<_ProfileView> {
                         : null,
                   ),
                   const SizedBox(height: 14),
+
+                  // ── Country Selector ──────────────────────────────────────
+                  DropdownButtonFormField<CountryInfo>(
+                    initialValue: _selectedCountry,
+                    decoration: const InputDecoration(
+                      labelText: 'Country',
+                      prefixIcon: Icon(Icons.public_outlined, size: 20),
+                    ),
+                    items: EastAfricaCountries.all.map((c) {
+                      return DropdownMenuItem<CountryInfo>(
+                        value: c,
+                        child: Row(
+                          children: [
+                            Text(c.flag, style: const TextStyle(fontSize: 18)),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${c.name} (${c.dialCode})',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (country) {
+                      if (country != null) {
+                        setState(() {
+                          _selectedCountry = country;
+                          if (_district != null && !country.regions.contains(_district)) {
+                            _district = null;
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── International Phone Input ──────────────────────────────
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Phone number',
-                      hintText: '+256 7XX XXX XXX',
-                      prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                      hintText: '7XX XXX XXX',
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        margin: const EdgeInsets.only(right: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 18)),
+                            const SizedBox(width: 6),
+                            Text(
+                              _selectedCountry.dialCode,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              height: 18,
+                              width: 1,
+                              color: AppColors.borderDark,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
+
+                  // ── Regional / District Dropdown ──────────────────────────
                   DropdownButtonFormField<String>(
+                    key: ValueKey('district_${_selectedCountry.code}'),
                     initialValue: _district,
-                    decoration: const InputDecoration(
-                      labelText: 'District',
-                      prefixIcon: Icon(Icons.location_on_outlined, size: 20),
+                    decoration: InputDecoration(
+                      labelText: _selectedCountry.regionsLabel,
+                      prefixIcon: const Icon(Icons.location_on_outlined, size: 20),
                     ),
-                    hint: const Text('Select district'),
-                    items: _districts
+                    hint: Text('Select ${_selectedCountry.regionsLabel.toLowerCase()}'),
+                    items: _selectedCountry.regions
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
                     onChanged: (v) => setState(() => _district = v),
                   ),
                   const SizedBox(height: 14),
+
+                  // ── Income Type Dropdown ──────────────────────────────────
                   DropdownButtonFormField<String>(
                     initialValue: _employmentType,
                     decoration: const InputDecoration(
@@ -239,6 +285,8 @@ class _ProfileViewState extends State<_ProfileView> {
                     onChanged: (v) => setState(() => _employmentType = v),
                   ),
                   const SizedBox(height: 14),
+
+                  // ── Employer Name ──────────────────────────────────────────
                   TextFormField(
                     controller: _employerController,
                     decoration: const InputDecoration(
@@ -247,132 +295,41 @@ class _ProfileViewState extends State<_ProfileView> {
                     ),
                   ),
                   const SizedBox(height: 14),
+
+                  // ── Monthly Income (Currency Scalable) ────────────────────
                   TextFormField(
                     controller: _incomeController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Monthly income (UGX)',
+                    decoration: InputDecoration(
+                      labelText: 'Monthly income (${_selectedCountry.currency})',
                       hintText: 'e.g. 1,500,000',
-                      prefixIcon: Icon(Icons.currency_exchange_outlined, size: 20),
+                      prefixIcon: const Icon(Icons.currency_exchange_outlined, size: 20),
                     ),
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Advanced filter preferences ──────────────────────────
-                  const Text(
-                    'Advanced filter preferences',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'These settings are used as defaults when you open Advanced '
-                    'Filters in the marketplace.',
-                    style: TextStyle(fontSize: 12, color: AppColors.text2Light),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Employment type chips
-                  const Text(
-                    'Employment type',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _employmentTypes.map((opt) {
-                      final selected =
-                          _selectedEmploymentTypes.contains(opt.$1);
-                      return _FilterChip(
-                        label: opt.$2,
-                        selected: selected,
-                        onTap: () => setState(() {
-                          if (selected) {
-                            _selectedEmploymentTypes.remove(opt.$1);
-                          } else {
-                            _selectedEmploymentTypes.add(opt.$1);
-                          }
-                        }),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Income bracket chips
-                  const Text(
-                    'Monthly income range',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _incomeBrackets.map((opt) {
-                      final selected = _selectedIncomeBracket == opt.$1;
-                      return _FilterChip(
-                        label: opt.$2,
-                        selected: selected,
-                        onTap: () => setState(
-                          () => _selectedIncomeBracket = opt.$1,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Boolean toggles
-                  _ToggleTile(
-                    icon: Icons.receipt_long_outlined,
-                    iconColor: AppColors.accent,
-                    title: 'Has suggested terms',
-                    subtitle:
-                        'Prefer Pro-posted listings with locked interest rate, late fee, and repayment schedule',
-                    value: _prefersSuggestedTerms,
-                    onChanged: (v) =>
-                        setState(() => _prefersSuggestedTerms = v),
-                  ),
-                  const SizedBox(height: 10),
-                  _ToggleTile(
-                    icon: Icons.verified_outlined,
-                    iconColor: AppColors.success,
-                    title: 'Verified borrower',
-                    subtitle:
-                        'Prefer listings from KYC-approved account holders',
-                    value: _prefersVerifiedOnly,
-                    onChanged: (v) =>
-                        setState(() => _prefersVerifiedOnly = v),
-                  ),
-                  const SizedBox(height: 28),
-
+                  // ── Save Button ────────────────────────────────────────────
                   ElevatedButton(
                     onPressed: isSaving
                         ? null
                         : () {
                             if (!_formKey.currentState!.validate()) return;
                             final incomeText = _incomeController.text.trim();
-                            final monthlyIncomeUgx = incomeText.isEmpty
+                            final monthlyIncome = incomeText.isEmpty
                                 ? null
                                 : int.tryParse(incomeText.replaceAll(',', ''));
+                            final fullPhone = _formatFullPhoneNumber();
+
                             context.read<ProfileCubit>().updateProfile(
                                   fullName: _nameController.text.trim(),
-                                  phone:
-                                      _phoneController.text.trim().isEmpty
-                                          ? null
-                                          : _phoneController.text.trim(),
+                                  phone: fullPhone.isEmpty ? null : fullPhone,
                                   district: _district,
                                   employmentType: _employmentType,
                                   employerName:
                                       _employerController.text.trim().isEmpty
                                           ? null
                                           : _employerController.text.trim(),
-                                  monthlyIncomeUgx: monthlyIncomeUgx,
-                                  preferredEmploymentTypes:
-                                      _selectedEmploymentTypes.isNotEmpty
-                                          ? _selectedEmploymentTypes.toList()
-                                          : null,
-                                  preferredIncomeBracket: _selectedIncomeBracket,
-                                  prefersSuggestedTerms: _prefersSuggestedTerms,
-                                  prefersVerifiedOnly: _prefersVerifiedOnly,
+                                  monthlyIncomeUgx: monthlyIncome,
                                 );
                           },
                     child: isSaving
@@ -388,108 +345,6 @@ class _ProfileViewState extends State<_ProfileView> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.purple.withValues(alpha: 0.18)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: selected
-                ? AppColors.purple
-                : AppColors.borderDark.withValues(alpha: 0.5),
-            width: selected ? 1.3 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.5,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected ? AppColors.purple : null,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToggleTile extends StatelessWidget {
-  const _ToggleTile({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark.withValues(alpha: 0.5)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: iconColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 11.5),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.purple,
-            activeTrackColor: AppColors.purple.withValues(alpha: 0.35),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ],
       ),
     );
   }
