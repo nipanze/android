@@ -1330,6 +1330,33 @@ COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
 
 
 -- --------------------------------------------
+-- check_phone_registered
+-- Helper RPC for phone onboarding. Checks if a phone number is registered.
+-- Returns the associated user's email if found, otherwise NULL.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION public.check_phone_registered(p_phone TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_email TEXT;
+BEGIN
+    SELECT au.email INTO v_email
+    FROM auth.users au
+    JOIN public.profiles p ON p.id = au.id
+    WHERE p.phone = p_phone OR au.phone = p_phone OR au.email = p_phone
+    LIMIT 1;
+
+    RETURN v_email;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.check_phone_registered(TEXT) TO authenticated, anon;
+
+
+-- --------------------------------------------
 -- get_marketplace_pro_filtered
 -- Applies Pro Advanced Filters on top of v_loan_listings. Raises if the
 -- caller does not have an active Pro subscription, rather than silently

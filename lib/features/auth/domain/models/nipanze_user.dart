@@ -29,6 +29,7 @@ class NipanzeUser extends Equatable {
     this.employerName,
     this.monthlyIncome,
     this.incomeCurrency = 'UGX',
+    this.country = 'UG',
     this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
     this.isAdmin = false,
@@ -45,6 +46,7 @@ class NipanzeUser extends Equatable {
   final String? employerName;
   final int? monthlyIncome;
   final String incomeCurrency;
+  final String country;
   int? get monthlyIncomeUgx => monthlyIncome;
   final SubscriptionPlan subscriptionPlan;
   final KycStatus kycStatus;
@@ -70,6 +72,7 @@ class NipanzeUser extends Equatable {
       employerName: map['employer_name'] as String?,
       monthlyIncome: (map['monthly_income'] as num?)?.toInt(),
       incomeCurrency: map['income_currency'] as String? ?? 'UGX',
+      country: map['country'] as String? ?? 'UG',
       subscriptionPlan:
           _planFromString(map['subscription_plan'] as String? ?? 'free'),
       kycStatus:
@@ -149,5 +152,5 @@ class NipanzeUser extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType, streetAddress];
+      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType, streetAddress, country];
 }

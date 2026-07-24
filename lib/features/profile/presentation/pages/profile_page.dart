@@ -301,7 +301,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         employmentType: NipanzeUser.employmentToString(_employmentType),
         employerName:
             _employerCtrl.text.trim().isEmpty ? null : _employerCtrl.text.trim(),
-        monthlyIncomeUgx: int.tryParse(_incomeCtrl.text.trim()),
+        monthlyIncome: int.tryParse(_incomeCtrl.text.trim()),
       );
       // Refresh auth state so the profile page updates
       if (mounted) {

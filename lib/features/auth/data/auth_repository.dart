@@ -100,13 +100,32 @@ class AuthRepository {
     return _fetchProfile(user.id, user.email ?? '');
   }
 
+  String cleanPhone(String phone) {
+    var clean = phone.replaceAll(RegExp(r'[\s\-()]+'), '');
+    if (!clean.startsWith('+')) {
+      clean = '+$clean';
+    }
+    return clean;
+  }
+
+  Future<String?> checkPhoneRegistered(String phone) async {
+    try {
+      final clean = cleanPhone(phone);
+      final response = await _client.rpc('check_phone_registered', params: {'p_phone': clean});
+      return response as String?;
+    } catch (e) {
+      debugPrint('Error in checkPhoneRegistered RPC: $e');
+      return null;
+    }
+  }
+
   Future<NipanzeUser> _fetchProfile(String id, String email) async {
     // ── 1. Profile ──────────────────────────────────────────────────────────
     Map<String, dynamic>? data;
     try {
       data = await _client
           .from('profiles')
-          .select('id, full_name, phone, district, street_address, employment_type, employer_name, monthly_income_ugx, is_admin')
+          .select('id, full_name, phone, country, district, street_address, employment_type, employer_name, monthly_income, income_currency, is_admin')
           .eq('id', id)
           .maybeSingle();
     } catch (e) {
@@ -190,21 +209,27 @@ class AuthRepository {
   /// Update the current user's profile fields.
   Future<void> updateProfile({
     String? fullName,
+    String? phone,
+    String? country,
     String? district,
     String? streetAddress,
     String? employmentType,
     String? employerName,
-    int? monthlyIncomeUgx,
+    int? monthlyIncome,
+    String? incomeCurrency,
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
     final updates = <String, dynamic>{};
     if (fullName != null) updates['full_name'] = fullName;
+    if (phone != null) updates['phone'] = phone;
+    if (country != null) updates['country'] = country;
     if (district != null) updates['district'] = district;
     if (streetAddress != null) updates['street_address'] = streetAddress;
     if (employmentType != null) updates['employment_type'] = employmentType;
     if (employerName != null) updates['employer_name'] = employerName;
-    if (monthlyIncomeUgx != null) updates['monthly_income_ugx'] = monthlyIncomeUgx;
+    if (monthlyIncome != null) updates['monthly_income'] = monthlyIncome;
+    if (incomeCurrency != null) updates['income_currency'] = incomeCurrency;
     if (updates.isEmpty) return;
     await _client.from('profiles').update(updates).eq('id', userId);
   }

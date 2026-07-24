@@ -55,3 +55,35 @@ class AuthUserChanged extends AuthEvent {
 class AuthProfileRefreshRequested extends AuthEvent {
   const AuthProfileRefreshRequested();
 }
+
+/// Phone-based login: resolve phone → email via RPC, then sign in with
+/// the stored email + provided password (or Test1234! bypass in dev).
+class AuthPhoneSignInRequested extends AuthEvent {
+  const AuthPhoneSignInRequested({
+    required this.phone,
+    required this.password,
+  });
+  final String phone;
+  final String password;
+  @override
+  List<Object?> get props => [phone];
+}
+
+/// Phone-based registration: create auth account using a mock email derived
+/// from the phone number, then update the profile with all gathered data.
+class AuthPhoneSignUpRequested extends AuthEvent {
+  const AuthPhoneSignUpRequested({
+    required this.phone,
+    required this.password,
+    required this.fullName,
+    required this.countryCode,
+    this.email,
+  });
+  final String phone;
+  final String password;
+  final String fullName;
+  final String countryCode;
+  final String? email; // optional real email from Step 3
+  @override
+  List<Object?> get props => [phone, fullName];
+}

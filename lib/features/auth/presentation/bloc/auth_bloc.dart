@@ -22,7 +22,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignOutRequested>(_onSignOut);
     on<AuthPasswordResetRequested>(_onPasswordReset);
     on<AuthUserChanged>(_onUserChanged);
-    on<AuthProfileRefreshRequested>(_onProfileRefresh); // ← add this
+    on<AuthProfileRefreshRequested>(_onProfileRefresh);
+    on<AuthPhoneSignInRequested>(_onPhoneSignIn);
+    on<AuthPhoneSignUpRequested>(_onPhoneSignUp);
 
     _subscription = _authRepository.authStateChanges.listen(
       (user) => add(AuthUserChanged(user)),
@@ -132,6 +134,78 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } catch (e) {
       debugPrint('Error refreshing user profile: $e');
+    }
+  }
+
+  /// Phone sign-in: resolve phone → email via RPC, then sign in.
+  Future<void> _onPhoneSignIn(
+    AuthPhoneSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final clean = _authRepository.cleanPhone(event.phone);
+      final resolvedEmail = await _authRepository.checkPhoneRegistered(clean);
+      if (resolvedEmail == null) {
+        emit(const AuthError('Phone number not found. Please create an account.'));
+        return;
+      }
+      final user = await _authRepository.signIn(
+        email: resolvedEmail,
+        password: event.password,
+      );
+      emit(AuthAuthenticated(
+        user: user,
+        needsEmailVerification: !_authRepository.isEmailVerified,
+      ));
+    } on AppException catch (e) {
+      emit(AuthError(e.message));
+    } catch (e) {
+      emit(const AuthError('Sign-in failed. Check your credentials and try again.'));
+    }
+  }
+
+  /// Phone sign-up: create account with mock email, then save profile data.
+  Future<void> _onPhoneSignUp(
+    AuthPhoneSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final clean = _authRepository.cleanPhone(event.phone);
+      // Derive a deterministic mock email from the E.164 phone number.
+      final digits = clean.replaceAll('+', '');
+      final mockEmail = '$digits@nipanze.test';
+
+      await _authRepository.signUp(
+        email: mockEmail,
+        password: event.password,
+        fullName: event.fullName,
+      );
+
+      // signUp with Supabase auto-confirms when email confirm is disabled
+      // so we can immediately sign in and update the profile.
+      final user = await _authRepository.signIn(
+        email: mockEmail,
+        password: event.password,
+      );
+
+      // Persist the collected profile data.
+      await _authRepository.updateProfile(
+        fullName: event.fullName,
+        phone: clean,
+        country: event.countryCode,
+      );
+
+      emit(AuthAuthenticated(
+        user: user,
+        needsEmailVerification: false,
+      ));
+    } on AppException catch (e) {
+      emit(AuthError(e.message));
+    } catch (e) {
+      debugPrint('Phone sign-up error: $e');
+      emit(const AuthError('Registration failed. Please try again.'));
     }
   }
 
