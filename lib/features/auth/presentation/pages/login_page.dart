@@ -164,10 +164,15 @@ class _LoginPageState extends State<LoginPage>
     return val.length == 6 && RegExp(r'^\d{6}$').hasMatch(val);
   }
 
-  void _clearOtp() {
-    for (final c in _otpControllers) {
-      c.clear();
+  void _prefillDefaultOtp() {
+    const defaultOtp = '123456';
+    for (int i = 0; i < 6; i++) {
+      _otpControllers[i].text = defaultOtp[i];
     }
+  }
+
+  void _clearOtp() {
+    _prefillDefaultOtp();
     _otpFocusNodes.first.requestFocus();
   }
 
@@ -181,7 +186,8 @@ class _LoginPageState extends State<LoginPage>
     // Check if phone is already registered (hybrid bypass)
     final phone = _fullPhone;
 
-    // Optimistically move to OTP screen; resolve in background
+    // Optimistically move to OTP screen with pre-filled default OTP (123456)
+    _prefillDefaultOtp();
     _startResendTimer();
     await _goTo(_WizardStep.otp);
 
@@ -647,7 +653,7 @@ class _OtpScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Demo mode: enter any 6 digits to continue.',
+                  'Demo mode: default OTP is 123456 (pre-filled).',
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: AppColors.warning),
                 ),

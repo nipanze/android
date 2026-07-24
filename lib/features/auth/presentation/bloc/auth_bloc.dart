@@ -25,6 +25,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthProfileRefreshRequested>(_onProfileRefresh);
     on<AuthPhoneSignInRequested>(_onPhoneSignIn);
     on<AuthPhoneSignUpRequested>(_onPhoneSignUp);
+    on<AuthBypassEmailVerificationRequested>(_onBypassEmailVerification);
 
     _subscription = _authRepository.authStateChanges.listen(
       (user) => add(AuthUserChanged(user)),
@@ -206,6 +207,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       debugPrint('Phone sign-up error: $e');
       emit(const AuthError('Registration failed. Please try again.'));
+    }
+  }
+
+  void _onBypassEmailVerification(
+    AuthBypassEmailVerificationRequested event,
+    Emitter<AuthState> emit,
+  ) {
+    final current = state;
+    if (current is AuthAuthenticated) {
+      emit(AuthAuthenticated(
+        user: current.user,
+        needsEmailVerification: false,
+      ));
+    } else {
+      final user = _authRepository.currentUser;
+      if (user != null) {
+        emit(AuthAuthenticated(
+          user: user,
+          needsEmailVerification: false,
+        ));
+      }
     }
   }
 

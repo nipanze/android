@@ -87,3 +87,8 @@ class AuthPhoneSignUpRequested extends AuthEvent {
   @override
   List<Object?> get props => [phone, fullName];
 }
+
+/// Development mode helper: bypasses email verification requirement.
+class AuthBypassEmailVerificationRequested extends AuthEvent {
+  const AuthBypassEmailVerificationRequested();
+}

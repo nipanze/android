@@ -52,9 +52,11 @@ class VerifyEmailPage extends StatelessWidget {
                       ?.copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 32),
-                OutlinedButton(
+                ElevatedButton(
                   onPressed: () {
-                    context.read<AuthBloc>().add(const AuthStarted());
+                    context
+                        .read<AuthBloc>()
+                        .add(const AuthBypassEmailVerificationRequested());
                   },
                   child: const Text('I\'ve verified — continue'),
                 ),
