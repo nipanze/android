@@ -1,12 +1,14 @@
 -- ============================================
 -- NIPANZE Database Schema
--- Version: 4.1 (Unified Marketplace Model — Non-Custodial Matchmaking Marketplace)
+-- Version: 5.0 (Multi-Country Expansion + Pro Advanced Filters, on top of the
+--               v4.1 Unified Marketplace Model — Non-Custodial Matchmaking Marketplace)
 -- PostgreSQL 14+ · Flutter + Supabase
 --
 -- Non-custodial peer-to-peer loan listing marketplace.
--- Uganda-first. Basic borrowing is free. Premium borrowers can suggest terms.
+-- Uganda-first, architected for the full East African Community (EAC) on one
+-- shared schema. Basic borrowing is free. Premium borrowers can suggest terms.
 -- Lender bids require a subscription.
--- Platform NEVER holds, tracks, or processes money.
+-- Platform NEVER holds, tracks, or processes money between borrower and lender.
 -- Contact details are revealed only after a locked contract is generated.
 --
 -- v4.1 change: removed role-based model. There is no stored borrower/lender
@@ -21,6 +23,54 @@
 --   2) trg_agreements_updated_at trigger moved from right after the
 --      agreements table into the TRIGGERS section, after fn_set_updated_at()
 --      is defined.
+--
+-- v4.2 addition: Pro Advanced Marketplace Filters — fn_income_bracket(),
+-- v_marketplace_pro_filters view, and get_marketplace_pro_filtered() RPC.
+-- Self-gated to callers with an active Pro subscription; returns zero rows
+-- (view) or raises (RPC) for anyone else. Never exposes exact monthly
+-- income or employer/bank names — only bucketed income and categorical
+-- employment type.
+--
+-- v5.0 addition: Multi-Country Expansion. One shared schema now serves every
+-- East African Community member state instead of Uganda only:
+--   1) New `countries` reference table — code, name, currency_code,
+--      phone_prefix, is_active. Seeded with all 8 EAC states (UG active,
+--      the other 7 inactive until each clears its own launch checklist).
+--      Created early in this file so `profiles` and `loan_requests` can
+--      reference it via FK.
+--   2) `profiles.country` — source of truth for a user's market, defaults
+--      to 'UG', set from onboarding (phone-prefix suggestion, never
+--      enforced) via handle_new_auth_user().
+--   3) `loan_requests.country` — copied from the borrower's profile at
+--      insert time by trg_fn_set_request_country(), then immutable
+--      (same "locked after publish" pattern as suggested terms).
+--   4) `loan_offers` gets NO country column — an offer's country is always
+--      read through `request_id -> loan_requests.country`, so there is
+--      exactly one source of truth, never two that can drift apart.
+--   5) `system_settings.country` — nullable; NULL rows are global defaults,
+--      non-null rows are per-market overrides. Composite unique constraint
+--      on (setting_key, country).
+--   6) `subscriptions.amount_ugx` renamed to `amount_minor_units` — the
+--      currency is implied by the subscriber's `profiles.country`, not
+--      hardcoded to UGX.
+--   7) `v_loan_listings` and `v_lender_offers` now expose `country` and
+--      `currency_code` (joined from `countries`) alongside every amount.
+--      `v_marketplace_activity` is now groupable by `country`.
+--   8) New `transactions` table (Stage 6 — Flutterwave or equivalent).
+--      Scoped strictly to Nipanze's own revenue (subscriptions, and the
+--      contact-unlock fee if that open decision is ever resolved to "yes").
+--      NEVER touches P2P loan funds. Only a verified webhook may write
+--      status = 'successful'; the client-side redirect is never trusted.
+--   9) Cross-border offers are ALLOWED by default in this schema (no country
+--      check in trg_fn_validate_offer) per the BUILD_PLAN.md recommendation.
+--      A single clause can be added there later if product direction
+--      changes to single-market-only offers.
+--  10) Marketplace filtering by country is an APPLICATION-LAYER default
+--      (MarketplaceRepository filters `v_loan_listings WHERE country =
+--      :userCountry`), not an RLS boundary — "global browse" was the
+--      chosen policy over hard per-country RLS isolation, to support
+--      diaspora and cross-border lending. See BUILD_PLAN.md for the
+--      documented subquery pattern if hard isolation is ever adopted.
 -- ============================================
 
 
@@ -112,6 +162,7 @@ CREATE TYPE audit_event_type_enum AS ENUM (
     'agreement_locked',
     'contact_revealed', 'review_submitted',
     'subscription_changed',
+    'transaction_completed',
     'admin_action'
 );
 
@@ -121,9 +172,50 @@ CREATE TYPE setting_type_enum AS ENUM (
 
 
 -- ============================================
+-- TABLE: countries  (v5.0 — new reference table)
+-- One row per East African Community member state. Seeded with all 8 up
+-- front; launching a market is `UPDATE countries SET is_active = TRUE`,
+-- never a schema migration. profiles and loan_requests both FK to this
+-- table, so it must exist before either is created.
+-- ============================================
+
+CREATE TABLE countries (
+    code           TEXT PRIMARY KEY,          -- ISO 3166-1 alpha-2
+    name           TEXT NOT NULL,
+    currency_code  TEXT NOT NULL,              -- ISO 4217
+    phone_prefix   TEXT NOT NULL,              -- onboarding-time default suggestion only, never enforced
+    is_active      BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  countries IS
+'Reference table for every EAC market Nipanze can operate in. is_active gates whether new
+ listings/subscriptions can be created in that market; existing data and history are untouched
+ when a market is paused. Adding a market is a data change, never a schema migration.';
+COMMENT ON COLUMN countries.phone_prefix IS
+'Onboarding-time default suggestion only (like GPS/IP). Never trusted as the enforced value —
+ profiles.country, once set, is the source of truth.';
+
+INSERT INTO countries (code, name, currency_code, phone_prefix, is_active) VALUES
+    ('UG', 'Uganda',       'UGX', '+256', TRUE),
+    ('KE', 'Kenya',        'KES', '+254', FALSE),
+    ('TZ', 'Tanzania',     'TZS', '+255', FALSE),
+    ('RW', 'Rwanda',       'RWF', '+250', FALSE),
+    ('BI', 'Burundi',      'BIF', '+257', FALSE),
+    ('SS', 'South Sudan',  'SSP', '+211', FALSE),
+    ('CD', 'DR Congo',     'CDF', '+243', FALSE),
+    ('SO', 'Somalia',      'SOS', '+252', FALSE);
+
+CREATE INDEX idx_countries_is_active ON countries (is_active) WHERE is_active = TRUE;
+
+
+-- ============================================
 -- AUTH BRIDGE
 -- Syncs auth.users → public.profiles on registration.
 -- Also creates a free subscription automatically.
+-- v5.0: also resolves the new user's country from onboarding metadata
+-- (phone-prefix guess or explicit selection), falling back to 'UG' if
+-- missing or not a known country code — never trusts an unvalidated value.
 -- ============================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
@@ -132,20 +224,28 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+    v_country TEXT;
 BEGIN
+    v_country := UPPER(COALESCE(NEW.raw_user_meta_data->>'country_code', 'UG'));
+    IF NOT EXISTS (SELECT 1 FROM public.countries WHERE code = v_country) THEN
+        v_country := 'UG';
+    END IF;
+
     INSERT INTO public.profiles (
-        id, full_name, account_status, is_admin
+        id, full_name, account_status, is_admin, country
     )
     VALUES (
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'full_name', SPLIT_PART(NEW.email, '@', 1)),
         'pending_verification',
-        FALSE
+        FALSE,
+        v_country
     )
     ON CONFLICT (id) DO NOTHING;
 
     -- Every new user gets a free subscription (can browse marketplace and post requests)
-    INSERT INTO public.subscriptions (user_id, plan, status, amount_ugx)
+    INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units)
     VALUES (NEW.id, 'free', 'active', 0)
     ON CONFLICT DO NOTHING;
 
@@ -159,14 +259,17 @@ CREATE TRIGGER on_auth_user_created
     EXECUTE FUNCTION public.handle_new_auth_user();
 
 COMMENT ON FUNCTION public.handle_new_auth_user IS
-'Syncs auth.users → public.profiles on every registration and provisions a free subscription.
- Free plan allows marketplace browsing and posting loan requests at no cost.';
+'Syncs auth.users → public.profiles on every registration, resolves the new profile''s country
+ (defaulting to UG if the onboarding suggestion is missing or unrecognized), and provisions a
+ free subscription. Free plan allows marketplace browsing and posting loan requests at no cost.';
 
 
 -- ============================================
 -- TABLE: profiles  (extends auth.users 1-to-1)
 -- v4.1: no stored borrower/lender role. is_admin is the only role concept,
 -- and it governs platform moderation only — never marketplace capability.
+-- v5.0: carries `country`, the source of truth for which EAC market this
+-- account belongs to. Required, defaults to 'UG', editable by the user.
 -- ============================================
 
 CREATE TABLE profiles (
@@ -176,11 +279,22 @@ CREATE TABLE profiles (
     phone            TEXT UNIQUE,
     -- Public badge only; the phone number itself remains private until reveal.
     phone_verified_at TIMESTAMP,
+    country          TEXT NOT NULL DEFAULT 'UG' REFERENCES countries(code),
     district         TEXT,
     street_address   TEXT,
     employment_type  employment_type_enum,
     employer_name    TEXT,
-    monthly_income_ugx BIGINT,
+    monthly_income     BIGINT,
+    income_currency    VARCHAR(3) NOT NULL DEFAULT 'UGX',  -- ISO 4217; derived from profiles.country
+
+    -- Marketplace filter preferences (v4.5) — mirrors Advanced Filters defaults
+    preferred_employment_types  TEXT[],
+    preferred_income_bracket    TEXT,
+    prefers_suggested_terms     BOOLEAN NOT NULL DEFAULT FALSE,
+    prefers_verified_only       BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- Free contact-unlock credits (welcome gift for free-plan users)
+    free_unlocks_remaining      INT NOT NULL DEFAULT 1,
 
     account_status   account_status_enum NOT NULL DEFAULT 'pending_verification',
     is_admin         BOOLEAN NOT NULL DEFAULT FALSE,
@@ -189,22 +303,36 @@ CREATE TABLE profiles (
     updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE  profiles IS 'Core user profile. Extends auth.users 1-to-1. One account supports both borrower and lender activity.';
+COMMENT ON TABLE  profiles IS 'Core user profile. Extends auth.users 1-to-1. One account supports both borrower and lender activity, in whichever EAC country the account belongs to.';
 COMMENT ON COLUMN profiles.phone IS 'Masked until contact reveal is triggered post-offer-acceptance.';
 COMMENT ON COLUMN profiles.phone_verified_at IS
 'Timestamp of OTP verification. Only the verified status is exposed as a trust signal.';
+COMMENT ON COLUMN profiles.country IS
+'Source of truth for the account''s market. Editable by the user; loan_requests.country is
+ copied from this value at post time and then frozen, so a later correction here never
+ silently moves an already-published listing into a different market''s feed.';
+COMMENT ON COLUMN profiles.monthly_income IS
+'Free-text numeric income figure used only for fn_income_bracket() bucketing in Pro Advanced
+ Filters — never exposed as an exact figure to any other user, regardless of plan or country.';
 COMMENT ON COLUMN profiles.is_admin IS
 'The only role in the system. Governs platform moderation access, unrelated to marketplace
  capability, which comes entirely from subscription_plan on the subscriptions table.';
 
+CREATE INDEX idx_profiles_country ON profiles (country);
+
 
 -- ============================================
 -- TABLE: system_settings  (key-value, admin-managed)
+-- v5.0: gains a nullable `country` column. NULL rows are global defaults;
+-- non-null rows override a specific market. Composite-unique on
+-- (setting_key, country) via a normalized expression index below, since a
+-- plain UNIQUE on setting_key alone no longer holds once overrides exist.
 -- ============================================
 
 CREATE TABLE system_settings (
     setting_id    UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    setting_key   VARCHAR(100) UNIQUE NOT NULL,
+    setting_key   VARCHAR(100) NOT NULL,
+    country       TEXT         REFERENCES countries(code),   -- NULL = global default
     setting_value TEXT,
     setting_type  setting_type_enum NOT NULL DEFAULT 'string',
     category      VARCHAR(50),
@@ -214,21 +342,32 @@ CREATE TABLE system_settings (
     updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE system_settings IS 'Platform configuration. All business limits read from here at runtime.';
+COMMENT ON TABLE  system_settings IS
+'Platform configuration. All business limits read from here at runtime. A row with
+ country IS NULL is the global default; a row with country set overrides that key for
+ that market only. Resolve with: COALESCE(country-specific row, global row).';
+
+-- Composite-unique on (setting_key, country), treating NULL country as a single
+-- normalized value so at most one global-default row can exist per key.
+CREATE UNIQUE INDEX uidx_system_settings_key_country
+    ON system_settings (setting_key, COALESCE(country, '__global__'));
 
 
 -- ============================================
 -- DEFAULT SYSTEM SETTINGS
+-- Global defaults (country IS NULL). Per-country overrides are inserted
+-- later, per market, as each one is prepared for launch — see BUILD_PLAN.md
+-- Stage 4.5/6.
 -- ============================================
 
 INSERT INTO system_settings (setting_key, setting_value, setting_type, category, description, is_public) VALUES
-    ('min_loan_amount',         '100000',   'number',  'limits',      'Minimum loan request amount in UGX',                   TRUE),
-    ('max_loan_amount',         '50000000', 'number',  'limits',      'Maximum loan request amount in UGX',                   TRUE),
-    ('min_offer_amount',        '100000',   'number',  'limits',      'Minimum offer amount per lender in UGX',               TRUE),
+    ('min_loan_amount',         '100000',   'number',  'limits',      'Minimum loan request amount, in the request''s own currency (global default)', TRUE),
+    ('max_loan_amount',         '50000000', 'number',  'limits',      'Maximum loan request amount, in the request''s own currency (global default)', TRUE),
+    ('min_offer_amount',        '100000',   'number',  'limits',      'Minimum offer amount per lender, in the listing''s own currency (global default)', TRUE),
     ('max_concurrent_requests', '3',        'number',  'limits',      'Maximum active loan requests per borrower',             TRUE),
     ('listing_duration_days',   '7',        'number',  'marketplace', 'Days a loan request stays listed before expiry',       TRUE),
     ('kyc_validity_months',     '12',       'number',  'compliance',  'Months until KYC expires and re-verification required', TRUE),
-    ('platform_currency',       'UGX',      'string',  'general',     'Platform operating currency',                          TRUE),
+    ('platform_currency',       'UGX',      'string',  'general',     'Fallback/global-default operating currency (each market''s actual currency comes from countries.currency_code)', TRUE),
     ('auto_logout_minutes',     '30',       'number',  'security',    'Idle session timeout in minutes',                      FALSE),
     ('access_token_minutes',    '15',       'number',  'security',    'Access JWT TTL in minutes',                            FALSE),
     ('refresh_token_days',      '7',        'number',  'security',    'Refresh token TTL in days',                            FALSE);
@@ -238,6 +377,9 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type, category,
 -- TABLE: subscriptions
 -- Free plan → browse + post requests (no cost).
 -- Lender plan → make offers (paid subscription required).
+-- v5.0: amount_ugx renamed to amount_minor_units — currency is implied by
+-- the subscriber's profiles.country, not hardcoded to UGX. Same plan tiers
+-- and capabilities in every market; only the price differs.
 -- ============================================
 
 CREATE TABLE subscriptions (
@@ -249,7 +391,7 @@ CREATE TABLE subscriptions (
 
     started_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at  TIMESTAMP,
-    amount_ugx  BIGINT NOT NULL DEFAULT 0,
+    amount_minor_units BIGINT NOT NULL DEFAULT 0,
     auto_renew  BOOLEAN NOT NULL DEFAULT TRUE,
 
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -258,7 +400,9 @@ CREATE TABLE subscriptions (
 
 COMMENT ON TABLE  subscriptions IS
 'One active subscription per user. free = no cost, browse and post requests.
- lender or pro plan required to make offers.';
+ lender or pro plan required to make offers. amount_minor_units is only meaningful
+ alongside the subscriber''s profiles.country -> countries.currency_code; the plan
+ tiers themselves are identical across every market, only the price is localized.';
 
 -- Only one active subscription per user at a time
 CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active'; ALTER TABLE public.subscriptions ADD CONSTRAINT uidx_sub_user UNIQUE (user_id);
@@ -297,18 +441,25 @@ CREATE TABLE kyc_verifications (
 
 COMMENT ON TABLE kyc_verifications IS
 'Optional KYC. Verification badge shown on borrower profile when approved.
- Not required to post a loan request — borrowing is free and open.';
+ Not required to post a loan request — borrowing is free and open.
+ national_id_type is free text specifically so it can absorb country-specific document
+ types (e.g. Kenyan ID vs Ugandan national ID formats) without a schema change.';
 
 
 -- ============================================
 -- TABLE: loan_requests  (borrower listings)
 -- Borrowers post structured funding requests for free.
 -- Contact details are never exposed until an offer is accepted.
+-- v5.0: carries `country`, copied from the borrower's profile at insert
+-- time by trg_fn_set_request_country() and then frozen — the listing's
+-- market never silently moves if the borrower's profile country is later
+-- corrected.
 -- ============================================
 
 CREATE TABLE loan_requests (
     id                          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     borrower_id                 UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+    country                     TEXT NOT NULL REFERENCES countries(code),
 
     title                       TEXT NOT NULL,
     purpose                     TEXT NOT NULL,
@@ -322,7 +473,7 @@ CREATE TABLE loan_requests (
     preferred_repayment_plan    TEXT NOT NULL           -- weekly, monthly, one_time
                                     CONSTRAINT chk_lr_repayment_plan
                                     CHECK (preferred_repayment_plan IN ('weekly', 'monthly', 'one_time')),
-    repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000 UGX per month
+    repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000, in the request's own currency
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
 
@@ -366,17 +517,30 @@ CREATE TABLE loan_requests (
 COMMENT ON TABLE  loan_requests IS
 'Borrower funding requests. Free to post. borrower_id masked on all public views.
  Income and repayment fields give lenders enough context to make an informed bid.
- Pro-tier term suggestions are locked on publish.';
+ Pro-tier term suggestions are locked on publish. country is copied from the
+ borrower''s profile at insert time and frozen thereafter.';
 COMMENT ON COLUMN loan_requests.borrower_id IS
 'NEVER exposed in v_loan_listings or any marketplace query. Contact revealed only post-acceptance.';
+COMMENT ON COLUMN loan_requests.country IS
+'Set once by trg_fn_set_request_country() at insert, from the borrower''s profiles.country.
+ Immutable thereafter — see trg_fn_lock_request_terms(), which also guards this column.';
 COMMENT ON COLUMN loan_requests.number_of_offers IS
 'Count of offers only. No monetary totals stored — platform is non-custodial.';
+
+CREATE INDEX idx_lr_country        ON loan_requests (country);
+CREATE INDEX idx_lr_country_status ON loan_requests (country, status);
 
 
 -- ============================================
 -- TABLE: loan_offers  (lender offers on a borrower request)
 -- Lenders must have an active lender/pro subscription to make offers.
 -- Lender identity is hidden from the borrower until the offer is accepted.
+-- v5.0: deliberately gets NO country column. An offer's country is always
+-- its parent request's country, read through request_id -> loan_requests.
+-- Storing it a second time here would create a value that can drift from
+-- its source of truth for no benefit. Cross-border offers (a lender in one
+-- EAC country bidding on a request in another) are allowed by default —
+-- see trg_fn_validate_offer() below, which has no country check.
 -- ============================================
 
 CREATE TABLE loan_offers (
@@ -411,9 +575,12 @@ CREATE TABLE loan_offers (
 );
 
 COMMENT ON COLUMN loan_offers.lender_id IS
-'Internal FK. Lender identity hidden from borrower until the offer is accepted.';
+'Internal FK. Lender identity hidden from borrower until the offer is accepted. May belong
+ to a profile in a different EAC country than the listing — cross-border offers are allowed.';
 COMMENT ON COLUMN loan_offers.offer_amount IS
-'Proposed lending amount stated by lender. Platform never holds or moves this money.';
+'Proposed lending amount stated by lender, in the listing''s own currency
+ (loan_offers.request_id -> loan_requests.country -> countries.currency_code).
+ Platform never holds or moves this money.';
 COMMENT ON COLUMN loan_offers.terms_locked_at IS
 'Stage 4: lender bid terms are locked when the bid is submitted.';
 
@@ -438,7 +605,7 @@ CREATE TABLE watchlist (
 -- Triggered only after a borrower accepts a lender's offer.
 -- Reveals legal name, phone, and email of both parties.
 -- Logged in audit_logs. Irreversible once triggered.
--- Platform never discloses identity outside this flow.
+-- Platform never discloses identity outside this flow, in any market.
 -- ============================================
 
 CREATE TABLE contact_reveals (
@@ -462,7 +629,9 @@ COMMENT ON TABLE contact_reveals IS
 'Opt-in identity disclosure triggered when a borrower accepts an offer.
  Reveals legal name, phone, and email of both parties.
  Irreversible once revealed. Enforced at the API layer, not just the UI.
- Platform never discloses identity outside this flow. No fee charged — non-custodial.';
+ Platform never discloses identity outside this flow. No fee charged today — non-custodial.
+ A flat, disclosed contact-unlock fee is a proposed, not-yet-committed change — see
+ the transactions table and BUILD_PLAN.md.';
 
 
 -- ============================================
@@ -486,7 +655,7 @@ CREATE TABLE agreements (
 
     -- Agreement text + snapshot (for audit trail)
     agreement_text              TEXT NOT NULL,
-    agreement_snapshot          JSONB,  -- Full snapshot at lock time for immutability
+    agreement_snapshot          JSONB,  -- Full snapshot at lock time for immutability, includes currency_code
 
     -- Contract is generated locked by accept_offer.
     status                      agreement_status_enum NOT NULL DEFAULT 'locked',
@@ -504,13 +673,17 @@ CREATE TABLE agreements (
 COMMENT ON TABLE agreements IS
 'Locked loan agreement. Auto-generated after bid acceptance.
  Late payment penalty applies only to missed installments, not the total loan.
- Agreement is read-only after generation (snapshot captured immediately).
+ Agreement is read-only after generation (snapshot captured immediately, including currency_code
+ so a generated contract never displays a bare number without its currency).
  All agreement events are logged in audit_logs for traceability.';
 
 -- ============================================
 -- TABLES: reviews and trust_aggregates
 -- A "completed deal" means a locked agreement whose contact has been revealed.
 -- It deliberately does not imply repayment, which happens off-platform.
+-- Trust aggregates are GLOBAL per user, not per country — see BUILD_PLAN.md
+-- "Multi-Country Expansion Model" for the rationale (reputation doesn't
+-- reset at a border).
 -- ============================================
 
 CREATE TABLE reviews (
@@ -542,7 +715,9 @@ CREATE TABLE trust_aggregates (
 COMMENT ON TABLE reviews IS
 'Immutable, one-per-party review for a completed on-platform deal. It never represents off-platform repayment behaviour.';
 COMMENT ON TABLE trust_aggregates IS
-'Cached, platform-scoped reputation aggregates. Public fields and Pro-only analytical fields are exposed through separate views.';
+'Cached, platform-scoped reputation aggregates. One row per user, GLOBAL across every EAC
+ market they have participated in — never one row per user per country. Public fields and
+ Pro-only analytical fields are exposed through separate views.';
 
 -- Indexes
 CREATE INDEX idx_agr_offer_id    ON agreements (offer_id);
@@ -651,6 +826,58 @@ CREATE TABLE referrals (
 
 
 -- ============================================
+-- TABLE: transactions  (Stage 6 — Flutterwave or equivalent aggregator)
+-- Scoped STRICTLY to Nipanze's own revenue: subscription charges, and the
+-- contact-unlock fee IF that open decision is ever resolved to "yes".
+-- NEVER touches money between a borrower and a lender — that stays
+-- entirely off-platform per Architecture Constraint #1. Only a verified
+-- webhook may set status = 'successful'; the client-side redirect after
+-- payment is never trusted to grant access on its own.
+-- ============================================
+
+CREATE TABLE transactions (
+    id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id                  UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    type                     TEXT NOT NULL CONSTRAINT chk_tx_type CHECK (type IN ('subscription', 'contact_unlock')),
+    amount                   BIGINT NOT NULL CONSTRAINT chk_tx_amount_positive CHECK (amount > 0),
+    currency_code            TEXT NOT NULL,
+    country                  TEXT NOT NULL REFERENCES countries(code),   -- payer's country at time of charge
+
+    provider                 TEXT NOT NULL DEFAULT 'flutterwave',        -- plain text, not enum, so a second processor can be added later
+    provider_tx_ref          TEXT NOT NULL UNIQUE,                        -- idempotency key Nipanze generates, sent to the provider
+    provider_tx_id           TEXT,                                        -- provider's own reference, populated on webhook confirm
+
+    status                   TEXT NOT NULL DEFAULT 'pending'
+                                CONSTRAINT chk_tx_status CHECK (status IN ('pending', 'successful', 'failed', 'reversed')),
+
+    related_subscription_id  UUID REFERENCES subscriptions(id),
+    related_reveal_id        UUID REFERENCES contact_reveals(id),
+
+    webhook_verified_at      TIMESTAMP,   -- set only after the provider's webhook signature check passes
+
+    created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE transactions IS
+'Payment records for Nipanze''s own revenue only (subscriptions, and the contact-unlock fee
+ if ever adopted) — never P2P loan funds. provider_tx_ref is generated by Nipanze before the
+ charge is initiated so retries and webhook replays are idempotent. status only ever reaches
+ ''successful'' via the signature-verified webhook handler (a service-role Edge Function),
+ never via the client-side post-payment redirect. A user''s subscriptions.plan upgrades only
+ after a linked transaction reaches ''successful'' — never optimistically.';
+COMMENT ON COLUMN transactions.provider IS
+'Plain text, not an enum, specifically so a second processor can be added later (e.g. a
+ card-only fallback, or a different aggregator for a market Flutterwave covers thinly) without
+ a schema migration.';
+
+CREATE INDEX idx_tx_user_id  ON transactions (user_id);
+CREATE INDEX idx_tx_status   ON transactions (status);
+CREATE INDEX idx_tx_country  ON transactions (country);
+
+
+-- ============================================
 -- INDEXES
 -- ============================================
 
@@ -709,6 +936,30 @@ CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoke
 
 
 -- ============================================
+-- FUNCTIONS: Pro Advanced Marketplace Filters (v4.2)
+-- fn_income_bracket() buckets exact income into a coarse category so it can
+-- be filtered on without ever exposing the exact monthly income figure.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION fn_income_bracket(p_income BIGINT)
+RETURNS TEXT
+LANGUAGE sql IMMUTABLE
+AS $$
+    SELECT CASE
+        WHEN p_income IS NULL THEN NULL
+        WHEN p_income < 2000000  THEN 'under_2m'
+        WHEN p_income < 5000000  THEN '2m_5m'
+        WHEN p_income < 10000000 THEN '5m_10m'
+        ELSE 'over_10m'
+    END;
+$$;
+
+COMMENT ON FUNCTION fn_income_bracket(BIGINT) IS
+'Buckets an exact monthly income figure into a coarse category (under_2m / 2m_5m / 5m_10m /
+ over_10m) for Pro Advanced Filters. Never exposes the exact figure.';
+
+
+-- ============================================
 -- VIEWS
 -- ============================================
 
@@ -717,6 +968,8 @@ CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoke
 -- Anonymised public marketplace feed.
 -- borrower_id, phone, email, full_name, and national ID are intentionally excluded.
 -- Exposes enough structured context for lenders to make informed offers.
+-- v5.0: now includes country and currency_code (joined from countries) so
+-- every amount is shown alongside the currency it's denominated in.
 -- --------------------------------------------
 CREATE VIEW v_loan_listings AS
 SELECT
@@ -724,6 +977,8 @@ SELECT
     lr.title,
     lr.purpose,
     lr.district,
+    lr.country,
+    c.currency_code,
     lr.duration_months,
     lr.requested_amount,
     lr.preferred_repayment_plan,
@@ -745,7 +1000,8 @@ SELECT
     lr.expires_at,
     -- KYC badge (status only — no personal verification documents)
     k.status                                                                  AS kyc_status,
-    -- Public, privacy-safe trust signals for the request owner.
+    -- Public, privacy-safe trust signals for the request owner. GLOBAL across
+    -- every EAC country the owner has participated in, not just this listing's market.
     ta.rating_avg                                                             AS trust_rating_avg,
     COALESCE(ta.review_count, 0)                                              AS trust_review_count,
     COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
@@ -759,6 +1015,7 @@ SELECT
     (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h
 FROM  loan_requests   lr
 JOIN  profiles p ON p.id = lr.borrower_id
+JOIN  countries c ON c.code = lr.country
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
 WHERE lr.status = 'active'
@@ -775,8 +1032,13 @@ WHERE lr.status = 'active'
   );
 
 COMMENT ON VIEW v_loan_listings IS
-'Anonymised marketplace feed. borrower_id, contact details, and private documents are never present.
- Repayment fields and Pro-tier suggestions help lenders make an informed bid without exposing income source.';
+'Anonymised marketplace feed across every EAC market. borrower_id, contact details, and
+ private documents are never present. Repayment fields and Pro-tier suggestions help lenders
+ make an informed bid without exposing income source. country/currency_code are always
+ returned together with every amount. The Flutter client filters this feed to the user''s
+ own country by default (MarketplaceRepository), with an explicit toggle to browse others —
+ this view itself does not restrict by country, matching the "global browse" policy in
+ BUILD_PLAN.md.';
 
 
 -- --------------------------------------------
@@ -788,6 +1050,7 @@ CREATE VIEW v_user_marketplace_activity WITH (security_invoker = true) AS
 SELECT
     p.id                                                                      AS user_id,
     p.full_name,
+    p.country,
     p.account_status,
     -- borrower side
     COUNT(DISTINCT lr.id) FILTER (
@@ -826,6 +1089,7 @@ COMMENT ON VIEW v_user_marketplace_activity IS
 -- Trust profile views
 -- These contain no contact details. The public view is intentionally readable
 -- without marketplace participation; the Pro view adds only derived insights.
+-- Both are GLOBAL — not scoped or filtered by country in any way.
 -- --------------------------------------------
 CREATE VIEW v_trust_profile_public AS
 SELECT
@@ -858,6 +1122,8 @@ WHERE EXISTS (
 -- v_lender_offers
 -- Lender offer activity — for My Offers screen.
 -- Does NOT expose borrower contact details.
+-- v5.0: now includes country and currency_code, joined through the parent
+-- listing (loan_offers has no country column of its own).
 -- --------------------------------------------
 CREATE VIEW v_lender_offers WITH (security_invoker = true) AS
 SELECT
@@ -867,6 +1133,8 @@ SELECT
     lr.title                                                                  AS listing_title,
     lr.purpose                                                                AS listing_purpose,
     lr.district,
+    lr.country,
+    c.currency_code,
     lr.duration_months,
     lr.requested_amount,
     lo.offer_amount,
@@ -891,22 +1159,28 @@ SELECT
     cr.revealed_at
 FROM  loan_offers     lo
 JOIN  loan_requests   lr ON lr.id      = lo.request_id
+JOIN  countries       c  ON c.code     = lr.country
 JOIN  profiles        p  ON p.id       = lo.lender_id
 LEFT  JOIN kyc_verifications k ON k.user_id = lo.lender_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lo.lender_id
 LEFT  JOIN contact_reveals cr ON cr.offer_id = lo.id;
 
 COMMENT ON VIEW v_lender_offers IS
-'Lender offer history with reveal status. Borrower contact details not exposed until reveal_status = revealed.';
+'Lender offer history with reveal status. Borrower contact details not exposed until
+ reveal_status = revealed. country/currency_code are read through the parent listing
+ (loan_requests), never stored on loan_offers itself.';
 
 
 -- --------------------------------------------
 -- v_marketplace_activity
 -- Marketplace-wide KPIs for admin dashboard.
+-- v5.0: now includes country, so admin can filter or group KPIs per market
+-- instead of only seeing a single blended global figure.
 -- --------------------------------------------
 CREATE VIEW v_marketplace_activity WITH (security_invoker = true) AS
 SELECT
     DATE_TRUNC('month', lr.listed_at)                                        AS month,
+    lr.country,
     COUNT(lr.id)                                                              AS total_listings,
     COUNT(lr.id) FILTER (WHERE lr.status = 'active')                        AS active_listings,
     COUNT(lr.id) FILTER (WHERE lr.status = 'contracted')                    AS contracted_listings,
@@ -920,11 +1194,43 @@ SELECT
      WHERE status = 'active' AND plan != 'free')                             AS active_paid_subscribers
 FROM  loan_requests lr
 LEFT  JOIN loan_offers lo ON lo.request_id = lr.id
-GROUP BY DATE_TRUNC('month', lr.listed_at)
-ORDER BY month DESC;
+GROUP BY DATE_TRUNC('month', lr.listed_at), lr.country
+ORDER BY month DESC, lr.country;
 
 COMMENT ON VIEW v_marketplace_activity IS
-'Admin KPIs. No monetary aggregates — non-custodial. Match rate measures how many listings received at least one offer.';
+'Admin KPIs, filterable/groupable by country. No monetary aggregates — non-custodial, and
+ amounts are never summed across markets with different currencies (see BUILD_PLAN.md).
+ Match rate measures how many listings received at least one offer.
+ active_paid_subscribers is intentionally global, not per-country, in this base view.';
+
+
+-- --------------------------------------------
+-- v_marketplace_pro_filters  (Pro Advanced Marketplace Filters, v4.2)
+-- Self-gating view: returns zero rows for any caller without an active Pro
+-- subscription. Never exposes exact monthly income or employer/bank names —
+-- only bucketed income and categorical employment type.
+-- --------------------------------------------
+CREATE VIEW v_marketplace_pro_filters WITH (security_invoker = true) AS
+SELECT
+    lr.id                                       AS request_id,
+    lr.country,
+    p.employment_type,
+    fn_income_bracket(p.monthly_income)         AS income_bracket,
+    (lr.suggested_interest_rate_pct IS NOT NULL) AS has_suggested_terms,
+    (k.status = 'approved')                      AS owner_verified
+FROM  loan_requests lr
+JOIN  profiles p ON p.id = lr.borrower_id
+LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+WHERE lr.status = 'active'
+  AND EXISTS (
+      SELECT 1 FROM subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+  );
+
+COMMENT ON VIEW v_marketplace_pro_filters IS
+'Pro-only filter signals (employment type, bucketed income, suggested-terms flag, owner
+ verification status) for a listing. Self-gated: returns zero rows for any caller without an
+ active Pro subscription, so the DB is the enforcement point, not the Flutter client.';
 
 
 -- --------------------------------------------
@@ -1022,8 +1328,59 @@ $$;
 COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
 'Participant-scoped bid book. Listing owners and offer-makers receive exact terms; all other viewers receive only v_loan_listings aggregate coverage.';
 
+
+-- --------------------------------------------
+-- get_marketplace_pro_filtered
+-- Applies Pro Advanced Filters on top of v_loan_listings. Raises if the
+-- caller does not have an active Pro subscription, rather than silently
+-- returning nothing, so client errors are explicit.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION get_marketplace_pro_filtered(
+    p_employment_type      employment_type_enum DEFAULT NULL,
+    p_income_bracket       TEXT                  DEFAULT NULL,
+    p_suggested_terms_only BOOLEAN               DEFAULT FALSE,
+    p_verified_only        BOOLEAN               DEFAULT FALSE,
+    p_country              TEXT                  DEFAULT NULL
+)
+RETURNS SETOF v_loan_listings
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM subscriptions
+        WHERE user_id = auth.uid() AND status = 'active' AND plan = 'pro'
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: Advanced marketplace filters require a Pro subscription.'
+            USING ERRCODE = 'P0050';
+    END IF;
+
+    RETURN QUERY
+    SELECT vl.*
+    FROM v_loan_listings vl
+    JOIN loan_requests lr ON lr.id = vl.request_id
+    JOIN profiles p ON p.id = lr.borrower_id
+    LEFT JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+    WHERE (p_employment_type IS NULL OR p.employment_type = p_employment_type)
+      AND (p_income_bracket IS NULL OR fn_income_bracket(p.monthly_income) = p_income_bracket)
+      AND (NOT p_suggested_terms_only OR lr.suggested_interest_rate_pct IS NOT NULL)
+      AND (NOT p_verified_only OR k.status = 'approved')
+      AND (p_country IS NULL OR vl.country = p_country);
+END;
+$$;
+
+COMMENT ON FUNCTION get_marketplace_pro_filtered IS
+'Pro-only marketplace filtering by employment type, bucketed income, suggested-terms
+ presence, owner verification, and (optionally) country. Raises NIPANZE_PRO_REQUIRED for any
+ caller without an active Pro subscription — the DB is the enforcement point, matching
+ v_marketplace_pro_filters above.';
+
+
 -- Rebuild a user's platform-scoped trust summary. This intentionally counts
--- only agreements that reached contact reveal, never repayment behaviour.
+-- only agreements that reached contact reveal, never repayment behaviour,
+-- and is GLOBAL across every country the user has participated in.
 CREATE OR REPLACE FUNCTION public.recompute_trust_aggregates(p_user_id UUID)
 RETURNS VOID
 LANGUAGE plpgsql
@@ -1176,6 +1533,8 @@ END;
 $$;
 
 -- Generate locked contract text from accepted bid terms.
+-- v5.0: accepts a currency code so the contract text never displays a bare
+-- number without stating what currency it's denominated in.
 CREATE OR REPLACE FUNCTION fn_generate_locked_contract_text(
     p_borrower_name TEXT,
     p_lender_name TEXT,
@@ -1185,7 +1544,8 @@ CREATE OR REPLACE FUNCTION fn_generate_locked_contract_text(
     p_repayment_frequency TEXT,
     p_installment_amount BIGINT,
     p_duration_months INT,
-    p_late_fee_pct NUMERIC
+    p_late_fee_pct NUMERIC,
+    p_currency_code TEXT DEFAULT 'UGX'
 )
 RETURNS TEXT LANGUAGE plpgsql STABLE AS $$
 BEGIN
@@ -1197,11 +1557,11 @@ Borrower: %s
 Lender: %s
 
 LOCKED TERMS
-Loan amount: UGX %s
+Loan amount: %s %s
 Interest rate: %s%%
-Total repayment amount: UGX %s
+Total repayment amount: %s %s
 Repayment schedule: %s
-Installment amount: UGX %s
+Installment amount: %s %s
 Duration: %s months
 Start date: %s
 End date: %s
@@ -1215,10 +1575,13 @@ Nipanze provides this agreement for convenience only. The final obligation is so
 Audit timestamp: %s',
         COALESCE(p_borrower_name, 'Borrower'),
         COALESCE(p_lender_name, 'Lender'),
+        p_currency_code,
         p_loan_amount,
         p_interest_rate_pct,
+        p_currency_code,
         p_total_repayment,
         p_repayment_frequency,
+        p_currency_code,
         p_installment_amount,
         p_duration_months,
         CURRENT_DATE,
@@ -1234,7 +1597,9 @@ $$;
 -- TRIGGER FUNCTIONS
 -- ============================================
 
--- Set expires_at on loan_request insert using system_settings
+-- Set expires_at on loan_request insert using system_settings.
+-- Resolves the per-country override if one exists, falling back to the
+-- global default (country IS NULL) otherwise.
 CREATE OR REPLACE FUNCTION trg_fn_set_listing_expiry()
 RETURNS TRIGGER LANGUAGE plpgsql
 SET search_path = public AS $$
@@ -1242,11 +1607,35 @@ DECLARE
     v_days INT;
 BEGIN
     SELECT setting_value::INT INTO v_days
-    FROM system_settings WHERE setting_key = 'listing_duration_days';
+    FROM system_settings
+    WHERE setting_key = 'listing_duration_days'
+      AND (country = NEW.country OR country IS NULL)
+    ORDER BY country NULLS LAST
+    LIMIT 1;
+
     NEW.expires_at := NOW() + (v_days || ' days')::INTERVAL;
     RETURN NEW;
 END;
 $$;
+
+
+-- v5.0: copies country from the borrower's profile onto a new loan_requests
+-- row at insert time. Same "locked at post time" pattern as term-locking —
+-- once set here, trg_fn_lock_request_terms() below guards it from edits.
+CREATE OR REPLACE FUNCTION trg_fn_set_request_country()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+BEGIN
+    IF NEW.country IS NULL THEN
+        SELECT country INTO NEW.country FROM profiles WHERE id = NEW.borrower_id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+COMMENT ON FUNCTION trg_fn_set_request_country IS
+'v5.0: sets loan_requests.country from the borrower''s profiles.country at insert time,
+ if not already supplied. Frozen thereafter by trg_fn_lock_request_terms().';
 
 
 -- Block listing if account is not active
@@ -1275,7 +1664,7 @@ DECLARE
     v_max          INT;
 BEGIN
     SELECT setting_value::INT INTO v_max
-    FROM system_settings WHERE setting_key = 'max_concurrent_requests';
+    FROM system_settings WHERE setting_key = 'max_concurrent_requests' AND country IS NULL;
 
     SELECT COUNT(*) INTO v_active_count
     FROM loan_requests
@@ -1324,7 +1713,7 @@ END;
 $$;
 
 
--- Lock request term suggestions after publish.
+-- Lock request term suggestions AND country after publish.
 CREATE OR REPLACE FUNCTION trg_fn_lock_request_terms()
 RETURNS TRIGGER LANGUAGE plpgsql
 SET search_path = public AS $$
@@ -1338,12 +1727,22 @@ BEGIN
         RAISE EXCEPTION 'NIPANZE_REQUEST_TERMS_LOCKED: Terms cannot be edited after publish.'
             USING ERRCODE = 'P0005';
     END IF;
+
+    IF OLD.country IS DISTINCT FROM NEW.country THEN
+        RAISE EXCEPTION 'NIPANZE_REQUEST_COUNTRY_LOCKED: A listing''s country is frozen at publish time and cannot be changed.'
+            USING ERRCODE = 'P0006';
+    END IF;
+
     RETURN NEW;
 END;
 $$;
 
 
--- Validate a lender offer before insert
+-- Validate a lender offer before insert.
+-- v5.0: no country check — cross-border offers are ALLOWED by default per
+-- BUILD_PLAN.md. To restrict to single-market offers only, add a clause
+-- here comparing (SELECT country FROM profiles WHERE id = NEW.lender_id)
+-- against v_listing.country.
 CREATE OR REPLACE FUNCTION trg_fn_validate_offer()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
@@ -1371,12 +1770,16 @@ BEGIN
             USING ERRCODE = 'P0012';
     END IF;
 
-    -- Minimum offer amount
+    -- Minimum offer amount (global default; per-country override takes precedence if present)
     SELECT setting_value::BIGINT INTO v_min_offer
-    FROM system_settings WHERE setting_key = 'min_offer_amount';
+    FROM system_settings
+    WHERE setting_key = 'min_offer_amount'
+      AND (country = v_listing.country OR country IS NULL)
+    ORDER BY country NULLS LAST
+    LIMIT 1;
 
     IF NEW.offer_amount < v_min_offer THEN
-        RAISE EXCEPTION 'NIPANZE_MIN_OFFER: Bid amount must be at least UGX %.', v_min_offer
+        RAISE EXCEPTION 'NIPANZE_MIN_OFFER: Bid amount must be at least %.', v_min_offer
             USING ERRCODE = 'P0013';
     END IF;
 
@@ -1477,6 +1880,12 @@ $$;
 -- TRIGGERS
 -- ============================================
 
+-- countries
+CREATE TRIGGER trg_countries_updated_at_noop
+    BEFORE UPDATE ON countries
+    FOR EACH ROW WHEN (FALSE)  -- placeholder no-op; countries has no updated_at column by design
+    EXECUTE FUNCTION fn_set_updated_at();
+
 -- profiles
 CREATE TRIGGER trg_profiles_updated_at
     BEFORE UPDATE ON profiles
@@ -1498,6 +1907,10 @@ CREATE TRIGGER trg_system_settings_updated_at
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 -- loan_requests
+CREATE TRIGGER trg_set_request_country
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_set_request_country();
+
 CREATE TRIGGER trg_require_active_account
     BEFORE INSERT ON loan_requests
     FOR EACH ROW EXECUTE FUNCTION trg_fn_require_active_account();
@@ -1555,6 +1968,11 @@ CREATE TRIGGER trg_agreements_updated_at
     BEFORE UPDATE ON agreements
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
+-- transactions
+CREATE TRIGGER trg_transactions_updated_at
+    BEFORE UPDATE ON transactions
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
 
 -- ============================================
 -- RPC: accept_offer  (Stage 4: Creates locked agreement)
@@ -1563,6 +1981,8 @@ CREATE TRIGGER trg_agreements_updated_at
 -- and notifies both parties.
 -- Contact details are NOT returned here — unlock_contact is the only
 -- API that reveals contact details after the contract is locked.
+-- v5.0: the agreement snapshot and contract text now carry currency_code,
+-- resolved from the listing's country.
 -- ============================================
 
 CREATE OR REPLACE FUNCTION private.accept_offer_internal(
@@ -1579,6 +1999,7 @@ DECLARE
     v_offer public.loan_offers%ROWTYPE;
     v_borrower public.profiles%ROWTYPE;
     v_lender public.profiles%ROWTYPE;
+    v_currency_code TEXT;
     v_agreement_id UUID;
     v_total_repayment BIGINT;
     v_agreement_text TEXT;
@@ -1613,6 +2034,7 @@ BEGIN
 
     SELECT * INTO v_borrower FROM public.profiles WHERE id = p_borrower_id;
     SELECT * INTO v_lender FROM public.profiles WHERE id = v_offer.lender_id;
+    SELECT currency_code INTO v_currency_code FROM public.countries WHERE code = v_listing.country;
 
     v_total_repayment := ROUND(v_offer.offer_amount * (1 + (v_offer.interest_rate_pct / 100.0)))::BIGINT;
 
@@ -1621,6 +2043,8 @@ BEGIN
         'offer_id', p_offer_id,
         'borrower_id', p_borrower_id,
         'lender_id', v_offer.lender_id,
+        'country', v_listing.country,
+        'currency_code', v_currency_code,
         'loan_amount', v_offer.offer_amount,
         'interest_rate_pct', v_offer.interest_rate_pct,
         'total_repayment_amount', v_total_repayment,
@@ -1645,7 +2069,8 @@ BEGIN
         v_offer.repayment_frequency,
         v_offer.installment_amount,
         v_listing.duration_months,
-        v_offer.late_fee_pct
+        v_offer.late_fee_pct,
+        v_currency_code
     );
 
     UPDATE public.loan_offers SET status = 'accepted', accepted_at = NOW() WHERE id = p_offer_id;
@@ -1736,7 +2161,8 @@ GRANT  EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticate
 COMMENT ON FUNCTION public.accept_offer IS
 'Atomically accepts a bid, rejects others, marks listing contracted, and creates a locked agreement.
  Returns agreement_id. Contact details are not exposed until unlock_contact() is called.
- Platform never holds or moves funds.';
+ Platform never holds or moves funds. The agreement snapshot and contract text include
+ currency_code, resolved from the listing''s country.';
 
 
 -- ============================================
@@ -1966,21 +2392,23 @@ COMMENT ON FUNCTION public.unlock_contact IS
 -- ROW-LEVEL SECURITY
 -- ============================================
 
-ALTER TABLE system_settings     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles            ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE kyc_verifications   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE loan_requests       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE loan_offers         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE watchlist           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE contact_reveals     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE agreements          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trust_aggregates    ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE audit_logs          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE refresh_tokens      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referrals           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE countries            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_settings      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kyc_verifications    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_requests        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_offers          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE watchlist            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_reveals      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agreements           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trust_aggregates     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE refresh_tokens       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrals            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions         ENABLE ROW LEVEL SECURITY;
 
 
 -- Helper function to safely fetch the current active user's subscription plan.
@@ -2026,6 +2454,12 @@ GRANT USAGE  ON SCHEMA private TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
 
+-- countries — public reference data, readable by everyone; admin-only writes
+CREATE POLICY "countries: public read"
+    ON countries FOR SELECT TO authenticated, anon USING (TRUE);
+CREATE POLICY "countries: admin write"
+    ON countries FOR ALL TO authenticated USING (private.is_admin());
+
 -- system_settings
 CREATE POLICY "system_settings: authenticated read"
     ON system_settings FOR SELECT TO authenticated USING (is_public = TRUE OR private.is_admin());
@@ -2059,6 +2493,11 @@ CREATE POLICY "kyc: own or admin update"
     USING (user_id = auth.uid() OR private.is_admin());
 
 -- loan_requests
+-- NOTE: "global browse" policy (BUILD_PLAN.md) — this does NOT restrict
+-- reads to the caller's own country. The Flutter client applies the
+-- country default via MarketplaceRepository. If hard per-country RLS
+-- isolation is ever adopted instead, add:
+--   AND (country = (SELECT country FROM profiles WHERE id = auth.uid()) OR borrower_id = auth.uid() OR private.is_admin())
 CREATE POLICY "loan_requests: marketplace read"
     ON loan_requests FOR SELECT TO authenticated
     USING (status = 'active' OR borrower_id = auth.uid() OR private.is_admin());
@@ -2073,6 +2512,7 @@ CREATE POLICY "loan_requests: admin delete"
 
 -- loan_offers
 -- Borrowers see offers on their own listings; lenders see their own offers; admins see all.
+-- No country restriction — cross-border offers are allowed by default (see trg_fn_validate_offer).
 CREATE POLICY "loan_offers: relevant parties read"
     ON loan_offers FOR SELECT TO authenticated
     USING (
@@ -2187,6 +2627,14 @@ CREATE POLICY "referrals: own insert"
 CREATE POLICY "referrals: admin write"
     ON referrals FOR ALL TO authenticated USING (private.is_admin());
 
+-- transactions — own or admin read; all writes go through the service-role
+-- webhook Edge Function, never directly from the Flutter client.
+CREATE POLICY "transactions: own or admin read"
+    ON transactions FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "transactions: service role write"
+    ON transactions FOR ALL TO service_role USING (TRUE) WITH CHECK (TRUE);
+
 
 -- ============================================
 -- REALTIME PUBLICATIONS
@@ -2215,10 +2663,12 @@ DECLARE db TEXT;
 BEGIN
     SELECT current_database() INTO db;
     EXECUTE FORMAT('COMMENT ON DATABASE %I IS %L', db,
-        'Nipanze v4.1 — Non-custodial loan listing matchmaking marketplace. Uganda-first. '
-        'Unified marketplace: no stored borrower/lender role, capability comes from subscription_plan. '
-        'Borrowing is free. Lender offers require a subscription. '
-        'Contact revealed only after offer acceptance. Platform never holds or tracks funds.');
+        'Nipanze v5.0 — Non-custodial loan listing matchmaking marketplace across the East '
+        'African Community, Uganda-first. Unified marketplace: no stored borrower/lender role, '
+        'capability comes from subscription_plan. Country is explicit, indexed, and locked at '
+        'creation for listings; trust signals are global, not per-country. Borrowing is free. '
+        'Lender offers require a subscription. Contact revealed only after offer acceptance. '
+        'Platform never holds or tracks funds between borrower and lender, in any market.');
 END $$;
 
 
@@ -2237,6 +2687,7 @@ REVOKE EXECUTE ON FUNCTION public.handle_new_auth_user() FROM public, authentica
 REVOKE EXECUTE ON FUNCTION public.trg_fn_require_active_account() FROM public, authenticated, anon;
 REVOKE EXECUTE ON FUNCTION public.trg_fn_max_concurrent_requests() FROM public, authenticated, anon;
 REVOKE EXECUTE ON FUNCTION public.trg_fn_validate_offer() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_set_request_country() FROM public, authenticated, anon;
 
 -- Revoke public/anon access on client-facing RPCs and restrict to authenticated/service_role
 -- is_admin is in the private schema — only grant to authenticated for RLS use
@@ -2252,17 +2703,91 @@ GRANT EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, se
 REVOKE EXECUTE ON FUNCTION public.get_my_subscription_plan() FROM public, anon;
 GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated, service_role;
 
+REVOKE EXECUTE ON FUNCTION get_marketplace_pro_filtered(employment_type_enum, TEXT, BOOLEAN, BOOLEAN, TEXT) FROM public, anon;
+GRANT EXECUTE ON FUNCTION get_marketplace_pro_filtered(employment_type_enum, TEXT, BOOLEAN, BOOLEAN, TEXT) TO authenticated, service_role;
+
 
 -- ============================================
--- END OF SCHEMA v4.1
+-- VIEW: v_lender_rate_history
+-- Safe, identity-preserving view for lender rate sparklines.
+-- Exposes only numeric trend data — no borrower info, no PII.
+-- ============================================
+CREATE OR REPLACE VIEW public.v_lender_rate_history
+WITH (security_invoker = true) AS
+SELECT
+    lender_id,
+    interest_rate_pct,
+    late_fee_pct,
+    installment_amount,
+    offered_at,
+    ROW_NUMBER() OVER (
+        PARTITION BY lender_id ORDER BY offered_at DESC
+    ) AS rn
+FROM public.loan_offers
+WHERE status IN ('pending', 'accepted', 'rejected');
+
+
+-- ============================================
+-- RPC: consume_free_unlock()
+-- Atomically decrements free_unlocks_remaining for the calling user.
+-- Returns new remaining count. Raises NIPANZE_NO_FREE_UNLOCKS if count=0.
+-- ============================================
+CREATE OR REPLACE FUNCTION public.consume_free_unlock()
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_user_id   UUID := auth.uid();
+    v_remaining INT;
+BEGIN
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED';
+    END IF;
+
+    SELECT free_unlocks_remaining
+      INTO v_remaining
+      FROM profiles
+     WHERE id = v_user_id
+       FOR UPDATE;
+
+    IF v_remaining IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_PROFILE_NOT_FOUND';
+    END IF;
+
+    IF v_remaining <= 0 THEN
+        RAISE EXCEPTION 'NIPANZE_NO_FREE_UNLOCKS';
+    END IF;
+
+    UPDATE profiles
+       SET free_unlocks_remaining = free_unlocks_remaining - 1,
+           updated_at             = NOW()
+     WHERE id = v_user_id
+    RETURNING free_unlocks_remaining INTO v_remaining;
+
+    RETURN v_remaining;
+END;
+$$;
+
+COMMENT ON FUNCTION public.consume_free_unlock() IS
+'Atomically decrements free_unlocks_remaining for the calling authenticated user. '
+'Returns new remaining count. Raises NIPANZE_NO_FREE_UNLOCKS if count is already 0.';
+
+
+-- ============================================
+-- END OF SCHEMA v5.0
 -- ============================================
 -- Grants for views
+GRANT SELECT ON countries TO authenticated, anon;
 GRANT SELECT ON v_loan_listings TO authenticated, anon;
 GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
 GRANT SELECT ON v_lender_offers TO authenticated, anon;
 GRANT SELECT ON v_marketplace_activity TO authenticated, anon;
+GRANT SELECT ON v_marketplace_pro_filters TO authenticated;
 GRANT SELECT ON v_trust_profile_public TO authenticated, anon;
 GRANT SELECT ON v_trust_profile_pro TO authenticated;
+GRANT EXECUTE ON FUNCTION fn_income_bracket(BIGINT) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.submit_review(UUID, SMALLINT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.recompute_trust_aggregates(UUID) TO service_role;
 
@@ -2270,3 +2795,6 @@ GRANT EXECUTE ON FUNCTION public.recompute_trust_aggregates(UUID) TO service_rol
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
+
+GRANT SELECT ON public.v_lender_rate_history TO authenticated;
+GRANT EXECUTE ON FUNCTION public.consume_free_unlock() TO authenticated;
