@@ -258,7 +258,9 @@ class _LoginPageState extends State<LoginPage>
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isWelcome = _step == _WizardStep.welcome;
     return Scaffold(
+      backgroundColor: isWelcome ? const Color(0xFF0A0A12) : null,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -274,10 +276,15 @@ class _LoginPageState extends State<LoginPage>
           final isLoading = state is AuthLoading;
           final errorMsg = state is AuthError ? state.message : null;
 
+          final step = _buildStep(isLoading, errorMsg);
+          // Welcome screen handles its own SafeArea + full-bleed gradient
+          if (isWelcome) {
+            return FadeTransition(opacity: _fadeAnim, child: step);
+          }
           return SafeArea(
             child: FadeTransition(
               opacity: _fadeAnim,
-              child: _buildStep(isLoading, errorMsg),
+              child: step,
             ),
           );
         },
@@ -401,59 +408,173 @@ class _WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-          const AuthBrandMark(),
-          const SizedBox(height: 12),
-          const AuthStatusPill(label: 'Non-custodial marketplace'),
-          const SizedBox(height: 40),
-          Text(
-            'Welcome to\nNipanze',
-            style: theme.textTheme.displayLarge?.copyWith(
-              fontSize: 32,
-              height: 1.15,
+    final size = MediaQuery.sizeOf(context);
+    return Container(
+      width: double.infinity,
+      height: size.height,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF0A0A12),
+            Color(0xFF0D0D1A),
+            Color(0xFF0A0A12),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // ── Top: Logo ─────────────────────────────────────────────
+            const SizedBox(height: 32),
+            _NipanzeLogo(),
+
+            // ── Hero copy ─────────────────────────────────────────────
+            const SizedBox(height: 28),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                children: [
+                  Text(
+                    'Borrow. Lend. Grow.\nAcross East Africa.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      height: 1.25,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'A trusted marketplace connecting\nborrowers with lenders.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFFADADB8),
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Match with vetted lenders, borrowers & employers — no middleman.',
-            style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
-          ),
-          const SizedBox(height: 40),
 
-          // Primary: phone
-          ElevatedButton.icon(
-            onPressed: onContinueWithPhone,
-            icon: const Icon(Icons.phone_outlined, size: 18),
-            label: const Text('Continue with Phone'),
-          ),
-          const SizedBox(height: 12),
-
-          // Secondary: email
-          OutlinedButton.icon(
-            onPressed: onContinueWithEmail,
-            icon: const Icon(Icons.mail_outline_rounded, size: 18),
-            label: const Text('Continue with Email'),
-          ),
-          const SizedBox(height: 32),
-
-          Center(
-            child: Text(
-              'Nipanze does not hold or move your funds.\nAll deals are arranged directly between participants.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(height: 1.6),
+            // ── Hero illustration ─────────────────────────────────────
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Image.asset(
+                  'assets/images/hero_illustration.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
-          ),
-        ],
+
+            // ── CTA + footer ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Column(
+                children: [
+                  // Primary CTA
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: onContinueWithPhone,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7C3AED),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.phone_rounded, size: 20),
+                      label: const Text(
+                        'Continue with Phone',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Terms footer
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.shield_outlined,
+                          size: 14,
+                          color: Color(0xFF6B7280),
+                        ),
+                        const SizedBox(width: 6),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: const TextSpan(
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            children: [
+                              TextSpan(text: 'By continuing, you agree to our\n'),
+                              TextSpan(
+                                text: 'Terms of Use',
+                                style: TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+// ── Nipanze logo image ────────────────────────────────────────────────────────
+class _NipanzeLogo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logoAsset = isDark
+        ? 'assets/images/nipanze_logo_dark.png'
+        : 'assets/images/nipanze_logo_light.png';
+    return Image.asset(
+      logoAsset,
+      height: 50,
+      fit: BoxFit.contain,
+    );
+  }
+}
+
 
 // ── 1. Phone Entry ────────────────────────────────────────────────────────────
 class _PhoneEntryScreen extends StatelessWidget {

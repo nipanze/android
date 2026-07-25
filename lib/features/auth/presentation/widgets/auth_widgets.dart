@@ -10,42 +10,21 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
-/// "N" mark + "Nipanze" wordmark, used at the top of the login screen.
-/// Uses AppColors.accentDark -> AppColors.purple, the same gradient pair
-/// as the profile avatar, so the two brand touchpoints in the app match.
+/// Nipanze logo image — switches between the dark and light variant
+/// automatically based on the current [ThemeData.brightness].
 class AuthBrandMark extends StatelessWidget {
   const AuthBrandMark({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.accentDark, AppColors.purple],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: const Center(
-            child: Text(
-              'N',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                fontFamily: AppFonts.heading,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text('Nipanze', style: Theme.of(context).textTheme.headlineMedium),
-      ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logoAsset = isDark
+        ? 'assets/images/nipanze_logo_dark.png'
+        : 'assets/images/nipanze_logo_light.png';
+    return Image.asset(
+      logoAsset,
+      height: 38,
+      fit: BoxFit.contain,
     );
   }
 }
