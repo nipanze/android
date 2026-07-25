@@ -16,14 +16,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class StarfieldBackground extends StatelessWidget {
-  const StarfieldBackground({super.key});
+  const StarfieldBackground({super.key, this.isDark = true});
+
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return const Positioned.fill(
+    return Positioned.fill(
       child: IgnorePointer(
         child: CustomPaint(
-          painter: _StarfieldPainter(),
+          painter: _StarfieldPainter(isDark: isDark),
         ),
       ),
     );
@@ -31,7 +33,9 @@ class StarfieldBackground extends StatelessWidget {
 }
 
 class _StarfieldPainter extends CustomPainter {
-  const _StarfieldPainter();
+  const _StarfieldPainter({required this.isDark});
+
+  final bool isDark;
 
   // Fixed seed so the star positions are stable across rebuilds/hot reload.
   static const int _seed = 42;
@@ -44,8 +48,9 @@ class _StarfieldPainter extends CustomPainter {
 
   void _paintStars(Canvas canvas, Size size) {
     final rand = Random(_seed);
-    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.35);
-    final dimStarPaint = Paint()..color = Colors.white.withValues(alpha: 0.15);
+    final baseColor = isDark ? Colors.white : const Color(0xFF7C3AED);
+    final starPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.35 : 0.15);
+    final dimStarPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.15 : 0.08);
 
     // Concentrate stars in the upper ~55% of the screen, same as the
     // mockup — the lower half is dominated by the illustration + CTA.
@@ -60,7 +65,7 @@ class _StarfieldPainter extends CustomPainter {
     // A handful of slightly larger "sparkle" stars, matching the small
     // four-point sparkle accents visible near the illustration in the
     // mockup.
-    final sparklePaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
+    final sparklePaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.5 : 0.25);
     final sparklePositions = [
       Offset(size.width * 0.18, size.height * 0.46),
       Offset(size.width * 0.82, size.height * 0.40),
@@ -86,8 +91,9 @@ class _StarfieldPainter extends CustomPainter {
   }
 
   void _paintContinentPlaceholder(Canvas canvas, Size size) {
+    final baseColor = isDark ? Colors.white : const Color(0xFF7C3AED);
     final continentPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.035)
+      ..color = baseColor.withValues(alpha: isDark ? 0.035 : 0.04)
       ..style = PaintingStyle.fill;
 
     // Rough Africa-like silhouette, centered behind the illustration area.
@@ -124,5 +130,6 @@ class _StarfieldPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _StarfieldPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _StarfieldPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

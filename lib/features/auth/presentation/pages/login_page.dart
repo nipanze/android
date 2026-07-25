@@ -409,26 +409,38 @@ class _WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.sizeOf(context);
+
+    final bgColors = isDark
+        ? const [Color(0xFF0A0A12), Color(0xFF0D0D1A), Color(0xFF0A0A12)]
+        : const [Color(0xFFF8FAFC), Color(0xFFF1F5F9), Color(0xFFF8FAFC)];
+
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+    final footerTextColor =
+        isDark ? const Color(0xFFD1D5DB) : const Color(0xFF475569);
+    final footerLinkColor =
+        isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED);
+    final footerIconColor =
+        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B);
+
     return Container(
       width: double.infinity,
       height: size.height,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF0A0A12),
-            Color(0xFF0D0D1A),
-            Color(0xFF0A0A12),
-          ],
+          colors: bgColors,
         ),
       ),
       // Stack lets the starfield/continent silhouette sit behind everything
       // without disturbing the existing Column layout below.
       child: Stack(
         children: [
-          const StarfieldBackground(),
+          StarfieldBackground(isDark: isDark),
           SafeArea(
             child: Column(
               children: [
@@ -438,8 +450,8 @@ class _WelcomeScreen extends StatelessWidget {
 
                 // ── Hero copy ─────────────────────────────────────────────
                 const SizedBox(height: 16),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
                       Text(
@@ -449,12 +461,12 @@ class _WelcomeScreen extends StatelessWidget {
                           fontFamily: 'Sora',
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                          color: titleColor,
                           height: 1.25,
                           letterSpacing: -0.3,
                         ),
                       ),
-                      SizedBox(height: 14),
+                      const SizedBox(height: 14),
                       Text(
                         'A trusted marketplace connecting\nborrowers with lenders.',
                         textAlign: TextAlign.center,
@@ -462,7 +474,7 @@ class _WelcomeScreen extends StatelessWidget {
                           fontFamily: 'Inter',
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFFADADB8),
+                          color: subtitleColor,
                           height: 1.5,
                         ),
                       ),
@@ -473,39 +485,29 @@ class _WelcomeScreen extends StatelessWidget {
                 // ── Hero illustration ─────────────────────────────────────
                 // ShaderMask fades the illustration's own top/bottom edges
                 // to transparent so it melts into the background gradient
-                // instead of reading as a pasted-in rectangle. This only
-                // helps if the source PNG has a transparent background to
-                // begin with — if the asset ships with its own opaque box,
-                // re-export it with transparency first; no amount of
-                // Flutter-side masking can remove baked-in pixels.
+                // instead of reading as a pasted-in rectangle.
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Builder(
-                      builder: (context) {
-                        final isDark =
-                            Theme.of(context).brightness == Brightness.dark;
-                        return ShaderMask(
-                          shaderCallback: (rect) => const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.white,
-                              Colors.white,
-                              Colors.transparent,
-                            ],
-                            stops: [0.0, 0.12, 0.85, 1.0],
-                          ).createShader(rect),
-                          blendMode: BlendMode.dstIn,
-                          child: Image.asset(
-                            isDark
-                                ? 'assets/images/hero_illustration_dark.png'
-                                : 'assets/images/hero_illustration_light.png',
-                            fit: BoxFit.contain,
-                          ),
-                        );
-                      },
+                    child: ShaderMask(
+                      shaderCallback: (rect) => const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.white,
+                          Colors.white,
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.12, 0.85, 1.0],
+                      ).createShader(rect),
+                      blendMode: BlendMode.dstIn,
+                      child: Image.asset(
+                        isDark
+                            ? 'assets/images/hero_illustration_dark.png'
+                            : 'assets/images/hero_illustration_light.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
@@ -548,37 +550,37 @@ class _WelcomeScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.shield_outlined,
                               size: 18,
-                              color: Color(0xFF9CA3AF),
+                              color: footerIconColor,
                             ),
                             const SizedBox(width: 8),
                             RichText(
                               textAlign: TextAlign.center,
-                              text: const TextSpan(
+                              text: TextSpan(
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 14,
-                                  color: Color(0xFFD1D5DB),
+                                  color: footerTextColor,
                                   height: 1.4,
                                 ),
                                 children: [
-                                  TextSpan(
+                                  const TextSpan(
                                       text:
                                           'By continuing, you agree to our\n'),
                                   TextSpan(
                                     text: 'Terms of Use',
                                     style: TextStyle(
-                                      color: Color(0xFFA78BFA),
+                                      color: footerLinkColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  TextSpan(text: ' and '),
+                                  const TextSpan(text: ' and '),
                                   TextSpan(
                                     text: 'Privacy Policy',
                                     style: TextStyle(
-                                      color: Color(0xFFA78BFA),
+                                      color: footerLinkColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
