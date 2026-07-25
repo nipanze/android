@@ -17,12 +17,8 @@ class AuthBrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoAsset = isDark
-        ? 'assets/images/nipanze_logo_dark.png'
-        : 'assets/images/nipanze_logo_light.png';
     return Image.asset(
-      logoAsset,
+      'assets/images/nipanze_logo.png',
       height: 38,
       fit: BoxFit.contain,
     );

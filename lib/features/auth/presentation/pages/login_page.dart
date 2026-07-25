@@ -30,6 +30,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/starfield_background.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step enum
@@ -423,137 +424,177 @@ class _WelcomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // ── Top: Logo ─────────────────────────────────────────────
-            const SizedBox(height: 32),
-            _NipanzeLogo(),
+      // Stack lets the starfield/continent silhouette sit behind everything
+      // without disturbing the existing Column layout below.
+      child: Stack(
+        children: [
+          const StarfieldBackground(),
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Top: Logo ─────────────────────────────────────────────
+                const SizedBox(height: 16),
+                _NipanzeLogo(),
 
-            // ── Hero copy ─────────────────────────────────────────────
-            const SizedBox(height: 28),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  Text(
-                    'Borrow. Lend. Grow.\nAcross East Africa.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Sora',
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1.25,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    'A trusted marketplace connecting\nborrowers with lenders.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFFADADB8),
-                      height: 1.6,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Hero illustration ─────────────────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Image.asset(
-                  'assets/images/hero_illustration.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-
-            // ── CTA + footer ──────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: Column(
-                children: [
-                  // Primary CTA
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      onPressed: onContinueWithPhone,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7C3AED),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                // ── Hero copy ─────────────────────────────────────────────
+                const SizedBox(height: 16),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Borrow. Lend. Grow.\nAcross East Africa.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Sora',
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.25,
+                          letterSpacing: -0.3,
                         ),
-                        elevation: 0,
                       ),
-                      icon: const Icon(Icons.phone_rounded, size: 20),
-                      label: const Text(
-                        'Continue with Phone',
+                      SizedBox(height: 14),
+                      Text(
+                        'A trusted marketplace connecting\nborrowers with lenders.',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFFADADB8),
+                          height: 1.5,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // ── Hero illustration ─────────────────────────────────────
+                // ShaderMask fades the illustration's own top/bottom edges
+                // to transparent so it melts into the background gradient
+                // instead of reading as a pasted-in rectangle. This only
+                // helps if the source PNG has a transparent background to
+                // begin with — if the asset ships with its own opaque box,
+                // re-export it with transparency first; no amount of
+                // Flutter-side masking can remove baked-in pixels.
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Builder(
+                      builder: (context) {
+                        final isDark =
+                            Theme.of(context).brightness == Brightness.dark;
+                        return ShaderMask(
+                          shaderCallback: (rect) => const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white,
+                              Colors.white,
+                              Colors.transparent,
+                            ],
+                            stops: [0.0, 0.12, 0.85, 1.0],
+                          ).createShader(rect),
+                          blendMode: BlendMode.dstIn,
+                          child: Image.asset(
+                            isDark
+                                ? 'assets/images/hero_illustration_dark.png'
+                                : 'assets/images/hero_illustration_light.png',
+                            fit: BoxFit.contain,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 18),
+                ),
 
-                  // Terms footer
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.shield_outlined,
-                          size: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                        const SizedBox(width: 6),
-                        RichText(
-                          textAlign: TextAlign.center,
-                          text: const TextSpan(
+                // ── CTA + footer ──────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  child: Column(
+                    children: [
+                      // Primary CTA
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton.icon(
+                          onPressed: onContinueWithPhone,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C3AED),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.phone_rounded, size: 20),
+                          label: const Text(
+                            'Continue with Phone',
                             style: TextStyle(
                               fontFamily: 'Inter',
-                              fontSize: 12,
-                              color: Color(0xFF9CA3AF),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
-                            children: [
-                              TextSpan(text: 'By continuing, you agree to our\n'),
-                              TextSpan(
-                                text: 'Terms of Use',
-                                style: TextStyle(
-                                  color: Color(0xFF8B5CF6),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              TextSpan(text: ' and '),
-                              TextSpan(
-                                text: 'Privacy Policy',
-                                style: TextStyle(
-                                  color: Color(0xFF8B5CF6),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Terms footer
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.shield_outlined,
+                              size: 18,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            const SizedBox(width: 8),
+                            RichText(
+                              textAlign: TextAlign.center,
+                              text: const TextSpan(
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  color: Color(0xFFD1D5DB),
+                                  height: 1.4,
+                                ),
+                                children: [
+                                  TextSpan(
+                                      text:
+                                          'By continuing, you agree to our\n'),
+                                  TextSpan(
+                                    text: 'Terms of Use',
+                                    style: TextStyle(
+                                      color: Color(0xFFA78BFA),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  TextSpan(text: ' and '),
+                                  TextSpan(
+                                    text: 'Privacy Policy',
+                                    style: TextStyle(
+                                      color: Color(0xFFA78BFA),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -563,13 +604,9 @@ class _WelcomeScreen extends StatelessWidget {
 class _NipanzeLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoAsset = isDark
-        ? 'assets/images/nipanze_logo_dark.png'
-        : 'assets/images/nipanze_logo_light.png';
     return Image.asset(
-      logoAsset,
-      height: 50,
+      'assets/images/nipanze_logo.png',
+      height: 110,
       fit: BoxFit.contain,
     );
   }
