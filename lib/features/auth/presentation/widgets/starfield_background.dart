@@ -42,8 +42,27 @@ class _StarfieldPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    _paintAmbientGlow(canvas, size);
     _paintStars(canvas, size);
-    _paintContinentPlaceholder(canvas, size);
+  }
+
+  void _paintAmbientGlow(Canvas canvas, Size size) {
+    final glowColor = isDark
+        ? const Color(0xFF8B5CF6).withValues(alpha: 0.12)
+        : const Color(0xFF8B5CF6).withValues(alpha: 0.05);
+
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [glowColor, Colors.transparent],
+        stops: const [0.0, 1.0],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.5, size.height * 0.22),
+          radius: size.width * 0.65,
+        ),
+      );
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
   }
 
   void _paintStars(Canvas canvas, Size size) {
@@ -52,24 +71,20 @@ class _StarfieldPainter extends CustomPainter {
     final starPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.35 : 0.15);
     final dimStarPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.15 : 0.08);
 
-    // Concentrate stars in the upper ~55% of the screen, same as the
-    // mockup — the lower half is dominated by the illustration + CTA.
-    for (int i = 0; i < 70; i++) {
+    // Concentrate stars in the upper ~45% of the screen above the illustration
+    for (int i = 0; i < 50; i++) {
       final dx = rand.nextDouble() * size.width;
-      final dy = rand.nextDouble() * size.height * 0.55;
+      final dy = rand.nextDouble() * size.height * 0.45;
       final r = rand.nextDouble() * 1.1 + 0.3;
       final paint = rand.nextBool() ? starPaint : dimStarPaint;
       canvas.drawCircle(Offset(dx, dy), r, paint);
     }
 
-    // A handful of slightly larger "sparkle" stars, matching the small
-    // four-point sparkle accents visible near the illustration in the
-    // mockup.
     final sparklePaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.5 : 0.25);
     final sparklePositions = [
-      Offset(size.width * 0.18, size.height * 0.46),
-      Offset(size.width * 0.82, size.height * 0.40),
-      Offset(size.width * 0.72, size.height * 0.52),
+      Offset(size.width * 0.15, size.height * 0.20),
+      Offset(size.width * 0.85, size.height * 0.18),
+      Offset(size.width * 0.78, size.height * 0.32),
     ];
     for (final pos in sparklePositions) {
       _drawSparkle(canvas, pos, 4.5, sparklePaint);
@@ -88,45 +103,6 @@ class _StarfieldPainter extends CustomPainter {
       ..lineTo(center.dx - size * 0.28, center.dy - size * 0.28)
       ..close();
     canvas.drawPath(path, paint);
-  }
-
-  void _paintContinentPlaceholder(Canvas canvas, Size size) {
-    final baseColor = isDark ? Colors.white : const Color(0xFF7C3AED);
-    final continentPaint = Paint()
-      ..color = baseColor.withValues(alpha: isDark ? 0.035 : 0.04)
-      ..style = PaintingStyle.fill;
-
-    // Rough Africa-like silhouette, centered behind the illustration area.
-    final path = Path()
-      ..moveTo(size.width * 0.34, size.height * 0.34)
-      ..cubicTo(
-        size.width * 0.44, size.height * 0.30,
-        size.width * 0.58, size.height * 0.31,
-        size.width * 0.64, size.height * 0.40,
-      )
-      ..cubicTo(
-        size.width * 0.70, size.height * 0.48,
-        size.width * 0.66, size.height * 0.58,
-        size.width * 0.62, size.height * 0.66,
-      )
-      ..cubicTo(
-        size.width * 0.58, size.height * 0.76,
-        size.width * 0.50, size.height * 0.80,
-        size.width * 0.44, size.height * 0.72,
-      )
-      ..cubicTo(
-        size.width * 0.38, size.height * 0.64,
-        size.width * 0.30, size.height * 0.58,
-        size.width * 0.31, size.height * 0.48,
-      )
-      ..cubicTo(
-        size.width * 0.32, size.height * 0.40,
-        size.width * 0.30, size.height * 0.37,
-        size.width * 0.34, size.height * 0.34,
-      )
-      ..close();
-
-    canvas.drawPath(path, continentPaint);
   }
 
   @override

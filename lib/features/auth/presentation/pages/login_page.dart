@@ -412,9 +412,7 @@ class _WelcomeScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.sizeOf(context);
 
-    final bgColors = isDark
-        ? const [Color(0xFF0A0A12), Color(0xFF0D0D1A), Color(0xFF0A0A12)]
-        : const [Color(0xFFF8FAFC), Color(0xFFF1F5F9), Color(0xFFF8FAFC)];
+    final bgColor = isDark ? const Color(0xFF06080E) : const Color(0xFFFFFFFF);
 
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor =
@@ -430,11 +428,7 @@ class _WelcomeScreen extends StatelessWidget {
       width: double.infinity,
       height: size.height,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: bgColors,
-        ),
+        color: bgColor,
       ),
       // Stack lets the starfield/continent silhouette sit behind everything
       // without disturbing the existing Column layout below.
@@ -483,9 +477,6 @@ class _WelcomeScreen extends StatelessWidget {
                 ),
 
                 // ── Hero illustration ─────────────────────────────────────
-                // ShaderMask fades the illustration's own top/bottom edges
-                // to transparent so it melts into the background gradient
-                // instead of reading as a pasted-in rectangle.
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -499,7 +490,7 @@ class _WelcomeScreen extends StatelessWidget {
                           Colors.white,
                           Colors.transparent,
                         ],
-                        stops: [0.0, 0.12, 0.85, 1.0],
+                        stops: [0.0, 0.25, 0.75, 1.0],
                       ).createShader(rect),
                       blendMode: BlendMode.dstIn,
                       child: Image.asset(
