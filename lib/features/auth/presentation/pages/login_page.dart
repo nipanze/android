@@ -421,8 +421,6 @@ class _WelcomeScreen extends StatelessWidget {
         isDark ? const Color(0xFFD1D5DB) : const Color(0xFF475569);
     final footerLinkColor =
         isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED);
-    final footerIconColor =
-        isDark ? const Color(0xFF9CA3AF) : const Color(0xFF64748B);
 
     return Container(
       width: double.infinity,
@@ -505,7 +503,7 @@ class _WelcomeScreen extends StatelessWidget {
 
                 // ── CTA + footer ──────────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 50),
                   child: Column(
                     children: [
                       // Primary CTA
@@ -541,11 +539,7 @@ class _WelcomeScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.shield_outlined,
-                              size: 18,
-                              color: footerIconColor,
-                            ),
+                       
                             const SizedBox(width: 8),
                             RichText(
                               textAlign: TextAlign.center,
@@ -628,114 +622,256 @@ class _PhoneEntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _BackHeader(onBack: onBack),
-            const SizedBox(height: 28),
-            Text('Enter your\nphone number',
-                style: theme.textTheme.displayLarge
-                    ?.copyWith(fontSize: 28, height: 1.2)),
-            const SizedBox(height: 8),
-            Text('We\'ll send a verification code',
-                style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 32),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+    final cardBgColor =
+        isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+    final cardBorderColor =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
 
-            // Dial-code picker + number field
-            Text('PHONE NUMBER',
-                style: theme.textTheme.labelSmall?.copyWith(
-                    fontSize: 10.5,
-                    letterSpacing: 0.3,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.55))),
-            const SizedBox(height: 6),
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: theme.dividerColor),
-              ),
-              child: Row(
-                children: [
-                  // Dial-code chip
-                  GestureDetector(
-                    onTap: onCountryTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 14),
-                      decoration: BoxDecoration(
-                        border: Border(
-                            right: BorderSide(color: theme.dividerColor)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight - 32,
+            ),
+            child: IntrinsicHeight(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // ── Header: Back button + 3-step progress bar ────────────────
+                    _StepProgressHeader(onBack: onBack, currentStep: 1),
+                    const SizedBox(height: 36),
+
+                    // ── Titles ─────────────────────────────────────────────────
+                    Text(
+                      'Enter your phone number',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor,
+                        letterSpacing: -0.3,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'We\'ll send you a verification code',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: subtitleColor,
+                      ),
+                    ),
+                    const SizedBox(height: 36),
+
+                    // ── Phone Input Field Card ─────────────────────────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: cardBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cardBorderColor),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
                       child: Row(
                         children: [
-                          Text(selectedCountry.flag,
-                              style: const TextStyle(fontSize: 20)),
-                          const SizedBox(width: 6),
-                          Text(selectedCountry.dialCode,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600)),
-                          const SizedBox(width: 4),
-                          Icon(Icons.keyboard_arrow_down_rounded,
-                              size: 16,
-                              color: theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.5)),
+                          // Country selector chip
+                          GestureDetector(
+                            onTap: onCountryTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    selectedCountry.flag,
+                                    style: const TextStyle(fontSize: 22),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    selectedCountry.dialCode,
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: titleColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 20,
+                                    color: subtitleColor,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Vertical divider line
+                          Container(
+                            height: 28,
+                            width: 1,
+                            margin: const EdgeInsets.symmetric(horizontal: 14),
+                            color: cardBorderColor,
+                          ),
+                          // Phone input
+                          Expanded(
+                            child: TextFormField(
+                              controller: controller,
+                              keyboardType: TextInputType.phone,
+                              textInputAction: TextInputAction.done,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: titleColor,
+                              ),
+                              onFieldSubmitted: (_) => onNext(),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(12),
+                              ],
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                focusedErrorBorder: InputBorder.none,
+                                filled: false,
+                                isDense: true,
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                hintText: '7XXXXXXXX',
+                                hintStyle: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 16,
+                                  color: isDark
+                                      ? const Color(0xFF4B5563)
+                                      : const Color(0xFF94A3B8),
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().length < 7) {
+                                  return 'Enter a valid phone number';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                  // Number input
-                  Expanded(
-                    child: TextFormField(
-                      controller: controller,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => onNext(),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(12),
-                      ],
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
-                        filled: false,
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 14),
-                        hintText: '7XX XXX XXX',
+                    const SizedBox(height: 28),
+
+                    // ── Security Callout Card ──────────────────────────────────
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardBgColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cardBorderColor),
                       ),
-                      validator: (v) {
-                        if (v == null || v.trim().length < 7) {
-                          return 'Enter a valid phone number';
-                        }
-                        return null;
-                      },
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF7C3AED)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.verified_user_rounded,
+                              color: Color(0xFFA78BFA),
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Your number is safe with us',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: titleColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'We never share your number with anyone.',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    color: subtitleColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+
+                    const Spacer(),
+                    const SizedBox(height: 24),
+
+                    // ── Primary Action Button ─────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : onNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C3AED),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              const Color(0xFF7C3AED).withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: isLoading
+                            ? const _ButtonLoader()
+                            : const Text(
+                                'Continue',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 28),
-
-            ElevatedButton(
-              onPressed: isLoading ? null : onNext,
-              child: isLoading
-                  ? const _ButtonLoader()
-                  : const Text('Send Code'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
+
 
 // ── 2. OTP ────────────────────────────────────────────────────────────────────
 class _OtpScreen extends StatelessWidget {
@@ -771,7 +907,7 @@ class _OtpScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _BackHeader(onBack: onBack),
+          _StepProgressHeader(onBack: onBack, currentStep: 2),
           const SizedBox(height: 28),
           Text(
             isReturningUser ? 'Welcome back 👋' : 'Verify your number',
@@ -969,7 +1105,7 @@ class _ProfileSetupScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _BackHeader(onBack: onBack),
+            _StepProgressHeader(onBack: onBack, currentStep: 3),
             const SizedBox(height: 28),
             Text(
               isReturningUser ? 'Enter your password' : 'Tell us about you',
@@ -1403,6 +1539,57 @@ class _BackHeader extends StatelessWidget {
     );
   }
 }
+
+class _StepProgressHeader extends StatelessWidget {
+  const _StepProgressHeader({
+    required this.onBack,
+    required this.currentStep,
+  });
+
+  final VoidCallback onBack;
+  final int currentStep;
+  static const int totalSteps = 3;
+
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: onBack,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(totalSteps, (index) {
+              final stepNumber = index + 1;
+              final isActive = stepNumber <= currentStep;
+              return Container(
+                width: 32,
+                height: 4,
+                margin: EdgeInsets.only(right: index < totalSteps - 1 ? 6 : 0),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? const Color(0xFF7C3AED)
+                      : (isDark
+                          ? const Color(0xFF27272A)
+                          : const Color(0xFFE2E8F0)),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(width: 24),
+      ],
+    );
+  }
+}
+
 
 class _CountryPickerField extends StatelessWidget {
   const _CountryPickerField({
