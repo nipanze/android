@@ -246,7 +246,7 @@ class WelcomePage extends StatelessWidget {
                 children: [
                   // ── Top: Header Row (Logo + Language Chip) ───────────────
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

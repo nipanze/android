@@ -647,7 +647,7 @@ class _WelcomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 // ── Top: Logo ─────────────────────────────────────────────
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 _NipanzeLogo(),
 
                 // ── Hero copy ─────────────────────────────────────────────
