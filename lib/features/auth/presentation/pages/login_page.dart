@@ -901,97 +901,200 @@ class _OtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _StepProgressHeader(onBack: onBack, currentStep: 2),
-          const SizedBox(height: 28),
-          Text(
-            isReturningUser ? 'Welcome back 👋' : 'Verify your number',
-            style:
-                theme.textTheme.displayLarge?.copyWith(fontSize: 26, height: 1.2),
-          ),
-          const SizedBox(height: 8),
-          Text.rich(
-            TextSpan(
-              text: 'Enter the 6-digit code sent to ',
-              style: theme.textTheme.bodyMedium,
-              children: [
-                TextSpan(
-                    text: phone,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
-              ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight - 32,
             ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(children: [
-              const Icon(Icons.info_outline_rounded,
-                  size: 14, color: AppColors.warning),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Demo mode: default OTP is 123456 (pre-filled).',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: AppColors.warning),
-                ),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 32),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // ── Header: Back button + Step 2 indicator ─────────────────
+                  _StepProgressHeader(onBack: onBack, currentStep: 2),
+                  const SizedBox(height: 36),
 
-          // OTP boxes
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(6, (i) => _OtpBox(
-                  controller: controllers[i],
-                  focusNode: focusNodes[i],
-                  nextFocus: i < 5 ? focusNodes[i + 1] : null,
-                  prevFocus: i > 0 ? focusNodes[i - 1] : null,
-                  onComplete: i == 5 ? onVerify : null,
-                )),
-          ),
-
-          if (errorMsg != null) ...[
-            const SizedBox(height: 16),
-            _ErrorBanner(message: errorMsg!),
-          ],
-
-          const SizedBox(height: 28),
-
-          ElevatedButton(
-            onPressed: isLoading ? null : onVerify,
-            child: isLoading ? const _ButtonLoader() : const Text('Verify'),
-          ),
-          const SizedBox(height: 16),
-
-          Center(
-            child: resendSeconds > 0
-                ? Text(
-                    'Resend code in ${resendSeconds}s',
-                    style: theme.textTheme.bodySmall,
-                  )
-                : TextButton(
-                    onPressed: onResend,
-                    child: const Text('Resend code'),
+                  // ── Titles ─────────────────────────────────────────────────
+                  Text(
+                    isReturningUser ? 'Welcome back 👋' : 'Verify your number',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Sora',
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                      letterSpacing: -0.3,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Enter the 6-digit code sent to',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: subtitleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    phone.isNotEmpty ? phone : '+256 7XX XXX XXX',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Demo hint ─────────────────────────────────────────────
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            size: 14, color: AppColors.warning),
+                        SizedBox(width: 6),
+                        Text(
+                          'Demo mode: default OTP is 123456 (pre-filled).',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            color: AppColors.warning,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // ── 6-Digit OTP Box Row ────────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(
+                      6,
+                      (i) => _OtpBox(
+                        controller: controllers[i],
+                        focusNode: focusNodes[i],
+                        nextFocus: i < 5 ? focusNodes[i + 1] : null,
+                        prevFocus: i > 0 ? focusNodes[i - 1] : null,
+                        onComplete: i == 5 ? onVerify : null,
+                      ),
+                    ),
+                  ),
+
+                  if (errorMsg != null) ...[
+                    const SizedBox(height: 16),
+                    _ErrorBanner(message: errorMsg!),
+                  ],
+
+                  const SizedBox(height: 32),
+
+                  // ── Resend Code Countdown Line ─────────────────────────────
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        color: subtitleColor,
+                      ),
+                      children: [
+                        const TextSpan(text: "Didn't receive code? "),
+                        if (resendSeconds > 0) ...[
+                          const TextSpan(
+                            text: 'Resend',
+                            style: TextStyle(
+                              color: Color(0xFFA78BFA),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          TextSpan(
+                            text:
+                                ' in 00:${resendSeconds.toString().padLeft(2, '0')}',
+                            style: TextStyle(color: subtitleColor),
+                          ),
+                        ] else ...[
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: GestureDetector(
+                              onTap: onResend,
+                              child: const Text(
+                                'Resend Code',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  color: Color(0xFFA78BFA),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+                  const SizedBox(height: 24),
+
+                  // ── Primary Action Button ─────────────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : onVerify,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7C3AED),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor:
+                            const Color(0xFF7C3AED).withValues(alpha: 0.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? const _ButtonLoader()
+                          : const Text(
+                              'Verify & Continue',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-// OTP single box
+// OTP single box with dynamic focus & border highlights
 class _OtpBox extends StatelessWidget {
   const _OtpBox({
     required this.controller,
@@ -1009,48 +1112,75 @@ class _OtpBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: 44,
-      height: 52,
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(1),
-          ],
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final cardBgColor =
+        isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+    final cardBorderColor =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+
+    return ListenableBuilder(
+      listenable: Listenable.merge([focusNode, controller]),
+      builder: (context, _) {
+        final isFocused = focusNode.hasFocus;
+        final hasValue = controller.text.isNotEmpty;
+        final isActive = isFocused || hasValue;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 48,
+          height: 58,
+          decoration: BoxDecoration(
+            color: cardBgColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isActive ? const Color(0xFF7C3AED) : cardBorderColor,
+              width: isActive ? 1.5 : 1.0,
+            ),
           ),
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            isDense: true,
-            counterText: '',
+          child: Center(
+            child: TextFormField(
+              controller: controller,
+              focusNode: focusNode,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              cursorColor: const Color(0xFF7C3AED),
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(1),
+              ],
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                filled: false,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                counterText: '',
+              ),
+              onChanged: (v) {
+                if (v.length == 1) {
+                  if (nextFocus != null) {
+                    nextFocus!.requestFocus();
+                  } else {
+                    onComplete?.call();
+                  }
+                } else if (v.isEmpty && prevFocus != null) {
+                  prevFocus!.requestFocus();
+                }
+              },
+            ),
           ),
-          onChanged: (v) {
-            if (v.length == 1) {
-              if (nextFocus != null) {
-                nextFocus!.requestFocus();
-              } else {
-                onComplete?.call();
-              }
-            } else if (v.isEmpty && prevFocus != null) {
-              prevFocus!.requestFocus();
-            }
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1095,130 +1225,522 @@ class _ProfileSetupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+    final cardBgColor =
+        isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+    final cardBorderColor =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
 
-    // For returning users we only need the password
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Form(
-        key: formKey,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+            child: IntrinsicHeight(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // ── Header ─────────────────────────────────────────────
+                    _StepProgressHeader(onBack: onBack, currentStep: 3),
+                    const SizedBox(height: 24),
+
+                    // ── Titles ─────────────────────────────────────────────
+                    Text(
+                      isReturningUser ? 'Enter your password' : 'Tell us about you',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Sora',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isReturningUser
+                          ? 'Login to your account'
+                          : 'Let\'s complete your profile',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        color: subtitleColor,
+                      ),
+                    ),
+
+                    if (!isReturningUser) ...[
+                      const SizedBox(height: 24),
+
+                      // ── Avatar Picker ───────────────────────────────────
+                      GestureDetector(
+                        onTap: () {}, // placeholder for future photo pick
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF7C3AED),
+                              width: 2,
+                            ),
+                            color: cardBgColor,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 32,
+                            color: Color(0xFF7C3AED),
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    if (errorMsg != null) ...[
+                      const SizedBox(height: 16),
+                      _ErrorBanner(message: errorMsg!),
+                    ],
+                    const SizedBox(height: 24),
+
+                    if (!isReturningUser) ...[
+                      // Full Name
+                      _ProfileField(
+                        label: 'Full name',
+                        controller: nameController,
+                        icon: Icons.person_outline_rounded,
+                        hintText: 'John Doe',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        textInputAction: TextInputAction.next,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Enter your full name'
+                            : null,
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Email (optional)
+                      _ProfileField(
+                        label: 'Email (optional)',
+                        controller: emailController,
+                        icon: Icons.mail_outline_rounded,
+                        hintText: 'johndoe@gmail.com',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return null;
+                          if (!v.contains('@')) return 'Enter a valid email';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Country picker
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Country',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: subtitleColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: onCountryTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: cardBgColor,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: cardBorderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(selectedCountry.flag,
+                                  style: const TextStyle(fontSize: 20)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '${selectedCountry.name} (${selectedCountry.code})',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    color: titleColor,
+                                  ),
+                                ),
+                              ),
+                              Icon(Icons.keyboard_arrow_down_rounded,
+                                  size: 20, color: subtitleColor),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Info callout
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: cardBgColor,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: cardBorderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7C3AED)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_outlined,
+                                size: 20,
+                                color: Color(0xFFA78BFA),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'You can change this later in settings.',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  color: subtitleColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      // Returning user password field only
+                      _ProfileField(
+                        label: 'Password',
+                        controller: passwordController,
+                        icon: Icons.lock_outline_rounded,
+                        hintText: '••••••••',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        obscureText: obscurePassword,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => onSubmit(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            size: 18,
+                            color: subtitleColor,
+                          ),
+                          onPressed: onTogglePassword,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+
+                    const Spacer(),
+                    const SizedBox(height: 24),
+
+                    // ── Action Button ─────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : onSubmit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C3AED),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              const Color(0xFF7C3AED).withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: isLoading
+                            ? const _ButtonLoader()
+                            : Text(
+                                isReturningUser ? 'Sign in' : 'Finish',
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Reusable styled input field used by the Profile Setup screen.
+class _ProfileField extends StatelessWidget {
+  const _ProfileField({
+    required this.label,
+    required this.controller,
+    required this.icon,
+    required this.hintText,
+    required this.isDark,
+    required this.cardBgColor,
+    required this.cardBorderColor,
+    required this.titleColor,
+    required this.subtitleColor,
+    this.keyboardType,
+    this.textInputAction,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.onFieldSubmitted,
+    this.validator,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final IconData icon;
+  final String hintText;
+  final bool isDark;
+  final Color cardBgColor;
+  final Color cardBorderColor;
+  final Color titleColor;
+  final Color subtitleColor;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final ValueChanged<String>? onFieldSubmitted;
+  final FormFieldValidator<String>? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: subtitleColor,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          obscureText: obscureText,
+          onFieldSubmitted: onFieldSubmitted,
+          validator: validator,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 15,
+            color: titleColor,
+          ),
+          cursorColor: const Color(0xFF7C3AED),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: cardBgColor,
+            hintText: hintText,
+            hintStyle: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 15,
+              color: isDark ? const Color(0xFF4B5563) : const Color(0xFF94A3B8),
+            ),
+            prefixIcon: Icon(icon, size: 18, color: subtitleColor),
+            suffixIcon: suffixIcon,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: cardBorderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: cardBorderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                  color: Color(0xFFEF4444), width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+
+// ── 5. Success ────────────────────────────────────────────────────────────────
+class _SuccessScreen extends StatelessWidget {
+  const _SuccessScreen({required this.onGoToMarketplace});
+  final VoidCallback onGoToMarketplace;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+    final cardBgColor =
+        isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+    final cardBorderColor =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _StepProgressHeader(onBack: onBack, currentStep: 3),
-            const SizedBox(height: 28),
-            Text(
-              isReturningUser ? 'Enter your password' : 'Tell us about you',
-              style: theme.textTheme.displayLarge
-                  ?.copyWith(fontSize: 26, height: 1.2),
+            const Spacer(),
+
+            // ── Big green checkmark ───────────────────────────────────────
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF22C55E),
+                  width: 3,
+                ),
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Color(0xFF22C55E),
+                size: 60,
+              ),
             ),
+            const SizedBox(height: 32),
+
+            // ── Title ─────────────────────────────────────────────────────
+            Text(
+              "You're in! 🎉",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+                color: titleColor,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Your account has been created\nsuccessfully.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 15,
+                color: subtitleColor,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 36),
+
+            // ── Feature cards ─────────────────────────────────────────────
+            _SuccessFeatureCard(
+              icon: Icons.people_alt_rounded,
+              iconBgColor: const Color(0xFF7C3AED).withValues(alpha: 0.15),
+              iconColor: const Color(0xFFA78BFA),
+              title: 'Explore loan requests',
+              subtitle: 'Find borrowers and lenders\nin your country.',
+              cardBgColor: cardBgColor,
+              cardBorderColor: cardBorderColor,
+              titleColor: titleColor,
+              subtitleColor: subtitleColor,
+            ),
+            const SizedBox(height: 12),
+            _SuccessFeatureCard(
+              icon: Icons.verified_user_rounded,
+              iconBgColor: const Color(0xFF22C55E).withValues(alpha: 0.15),
+              iconColor: const Color(0xFF22C55E),
+              title: 'Safe & secure',
+              subtitle: 'We protect your data and\ntransactions.',
+              cardBgColor: cardBgColor,
+              cardBorderColor: cardBorderColor,
+              titleColor: titleColor,
+              subtitleColor: subtitleColor,
+            ),
+
+            const Spacer(),
             const SizedBox(height: 8),
-            Text(
-              isReturningUser
-                  ? 'Login to your account'
-                  : 'Set up your profile to get started',
-              style: theme.textTheme.bodyMedium,
-            ),
-            if (errorMsg != null) ...[
-              const SizedBox(height: 16),
-              _ErrorBanner(message: errorMsg!),
-            ],
-            const SizedBox(height: 28),
 
-            if (!isReturningUser) ...[
-              AuthField(
-                label: 'Full Name',
-                controller: nameController,
-                icon: Icons.person_outline_rounded,
-                textInputAction: TextInputAction.next,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Enter your full name'
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              AuthField(
-                label: 'Email (optional)',
-                controller: emailController,
-                icon: Icons.mail_outline_rounded,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null;
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              // Country picker
-              _CountryPickerField(
-                selectedCountry: selectedCountry,
-                onTap: onCountryTap,
-              ),
-              const SizedBox(height: 14),
-            ],
-
-            // Password
-            AuthField(
-              label: 'Password',
-              controller: passwordController,
-              icon: Icons.lock_outline_rounded,
-              obscureText: obscurePassword,
-              textInputAction: isReturningUser
-                  ? TextInputAction.done
-                  : TextInputAction.next,
-              onFieldSubmitted: isReturningUser ? (_) => onSubmit() : null,
-              suffixIcon: IconButton(
-                icon: Icon(
-                  obscurePassword
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
-                  size: 17,
-                ),
-                onPressed: onTogglePassword,
-              ),
-              validator: (v) {
-                if (v == null || v.length < 8) {
-                  return 'Password must be at least 8 characters';
-                }
-                return null;
-              },
-            ),
-
-            if (!isReturningUser) ...[
-              const SizedBox(height: 14),
-              AuthField(
-                label: 'Confirm Password',
-                controller: confirmController,
-                icon: Icons.lock_outline_rounded,
-                obscureText: obscureConfirm,
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) => onSubmit(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    obscureConfirm
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    size: 17,
+            // ── CTA button ────────────────────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: onGoToMarketplace,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7C3AED),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  onPressed: onToggleConfirm,
+                  elevation: 0,
                 ),
-                validator: (v) {
-                  if (v != passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
+                child: const Text(
+                  'Go to Marketplace',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ],
-
-            const SizedBox(height: 28),
-            ElevatedButton(
-              onPressed: isLoading ? null : onSubmit,
-              child: isLoading
-                  ? const _ButtonLoader()
-                  : Text(isReturningUser ? 'Sign in' : 'Create account'),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -1226,53 +1748,83 @@ class _ProfileSetupScreen extends StatelessWidget {
   }
 }
 
-// ── 4. Success ────────────────────────────────────────────────────────────────
-class _SuccessScreen extends StatelessWidget {
-  const _SuccessScreen({required this.onGoToMarketplace});
-  final VoidCallback onGoToMarketplace;
+class _SuccessFeatureCard extends StatelessWidget {
+  const _SuccessFeatureCard({
+    required this.icon,
+    required this.iconBgColor,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.cardBgColor,
+    required this.cardBorderColor,
+    required this.titleColor,
+    required this.subtitleColor,
+  });
+
+  final IconData icon;
+  final Color iconBgColor;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final Color cardBgColor;
+  final Color cardBorderColor;
+  final Color titleColor;
+  final Color subtitleColor;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 60),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cardBorderColor),
+      ),
+      child: Row(
         children: [
           Container(
-            width: 90,
-            height: 90,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.accentDark, AppColors.purple],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: iconBgColor,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.check_rounded,
-                color: Colors.white, size: 48),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
-          const SizedBox(height: 28),
-          Text("You're in! \u{1F389}",
-              style: theme.textTheme.displayLarge?.copyWith(fontSize: 30),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          Text(
-            'Your account is ready. Browse listings, match with lenders, and start building.',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
-          ),
-          const SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: onGoToMarketplace,
-            child: const Text('Go to Marketplace'),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    color: subtitleColor,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 }
+
 
 // ── 5. Email Login ────────────────────────────────────────────────────────────
 class _EmailLoginScreen extends StatelessWidget {
@@ -1567,7 +2119,7 @@ class _StepProgressHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(totalSteps, (index) {
               final stepNumber = index + 1;
-              final isActive = stepNumber <= currentStep;
+              final isActive = stepNumber == currentStep;
               return Container(
                 width: 32,
                 height: 4,
@@ -1590,59 +2142,6 @@ class _StepProgressHeader extends StatelessWidget {
   }
 }
 
-
-class _CountryPickerField extends StatelessWidget {
-  const _CountryPickerField({
-    required this.selectedCountry,
-    required this.onTap,
-  });
-
-  final CountryInfo selectedCountry;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('COUNTRY',
-            style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 10.5,
-                letterSpacing: 0.3,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.55))),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: theme.dividerColor),
-            ),
-            child: Row(
-              children: [
-                Text(selectedCountry.flag,
-                    style: const TextStyle(fontSize: 20)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(selectedCountry.name,
-                      style: theme.textTheme.bodyMedium),
-                ),
-                Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: theme.colorScheme.onSurface
-                        .withValues(alpha: 0.45)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _ErrorBanner extends StatelessWidget {
   const _ErrorBanner({required this.message});
