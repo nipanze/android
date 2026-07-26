@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/language_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../widgets/language_selector_sheet.dart';
 import '../widgets/starfield_background.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -240,12 +242,62 @@ class WelcomePage extends StatelessWidget {
             SafeArea(
               child: Column(
                 children: [
-                  // ── Top: Logo ─────────────────────────────────────────────
-                  const SizedBox(height: 16),
-                  Image.asset(
-                    'assets/images/nipanze_logo.png',
-                    height: 110,
-                    fit: BoxFit.contain,
+                  // ── Top: Header Row (Logo + Language Chip) ───────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(width: 60), // balance space
+                        Image.asset(
+                          'assets/images/nipanze_logo.png',
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
+                        // Language Chip Button
+                        ValueListenableBuilder<Locale?>(
+                          valueListenable: LanguageService.instance.notifier,
+                          builder: (context, _, __) {
+                            final currentLang = LanguageService.instance.currentLanguage;
+                            return GestureDetector(
+                              onTap: () => showLanguageSelectorSheet(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF161726) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isDark ? const Color(0xFF2B2C40) : const Color(0xFFCBD5E1),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(currentLang.flag, style: const TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      currentLang.code.toUpperCase(),
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: titleColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 16,
+                                      color: subtitleColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
 
                   // ── Hero copy ─────────────────────────────────────────────

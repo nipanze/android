@@ -9,8 +9,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/language_selector_sheet.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 class LoginPage extends StatefulWidget {
@@ -125,17 +127,59 @@ class _LoginPageState extends State<LoginPage>
                   children: [
                     const SizedBox(height: 8),
 
-                    // ── Back arrow ─────────────────────────────────────────
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back_ios_new_rounded,
-                            size: 20, color: titleColor),
-                        onPressed: () =>
-                            context.canPop() ? context.pop() : context.go(AppRoutes.welcome),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
+                    // ── Header Row: Back arrow + Language Chip ───────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.arrow_back_ios_new_rounded,
+                              size: 20, color: titleColor),
+                          onPressed: () =>
+                              context.canPop() ? context.pop() : context.go(AppRoutes.welcome),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        // Language Selector Chip
+                        ValueListenableBuilder<Locale?>(
+                          valueListenable: LanguageService.instance.notifier,
+                          builder: (context, _, __) {
+                            final currentLang = LanguageService.instance.currentLanguage;
+                            return GestureDetector(
+                              onTap: () => showLanguageSelectorSheet(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: cardBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: cardBorder),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(currentLang.flag, style: const TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      currentLang.code.toUpperCase(),
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: titleColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 16,
+                                      color: subtitleColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
 

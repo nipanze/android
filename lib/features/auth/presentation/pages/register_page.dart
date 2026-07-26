@@ -30,9 +30,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/auth_widgets.dart';
+import '../widgets/language_selector_sheet.dart';
 import '../widgets/starfield_background.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2355,7 +2357,48 @@ class _StepProgressHeader extends StatelessWidget {
             }),
           ),
         ),
-        const SizedBox(width: 24),
+        ValueListenableBuilder<Locale?>(
+          valueListenable: LanguageService.instance.notifier,
+          builder: (context, _, __) {
+            final currentLang = LanguageService.instance.currentLanguage;
+            final cardBgColor = isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+            final cardBorderColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+            final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+            final subtitleColor = isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+            return GestureDetector(
+              onTap: () => showLanguageSelectorSheet(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: cardBgColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: cardBorderColor),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(currentLang.flag, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(width: 3),
+                    Text(
+                      currentLang.code.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor,
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 14,
+                      color: subtitleColor,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }

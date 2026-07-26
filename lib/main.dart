@@ -11,6 +11,7 @@ import 'core/bloc/app_bloc_observer.dart';
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
+import 'core/services/language_service.dart';
 import 'core/services/theme_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -29,8 +30,9 @@ void main() async {
     debug: false,
   );
 
-  // Theme persistence — loads saved mode before first frame
+  // Theme & Language persistence — loads saved settings before first frame
   await ThemeService.instance.init();
+  await LanguageService.instance.init();
 
   // Dependency injection
   configureDependencies();
@@ -50,20 +52,24 @@ class NipanzeApp extends StatelessWidget {
       create: (_) => getIt<AuthBloc>()..add(const AuthStarted()),
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeService.instance.notifier,
-        builder: (context, themeMode, _) => MaterialApp.router(
-          title: 'Nipanze',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeMode,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: AppRouter(authBloc: context.read<AuthBloc>()).router,
+        builder: (context, themeMode, _) => ValueListenableBuilder<Locale?>(
+          valueListenable: LanguageService.instance.notifier,
+          builder: (context, locale, _) => MaterialApp.router(
+            title: 'Nipanze',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            locale: locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: AppRouter(authBloc: context.read<AuthBloc>()).router,
+          ),
         ),
       ),
     );
