@@ -9,6 +9,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
+import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
@@ -26,6 +27,7 @@ import '../../shared/widgets/main_scaffold.dart';
 // Deleted: import '../../features/contracts/presentation/pages/contract_detail_page.dart';
 
 class AppRoutes {
+  static const String welcome = '/auth/welcome';
   static const String login = '/auth/login';
   static const String register = '/auth/register';
   static const String verifyEmail = '/auth/verify-email';
@@ -62,6 +64,11 @@ class AppRouter {
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
     routes: [
       // ── Auth routes (no shell) ──────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.welcome,
+        name: 'welcome',
+        pageBuilder: (_, state) => _fade(state, const WelcomePage()),
+      ),
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
@@ -206,7 +213,7 @@ class AppRouter {
     if (authState is AuthLoading) return null;
 
     if (authState is AuthUnauthenticated) {
-      return onAuth ? null : AppRoutes.login;
+      return onAuth ? null : AppRoutes.welcome;
     }
 
     if (authState is AuthAuthenticated) {
