@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/bloc/app_bloc_observer.dart';
+import 'core/services/localization_fallback.dart';
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
@@ -63,11 +64,19 @@ class NipanzeApp extends StatelessWidget {
             locale: locale,
             localizationsDelegates: const [
               AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
+              SafeMaterialLocalizationsDelegate(),
               GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
+              SafeCupertinoLocalizationsDelegate(),
             ],
             supportedLocales: AppLocalizations.supportedLocales,
+            // If the user's locale isn't in our list at all, default to English
+            localeResolutionCallback: (deviceLocale, supported) {
+              if (locale != null) return locale; // honour explicit user choice
+              for (final s in supported) {
+                if (s.languageCode == deviceLocale?.languageCode) return s;
+              }
+              return const Locale('en');
+            },
             routerConfig: AppRouter(authBloc: context.read<AuthBloc>()).router,
           ),
         ),
