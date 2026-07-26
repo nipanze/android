@@ -32,6 +32,7 @@ import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/language_selector_sheet.dart';
@@ -616,6 +617,7 @@ class _WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.sizeOf(context);
 
@@ -654,7 +656,7 @@ class _WelcomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        'Borrow. Lend. Grow.\nAcross East Africa.',
+                        l10n.welcomeTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Sora',
@@ -667,7 +669,7 @@ class _WelcomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'A trusted marketplace connecting\nborrowers with lenders.',
+                        l10n.welcomeSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',

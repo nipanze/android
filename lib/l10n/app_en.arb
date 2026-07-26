@@ -1,8 +1,10 @@
 {
   "@@locale": "en",
   "appTitle": "Nipanze",
-  "welcomeTitle": "Borrow. Lend. Grow. Across East Africa.",
-  "welcomeSubtitle": "A trusted marketplace connecting borrowers with lenders.",
+  "welcomeTitle": "Borrow. Lend. Grow.",
+  "welcomeSubtitle": "Checkout local listings",
+  "selectLanguage": "Select Language",
+  "choosePreferredLanguage": "Choose your preferred language",
   "continueWithPhone": "Continue with Phone",
   "continueWithEmail": "Continue with Email",
   "getStartedTitle": "Get started with Nipanze",

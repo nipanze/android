@@ -1,8 +1,10 @@
 {
   "@@locale": "rw",
   "appTitle": "Nipanze",
-  "welcomeTitle": "Guriza. Guriza. Gura. Muri Afrika y'Iburasirazuba.",
-  "welcomeSubtitle": "Isoko ryizerwa rihuza abaguza n'abaguriza.",
+  "welcomeTitle": "Guriza. Guriza. Gura.",
+  "welcomeSubtitle": "Reba ibyanditswe hafi yawe",
+  "selectLanguage": "Hitamo Ururimi",
+  "choosePreferredLanguage": "Hitamo ururimi wifuza",
   "continueWithPhone": "Komeza ukoresheje Telefoni",
   "continueWithEmail": "Komeza ukoresheje Imeyili",
   "getStartedTitle": "Tangira na Nipanze",

@@ -113,14 +113,26 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Borrow. Lend. Grow. Across East Africa.'**
+  /// **'Borrow. Lend. Grow.'**
   String get welcomeTitle;
 
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'A trusted marketplace connecting borrowers with lenders.'**
+  /// **'Checkout local listings'**
   String get welcomeSubtitle;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @choosePreferredLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language'**
+  String get choosePreferredLanguage;
 
   /// No description provided for @continueWithPhone.
   ///

@@ -384,7 +384,7 @@ class WelcomePage extends StatelessWidget {
                             icon: const Icon(Icons.phone_rounded, size: 20),
                             label: Text(
                               l10n.continueWithPhone,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,

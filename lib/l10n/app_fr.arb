@@ -1,8 +1,10 @@
 {
   "@@locale": "fr",
   "appTitle": "Nipanze",
-  "welcomeTitle": "Empruntez. Prêtez. Grandissez. Dans toute l'Afrique de l'Est.",
-  "welcomeSubtitle": "Une plateforme de confiance reliant emprunteurs et prêteurs.",
+  "welcomeTitle": "Empruntez. Prêtez. Grandissez.",
+  "welcomeSubtitle": "Découvrez les annonces locales",
+  "selectLanguage": "Sélectionnez la langue",
+  "choosePreferredLanguage": "Choisissez votre langue préférée",
   "continueWithPhone": "Continuer avec le téléphone",
   "continueWithEmail": "Continuer avec l'e-mail",
   "getStartedTitle": "Commencez avec Nipanze",

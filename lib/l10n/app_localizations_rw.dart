@@ -12,11 +12,16 @@ class AppLocalizationsRw extends AppLocalizations {
   String get appTitle => 'Nipanze';
 
   @override
-  String get welcomeTitle =>
-      'Guriza. Guriza. Gura. Muri Afrika y\'Iburasirazuba.';
+  String get welcomeTitle => 'Guriza. Guriza. Gura.';
 
   @override
-  String get welcomeSubtitle => 'Isoko ryizerwa rihuza abaguza n\'abaguriza.';
+  String get welcomeSubtitle => 'Reba ibyanditswe hafi yawe';
+
+  @override
+  String get selectLanguage => 'Hitamo Ururimi';
+
+  @override
+  String get choosePreferredLanguage => 'Hitamo ururimi wifuza';
 
   @override
   String get continueWithPhone => 'Komeza ukoresheje Telefoni';

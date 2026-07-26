@@ -12,10 +12,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'Nipanze';
 
   @override
-  String get welcomeTitle => 'اقترض. أقرض. انمو. عبر إفريقيا.';
+  String get welcomeTitle => 'اقترض. أقرض. انمو.';
 
   @override
-  String get welcomeSubtitle => 'سوق موثوق يربط بين المقترضين والمقرضين.';
+  String get welcomeSubtitle => 'استكشف العروض المحلية';
+
+  @override
+  String get selectLanguage => 'اختر اللغة';
+
+  @override
+  String get choosePreferredLanguage => 'اختر لغتك المفضلة';
 
   @override
   String get continueWithPhone => 'المتابعة برقم الهاتف';

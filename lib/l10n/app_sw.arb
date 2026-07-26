@@ -1,8 +1,10 @@
 {
   "@@locale": "sw",
   "appTitle": "Nipanze",
-  "welcomeTitle": "Kopa. Kopesha. Kua. Afrika Mashariki Kote.",
-  "welcomeSubtitle": "Soko linaloaminika linalounganisha wakopaji na wakopeshi.",
+  "welcomeTitle": "Kopa. Kopesha. Kua.",
+  "welcomeSubtitle": "Tazama matangazo ya eneo lako",
+  "selectLanguage": "Chagua Lugha",
+  "choosePreferredLanguage": "Chagua lugha unayopendelea",
   "continueWithPhone": "Endelea na Nambari ya Simu",
   "continueWithEmail": "Endelea na Barua Pepe",
   "getStartedTitle": "Anza na Nipanze",

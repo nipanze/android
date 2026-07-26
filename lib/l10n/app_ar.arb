@@ -1,8 +1,10 @@
 {
   "@@locale": "ar",
   "appTitle": "Nipanze",
-  "welcomeTitle": "اقترض. أقرض. انمو. عبر إفريقيا.",
-  "welcomeSubtitle": "سوق موثوق يربط بين المقترضين والمقرضين.",
+  "welcomeTitle": "اقترض. أقرض. انمو.",
+  "welcomeSubtitle": "استكشف العروض المحلية",
+  "selectLanguage": "اختر اللغة",
+  "choosePreferredLanguage": "اختر لغتك المفضلة",
   "continueWithPhone": "المتابعة برقم الهاتف",
   "continueWithEmail": "المتابعة بالبريد الإلكتروني",
   "getStartedTitle": "ابدأ مع Nipanze",

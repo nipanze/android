@@ -12,12 +12,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get appTitle => 'Nipanze';
 
   @override
-  String get welcomeTitle =>
-      'Empruntez. Prêtez. Grandissez. Dans toute l\'Afrique de l\'Est.';
+  String get welcomeTitle => 'Empruntez. Prêtez. Grandissez.';
 
   @override
-  String get welcomeSubtitle =>
-      'Une plateforme de confiance reliant emprunteurs et prêteurs.';
+  String get welcomeSubtitle => 'Découvrez les annonces locales';
+
+  @override
+  String get selectLanguage => 'Sélectionnez la langue';
+
+  @override
+  String get choosePreferredLanguage => 'Choisissez votre langue préférée';
 
   @override
   String get continueWithPhone => 'Continuer avec le téléphone';

@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/widgets/language_selector_sheet.dart
 import 'package:flutter/material.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Shows a bottom sheet allowing the user to switch the app language dynamically.
 void showLanguageSelectorSheet(BuildContext context) {
@@ -21,6 +22,7 @@ void showLanguageSelectorSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetContext) {
+      final l10n = AppLocalizations.of(sheetContext) ?? AppLocalizations.of(context)!;
       return Container(
         decoration: BoxDecoration(
           color: sheetBg,
@@ -44,7 +46,7 @@ void showLanguageSelectorSheet(BuildContext context) {
 
             // Header Text
             Text(
-              'Select Language',
+              l10n.selectLanguage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Sora',
@@ -55,7 +57,7 @@ void showLanguageSelectorSheet(BuildContext context) {
             ),
             const SizedBox(height: 6),
             Text(
-              'Choose your preferred language',
+              l10n.choosePreferredLanguage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Inter',

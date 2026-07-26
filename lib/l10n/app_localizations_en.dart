@@ -12,11 +12,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Nipanze';
 
   @override
-  String get welcomeTitle => 'Borrow. Lend. Grow. Across East Africa.';
+  String get welcomeTitle => 'Borrow. Lend. Grow.';
 
   @override
-  String get welcomeSubtitle =>
-      'A trusted marketplace connecting borrowers with lenders.';
+  String get welcomeSubtitle => 'Checkout local listings';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get choosePreferredLanguage => 'Choose your preferred language';
 
   @override
   String get continueWithPhone => 'Continue with Phone';
