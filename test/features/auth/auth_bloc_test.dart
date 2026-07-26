@@ -27,6 +27,8 @@ void main() {
         .thenAnswer((_) => const Stream.empty());
     when(() => mockRepo.currentUser).thenReturn(null);
     when(() => mockRepo.isEmailVerified).thenReturn(false);
+    when(() => mockRepo.checkPhoneRegistered(any()))
+        .thenAnswer((_) async => null);
   });
 
   group('AuthBloc', () {
@@ -113,6 +115,45 @@ void main() {
         isA<AuthLoading>(),
         predicate<AuthState>(
             (s) => s is AuthUnauthenticated && s.pendingVerification),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthSignUpRequested emits AuthError when email already exists',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.checkPhoneRegistered('existing@nipanze.ug'))
+            .thenAnswer((_) async => 'existing@nipanze.ug');
+      },
+      act: (bloc) => bloc.add(const AuthSignUpRequested(
+        email: 'existing@nipanze.ug',
+        password: 'Test1234!',
+        fullName: 'Existing User',
+      )),
+      expect: () => [
+        isA<AuthLoading>(),
+        isA<AuthError>(),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'AuthPhoneSignUpRequested emits AuthError when phone already exists',
+      build: () => AuthBloc(mockRepo),
+      setUp: () {
+        when(() => mockRepo.cleanPhone('+254712345678'))
+            .thenReturn('+254712345678');
+        when(() => mockRepo.checkPhoneRegistered('+254712345678'))
+            .thenAnswer((_) async => 'user@nipanze.ug');
+      },
+      act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
+        phone: '+254712345678',
+        password: 'Test1234!',
+        fullName: 'Existing User',
+        countryCode: 'KE',
+      )),
+      expect: () => [
+        isA<AuthLoading>(),
+        isA<AuthError>(),
       ],
     );
 

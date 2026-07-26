@@ -79,6 +79,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
+      final existingEmail =
+          await _authRepository.checkPhoneRegistered(event.email);
+      if (existingEmail != null) {
+        emit(const AuthError(
+            'This email is already registered. Please log in instead.'));
+        return;
+      }
       await _authRepository.signUp(
         email: event.email,
         password: event.password,
@@ -174,6 +181,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final clean = _authRepository.cleanPhone(event.phone);
+      final existingPhone = await _authRepository.checkPhoneRegistered(clean);
+      if (existingPhone != null) {
+        emit(const AuthError(
+            'This phone number is already registered. Please log in instead.'));
+        return;
+      }
+
+      if (event.email != null && event.email!.trim().isNotEmpty) {
+        final existingEmail =
+            await _authRepository.checkPhoneRegistered(event.email!.trim());
+        if (existingEmail != null) {
+          emit(const AuthError(
+              'This email is already registered. Please use another email or log in.'));
+          return;
+        }
+      }
+
       // Derive a deterministic mock email from the E.164 phone number.
       final digits = clean.replaceAll('+', '');
       final mockEmail = '$digits@nipanze.test';

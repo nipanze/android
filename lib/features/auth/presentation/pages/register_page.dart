@@ -61,7 +61,8 @@ class _RegisterPageState extends State<RegisterPage>
     with SingleTickerProviderStateMixin {
   // ── wizard state ──────────────────────────────────────────────────────────
   late _WizardStep _step;
-  bool _isReturningUser = false; // true when phone is already registered
+  final bool _isReturningUser = false;
+  bool _isCheckingPhone = false;
 
   // ── phone step controllers ────────────────────────────────────────────────
   CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
@@ -183,21 +184,40 @@ class _RegisterPageState extends State<RegisterPage>
   Future<void> _onSendCode() async {
     if (!_phoneFormKey.currentState!.validate()) return;
 
+    setState(() => _isCheckingPhone = true);
     final bloc = context.read<AuthBloc>();
-    // Check if phone is already registered (hybrid bypass)
     final phone = _fullPhone;
 
-    // Optimistically move to OTP screen with pre-filled default OTP (123456)
-    _prefillDefaultOtp();
-    _startResendTimer();
-    await _goTo(_WizardStep.otp);
-
-    // Lookup in background — sets _isReturningUser flag for OTP confirm
     final resolvedEmail =
         await bloc.state.repository?.checkPhoneRegistered(phone);
     if (mounted) {
-      setState(() => _isReturningUser = resolvedEmail != null);
+      setState(() => _isCheckingPhone = false);
     }
+    if (!mounted) return;
+
+    if (resolvedEmail != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'This phone number is already registered. Please log in instead.',
+            style: TextStyle(fontFamily: 'Inter'),
+          ),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Log In',
+            textColor: Colors.white,
+            onPressed: () => context.go(AppRoutes.login),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // New user → proceed to OTP
+    _prefillDefaultOtp();
+    _startResendTimer();
+    await _goTo(_WizardStep.otp);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -205,42 +225,49 @@ class _RegisterPageState extends State<RegisterPage>
   // ─────────────────────────────────────────────────────────────────────────
   Future<void> _onVerifyOtp() async {
     if (!_isOtpValid()) return;
-    // Bypass: any valid 6-digit code is accepted.
-    if (_isReturningUser) {
-      // Returning user → ask for password to sign in
-      await _goTo(_WizardStep.profileSetup);
-      // We repurpose profileSetup as password-only for returning users.
-      // Actually, let's just let them enter password inline — handled below.
-    } else {
-      // New user → go to profile setup
-      await _goTo(_WizardStep.profileSetup);
-    }
+    await _goTo(_WizardStep.profileSetup);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Profile setup submit
   // ─────────────────────────────────────────────────────────────────────────
-  void _onProfileSubmit() {
+  Future<void> _onProfileSubmit() async {
     if (!_profileFormKey.currentState!.validate()) return;
 
-    if (_isReturningUser) {
-      // Returning user identified by phone: sign in with resolved account
-      context.read<AuthBloc>().add(AuthPhoneSignInRequested(
-            phone: _fullPhone,
-            password: _passwordController.text,
-          ));
-    } else {
-      // New user: register
-      context.read<AuthBloc>().add(AuthPhoneSignUpRequested(
-            phone: _fullPhone,
-            password: _passwordController.text,
-            fullName: _nameController.text.trim(),
-            countryCode: _profileCountry.code,
-            email: _optEmailController.text.trim().isEmpty
-                ? null
-                : _optEmailController.text.trim(),
-          ));
+    final optEmail = _optEmailController.text.trim();
+    if (optEmail.isNotEmpty) {
+      final bloc = context.read<AuthBloc>();
+      final existingEmail =
+          await bloc.state.repository?.checkPhoneRegistered(optEmail);
+      if (!mounted) return;
+      if (existingEmail != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'This email address is already registered. Please use another email or log in.',
+              style: TextStyle(fontFamily: 'Inter'),
+            ),
+            backgroundColor: const Color(0xFFDC2626),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Log In',
+              textColor: Colors.white,
+              onPressed: () => context.go(AppRoutes.login),
+            ),
+          ),
+        );
+        return;
+      }
     }
+
+    // New user: register
+    context.read<AuthBloc>().add(AuthPhoneSignUpRequested(
+          phone: _fullPhone,
+          password: _passwordController.text,
+          fullName: _nameController.text.trim(),
+          countryCode: _profileCountry.code,
+          email: optEmail.isEmpty ? null : optEmail,
+        ));
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -304,7 +331,7 @@ class _RegisterPageState extends State<RegisterPage>
           formKey: _phoneFormKey,
           selectedCountry: _selectedCountry,
           controller: _phoneController,
-          isLoading: isLoading,
+          isLoading: isLoading || _isCheckingPhone,
           onCountryTap: _showCountrySheet,
           onBack: () {
             if (context.canPop()) {
