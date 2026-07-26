@@ -223,10 +223,10 @@ class _LoginPageState extends State<LoginPage>
                     if (_usePhone)
                       _buildPhoneField(cardBg, cardBorder, titleColor, subtitleColor, hintColor)
                     else
-                      _buildEmailField(cardBg, cardBorder, titleColor, hintColor),
+                      _buildEmailField(cardBg, cardBorder, titleColor, hintColor, l10n),
                     const SizedBox(height: 12),
 
-                    _buildPasswordField(cardBg, cardBorder, titleColor, hintColor),
+                    _buildPasswordField(cardBg, cardBorder, titleColor, hintColor, l10n),
                     const SizedBox(height: 18),
 
                     // ── Remember me + Forgot ───────────────────────────────
@@ -505,7 +505,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Email field ───────────────────────────────────────────────────────────
-  Widget _buildEmailField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor) {
+  Widget _buildEmailField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
@@ -537,7 +537,7 @@ class _LoginPageState extends State<LoginPage>
                 filled: false,
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                hintText: 'Email address',
+                hintText: l10n.email,
                 hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15,
@@ -558,7 +558,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Password field ────────────────────────────────────────────────────────
-  Widget _buildPasswordField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor) {
+  Widget _buildPasswordField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor, AppLocalizations l10n) {
     final obscure = _usePhone ? _obscurePhone : _obscureEmail;
     final ctrl = _usePhone ? _phonePassCtrl : _emailPassCtrl;
 
@@ -595,7 +595,7 @@ class _LoginPageState extends State<LoginPage>
                 filled: false,
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                hintText: 'Password',
+                hintText: l10n.password,
                 hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15,
