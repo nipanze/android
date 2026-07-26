@@ -15,7 +15,11 @@ class AppLocalizationsSw extends AppLocalizations {
   String get welcomeTitle => 'Kopa. Kopesha. Kua.';
 
   @override
-  String get welcomeSubtitle => 'Tazama matangazo ya eneo lako';
+  String get welcomeTagline => 'Tazama matangazo ya eneo lako';
+
+  @override
+  String get welcomeSubtitle =>
+      'Soko linaloaminika linalounganisha wakopaji na wakopeshi.';
 
   @override
   String get selectLanguage => 'Chagua Lugha';

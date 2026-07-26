@@ -15,7 +15,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get welcomeTitle => 'Empruntez. Prêtez. Grandissez.';
 
   @override
-  String get welcomeSubtitle => 'Découvrez les annonces locales';
+  String get welcomeTagline => 'Découvrez les annonces locales';
+
+  @override
+  String get welcomeSubtitle =>
+      'Une plateforme de confiance reliant emprunteurs et prêteurs.';
 
   @override
   String get selectLanguage => 'Sélectionnez la langue';

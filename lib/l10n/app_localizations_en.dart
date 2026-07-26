@@ -15,7 +15,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeTitle => 'Borrow. Lend. Grow.';
 
   @override
-  String get welcomeSubtitle => 'Checkout local listings';
+  String get welcomeTagline => 'Checkout local listings';
+
+  @override
+  String get welcomeSubtitle =>
+      'A trusted marketplace connecting borrowers with lenders.';
 
   @override
   String get selectLanguage => 'Select Language';

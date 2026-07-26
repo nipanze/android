@@ -116,10 +116,16 @@ abstract class AppLocalizations {
   /// **'Borrow. Lend. Grow.'**
   String get welcomeTitle;
 
-  /// No description provided for @welcomeSubtitle.
+  /// No description provided for @welcomeTagline.
   ///
   /// In en, this message translates to:
   /// **'Checkout local listings'**
+  String get welcomeTagline;
+
+  /// No description provided for @welcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A trusted marketplace connecting borrowers with lenders.'**
   String get welcomeSubtitle;
 
   /// No description provided for @selectLanguage.

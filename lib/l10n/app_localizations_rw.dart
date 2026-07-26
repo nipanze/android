@@ -15,7 +15,10 @@ class AppLocalizationsRw extends AppLocalizations {
   String get welcomeTitle => 'Guriza. Guriza. Gura.';
 
   @override
-  String get welcomeSubtitle => 'Reba ibyanditswe hafi yawe';
+  String get welcomeTagline => 'Reba ibyanditswe hafi yawe';
+
+  @override
+  String get welcomeSubtitle => 'Isoko ryizerwa rihuza abaguza n\'abaguriza.';
 
   @override
   String get selectLanguage => 'Hitamo Ururimi';

@@ -36,6 +36,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/auth_widgets.dart';
 import '../widgets/language_selector_sheet.dart';
+import '../widgets/live_dot.dart';
 import '../widgets/starfield_background.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -667,16 +668,37 @@ class _WelcomeScreen extends StatelessWidget {
                           letterSpacing: -0.3,
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const LiveDot(size: 8),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.welcomeTagline,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: subtitleColor,
+                              height: 1.4,
+                              letterSpacing: 0.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
                       Text(
                         l10n.welcomeSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: subtitleColor,
-                          height: 1.5,
+                          color: subtitleColor.withValues(alpha: 0.8),
+                          height: 1.55,
                         ),
                       ),
                     ],

@@ -15,7 +15,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeTitle => 'اقترض. أقرض. انمو.';
 
   @override
-  String get welcomeSubtitle => 'استكشف العروض المحلية';
+  String get welcomeTagline => 'استكشف العروض المحلية';
+
+  @override
+  String get welcomeSubtitle => 'سوق موثوق يربط بين المقترضين والمقرضين.';
 
   @override
   String get selectLanguage => 'اختر اللغة';
