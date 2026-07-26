@@ -5,13 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'core/bloc/app_bloc_observer.dart';
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/services/theme_service.dart';
 import 'core/theme/app_theme.dart';
-import 'core/bloc/app_bloc_observer.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +56,13 @@ class NipanzeApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: AppRouter(authBloc: context.read<AuthBloc>()).router,
         ),
       ),

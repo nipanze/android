@@ -19,11 +19,14 @@
 // the GoRouter redirect for AuthAuthenticated still owns the exit-to-home.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
@@ -82,7 +85,7 @@ class _RegisterPageState extends State<RegisterPage>
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
-  CountryInfo _profileCountry = EastAfricaCountries.defaultCountry;
+  File? _avatarFile;
 
   // ── email login controllers ───────────────────────────────────────────────
   final _emailLoginController = TextEditingController();
@@ -265,9 +268,182 @@ class _RegisterPageState extends State<RegisterPage>
           phone: _fullPhone,
           password: _passwordController.text,
           fullName: _nameController.text.trim(),
-          countryCode: _profileCountry.code,
+          countryCode: _selectedCountry.code,
           email: optEmail.isEmpty ? null : optEmail,
         ));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Avatar picker
+  // ─────────────────────────────────────────────────────────────────────────
+  Future<void> _pickAvatar() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF0F101C) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
+    final cardBg = isDark ? const Color(0xFF181928) : const Color(0xFFF1F5F9);
+    final cardBorder =
+        isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
+    const purple = Color(0xFF7C3AED);
+
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: sheetBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: cardBorder),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 34),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF2D2D42)
+                    : const Color(0xFFCBD5E1),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Choose photo',
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Select where to pick your profile photo',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                color: subtitleColor,
+              ),
+            ),
+            const SizedBox(height: 20),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: purple.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: purple.withValues(alpha: 0.4), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: purple,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.camera_alt_rounded,
+                          color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Take a photo',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: titleColor)),
+                          Text('Use your camera',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: subtitleColor)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: Color(0xFF7C3AED), size: 22),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: cardBorder),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: purple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.photo_library_rounded,
+                          color: Color(0xFF7C3AED), size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Choose from gallery',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: titleColor)),
+                          Text('Pick an existing photo',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: subtitleColor)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded,
+                        color: subtitleColor, size: 22),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+
+    if (picked != null && mounted) {
+      setState(() => _avatarFile = File(picked.path));
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -365,7 +541,6 @@ class _RegisterPageState extends State<RegisterPage>
           confirmController: _confirmController,
           obscurePassword: _obscurePassword,
           obscureConfirm: _obscureConfirm,
-          selectedCountry: _profileCountry,
           formKey: _profileFormKey,
           isLoading: isLoading,
           errorMsg: errorMsg,
@@ -373,7 +548,8 @@ class _RegisterPageState extends State<RegisterPage>
               setState(() => _obscurePassword = !_obscurePassword),
           onToggleConfirm: () =>
               setState(() => _obscureConfirm = !_obscureConfirm),
-          onCountryTap: () => _showCountrySheet(forProfile: true),
+          avatarFile: _avatarFile,
+          onPickAvatar: _pickAvatar,
           onBack: () => _goTo(_WizardStep.otp),
           onSubmit: _onProfileSubmit,
         ),
@@ -400,7 +576,7 @@ class _RegisterPageState extends State<RegisterPage>
   // ─────────────────────────────────────────────────────────────────────────
   // Country selection bottom sheet
   // ─────────────────────────────────────────────────────────────────────────
-  Future<void> _showCountrySheet({bool forProfile = false}) async {
+  Future<void> _showCountrySheet() async {
     final picked = await showModalBottomSheet<CountryInfo>(
       context: context,
       isScrollControlled: true,
@@ -409,11 +585,7 @@ class _RegisterPageState extends State<RegisterPage>
     );
     if (picked != null && mounted) {
       setState(() {
-        if (forProfile) {
-          _profileCountry = picked;
-        } else {
-          _selectedCountry = picked;
-        }
+        _selectedCountry = picked;
       });
     }
   }
@@ -1228,15 +1400,15 @@ class _ProfileSetupScreen extends StatelessWidget {
     required this.confirmController,
     required this.obscurePassword,
     required this.obscureConfirm,
-    required this.selectedCountry,
     required this.formKey,
     required this.isLoading,
     required this.errorMsg,
     required this.onTogglePassword,
     required this.onToggleConfirm,
-    required this.onCountryTap,
     required this.onBack,
     required this.onSubmit,
+    this.avatarFile,
+    this.onPickAvatar,
   });
 
   final bool isReturningUser;
@@ -1246,15 +1418,15 @@ class _ProfileSetupScreen extends StatelessWidget {
   final TextEditingController confirmController;
   final bool obscurePassword;
   final bool obscureConfirm;
-  final CountryInfo selectedCountry;
   final GlobalKey<FormState> formKey;
   final bool isLoading;
   final String? errorMsg;
   final VoidCallback onTogglePassword;
   final VoidCallback onToggleConfirm;
-  final VoidCallback onCountryTap;
   final VoidCallback onBack;
   final VoidCallback onSubmit;
+  final File? avatarFile;
+  final VoidCallback? onPickAvatar;
 
   @override
   Widget build(BuildContext context) {
@@ -1285,7 +1457,9 @@ class _ProfileSetupScreen extends StatelessWidget {
 
                     // ── Titles ─────────────────────────────────────────────
                     Text(
-                      isReturningUser ? 'Enter your password' : 'Tell us about you',
+                      isReturningUser
+                          ? 'Enter your password'
+                          : 'Tell us about you',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -1299,7 +1473,7 @@ class _ProfileSetupScreen extends StatelessWidget {
                     Text(
                       isReturningUser
                           ? 'Login to your account'
-                          : 'Let\'s complete your profile',
+                          : 'Create your profile & set a password',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Inter',
@@ -1309,27 +1483,61 @@ class _ProfileSetupScreen extends StatelessWidget {
                     ),
 
                     if (!isReturningUser) ...[
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // ── Avatar Picker ───────────────────────────────────
                       GestureDetector(
-                        onTap: () {}, // placeholder for future photo pick
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFF7C3AED),
-                              width: 2,
+                        onTap: onPickAvatar,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFF7C3AED),
+                                  width: 2.5,
+                                ),
+                                color: cardBgColor,
+                                image: avatarFile != null
+                                    ? DecorationImage(
+                                        image: FileImage(avatarFile!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                              ),
+                              child: avatarFile == null
+                                  ? const Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 30,
+                                      color: Color(0xFF7C3AED),
+                                    )
+                                  : null,
                             ),
-                            color: cardBgColor,
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_rounded,
-                            size: 32,
-                            color: Color(0xFF7C3AED),
-                          ),
+                            // Edit badge
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF7C3AED),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: cardBgColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.edit_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -1338,7 +1546,7 @@ class _ProfileSetupScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       _ErrorBanner(message: errorMsg!),
                     ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     if (!isReturningUser) ...[
                       // Full Name
@@ -1380,93 +1588,71 @@ class _ProfileSetupScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      // Country picker
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Country',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                      // Password creation
+                      _ProfileField(
+                        label: 'Create password',
+                        controller: passwordController,
+                        icon: Icons.lock_outline_rounded,
+                        hintText: '••••••••',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        obscureText: obscurePassword,
+                        textInputAction: TextInputAction.next,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            size: 18,
                             color: subtitleColor,
                           ),
+                          onPressed: onTogglePassword,
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: onCountryTap,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: cardBgColor,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: cardBorderColor),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(selectedCountry.flag,
-                                  style: const TextStyle(fontSize: 20)),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  '${selectedCountry.name} (${selectedCountry.code})',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 15,
-                                    color: titleColor,
-                                  ),
-                                ),
-                              ),
-                              Icon(Icons.keyboard_arrow_down_rounded,
-                                  size: 20, color: subtitleColor),
-                            ],
-                          ),
-                        ),
+                        validator: (v) {
+                          if (v == null || v.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 14),
 
-                      // Info callout
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: cardBgColor,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: cardBorderColor),
+                      // Confirm Password
+                      _ProfileField(
+                        label: 'Confirm password',
+                        controller: confirmController,
+                        icon: Icons.lock_outline_rounded,
+                        hintText: '••••••••',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        obscureText: obscureConfirm,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => onSubmit(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirm
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            size: 18,
+                            color: subtitleColor,
+                          ),
+                          onPressed: onToggleConfirm,
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF7C3AED)
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.verified_user_outlined,
-                                size: 20,
-                                color: Color(0xFFA78BFA),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'You can change this later in settings.',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 13,
-                                  color: subtitleColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Confirm your password';
+                          }
+                          if (v != passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
                       ),
                     ] else ...[
                       // Returning user password field only

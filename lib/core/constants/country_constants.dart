@@ -13,12 +13,12 @@ class CountryInfo {
     required this.proPriceFormatted,
   });
 
-  final String code;                  // e.g. 'UG', 'KE'
+  final String code;                  // e.g. 'UG', 'KE', 'NG'
   final String name;                  // e.g. 'Uganda', 'Kenya'
   final String flag;                  // e.g. '🇺🇬'
   final String dialCode;              // e.g. '+256'
   final String currency;              // e.g. 'UGX'
-  final String regionsLabel;          // e.g. 'District', 'County'
+  final String regionsLabel;          // e.g. 'District', 'County', 'State'
   final List<String> regions;
   final String lenderPriceFormatted;  // Charm pricing, e.g. 'UGX 19,900'
   final String proPriceFormatted;     // Charm pricing, e.g. 'UGX 49,900'
@@ -118,51 +118,78 @@ class EastAfricaCountries {
     ],
   );
 
-  static const CountryInfo southSudan = CountryInfo(
-    code: 'SS',
-    name: 'South Sudan',
-    flag: '🇸🇸',
-    dialCode: '+211',
-    currency: 'SSP',
+  static const CountryInfo nigeria = CountryInfo(
+    code: 'NG',
+    name: 'Nigeria',
+    flag: '🇳🇬',
+    dialCode: '+234',
+    currency: 'NGN',
     regionsLabel: 'State',
-    lenderPriceFormatted: 'SSP 7,900',
-    proPriceFormatted: 'SSP 19,900',
+    lenderPriceFormatted: 'NGN 2,900',
+    proPriceFormatted: 'NGN 7,900',
     regions: [
-      'Juba (Central Equatoria)',
-      'Upper Nile',
-      'Jonglei',
-      'Unity',
-      'Western Equatoria',
-      'Eastern Equatoria',
+      'Lagos',
+      'Abuja (FCT)',
+      'Kano',
+      'Ibadan',
+      'Port Harcourt',
+      'Enugu',
+      'Kaduna',
       'Other',
     ],
   );
 
-  static const CountryInfo burundi = CountryInfo(
-    code: 'BI',
-    name: 'Burundi',
-    flag: '🇧🇮',
-    dialCode: '+257',
-    currency: 'BIF',
+  static const CountryInfo southAfrica = CountryInfo(
+    code: 'ZA',
+    name: 'South Africa',
+    flag: '🇿🇦',
+    dialCode: '+27',
+    currency: 'ZAR',
     regionsLabel: 'Province',
-    lenderPriceFormatted: 'BIF 15,900',
-    proPriceFormatted: 'BIF 39,900',
+    lenderPriceFormatted: 'ZAR 99',
+    proPriceFormatted: 'ZAR 249',
     regions: [
-      'Bujumbura',
-      'Gitega',
-      'Ngozi',
-      'Rumonge',
+      'Gauteng',
+      'Western Cape',
+      'KwaZulu-Natal',
+      'Eastern Cape',
+      'Free State',
+      'Mpumalanga',
+      'Limpopo',
       'Other',
     ],
   );
 
+  static const CountryInfo egypt = CountryInfo(
+    code: 'EG',
+    name: 'Egypt',
+    flag: '🇪🇬',
+    dialCode: '+20',
+    currency: 'EGP',
+    regionsLabel: 'Governorate',
+    lenderPriceFormatted: 'EGP 199',
+    proPriceFormatted: 'EGP 499',
+    regions: [
+      'Cairo',
+      'Alexandria',
+      'Giza',
+      'Shubra El Kheima',
+      'Port Said',
+      'Suez',
+      'Luxor',
+      'Other',
+    ],
+  );
+
+  /// Exactly the 7 supported countries: Uganda, Kenya, Tanzania, Rwanda, Nigeria, South Africa, Egypt
   static const List<CountryInfo> all = [
     uganda,
     kenya,
     tanzania,
     rwanda,
-    southSudan,
-    burundi,
+    nigeria,
+    southAfrica,
+    egypt,
   ];
 
   static CountryInfo get defaultCountry => uganda;
