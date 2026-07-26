@@ -111,4 +111,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get termsNotice =>
       'By continuing, you agree to our Terms of Use and Privacy Policy.';
+
+  @override
+  String get phoneSafeTitle => 'Your number is safe with us';
+
+  @override
+  String get phoneSafeSubtitle => 'We never share your number with anyone.';
 }

@@ -112,5 +112,11 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get termsNotice =>
-      'Kwa kuendelea, unakubaliana na Masharti yetu ya Matumizi na Sera ya Faragha.';
+      'Kwa kuendelea, unakubaliana na Masharti ya Matumizi na Siasa ya Faragha wetu.';
+
+  @override
+  String get phoneSafeTitle => 'Nambari yako iko salama nasi';
+
+  @override
+  String get phoneSafeSubtitle => 'Hatushirikishi nambari yako na mtu yeyote.';
 }

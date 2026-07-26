@@ -113,5 +113,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get termsNotice =>
-      'En continuant, vous acceptez nos Conditions d\'utilisation et notre Politique de confidentialité.';
+      'En continuant, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité.';
+
+  @override
+  String get phoneSafeTitle => 'Votre numéro est en sécurité avec nous';
+
+  @override
+  String get phoneSafeSubtitle =>
+      'Nous ne partagerons jamais votre numéro avec quiconque.';
 }

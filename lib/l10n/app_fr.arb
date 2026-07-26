@@ -33,5 +33,7 @@
   "completeProfileSubtitle": "Créez votre profil et définissez un mot de passe",
   "fullName": "Nom complet",
   "finish": "Terminer",
-  "termsNotice": "En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité."
+  "termsNotice": "En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+  "phoneSafeTitle": "Votre numéro est en sécurité avec nous",
+  "phoneSafeSubtitle": "Nous ne partagerons jamais votre numéro avec quiconque."
 }

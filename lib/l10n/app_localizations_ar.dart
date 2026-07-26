@@ -110,4 +110,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get termsNotice =>
       'بالمتابعة، فإنك توافق على شروط الاستخدام وسياسة الخصوصية الخاصة بنا.';
+
+  @override
+  String get phoneSafeTitle => 'رقمك في أمان معنا';
+
+  @override
+  String get phoneSafeSubtitle => 'نحن لا نشارك رقمك مع أي شخص آخر.';
 }

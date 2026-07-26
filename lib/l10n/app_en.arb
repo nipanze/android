@@ -33,5 +33,7 @@
   "completeProfileSubtitle": "Create your profile & set a password",
   "fullName": "Full name",
   "finish": "Finish",
-  "termsNotice": "By continuing, you agree to our Terms of Use and Privacy Policy."
+  "termsNotice": "By continuing, you agree to our Terms of Use and Privacy Policy.",
+  "phoneSafeTitle": "Your number is safe with us",
+  "phoneSafeSubtitle": "We never share your number with anyone."
 }

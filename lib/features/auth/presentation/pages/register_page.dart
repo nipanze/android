@@ -853,6 +853,7 @@ class _PhoneEntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor =
@@ -882,7 +883,7 @@ class _PhoneEntryScreen extends StatelessWidget {
 
                     // ── Titles ─────────────────────────────────────────────────
                     Text(
-                      'Enter your phone number',
+                      l10n.enterPhoneTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -894,7 +895,7 @@ class _PhoneEntryScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'We\'ll send you a verification code',
+                      l10n.enterPhoneSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Inter',
@@ -1036,7 +1037,7 @@ class _PhoneEntryScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Your number is safe with us',
+                                  l10n.phoneSafeTitle,
                                   style: TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 15,
@@ -1046,7 +1047,7 @@ class _PhoneEntryScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'We never share your number with anyone.',
+                                  l10n.phoneSafeSubtitle,
                                   style: TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 13,
@@ -1081,9 +1082,9 @@ class _PhoneEntryScreen extends StatelessWidget {
                         ),
                         child: isLoading
                             ? const _ButtonLoader()
-                            : const Text(
-                                'Continue',
-                                style: TextStyle(
+                            : Text(
+                                l10n.sendCode,
+                                style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

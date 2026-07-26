@@ -307,6 +307,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By continuing, you agree to our Terms of Use and Privacy Policy.'**
   String get termsNotice;
+
+  /// No description provided for @phoneSafeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your number is safe with us'**
+  String get phoneSafeTitle;
+
+  /// No description provided for @phoneSafeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We never share your number with anyone.'**
+  String get phoneSafeSubtitle;
 }
 
 class _AppLocalizationsDelegate

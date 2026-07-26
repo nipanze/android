@@ -111,5 +111,12 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get termsNotice =>
-      'Mugukomeza, wemeye Amategeko n\'Amabwiriza yacu n\'Ipolisi y\'Ubwinjiriro.';
+      'Muri gukomeza, wemeye amabwiriza yacu n\'amatsinda y\'amabwiriza y\'ibanga.';
+
+  @override
+  String get phoneSafeTitle => 'Numero yawe irinzwe neza';
+
+  @override
+  String get phoneSafeSubtitle =>
+      'Ntitwigeze tusangiza numero yawe n\'umuntu uwo ari we wese.';
 }
