@@ -11,6 +11,7 @@ import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/language_selector_sheet.dart';
 
@@ -97,6 +98,7 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -185,7 +187,7 @@ class _LoginPageState extends State<LoginPage>
 
                     // ── Title ──────────────────────────────────────────────
                     Text(
-                      'Welcome back 👋',
+                      l10n.welcomeBack,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -197,7 +199,7 @@ class _LoginPageState extends State<LoginPage>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Login to your account',
+                      l10n.loginToAccount,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Inter',
@@ -208,7 +210,7 @@ class _LoginPageState extends State<LoginPage>
                     const SizedBox(height: 32),
 
                     // ── Phone / Email tabs ─────────────────────────────────
-                    _buildTabs(dividerColor, subtitleColor, purpleColor),
+                    _buildTabs(dividerColor, subtitleColor, purpleColor, l10n),
                     const SizedBox(height: 28),
 
                     // ── Error banner ──────────────────────────────────────
@@ -239,7 +241,7 @@ class _LoginPageState extends State<LoginPage>
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Remember me',
+                          l10n.rememberMe,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
@@ -250,9 +252,9 @@ class _LoginPageState extends State<LoginPage>
                         GestureDetector(
                           onTap: () =>
                               context.push(AppRoutes.resetPassword),
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.forgotPassword,
+                            style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -286,9 +288,9 @@ class _LoginPageState extends State<LoginPage>
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : const Text(
-                                'Login',
-                                style: TextStyle(
+                            : Text(
+                                l10n.logIn,
+                                style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -303,7 +305,7 @@ class _LoginPageState extends State<LoginPage>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account?",
+                          l10n.dontHaveAccount,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
@@ -313,9 +315,9 @@ class _LoginPageState extends State<LoginPage>
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () => context.go(AppRoutes.register),
-                          child: const Text(
-                            'Sign up',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.signUp,
+                            style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -337,14 +339,14 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Tab bar ─────────────────────────────────────────────────────────────────
-  Widget _buildTabs(Color dividerColor, Color subtitleColor, Color purpleColor) {
+  Widget _buildTabs(Color dividerColor, Color subtitleColor, Color purpleColor, AppLocalizations l10n) {
     return Column(
       children: [
         Row(
           children: [
             _buildTab(
               icon: Icons.smartphone_rounded,
-              label: 'Phone',
+              label: l10n.phone,
               active: _usePhone,
               subtitleColor: subtitleColor,
               purpleColor: purpleColor,
@@ -352,7 +354,7 @@ class _LoginPageState extends State<LoginPage>
             ),
             _buildTab(
               icon: Icons.email_outlined,
-              label: 'Email',
+              label: l10n.email,
               active: !_usePhone,
               subtitleColor: subtitleColor,
               purpleColor: purpleColor,
