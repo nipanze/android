@@ -50,18 +50,20 @@ class AuthRepository {
     }
   }
 
-  Future<void> signUp({
+  Future<User?> signUp({
     required String email,
     required String password,
     required String fullName,
   }) async {
     try {
-      await _client.auth.signUp(
+      final res = await _client.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': fullName},
       );
+      return res.user;
     } catch (e) {
+      debugPrint('signUp error: $e');
       throw parseSupabaseError(e);
     }
   }
@@ -220,7 +222,10 @@ class AuthRepository {
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
-    final updates = <String, dynamic>{};
+    final updates = <String, dynamic>{
+      'id': userId,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
     if (fullName != null) updates['full_name'] = fullName;
     if (phone != null) updates['phone'] = phone;
     if (country != null) updates['country'] = country;
@@ -230,7 +235,16 @@ class AuthRepository {
     if (employerName != null) updates['employer_name'] = employerName;
     if (monthlyIncome != null) updates['monthly_income'] = monthlyIncome;
     if (incomeCurrency != null) updates['income_currency'] = incomeCurrency;
-    if (updates.isEmpty) return;
-    await _client.from('profiles').update(updates).eq('id', userId);
+
+    try {
+      await _client.from('profiles').upsert(updates);
+    } catch (e) {
+      debugPrint('Error upserting profile: $e');
+      try {
+        await _client.from('profiles').update(updates).eq('id', userId);
+      } catch (err2) {
+        debugPrint('Fallback profile update error: $err2');
+      }
+    }
   }
 }

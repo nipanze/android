@@ -19,7 +19,6 @@
 // the GoRouter redirect for AuthAuthenticated still owns the exit-to-home.
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -89,7 +88,7 @@ class _RegisterPageState extends State<RegisterPage>
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
-  File? _avatarFile;
+  Uint8List? _avatarBytes;
 
   // ── email login controllers ───────────────────────────────────────────────
   final _emailLoginController = TextEditingController();
@@ -446,7 +445,8 @@ class _RegisterPageState extends State<RegisterPage>
     );
 
     if (picked != null && mounted) {
-      setState(() => _avatarFile = File(picked.path));
+      final bytes = await picked.readAsBytes();
+      setState(() => _avatarBytes = bytes);
     }
   }
 
@@ -552,7 +552,7 @@ class _RegisterPageState extends State<RegisterPage>
               setState(() => _obscurePassword = !_obscurePassword),
           onToggleConfirm: () =>
               setState(() => _obscureConfirm = !_obscureConfirm),
-          avatarFile: _avatarFile,
+          avatarBytes: _avatarBytes,
           onPickAvatar: _pickAvatar,
           onBack: () => _goTo(_WizardStep.otp),
           onSubmit: _onProfileSubmit,
@@ -1434,7 +1434,7 @@ class _ProfileSetupScreen extends StatelessWidget {
     required this.onToggleConfirm,
     required this.onBack,
     required this.onSubmit,
-    this.avatarFile,
+    this.avatarBytes,
     this.onPickAvatar,
   });
 
@@ -1452,11 +1452,33 @@ class _ProfileSetupScreen extends StatelessWidget {
   final VoidCallback onToggleConfirm;
   final VoidCallback onBack;
   final VoidCallback onSubmit;
-  final File? avatarFile;
+  final Uint8List? avatarBytes;
   final VoidCallback? onPickAvatar;
+
+  bool _isFormValid() {
+    if (isReturningUser) {
+      return passwordController.text.length >= 8;
+    }
+    final name = nameController.text.trim();
+    if (name.isEmpty) return false;
+
+    final pwd = passwordController.text;
+    if (pwd.length < 8) return false;
+
+    final confirm = confirmController.text;
+    if (confirm.isEmpty || confirm != pwd) return false;
+
+    final email = emailController.text.trim();
+    if (email.isNotEmpty) {
+      if (!email.contains('@') || !email.contains('.')) return false;
+    }
+
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor =
@@ -1485,8 +1507,8 @@ class _ProfileSetupScreen extends StatelessWidget {
                     // ── Titles ─────────────────────────────────────────────
                     Text(
                       isReturningUser
-                          ? 'Enter your password'
-                          : 'Tell us about you',
+                          ? l10n.welcomeBack
+                          : l10n.tellUsAboutYou,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -1499,8 +1521,8 @@ class _ProfileSetupScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       isReturningUser
-                          ? 'Login to your account'
-                          : 'Create your profile & set a password',
+                          ? l10n.loginToAccount
+                          : l10n.completeProfileSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Inter',
@@ -1527,14 +1549,14 @@ class _ProfileSetupScreen extends StatelessWidget {
                                   width: 2.5,
                                 ),
                                 color: cardBgColor,
-                                image: avatarFile != null
+                                image: avatarBytes != null
                                     ? DecorationImage(
-                                        image: FileImage(avatarFile!),
+                                        image: MemoryImage(avatarBytes!),
                                         fit: BoxFit.cover,
                                       )
                                     : null,
                               ),
-                              child: avatarFile == null
+                              child: avatarBytes == null
                                   ? const Icon(
                                       Icons.camera_alt_rounded,
                                       size: 30,
@@ -1719,32 +1741,45 @@ class _ProfileSetupScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // ── Action Button ─────────────────────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : onSubmit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7C3AED),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor:
-                              const Color(0xFF7C3AED).withValues(alpha: 0.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: isLoading
-                            ? const _ButtonLoader()
-                            : Text(
-                                isReturningUser ? 'Sign in' : 'Finish',
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                    ListenableBuilder(
+                      listenable: Listenable.merge([
+                        nameController,
+                        emailController,
+                        passwordController,
+                        confirmController,
+                      ]),
+                      builder: (context, _) {
+                        final isValid = _isFormValid();
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: (isLoading || !isValid) ? null : onSubmit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF7C3AED),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor:
+                                  const Color(0xFF7C3AED).withValues(alpha: 0.35),
+                              disabledForegroundColor:
+                                  Colors.white.withValues(alpha: 0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                      ),
+                              elevation: 0,
+                            ),
+                            child: isLoading
+                                ? const _ButtonLoader()
+                                : Text(
+                                    isReturningUser ? l10n.logIn : l10n.finish,
+                                    style: const TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                   ],

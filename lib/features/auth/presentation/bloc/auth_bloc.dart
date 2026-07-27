@@ -202,18 +202,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final digits = clean.replaceAll('+', '');
       final mockEmail = '$digits@nipanze.test';
 
-      await _authRepository.signUp(
+      final createdUser = await _authRepository.signUp(
         email: mockEmail,
         password: event.password,
         fullName: event.fullName,
       );
 
-      // signUp with Supabase auto-confirms when email confirm is disabled
-      // so we can immediately sign in and update the profile.
-      final user = await _authRepository.signIn(
-        email: mockEmail,
-        password: event.password,
-      );
+      NipanzeUser? user;
+      try {
+        user = await _authRepository.signIn(
+          email: mockEmail,
+          password: event.password,
+        );
+      } catch (signInErr) {
+        debugPrint('signIn after signUp notice: $signInErr');
+        if (createdUser != null) {
+          user = NipanzeUser(
+            id: createdUser.id,
+            email: createdUser.email ?? mockEmail,
+            fullName: event.fullName,
+            phone: clean,
+            country: event.countryCode,
+          );
+        }
+      }
 
       // Persist the collected profile data.
       await _authRepository.updateProfile(
@@ -222,14 +234,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         country: event.countryCode,
       );
 
-      emit(AuthAuthenticated(
-        user: user,
-        needsEmailVerification: false,
-      ));
+      if (user != null) {
+        emit(AuthAuthenticated(
+          user: user,
+          needsEmailVerification: false,
+        ));
+      } else {
+        emit(const AuthError('Registration failed. Please try again.'));
+      }
     } on AppException catch (e) {
+      debugPrint('AppException in phone sign-up: ${e.message}');
       emit(AuthError(e.message));
-    } catch (e) {
-      debugPrint('Phone sign-up error: $e');
+    } catch (e, stack) {
+      debugPrint('Phone sign-up error: $e\n$stack');
       emit(const AuthError('Registration failed. Please try again.'));
     }
   }

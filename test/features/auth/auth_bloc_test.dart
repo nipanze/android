@@ -104,7 +104,7 @@ void main() {
               email: any(named: 'email'),
               password: any(named: 'password'),
               fullName: any(named: 'fullName'),
-            )).thenAnswer((_) async {});
+            )).thenAnswer((_) async => null);
       },
       act: (bloc) => bloc.add(const AuthSignUpRequested(
         email: 'new@nipanze.ug',

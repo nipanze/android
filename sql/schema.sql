@@ -2818,10 +2818,12 @@ GRANT EXECUTE ON FUNCTION fn_income_bracket(BIGINT) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.submit_review(UUID, SMALLINT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.recompute_trust_aggregates(UUID) TO service_role;
 
--- Explicitly grant privileges on all tables
+-- Explicitly grant privileges on schema and tables
+GRANT USAGE ON SCHEMA public TO authenticated, anon, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.check_phone_registered(TEXT) TO authenticated, anon, service_role;
 
 GRANT SELECT ON public.v_lender_rate_history TO authenticated;
 GRANT EXECUTE ON FUNCTION public.consume_free_unlock() TO authenticated;
