@@ -414,4 +414,340 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get nipanzeDisclaimer =>
       'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.';
+
+  @override
+  String get lenderRequired => 'Lender required';
+
+  @override
+  String get lenderRequiredSubtitle =>
+      'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.';
+
+  @override
+  String get lenderTier => 'Lender tier';
+
+  @override
+  String get lenderTierDesc =>
+      'For anyone ready to make structured offers and earn returns on Nipanze.';
+
+  @override
+  String get everythingInFree => 'Everything in Free';
+
+  @override
+  String get lenderFeature1 =>
+      'Make offers with full terms (rate, fee, schedule)';
+
+  @override
+  String get lenderFeature2 => 'See offer detail where you participate';
+
+  @override
+  String get chooseLender => 'Choose Lender';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get paymentSecurityDisclaimer =>
+      'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.';
+
+  @override
+  String get proRequired => 'Pro tier required';
+
+  @override
+  String get proRequiredSubtitle =>
+      'Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.';
+
+  @override
+  String get proTier => 'Pro tier';
+
+  @override
+  String get proTierDesc =>
+      'Full marketplace access, advanced filters and strong request positioning.';
+
+  @override
+  String get everythingInLender => 'Everything in Lender';
+
+  @override
+  String get proFeature1 => 'Suggest rates, late fees and repayment terms';
+
+  @override
+  String get proFeature2 => 'Advanced filters (income, employment, verified)';
+
+  @override
+  String get proFeature3 =>
+      'Verified badge, reliability score and priority visibility';
+
+  @override
+  String get choosePro => 'Choose Pro';
+
+  @override
+  String get plansAndPricing => 'Plans & pricing';
+
+  @override
+  String get chooseAccessTitle => 'Choose the access you need';
+
+  @override
+  String chooseAccessSubtitle(String flag, String country) {
+    return 'One account can post requests and make offers. Prices match your account region ($flag $country).';
+  }
+
+  @override
+  String get perMonth => ' / month';
+
+  @override
+  String get freePlanSubtitle =>
+      'Browse, watch listings, post basic requests, and accept offers.';
+
+  @override
+  String get freeFeature1 => 'Browse the marketplace';
+
+  @override
+  String get freeFeature2 => 'Post basic loan requests';
+
+  @override
+  String get freeFeature3 => 'Accept offers received';
+
+  @override
+  String get currentPlan => 'Current plan';
+
+  @override
+  String get useFree => 'Use Free';
+
+  @override
+  String choosePlan(String plan) {
+    return 'Choose $plan';
+  }
+
+  @override
+  String planSelectedMessage(String plan) {
+    return '$plan selected. Secure payment activation will be available shortly.';
+  }
+
+  @override
+  String get unlockDealTitle => 'Unlock deal';
+
+  @override
+  String get unlockDealAndContact => 'Unlock deal & contact';
+
+  @override
+  String get dealAgreementLocked => 'Deal agreement locked';
+
+  @override
+  String get dealAgreementLockedSubtitle =>
+      'Both borrower and lender have confirmed the deal. You can now unlock contact details to connect directly.';
+
+  @override
+  String includedInPlan(String plan) {
+    return 'Included in your $plan plan';
+  }
+
+  @override
+  String get unlimitedUnlocksSubtitle =>
+      'Unlimited contact unlocks at no extra fee.';
+
+  @override
+  String welcomeGiftUnlocks(int count) {
+    return '🎁 Welcome gift — $count free unlock(s) remaining';
+  }
+
+  @override
+  String get welcomeGiftSubtitle =>
+      'This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.';
+
+  @override
+  String get unlockFeeApplies => 'UGX 5,000 unlock fee applies';
+
+  @override
+  String get unlockFeeAppliesSubtitle =>
+      'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.';
+
+  @override
+  String get whatHappensNext => 'What happens next';
+
+  @override
+  String get step1Title => 'Contact details revealed';
+
+  @override
+  String get step1Desc =>
+      'Legal name, phone, and email of both parties will be shared.';
+
+  @override
+  String get step2Title => 'Direct connection';
+
+  @override
+  String get step2Desc =>
+      'You can now contact your partner outside the Nipanze platform.';
+
+  @override
+  String get step3Title => 'Complete transaction';
+
+  @override
+  String get step3Desc =>
+      'Finalize the loan agreement and exchange funds directly.';
+
+  @override
+  String get disclaimerNonCustodial =>
+      'Nipanze does not hold or move any funds. You and your partner are solely responsible for all financial transactions and dispute resolution.';
+
+  @override
+  String get payToUnlock => 'Pay UGX 5,000 to Unlock';
+
+  @override
+  String get unlockWithFreeCredit => 'Unlock with Free Credit';
+
+  @override
+  String get unlockContactDetails => 'Unlock contact details';
+
+  @override
+  String get upgradeForUnlimited => 'Upgrade for unlimited unlocks';
+
+  @override
+  String get contactDetailsRevealed => 'Contact details revealed';
+
+  @override
+  String get connectionSuccessful =>
+      'Connection successful. Here are the contact details:';
+
+  @override
+  String get borrower => 'Borrower';
+
+  @override
+  String get lender => 'Lender';
+
+  @override
+  String get directContactNotice =>
+      'You can now contact your partner directly to complete the transaction outside of the Nipanze platform.';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String planTitle(String plan) {
+    return '$plan plan';
+  }
+
+  @override
+  String get nonCustodialAccess => 'Non-custodial access';
+
+  @override
+  String get howTrustWorks => 'How trust works';
+
+  @override
+  String get trustExplanation =>
+      'Trust signals reflect only activity completed through Nipanze. They do not assess or imply off-platform repayment behaviour.';
+
+  @override
+  String get trustScore => 'Trust score';
+
+  @override
+  String get completeDealsToBuild => 'Complete deals to build your score';
+
+  @override
+  String get noReviewsYet => 'No reviews yet';
+
+  @override
+  String successfulDeals(int count) {
+    return '$count successful deals';
+  }
+
+  @override
+  String get repeatParticipant => 'Repeat participant';
+
+  @override
+  String get notRepeatYet => 'Not a repeat yet';
+
+  @override
+  String get phoneVerified => 'Phone verified';
+
+  @override
+  String get phoneNotVerified => 'Phone not verified';
+
+  @override
+  String get publicTrustSignals =>
+      'Public trust signals are based only on activity completed through Nipanze.';
+
+  @override
+  String get advancedFilters => 'Advanced Filters';
+
+  @override
+  String get advancedFiltersBadge => 'Pro · Narrow the marketplace feed';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterClear => 'Clear';
+
+  @override
+  String get filterApply => 'Apply filters';
+
+  @override
+  String get filterDone => 'Done';
+
+  @override
+  String get filterEmploymentType => 'Employment type';
+
+  @override
+  String get filterEmploymentSubtitle =>
+      'Filter by the borrower\'s declared employment';
+
+  @override
+  String get filterIncomeRange => 'Monthly income range';
+
+  @override
+  String get filterIncomeSubtitle =>
+      'Coarse brackets — exact income is never shown';
+
+  @override
+  String get filterQualitySignals => 'Listing quality signals';
+
+  @override
+  String get filterHasSuggestedTerms => 'Has suggested terms';
+
+  @override
+  String get filterHasSuggestedTermsSubtitle =>
+      'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule';
+
+  @override
+  String get filterVerifiedBorrower => 'Verified borrower';
+
+  @override
+  String get filterVerifiedBorrowerSubtitle =>
+      'Only requests from KYC-approved account holders';
+
+  @override
+  String get filterPrivacyNote =>
+      'Employer names and exact income are never shown. Income brackets and employment categories are the only signals available, by design.';
+
+  @override
+  String get empGovEmployee => 'Government employee';
+
+  @override
+  String get empEmployedPrivate => 'Employed (private)';
+
+  @override
+  String get empSelfEmployed => 'Self-employed';
+
+  @override
+  String get empSmallBusinessOwner => 'Small business owner';
+
+  @override
+  String get empBusinessOwner => 'Business owner';
+
+  @override
+  String get empStudent => 'Student';
+
+  @override
+  String get empOther => 'Other';
+
+  @override
+  String get incomeUnder2m => 'Under 2M UGX / month';
+
+  @override
+  String get income2m5m => '2M – 5M UGX / month';
+
+  @override
+  String get income5m10m => '5M – 10M UGX / month';
+
+  @override
+  String get incomeOver10m => 'Over 10M UGX / month';
 }

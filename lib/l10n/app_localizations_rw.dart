@@ -414,5 +414,343 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get nipanzeDisclaimer =>
-      'Nipanze ni urubuga rwo guhuza gusa. Ntitureba, ntitwimura, kandi ntidutunga amafaranga. Imishyikirano yose ikorwa hagati y\'abageza neza.';
+      'Nipanze ni urubuga rwo guhuza abantu. Ntitubika, ntitwimura, cyangwa ntitukemura amafaranga. Ibikorwa byose biba hagati y\'abakoresha ku giti cyabo.';
+
+  @override
+  String get lenderRequired => 'Ukeneye konti y\'Umuguriza';
+
+  @override
+  String get lenderRequiredSubtitle =>
+      'Gutanga ibyifuzo ni igice cy\'ipulani y\'Umuguriza (iboneka no mu Pro). Kuzamura konti ngo ufungure gutanga ibyifuzo.';
+
+  @override
+  String get lenderTier => 'Kirenga cy\'Umuguriza';
+
+  @override
+  String get lenderTierDesc =>
+      'Kugirango umuntu wese witeguye gutanga ibyifuzo biteguye neza no kunguka kuri Nipanze.';
+
+  @override
+  String get everythingInFree => 'Ibyose biri muri Kubuntu';
+
+  @override
+  String get lenderFeature1 =>
+      'Tanga ibyifuzo birimo amategeko yose (ingano, amafaranga, igihe)';
+
+  @override
+  String get lenderFeature2 => 'Reba amakuru arambuye y\'ibyifuzo wajemo';
+
+  @override
+  String get chooseLender => 'Hitamo Umuguriza';
+
+  @override
+  String get notNow => 'Oya ntabwo ari ubu';
+
+  @override
+  String get paymentSecurityDisclaimer =>
+      'Nipanze ntiyabika cyangwa ngo yimura amafaranga. Guhindura abunzi bwemezwa binyuze mu nzira yizewe yo kwishyura.';
+
+  @override
+  String get proRequired => 'Ukeneye konti ya Pro';
+
+  @override
+  String get proRequiredSubtitle =>
+      'Ibyiza byisumbuye nko gutanga amasezerano yihariye n\'uyunguruzo byisumbuye biri kuri Pro gusa.';
+
+  @override
+  String get proTier => 'Kirenga cya Pro';
+
+  @override
+  String get proTierDesc =>
+      'Kugera ku isoko ryose, uyunguruzo bwa kumenya neza n\'umwanya wa mbere.';
+
+  @override
+  String get everythingInLender => 'Ibyose biri mu Muguriza';
+
+  @override
+  String get proFeature1 =>
+      'Tanga ingano y\'inyungu, igihano cyo gutinda n\'amatariki yo kwishyura';
+
+  @override
+  String get proFeature2 => 'Uyunguruzo rwihariye (inguano, akazi, kwemezwa)';
+
+  @override
+  String get proFeature3 =>
+      'Ikirango cyemejwe, amanota y\'ikizere n\'ukuboneka ku mwanya wa mbere';
+
+  @override
+  String get choosePro => 'Hitamo Pro';
+
+  @override
+  String get plansAndPricing => 'Ipulani n\'Ibiciro';
+
+  @override
+  String get chooseAccessTitle => 'Hitamo ubushobozi ukeneye';
+
+  @override
+  String chooseAccessSubtitle(String flag, String country) {
+    return 'Konti imwe ishobora gusaba no gutanga ibyifuzo. Ibiciro bihura n\'akarere ka konti yawe ($flag $country).';
+  }
+
+  @override
+  String get perMonth => ' / ukwezi';
+
+  @override
+  String get freePlanSubtitle =>
+      'Shakisha, kurikirana, tangaza ubusabe bw\'ibanze, no kwemera ibyifuzo.';
+
+  @override
+  String get freeFeature1 => 'Shakisha ku isoko';
+
+  @override
+  String get freeFeature2 => 'Tanga ubusabe bw\'ibanze bwo kuguzwa';
+
+  @override
+  String get freeFeature3 => 'Emera ibyifuzo wakiriye';
+
+  @override
+  String get currentPlan => 'Ipulani iriho';
+
+  @override
+  String get useFree => 'Koresha Kubuntu';
+
+  @override
+  String choosePlan(String plan) {
+    return 'Hitamo $plan';
+  }
+
+  @override
+  String planSelectedMessage(String plan) {
+    return '$plan yatoranyijwe. Kwishyura kwizewe bizaboneka vuba.';
+  }
+
+  @override
+  String get unlockDealTitle => 'Fungura ubwumvikane';
+
+  @override
+  String get unlockDealAndContact => 'Fungura ubwumvikane n\'amakuru y\'ibanze';
+
+  @override
+  String get dealAgreementLocked => 'Amasezerano yafunzwe';
+
+  @override
+  String get dealAgreementLockedSubtitle =>
+      'Umusabi n\'umuguriza bombi bemeje amasezerano. Ubu ushobora gufungura amakuru bagezaho ngo mvugane imbona nkubone.';
+
+  @override
+  String includedInPlan(String plan) {
+    return 'Biri mu ipulani yawe ya $plan';
+  }
+
+  @override
+  String get unlimitedUnlocksSubtitle =>
+      'Gufungura amakuru yo kuvugana bitagira umupaka bila kudasaba icyiru.';
+
+  @override
+  String welcomeGiftUnlocks(int count) {
+    return '🎁 Impano y\'ikaze — haracyari fursa $count zo gufungura kubuntu';
+  }
+
+  @override
+  String get welcomeGiftSubtitle =>
+      'Iki gikorwa gikoresha imwe mu fursa zawe zo gufungura kubuntu. Izindi fursa zishyurwa UGX 5,000.';
+
+  @override
+  String get unlockFeeApplies => 'Igiciro cyo gufungura ni UGX 5,000';
+
+  @override
+  String get unlockFeeAppliesSubtitle =>
+      'Fursa yawe yo gufungura kubuntu yakoreshejwe. Kuzamura kuri Umuguriza cyangwa Pro ubonereho gufungura bitagira umupaka.';
+
+  @override
+  String get whatHappensNext => 'Ikurikira n\'iki';
+
+  @override
+  String get step1Title => 'Amakuru yo kuvugana yaragaragajwe';
+
+  @override
+  String get step1Desc =>
+      'Izina ry\'amategeko, terefone, n\'e-mail by\'pande zombi bizasangizwa.';
+
+  @override
+  String get step2Title => 'Guhuza imbona nkubone';
+
+  @override
+  String get step2Desc =>
+      'Ubu ushobora kuvugana n\'uwo mukorana hanze y\'urubuga rwa Nipanze.';
+
+  @override
+  String get step3Title => 'Soza igikorwa';
+
+  @override
+  String get step3Desc =>
+      'Soza amasezerano y\'inguframe n\'ihererekanya ry\'amafaranga imbona nkubone.';
+
+  @override
+  String get disclaimerNonCustodial =>
+      'Nipanze ntiyabika cyangwa ngo yimura amafaranga ayo ari yo yose. Wowe n\'uwo mukorana ni mwe bonyine mubazwa ibikorwa byose by\'amafaranga n\'ikemurampaka.';
+
+  @override
+  String get payToUnlock => 'Ishyura UGX 5,000 Ufungure';
+
+  @override
+  String get unlockWithFreeCredit => 'Fungura ukoresheje fursa y\'ubuntu';
+
+  @override
+  String get unlockContactDetails => 'Fungura amakuru yo kuvugana';
+
+  @override
+  String get upgradeForUnlimited =>
+      'Zamura ubonereho gufungura bitagira umupaka';
+
+  @override
+  String get contactDetailsRevealed => 'Amakuru yo kuvugana yaragaragajwe';
+
+  @override
+  String get connectionSuccessful =>
+      'Guhuza kwayendeye neza. Aya ni amakuru yo kuvugana:';
+
+  @override
+  String get borrower => 'Umusabi';
+
+  @override
+  String get lender => 'Umuguriza';
+
+  @override
+  String get directContactNotice =>
+      'Ubu ushobora kuvugana n\'uwo mukorana imbona nkubone ngo usoze igikorwa hanze ya Nipanze.';
+
+  @override
+  String get done => 'Byarangiye';
+
+  @override
+  String planTitle(String plan) {
+    return 'Ipulani ya $plan';
+  }
+
+  @override
+  String get nonCustodialAccess => 'Ubushobozi bw\'ubunzi butabika amafaranga';
+
+  @override
+  String get howTrustWorks => 'Uko ikizere gukora';
+
+  @override
+  String get trustExplanation =>
+      'Ibyerekana ikizere bigaragaza gusa ibikorwa byakozwe binyuze kuri Nipanze. Ntitubara ibikorwa byo kwishyura hanze y\'urubuga.';
+
+  @override
+  String get trustScore => 'Amanota y\'ikizere';
+
+  @override
+  String get completeDealsToBuild => 'Soza amasezerano ngo wubake amanota yawe';
+
+  @override
+  String get noReviewsYet => 'Nta bitekerezo biratangwa';
+
+  @override
+  String successfulDeals(int count) {
+    return 'Amasezerano $count yagezweho neza';
+  }
+
+  @override
+  String get repeatParticipant => 'Umukoresha unyaruka';
+
+  @override
+  String get notRepeatYet => 'Ntiraba umukoresha unyaruka';
+
+  @override
+  String get phoneVerified => 'Terefone yaremejwe';
+
+  @override
+  String get phoneNotVerified => 'Terefone ntiyaremejwe';
+
+  @override
+  String get publicTrustSignals =>
+      'Ibyerekana ikizere by\'abantu bishingiye gusa ku bikorwa byakozwe binyuze kuri Nipanze.';
+
+  @override
+  String get advancedFilters => 'Uyunguruzo bwisumbuye';
+
+  @override
+  String get advancedFiltersBadge => 'Pro · Shungura ibiri kuri isoko';
+
+  @override
+  String get filterReset => 'Subira imbere';
+
+  @override
+  String get filterClear => 'Siba';
+
+  @override
+  String get filterApply => 'Shyira uyunguruzo';
+
+  @override
+  String get filterDone => 'Byarangiye';
+
+  @override
+  String get filterEmploymentType => 'Ubwoko bw\'akazi';
+
+  @override
+  String get filterEmploymentSubtitle =>
+      'Shungura hakurikijwe akazi ka muguzi kwatangajwe';
+
+  @override
+  String get filterIncomeRange => 'Urwego rw\'inyungu za buri kwezi';
+
+  @override
+  String get filterIncomeSubtitle =>
+      'Ibikorwa bya hafi — inyungu nyayo ntizigaragazwa na rimwe';
+
+  @override
+  String get filterQualitySignals => 'Ibimenyetso by\'ubwiza bw\'urutonde';
+
+  @override
+  String get filterHasSuggestedTerms => 'Bifite amategeko atekerezwa';
+
+  @override
+  String get filterHasSuggestedTermsSubtitle =>
+      'Irutonde ry\'Pro gusa rifite igipimo cy\'inyungu gitunganye, igihano cy\'gutinda, n\'igihe cyo kwishyura';
+
+  @override
+  String get filterVerifiedBorrower => 'Umusabi wemejwe';
+
+  @override
+  String get filterVerifiedBorrowerSubtitle =>
+      'Izimusaba gusa zivuye ku bafite konti zemejwe na KYC';
+
+  @override
+  String get filterPrivacyNote =>
+      'Amazina y\'abakora ndetse n\'inyungu nyayo ntibigaragazwa na rimwe. Imikorere y\'inyungu n\'amoko y\'akazi ni ibyerekana by\'ingenzi gusa, by\'ingenzi.';
+
+  @override
+  String get empGovEmployee => 'Umukozi wa leta';
+
+  @override
+  String get empEmployedPrivate => 'Umukozi (abikorera)';
+
+  @override
+  String get empSelfEmployed => 'Akora afite ubwe';
+
+  @override
+  String get empSmallBusinessOwner => 'Nyir\'ubucuruzi buto';
+
+  @override
+  String get empBusinessOwner => 'Nyir\'ubucuruzi';
+
+  @override
+  String get empStudent => 'Umunyeshuri';
+
+  @override
+  String get empOther => 'Ikindi';
+
+  @override
+  String get incomeUnder2m => 'Munsi ya 2M UGX / ukwezi';
+
+  @override
+  String get income2m5m => '2M – 5M UGX / ukwezi';
+
+  @override
+  String get income5m10m => '5M – 10M UGX / ukwezi';
+
+  @override
+  String get incomeOver10m => 'Hejuru ya 10M UGX / ukwezi';
 }

@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Show the Pro plan required bottom sheet matching the Nipanze paywall design.
@@ -26,6 +28,7 @@ class _ProRequiredSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     String? phone;
     try {
@@ -82,7 +85,7 @@ class _ProRequiredSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Pro tier required',
+                    l10n?.proRequired ?? 'Pro tier required',
                     style: TextStyle(
                       fontFamily: AppFonts.heading,
                       fontSize: 20,
@@ -104,7 +107,8 @@ class _ProRequiredSheet extends StatelessWidget {
 
               // ── Subtitle ────────────────────────────────────────────────
               Text(
-                'Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.',
+                l10n?.proRequiredSubtitle ??
+                    'Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.',
                 style: TextStyle(
                   fontSize: 13.5,
                   height: 1.4,
@@ -133,7 +137,7 @@ class _ProRequiredSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Pro tier',
+                        l10n?.proTier ?? 'Pro tier',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -183,7 +187,7 @@ class _ProRequiredSheet extends StatelessWidget {
                            ),
                         ),
                         Text(
-                          ' / month',
+                          l10n?.perMonth ?? ' / month',
                           style: TextStyle(
                             fontSize: 13.5,
                             color: textSecondary,
@@ -197,7 +201,8 @@ class _ProRequiredSheet extends StatelessWidget {
 
                     // Short Card Description
                     Text(
-                      'Full marketplace access, advanced filters and strong request positioning.',
+                      l10n?.proTierDesc ??
+                          'Full marketplace access, advanced filters and strong request positioning.',
                      style: TextStyle(
                        fontSize: 12.5,
                        height: 1.4,
@@ -210,17 +215,17 @@ class _ProRequiredSheet extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Feature Checkmark List
-                    _buildFeatureItem(checkColor, textPrimary, 'Everything in Lender'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.everythingInLender ?? 'Everything in Lender'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, 'Suggest rates, late fees and repayment terms'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature1 ?? 'Suggest rates, late fees and repayment terms'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, 'Advanced filters (income, employment, verified)'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature2 ?? 'Advanced filters (income, employment, verified)'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, 'Verified badge, reliability score and priority visibility'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature3 ?? 'Verified badge, reliability score and priority visibility'),
 
                     const SizedBox(height: 22),
 
-                    // "Choose pro" Button
+                    // "Choose Pro" Button
                     SizedBox(
                       width: double.infinity,
                       height: 48,
@@ -237,9 +242,9 @@ class _ProRequiredSheet extends StatelessWidget {
                           Navigator.of(context).pop();
                           context.push(AppRoutes.pricing);
                         },
-                        child: const Text(
-                          'Choose pro',
-                          style: TextStyle(
+                        child: Text(
+                          l10n?.choosePro ?? 'Choose Pro',
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
@@ -259,9 +264,9 @@ class _ProRequiredSheet extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: textSecondary,
                   ),
-                  child: const Text(
-                    'Not now',
-                    style: TextStyle(
+                  child: Text(
+                    l10n?.notNow ?? 'Not now',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -273,7 +278,8 @@ class _ProRequiredSheet extends StatelessWidget {
 
               // ── Legal / Security Caption ────────────────────────────────
               Text(
-                'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
+                l10n?.paymentSecurityDisclaimer ??
+                    'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,

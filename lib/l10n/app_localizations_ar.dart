@@ -412,4 +412,335 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get nipanzeDisclaimer =>
       'Nipanze منصة وساطة غير حارسة. لا نحتجز أو ننقل أو نسوي الأموال. تتم جميع المعاملات مباشرة بين المشاركين.';
+
+  @override
+  String get lenderRequired => 'مستوى المقرض مطلوب';
+
+  @override
+  String get lenderRequiredSubtitle =>
+      'تقديم العروض هو جزء من خطة المقرض (مضمنة أيضًا في Pro). قم بالترقية لفتح إمكانية تقديم العروض على أي إعلان.';
+
+  @override
+  String get lenderTier => 'مستوى المقرض';
+
+  @override
+  String get lenderTierDesc =>
+      'لكل من هو مستعد لتقديم عروض مهيكلة وتحقيق عوائد على Nipanze.';
+
+  @override
+  String get everythingInFree => 'كل شيء في الخطة المجانية';
+
+  @override
+  String get lenderFeature1 =>
+      'تقديم عروض بشروط كاملة (الفائدة، الرسوم، الجدول الزمني)';
+
+  @override
+  String get lenderFeature2 => 'عرض تفاصيل العرض حيث تشارك';
+
+  @override
+  String get chooseLender => 'اختيار المقرض';
+
+  @override
+  String get notNow => 'ليس الآن';
+
+  @override
+  String get paymentSecurityDisclaimer =>
+      'Nipanze لا تحتجز ولا تنقل الأموال. يتم تأكيد تغييرات الاشتراك عبر تدفق دفع آمن.';
+
+  @override
+  String get proRequired => 'مستوى Pro مطلوب';
+
+  @override
+  String get proRequiredSubtitle =>
+      'الميزات المتقدمة مثل اقتراحات الشروط المخصصة والتصفية المتقدمة مخصصة لمشتركي Pro.';
+
+  @override
+  String get proTier => 'مستوى Pro';
+
+  @override
+  String get proTierDesc =>
+      'وصول كامل إلى السوق، تصفية متقدمة وتمركز أولوية للطلبات.';
+
+  @override
+  String get everythingInLender => 'كل شيء في خطة المقرض';
+
+  @override
+  String get proFeature1 => 'اقتراح الفوائد وغرامات التأخير وشروط السداد';
+
+  @override
+  String get proFeature2 => 'تصفية متقدمة (الدخل، التوظيف، الموثق)';
+
+  @override
+  String get proFeature3 => 'شارة موثقة، درجة موثوقية ورؤية ذات أولوية';
+
+  @override
+  String get choosePro => 'اختيار Pro';
+
+  @override
+  String get plansAndPricing => 'الخطط والأسعار';
+
+  @override
+  String get chooseAccessTitle => 'اختر مستوى الوصول الذي تحتاجه';
+
+  @override
+  String chooseAccessSubtitle(String flag, String country) {
+    return 'يمكن لحساب واحد نشر الطلبات تقديم العروض. تتطابق الأسعار مع منطقة حسابك ($flag $country).';
+  }
+
+  @override
+  String get perMonth => ' / شهرياً';
+
+  @override
+  String get freePlanSubtitle =>
+      'التصفح، متابعة الإعلانات، نشر الطلبات الأساسية، وقبول العروض.';
+
+  @override
+  String get freeFeature1 => 'تصفح السوق';
+
+  @override
+  String get freeFeature2 => 'نشر طلبات القروض الأساسية';
+
+  @override
+  String get freeFeature3 => 'قبول العروض المستلمة';
+
+  @override
+  String get currentPlan => 'الخطة الحالية';
+
+  @override
+  String get useFree => 'استخدام المجاني';
+
+  @override
+  String choosePlan(String plan) {
+    return 'اختيار $plan';
+  }
+
+  @override
+  String planSelectedMessage(String plan) {
+    return 'تم اختيار $plan. ستتوفر عملية تفعيل الدفع الآمن قريبًا.';
+  }
+
+  @override
+  String get unlockDealTitle => 'فتح الصفقة';
+
+  @override
+  String get unlockDealAndContact => 'فتح الصفقة وبيانات الاتصال';
+
+  @override
+  String get dealAgreementLocked => 'اتفاقية الصفقة مقفلة';
+
+  @override
+  String get dealAgreementLockedSubtitle =>
+      'أكد كل من المقترض والمقرض الصفقة. يمكنك الآن فتح بيانات الاتصال للتواصل مباشرة.';
+
+  @override
+  String includedInPlan(String plan) {
+    return 'مضمن في خطة $plan الخاصة بك';
+  }
+
+  @override
+  String get unlimitedUnlocksSubtitle =>
+      'فتح غير محدود لبيانات الاتصال بدون رسوم إضافية.';
+
+  @override
+  String welcomeGiftUnlocks(int count) {
+    return '🎁 هدية الترحيب — متبقي $count عملية فتح مجانية';
+  }
+
+  @override
+  String get welcomeGiftSubtitle =>
+      'تستخدم هذه الصفقة إحدى عمليات الفتح المجانية الخاصة بك. تكلفة عمليات الفتح الإضافية 5,000 شلن أوغندي.';
+
+  @override
+  String get unlockFeeApplies => 'تطبق رسوم فتح بقيمة 5,000 شلن أوغندي';
+
+  @override
+  String get unlockFeeAppliesSubtitle =>
+      'تم استخدام فتح الترحيب الخاص بك. قم بالترقية إلى المقرض أو Pro للحصول على فتح مجاني غير محدود.';
+
+  @override
+  String get whatHappensNext => 'ماذا يحدث بعد ذلك';
+
+  @override
+  String get step1Title => 'الكشف عن بيانات الاتصال';
+
+  @override
+  String get step1Desc =>
+      'سيتم مشاركة الاسم القانوني ورقم الهاتف والبريد الإلكتروني لكلا الطرفين.';
+
+  @override
+  String get step2Title => 'اتصال مباشر';
+
+  @override
+  String get step2Desc => 'يمكنك الآن الاتصال بشريكك خارج منصة Nipanze.';
+
+  @override
+  String get step3Title => 'إكمال المعاملة';
+
+  @override
+  String get step3Desc => 'إتمام اتفاقية القروض وتبادل الأموال مباشرة.';
+
+  @override
+  String get disclaimerNonCustodial =>
+      'Nipanze لا تحتجز ولا تنقل أي أموال. أنت وشريكك مسؤولان بشكل كامل عن جميع المعاملات المالية وحل النزاعات.';
+
+  @override
+  String get payToUnlock => 'دفع 5,000 شلن للفتح';
+
+  @override
+  String get unlockWithFreeCredit => 'الفتح باستخدام الرصيد المجاني';
+
+  @override
+  String get unlockContactDetails => 'فتح بيانات الاتصال';
+
+  @override
+  String get upgradeForUnlimited => 'الترقية للحصول على فتح غير محدود';
+
+  @override
+  String get contactDetailsRevealed => 'تم الكشف عن بيانات الاتصال';
+
+  @override
+  String get connectionSuccessful => 'تم الاتصال بنجاح. إليك بيانات الاتصال:';
+
+  @override
+  String get borrower => 'المقترض';
+
+  @override
+  String get lender => 'المقرض';
+
+  @override
+  String get directContactNotice =>
+      'يمكنك الآن الاتصال بشريكك مباشرة لإكمال المعاملة خارج منصة Nipanze.';
+
+  @override
+  String get done => 'تم';
+
+  @override
+  String planTitle(String plan) {
+    return 'خطة $plan';
+  }
+
+  @override
+  String get nonCustodialAccess => 'وصول غير حارسي';
+
+  @override
+  String get howTrustWorks => 'كيف تعمل الثقة';
+
+  @override
+  String get trustExplanation =>
+      'تعكس مؤشرات الثقة فقط النشاط المكتمل من خلال Nipanze. ولا تقيم أو تضمن سلوك السداد خارج المنصة.';
+
+  @override
+  String get trustScore => 'درجة الثقة';
+
+  @override
+  String get completeDealsToBuild => 'أكمل الصفقات لبناء درجتك';
+
+  @override
+  String get noReviewsYet => 'لا توجد تقييمات بعد';
+
+  @override
+  String successfulDeals(int count) {
+    return '$count صفقات ناجحة';
+  }
+
+  @override
+  String get repeatParticipant => 'مشارك مكرر';
+
+  @override
+  String get notRepeatYet => 'ليس مشاركًا مكررًا بعد';
+
+  @override
+  String get phoneVerified => 'الهاتف موثق';
+
+  @override
+  String get phoneNotVerified => 'الهاتف غير موثق';
+
+  @override
+  String get publicTrustSignals =>
+      'تستند مؤشرات الثقة العامة فقط إلى النشاط المكتمل عبر Nipanze.';
+
+  @override
+  String get advancedFilters => 'فلاتر متقدمة';
+
+  @override
+  String get advancedFiltersBadge => 'Pro · تضييق نطاق بحثك';
+
+  @override
+  String get filterReset => 'إعادة ضبط';
+
+  @override
+  String get filterClear => 'مسح';
+
+  @override
+  String get filterApply => 'تطبيق الفلاتر';
+
+  @override
+  String get filterDone => 'تم';
+
+  @override
+  String get filterEmploymentType => 'نوع العمل';
+
+  @override
+  String get filterEmploymentSubtitle => 'التصفية حسب التوظيف المُعلن للمقترض';
+
+  @override
+  String get filterIncomeRange => 'نطاق الدخل الشهري';
+
+  @override
+  String get filterIncomeSubtitle =>
+      'شرائح تقريبية — الدخل الدقيق لا يُظهر أبداً';
+
+  @override
+  String get filterQualitySignals => 'مؤشرات جودة الإعلان';
+
+  @override
+  String get filterHasSuggestedTerms => 'يحتوي على شروط مقترحة';
+
+  @override
+  String get filterHasSuggestedTermsSubtitle =>
+      'فقط الإعلانات التي تحتوي على نسبة فائدة ثابتة وغرامات تأخير وجدول سداد';
+
+  @override
+  String get filterVerifiedBorrower => 'مقترض موثق';
+
+  @override
+  String get filterVerifiedBorrowerSubtitle =>
+      'فقط الطلبات من أصحاب الحسابات الموثقة عبر KYC';
+
+  @override
+  String get filterPrivacyNote =>
+      'لا تُظهر أسماء جهات العمل أو الدخل الدقيق أبداً. الشرائح الدخلية وفئات التوظيف هي الإشارات الوحيدة المتاحة، بتصميم مقصود.';
+
+  @override
+  String get empGovEmployee => 'موظف حكومي';
+
+  @override
+  String get empEmployedPrivate => 'موظف (خاص)';
+
+  @override
+  String get empSelfEmployed => 'عامل حر';
+
+  @override
+  String get empSmallBusinessOwner => 'صاحب مشروع صغير';
+
+  @override
+  String get empBusinessOwner => 'صاحب عمل';
+
+  @override
+  String get empStudent => 'طالب';
+
+  @override
+  String get empOther => 'أخرى';
+
+  @override
+  String get incomeUnder2m => 'أقل من 2 مليون UGX / شهر';
+
+  @override
+  String get income2m5m => '2 – 5 مليون UGX / شهر';
+
+  @override
+  String get income5m10m => '5 – 10 مليون UGX / شهر';
+
+  @override
+  String get incomeOver10m => 'أكثر من 10 مليون UGX / شهر';
 }

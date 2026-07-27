@@ -151,7 +151,7 @@ class _AccountView extends StatelessWidget {
                     const SizedBox(height: 4),
 
                     // ── Subscription ──────────────────────────────────────
-                    SectionHeader(AppLocalizations.of(context)!.subscription),
+                    SectionHeader(AppLocalizations.of(context)?.subscription ?? 'Subscription'),
                     _SubscriptionCard(profile: profile),
                     const SizedBox(height: 8),
                     if (authState is AuthAuthenticated &&
@@ -160,8 +160,8 @@ class _AccountView extends StatelessWidget {
                         onTap: () => context.push(AppRoutes.pricing),
                         label: authState.user.subscriptionPlan ==
                                 SubscriptionPlan.lender
-                            ? AppLocalizations.of(context)!.upgradeToPro
-                            : AppLocalizations.of(context)!.viewPlansUpgrade,
+                            ? (AppLocalizations.of(context)?.upgradeToPro ?? 'Upgrade to Pro')
+                            : (AppLocalizations.of(context)?.viewPlansUpgrade ?? 'View plans'),
                       ),
 
                     if (context.read<AuthBloc>().state is AuthAuthenticated &&
@@ -172,14 +172,14 @@ class _AccountView extends StatelessWidget {
                       Card(
                           child: _ActionRow(
                         icon: Icons.admin_panel_settings_outlined,
-                        label: AppLocalizations.of(context)!.adminDashboard,
+                        label: AppLocalizations.of(context)?.adminDashboard ?? 'Admin Dashboard',
                         onTap: () => context.push(AppRoutes.admin),
                       )),
                     ],
                     const SizedBox(height: 20),
 
                     Text(
-                      AppLocalizations.of(context)!.nipanzeDisclaimer,
+                      AppLocalizations.of(context)?.nipanzeDisclaimer ?? 'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontSize: 10,
@@ -196,25 +196,26 @@ class _AccountView extends StatelessWidget {
     );
   }
 
-  void _showTrustExplainer(BuildContext context) =>
-      showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (context) => const Padding(
-          padding: EdgeInsets.fromLTRB(24, 0, 24, 32),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('How trust works',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                SizedBox(height: 10),
-                Text(
-                    'Trust signals reflect only activity completed through Nipanze. They do not assess or imply off-platform repayment behaviour.'),
-              ]),
-        ),
-      );
+  void _showTrustExplainer(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.howTrustWorks,
+                  style:
+                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 10),
+              Text(l10n.trustExplanation),
+            ]),
+      ),
+    );
+  }
 
   void _showSettingsSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -777,35 +778,18 @@ class _TrustPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final hasScore = profile.trustReliabilityScore != null;
-    // Fix: reliability score is 0-100 already (per ProfileRepository mapping
-    // from proTrust['reliability_score']), so no extra scaling is needed.
     final scorePct =
         hasScore ? (profile.trustReliabilityScore!.clamp(0, 100)) / 100 : 0.0;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(14),
-        // Fix: badge rows were bunched at the top with fixed 6px gaps,
-        // leaving dead space below since the Column only took its natural
-        // (min) height while the left score box was taller. IntrinsicHeight
-        // gives this Row a shared finite height (safe here, unlike the
-        // earlier stats-Row crash, because Card sizes to its child rather
-        // than passing down an unbounded height) — CrossAxisAlignment.stretch
-        // then makes the badge Column match the score box's height, and
-        // mainAxisAlignment.spaceBetween distributes the four rows evenly
-        // across it instead of clumping them at the top.
         child: IntrinsicHeight(
           child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-            // Left — score block
-            // Fix: was a fixed `width: 100`, which read as a narrow sliver
-            // next to the badge list. Switched to Expanded(flex: 5) against
-            // the badge column's Expanded(flex: 6) below so the two columns
-            // split the available width almost evenly (with the badges
-            // getting a slight edge, matching the mockup's proportions)
-            // instead of the score block being squeezed down to a minimum.
             Expanded(
               flex: 5,
               child: Container(
@@ -821,9 +805,9 @@ class _TrustPanel extends StatelessWidget {
                     const Icon(Icons.shield_outlined,
                         size: 22, color: AppColors.accent),
                     const SizedBox(height: 4),
-                    const Text('Trust score',
+                    Text(l10n.trustScore,
                         style:
-                            TextStyle(fontSize: 9, color: AppColors.text2Dark),
+                            const TextStyle(fontSize: 9, color: AppColors.text2Dark),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 4),
                     Text(
@@ -834,23 +818,13 @@ class _TrustPanel extends StatelessWidget {
                           fontFamily: AppFonts.heading),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Complete deals to build your score',
+                    Text(
+                      l10n.completeDealsToBuild,
                       style:
-                          TextStyle(fontSize: 8, color: AppColors.text3Dark),
+                          const TextStyle(fontSize: 8, color: AppColors.text3Dark),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    // Progress bar toward a scored state, with % readout.
-                    // Fix: previously used Theme.of(context).dividerColor as
-                    // the track background, which renders far too bright
-                    // against this dark card and reads as a solid white bar
-                    // instead of a subtle track. Switched to the theme's own
-                    // muted surface token (bg3Dark/bg3Light) to match. Also
-                    // moved the "0%" label onto the same row as the bar (was
-                    // a separate stacked line below), and added a small
-                    // leading dot to mark the current progress position,
-                    // matching the target design's slider-style indicator.
                     Row(
                       children: [
                         Expanded(
@@ -902,18 +876,6 @@ class _TrustPanel extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            // Right — badge list
-            // Fix: badges were being greyed out (icon + text muted) whenever
-            // the underlying status was "not yet achieved" (0 deals, not a
-            // repeat participant), which doesn't match the target design —
-            // there, every badge keeps full-brightness text and a fully
-            // saturated icon color regardless of whether the state is
-            // positive or still-pending; only the label copy communicates
-            // the state. Dropped `muted` entirely so all four rows render
-            // consistently. Also swapped the "repeat participant" icon color
-            // from success (green, same as the deals-count badge right above
-            // it) to accent (blue), matching the mockup's distinct color per
-            // badge instead of reusing green twice in a row.
             Expanded(
               flex: 6,
               child: Column(
@@ -924,28 +886,27 @@ class _TrustPanel extends StatelessWidget {
                     icon: Icons.star_rounded,
                     color: AppColors.warning,
                     label: profile.trustRatingAvg == null
-                        ? 'No reviews yet'
+                        ? l10n.noReviewsYet
                         : '${profile.trustRatingAvg!.toStringAsFixed(1)} (${profile.trustReviewCount})',
                   ),
                   _TrustBadgeItem(
                     icon: Icons.handshake_outlined,
                     color: AppColors.success,
-                    label:
-                        '${profile.trustCompletedDealsCount} successful deals',
+                    label: l10n.successfulDeals(profile.trustCompletedDealsCount),
                   ),
                   _TrustBadgeItem(
                     icon: Icons.repeat_rounded,
                     color: AppColors.accent,
                     label: profile.trustIsRepeatParticipant
-                        ? 'Repeat participant'
-                        : 'Not a repeat yet',
+                        ? l10n.repeatParticipant
+                        : l10n.notRepeatYet,
                   ),
                   _TrustBadgeItem(
                     icon: Icons.phone_iphone_rounded,
                     color: AppColors.success,
                     label: profile.trustPhoneVerified
-                        ? 'Phone verified'
-                        : 'Phone not verified',
+                        ? l10n.phoneVerified
+                        : l10n.phoneNotVerified,
                   ),
                 ],
               ),
@@ -989,27 +950,30 @@ class _PublicTrustInfoCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: AppColors.accent.withValues(alpha: 0.07),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Material(
+      color: AppColors.accent.withValues(alpha: 0.07),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: const Padding(
-            padding: EdgeInsets.all(12),
-            child: Row(children: [
-              Icon(Icons.shield_outlined, size: 18, color: AppColors.accent),
-              SizedBox(width: 10),
-              Expanded(
-                  child: Text(
-                      'Public trust signals are based only on activity completed through Nipanze.',
-                      style: TextStyle(fontSize: 10, height: 1.3))),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: AppColors.text3Dark),
-            ]),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(children: [
+            const Icon(Icons.shield_outlined, size: 18, color: AppColors.accent),
+            const SizedBox(width: 10),
+            Expanded(
+                child: Text(
+                    l10n.publicTrustSignals,
+                    style: const TextStyle(fontSize: 10, height: 1.3))),
+            const Icon(Icons.chevron_right_rounded,
+                size: 18, color: AppColors.text3Dark),
+          ]),
         ),
-      );
+      ),
+    );
+  }
 }
 
 // ── Subscription Card ─────────────────────────────────────────────────────────
@@ -1020,6 +984,7 @@ class _SubscriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final plan = profile?.subscriptionPlan ?? 'free';
     final status = profile?.subscriptionStatus ?? 'active';
     final color = _planColor(plan);
@@ -1047,14 +1012,14 @@ class _SubscriptionCard extends StatelessWidget {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${_planLabel(plan)} plan',
+                Text(l10n?.planTitle(_planLabel(plan)) ?? '${_planLabel(plan)} Plan',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: color)),
                 const SizedBox(height: 2),
-                const Text('Non-custodial access',
-                    style: TextStyle(fontSize: 11)),
+                Text(l10n?.nonCustodialAccess ?? 'Non-custodial access',
+                    style: const TextStyle(fontSize: 11)),
               ]),
         ),
         _StatusPill(label: status.toUpperCase(), color: color),

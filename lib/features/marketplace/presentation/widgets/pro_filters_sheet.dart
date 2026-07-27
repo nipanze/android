@@ -14,38 +14,69 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../cubit/marketplace_cubit.dart';
 
 // ── Value domain ─────────────────────────────────────────────────────────────
 
 class _EmploymentOption {
-  const _EmploymentOption(this.value, this.label);
+  const _EmploymentOption(this.value, this.labelKey);
   final String value;
-  final String label;
+  final String labelKey;
 }
 
 const _kEmploymentOptions = [
-  _EmploymentOption('government_employee', 'Government employee'),
-  _EmploymentOption('employed', 'Employed (private)'),
-  _EmploymentOption('self_employed', 'Self-employed'),
-  _EmploymentOption('small_business_owner', 'Small business owner'),
-  _EmploymentOption('business_owner', 'Business owner'),
-  _EmploymentOption('student', 'Student'),
-  _EmploymentOption('other', 'Other'),
+  _EmploymentOption('government_employee', 'empGovEmployee'),
+  _EmploymentOption('employed', 'empEmployedPrivate'),
+  _EmploymentOption('self_employed', 'empSelfEmployed'),
+  _EmploymentOption('small_business_owner', 'empSmallBusinessOwner'),
+  _EmploymentOption('business_owner', 'empBusinessOwner'),
+  _EmploymentOption('student', 'empStudent'),
+  _EmploymentOption('other', 'empOther'),
 ];
 
 class _IncomeBracketOption {
-  const _IncomeBracketOption(this.value, this.label);
+  const _IncomeBracketOption(this.value, this.labelKey);
   final String value;
-  final String label;
+  final String labelKey;
 }
 
 const _kIncomeBracketOptions = [
-  _IncomeBracketOption('under_2m', 'Under 2M UGX / month'),
-  _IncomeBracketOption('2m_5m', '2M – 5M UGX / month'),
-  _IncomeBracketOption('5m_10m', '5M – 10M UGX / month'),
-  _IncomeBracketOption('over_10m', 'Over 10M UGX / month'),
+  _IncomeBracketOption('under_2m', 'incomeUnder2m'),
+  _IncomeBracketOption('2m_5m', 'income2m5m'),
+  _IncomeBracketOption('5m_10m', 'income5m10m'),
+  _IncomeBracketOption('over_10m', 'incomeOver10m'),
 ];
+
+/// Resolves a labelKey to a localized string.
+String _resolveLabel(AppLocalizations? l10n, String key) {
+  switch (key) {
+    case 'empGovEmployee':
+      return l10n?.empGovEmployee ?? 'Government employee';
+    case 'empEmployedPrivate':
+      return l10n?.empEmployedPrivate ?? 'Employed (private)';
+    case 'empSelfEmployed':
+      return l10n?.empSelfEmployed ?? 'Self-employed';
+    case 'empSmallBusinessOwner':
+      return l10n?.empSmallBusinessOwner ?? 'Small business owner';
+    case 'empBusinessOwner':
+      return l10n?.empBusinessOwner ?? 'Business owner';
+    case 'empStudent':
+      return l10n?.empStudent ?? 'Student';
+    case 'empOther':
+      return l10n?.empOther ?? 'Other';
+    case 'incomeUnder2m':
+      return l10n?.incomeUnder2m ?? 'Under 2M UGX / month';
+    case 'income2m5m':
+      return l10n?.income2m5m ?? '2M – 5M UGX / month';
+    case 'income5m10m':
+      return l10n?.income5m10m ?? '5M – 10M UGX / month';
+    case 'incomeOver10m':
+      return l10n?.incomeOver10m ?? 'Over 10M UGX / month';
+    default:
+      return key;
+  }
+}
 
 String? _fnIncomeBracket(int? monthlyIncomeUgx) {
   if (monthlyIncomeUgx == null) return null;
@@ -194,6 +225,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final l10n = AppLocalizations.of(context);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.82,
@@ -244,13 +276,13 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Advanced Filters',
+                            l10n?.advancedFilters ?? 'Advanced Filters',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           Text(
-                            'Pro · Narrow the marketplace feed',
+                            l10n?.advancedFiltersBadge ?? 'Pro · Narrow the marketplace feed',
                             style: TextStyle(
                               fontSize: 11,
                               color: AppColors.purple.withValues(alpha: 0.85),
@@ -273,9 +305,9 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                               horizontal: 10, vertical: 4),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: const Text(
-                          'Reset',
-                          style: TextStyle(
+                        child: Text(
+                          l10n?.filterReset ?? 'Reset',
+                          style: const TextStyle(
                               color: AppColors.danger, fontSize: 12.5),
                         ),
                       ),
@@ -292,8 +324,9 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     // Employment type
                     _SectionHeader(
                       icon: Icons.work_outline_rounded,
-                      label: 'Employment type',
-                      subtitle: 'Filter by the borrower\'s declared employment',
+                      label: l10n?.filterEmploymentType ?? 'Employment type',
+                      subtitle: l10n?.filterEmploymentSubtitle ??
+                          "Filter by the borrower's declared employment",
                       textColor: text2,
                     ),
                     const SizedBox(height: 10),
@@ -303,7 +336,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       children: _kEmploymentOptions.map((opt) {
                         final selected = _selectedEmployment.contains(opt.value);
                         return _FilterChip(
-                          label: opt.label,
+                          label: _resolveLabel(l10n, opt.labelKey),
                           selected: selected,
                           onTap: () => setState(() {
                             if (selected) {
@@ -319,8 +352,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     // Income bracket
                     _SectionHeader(
                       icon: Icons.bar_chart_rounded,
-                      label: 'Monthly income range',
-                      subtitle:
+                      label: l10n?.filterIncomeRange ?? 'Monthly income range',
+                      subtitle: l10n?.filterIncomeSubtitle ??
                           'Coarse brackets — exact income is never shown',
                       textColor: text2,
                     ),
@@ -331,7 +364,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       children: _kIncomeBracketOptions.map((opt) {
                         final selected = _selectedIncome.contains(opt.value);
                         return _FilterChip(
-                          label: opt.label,
+                          label: _resolveLabel(l10n, opt.labelKey),
                           selected: selected,
                           onTap: () => setState(() {
                             if (selected) {
@@ -347,15 +380,15 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     // Boolean toggles
                     _SectionHeader(
                       icon: Icons.shield_outlined,
-                      label: 'Listing quality signals',
+                      label: l10n?.filterQualitySignals ?? 'Listing quality signals',
                       textColor: text2,
                     ),
                     const SizedBox(height: 10),
                     _ToggleTile(
                       icon: Icons.receipt_long_outlined,
                       iconColor: AppColors.accent,
-                      title: 'Has suggested terms',
-                      subtitle:
+                      title: l10n?.filterHasSuggestedTerms ?? 'Has suggested terms',
+                      subtitle: l10n?.filterHasSuggestedTermsSubtitle ??
                           'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule',
                       value: _suggestedTermsOnly,
                       onChanged: (v) => setState(() => _suggestedTermsOnly = v),
@@ -365,8 +398,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     _ToggleTile(
                       icon: Icons.verified_outlined,
                       iconColor: AppColors.success,
-                      title: 'Verified borrower',
-                      subtitle:
+                      title: l10n?.filterVerifiedBorrower ?? 'Verified borrower',
+                      subtitle: l10n?.filterVerifiedBorrowerSubtitle ??
                           'Only requests from KYC-approved account holders',
                       value: _verifiedOnly,
                       onChanged: (v) => setState(() => _verifiedOnly = v),
@@ -393,9 +426,10 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Employer names and exact income are never shown. '
-                              'Income brackets and employment categories are the '
-                              'only signals available, by design.',
+                              l10n?.filterPrivacyNote ??
+                                  'Employer names and exact income are never shown. '
+                                  'Income brackets and employment categories are the '
+                                  'only signals available, by design.',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 color: text2,
@@ -432,8 +466,10 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text('Clear',
-                              style: TextStyle(fontSize: 13)),
+                          child: Text(
+                            l10n?.filterClear ?? 'Clear',
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ),
                       ),
                     if (_anyActive) const SizedBox(width: 10),
@@ -451,7 +487,9 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                           ),
                         ),
                         child: Text(
-                          _anyActive ? 'Apply filters' : 'Done',
+                          _anyActive
+                              ? (l10n?.filterApply ?? 'Apply filters')
+                              : (l10n?.filterDone ?? 'Done'),
                           style: const TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,

@@ -847,6 +847,600 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.'**
   String get nipanzeDisclaimer;
+
+  /// No description provided for @lenderRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender required'**
+  String get lenderRequired;
+
+  /// No description provided for @lenderRequiredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.'**
+  String get lenderRequiredSubtitle;
+
+  /// No description provided for @lenderTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender tier'**
+  String get lenderTier;
+
+  /// No description provided for @lenderTierDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'For anyone ready to make structured offers and earn returns on Nipanze.'**
+  String get lenderTierDesc;
+
+  /// No description provided for @everythingInFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything in Free'**
+  String get everythingInFree;
+
+  /// No description provided for @lenderFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Make offers with full terms (rate, fee, schedule)'**
+  String get lenderFeature1;
+
+  /// No description provided for @lenderFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'See offer detail where you participate'**
+  String get lenderFeature2;
+
+  /// No description provided for @chooseLender.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Lender'**
+  String get chooseLender;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @paymentSecurityDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.'**
+  String get paymentSecurityDisclaimer;
+
+  /// No description provided for @proRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro tier required'**
+  String get proRequired;
+
+  /// No description provided for @proRequiredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.'**
+  String get proRequiredSubtitle;
+
+  /// No description provided for @proTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro tier'**
+  String get proTier;
+
+  /// No description provided for @proTierDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Full marketplace access, advanced filters and strong request positioning.'**
+  String get proTierDesc;
+
+  /// No description provided for @everythingInLender.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything in Lender'**
+  String get everythingInLender;
+
+  /// No description provided for @proFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest rates, late fees and repayment terms'**
+  String get proFeature1;
+
+  /// No description provided for @proFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced filters (income, employment, verified)'**
+  String get proFeature2;
+
+  /// No description provided for @proFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified badge, reliability score and priority visibility'**
+  String get proFeature3;
+
+  /// No description provided for @choosePro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Pro'**
+  String get choosePro;
+
+  /// No description provided for @plansAndPricing.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans & pricing'**
+  String get plansAndPricing;
+
+  /// No description provided for @chooseAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the access you need'**
+  String get chooseAccessTitle;
+
+  /// No description provided for @chooseAccessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One account can post requests and make offers. Prices match your account region ({flag} {country}).'**
+  String chooseAccessSubtitle(String flag, String country);
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **' / month'**
+  String get perMonth;
+
+  /// No description provided for @freePlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse, watch listings, post basic requests, and accept offers.'**
+  String get freePlanSubtitle;
+
+  /// No description provided for @freeFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse the marketplace'**
+  String get freeFeature1;
+
+  /// No description provided for @freeFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Post basic loan requests'**
+  String get freeFeature2;
+
+  /// No description provided for @freeFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept offers received'**
+  String get freeFeature3;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get currentPlan;
+
+  /// No description provided for @useFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Free'**
+  String get useFree;
+
+  /// No description provided for @choosePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose {plan}'**
+  String choosePlan(String plan);
+
+  /// No description provided for @planSelectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{plan} selected. Secure payment activation will be available shortly.'**
+  String planSelectedMessage(String plan);
+
+  /// No description provided for @unlockDealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock deal'**
+  String get unlockDealTitle;
+
+  /// No description provided for @unlockDealAndContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock deal & contact'**
+  String get unlockDealAndContact;
+
+  /// No description provided for @dealAgreementLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Deal agreement locked'**
+  String get dealAgreementLocked;
+
+  /// No description provided for @dealAgreementLockedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Both borrower and lender have confirmed the deal. You can now unlock contact details to connect directly.'**
+  String get dealAgreementLockedSubtitle;
+
+  /// No description provided for @includedInPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Included in your {plan} plan'**
+  String includedInPlan(String plan);
+
+  /// No description provided for @unlimitedUnlocksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited contact unlocks at no extra fee.'**
+  String get unlimitedUnlocksSubtitle;
+
+  /// No description provided for @welcomeGiftUnlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'🎁 Welcome gift — {count} free unlock(s) remaining'**
+  String welcomeGiftUnlocks(int count);
+
+  /// No description provided for @welcomeGiftSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.'**
+  String get welcomeGiftSubtitle;
+
+  /// No description provided for @unlockFeeApplies.
+  ///
+  /// In en, this message translates to:
+  /// **'UGX 5,000 unlock fee applies'**
+  String get unlockFeeApplies;
+
+  /// No description provided for @unlockFeeAppliesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.'**
+  String get unlockFeeAppliesSubtitle;
+
+  /// No description provided for @whatHappensNext.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens next'**
+  String get whatHappensNext;
+
+  /// No description provided for @step1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details revealed'**
+  String get step1Title;
+
+  /// No description provided for @step1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal name, phone, and email of both parties will be shared.'**
+  String get step1Desc;
+
+  /// No description provided for @step2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct connection'**
+  String get step2Title;
+
+  /// No description provided for @step2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now contact your partner outside the Nipanze platform.'**
+  String get step2Desc;
+
+  /// No description provided for @step3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete transaction'**
+  String get step3Title;
+
+  /// No description provided for @step3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Finalize the loan agreement and exchange funds directly.'**
+  String get step3Desc;
+
+  /// No description provided for @disclaimerNonCustodial.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze does not hold or move any funds. You and your partner are solely responsible for all financial transactions and dispute resolution.'**
+  String get disclaimerNonCustodial;
+
+  /// No description provided for @payToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay UGX 5,000 to Unlock'**
+  String get payToUnlock;
+
+  /// No description provided for @unlockWithFreeCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with Free Credit'**
+  String get unlockWithFreeCredit;
+
+  /// No description provided for @unlockContactDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock contact details'**
+  String get unlockContactDetails;
+
+  /// No description provided for @upgradeForUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade for unlimited unlocks'**
+  String get upgradeForUnlimited;
+
+  /// No description provided for @contactDetailsRevealed.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details revealed'**
+  String get contactDetailsRevealed;
+
+  /// No description provided for @connectionSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection successful. Here are the contact details:'**
+  String get connectionSuccessful;
+
+  /// No description provided for @borrower.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrower'**
+  String get borrower;
+
+  /// No description provided for @lender.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender'**
+  String get lender;
+
+  /// No description provided for @directContactNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now contact your partner directly to complete the transaction outside of the Nipanze platform.'**
+  String get directContactNotice;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @planTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{plan} plan'**
+  String planTitle(String plan);
+
+  /// No description provided for @nonCustodialAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-custodial access'**
+  String get nonCustodialAccess;
+
+  /// No description provided for @howTrustWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How trust works'**
+  String get howTrustWorks;
+
+  /// No description provided for @trustExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust signals reflect only activity completed through Nipanze. They do not assess or imply off-platform repayment behaviour.'**
+  String get trustExplanation;
+
+  /// No description provided for @trustScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust score'**
+  String get trustScore;
+
+  /// No description provided for @completeDealsToBuild.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete deals to build your score'**
+  String get completeDealsToBuild;
+
+  /// No description provided for @noReviewsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get noReviewsYet;
+
+  /// No description provided for @successfulDeals.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} successful deals'**
+  String successfulDeals(int count);
+
+  /// No description provided for @repeatParticipant.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat participant'**
+  String get repeatParticipant;
+
+  /// No description provided for @notRepeatYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a repeat yet'**
+  String get notRepeatYet;
+
+  /// No description provided for @phoneVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone verified'**
+  String get phoneVerified;
+
+  /// No description provided for @phoneNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone not verified'**
+  String get phoneNotVerified;
+
+  /// No description provided for @publicTrustSignals.
+  ///
+  /// In en, this message translates to:
+  /// **'Public trust signals are based only on activity completed through Nipanze.'**
+  String get publicTrustSignals;
+
+  /// No description provided for @advancedFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Filters'**
+  String get advancedFilters;
+
+  /// No description provided for @advancedFiltersBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro · Narrow the marketplace feed'**
+  String get advancedFiltersBadge;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get filterReset;
+
+  /// No description provided for @filterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filterClear;
+
+  /// No description provided for @filterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply filters'**
+  String get filterApply;
+
+  /// No description provided for @filterDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get filterDone;
+
+  /// No description provided for @filterEmploymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Employment type'**
+  String get filterEmploymentType;
+
+  /// No description provided for @filterEmploymentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by the borrower\'s declared employment'**
+  String get filterEmploymentSubtitle;
+
+  /// No description provided for @filterIncomeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly income range'**
+  String get filterIncomeRange;
+
+  /// No description provided for @filterIncomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coarse brackets — exact income is never shown'**
+  String get filterIncomeSubtitle;
+
+  /// No description provided for @filterQualitySignals.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing quality signals'**
+  String get filterQualitySignals;
+
+  /// No description provided for @filterHasSuggestedTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Has suggested terms'**
+  String get filterHasSuggestedTerms;
+
+  /// No description provided for @filterHasSuggestedTermsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule'**
+  String get filterHasSuggestedTermsSubtitle;
+
+  /// No description provided for @filterVerifiedBorrower.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified borrower'**
+  String get filterVerifiedBorrower;
+
+  /// No description provided for @filterVerifiedBorrowerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only requests from KYC-approved account holders'**
+  String get filterVerifiedBorrowerSubtitle;
+
+  /// No description provided for @filterPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Employer names and exact income are never shown. Income brackets and employment categories are the only signals available, by design.'**
+  String get filterPrivacyNote;
+
+  /// No description provided for @empGovEmployee.
+  ///
+  /// In en, this message translates to:
+  /// **'Government employee'**
+  String get empGovEmployee;
+
+  /// No description provided for @empEmployedPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Employed (private)'**
+  String get empEmployedPrivate;
+
+  /// No description provided for @empSelfEmployed.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-employed'**
+  String get empSelfEmployed;
+
+  /// No description provided for @empSmallBusinessOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Small business owner'**
+  String get empSmallBusinessOwner;
+
+  /// No description provided for @empBusinessOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Business owner'**
+  String get empBusinessOwner;
+
+  /// No description provided for @empStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get empStudent;
+
+  /// No description provided for @empOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get empOther;
+
+  /// No description provided for @incomeUnder2m.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 2M UGX / month'**
+  String get incomeUnder2m;
+
+  /// No description provided for @income2m5m.
+  ///
+  /// In en, this message translates to:
+  /// **'2M – 5M UGX / month'**
+  String get income2m5m;
+
+  /// No description provided for @income5m10m.
+  ///
+  /// In en, this message translates to:
+  /// **'5M – 10M UGX / month'**
+  String get income5m10m;
+
+  /// No description provided for @incomeOver10m.
+  ///
+  /// In en, this message translates to:
+  /// **'Over 10M UGX / month'**
+  String get incomeOver10m;
 }
 
 class _AppLocalizationsDelegate

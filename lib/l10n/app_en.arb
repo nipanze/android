@@ -188,5 +188,143 @@
   },
   "verified": "Verified",
   "districtNotSet": "District not set",
-  "nipanzeDisclaimer": "Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants."
+  "nipanzeDisclaimer": "Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.",
+  "lenderRequired": "Lender required",
+  "lenderRequiredSubtitle": "Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.",
+  "lenderTier": "Lender tier",
+  "lenderTierDesc": "For anyone ready to make structured offers and earn returns on Nipanze.",
+  "everythingInFree": "Everything in Free",
+  "lenderFeature1": "Make offers with full terms (rate, fee, schedule)",
+  "lenderFeature2": "See offer detail where you participate",
+  "chooseLender": "Choose Lender",
+  "notNow": "Not now",
+  "paymentSecurityDisclaimer": "Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.",
+  "proRequired": "Pro tier required",
+  "proRequiredSubtitle": "Advanced features like custom term proposals and advanced filters are reserved for Pro subscribers.",
+  "proTier": "Pro tier",
+  "proTierDesc": "Full marketplace access, advanced filters and strong request positioning.",
+  "everythingInLender": "Everything in Lender",
+  "proFeature1": "Suggest rates, late fees and repayment terms",
+  "proFeature2": "Advanced filters (income, employment, verified)",
+  "proFeature3": "Verified badge, reliability score and priority visibility",
+  "choosePro": "Choose Pro",
+  "plansAndPricing": "Plans & pricing",
+  "chooseAccessTitle": "Choose the access you need",
+  "chooseAccessSubtitle": "One account can post requests and make offers. Prices match your account region ({flag} {country}).",
+  "@chooseAccessSubtitle": {
+    "placeholders": {
+      "flag": { "type": "String" },
+      "country": { "type": "String" }
+    }
+  },
+  "perMonth": " / month",
+  "freePlanSubtitle": "Browse, watch listings, post basic requests, and accept offers.",
+  "freeFeature1": "Browse the marketplace",
+  "freeFeature2": "Post basic loan requests",
+  "freeFeature3": "Accept offers received",
+  "currentPlan": "Current plan",
+  "useFree": "Use Free",
+  "choosePlan": "Choose {plan}",
+  "@choosePlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "planSelectedMessage": "{plan} selected. Secure payment activation will be available shortly.",
+  "@planSelectedMessage": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "unlockDealTitle": "Unlock deal",
+  "unlockDealAndContact": "Unlock deal & contact",
+  "dealAgreementLocked": "Deal agreement locked",
+  "dealAgreementLockedSubtitle": "Both borrower and lender have confirmed the deal. You can now unlock contact details to connect directly.",
+  "includedInPlan": "Included in your {plan} plan",
+  "@includedInPlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "unlimitedUnlocksSubtitle": "Unlimited contact unlocks at no extra fee.",
+  "welcomeGiftUnlocks": "🎁 Welcome gift — {count} free unlock(s) remaining",
+  "@welcomeGiftUnlocks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "welcomeGiftSubtitle": "This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.",
+  "unlockFeeApplies": "UGX 5,000 unlock fee applies",
+  "unlockFeeAppliesSubtitle": "Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.",
+  "whatHappensNext": "What happens next",
+  "step1Title": "Contact details revealed",
+  "step1Desc": "Legal name, phone, and email of both parties will be shared.",
+  "step2Title": "Direct connection",
+  "step2Desc": "You can now contact your partner outside the Nipanze platform.",
+  "step3Title": "Complete transaction",
+  "step3Desc": "Finalize the loan agreement and exchange funds directly.",
+  "disclaimerNonCustodial": "Nipanze does not hold or move any funds. You and your partner are solely responsible for all financial transactions and dispute resolution.",
+  "payToUnlock": "Pay UGX 5,000 to Unlock",
+  "unlockWithFreeCredit": "Unlock with Free Credit",
+  "unlockContactDetails": "Unlock contact details",
+  "upgradeForUnlimited": "Upgrade for unlimited unlocks",
+  "contactDetailsRevealed": "Contact details revealed",
+  "connectionSuccessful": "Connection successful. Here are the contact details:",
+  "borrower": "Borrower",
+  "lender": "Lender",
+  "directContactNotice": "You can now contact your partner directly to complete the transaction outside of the Nipanze platform.",
+  "done": "Done",
+  "planTitle": "{plan} plan",
+  "@planTitle": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "nonCustodialAccess": "Non-custodial access",
+  "howTrustWorks": "How trust works",
+  "trustExplanation": "Trust signals reflect only activity completed through Nipanze. They do not assess or imply off-platform repayment behaviour.",
+  "trustScore": "Trust score",
+  "completeDealsToBuild": "Complete deals to build your score",
+  "noReviewsYet": "No reviews yet",
+  "successfulDeals": "{count} successful deals",
+  "@successfulDeals": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "repeatParticipant": "Repeat participant",
+  "notRepeatYet": "Not a repeat yet",
+  "phoneVerified": "Phone verified",
+  "phoneNotVerified": "Phone not verified",
+  "publicTrustSignals": "Public trust signals are based only on activity completed through Nipanze.",
+
+  "advancedFilters": "Advanced Filters",
+  "advancedFiltersBadge": "Pro · Narrow the marketplace feed",
+  "filterReset": "Reset",
+  "filterClear": "Clear",
+  "filterApply": "Apply filters",
+  "filterDone": "Done",
+  "filterEmploymentType": "Employment type",
+  "filterEmploymentSubtitle": "Filter by the borrower's declared employment",
+  "filterIncomeRange": "Monthly income range",
+  "filterIncomeSubtitle": "Coarse brackets — exact income is never shown",
+  "filterQualitySignals": "Listing quality signals",
+  "filterHasSuggestedTerms": "Has suggested terms",
+  "filterHasSuggestedTermsSubtitle": "Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule",
+  "filterVerifiedBorrower": "Verified borrower",
+  "filterVerifiedBorrowerSubtitle": "Only requests from KYC-approved account holders",
+  "filterPrivacyNote": "Employer names and exact income are never shown. Income brackets and employment categories are the only signals available, by design.",
+
+  "empGovEmployee": "Government employee",
+  "empEmployedPrivate": "Employed (private)",
+  "empSelfEmployed": "Self-employed",
+  "empSmallBusinessOwner": "Small business owner",
+  "empBusinessOwner": "Business owner",
+  "empStudent": "Student",
+  "empOther": "Other",
+
+  "incomeUnder2m": "Under 2M UGX / month",
+  "income2m5m": "2M – 5M UGX / month",
+  "income5m10m": "5M – 10M UGX / month",
+  "incomeOver10m": "Over 10M UGX / month"
 }

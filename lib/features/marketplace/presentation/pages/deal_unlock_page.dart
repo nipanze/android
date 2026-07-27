@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/domain/models/user_profile.dart';
@@ -81,16 +82,17 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
     String body;
     String confirmLabel;
 
+    final l10n = AppLocalizations.of(context)!;
     if (isPaid) {
-      title = 'Unlock contact details?';
+      title = l10n.unlockContactDetails;
       body =
           'As a ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} subscriber, this unlock is included in your plan at no extra cost.\n\nContact details will be shared with both parties immediately.';
-      confirmLabel = 'Unlock for Free';
+      confirmLabel = l10n.unlockWithFreeCredit;
     } else if (hasWelcomeCredit) {
-      title = '🎁 Use your welcome unlock';
+      title = l10n.welcomeGiftUnlocks(freeLeft);
       body =
           'You have $freeLeft free unlock${freeLeft == 1 ? '' : 's'} remaining as a welcome gift.\n\nContact details will be shared with both parties. Subsequent unlocks cost UGX 5,000 each.\n\nThis action is irreversible.';
-      confirmLabel = 'Use Free Unlock';
+      confirmLabel = l10n.unlockWithFreeCredit;
     } else {
       // No credits — show payment gate instead
       await _showPaymentGate();
@@ -105,7 +107,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -170,6 +172,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
   }
 
   Future<void> _showPaymentGate() async {
+    final l10n = AppLocalizations.of(context)!;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -183,11 +186,11 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'Unlock contact details',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                l10n.unlockContactDetails,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
             // Fee info card
@@ -287,7 +290,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       Navigator.pop(ctx);
                       context.push(AppRoutes.pricing);
                     },
-                    child: const Text('Upgrade Plan'),
+                    child: Text(l10n.viewPlansUpgrade),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -298,7 +301,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       _proceedWithPayment();
                     },
                     icon: const Icon(Icons.lock_open_rounded, size: 16),
-                    label: const Text('Pay UGX 5,000'),
+                    label: Text(l10n.payToUnlock),
                   ),
                 ),
               ],
@@ -323,16 +326,17 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock deal')),
+        appBar: AppBar(title: Text(l10n.unlockDealTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null || _agreement == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock deal')),
+        appBar: AppBar(title: Text(l10n.unlockDealTitle)),
         body: ErrorState(
           message: _error ?? 'Agreement not found',
           onRetry: _loadAgreement,
@@ -344,7 +348,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
 
     if (!agreement.isFullyLocked) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unlock deal')),
+        appBar: AppBar(title: Text(l10n.unlockDealTitle)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -397,7 +401,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
             }
           },
         ),
-        title: const Text('Unlock deal & contact'),
+        title: Text(l10n.unlockDealAndContact),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -423,7 +427,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                           size: 20, color: AppColors.success),
                       const SizedBox(width: 8),
                       Text(
-                        'Deal agreement locked',
+                        l10n.dealAgreementLocked,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: AppColors.success,
                               fontWeight: FontWeight.bold,
@@ -433,8 +437,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Both borrower and lender have confirmed the deal. '
-                    'You can now unlock contact details to connect directly.',
+                    l10n.dealAgreementLockedSubtitle,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -447,55 +450,48 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               _UnlockCostBanner(
                 icon: Icons.workspace_premium_rounded,
                 color: AppColors.purple,
-                title:
-                    'Included in your ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} plan',
-                subtitle: 'Unlimited contact unlocks at no extra fee.',
+                title: l10n.includedInPlan(plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'),
+                subtitle: l10n.unlimitedUnlocksSubtitle,
               )
             else if (hasFreeCredit)
               _UnlockCostBanner(
                 icon: Icons.card_giftcard_rounded,
                 color: AppColors.success,
-                title:
-                    '🎁 Welcome gift — $freeLeft free unlock${freeLeft == 1 ? '' : 's'} remaining',
-                subtitle:
-                    'This deal uses one of your free unlocks. Additional unlocks cost UGX 5,000.',
+                title: l10n.welcomeGiftUnlocks(freeLeft),
+                subtitle: l10n.welcomeGiftSubtitle,
               )
             else
-              const _UnlockCostBanner(
+              _UnlockCostBanner(
                 icon: Icons.payment_rounded,
                 color: AppColors.warning,
-                title: 'UGX 5,000 unlock fee applies',
-                subtitle:
-                    'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.',
+                title: l10n.unlockFeeApplies,
+                subtitle: l10n.unlockFeeAppliesSubtitle,
               ),
 
             const SizedBox(height: 20),
 
             // What happens next
             Text(
-              'What happens next',
+              l10n.whatHappensNext,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            const _InfoStep(
+            _InfoStep(
               number: 1,
-              title: 'Contact details revealed',
-              description:
-                  'Legal name, phone, and email of both parties will be shared.',
+              title: l10n.step1Title,
+              description: l10n.step1Desc,
             ),
             const SizedBox(height: 8),
-            const _InfoStep(
+            _InfoStep(
               number: 2,
-              title: 'Direct connection',
-              description:
-                  'You can now contact your partner outside the Nipanze platform.',
+              title: l10n.step2Title,
+              description: l10n.step2Desc,
             ),
             const SizedBox(height: 8),
-            const _InfoStep(
+            _InfoStep(
               number: 3,
-              title: 'Complete transaction',
-              description:
-                  'Finalize the loan agreement and exchange funds directly.',
+              title: l10n.step3Title,
+              description: l10n.step3Desc,
             ),
             const SizedBox(height: 24),
 
@@ -519,9 +515,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Nipanze does not hold or move any funds. You and your '
-                      'partner are solely responsible for all financial '
-                      'transactions and dispute resolution.',
+                      l10n.disclaimerNonCustodial,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
@@ -558,10 +552,10 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                       ),
                 label: Text(
                   needsPayment
-                      ? 'Pay UGX 5,000 to Unlock'
+                      ? l10n.payToUnlock
                       : (hasFreeCredit
-                          ? 'Unlock with Free Credit'
-                          : 'Unlock contact details'),
+                          ? l10n.unlockWithFreeCredit
+                          : l10n.unlockContactDetails),
                 ),
               ),
             ),
@@ -572,9 +566,9 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               Center(
                 child: TextButton(
                   onPressed: () => context.push(AppRoutes.pricing),
-                  child: const Text(
-                    'Upgrade for unlimited unlocks',
-                    style: TextStyle(fontSize: 12),
+                  child: Text(
+                    l10n.upgradeForUnlimited,
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),
@@ -732,27 +726,28 @@ class _ContactRevealDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Contact details revealed'),
+      title: Text(l10n.contactDetailsRevealed),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Connection successful. Here are the contact details:',
+              l10n.connectionSuccessful,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
             _ContactCard(
-              label: 'Borrower',
+              label: l10n.borrower,
               name: borrowerName,
               phone: borrowerPhone,
               email: borrowerEmail,
             ),
             const SizedBox(height: 12),
             _ContactCard(
-              label: 'Lender',
+              label: l10n.lender,
               name: lenderName,
               phone: lenderPhone,
               email: lenderEmail,
@@ -765,7 +760,7 @@ class _ContactRevealDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'You can now contact your partner directly to complete the transaction outside of the Nipanze platform.',
+                l10n.directContactNotice,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

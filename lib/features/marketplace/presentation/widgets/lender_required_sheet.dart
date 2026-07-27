@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 /// Show the Lender plan required bottom sheet matching the Nipanze paywall design.
@@ -26,6 +28,7 @@ class _LenderRequiredSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     String? phone;
     try {
@@ -82,7 +85,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Lender required',
+                    l10n?.lenderRequired ?? 'Lender required',
                     style: TextStyle(
                       fontFamily: AppFonts.heading,
                       fontSize: 20,
@@ -104,7 +107,8 @@ class _LenderRequiredSheet extends StatelessWidget {
 
               // ── Subtitle ────────────────────────────────────────────────
               Text(
-                'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.',
+                l10n?.lenderRequiredSubtitle ??
+                    'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.',
                 style: TextStyle(
                   fontSize: 13.5,
                   height: 1.4,
@@ -133,7 +137,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Lender tier',
+                        l10n?.lenderTier ?? 'Lender tier',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -154,7 +158,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                          Text(
-                           'Lender',
+                           l10n?.lender ?? 'Lender',
                            style: TextStyle(
                              fontFamily: AppFonts.heading,
                              fontSize: 17,
@@ -183,7 +187,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                            ),
                         ),
                         Text(
-                          ' / month',
+                          l10n?.perMonth ?? ' / month',
                           style: TextStyle(
                             fontSize: 13.5,
                             color: textSecondary,
@@ -197,7 +201,8 @@ class _LenderRequiredSheet extends StatelessWidget {
 
                     // Short Card Description
                     Text(
-                      'For anyone ready to make structured offers and earn returns on Nipanze.',
+                      l10n?.lenderTierDesc ??
+                          'For anyone ready to make structured offers and earn returns on Nipanze.',
                      style: TextStyle(
                        fontSize: 12.5,
                        height: 1.4,
@@ -210,11 +215,11 @@ class _LenderRequiredSheet extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Feature Checkmark List
-                    _buildFeatureItem(checkColor, textPrimary, 'Everything in Free'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.everythingInFree ?? 'Everything in Free'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, 'Make offers with full terms (rate, fee, schedule)'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.lenderFeature1 ?? 'Make offers with full terms (rate, fee, schedule)'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, 'See offer detail where you participate'),
+                    _buildFeatureItem(checkColor, textPrimary, l10n?.lenderFeature2 ?? 'See offer detail where you participate'),
 
                     const SizedBox(height: 22),
 
@@ -235,9 +240,9 @@ class _LenderRequiredSheet extends StatelessWidget {
                           Navigator.of(context).pop();
                           context.push(AppRoutes.pricing);
                         },
-                        child: const Text(
-                          'Choose Lender',
-                          style: TextStyle(
+                        child: Text(
+                          l10n?.chooseLender ?? 'Choose Lender',
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
@@ -257,9 +262,9 @@ class _LenderRequiredSheet extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: textSecondary,
                   ),
-                  child: const Text(
-                    'Not now',
-                    style: TextStyle(
+                  child: Text(
+                    l10n?.notNow ?? 'Not now',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -271,7 +276,8 @@ class _LenderRequiredSheet extends StatelessWidget {
 
               // ── Legal / Security Caption ────────────────────────────────
               Text(
-                'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
+                l10n?.paymentSecurityDisclaimer ??
+                    'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,

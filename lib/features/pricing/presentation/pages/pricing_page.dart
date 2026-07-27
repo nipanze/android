@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
@@ -13,6 +14,7 @@ class PricingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = context.watch<AuthBloc>().state;
     final current = state is AuthAuthenticated
         ? state.user.subscriptionPlan
@@ -23,7 +25,7 @@ class PricingPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plans & pricing'),
+        title: Text(l10n?.plansAndPricing ?? 'Plans & pricing'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -35,12 +37,13 @@ class PricingPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Choose the access you need',
+                      l10n?.chooseAccessTitle ?? 'Choose the access you need',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'One account can post requests and make offers. Prices match your account region (${country.flag} ${country.name}).',
+                      l10n?.chooseAccessSubtitle(country.flag, country.name) ??
+                          'Prices match your account region (${country.flag} ${country.name}).',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -74,11 +77,11 @@ class PricingPage extends StatelessWidget {
           _PlanCard(
             plan: SubscriptionPlan.free,
             price: 'Free',
-            subtitle: 'Browse, watch listings, post basic requests, and accept offers.',
-            features: const [
-              'Browse the marketplace',
-              'Post basic loan requests',
-              'Accept offers received',
+            subtitle: l10n?.freePlanSubtitle ?? 'Browse, watch listings, post basic requests, and accept offers.',
+            features: [
+              l10n?.freeFeature1 ?? 'Browse the marketplace',
+              l10n?.freeFeature2 ?? 'Post basic loan requests',
+              l10n?.freeFeature3 ?? 'Accept offers received',
             ],
             current: current,
             onChoose: () => _choosePlan(context, SubscriptionPlan.free),
@@ -86,12 +89,12 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.lender,
-            price: '${country.lenderPriceFormatted} / month',
-            subtitle: 'For anyone ready to make structured offers.',
-            features: const [
-              'Everything in Free',
-              'Make offers with full terms (rate, fee, schedule)',
-              'See offer detail where you participate',
+            price: '${country.lenderPriceFormatted}${l10n?.perMonth ?? ' / month'}',
+            subtitle: l10n?.lenderTierDesc ?? 'For anyone ready to make structured offers and earn returns on Nipanze.',
+            features: [
+              l10n?.everythingInFree ?? 'Everything in Free',
+              l10n?.lenderFeature1 ?? 'Make offers with full terms (rate, fee, schedule)',
+              l10n?.lenderFeature2 ?? 'See offer detail where you participate',
             ],
             current: current,
             onChoose: () => _choosePlan(context, SubscriptionPlan.lender),
@@ -99,23 +102,23 @@ class PricingPage extends StatelessWidget {
           const SizedBox(height: 12),
           _PlanCard(
             plan: SubscriptionPlan.pro,
-            price: '${country.proPriceFormatted} / month',
-            subtitle: 'Full marketplace access, advanced filters and strong request positioning.',
-            features: const [
-              'Everything in Lender',
-              'Suggest rates, late fees and repayment terms',
-              'Pro Advanced Filters (income, employment, verified)',
-              'Verified badge, reliability score & priority visibility',
+            price: '${country.proPriceFormatted}${l10n?.perMonth ?? ' / month'}',
+            subtitle: l10n?.proTierDesc ?? 'Full marketplace access, advanced filters and strong request positioning.',
+            features: [
+              l10n?.everythingInLender ?? 'Everything in Lender',
+              l10n?.proFeature1 ?? 'Suggest rates, late fees and repayment terms',
+              l10n?.proFeature2 ?? 'Advanced filters (income, employment, verified)',
+              l10n?.proFeature3 ?? 'Verified badge, reliability score and priority visibility',
             ],
             current: current,
             onChoose: () => _choosePlan(context, SubscriptionPlan.pro),
             highlighted: true,
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
+          Text(
+            l10n?.paymentSecurityDisclaimer ?? 'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: AppColors.text3Dark),
+            style: const TextStyle(fontSize: 11, color: AppColors.text3Dark),
           ),
         ],
       ),
@@ -123,9 +126,10 @@ class PricingPage extends StatelessWidget {
   }
 
   void _choosePlan(BuildContext context, SubscriptionPlan plan) {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
-        '${_label(plan)} selected. Secure payment activation will be available shortly.',
+        l10n?.planSelectedMessage(_label(plan)) ?? 'Selected: ${_label(plan)}',
       ),
     ));
   }
@@ -161,6 +165,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isCurrent = plan == current;
     final color = plan == SubscriptionPlan.pro
         ? AppColors.purple
@@ -191,7 +196,7 @@ class _PlanCard extends StatelessWidget {
                       ),
                 ),
                 const Spacer(),
-                if (isCurrent) const Chip(label: Text('Current plan')),
+                if (isCurrent) Chip(label: Text(l10n?.currentPlan ?? 'Current plan')),
               ],
             ),
             const SizedBox(height: 6),
@@ -229,8 +234,8 @@ class _PlanCard extends StatelessWidget {
                   onPressed: onChoose,
                   child: Text(
                     plan == SubscriptionPlan.free
-                        ? 'Use Free'
-                        : 'Choose ${PricingPage._label(plan)}',
+                        ? (l10n?.useFree ?? 'Use Free')
+                        : (l10n?.choosePlan(PricingPage._label(plan)) ?? 'Choose ${PricingPage._label(plan)}'),
                   ),
                 ),
               ),
@@ -241,3 +246,4 @@ class _PlanCard extends StatelessWidget {
     );
   }
 }
+
