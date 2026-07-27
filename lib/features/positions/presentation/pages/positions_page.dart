@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../listings/presentation/pages/my_listings_page.dart';
@@ -59,12 +60,12 @@ class _PositionsViewState extends State<_PositionsView>
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Row(children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('My Activity',
+                Text(AppLocalizations.of(context)!.myActivityTitle,
                     style: Theme.of(context).textTheme.headlineMedium),
                 BlocBuilder<PositionsCubit, PositionsState>(
                   builder: (context, state) {
                     if (state is! PositionsLoaded) {
-                      return Text('Manage your listings and offers',
+                      return Text(AppLocalizations.of(context)!.myActivitySubtitle,
                           style: Theme.of(context).textTheme.bodySmall);
                     }
                     final activity = state.activity;
@@ -72,7 +73,10 @@ class _PositionsViewState extends State<_PositionsView>
                         .where((o) => o.status == OfferStatus.pending)
                         .length;
                     return Text(
-                      '${activity?['active_listings'] ?? 0} Listings · $activeOffers Active Offers',
+                      AppLocalizations.of(context)!.myActivityStats(
+                        activity?['active_listings'] ?? 0,
+                        activeOffers,
+                      ),
                       style: Theme.of(context).textTheme.bodySmall,
                     );
                   },
@@ -88,9 +92,9 @@ class _PositionsViewState extends State<_PositionsView>
             labelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
-            tabs: const [
-              Tab(text: 'My Requests'),
-              Tab(text: 'My Offers'),
+            tabs: [
+              Tab(text: AppLocalizations.of(context)!.tabMyRequests),
+              Tab(text: AppLocalizations.of(context)!.tabMyOffers),
             ],
           ),
 
@@ -141,11 +145,11 @@ class _LenderTab extends StatelessWidget {
     if (offers.isEmpty) {
       return EmptyState(
         icon: Icons.payments_outlined,
-        title: 'No offers yet',
-        subtitle: 'Offers you place on marketplace listings will appear here.',
+        title: AppLocalizations.of(context)!.noOffersYet,
+        subtitle: AppLocalizations.of(context)!.noOffersSubtitle,
         action: ElevatedButton(
             onPressed: () => context.go('/marketplace'),
-            child: const Text('Browse Marketplace')),
+            child: Text(AppLocalizations.of(context)!.browseMarketplaceBtn)),
       );
     }
 
@@ -164,7 +168,7 @@ class _LenderTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           if (pending.isNotEmpty) ...[
-            const SectionHeader('Active Offers'),
+            SectionHeader(AppLocalizations.of(context)!.activeOffers),
             ...pending.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(
@@ -172,14 +176,14 @@ class _LenderTab extends StatelessWidget {
                 )),
           ],
           if (accepted.isNotEmpty) ...[
-            const SectionHeader('Matched / Accepted'),
+            SectionHeader(AppLocalizations.of(context)!.matchedAccepted),
             ...accepted.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(offer: o, onWithdraw: () {}),
                 )),
           ],
           if (history.isNotEmpty) ...[
-            const SectionHeader('History'),
+            SectionHeader(AppLocalizations.of(context)!.history),
             ...history.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(offer: o, onWithdraw: () {}),
@@ -194,20 +198,20 @@ class _LenderTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Withdraw Offer?'),
+        title: Text(AppLocalizations.of(context)!.withdrawOffer),
         content: Text(
-            'Are you sure you want to withdraw your offer for UGX ${offer.offerAmount}?'),
+            AppLocalizations.of(context)!.withdrawConfirm(offer.offerAmount)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Keep Offer')),
+              child: Text(AppLocalizations.of(context)!.keepOffer)),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               context.read<PositionsCubit>().withdrawOffer(offer.offerId);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Withdraw'),
+            child: Text(AppLocalizations.of(context)!.withdraw),
           ),
         ],
       ),

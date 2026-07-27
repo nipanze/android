@@ -35,5 +35,158 @@
   "finish": "Finish",
   "termsNotice": "By continuing, you agree to our Terms of Use and Privacy Policy.",
   "phoneSafeTitle": "Your number is safe with us",
-  "phoneSafeSubtitle": "We never share your number with anyone."
+  "phoneSafeSubtitle": "We never share your number with anyone.",
+  "navMarkets": "Markets",
+  "navWatchlist": "Watchlist",
+  "navRequest": "Request",
+  "navPositions": "Positions",
+  "navAccount": "Account",
+  "marketplaceTitle": "Marketplace",
+  "listingsLive": "{count} listings · live",
+  "@listingsLive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filtered": "Filtered",
+  "applyingFilters": "Applying filters…",
+  "noListingsFound": "No listings found",
+  "noListingsSubtitle": "Check back soon — new listings appear in real time.",
+  "noMatches": "No matches",
+  "noMatchesSubtitle": "No active listings match your Pro filters.\nTry adjusting or clearing the filter criteria.",
+  "adjustFilters": "Adjust filters",
+  "removeFromWatchlist": "Remove from watchlist",
+  "saveToWatchlist": "Save to watchlist",
+  "months": "months",
+  "daysLeft": "{count}d left",
+  "@daysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursLeft": "{count}h left",
+  "@hoursLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minutesLeft": "{count}m left",
+  "@minutesLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "expired": "Expired",
+
+  "watchlistTitle": "Watchlist",
+  "watchlistSubtitle": "Listings you're tracking",
+  "watchlistSaved": "{count} saved",
+  "@watchlistSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "watchlistInfoSubscribed": "Free for all users. Get notified when offers change, rates improve, or a listing is closing.",
+  "watchlistInfoFree": "Free for all users. Get notified when offers change, rates improve, or a listing is closing. Subscribe to make offers.",
+  "watchlistError": "Error loading watchlist",
+  "watchlistEmpty": "No saved listings",
+  "watchlistEmptySubtitle": "Browse the marketplace and tap \"Save to watchlist\" on any listing.",
+  "browseMarketplace": "Browse marketplace",
+  "removedFromWatchlist": "Removed from watchlist",
+  "undo": "Undo",
+  "tryAgain": "Try again",
+
+  "myActivityTitle": "My Activity",
+  "myActivitySubtitle": "Manage your listings and offers",
+  "myActivityStats": "{listings} Listings · {offers} Active Offers",
+  "@myActivityStats": {
+    "placeholders": {
+      "listings": { "type": "int" },
+      "offers": { "type": "int" }
+    }
+  },
+  "tabMyRequests": "My Requests",
+  "tabMyOffers": "My Offers",
+  "noOffersYet": "No offers yet",
+  "noOffersSubtitle": "Offers you place on marketplace listings will appear here.",
+  "browseMarketplaceBtn": "Browse Marketplace",
+  "activeOffers": "Active Offers",
+  "matchedAccepted": "Matched / Accepted",
+  "history": "History",
+  "withdrawOffer": "Withdraw Offer?",
+  "withdrawConfirm": "Are you sure you want to withdraw your offer for UGX {amount}?",
+  "@withdrawConfirm": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+  "keepOffer": "Keep Offer",
+  "withdraw": "Withdraw",
+
+  "myRequestsTitle": "My Requests",
+  "sectionActive": "Active · {count}",
+  "@sectionActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionContracted": "Contracted · {count}",
+  "@sectionContracted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionClosed": "Closed · {count}",
+  "@sectionClosed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLoanRequests": "No loan requests yet",
+  "noLoanRequestsSubtitle": "Post a request and lenders will compete to offer you the best rate.",
+  "createLoanRequest": "Create a loan request",
+  "cancelListing": "Cancel listing?",
+  "cancelListingConfirm": "This will remove \"{title}\" from the marketplace. Any pending offers will be rejected. This cannot be undone.",
+  "@cancelListingConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "keepIt": "Keep it",
+  "cancelListingBtn": "Cancel listing",
+  "contractNotGenerated": "Contract not yet generated.",
+
+  "accountTitle": "Account",
+  "settingsTitle": "Settings",
+  "contactUs": "Contact Us",
+  "community": "Community",
+  "legal": "Legal",
+  "signOut": "Sign Out",
+  "signOutConfirm": "Are you sure you want to sign out of your account?",
+  "cancel": "Cancel",
+  "profileUpdated": "Profile updated.",
+  "editProfile": "Edit Profile",
+  "identityVerification": "Identity Verification",
+  "security": "Security",
+  "notifications": "Notifications",
+  "statListings": "Listings",
+  "statListingsSubtitle": "Posted requests",
+  "statOffers": "Offers",
+  "statOffersSubtitle": "Offers made",
+  "statMatches": "Matches",
+  "statMatchesSubtitle": "Successful matches",
+  "trustReputation": "Trust & Reputation",
+  "subscription": "Subscription",
+  "upgradeToPro": "Upgrade to Pro",
+  "viewPlansUpgrade": "View plans & upgrade",
+  "adminDashboard": "Admin dashboard",
+  "memberSince": "Member since {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "verified": "Verified",
+  "districtNotSet": "District not set",
+  "nipanzeDisclaimer": "Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants."
 }

@@ -35,5 +35,158 @@
   "finish": "Rangiza",
   "termsNotice": "Muri gukomeza, wemeye amabwiriza yacu n'amatsinda y'amabwiriza y'ibanga.",
   "phoneSafeTitle": "Numero yawe irinzwe neza",
-  "phoneSafeSubtitle": "Ntitwigeze tusangiza numero yawe n'umuntu uwo ari we wese."
+  "phoneSafeSubtitle": "Ntitwigeze tusangiza numero yawe n'umuntu uwo ari we wese.",
+  "navMarkets": "Amasoko",
+  "navWatchlist": "Ibyo ukurikira",
+  "navRequest": "Saba",
+  "navPositions": "Ibikorwa",
+  "navAccount": "Konti",
+  "marketplaceTitle": "Isoko ry'Inguzanyo",
+  "listingsLive": "{count} urutonde · Imbona-nkubone",
+  "@listingsLive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filtered": "Shunguwe",
+  "applyingFilters": "Gushungura…",
+  "noListingsFound": "Nta nguzanyo ziriho",
+  "noListingsSubtitle": "Ongera ugerageze n'amatsiko — inguzanyo nshya ziza mu gihe nyacyo.",
+  "noMatches": "Nta bihuye",
+  "noMatchesSubtitle": "Nta nguzanyo zihuye n'ibyo washunguye.\nGerageza guhindura cyangwa gukuraho ibipimo.",
+  "adjustFilters": "Hindura ibipimo",
+  "removeFromWatchlist": "Kura mu byo ukurikira",
+  "saveToWatchlist": "Bika mu byo ukurikira",
+  "months": "amezi",
+  "daysLeft": "{count} iminsi isigaye",
+  "@daysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursLeft": "{count} amasaha asigaye",
+  "@hoursLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minutesLeft": "{count} iminota isigaye",
+  "@minutesLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "expired": "Byarangiye",
+
+  "watchlistTitle": "Urutonde rw'Ikurikirana",
+  "watchlistSubtitle": "Inguzanyo ukurikira",
+  "watchlistSaved": "{count} zachunwe",
+  "@watchlistSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "watchlistInfoSubscribed": "Kubuntu ku batumiaji bose. Menya iyo habaye impinduka ku nguzanyo, inyungu zigabanuka, cyangwa inguzanyo iri gufunga.",
+  "watchlistInfoFree": "Kubuntu ku batumiaji bose. Menya iyo habaye impinduka. Iyandikishe kugira ngo utange ibirego.",
+  "watchlistError": "Ikosa mu gufungura urutonde rw'ikurikirana",
+  "watchlistEmpty": "Nta nguzanyo zachunwe",
+  "watchlistEmptySubtitle": "Shakisha isoko hanyuma kanda \"Bika mu byo ukurikira\" ku nguzanyo iyo ari yo yose.",
+  "browseMarketplace": "Shakisha isoko",
+  "removedFromWatchlist": "Yakuwe mu byo ukurikira",
+  "undo": "Subiraho",
+  "tryAgain": "Gerageza nanone",
+
+  "myActivityTitle": "Ibikorwa Byanjye",
+  "myActivitySubtitle": "Genzura inguzanyo n'ibirego byawe",
+  "myActivityStats": "{listings} Inguzanyo · {offers} Ibirego Bikomeje",
+  "@myActivityStats": {
+    "placeholders": {
+      "listings": { "type": "int" },
+      "offers": { "type": "int" }
+    }
+  },
+  "tabMyRequests": "Izimusaba Zanjye",
+  "tabMyOffers": "Ibirego Byanjye",
+  "noOffersYet": "Nta birego birahari",
+  "noOffersSubtitle": "Ibirego utanga ku nguzanyo z'isoko bizagaragara hano.",
+  "browseMarketplaceBtn": "Shakisha Isoko",
+  "activeOffers": "Ibirego Bikomeje",
+  "matchedAccepted": "Byahuye / Byakiriwe",
+  "history": "Amateka",
+  "withdrawOffer": "Kuraho Irego?",
+  "withdrawConfirm": "Urizera kuraho irigo ryawe rya UGX {amount}?",
+  "@withdrawConfirm": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+  "keepOffer": "Bika Irego",
+  "withdraw": "Kuraho",
+
+  "myRequestsTitle": "Izimusaba Zanjye",
+  "sectionActive": "Zikomeje · {count}",
+  "@sectionActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionContracted": "Zisigiriwe · {count}",
+  "@sectionContracted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionClosed": "Zafunzwe · {count}",
+  "@sectionClosed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLoanRequests": "Nta zimusaba z'inguzanyo zirahari",
+  "noLoanRequestsSubtitle": "Tanga izimusaba kandi abakopesheje bazashindana kukugezaho igipimo gikwiye.",
+  "createLoanRequest": "Kora izimusaba y'inguzanyo",
+  "cancelListing": "Kuraho inguzanyo?",
+  "cancelListingConfirm": "Iki kizakuraho \"{title}\" ku isoko. Ibirego byose bicomeje bizavanwa.",
+  "@cancelListingConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "keepIt": "Bika",
+  "cancelListingBtn": "Kuraho inguzanyo",
+  "contractNotGenerated": "Amasezerano ntiyateguwe.",
+
+  "accountTitle": "Konti",
+  "settingsTitle": "Igenamiterere",
+  "contactUs": "Twandikire",
+  "community": "Umuryango",
+  "legal": "Amategeko",
+  "signOut": "Sohoka",
+  "signOutConfirm": "Urizera gusohoka muri konti yawe?",
+  "cancel": "Hagarika",
+  "profileUpdated": "Umwirondoro wasuzumwe.",
+  "editProfile": "Hindura Umwirondoro",
+  "identityVerification": "Kwemeza Indangamuntu",
+  "security": "Umutekano",
+  "notifications": "Amatangazo",
+  "statListings": "Inguzanyo",
+  "statListingsSubtitle": "Izimusaba zatangiwe",
+  "statOffers": "Ibirego",
+  "statOffersSubtitle": "Ibirego byatanzwe",
+  "statMatches": "Guhuza",
+  "statMatchesSubtitle": "Guhuza byagenze neza",
+  "trustReputation": "Icyizere & Isura",
+  "subscription": "Kwiyandikisha",
+  "upgradeToPro": "Komeza kuri Pro",
+  "viewPlansUpgrade": "Reba gahunda & komeza",
+  "adminDashboard": "Imbaho y'Umuyobozi",
+  "memberSince": "Umunyamuryango kuva {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "verified": "Byemejwe",
+  "districtNotSet": "Akarere ntikagorwa",
+  "nipanzeDisclaimer": "Nipanze ni urubuga rwo guhuza gusa. Ntitureba, ntitwimura, kandi ntidutunga amafaranga. Imishyikirano yose ikorwa hagati y'abageza neza."
 }

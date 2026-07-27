@@ -35,5 +35,158 @@
   "finish": "إنهاء",
   "termsNotice": "بالمتابعة، فإنك توافق على شروط الاستخدام وسياسة الخصوصية الخاصة بنا.",
   "phoneSafeTitle": "رقمك في أمان معنا",
-  "phoneSafeSubtitle": "نحن لا نشارك رقمك مع أي شخص آخر."
+  "phoneSafeSubtitle": "نحن لا نشارك رقمك مع أي شخص آخر.",
+  "navMarkets": "الأسواق",
+  "navWatchlist": "قائمة المتابعة",
+  "navRequest": "طلب",
+  "navPositions": "الأنشطة",
+  "navAccount": "الحساب",
+  "marketplaceTitle": "السوق",
+  "listingsLive": "{count} عروض · مباشر",
+  "@listingsLive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filtered": "مصفى",
+  "applyingFilters": "جاري تطبيق التصفية…",
+  "noListingsFound": "لم يتم العثور على عروض",
+  "noListingsSubtitle": "تحقق لاحقاً — تظهر العروض الجديدة في الوقت الفعلي.",
+  "noMatches": "لا توجد نتائج",
+  "noMatchesSubtitle": "لا توجد عروض تطابق فلاتر Pro الخاصة بك.\nجرب تعديل أو مسح معايير التصفية.",
+  "adjustFilters": "تعديل الفلاتر",
+  "removeFromWatchlist": "إزالة من قائمة المتابعة",
+  "saveToWatchlist": "حفظ في قائمة المتابعة",
+  "months": "أشهر",
+  "daysLeft": "{count} يوم متبقٍ",
+  "@daysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursLeft": "{count} ساعة متبقية",
+  "@hoursLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minutesLeft": "{count} دقيقة متبقية",
+  "@minutesLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "expired": "منتهي",
+
+  "watchlistTitle": "قائمة المتابعة",
+  "watchlistSubtitle": "العروض التي تتابعها",
+  "watchlistSaved": "{count} محفوظ",
+  "@watchlistSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "watchlistInfoSubscribed": "مجاني للجميع. احصل على إشعارات عند تغيير العروض أو تحسن الأسعار أو إغلاق الإعلانات.",
+  "watchlistInfoFree": "مجاني للجميع. احصل على إشعارات عند تغيير العروض. اشترك لتقديم العروض.",
+  "watchlistError": "خطأ في تحميل قائمة المتابعة",
+  "watchlistEmpty": "لا توجد إعلانات محفوظة",
+  "watchlistEmptySubtitle": "تصفح السوق واضغط على \"حفظ في قائمة المتابعة\" على أي إعلان.",
+  "browseMarketplace": "تصفح السوق",
+  "removedFromWatchlist": "تمت الإزالة من قائمة المتابعة",
+  "undo": "تراجع",
+  "tryAgain": "حاول مجدداً",
+
+  "myActivityTitle": "نشاطي",
+  "myActivitySubtitle": "إدارة إعلاناتك وعروضك",
+  "myActivityStats": "{listings} إعلانات · {offers} عروض نشطة",
+  "@myActivityStats": {
+    "placeholders": {
+      "listings": { "type": "int" },
+      "offers": { "type": "int" }
+    }
+  },
+  "tabMyRequests": "طلباتي",
+  "tabMyOffers": "عروضي",
+  "noOffersYet": "لا توجد عروض بعد",
+  "noOffersSubtitle": "العروض التي تضعها على إعلانات السوق ستظهر هنا.",
+  "browseMarketplaceBtn": "تصفح السوق",
+  "activeOffers": "العروض النشطة",
+  "matchedAccepted": "متطابق / مقبول",
+  "history": "السجل",
+  "withdrawOffer": "سحب العرض؟",
+  "withdrawConfirm": "هل أنت متأكد من سحب عرضك بقيمة UGX {amount}؟",
+  "@withdrawConfirm": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+  "keepOffer": "احتفظ بالعرض",
+  "withdraw": "سحب",
+
+  "myRequestsTitle": "طلباتي",
+  "sectionActive": "نشط · {count}",
+  "@sectionActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionContracted": "متعاقد عليه · {count}",
+  "@sectionContracted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionClosed": "مغلق · {count}",
+  "@sectionClosed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLoanRequests": "لا توجد طلبات قرض بعد",
+  "noLoanRequestsSubtitle": "انشر طلباً وسيتنافس المقرضون لتقديم أفضل سعر.",
+  "createLoanRequest": "إنشاء طلب قرض",
+  "cancelListing": "إلغاء الإعلان؟",
+  "cancelListingConfirm": "سيؤدي هذا إلى إزالة \"{title}\" من السوق. سيتم رفض جميع العروض المعلقة.",
+  "@cancelListingConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "keepIt": "الإبقاء عليه",
+  "cancelListingBtn": "إلغاء الإعلان",
+  "contractNotGenerated": "لم يتم إنشاء العقد بعد.",
+
+  "accountTitle": "الحساب",
+  "settingsTitle": "الإعدادات",
+  "contactUs": "اتصل بنا",
+  "community": "المجتمع",
+  "legal": "قانوني",
+  "signOut": "تسجيل الخروج",
+  "signOutConfirm": "هل أنت متأكد من تسجيل الخروج من حسابك؟",
+  "cancel": "إلغاء",
+  "profileUpdated": "تم تحديث الملف الشخصي.",
+  "editProfile": "تعديل الملف الشخصي",
+  "identityVerification": "التحقق من الهوية",
+  "security": "الأمان",
+  "notifications": "الإشعارات",
+  "statListings": "الإعلانات",
+  "statListingsSubtitle": "الطلبات المنشورة",
+  "statOffers": "العروض",
+  "statOffersSubtitle": "العروض المقدمة",
+  "statMatches": "التطابقات",
+  "statMatchesSubtitle": "تطابقات ناجحة",
+  "trustReputation": "الثقة والسمعة",
+  "subscription": "الاشتراك",
+  "upgradeToPro": "الترقية إلى Pro",
+  "viewPlansUpgrade": "عرض الخطط والترقية",
+  "adminDashboard": "لوحة تحكم المسؤول",
+  "memberSince": "عضو منذ {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "verified": "موثق",
+  "districtNotSet": "المنطقة غير محددة",
+  "nipanzeDisclaimer": "Nipanze منصة وساطة غير حارسة. لا نحتجز أو ننقل أو نسوي الأموال. تتم جميع المعاملات مباشرة بين المشاركين."
 }

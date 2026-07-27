@@ -319,6 +319,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We never share your number with anyone.'**
   String get phoneSafeSubtitle;
+
+  /// No description provided for @navMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get navMarkets;
+
+  /// No description provided for @navWatchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist'**
+  String get navWatchlist;
+
+  /// No description provided for @navRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get navRequest;
+
+  /// No description provided for @navPositions.
+  ///
+  /// In en, this message translates to:
+  /// **'Positions'**
+  String get navPositions;
+
+  /// No description provided for @navAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get navAccount;
+
+  /// No description provided for @marketplaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketplace'**
+  String get marketplaceTitle;
+
+  /// No description provided for @listingsLive.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} listings · live'**
+  String listingsLive(int count);
+
+  /// No description provided for @filtered.
+  ///
+  /// In en, this message translates to:
+  /// **'Filtered'**
+  String get filtered;
+
+  /// No description provided for @applyingFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Applying filters…'**
+  String get applyingFilters;
+
+  /// No description provided for @noListingsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No listings found'**
+  String get noListingsFound;
+
+  /// No description provided for @noListingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back soon — new listings appear in real time.'**
+  String get noListingsSubtitle;
+
+  /// No description provided for @noMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches'**
+  String get noMatches;
+
+  /// No description provided for @noMatchesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No active listings match your Pro filters.\nTry adjusting or clearing the filter criteria.'**
+  String get noMatchesSubtitle;
+
+  /// No description provided for @adjustFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust filters'**
+  String get adjustFilters;
+
+  /// No description provided for @removeFromWatchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from watchlist'**
+  String get removeFromWatchlist;
+
+  /// No description provided for @saveToWatchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to watchlist'**
+  String get saveToWatchlist;
+
+  /// No description provided for @months.
+  ///
+  /// In en, this message translates to:
+  /// **'months'**
+  String get months;
+
+  /// No description provided for @daysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d left'**
+  String daysLeft(int count);
+
+  /// No description provided for @hoursLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h left'**
+  String hoursLeft(int count);
+
+  /// No description provided for @minutesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m left'**
+  String minutesLeft(int count);
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @watchlistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist'**
+  String get watchlistTitle;
+
+  /// No description provided for @watchlistSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listings you\'re tracking'**
+  String get watchlistSubtitle;
+
+  /// No description provided for @watchlistSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} saved'**
+  String watchlistSaved(int count);
+
+  /// No description provided for @watchlistInfoSubscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Free for all users. Get notified when offers change, rates improve, or a listing is closing.'**
+  String get watchlistInfoSubscribed;
+
+  /// No description provided for @watchlistInfoFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free for all users. Get notified when offers change, rates improve, or a listing is closing. Subscribe to make offers.'**
+  String get watchlistInfoFree;
+
+  /// No description provided for @watchlistError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading watchlist'**
+  String get watchlistError;
+
+  /// No description provided for @watchlistEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved listings'**
+  String get watchlistEmpty;
+
+  /// No description provided for @watchlistEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse the marketplace and tap \"Save to watchlist\" on any listing.'**
+  String get watchlistEmptySubtitle;
+
+  /// No description provided for @browseMarketplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse marketplace'**
+  String get browseMarketplace;
+
+  /// No description provided for @removedFromWatchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from watchlist'**
+  String get removedFromWatchlist;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @myActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Activity'**
+  String get myActivityTitle;
+
+  /// No description provided for @myActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your listings and offers'**
+  String get myActivitySubtitle;
+
+  /// No description provided for @myActivityStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{listings} Listings · {offers} Active Offers'**
+  String myActivityStats(int listings, int offers);
+
+  /// No description provided for @tabMyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'My Requests'**
+  String get tabMyRequests;
+
+  /// No description provided for @tabMyOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'My Offers'**
+  String get tabMyOffers;
+
+  /// No description provided for @noOffersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No offers yet'**
+  String get noOffersYet;
+
+  /// No description provided for @noOffersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers you place on marketplace listings will appear here.'**
+  String get noOffersSubtitle;
+
+  /// No description provided for @browseMarketplaceBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Marketplace'**
+  String get browseMarketplaceBtn;
+
+  /// No description provided for @activeOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Offers'**
+  String get activeOffers;
+
+  /// No description provided for @matchedAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched / Accepted'**
+  String get matchedAccepted;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @withdrawOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw Offer?'**
+  String get withdrawOffer;
+
+  /// No description provided for @withdrawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to withdraw your offer for UGX {amount}?'**
+  String withdrawConfirm(int amount);
+
+  /// No description provided for @keepOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Offer'**
+  String get keepOffer;
+
+  /// No description provided for @withdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get withdraw;
+
+  /// No description provided for @myRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Requests'**
+  String get myRequestsTitle;
+
+  /// No description provided for @sectionActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active · {count}'**
+  String sectionActive(int count);
+
+  /// No description provided for @sectionContracted.
+  ///
+  /// In en, this message translates to:
+  /// **'Contracted · {count}'**
+  String sectionContracted(int count);
+
+  /// No description provided for @sectionClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed · {count}'**
+  String sectionClosed(int count);
+
+  /// No description provided for @noLoanRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No loan requests yet'**
+  String get noLoanRequests;
+
+  /// No description provided for @noLoanRequestsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Post a request and lenders will compete to offer you the best rate.'**
+  String get noLoanRequestsSubtitle;
+
+  /// No description provided for @createLoanRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a loan request'**
+  String get createLoanRequest;
+
+  /// No description provided for @cancelListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel listing?'**
+  String get cancelListing;
+
+  /// No description provided for @cancelListingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove \"{title}\" from the marketplace. Any pending offers will be rejected. This cannot be undone.'**
+  String cancelListingConfirm(String title);
+
+  /// No description provided for @keepIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get keepIt;
+
+  /// No description provided for @cancelListingBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel listing'**
+  String get cancelListingBtn;
+
+  /// No description provided for @contractNotGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract not yet generated.'**
+  String get contractNotGenerated;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountTitle;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get contactUs;
+
+  /// No description provided for @community.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
+  /// No description provided for @legal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legal;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @signOutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out of your account?'**
+  String get signOutConfirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileUpdated;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @identityVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Verification'**
+  String get identityVerification;
+
+  /// No description provided for @security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @statListings.
+  ///
+  /// In en, this message translates to:
+  /// **'Listings'**
+  String get statListings;
+
+  /// No description provided for @statListingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted requests'**
+  String get statListingsSubtitle;
+
+  /// No description provided for @statOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers'**
+  String get statOffers;
+
+  /// No description provided for @statOffersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers made'**
+  String get statOffersSubtitle;
+
+  /// No description provided for @statMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get statMatches;
+
+  /// No description provided for @statMatchesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Successful matches'**
+  String get statMatchesSubtitle;
+
+  /// No description provided for @trustReputation.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust & Reputation'**
+  String get trustReputation;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @upgradeToPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Pro'**
+  String get upgradeToPro;
+
+  /// No description provided for @viewPlansUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'View plans & upgrade'**
+  String get viewPlansUpgrade;
+
+  /// No description provided for @adminDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin dashboard'**
+  String get adminDashboard;
+
+  /// No description provided for @memberSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Member since {date}'**
+  String memberSince(String date);
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @districtNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'District not set'**
+  String get districtNotSet;
+
+  /// No description provided for @nipanzeDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.'**
+  String get nipanzeDisclaimer;
 }
 
 class _AppLocalizationsDelegate

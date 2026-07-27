@@ -18,6 +18,7 @@ import '../widgets/listing_card.dart';
 import '../widgets/listing_card_skeleton.dart';
 import '../widgets/pro_filters_sheet.dart';
 import '../widgets/pro_required_sheet.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class MarketplacePage extends StatelessWidget {
   const MarketplacePage({super.key});
@@ -76,7 +77,7 @@ class _MarketplaceView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Marketplace',
+                          AppLocalizations.of(context)!.marketplaceTitle,
                           style: Theme.of(context)
                               .textTheme
                               .headlineMedium
@@ -95,7 +96,7 @@ class _MarketplaceView extends StatelessWidget {
                                 const LiveDot(),
                                 const SizedBox(width: 5),
                                 Text(
-                                  '$count listings · live',
+                                  AppLocalizations.of(context)!.listingsLive(count),
                                   style: const TextStyle(
                                     color: AppColors.success,
                                     fontSize: 10.5,
@@ -112,9 +113,9 @@ class _MarketplaceView extends StatelessWidget {
                                           .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: const Text(
-                                      'Filtered',
-                                      style: TextStyle(
+                                    child: Text(
+                                      AppLocalizations.of(context)!.filtered,
+                                      style: const TextStyle(
                                         color: AppColors.purple,
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w600,
@@ -211,11 +212,11 @@ class _MarketplaceView extends StatelessWidget {
                     if (state is MarketplaceLoaded) {
                       // Subtle loading overlay while Pro filter RPC is in flight.
                       if (state.proFilterActive) {
-                        return const Center(
+                        return Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
@@ -223,10 +224,10 @@ class _MarketplaceView extends StatelessWidget {
                                   color: AppColors.purple,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               Text(
-                                'Applying filters…',
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.applyingFilters,
+                                style: const TextStyle(
                                     fontSize: 12.5, color: AppColors.purple),
                               ),
                             ],
@@ -238,11 +239,10 @@ class _MarketplaceView extends StatelessWidget {
                         if (state.proFilterCriteria.isActive) {
                           return const _EmptyProFilter();
                         }
-                        return const EmptyState(
+                        return EmptyState(
                           icon: Icons.show_chart_rounded,
-                          title: 'No listings found',
-                          subtitle:
-                              'Check back soon — new listings appear in real time.',
+                          title: AppLocalizations.of(context)!.noListingsFound,
+                          subtitle: AppLocalizations.of(context)!.noListingsSubtitle,
                         );
                       }
 
@@ -392,21 +392,20 @@ class _EmptyProFilter extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            const Text(
-              'No matches',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            Text(
+              AppLocalizations.of(context)!.noMatches,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'No active listings match your Pro filters.\n'
-              'Try adjusting or clearing the filter criteria.',
+            Text(
+              AppLocalizations.of(context)!.noMatchesSubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, height: 1.5),
+              style: const TextStyle(fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 18),
             OutlinedButton.icon(
               icon: const Icon(Icons.tune_rounded, size: 14),
-              label: const Text('Adjust filters'),
+              label: Text(AppLocalizations.of(context)!.adjustFilters),
               onPressed: () => showProFiltersSheet(
                 context,
                 cubit: context.read<MarketplaceCubit>(),

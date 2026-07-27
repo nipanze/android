@@ -35,5 +35,158 @@
   "finish": "Maliza",
   "termsNotice": "Kwa kuendelea, unakubaliana na Masharti ya Matumizi na Siasa ya Faragha wetu.",
   "phoneSafeTitle": "Nambari yako iko salama nasi",
-  "phoneSafeSubtitle": "Hatushirikishi nambari yako na mtu yeyote."
+  "phoneSafeSubtitle": "Hatushirikishi nambari yako na mtu yeyote.",
+  "navMarkets": "Soko",
+  "navWatchlist": "Fuatilia",
+  "navRequest": "Omba",
+  "navPositions": "Shughuli",
+  "navAccount": "Akaunti",
+  "marketplaceTitle": "Soko la Mikopo",
+  "listingsLive": "{count} orodha · mubashara",
+  "@listingsLive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filtered": "Imechujwa",
+  "applyingFilters": "Inachuja…",
+  "noListingsFound": "Hakuna orodha iliyopatikana",
+  "noListingsSubtitle": "Angalia tena hivi karibuni — orodha mpya hutokea wakati huo huo.",
+  "noMatches": "Hakuna matokeo",
+  "noMatchesSubtitle": "Hakuna orodha inayolingana na vichujio vyako vya Pro.\nJaribu kubadilisha au kufuta vichujio.",
+  "adjustFilters": "Badilisha vichujio",
+  "removeFromWatchlist": "Odosha kwenye watchlist",
+  "saveToWatchlist": "Hifadhi kwenye watchlist",
+  "months": "miezi",
+  "daysLeft": "{count}s imebaki",
+  "@daysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursLeft": "{count}s imebaki",
+  "@hoursLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minutesLeft": "{count}d imebaki",
+  "@minutesLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "expired": "Imemalizika",
+
+  "watchlistTitle": "Orodha ya Ufuatiliaji",
+  "watchlistSubtitle": "Orodha unazofuatilia",
+  "watchlistSaved": "{count} zilizohifadhiwa",
+  "@watchlistSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "watchlistInfoSubscribed": "Bure kwa watumiaji wote. Pokea arifa wakati orodha inabadilika, viwango vinavyoboreka, au orodha inafunga.",
+  "watchlistInfoFree": "Bure kwa watumiaji wote. Pokea arifa wakati orodha inabadilika. Jiandikishe kutoa mapendekezo.",
+  "watchlistError": "Hitilafu kupakia orodha ya ufuatiliaji",
+  "watchlistEmpty": "Hakuna orodha zilizohifadhiwa",
+  "watchlistEmptySubtitle": "Vinjari soko na bonyeza \"Hifadhi kwenye watchlist\" kwenye orodha yoyote.",
+  "browseMarketplace": "Vinjari soko",
+  "removedFromWatchlist": "Imeondolewa kwenye watchlist",
+  "undo": "Tendua",
+  "tryAgain": "Jaribu tena",
+
+  "myActivityTitle": "Shughuli Zangu",
+  "myActivitySubtitle": "Simamia orodha na maombi yako",
+  "myActivityStats": "{listings} Orodha · {offers} Maombi Yanayoendelea",
+  "@myActivityStats": {
+    "placeholders": {
+      "listings": { "type": "int" },
+      "offers": { "type": "int" }
+    }
+  },
+  "tabMyRequests": "Maombi Yangu",
+  "tabMyOffers": "Mapendekezo Yangu",
+  "noOffersYet": "Hakuna mapendekezo bado",
+  "noOffersSubtitle": "Mapendekezo unayotoa kwenye orodha za soko yataonekana hapa.",
+  "browseMarketplaceBtn": "Vinjari Soko",
+  "activeOffers": "Mapendekezo Yanayoendelea",
+  "matchedAccepted": "Yaliyolingana / Kukubaliwa",
+  "history": "Historia",
+  "withdrawOffer": "Ondoa Pendekezo?",
+  "withdrawConfirm": "Una uhakika unataka kuondoa pendekezo lako la UGX {amount}?",
+  "@withdrawConfirm": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+  "keepOffer": "Weka Pendekezo",
+  "withdraw": "Ondoa",
+
+  "myRequestsTitle": "Maombi Yangu",
+  "sectionActive": "Yanayoendelea · {count}",
+  "@sectionActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionContracted": "Yaliyosainiwa · {count}",
+  "@sectionContracted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionClosed": "Yaliyofungwa · {count}",
+  "@sectionClosed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLoanRequests": "Hakuna maombi ya mkopo bado",
+  "noLoanRequestsSubtitle": "Tuma ombi na wakopeshaji watashindana kukupa kiwango bora.",
+  "createLoanRequest": "Unda ombi la mkopo",
+  "cancelListing": "Futa orodha?",
+  "cancelListingConfirm": "Hii itaondoa \"{title}\" kutoka sokoni. Maombi yote yanayosubiri yatakataliwa.",
+  "@cancelListingConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "keepIt": "Iacha",
+  "cancelListingBtn": "Futa orodha",
+  "contractNotGenerated": "Mkataba bado haujatengenezwa.",
+
+  "accountTitle": "Akaunti",
+  "settingsTitle": "Mipangilio",
+  "contactUs": "Wasiliana Nasi",
+  "community": "Jumuiya",
+  "legal": "Kisheria",
+  "signOut": "Toka",
+  "signOutConfirm": "Una uhakika unataka kutoka kwenye akaunti yako?",
+  "cancel": "Ghairi",
+  "profileUpdated": "Wasifu umesasishwa.",
+  "editProfile": "Hariri Wasifu",
+  "identityVerification": "Uthibitisho wa Utambulisho",
+  "security": "Usalama",
+  "notifications": "Arifa",
+  "statListings": "Orodha",
+  "statListingsSubtitle": "Maombi yaliyowasilishwa",
+  "statOffers": "Mapendekezo",
+  "statOffersSubtitle": "Mapendekezo yaliyotolewa",
+  "statMatches": "Mechi",
+  "statMatchesSubtitle": "Mechi zilizofanikiwa",
+  "trustReputation": "Uaminifu & Sifa",
+  "subscription": "Usajili",
+  "upgradeToPro": "Panda hadi Pro",
+  "viewPlansUpgrade": "Angalia mipango & panda",
+  "adminDashboard": "Dashibodi ya Msimamizi",
+  "memberSince": "Mwanachama tangu {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "verified": "Imethibitishwa",
+  "districtNotSet": "Wilaya haijawekwa",
+  "nipanzeDisclaimer": "Nipanze ni jukwaa la kuoanisha tu. Hatushikili, hatuhamishe, wala hatutatuliwe fedha. Miamala yote hutokea moja kwa moja kati ya washiriki."
 }

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -48,9 +49,9 @@ class _WatchlistView extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Watchlist',
+                      Text(AppLocalizations.of(context)!.watchlistTitle,
                           style: Theme.of(context).textTheme.headlineMedium),
-                      Text("Listings you're tracking",
+                      Text(AppLocalizations.of(context)!.watchlistSubtitle,
                           style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
@@ -70,7 +71,8 @@ class _WatchlistView extends StatelessWidget {
                           border:
                               Border.all(color: Theme.of(context).dividerColor),
                         ),
-                        child: Text('$count saved',
+                        child: Text(
+                            AppLocalizations.of(context)!.watchlistSaved(count),
                             style: const TextStyle(fontSize: 10)),
                       );
                     },
@@ -88,8 +90,8 @@ class _WatchlistView extends StatelessWidget {
               ),
               child: Text(
                 isSubscribed
-                    ? 'Free for all users. Get notified when offers change, rates improve, or a listing is closing.'
-                    : 'Free for all users. Get notified when offers change, rates improve, or a listing is closing. Subscribe to make offers.',
+                    ? AppLocalizations.of(context)!.watchlistInfoSubscribed
+                    : AppLocalizations.of(context)!.watchlistInfoFree,
                 style: const TextStyle(fontSize: 11),
               ),
             ),
@@ -128,14 +130,14 @@ class _WatchlistView extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Error loading watchlist',
+                            AppLocalizations.of(context)!.watchlistError,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () =>
                                 context.read<WatchlistCubit>().load(),
-                            child: const Text('Try again'),
+                            child: Text(AppLocalizations.of(context)!.tryAgain),
                           ),
                         ],
                       ),
@@ -146,15 +148,14 @@ class _WatchlistView extends StatelessWidget {
                     if (state.listings.isEmpty) {
                       return EmptyState(
                         icon: Icons.star_outline_rounded,
-                        title: 'No saved listings',
-                        subtitle:
-                            'Browse the marketplace and tap "Save to watchlist" on any listing.',
+                        title: AppLocalizations.of(context)!.watchlistEmpty,
+                        subtitle: AppLocalizations.of(context)!.watchlistEmptySubtitle,
                         action: ElevatedButton(
                           onPressed: () {
                             ScaffoldMessenger.of(context).clearSnackBars();
                             context.go('/marketplace');
                           },
-                          child: const Text('Browse marketplace'),
+                          child: Text(AppLocalizations.of(context)!.browseMarketplace),
                         ),
                       );
                     }
@@ -183,10 +184,10 @@ class _WatchlistView extends StatelessWidget {
                               scaffoldMessenger.clearSnackBars();
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: const Text('Removed from watchlist'),
+                                  content: Text(AppLocalizations.of(context)!.removedFromWatchlist),
                                   duration: const Duration(seconds: 2),
                                   action: SnackBarAction(
-                                    label: 'Undo',
+                                    label: AppLocalizations.of(context)!.undo,
                                     textColor: AppColors.accent,
                                     onPressed: () {
                                       context
@@ -205,15 +206,14 @@ class _WatchlistView extends StatelessWidget {
 
                   return EmptyState(
                     icon: Icons.star_outline_rounded,
-                    title: 'No saved listings',
-                    subtitle:
-                        'Browse the marketplace and tap "Save to watchlist" on any listing.',
+                    title: AppLocalizations.of(context)!.watchlistEmpty,
+                    subtitle: AppLocalizations.of(context)!.watchlistEmptySubtitle,
                     action: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         context.go('/marketplace');
                       },
-                      child: const Text('Browse marketplace'),
+                      child: Text(AppLocalizations.of(context)!.browseMarketplace),
                     ),
                   );
                 },

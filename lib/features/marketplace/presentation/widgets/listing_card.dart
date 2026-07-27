@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../marketplace/domain/models/loan_listing.dart';
 
@@ -72,15 +73,16 @@ class ListingCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        '${listing.district} · ${listing.durationMonths} months',
+                        '${listing.district} · ${listing.durationMonths} ${AppLocalizations.of(context)!.months}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  tooltip:
-                      isSaved ? 'Remove from watchlist' : 'Save to watchlist',
+                  tooltip: isSaved
+                      ? AppLocalizations.of(context)!.removeFromWatchlist
+                      : AppLocalizations.of(context)!.saveToWatchlist,
                   visualDensity: VisualDensity.compact,
                   icon: Icon(
                     isSaved ? Icons.star_rounded : Icons.star_border_rounded,
@@ -119,7 +121,7 @@ class ListingCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              _shortTimeLabel(listing),
+              _shortTimeLabel(listing, AppLocalizations.of(context)!),
               style: TextStyle(
                 fontSize: 10,
                 color: listing.isClosingSoon6h
@@ -150,13 +152,13 @@ class ListingCard extends StatelessWidget {
     return (listing.numberOfOffers / 6).clamp(0.0, 0.9);
   }
 
-  String _shortTimeLabel(LoanListing listing) {
-    if (listing.isExpired) return 'Expired';
+  String _shortTimeLabel(LoanListing listing, AppLocalizations l10n) {
+    if (listing.isExpired) return l10n.expired;
     final days = listing.timeRemaining.inDays;
-    if (days > 0) return '${days}d left';
+    if (days > 0) return l10n.daysLeft(days);
     final hours = listing.timeRemaining.inHours;
-    if (hours > 0) return '${hours}h left';
-    return '${listing.timeRemaining.inMinutes}m left';
+    if (hours > 0) return l10n.hoursLeft(hours);
+    return l10n.minutesLeft(listing.timeRemaining.inMinutes);
   }
 
   String _fmtAmount(int amount) {

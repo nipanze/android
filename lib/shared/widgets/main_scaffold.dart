@@ -9,6 +9,7 @@ import '../../../core/di/injection.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../features/notifications/presentation/cubit/notification_cubit.dart';
+import '../../../l10n/app_localizations.dart';
 import 'offline_banner.dart';
 
 class MainScaffold extends StatelessWidget {
@@ -47,6 +48,25 @@ class MainScaffold extends StatelessWidget {
     return 0;
   }
 
+  String _getTabLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return key;
+    switch (key) {
+      case 'Markets':
+        return l10n.navMarkets;
+      case 'Watchlist':
+        return l10n.navWatchlist;
+      case 'Request':
+        return l10n.navRequest;
+      case 'Positions':
+        return l10n.navPositions;
+      case 'Account':
+        return l10n.navAccount;
+      default:
+        return key;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = _currentIndex(context);
@@ -68,10 +88,9 @@ class MainScaffold extends StatelessWidget {
             currentIndex: currentIndex,
             onTap: (index) => context.go(_tabs[index].route),
             items: _tabs.map((t) {
-              final isRequest = t.label == 'Request';
               return BottomNavigationBarItem(
                 icon: _buildIcon(context, t, currentIndex),
-                label: t.label,
+                label: _getTabLabel(context, t.label),
               );
             }).toList(),
           ),

@@ -8,6 +8,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -37,7 +38,7 @@ class _AccountView extends StatelessWidget {
           listener: (context, state) {
             if (state is ProfileCubitLoaded && state.justSaved) {
               ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile updated.')));
+                  SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated)));
             }
             if (state is ProfileCubitError) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -63,7 +64,7 @@ class _AccountView extends StatelessWidget {
                   children: [
                     // ── Header ────────────────────────────────────────────
                     Row(children: [
-                      Text('Account',
+                      Text(AppLocalizations.of(context)!.accountTitle,
                           style: Theme.of(context)
                               .textTheme
                               .titleLarge
@@ -73,7 +74,7 @@ class _AccountView extends StatelessWidget {
                                   fontSize: 20)),
                       const Spacer(),
                       IconButton(
-                        tooltip: 'Settings',
+                        tooltip: AppLocalizations.of(context)!.settingsTitle,
                         onPressed: () => _showSettingsSheet(context),
                         icon: const Icon(Icons.settings_outlined, size: 22),
                       ),
@@ -100,24 +101,24 @@ class _AccountView extends StatelessWidget {
                     Row(
                       children: [
                         _StatChip(
-                          label: 'Listings',
-                          subtitle: 'Posted requests',
+                          label: AppLocalizations.of(context)!.statListings,
+                          subtitle: AppLocalizations.of(context)!.statListingsSubtitle,
                           value: '${profile?.activeListings ?? 0}',
                           color: AppColors.accent,
                           icon: Icons.article_outlined,
                         ),
                         const SizedBox(width: 8),
                         _StatChip(
-                          label: 'Offers',
-                          subtitle: 'Offers made',
+                          label: AppLocalizations.of(context)!.statOffers,
+                          subtitle: AppLocalizations.of(context)!.statOffersSubtitle,
                           value: '${profile?.activeOffers ?? 0}',
                           color: AppColors.success,
                           icon: Icons.handshake_outlined,
                         ),
                         const SizedBox(width: 8),
                         _StatChip(
-                          label: 'Matches',
-                          subtitle: 'Successful matches',
+                          label: AppLocalizations.of(context)!.statMatches,
+                          subtitle: AppLocalizations.of(context)!.statMatchesSubtitle,
                           value: '${profile?.revealedContacts ?? 0}',
                           color: AppColors.purple,
                           icon: Icons.track_changes_outlined,
@@ -136,7 +137,7 @@ class _AccountView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 8),
                       child: Text(
-                        'Trust & Reputation',
+                        AppLocalizations.of(context)!.trustReputation,
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -150,7 +151,7 @@ class _AccountView extends StatelessWidget {
                     const SizedBox(height: 4),
 
                     // ── Subscription ──────────────────────────────────────
-                    const SectionHeader('Subscription'),
+                    SectionHeader(AppLocalizations.of(context)!.subscription),
                     _SubscriptionCard(profile: profile),
                     const SizedBox(height: 8),
                     if (authState is AuthAuthenticated &&
@@ -159,8 +160,8 @@ class _AccountView extends StatelessWidget {
                         onTap: () => context.push(AppRoutes.pricing),
                         label: authState.user.subscriptionPlan ==
                                 SubscriptionPlan.lender
-                            ? 'Upgrade to Pro'
-                            : 'View plans & upgrade',
+                            ? AppLocalizations.of(context)!.upgradeToPro
+                            : AppLocalizations.of(context)!.viewPlansUpgrade,
                       ),
 
                     if (context.read<AuthBloc>().state is AuthAuthenticated &&
@@ -171,16 +172,16 @@ class _AccountView extends StatelessWidget {
                       Card(
                           child: _ActionRow(
                         icon: Icons.admin_panel_settings_outlined,
-                        label: 'Admin dashboard',
+                        label: AppLocalizations.of(context)!.adminDashboard,
                         onTap: () => context.push(AppRoutes.admin),
                       )),
                     ],
                     const SizedBox(height: 20),
 
-                    const Text(
-                      'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.',
+                    Text(
+                      AppLocalizations.of(context)!.nipanzeDisclaimer,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 10,
                           color: AppColors.text3Dark,
                           height: 1.5),
@@ -230,11 +231,11 @@ class _AccountView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: Text(
-                  'Settings',
-                  style: TextStyle(
+                  AppLocalizations.of(sheetCtx)!.settingsTitle,
+                  style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -243,7 +244,7 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.chat_bubble_outline_rounded,
-                label: 'Contact Us',
+                label: AppLocalizations.of(sheetCtx)!.contactUs,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _showContactDialog(context);
@@ -252,7 +253,7 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.groups_outlined,
-                label: 'Community',
+                label: AppLocalizations.of(sheetCtx)!.community,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _showCommunityDialog(context);
@@ -261,7 +262,7 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.gavel_outlined,
-                label: 'Legal',
+                label: AppLocalizations.of(sheetCtx)!.legal,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _showLegalDialog(context);
@@ -280,7 +281,7 @@ class _AccountView extends StatelessWidget {
                       foregroundColor: AppColors.danger,
                       side: const BorderSide(color: AppColors.danger)),
                   icon: const Icon(Icons.logout_rounded, size: 16),
-                  label: const Text('Sign Out'),
+                  label: Text(AppLocalizations.of(sheetCtx)!.signOut),
                 ),
               ),
             ],
@@ -416,18 +417,18 @@ class _AccountView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                 child: Text(
-                  'Account',
-                  style: TextStyle(
+                  AppLocalizations.of(sheetCtx)!.accountTitle,
+                  style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.person_outline_rounded,
-                label: 'Edit Profile',
+                label: AppLocalizations.of(sheetCtx)!.editProfile,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   final currentLocation = GoRouterState.of(context).matchedLocation;
@@ -439,7 +440,7 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.verified_user_outlined,
-                label: 'Identity Verification',
+                label: AppLocalizations.of(sheetCtx)!.identityVerification,
                 trailing: _kycBadge(profile?.kycStatus),
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
@@ -449,13 +450,13 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.lock_outline_rounded,
-                label: 'Security',
+                label: AppLocalizations.of(sheetCtx)!.security,
                 onTap: () => Navigator.of(sheetCtx).pop(),
               ),
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.notifications_none_rounded,
-                label: 'Notifications',
+                label: AppLocalizations.of(sheetCtx)!.notifications,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   router.push(AppRoutes.notifications);
@@ -464,7 +465,7 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.settings_outlined,
-                label: 'Settings',
+                label: AppLocalizations.of(sheetCtx)!.settingsTitle,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _showSettingsSheet(context);
@@ -481,12 +482,12 @@ class _AccountView extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out of your account?'),
+        title: Text(AppLocalizations.of(context)!.signOut),
+        content: Text(AppLocalizations.of(context)!.signOutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -495,7 +496,7 @@ class _AccountView extends StatelessWidget {
               context.go(AppRoutes.login);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Sign Out'),
+            child: Text(AppLocalizations.of(context)!.signOut),
           ),
         ],
       ),
@@ -643,7 +644,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          profile?.district ?? 'District not set',
+                          profile?.district ?? AppLocalizations.of(context)!.districtNotSet,
                           style: const TextStyle(
                               fontSize: 11, color: AppColors.text2Dark),
                           overflow: TextOverflow.ellipsis,
@@ -658,7 +659,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                             size: 11, color: AppColors.text3Dark),
                         const SizedBox(width: 4),
                         Text(
-                          'Member since ${DateFormat('MMM yyyy').format(profile!.memberSince!)}',
+                          AppLocalizations.of(context)!.memberSince(DateFormat('MMM yyyy').format(profile!.memberSince!)),
                           style: const TextStyle(
                               fontSize: 11, color: AppColors.text2Dark),
                         ),
@@ -685,8 +686,8 @@ class _VerifiedBadge extends StatelessWidget {
           color: AppColors.success.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Text('Verified',
-            style: TextStyle(
+        child: Text(AppLocalizations.of(context)!.verified,
+            style: const TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 color: AppColors.success)),

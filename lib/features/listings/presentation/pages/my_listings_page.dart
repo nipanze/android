@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/my_listing.dart';
@@ -32,7 +33,7 @@ class _MyListingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Requests')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.myRequestsTitle)),
       body: BlocConsumer<MyListingsCubit, MyListingsState>(
         listener: (context, state) {
           if (state is MyListingsError) {
@@ -93,7 +94,7 @@ class _ListingsBody extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
         children: [
           if (_active.isNotEmpty) ...[
-            SectionHeader('Active · ${_active.length}'),
+            SectionHeader(AppLocalizations.of(context)!.sectionActive(_active.length)),
             ..._active.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: MyListingCard(
@@ -104,7 +105,7 @@ class _ListingsBody extends StatelessWidget {
                 )),
           ],
           if (_contracted.isNotEmpty) ...[
-            SectionHeader('Contracted · ${_contracted.length}'),
+            SectionHeader(AppLocalizations.of(context)!.sectionContracted(_contracted.length)),
             ..._contracted.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: MyListingCard(
@@ -116,7 +117,7 @@ class _ListingsBody extends StatelessWidget {
                 )),
           ],
           if (_closed.isNotEmpty) ...[
-            SectionHeader('Closed · ${_closed.length}'),
+            SectionHeader(AppLocalizations.of(context)!.sectionClosed(_closed.length)),
             ..._closed.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child:
@@ -137,7 +138,7 @@ class _ListingsBody extends StatelessWidget {
         await context.push('/marketplace/agreement/${agreement.id}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Contract not yet generated.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.contractNotGenerated)),
         );
       }
     } catch (e) {
@@ -155,15 +156,14 @@ class _ListingsBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Cancel listing?'),
+        title: Text(AppLocalizations.of(context)!.cancelListing),
         content: Text(
-          'This will remove "${listing.title}" from the marketplace. '
-          'Any pending offers will be rejected. This cannot be undone.',
+          AppLocalizations.of(context)!.cancelListingConfirm(listing.title),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Keep it'),
+            child: Text(AppLocalizations.of(context)!.keepIt),
           ),
           TextButton(
             onPressed: () {
@@ -171,7 +171,7 @@ class _ListingsBody extends StatelessWidget {
               context.read<MyListingsCubit>().cancelListing(listing.id);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Cancel listing'),
+            child: Text(AppLocalizations.of(context)!.cancelListingBtn),
           ),
         ],
       ),
@@ -186,12 +186,11 @@ class _EmptyRequestState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.request_page_outlined,
-      title: 'No loan requests yet',
-      subtitle:
-          'Post a request and lenders will compete to offer you the best rate.',
+      title: AppLocalizations.of(context)!.noLoanRequests,
+      subtitle: AppLocalizations.of(context)!.noLoanRequestsSubtitle,
       action: ElevatedButton(
         onPressed: () => context.go(AppRoutes.listingCreate),
-        child: const Text('Create a loan request'),
+        child: Text(AppLocalizations.of(context)!.createLoanRequest),
       ),
     );
   }

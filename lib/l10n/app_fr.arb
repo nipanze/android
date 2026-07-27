@@ -35,5 +35,158 @@
   "finish": "Terminer",
   "termsNotice": "En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
   "phoneSafeTitle": "Votre numéro est en sécurité avec nous",
-  "phoneSafeSubtitle": "Nous ne partagerons jamais votre numéro avec quiconque."
+  "phoneSafeSubtitle": "Nous ne partagerons jamais votre numéro avec quiconque.",
+  "navMarkets": "Marchés",
+  "navWatchlist": "Favoris",
+  "navRequest": "Demander",
+  "navPositions": "Positions",
+  "navAccount": "Compte",
+  "marketplaceTitle": "Marché",
+  "listingsLive": "{count} offres · en direct",
+  "@listingsLive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filtered": "Filtré",
+  "applyingFilters": "Application des filtres…",
+  "noListingsFound": "Aucune offre trouvée",
+  "noListingsSubtitle": "Revenez bientôt — de nouvelles offres apparaissent en temps réel.",
+  "noMatches": "Aucun résultat",
+  "noMatchesSubtitle": "Aucune offre ne correspond à vos filtres Pro.\nEssayez de modifier ou d'effacer les critères.",
+  "adjustFilters": "Ajuster les filtres",
+  "removeFromWatchlist": "Retirer des favoris",
+  "saveToWatchlist": "Ajouter aux favoris",
+  "months": "mois",
+  "daysLeft": "{count}j restants",
+  "@daysLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursLeft": "{count}h restants",
+  "@hoursLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minutesLeft": "{count}m restants",
+  "@minutesLeft": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "expired": "Expiré",
+
+  "watchlistTitle": "Favoris",
+  "watchlistSubtitle": "Annonces que vous suivez",
+  "watchlistSaved": "{count} enregistré(s)",
+  "@watchlistSaved": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "watchlistInfoSubscribed": "Gratuit pour tous. Soyez notifié quand les offres changent, les taux s'améliorent ou une annonce se ferme.",
+  "watchlistInfoFree": "Gratuit pour tous. Soyez notifié quand les offres changent. Abonnez-vous pour faire des offres.",
+  "watchlistError": "Erreur de chargement des favoris",
+  "watchlistEmpty": "Aucune annonce enregistrée",
+  "watchlistEmptySubtitle": "Parcourez le marché et appuyez sur \"Ajouter aux favoris\" sur une annonce.",
+  "browseMarketplace": "Parcourir le marché",
+  "removedFromWatchlist": "Retiré des favoris",
+  "undo": "Annuler",
+  "tryAgain": "Réessayer",
+
+  "myActivityTitle": "Mon Activité",
+  "myActivitySubtitle": "Gérez vos annonces et offres",
+  "myActivityStats": "{listings} Annonces · {offers} Offres Actives",
+  "@myActivityStats": {
+    "placeholders": {
+      "listings": { "type": "int" },
+      "offers": { "type": "int" }
+    }
+  },
+  "tabMyRequests": "Mes Demandes",
+  "tabMyOffers": "Mes Offres",
+  "noOffersYet": "Aucune offre pour l'instant",
+  "noOffersSubtitle": "Les offres que vous placez sur les annonces apparaîtront ici.",
+  "browseMarketplaceBtn": "Parcourir le marché",
+  "activeOffers": "Offres Actives",
+  "matchedAccepted": "Mises en correspondance / Acceptées",
+  "history": "Historique",
+  "withdrawOffer": "Retirer l'offre ?",
+  "withdrawConfirm": "Êtes-vous sûr de retirer votre offre de UGX {amount} ?",
+  "@withdrawConfirm": {
+    "placeholders": {
+      "amount": { "type": "int" }
+    }
+  },
+  "keepOffer": "Garder l'offre",
+  "withdraw": "Retirer",
+
+  "myRequestsTitle": "Mes Demandes",
+  "sectionActive": "Actif · {count}",
+  "@sectionActive": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionContracted": "Contracté · {count}",
+  "@sectionContracted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sectionClosed": "Fermé · {count}",
+  "@sectionClosed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "noLoanRequests": "Aucune demande de prêt pour l'instant",
+  "noLoanRequestsSubtitle": "Postez une demande et les prêteurs se disputeront pour vous offrir le meilleur taux.",
+  "createLoanRequest": "Créer une demande de prêt",
+  "cancelListing": "Annuler l'annonce ?",
+  "cancelListingConfirm": "Cela supprimera \"{title}\" du marché. Toutes les offres en attente seront rejetées.",
+  "@cancelListingConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "keepIt": "Garder",
+  "cancelListingBtn": "Annuler l'annonce",
+  "contractNotGenerated": "Contrat pas encore généré.",
+
+  "accountTitle": "Compte",
+  "settingsTitle": "Paramètres",
+  "contactUs": "Contactez-nous",
+  "community": "Communauté",
+  "legal": "Légal",
+  "signOut": "Se déconnecter",
+  "signOutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+  "cancel": "Annuler",
+  "profileUpdated": "Profil mis à jour.",
+  "editProfile": "Modifier le profil",
+  "identityVerification": "Vérification d'identité",
+  "security": "Sécurité",
+  "notifications": "Notifications",
+  "statListings": "Annonces",
+  "statListingsSubtitle": "Demandes publiées",
+  "statOffers": "Offres",
+  "statOffersSubtitle": "Offres soumises",
+  "statMatches": "Correspondances",
+  "statMatchesSubtitle": "Correspondances réussies",
+  "trustReputation": "Confiance & Réputation",
+  "subscription": "Abonnement",
+  "upgradeToPro": "Passer à Pro",
+  "viewPlansUpgrade": "Voir les plans & passer",
+  "adminDashboard": "Tableau de bord Admin",
+  "memberSince": "Membre depuis {date}",
+  "@memberSince": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "verified": "Vérifié",
+  "districtNotSet": "District non défini",
+  "nipanzeDisclaimer": "Nipanze est une plateforme de mise en relation non-dépositaire. Nous ne détenons, déplaçons ni réglons pas les fonds. Toutes les transactions se font directement entre participants."
 }
