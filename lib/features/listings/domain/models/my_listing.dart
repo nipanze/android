@@ -104,7 +104,9 @@ class MyListing extends Equatable {
       cancelledAt: map['cancelled_at'] != null
           ? DateTime.tryParse(map['cancelled_at'] as String)
           : null,
-      currency: map['currency'] as String? ?? 'UGX',
+      currency: (map['countries'] is Map && (map['countries'] as Map)['currency_code'] != null)
+          ? (map['countries'] as Map)['currency_code'] as String
+          : map['currency_code'] as String? ?? map['currency'] as String? ?? 'UGX',
     );
   }
 

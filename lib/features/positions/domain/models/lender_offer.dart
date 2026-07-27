@@ -125,7 +125,7 @@ class LenderOffer extends Equatable {
       revealedAt: map['revealed_at'] != null
           ? DateTime.tryParse(map['revealed_at'] as String)
           : null,
-      currency: map['currency'] as String? ?? 'UGX',
+      currency: map['currency_code'] as String? ?? map['currency'] as String? ?? 'UGX',
     );
   }
 

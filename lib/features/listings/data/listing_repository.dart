@@ -19,11 +19,11 @@ class ListingRepository {
       final data = await _client
           .from(TableNames.loanRequests)
           .select(
-            'id, title, purpose, district, duration_months, requested_amount, '
+            'id, title, purpose, district, country, countries(currency_code), duration_months, requested_amount, '
             'income_source, preferred_repayment_plan, repayment_amount_per_period, '
             'repayment_timeline, suggested_interest_rate_pct, suggested_late_fee_pct, '
             'suggested_repayment_frequency, suggested_installment_amount, terms_locked_at, '
-            'status, number_of_offers, currency, '
+            'status, number_of_offers, '
             'listed_at, expires_at, contracted_at, cancelled_at',
           )
           .eq('borrower_id', _uid)
@@ -51,7 +51,7 @@ class ListingRepository {
     double? suggestedLateFeePct,
     String? suggestedRepaymentFrequency,
     int? suggestedInstallmentAmount,
-    String currency = 'UGX',
+    String country = 'UG',
   }) async {
     try {
       final data = await _client
@@ -67,7 +67,7 @@ class ListingRepository {
             'preferred_repayment_plan': preferredRepaymentPlan,
             'repayment_amount_per_period': repaymentAmountPerPeriod,
             'repayment_timeline': repaymentTimeline,
-            'currency': currency,
+            'country': country,
             if (suggestedInterestRatePct != null)
               'suggested_interest_rate_pct': suggestedInterestRatePct,
             if (suggestedLateFeePct != null)
