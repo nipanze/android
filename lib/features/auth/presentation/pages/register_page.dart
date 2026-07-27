@@ -288,7 +288,7 @@ class _RegisterPageState extends State<RegisterPage>
     final cardBg = isDark ? const Color(0xFF181928) : const Color(0xFFF1F5F9);
     final cardBorder =
         isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
-    const purple = Color(0xFF7C3AED);
+    const purple = AppColors.accent;
 
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -376,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage>
                       ),
                     ),
                     const Icon(Icons.chevron_right_rounded,
-                        color: Color(0xFF7C3AED), size: 22),
+                        color: AppColors.accent, size: 22),
                   ],
                 ),
               ),
@@ -402,7 +402,7 @@ class _RegisterPageState extends State<RegisterPage>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.photo_library_rounded,
-                          color: Color(0xFF7C3AED), size: 20),
+                          color: AppColors.accent, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -630,7 +630,7 @@ class _WelcomeScreen extends StatelessWidget {
     final footerTextColor =
         isDark ? const Color(0xFFD1D5DB) : const Color(0xFF475569);
     final footerLinkColor =
-        isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED);
+        isDark ? AppColors.accentLight : AppColors.accent;
 
     return Container(
       width: double.infinity,
@@ -744,7 +744,7 @@ class _WelcomeScreen extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: onContinueWithPhone,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7C3AED),
+                            backgroundColor: AppColors.accent,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -1021,13 +1021,13 @@ class _PhoneEntryScreen extends StatelessWidget {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF7C3AED)
+                              color: AppColors.accent
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.verified_user_rounded,
-                              color: Color(0xFFA78BFA),
+                              color: AppColors.accentLight,
                               size: 24,
                             ),
                           ),
@@ -1071,10 +1071,10 @@ class _PhoneEntryScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : onNext,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7C3AED),
+                          backgroundColor: AppColors.accent,
                           foregroundColor: Colors.white,
                           disabledBackgroundColor:
-                              const Color(0xFF7C3AED).withValues(alpha: 0.5),
+                              AppColors.accent.withValues(alpha: 0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1254,7 +1254,7 @@ class _OtpScreen extends StatelessWidget {
                           const TextSpan(
                             text: 'Resend',
                             style: TextStyle(
-                              color: Color(0xFFA78BFA),
+                              color: AppColors.accentLight,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1273,7 +1273,7 @@ class _OtpScreen extends StatelessWidget {
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 14,
-                                  color: Color(0xFFA78BFA),
+                                  color: AppColors.accentLight,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1294,10 +1294,10 @@ class _OtpScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: isLoading ? null : onVerify,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7C3AED),
+                        backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor:
-                            const Color(0xFF7C3AED).withValues(alpha: 0.5),
+                            AppColors.accent.withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -1366,7 +1366,7 @@ class _OtpBox extends StatelessWidget {
             color: cardBgColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive ? const Color(0xFF7C3AED) : cardBorderColor,
+              color: isActive ? AppColors.accent : cardBorderColor,
               width: isActive ? 1.5 : 1.0,
             ),
           ),
@@ -1376,7 +1376,7 @@ class _OtpBox extends StatelessWidget {
               focusNode: focusNode,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
-              cursorColor: const Color(0xFF7C3AED),
+              cursorColor: AppColors.accent,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(1),
@@ -1545,7 +1545,7 @@ class _ProfileSetupScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF7C3AED),
+                                  color: AppColors.accent,
                                   width: 2.5,
                                 ),
                                 color: cardBgColor,
@@ -1560,7 +1560,7 @@ class _ProfileSetupScreen extends StatelessWidget {
                                   ? const Icon(
                                       Icons.camera_alt_rounded,
                                       size: 30,
-                                      color: Color(0xFF7C3AED),
+                                      color: AppColors.accent,
                                     )
                                   : null,
                             ),
@@ -1572,7 +1572,7 @@ class _ProfileSetupScreen extends StatelessWidget {
                                 width: 28,
                                 height: 28,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF7C3AED),
+                                  color: AppColors.accent,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: cardBgColor,
@@ -1756,10 +1756,10 @@ class _ProfileSetupScreen extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: (isLoading || !isValid) ? null : onSubmit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7C3AED),
+                              backgroundColor: AppColors.accent,
                               foregroundColor: Colors.white,
                               disabledBackgroundColor:
-                                  const Color(0xFF7C3AED).withValues(alpha: 0.35),
+                                  AppColors.accent.withValues(alpha: 0.35),
                               disabledForegroundColor:
                                   Colors.white.withValues(alpha: 0.5),
                               shape: RoundedRectangleBorder(
@@ -1856,7 +1856,7 @@ class _ProfileField extends StatelessWidget {
             fontSize: 15,
             color: titleColor,
           ),
-          cursorColor: const Color(0xFF7C3AED),
+          cursorColor: AppColors.accent,
           decoration: InputDecoration(
             filled: true,
             fillColor: cardBgColor,
@@ -1879,7 +1879,7 @@ class _ProfileField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+                  const BorderSide(color: AppColors.accent, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -1972,8 +1972,8 @@ class _SuccessScreen extends StatelessWidget {
             // ── Feature cards ─────────────────────────────────────────────
             _SuccessFeatureCard(
               icon: Icons.people_alt_rounded,
-              iconBgColor: const Color(0xFF7C3AED).withValues(alpha: 0.15),
-              iconColor: const Color(0xFFA78BFA),
+              iconBgColor: AppColors.accent.withValues(alpha: 0.15),
+              iconColor: AppColors.accentLight,
               title: 'Explore loan requests',
               subtitle: 'Find borrowers and lenders\nin your country.',
               cardBgColor: cardBgColor,
@@ -2004,7 +2004,7 @@ class _SuccessScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onGoToMarketplace,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7C3AED),
+                  backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -2407,7 +2407,7 @@ class _StepProgressHeader extends StatelessWidget {
                 margin: EdgeInsets.only(right: index < totalSteps - 1 ? 6 : 0),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? const Color(0xFF7C3AED)
+                      ? AppColors.accent
                       : (isDark
                           ? const Color(0xFF27272A)
                           : const Color(0xFFE2E8F0)),

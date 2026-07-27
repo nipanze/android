@@ -28,7 +28,7 @@ class WelcomePage extends StatelessWidget {
     final cardBorder = isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor = isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
-    const purpleColor = Color(0xFF7C3AED);
+    const purpleColor = AppColors.accent;
 
     showModalBottomSheet<void>(
       context: context,
@@ -396,7 +396,7 @@ class WelcomePage extends StatelessWidget {
                           child: ElevatedButton.icon(
                             onPressed: () => _showAuthPrompt(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF7C3AED),
+                              backgroundColor: AppColors.accent,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),

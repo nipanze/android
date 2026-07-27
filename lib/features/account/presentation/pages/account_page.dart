@@ -564,7 +564,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                     height: 58,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF6D28D9), Color(0xFF7C3AED)],
+                        colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),

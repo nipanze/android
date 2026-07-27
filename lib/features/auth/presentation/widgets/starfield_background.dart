@@ -67,7 +67,7 @@ class _StarfieldPainter extends CustomPainter {
 
   void _paintStars(Canvas canvas, Size size) {
     final rand = Random(_seed);
-    final baseColor = isDark ? Colors.white : const Color(0xFF7C3AED);
+    final baseColor = isDark ? Colors.white : const Color(0xFF2563EB);
     final starPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.35 : 0.15);
     final dimStarPaint = Paint()..color = baseColor.withValues(alpha: isDark ? 0.15 : 0.08);
 

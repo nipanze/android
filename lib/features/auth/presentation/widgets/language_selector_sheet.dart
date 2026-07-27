@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/widgets/language_selector_sheet.dart
 import 'package:flutter/material.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 
 /// Shows a bottom sheet allowing the user to switch the app language dynamically.
@@ -12,7 +13,7 @@ void showLanguageSelectorSheet(BuildContext context) {
   final cardBorder = isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
   final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
   final subtitleColor = isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
-  const purpleColor = Color(0xFF7C3AED);
+  const purpleColor = AppColors.accent;
 
   final currentCode = LanguageService.instance.locale?.languageCode ??
       Localizations.localeOf(context).languageCode;

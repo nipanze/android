@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand – Nipanze primary: Violet/Purple
-  static const Color accent     = Color(0xFF7C3AED); // primary purple
-  static const Color accentDark = Color(0xFF6D28D9); // pressed / dark variant
-  static const Color accentLight = Color(0xFFA78BFA); // light variant (dark-mode text on purple)
+  // Brand – Nipanze primary: Electric Royal Blue (Vibrant Fintech)
+  static const Color accent      = Color(0xFF2563EB); // Vibrant Electric Royal Blue
+  static const Color accentDark  = Color(0xFF1D4ED8); // Pressed / Deep gradient variant
+  static const Color accentLight = Color(0xFF60A5FA); // Light variant for dark-mode text & glow
   static const Color success = Color(0xFF10B981); // green
   static const Color warning = Color(0xFFF59E0B); // amber
-  static const Color danger = Color(0xFFEF4444); // red
-  static const Color purple = Color(0xFF7C3AED); // alias kept for backward compat
+  static const Color danger  = Color(0xFFEF4444); // red
+  static const Color purple  = Color(0xFF7C3AED); // Pro-tier only
 
   // Dark theme surfaces
   static const Color bgDark = Color(0xFF191917);
