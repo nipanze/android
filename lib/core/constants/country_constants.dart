@@ -13,15 +13,15 @@ class CountryInfo {
     required this.proPriceFormatted,
   });
 
-  final String code;                  // e.g. 'UG', 'KE', 'NG'
-  final String name;                  // e.g. 'Uganda', 'Kenya'
-  final String flag;                  // e.g. '🇺🇬'
-  final String dialCode;              // e.g. '+256'
-  final String currency;              // e.g. 'UGX'
-  final String regionsLabel;          // e.g. 'District', 'County', 'State'
+  final String code; // e.g. 'UG', 'KE', 'NG'
+  final String name; // e.g. 'Uganda', 'Kenya'
+  final String flag; // e.g. '🇺🇬'
+  final String dialCode; // e.g. '+256'
+  final String currency; // e.g. 'UGX'
+  final String regionsLabel; // e.g. 'District', 'County', 'State'
   final List<String> regions;
-  final String lenderPriceFormatted;  // Charm pricing, e.g. 'UGX 19,900'
-  final String proPriceFormatted;     // Charm pricing, e.g. 'UGX 49,900'
+  final String lenderPriceFormatted; // Charm pricing, e.g. 'UGX 19,900'
+  final String proPriceFormatted; // Charm pricing, e.g. 'UGX 49,900'
 }
 
 class EastAfricaCountries {
@@ -193,6 +193,61 @@ class EastAfricaCountries {
   ];
 
   static CountryInfo get defaultCountry => uganda;
+
+  static const Map<String, CountryInfo> legacyDecodable = {
+    'BI': CountryInfo(
+      code: 'BI',
+      name: 'Burundi',
+      flag: '🇧🇮',
+      dialCode: '+257',
+      currency: 'BIF',
+      regionsLabel: 'Province',
+      lenderPriceFormatted: 'BIF 0',
+      proPriceFormatted: 'BIF 0',
+      regions: ['Other'],
+    ),
+    'SS': CountryInfo(
+      code: 'SS',
+      name: 'South Sudan',
+      flag: '🇸🇸',
+      dialCode: '+211',
+      currency: 'SSP',
+      regionsLabel: 'State',
+      lenderPriceFormatted: 'SSP 0',
+      proPriceFormatted: 'SSP 0',
+      regions: ['Other'],
+    ),
+    'CD': CountryInfo(
+      code: 'CD',
+      name: 'DR Congo',
+      flag: '🇨🇩',
+      dialCode: '+243',
+      currency: 'CDF',
+      regionsLabel: 'Province',
+      lenderPriceFormatted: 'CDF 0',
+      proPriceFormatted: 'CDF 0',
+      regions: ['Other'],
+    ),
+    'SO': CountryInfo(
+      code: 'SO',
+      name: 'Somalia',
+      flag: '🇸🇴',
+      dialCode: '+252',
+      currency: 'SOS',
+      regionsLabel: 'Region',
+      lenderPriceFormatted: 'SOS 0',
+      proPriceFormatted: 'SOS 0',
+      regions: ['Other'],
+    ),
+  };
+
+  static CountryInfo findByCode(String? code) {
+    if (code == null || code.isEmpty) return defaultCountry;
+    for (final c in all) {
+      if (c.code == code) return c;
+    }
+    return legacyDecodable[code] ?? defaultCountry;
+  }
 
   /// Tries to match phone number prefix to country or defaults to Uganda.
   static CountryInfo findByPhone(String? phone) {

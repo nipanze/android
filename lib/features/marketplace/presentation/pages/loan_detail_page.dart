@@ -17,6 +17,7 @@ import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
+import '../../domain/models/marketplace_item.dart';
 import '../widgets/lender_required_sheet.dart';
 import '../widgets/pro_required_sheet.dart';
 
@@ -40,7 +41,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
   final _repo = getIt<MarketplaceRepository>();
   StreamSubscription<List<LoanOffer>>? _offersSub;
-  StreamSubscription<List<LoanListing>>? _listingSub;
+  StreamSubscription<List<MarketplaceItem>>? _listingSub;
 
   @override
   void initState() {
@@ -119,11 +120,11 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       onError: (_) {},
     );
 
-    _listingSub = _repo.watchListings().listen(
+    _listingSub = _repo.watchListings(module: MarketplaceModule.loan).listen(
       (listings) {
         if (!mounted) return;
         final updated = listings.where((l) => l.requestId == widget.requestId);
-        if (updated.isNotEmpty) setState(() => _listing = updated.first);
+        if (updated.isNotEmpty) setState(() => _listing = updated.first.loan);
       },
       onError: (_) {},
     );
@@ -152,8 +153,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
           content: Text(e.toString()), backgroundColor: AppColors.danger));
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -335,13 +334,20 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline, size: 16, color: AppColors.accent),
+                          const Icon(Icons.info_outline,
+                              size: 16, color: AppColors.accent),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Only your offer is visible here — the full bid book is visible to the borrower.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
                                   ),
                             ),
                           ),
@@ -746,10 +752,10 @@ class _OfferCardState extends State<_OfferCard>
   Widget build(BuildContext context) {
     final offer = widget.offer;
     final lenderLabel = offer.lenderId == 'your-offer'
-      ? 'Your offer'
-      : offer.hasMaskedLender
-        ? 'Lender #${widget.index + 1}'
-        : 'Lender #${offer.lenderId.substring(0, 5)}';
+        ? 'Your offer'
+        : offer.hasMaskedLender
+            ? 'Lender #${widget.index + 1}'
+            : 'Lender #${offer.lenderId.substring(0, 5)}';
     final coverage = widget.requestedAmount <= 0
         ? 0
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
@@ -1661,7 +1667,8 @@ class _CalculatorRowDetailPanel extends StatelessWidget {
           ),
           _CalculatorRow(
             label: 'Borrowing cost (total interest)',
-            value: '${offer.currency} ${_fmt(totalInterest.clamp(0, totalInterest))}',
+            value:
+                '${offer.currency} ${_fmt(totalInterest.clamp(0, totalInterest))}',
             valueColor: AppColors.success,
             isBold: true,
           ),
@@ -2003,8 +2010,6 @@ class _StatBox extends StatelessWidget {
       );
 }
 
-
-
 class _MakeOfferSheet extends StatefulWidget {
   const _MakeOfferSheet(
       {required this.listing,
@@ -2166,7 +2171,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
-                          labelText: 'Installment amount (${widget.listing.currency})',
+                          labelText:
+                              'Installment amount (${widget.listing.currency})',
                           prefixIcon: const Icon(Icons.price_check_outlined)),
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Enter amount' : null,

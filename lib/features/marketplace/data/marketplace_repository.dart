@@ -4,7 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../shared/models/forex_listing_model.dart';
 import '../domain/models/loan_listing.dart';
+import '../domain/models/marketplace_item.dart';
 
 @lazySingleton
 class MarketplaceRepository {
@@ -14,24 +16,41 @@ class MarketplaceRepository {
 
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
-  Future<List<LoanListing>> getListings({
+  Future<List<MarketplaceItem>> getListings({
     String? district,
     bool closingSoon = false,
+    MarketplaceModule? module,
   }) async {
     try {
-      var query = _client.from(ViewNames.loanListings).select();
+      final items = <MarketplaceItem>[];
 
-      if (district != null) {
-        query = query.eq('district', district) as dynamic;
+      if (module == null || module == MarketplaceModule.loan) {
+        var query = _client.from(ViewNames.loanListings).select();
+        if (district != null) {
+          query = query.eq('district', district) as dynamic;
+        }
+        if (closingSoon) {
+          query = query.eq('closing_soon_24h', true) as dynamic;
+        }
+        final data = await (query as PostgrestFilterBuilder)
+            .order('listed_at', ascending: false);
+        items.addAll((data as List)
+            .map((e) => MarketplaceItem.loan(LoanListing.fromMap(e))));
       }
-      if (closingSoon) {
-        query = query.eq('closing_soon_24h', true) as dynamic;
+
+      if (module == null || module == MarketplaceModule.forex) {
+        var query = _client.from(ViewNames.forexListings).select();
+        if (closingSoon) {
+          query = query.eq('closing_soon_24h', true) as dynamic;
+        }
+        final data = await (query as PostgrestFilterBuilder)
+            .order('listed_at', ascending: false);
+        items.addAll((data as List)
+            .map((e) => MarketplaceItem.forex(ForexListingModel.fromMap(e))));
       }
 
-      final data = await (query as PostgrestFilterBuilder)
-          .order('listed_at', ascending: false);
-
-      return (data as List).map((e) => LoanListing.fromMap(e)).toList();
+      items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
+      return items;
     } catch (e) {
       throw parseSupabaseError(e);
     }
@@ -155,10 +174,15 @@ class MarketplaceRepository {
   }
 
   /// Real-time stream of the marketplace feed.
-  Stream<List<LoanListing>> watchListings() {
-    return _client
-        .from(TableNames.loanRequests)
-        .stream(primaryKey: ['id']).asyncMap((_) => getListings());
+  Stream<List<MarketplaceItem>> watchListings({MarketplaceModule? module}) {
+    return _client.from(TableNames.loanRequests).stream(
+        primaryKey: ['id']).asyncMap((_) => getListings(module: module));
+  }
+
+  Stream<List<MarketplaceItem>> watchForexListings(
+      {MarketplaceModule? module}) {
+    return _client.from(TableNames.forexRequests).stream(
+        primaryKey: ['id']).asyncMap((_) => getListings(module: module));
   }
 
   /// Real-time stream for a single listing's offers.

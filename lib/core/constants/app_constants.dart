@@ -2,10 +2,16 @@ class TableNames {
   TableNames._();
 
   static const String profiles = 'profiles';
+  static const String countries = 'countries';
+  static const String currencies = 'currencies';
   static const String subscriptions = 'subscriptions';
   static const String kycVerifications = 'kyc_verifications';
   static const String loanRequests = 'loan_requests';
   static const String loanOffers = 'loan_offers';
+  static const String forexRequests = 'forex_requests';
+  static const String forexOffers = 'forex_offers';
+  static const String forexAgreements = 'forex_agreements';
+  static const String forexContactReveals = 'forex_contact_reveals';
   static const String agreements = 'agreements';
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';
@@ -20,8 +26,10 @@ class ViewNames {
   ViewNames._();
 
   static const String loanListings = 'v_loan_listings';
+  static const String forexListings = 'v_forex_listings';
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
+  static const String forexOffers = 'v_forex_offers';
   static const String marketplaceActivity = 'v_marketplace_activity';
   static const String trustProfilePublic = 'v_trust_profile_public';
   static const String trustProfilePro = 'v_trust_profile_pro';
@@ -33,11 +41,16 @@ class RpcNames {
   RpcNames._();
 
   static const String acceptOffer = 'accept_offer';
+  static const String acceptForexOffer = 'accept_forex_offer';
   static const String getPublicListingOffers = 'get_public_listing_offers';
+  static const String getPublicForexOffers = 'get_public_forex_offers';
   static const String unlockContact = 'unlock_contact';
+  static const String unlockForexContact = 'unlock_forex_contact';
   static const String revealContact = 'reveal_contact';
+  static const String submitForexReview = 'submit_forex_review';
   // Pro Advanced Filters (schema v4.2)
-  static const String getMarketplaceProFiltered = 'get_marketplace_pro_filtered';
+  static const String getMarketplaceProFiltered =
+      'get_marketplace_pro_filtered';
 }
 
 class StorageKeys {

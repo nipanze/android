@@ -35,7 +35,8 @@ class _WatchlistView extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
-    final isSubscribed = user != null && user.subscriptionPlan != SubscriptionPlan.free;
+    final isSubscribed =
+        user != null && user.subscriptionPlan != SubscriptionPlan.free;
 
     return Scaffold(
       body: SafeArea(
@@ -149,13 +150,15 @@ class _WatchlistView extends StatelessWidget {
                       return EmptyState(
                         icon: Icons.star_outline_rounded,
                         title: AppLocalizations.of(context)!.watchlistEmpty,
-                        subtitle: AppLocalizations.of(context)!.watchlistEmptySubtitle,
+                        subtitle: AppLocalizations.of(context)!
+                            .watchlistEmptySubtitle,
                         action: ElevatedButton(
                           onPressed: () {
                             ScaffoldMessenger.of(context).clearSnackBars();
                             context.go('/marketplace');
                           },
-                          child: Text(AppLocalizations.of(context)!.browseMarketplace),
+                          child: Text(
+                              AppLocalizations.of(context)!.browseMarketplace),
                         ),
                       );
                     }
@@ -171,20 +174,23 @@ class _WatchlistView extends StatelessWidget {
                             listing: listing,
                             onTap: () {
                               ScaffoldMessenger.of(context).clearSnackBars();
-                              context.push(
-                                '/marketplace/${listing.requestId}',
-                              );
+                              context.push(listing.forex == null
+                                  ? '/marketplace/${listing.requestId}'
+                                  : '/forex/${listing.requestId}');
                             },
                             onRemove: () {
-                              context
-                                  .read<WatchlistCubit>()
-                                  .remove(listing.requestId);
-                              
-                              final scaffoldMessenger = ScaffoldMessenger.of(context);
+                              context.read<WatchlistCubit>().remove(
+                                    listing.requestId,
+                                    forex: listing.forex != null,
+                                  );
+
+                              final scaffoldMessenger =
+                                  ScaffoldMessenger.of(context);
                               scaffoldMessenger.clearSnackBars();
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: Text(AppLocalizations.of(context)!.removedFromWatchlist),
+                                  content: Text(AppLocalizations.of(context)!
+                                      .removedFromWatchlist),
                                   duration: const Duration(seconds: 2),
                                   action: SnackBarAction(
                                     label: AppLocalizations.of(context)!.undo,
@@ -207,13 +213,15 @@ class _WatchlistView extends StatelessWidget {
                   return EmptyState(
                     icon: Icons.star_outline_rounded,
                     title: AppLocalizations.of(context)!.watchlistEmpty,
-                    subtitle: AppLocalizations.of(context)!.watchlistEmptySubtitle,
+                    subtitle:
+                        AppLocalizations.of(context)!.watchlistEmptySubtitle,
                     action: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         context.go('/marketplace');
                       },
-                      child: Text(AppLocalizations.of(context)!.browseMarketplace),
+                      child:
+                          Text(AppLocalizations.of(context)!.browseMarketplace),
                     ),
                   );
                 },

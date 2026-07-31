@@ -82,6 +82,9 @@ AppException _parseAuthError(String message) {
 }
 
 AppException _parsePostgrestError(String code, String message) {
+  final forex = _parseForexError(code, message);
+  if (forex != null) return forex;
+
   // Nipanze-specific trigger codes (aligned to v4.0)
   if (message.contains('NIPANZE_KYC_REQUIRED')) {
     return const KycRequiredException();
@@ -132,4 +135,97 @@ AppException _parsePostgrestError(String code, String message) {
   if (code == 'PGRST116') return const ListingNotFoundException();
 
   return const DatabaseException('Something went wrong. Please try again.');
+}
+
+AppException? _parseForexError(String code, String message) {
+  if (code == 'P0101' || message.contains('NIPANZE_ACCOUNT_INACTIVE')) {
+    return const PermissionException('Your account is not active.');
+  }
+  if (code == 'P0102' || message.contains('NIPANZE_FOREX_NOT_ENABLED')) {
+    return const PermissionException(
+      'Forex is not yet enabled in this market.',
+    );
+  }
+  if (code == 'P0103' || message.contains('NIPANZE_CURRENCY_NOT_TRADEABLE')) {
+    return const ValidationException(
+      'One or both currencies are not cleared for forex trading yet.',
+    );
+  }
+  if (code == 'P0104' || message.contains('NIPANZE_PRO_REQUIRED')) {
+    return const SubscriptionRequiredException('Pro');
+  }
+  if (code == 'P0105' ||
+      message.contains('NIPANZE_FOREX_REQUEST_TERMS_LOCKED')) {
+    return const DatabaseException(
+      'This forex request is locked and cannot be edited.',
+    );
+  }
+  if (code == 'P0106' ||
+      message.contains('NIPANZE_FOREX_REQUEST_COUNTRY_LOCKED')) {
+    return const DatabaseException(
+      'This forex request country is locked after publishing.',
+    );
+  }
+  if (code == 'P0110' ||
+      code == 'P0122' ||
+      message.contains('NIPANZE_FOREX_LISTING_NOT_ACTIVE')) {
+    return const DatabaseException(
+      'This forex request is no longer accepting offers.',
+    );
+  }
+  if (code == 'P0111' || message.contains('NIPANZE_FOREX_LISTING_EXPIRED')) {
+    return const DatabaseException('This forex request has expired.');
+  }
+  if (code == 'P0112' || message.contains('NIPANZE_SELF_OFFER')) {
+    return const ValidationException(
+      'You cannot make an offer on your own forex request.',
+    );
+  }
+  if (code == 'P0113' || message.contains('NIPANZE_SUBSCRIPTION_REQUIRED')) {
+    return const SubscriptionRequiredException('Lender');
+  }
+  if (code == 'P0114' ||
+      message.contains('NIPANZE_FOREX_OFFER_TERMS_REQUIRED')) {
+    return const ValidationException(
+      'Enter both a rate and available amount for your forex offer.',
+    );
+  }
+  if (code == 'P0115' || message.contains('NIPANZE_FOREX_OFFER_TERMS_LOCKED')) {
+    return const DatabaseException(
+      'Forex offer terms are locked after submission.',
+    );
+  }
+  if (code == 'P0116' || message.contains('NIPANZE_FOREX_OFFER_LOCKED')) {
+    return const DatabaseException(
+      'This accepted forex offer cannot be modified.',
+    );
+  }
+  if (code == 'P0120' ||
+      code == 'P0123' ||
+      message.contains('NIPANZE_FOREX_LISTING_NOT_FOUND') ||
+      message.contains('NIPANZE_FOREX_OFFER_NOT_FOUND')) {
+    return const ListingNotFoundException();
+  }
+  if (code == 'P0121' ||
+      code == 'P0124' ||
+      code == 'P0146' ||
+      message.contains('NIPANZE_UNAUTHORIZED')) {
+    return const PermissionException();
+  }
+  if (code == 'P0141' ||
+      message.contains('NIPANZE_FOREX_AGREEMENT_NOT_FOUND')) {
+    return const DatabaseException('This forex agreement could not be found.');
+  }
+  if (code == 'P0145' ||
+      message.contains('NIPANZE_FOREX_AGREEMENT_NOT_LOCKED')) {
+    return const DatabaseException(
+      'This forex agreement must be locked before contact can be unlocked.',
+    );
+  }
+  if (code.startsWith('P01')) {
+    return const DatabaseException(
+      'This forex action could not be completed. Please review the request and try again.',
+    );
+  }
+  return null;
 }

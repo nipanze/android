@@ -65,12 +65,14 @@ class MarketplaceLoaded extends MarketplaceState {
   const MarketplaceLoaded({
     required this.listings,
     required this.activeFilter,
+    this.moduleFilter,
     this.proFilterCriteria = const ProFilterCriteria(),
     this.proFilterActive = false,
   });
 
-  final List<LoanListing> listings;
+  final List<MarketplaceItem> listings;
   final String activeFilter;
+  final MarketplaceModule? moduleFilter;
 
   /// Current Pro filter criteria (always present; `.isActive` tells you
   /// whether they have any effect on the displayed listing set).
@@ -80,22 +82,29 @@ class MarketplaceLoaded extends MarketplaceState {
   final bool proFilterActive;
 
   MarketplaceLoaded copyWith({
-    List<LoanListing>? listings,
+    List<MarketplaceItem>? listings,
     String? activeFilter,
+    MarketplaceModule? moduleFilter,
     ProFilterCriteria? proFilterCriteria,
     bool? proFilterActive,
   }) {
     return MarketplaceLoaded(
       listings: listings ?? this.listings,
       activeFilter: activeFilter ?? this.activeFilter,
+      moduleFilter: moduleFilter ?? this.moduleFilter,
       proFilterCriteria: proFilterCriteria ?? this.proFilterCriteria,
       proFilterActive: proFilterActive ?? this.proFilterActive,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [listings, activeFilter, proFilterCriteria, proFilterActive];
+  List<Object?> get props => [
+        listings,
+        activeFilter,
+        moduleFilter,
+        proFilterCriteria,
+        proFilterActive
+      ];
 }
 
 class MarketplaceError extends MarketplaceState {

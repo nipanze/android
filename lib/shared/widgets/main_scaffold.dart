@@ -42,6 +42,7 @@ class MainScaffold extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
+    if (location.startsWith(AppRoutes.forexCreate)) return 2;
     for (int i = 0; i < _tabs.length; i++) {
       if (location.startsWith(_tabs[i].route)) return i;
     }
@@ -86,7 +87,13 @@ class MainScaffold extends StatelessWidget {
           ),
           child: BottomNavigationBar(
             currentIndex: currentIndex,
-            onTap: (index) => context.go(_tabs[index].route),
+            onTap: (index) {
+              if (_tabs[index].label == 'Request') {
+                _showRequestChoice(context);
+                return;
+              }
+              context.go(_tabs[index].route);
+            },
             items: _tabs.map((t) {
               return BottomNavigationBarItem(
                 icon: _buildIcon(context, t, currentIndex),
@@ -152,6 +159,39 @@ class MainScaffold extends StatelessWidget {
     }
 
     return icon;
+  }
+
+  void _showRequestChoice(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet_outlined),
+                title: const Text('Loan request'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.go(AppRoutes.listingCreate);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.currency_exchange_rounded),
+                title: const Text('Forex request'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.go(AppRoutes.forexCreate);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

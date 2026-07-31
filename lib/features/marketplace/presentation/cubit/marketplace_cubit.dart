@@ -6,7 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../data/marketplace_repository.dart';
-import '../../domain/models/loan_listing.dart';
+import '../../domain/models/marketplace_item.dart';
 
 part 'marketplace_state.dart';
 
@@ -15,13 +15,15 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceCubit(this._repository) : super(const MarketplaceInitial());
 
   final MarketplaceRepository _repository;
-  StreamSubscription<List<LoanListing>>? _realtimeSub;
+  StreamSubscription<List<MarketplaceItem>>? _realtimeSub;
+  StreamSubscription<List<MarketplaceItem>>? _forexRealtimeSub;
 
   String? _districtFilter;
+  MarketplaceModule? _moduleFilter;
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
-  List<LoanListing> _allListings = const [];
+  List<MarketplaceItem> _allListings = const [];
 
   /// Request IDs where the current user has an active (pending/accepted) offer.
   /// Listings matching these are hidden from the marketplace feed.
@@ -32,12 +34,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   // ── Public interface ──────────────────────────────────────────────────────
 
-  Future<void> load({String? district}) async {
+  Future<void> load({String? district, MarketplaceModule? module}) async {
     if (isClosed) return;
     _districtFilter = district;
+    _moduleFilter = module;
     emit(const MarketplaceLoading());
     try {
-      final listings = await _repository.getListings(district: district);
+      final listings =
+          await _repository.getListings(district: district, module: module);
       if (isClosed) return;
       _allListings = listings;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
@@ -50,7 +54,12 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     }
   }
 
-  Future<void> refresh() => load(district: _districtFilter);
+  Future<void> refresh() =>
+      load(district: _districtFilter, module: _moduleFilter);
+
+  Future<void> setModuleFilter(MarketplaceModule? module) {
+    return load(district: _districtFilter, module: module);
+  }
 
   /// Apply (or replace) Pro Advanced Filters.
   ///
@@ -89,9 +98,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
     if (isClosed) return;
 
-    final filtered = _allListings
-        .where((l) => allowedIds.contains(l.requestId))
-        .toList();
+    final filtered =
+        _allListings.where((l) => allowedIds.contains(l.requestId)).toList();
 
     _emitLoaded(overrideListings: filtered);
   }
@@ -104,13 +112,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   // ── Private helpers ───────────────────────────────────────────────────────
 
-  void _emitLoaded({List<LoanListing>? overrideListings}) {
+  void _emitLoaded({List<MarketplaceItem>? overrideListings}) {
     final listings = (overrideListings ?? _allListings)
-        .where((l) => !_myOfferRequestIds.contains(l.requestId))
+        .where((l) => !_myOfferRequestIds.contains(_offerKey(l)))
         .toList();
     emit(MarketplaceLoaded(
       listings: listings,
       activeFilter: _districtFilter ?? 'all',
+      moduleFilter: _moduleFilter,
       proFilterCriteria: _proFilter,
       proFilterActive: false,
     ));
@@ -118,11 +127,25 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   void _subscribeRealtime() {
     _realtimeSub?.cancel();
-    _realtimeSub = _repository.watchListings().listen(
+    _forexRealtimeSub?.cancel();
+    _realtimeSub = _repository.watchListings(module: _moduleFilter).listen(
       (listings) async {
         if (isClosed) return;
         _allListings = listings;
         // Re-apply any active Pro filter on the fresh list.
+        if (_proFilter.isActive) {
+          await applyProFilters(_proFilter);
+        } else {
+          _emitLoaded();
+        }
+      },
+      onError: (_) {},
+    );
+    _forexRealtimeSub =
+        _repository.watchForexListings(module: _moduleFilter).listen(
+      (listings) async {
+        if (isClosed) return;
+        _allListings = listings;
         if (_proFilter.isActive) {
           await applyProFilters(_proFilter);
         } else {
@@ -136,6 +159,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   @override
   Future<void> close() {
     _realtimeSub?.cancel();
+    _forexRealtimeSub?.cancel();
     return super.close();
   }
 
@@ -149,9 +173,22 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
           .select('request_id')
           .eq('lender_id', userId)
           .inFilter('status', ['pending', 'accepted']);
-      return (data as List).map((r) => r['request_id'] as String).toSet();
+      final keys = (data as List)
+          .map((r) => 'loan:${r['request_id'] as String}')
+          .toSet();
+      final forexData = await Supabase.instance.client
+          .from(TableNames.forexOffers)
+          .select('request_id')
+          .eq('offer_maker_id', userId)
+          .inFilter('status', ['pending', 'accepted']);
+      keys.addAll(
+          (forexData as List).map((r) => 'forex:${r['request_id'] as String}'));
+      return keys;
     } catch (_) {
       return {};
     }
   }
+
+  String _offerKey(MarketplaceItem item) =>
+      '${item.module == MarketplaceModule.loan ? 'loan' : 'forex'}:${item.requestId}';
 }

@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../../marketplace/domain/models/loan_listing.dart';
+import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../data/watchlist_repository.dart';
 
 part 'watchlist_state.dart';
@@ -15,7 +15,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
   WatchlistCubit(this._repository) : super(const WatchlistInitial());
 
   final WatchlistRepository _repository;
-  StreamSubscription<List<LoanListing>>? _realtimeSubscription;
+  StreamSubscription<List<MarketplaceItem>>? _realtimeSubscription;
 
   Future<void> load() async {
     emit(const WatchlistLoading());
@@ -43,9 +43,9 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     );
   }
 
-  Future<void> remove(String requestId) async {
+  Future<void> remove(String requestId, {bool forex = false}) async {
     try {
-      await _repository.remove(requestId);
+      await _repository.remove(requestId, forex: forex);
       final current = state;
       if (current is WatchlistLoaded) {
         final updated = current.listings
@@ -58,9 +58,12 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     }
   }
 
-  Future<void> add(LoanListing listing) async {
+  Future<void> add(MarketplaceItem listing) async {
     try {
-      await _repository.add(listing.requestId);
+      await _repository.add(
+        listing.requestId,
+        forex: listing.module == MarketplaceModule.forex,
+      );
       final current = state;
       if (current is WatchlistLoaded &&
           !current.listings

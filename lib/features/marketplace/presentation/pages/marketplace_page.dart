@@ -14,6 +14,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../cubit/marketplace_cubit.dart';
+import '../../domain/models/marketplace_item.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_card_skeleton.dart';
 import '../widgets/pro_filters_sheet.dart';
@@ -96,7 +97,8 @@ class _MarketplaceView extends StatelessWidget {
                                 const LiveDot(),
                                 const SizedBox(width: 5),
                                 Text(
-                                  AppLocalizations.of(context)!.listingsLive(count),
+                                  AppLocalizations.of(context)!
+                                      .listingsLive(count),
                                   style: const TextStyle(
                                     color: AppColors.success,
                                     fontSize: 10.5,
@@ -137,9 +139,8 @@ class _MarketplaceView extends StatelessWidget {
                   // ── Notification bell ─────────────────────────────────
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
-                      final unread = state is NotificationLoaded
-                          ? state.unreadCount
-                          : 0;
+                      final unread =
+                          state is NotificationLoaded ? state.unreadCount : 0;
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
@@ -176,6 +177,7 @@ class _MarketplaceView extends StatelessWidget {
                 ],
               ),
             ),
+            const _ModuleFilterRow(),
             // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
@@ -195,8 +197,7 @@ class _MarketplaceView extends StatelessWidget {
                       return ListView.separated(
                         padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                         itemCount: 4,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 8),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (_, __) => const ListingCardSkeleton(),
                       );
                     }
@@ -242,7 +243,8 @@ class _MarketplaceView extends StatelessWidget {
                         return EmptyState(
                           icon: Icons.show_chart_rounded,
                           title: AppLocalizations.of(context)!.noListingsFound,
-                          subtitle: AppLocalizations.of(context)!.noListingsSubtitle,
+                          subtitle:
+                              AppLocalizations.of(context)!.noListingsSubtitle,
                         );
                       }
 
@@ -250,8 +252,7 @@ class _MarketplaceView extends StatelessWidget {
                         onRefresh: () =>
                             context.read<MarketplaceCubit>().refresh(),
                         child: ListView.separated(
-                          padding:
-                              const EdgeInsets.fromLTRB(13, 1, 13, 14),
+                          padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                           itemCount: state.listings.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
@@ -266,12 +267,17 @@ class _MarketplaceView extends StatelessWidget {
                                 return ListingCard(
                                   listing: listing,
                                   onTap: () => context.push(
-                                    '/marketplace/${listing.requestId}',
+                                    listing.forex == null
+                                        ? '/marketplace/${listing.requestId}'
+                                        : '/forex/${listing.requestId}',
                                   ),
                                   isSaved: isSaved,
                                   onWatchlistToggle: () {
                                     if (isSaved) {
-                                      watchlist.remove(listing.requestId);
+                                      watchlist.remove(
+                                        listing.requestId,
+                                        forex: listing.forex != null,
+                                      );
                                     } else {
                                       watchlist.add(listing);
                                     }
@@ -296,6 +302,75 @@ class _MarketplaceView extends StatelessWidget {
   }
 }
 
+class _ModuleFilterRow extends StatelessWidget {
+  const _ModuleFilterRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MarketplaceCubit, MarketplaceState>(
+      builder: (context, state) {
+        final selected = state is MarketplaceLoaded ? state.moduleFilter : null;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+          child: Row(
+            children: [
+              _FilterPill(
+                label: 'All',
+                selected: selected == null,
+                onTap: () =>
+                    context.read<MarketplaceCubit>().setModuleFilter(null),
+              ),
+              const SizedBox(width: 8),
+              _FilterPill(
+                label: 'Loans',
+                selected: selected == MarketplaceModule.loan,
+                onTap: () => context
+                    .read<MarketplaceCubit>()
+                    .setModuleFilter(MarketplaceModule.loan),
+              ),
+              const SizedBox(width: 8),
+              _FilterPill(
+                label: 'Forex',
+                selected: selected == MarketplaceModule.forex,
+                onTap: () => context
+                    .read<MarketplaceCubit>()
+                    .setModuleFilter(MarketplaceModule.forex),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FilterPill extends StatelessWidget {
+  const _FilterPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: AppColors.accent.withValues(alpha: 0.16),
+      labelStyle: TextStyle(
+        color: selected ? AppColors.accent : null,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+  }
+}
+
 // ── Pro filter icon button ────────────────────────────────────────────────────
 
 class _ProFilterButton extends StatelessWidget {
@@ -306,8 +381,8 @@ class _ProFilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<MarketplaceCubit, MarketplaceState>(
       builder: (context, state) {
-        final hasActiveFilters = state is MarketplaceLoaded &&
-            state.proFilterCriteria.isActive;
+        final hasActiveFilters =
+            state is MarketplaceLoaded && state.proFilterCriteria.isActive;
 
         return SizedBox(
           width: 34,

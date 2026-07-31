@@ -19,7 +19,7 @@ class WatchlistLoading extends WatchlistState {
 class WatchlistLoaded extends WatchlistState {
   const WatchlistLoaded({required this.listings});
 
-  final List<LoanListing> listings;
+  final List<MarketplaceItem> listings;
 
   @override
   List<Object?> get props => [listings];

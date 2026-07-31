@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
+import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart';
 import 'package:nipanze/features/marketplace/presentation/cubit/marketplace_cubit.dart';
 
 class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}
@@ -12,7 +13,7 @@ void main() {
   late MockMarketplaceRepository mockRepo;
 
   final testListings = [
-    LoanListing(
+    MarketplaceItem.loan(LoanListing(
       requestId: 'req-1',
       title: 'Medical Expense',
       purpose: 'Medical',
@@ -27,8 +28,8 @@ void main() {
       listedAt: DateTime.now(),
       expiresAt: DateTime.now().add(const Duration(days: 7)),
       numberOfOffers: 0,
-    ),
-    LoanListing(
+    )),
+    MarketplaceItem.loan(LoanListing(
       requestId: 'req-2',
       title: 'Business Growth',
       purpose: 'Business',
@@ -43,12 +44,15 @@ void main() {
       listedAt: DateTime.now(),
       expiresAt: DateTime.now().add(const Duration(days: 5)),
       numberOfOffers: 2,
-    ),
+    )),
   ];
 
   setUp(() {
     mockRepo = MockMarketplaceRepository();
-    when(() => mockRepo.watchListings()).thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.watchListings(module: any(named: 'module')))
+        .thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.watchForexListings(module: any(named: 'module')))
+        .thenAnswer((_) => const Stream.empty());
   });
 
   group('MarketplaceCubit', () {
@@ -63,22 +67,27 @@ void main() {
     blocTest<MarketplaceCubit, MarketplaceState>(
       'load emits Loading then Loaded with cached listings',
       build: () {
-        when(() => mockRepo.getListings(district: any(named: 'district')))
-            .thenAnswer((_) async => testListings);
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => testListings);
         return MarketplaceCubit(mockRepo);
       },
       act: (cubit) => cubit.load(),
       expect: () => [
         isA<MarketplaceLoading>(),
-        isA<MarketplaceLoaded>().having((s) => s.listings.length, 'listings count', 2),
+        isA<MarketplaceLoaded>()
+            .having((s) => s.listings.length, 'listings count', 2),
       ],
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(
       'applyProFilters emits proFilterActive then Loaded with intersected listings matching RPC results',
       build: () {
-        when(() => mockRepo.getListings(district: any(named: 'district')))
-            .thenAnswer((_) async => testListings);
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => testListings);
         when(() => mockRepo.getProFilteredRequestIds(
               employmentTypes: any(named: 'employmentTypes'),
               incomeBrackets: any(named: 'incomeBrackets'),
@@ -97,19 +106,23 @@ void main() {
       expect: () => [
         isA<MarketplaceLoaded>()
             .having((s) => s.proFilterActive, 'filtering active', true)
-            .having((s) => s.proFilterCriteria.employmentTypes, 'filter criteria', ['self_employed']),
+            .having((s) => s.proFilterCriteria.employmentTypes,
+                'filter criteria', ['self_employed']),
         isA<MarketplaceLoaded>()
             .having((s) => s.proFilterActive, 'filtering done', false)
             .having((s) => s.listings.length, 'listings count', 1)
-            .having((s) => s.listings.first.requestId, 'matching request', 'req-2'),
+            .having(
+                (s) => s.listings.first.requestId, 'matching request', 'req-2'),
       ],
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(
       'clearProFilters restores all cached listings',
       build: () {
-        when(() => mockRepo.getListings(district: any(named: 'district')))
-            .thenAnswer((_) async => testListings);
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => testListings);
         when(() => mockRepo.getProFilteredRequestIds(
               employmentTypes: any(named: 'employmentTypes'),
               incomeBrackets: any(named: 'incomeBrackets'),
@@ -129,7 +142,8 @@ void main() {
       expect: () => [
         isA<MarketplaceLoaded>()
             .having((s) => s.listings.length, 'restored full count', 2)
-            .having((s) => s.proFilterCriteria.isActive, 'filters active', false),
+            .having(
+                (s) => s.proFilterCriteria.isActive, 'filters active', false),
       ],
     );
   });

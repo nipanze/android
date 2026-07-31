@@ -11,6 +11,9 @@ import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/forex/presentation/pages/forex_create_page.dart';
+import '../../features/forex/presentation/pages/forex_detail_page.dart';
+import '../../features/forex/presentation/pages/my_forex_requests_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
 import '../../features/listings/presentation/pages/my_listings_page.dart';
@@ -43,6 +46,9 @@ class AppRoutes {
   static const String myListings = '/listings/my-listings';
   static const String listingCreate =
       '/listings/create'; // ← top-level, not nested
+  static const String forexCreate = '/forex/create';
+  static const String forexDetail = '/forex/:requestId';
+  static const String myForexRequests = '/forex/my-forex';
   static const String revealContact = '/marketplace/reveal/:revealId';
   static const String notifications = '/notifications';
   static const String kyc = '/kyc';
@@ -127,6 +133,11 @@ class AppRouter {
             name: 'listingCreate',
             pageBuilder: (_, state) => _fade(state, const ListingCreatePage()),
           ),
+          GoRoute(
+            path: AppRoutes.forexCreate,
+            name: 'forexCreate',
+            pageBuilder: (_, state) => _fade(state, const ForexCreatePage()),
+          ),
           // ── My listings — accessible via profile/account, not the tab ──
           GoRoute(
             path: AppRoutes.myListings,
@@ -147,6 +158,19 @@ class AppRouter {
       ),
 
       // ── Non-shell authenticated routes ─────────────────────────────
+      GoRoute(
+        path: AppRoutes.myForexRequests,
+        name: 'myForexRequests',
+        pageBuilder: (_, state) => _slide(state, const MyForexRequestsPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.forexDetail,
+        name: 'forexDetail',
+        pageBuilder: (_, state) => _slide(
+          state,
+          ForexDetailPage(requestId: state.pathParameters['requestId']!),
+        ),
+      ),
       GoRoute(
         path: AppRoutes.agreement,
         name: 'agreement',
@@ -191,7 +215,8 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.profile,
         name: 'profile',
-        pageBuilder: (_, state) => _slide(state, ProfilePage()), // ignore: prefer_const_constructors
+        pageBuilder: (_, state) =>
+            _slide(state, ProfilePage()), // ignore: prefer_const_constructors
       ),
       GoRoute(
         path: AppRoutes.admin,
