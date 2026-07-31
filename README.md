@@ -1,8 +1,8 @@
 # Nipanze — Flutter + Supabase
 
-## A Non-Custodial Digital Lending Matchmaking Marketplace, Built for the East African Community from the Ground Up
+## A Non-Custodial Digital Lending & Forex Matchmaking Marketplace — Launching in Uganda, Built for Africa
 
-> Nipanze is a peer-to-peer financial marketplace that connects people who need money with people willing to lend, through structured requests, offers, and controlled contact sharing — without a bank, custodian, or intermediary holding any funds. Launching in Uganda, architected on one shared schema to expand across the full **East African Community** — Kenya, Tanzania, Rwanda, Burundi, South Sudan, DR Congo, and Somalia — without a redesign.
+> Nipanze is a peer-to-peer financial marketplace that connects people who need money with people willing to lend, and people who hold one currency with people who need it, through structured requests, offers, and controlled contact sharing — without a bank, custodian, or intermediary holding any funds or currency. Live in Uganda first, architected on one shared schema and one shared app to expand across **Kenya, Tanzania, Rwanda, Nigeria, South Africa, and Egypt** — without a redesign.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Status: MVP](https://img.shields.io/badge/Status-MVP-blue.svg)
@@ -15,14 +15,18 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 ## Table of Contents
 
 - [Overview](#overview)
+- [Two Projects, One Platform](#two-projects-one-platform)
 - [Problem Statement](#problem-statement)
 - [Solution](#solution)
 - [The Unified Marketplace Model](#the-unified-marketplace-model)
-- [Multi-Country Architecture](#multi-country-architecture)
+- [Multi-Market Architecture](#multi-market-architecture)
+- [Currencies — Local, Cross-Border, and USD](#currencies--local-cross-border-and-usd)
 - [Key Features](#key-features)
 - [Business Model](#business-model)
 - [Transparency & Controlled Contact](#transparency--controlled-contact)
 - [Trust & Reputation Signals](#trust--reputation-signals)
+- [Foreign Exchange (Forex)](#foreign-exchange-forex)
+- [Marketplace Feed & Listing Design](#marketplace-feed--listing-design)
 - [How It Works](#how-it-works)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -48,19 +52,39 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 
 Nipanze is a **peer-to-peer financial marketplace** built on a single, unified account model. There is no "borrower account" or "lender account" — every user sees the same marketplace and performs an action (**Post Request** or **Make Offer**) depending on what they click. Access to each action is gated purely by `subscription_plan`, not by any stored role.
 
-As of v5.0, Nipanze also runs on a **single shared database across every East African Community (EAC) country it operates in**, rather than a separate database or table set per market. A user's marketplace defaults to their own country; posting, browsing, offers, and trust signals all carry a `country` value that's enforced at the data layer, not just filtered in the UI. See [Multi-Country Architecture](#multi-country-architecture) for how this works and why it was built this way instead of per-country tables.
+As of v6.0, Nipanze runs on **one shared Supabase project and one Flutter app across every market it operates in**, and hosts **two feature-modules on that shared foundation — Loans and Forex** — see [Two Projects, One Platform](#two-projects-one-platform). Uganda is the launch market; Kenya, Tanzania, Rwanda, Nigeria, South Africa, and Egypt are the planned expansion markets, in that order. A user's marketplace defaults to their own country; posting, browsing, offers, and trust signals all carry a `country` value that's enforced at the data layer, not just filtered in the UI. See [Multi-Market Architecture](#multi-market-architecture).
 
-Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, guarantee repayment, track repayments, or act as a financial institution, in any market it operates in. It simply helps financial requests and offers meet through structured discovery, matching, and controlled connection.
+Nipanze does **not** hold funds, accept deposits, issue loans, pool capital, guarantee repayment, track repayments, convert or hold currency, guarantee exchange rates, or act as a financial institution or currency broker, in any market it operates in. It simply helps financial requests and offers — loan or forex — meet through structured discovery, matching, and controlled connection.
 
-Posting a request is free for everyone. Making offers requires the **Lender** plan. Suggesting preferred terms on a posted request requires the **Pro** plan. Contact details remain hidden until a contract is generated after an offer is accepted. Listing detail itself uses **tiered visibility** — see [Transparency & Controlled Contact](#transparency--controlled-contact) — so exact offer terms are only visible to the request owner and to other offer-makers competing on that same listing.
+Posting a request (loan or forex) is free for everyone. Making offers requires the **Lender** plan. Suggesting preferred terms on a posted request requires the **Pro** plan. Contact details remain hidden until a contract is generated after an offer is accepted. Listing detail itself uses **tiered visibility** — see [Transparency & Controlled Contact](#transparency--controlled-contact) — so exact offer terms are only visible to the request owner and to other offer-makers competing on that same listing.
 
-**Core Principle:** One marketplace per country, one shared platform underneath. Capability comes from your subscription plan; your default feed comes from your country — neither is a fixed identity baked into separate infrastructure.
+**Core Principle:** One marketplace per country, one shared platform underneath, two feature-modules on top. Capability comes from your subscription plan; your default feed comes from your country; which module you're using (Loans or Forex) comes from what you click — none of these is a fixed identity baked into separate infrastructure.
+
+---
+
+## Two Projects, One Platform
+
+Nipanze ships **Loans** and **Forex** as two distinct feature-modules — each with its own request/offer tables, its own create-request flow, its own listing-card design, and (in BUILD_PLAN.md) its own stage checklist and exit criteria — running on **one shared app, one shared Supabase project, and one shared account system.** This is not two apps wearing the same logo, and it's not a single blended feature either. It's the middle path:
+
+| Shared (one platform) | Separate (two projects) |
+|---|---|
+| Auth, `profiles`, `subscription_plan`, `is_admin` | `loan_requests` / `loan_offers` vs `forex_requests` / `forex_offers` |
+| `countries`, `currencies`, `system_settings` | `features/loans/` vs `features/forex/` Flutter modules |
+| Trust & reputation (`trust_aggregates`, `reviews`) | Listing-card design (funded-% progress bar vs Send/Rate/Receive panel) |
+| Selective transparency machinery (same RLS/RPC pattern) | Create-request form (loan terms vs currency pair + rate) |
+| Contracts, contact reveal (`accept_offer`, `reveal_contact`) | Per-module RLS/RPC pairs (`v_lender_offers`/`get_public_listing_offers` vs `v_forex_offers`/`get_public_forex_offers`) |
+| Watchlist, Positions, Notifications, KYC, Admin | Per-module regulatory review, per market (`countries.is_active` for lending, `countries.forex_enabled` for forex, independently toggled) |
+| One `Marketplace` screen, filterable by module | Per-module launch sequencing (a market can go live for Loans before Forex, or vice versa) |
+
+**Why this split, not full separation:** a request owner and an offer-maker shouldn't need two accounts, two logins, or two apps to do two closely related things — post a need, get offers, agree terms, get introduced. Full separation would mean re-implementing auth, trust, contracts, and contact-reveal twice for no product benefit. **Why not fully blended either:** a loan and a currency exchange are different enough in shape (loan terms vs. exchange rate; funded-% progress vs. Send/Rate/Receive) that force-fitting them into one generic "request" schema and one generic listing card would make both worse. Two tables, two forms, two card layouts — one everything else.
+
+This mirrors the marketplace mockup: **one Marketplace screen, one `All / Loans / Forex` filter row, one bottom nav** — but a `Loan` badge and a `Forex` badge render structurally different cards underneath.
 
 ---
 
 ## Problem Statement
 
-Across Uganda and the wider East African Community, access to affordable capital faces critical barriers:
+Across Uganda and Nipanze's planned expansion markets, access to affordable capital — and to fair currency exchange — faces critical barriers:
 
 - **Long bank procedures:** Formal approvals can take too long for urgent needs
 - **Lack of collateral:** Many people needing funds cannot meet traditional security requirements
@@ -68,26 +92,27 @@ Across Uganda and the wider East African Community, access to affordable capital
 - **High interest rates:** People needing funds lack flexible, competitive alternatives
 - **Limited visibility:** People willing to lend struggle to find requests and assess repayment ability
 - **Weak lending structure:** Informal lending lacks a reliable marketplace for discovery, offers, and connection
-- **Fragmented markets:** Cross-border and diaspora lending relationships already exist informally across the region (Ugandans, Kenyans, Rwandans, and others abroad funding family back home) but have no structured platform to happen on safely
+- **Poor exchange rates and bureau spreads:** Bank and bureau-de-change rates often sit well off the rate two individuals could agree on directly, and cross-border/diaspora currency needs are common but poorly served
+- **Fragmented markets:** Cross-border and diaspora lending and currency-exchange relationships already exist informally (East Africans, Nigerians, South Africans, and Egyptians abroad funding family back home, or converting currency person-to-person) but have no structured platform to happen on safely
 
-Many lending options still focus on collateral and institutional gatekeeping instead of giving people a structured way to show income, intent, and repayment plans — and almost none are built to serve more than one country without becoming a different product per market.
+Many lending options still focus on collateral and institutional gatekeeping instead of giving people a structured way to show income, intent, and repayment plans — and almost none are built to serve more than one country, or more than one type of financial matchmaking, without becoming a different product per market or per use case.
 
 ---
 
 ## Solution
 
-Nipanze provides a single marketplace structure — replicated per country on shared infrastructure — where:
+Nipanze provides a single marketplace structure — replicated per country on shared infrastructure, and covering both loan and forex requests — where:
 
-- Anyone can publish a structured funding request for free, in their own country's market and currency
-- Every request includes loan details, source of income, loan purpose, and repayment ability
-- Anyone can browse listed requests for free, defaulting to their own country with the option to browse other active EAC markets
-- Making an offer requires the Lender plan; the offer carries the offer-maker's own amount, interest/return expectation, and terms, in the request's currency
+- Anyone can publish a structured funding or currency-exchange request for free, in their own country and currency
+- Every loan request includes loan details, source of income, loan purpose, and repayment ability; every forex request includes the currency pair, amount, and optional preferred rate
+- Anyone can browse listed requests for free, defaulting to their own country with the option to browse other active markets
+- Making an offer requires the Lender plan; the offer carries the offer-maker's own amount and terms (interest/return expectation for loans, exchange rate for forex), in the request's currency
 - The request owner reviews available offers and accepts the one that fits
 - Contact details are revealed only after the request owner accepts an offer
 - Both parties connect outside the platform
-- The platform supports discovery, matching, and controlled contact sharing — nothing more, in every market it serves
+- The platform supports discovery, matching, and controlled contact sharing — nothing more, in every market it serves, for either request type
 
-**We are not a lender. We are a matchmaking marketplace — one product, one region, many countries.**
+**We are not a lender, a broker, or a bureau de change. We are a matchmaking marketplace — one platform, one region at a time, two ways to match: money now for money later, or currency you have for currency you need.**
 
 ---
 
@@ -100,79 +125,113 @@ Nipanze moved away from a role-based design (`borrower` / `lender`) to a **unifi
 - One interface for every user — no separate borrower/lender screens or signup paths
 - No `role` column stored on the account
 - Users choose a **subscription plan**, not an identity
-- The same person can post a request *and* make offers, at any time, from the same login, in any country their account belongs to
+- The same person can post a request *and* make offers, at any time, from the same login, in any country their account belongs to, on either the Loans module or the Forex module
 
 ### Single entry point after login
 
 Every user lands on the same dashboard:
 
-1. **Marketplace** — all loan listings for the user's active country, same feed structure for everyone
-2. **Post Request** — always visible, Free tier and up
-3. **Offers Panel** — offers *received* on your requests, and (if your plan allows) offers *you've made* on others' requests
+1. **Marketplace** — all loan and forex listings for the user's active country, filterable by `All / Loans / Forex`
+2. **Post Request** — always visible, Free tier and up, choosing Loan or Forex when posting
+3. **Offers Panel** — offers *received* on your requests, and (if your plan allows) offers *you've made* on others' requests, across both modules
 
 There is no "select your role" step anywhere in the app. A user simply acts:
 
-- Clicks **Post Request** → acting as the request owner for that listing
-- Clicks **Make Offer** → acting as the offer-maker for that listing
+- Clicks **Post Request** → picks Loan or Forex → acting as the request owner for that listing
+- Clicks **Make Offer** → acting as the offer-maker for that listing, loan or forex
 
 ### Feature access by plan
 
 | Plan | Access |
 |---|---|
-| 🟢 **Free** | Post basic loan requests (amount, duration, purpose) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting |
-| 🔵 **Lender** | Everything in Free, **plus**: make offers on any listing (in-country or cross-border, see [Multi-Country Architecture](#multi-country-architecture)) · set interest rate, late payment fee, and repayment schedule on offers |
-| 🟣 **Pro** | Everything in Lender, **plus**: suggest terms when posting a request (interest rate, late fee, repayment schedule) · priority visibility for posted requests · improved matching · Verified badge · advanced trust insights |
+| 🟢 **Free** | Post basic loan or forex requests (loan: amount, duration, purpose · forex: currency pair, amount, settlement preference) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting |
+| 🔵 **Lender** | Everything in Free, **plus**: make offers on any listing, loan or forex (in-country or cross-border, see [Multi-Market Architecture](#multi-market-architecture)) · set interest rate, late payment fee, and repayment schedule on loan offers · set exchange rate, available amount, and terms on forex offers |
+| 🟣 **Pro** | Everything in Lender, **plus**: suggest terms when posting a request — interest rate, late fee, and repayment schedule for a loan request, or a preferred exchange rate for a forex request · priority visibility for posted requests · improved matching · Verified badge · advanced trust insights |
 
-No plan is ever labeled "Borrower Plan" or "Lender-only," and no plan is country-specific — a single `subscription_plan` applies to the account regardless of which country's marketplace they're viewing. Each plan name describes the *unlocked capability*, not the person holding it. A single user can hold only **one** `subscription_plan` at a time (`free | lender | pro`), and Pro is a strict superset of Lender, which is a strict superset of Free.
+No plan is ever labeled "Borrower Plan," "Lender-only," or "Forex Plan," and no plan is ever country- or module-specific — a single `subscription_plan` applies to the account regardless of which country's marketplace they're viewing or whether they're acting in Loans or Forex. Each plan name describes the *unlocked capability*, not the person holding it or the module. A single user can hold only **one** `subscription_plan` at a time (`free | lender | pro`), and Pro is a strict superset of Lender, which is a strict superset of Free.
 
 ### The one exception: `is_admin`
 
-`is_admin` is a true role, separate from the subscription plan, since it governs platform moderation rather than marketplace participation. It is the **only** role in the system, and admin access spans every country.
+`is_admin` is a true role, separate from the subscription plan, since it governs platform moderation rather than marketplace participation. It is the **only** role in the system, and admin access spans every country and both modules.
 
 ---
 
-## Multi-Country Architecture
+## Multi-Market Architecture
 
-Nipanze runs on **one shared Supabase database and one set of tables for every EAC country it operates in** — not a separate database, project, or table set per market. This section explains the design and why. Full schema-level detail lives in [BUILD_PLAN.md](BUILD_PLAN.md#-multi-country-expansion-model-v50).
+Nipanze runs on **one shared Supabase database and one set of tables for every country it operates in** — not a separate database, project, or table set per market, and not a separate schema per module. This section explains the design and why. Full schema-level detail lives in [BUILD_PLAN.md](BUILD_PLAN.md#-multi-market-expansion-model-v60).
 
-### Scope: all eight EAC member states
+### Scope: Uganda first, then six planned markets
 
-| Country | Code | Currency | Phone Prefix |
-|---|---|---|---|
-| 🇺🇬 Uganda | `UG` | UGX | `+256` |
-| 🇰🇪 Kenya | `KE` | KES | `+254` |
-| 🇹🇿 Tanzania | `TZ` | TZS | `+255` |
-| 🇷🇼 Rwanda | `RW` | RWF | `+250` |
-| 🇧🇮 Burundi | `BI` | BIF | `+257` |
-| 🇸🇸 South Sudan | `SS` | SSP | `+211` |
-| 🇨🇩 DR Congo | `CD` | CDF | `+243` |
-| 🇸🇴 Somalia | `SO` | SOS | `+252` |
+Nipanze's launch and expansion plan spans **seven countries across three African regions**, not a single trading bloc — a deliberate shift from an earlier East-Africa-only framing:
 
-All eight are seeded in the `countries` table from the Stage 4.5 migration onward. Uganda is the only market with `is_active = TRUE` at launch; the other seven activate independently as each clears its own pricing, payment-rail coverage, and compliance review — see [Roadmap](#roadmap). Seeding all eight up front means the country picker, admin per-country settings, and currency-formatting logic never need a schema change to support a market that hasn't launched yet.
+| Country | Code | Currency | Currency Code | Phone Prefix | Region |
+|---|---|---|---|---|---|
+| 🇺🇬 Uganda | `UG` | Ugandan Shilling | `UGX` | `+256` | East Africa — **launch market** |
+| 🇰🇪 Kenya | `KE` | Kenyan Shilling | `KES` | `+254` | East Africa |
+| 🇹🇿 Tanzania | `TZ` | Tanzanian Shilling | `TZS` | `+255` | East Africa |
+| 🇷🇼 Rwanda | `RW` | Rwandan Franc | `RWF` | `+250` | East Africa |
+| 🇳🇬 Nigeria | `NG` | Nigerian Naira | `NGN` | `+234` | West Africa |
+| 🇿🇦 South Africa | `ZA` | South African Rand | `ZAR` | `+27` | Southern Africa |
+| 🇪🇬 Egypt | `EG` | Egyptian Pound | `EGP` | `+20` | North Africa |
+
+All seven are seeded in the `countries` table from the Stage 4.5 migration onward. Uganda is the only market with `is_active = TRUE` at launch; the other six activate independently, in the order listed above, as each clears its own pricing, payment-rail coverage, and compliance review — see [Roadmap](#roadmap). Seeding all seven up front means the country picker, admin per-country settings, and currency-formatting logic never need a schema change to support a market that hasn't launched yet.
+
+> **This list replaces an earlier East African Community (EAC)-only framing.** Burundi, South Sudan, DR Congo, and Somalia — previously scoped as EAC-completeness markets — are not currently on Nipanze's roadmap. The schema pattern below still supports adding any of them later the same way any new country is added (one row insert), but they are not part of the current seven-market plan.
 
 ### Why one shared schema, not one per country
 
-A per-country table design (`loan_requests_uganda`, `loan_requests_kenya`, …) was considered and rejected: it would multiply every RLS policy, trigger, view, and RPC in this schema by the number of countries, turn cross-market admin reporting into a UNION query across up to eight tables, and make launching a new country a migration project instead of a one-row data insert. Instead:
+A per-country table design (`loan_requests_uganda`, `loan_requests_nigeria`, …) was considered and rejected: it would multiply every RLS policy, trigger, view, and RPC in this schema by the number of countries, turn cross-market admin reporting into a UNION query across up to seven tables, and make launching a new country a migration project instead of a one-row data insert. Instead:
 
-- **One `countries` reference table** (`code`, `name`, `currency_code`, `phone_prefix`, `is_active`) — adding a new market is one row insert (already done for all eight); *launching* a market is one `UPDATE ... SET is_active = TRUE`
-- **`profiles.country` and `loan_requests.country`** — indexed, non-nullable columns that make every user and every listing's market explicit and queryable
-- **`loan_offers` has no country of its own** — an offer's country is always its parent request's country, read through the join, so there's exactly one source of truth for "what market is this offer in," not one that can drift out of sync across eight markets
+- **One `countries` reference table** (`code`, `name`, `currency_code`, `phone_prefix`, `is_active`, `forex_enabled`) — adding a new market is one row insert (already done for all seven); *launching* lending in a market is one `UPDATE ... SET is_active = TRUE`; *launching* forex in a market is the independent `forex_enabled` flag
+- **`profiles.country`, `loan_requests.country`, and `forex_requests.country`** — indexed, non-nullable columns that make every user and every listing's market explicit and queryable
+- **`loan_offers` and `forex_offers` have no country of their own** — an offer's country is always its parent request's country, read through the join, so there's exactly one source of truth for "what market is this offer in," not one that can drift out of sync across seven markets or two modules
 
 ### How filtering works
 
-A user's marketplace feed defaults to their own `profiles.country`. A Kenyan user sees Kenyan listings by default; a Rwandan user sees Rwandan listings by default — and so on for all eight markets. This is enforced at the application query layer (`MarketplaceRepository` filters `v_loan_listings WHERE country = :userCountry`), with an explicit, user-initiated option to browse other active markets — a deliberate choice over hard per-country RLS isolation, because diaspora and cross-border lending (funding a family request back home from elsewhere in the region) is a real, valuable use case this design wants to support rather than block. The RLS-level "hard isolation" alternative is fully specified in BUILD_PLAN.md if product direction changes later — it's a policy change, not a rearchitecture.
+A user's marketplace feed defaults to their own `profiles.country`, across both Loans and Forex. A Nigerian user sees Nigerian listings by default; a South African user sees South African listings by default — and so on for all seven markets. This is enforced at the application query layer (`MarketplaceRepository` filters `v_loan_listings WHERE country = :userCountry` and `v_forex_listings WHERE country = :userCountry`), with an explicit, user-initiated option to browse other active markets — a deliberate choice over hard per-country RLS isolation, because diaspora and cross-border lending and currency exchange (funding a family request back home, or converting currency for someone back home, from elsewhere in the region) is a real, valuable use case this design wants to support rather than block. Forex, being inherently cross-currency, leans on this browse-other-markets path more than loans do — see [Foreign Exchange (Forex)](#foreign-exchange-forex).
 
-### Currency travels with country
+### Regulatory diversity across these seven markets is real — flagged, not glossed over
 
-Every monetary figure in the schema (`requested_amount`, `offer_amount`, etc.) is a plain number with no currency of its own — it is only meaningful next to its row's `country → countries.currency_code`. Nipanze does not convert between currencies or compare amounts across markets; each listing is always shown in its own market's currency, whether that's UGX, KES, TZS, RWF, BIF, SSP, CDF, or SOS.
+Unlike the earlier EAC-only framing, where all target markets shared a regional bloc and broadly similar mobile-money-led payment landscapes, this seven-market list spans **materially different regulatory regimes and payment landscapes**: East Africa's mobile-money-dominant rails differ from Nigeria's card/bank-transfer-and-fintech-native rails, South Africa's mature card/EFT banking system, and Egypt's currency-control history around the EGP. Nipanze is not a law firm and this document does not constitute legal advice — every market on this list needs its own local regulatory review before `countries.is_active` (lending) or `countries.forex_enabled` (forex) is flipped, and that review should be treated as **more consequential** now than it was under a single-bloc EAC plan, not routine. See [Regulatory Compliance](#regulatory-compliance).
 
 ### What stays global regardless of country
 
-Public trust signals (rating, review count, completed-deal count, badges) reflect a user's **entire on-platform history across every market**, not a per-country reset — a lender's track record follows them whether they're browsing Kenya for the first time or their tenth deal in Uganda. See [Trust & Reputation Signals](#trust--reputation-signals).
+Public trust signals (rating, review count, completed-deal count, badges) reflect a user's **entire on-platform history across every market and both modules**, not a per-country or per-module reset — a lender's track record follows them whether they're browsing Kenya for the first time or their tenth deal in Uganda, and whether that history is loan deals, forex deals, or a mix of both. See [Trust & Reputation Signals](#trust--reputation-signals).
 
 ### Launching a new market
 
-Adding a country requires **no schema migration** — all eight are already seeded. Launching one is: flip `countries.is_active` to `TRUE`, finalize that market's `system_settings` overrides (min/max loan amount, listing duration, etc.) and local-currency subscription pricing, confirm payment-rail coverage with the chosen aggregator for that specific country, and localize KYC document-type expectations at the app layer. Rail coverage and regulatory readiness are **not uniform across the region** — Uganda, Kenya, Tanzania, and Rwanda have the most mature mobile-money coverage today; Burundi, South Sudan, DR Congo, and Somalia need dedicated per-market verification before activation. See [BUILD_PLAN.md](BUILD_PLAN.md) Stage 4.5 and Stage 6 for the full migration and per-market launch checklist.
+Adding a country requires **no schema migration** — all seven are already seeded. Launching lending in one is: flip `countries.is_active` to `TRUE`, finalize that market's `system_settings` overrides and local-currency subscription pricing, confirm payment-rail coverage with the chosen aggregator for that specific country, and localize KYC document-type expectations at the app layer. Launching forex in that same market is a **separate**, independently-timed decision — flip `countries.forex_enabled` only after its own currency-exchange-facilitation compliance review, which can clear on a different timeline than lending. See [BUILD_PLAN.md](BUILD_PLAN.md) Stage 4.5, Stage 4.7, and Stage 6 for the full migration and per-market launch checklist.
+
+---
+
+## Currencies — Local, Cross-Border, and USD
+
+Nipanze's `currencies` reference table is decoupled from `countries` on purpose, because currency questions turned out to be more granular than "one country, one currency":
+
+| Question | Answer | Where it's decided |
+|---|---|---|
+| Can I post a loan request in my own country's currency? | Always yes | Default — no flag needed |
+| Can I post a loan request in USD instead of my local currency? | Only where the market allows it | `system_settings.allow_foreign_currency_loans` (per country) — a loan is not a currency trade, so this is a lighter check, mainly about that country's rules on foreign-currency-denominated P2P lending |
+| Can I pay my subscription in USD instead of local currency? | Yes, wherever offered | Pure billing-currency choice — no different in kind from billing in local currency |
+| Can a forex request trade *into or out of* USD (or any currency)? | Only if that currency is explicitly cleared for forex trading | `currencies.forex_trading_enabled` — this is the one with real exposure to currency-exchange/bureau-style licensing, so it defaults to **off** for every currency until reviewed |
+
+### `currencies` table
+
+```sql
+-- currencies (conceptual)
+code                    TEXT PRIMARY KEY   -- ISO 4217, e.g. UGX, KES, TZS, RWF, NGN, ZAR, EGP, USD
+name                    TEXT NOT NULL
+is_market_currency      BOOLEAN NOT NULL DEFAULT FALSE   -- TRUE for the 7 currencies tied to a live/planned Nipanze country
+market_country          TEXT REFERENCES countries(code)  -- set only when is_market_currency = TRUE
+forex_trading_enabled   BOOLEAN NOT NULL DEFAULT FALSE    -- gates use in a forex_requests pair, independent of loan usage
+created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+```
+
+Seed: the seven market currencies (`UGX`, `KES`, `TZS`, `RWF`, `NGN`, `ZAR`, `EGP`) plus `USD`. All eight rows exist from the Stage 4.5 migration; `forex_trading_enabled` starts `FALSE` for every one of them, including the market currencies — a currency being someone's home currency does not automatically clear it for cross-border forex trading, which needs its own review even for UGX-vs-KES. This keeps "add a currency to the reference table" and "clear a currency for forex trading" as two separate, deliberately un-bundled decisions.
+
+### Why this shape, not one flag on `countries`
+
+A single `countries.currency_tradeable` flag was considered and rejected, because it conflates two different things: whether a currency exists in Nipanze's vocabulary at all (needed for loans and subscriptions, lower stakes) versus whether it's cleared to appear in a forex pair (needed only for Forex, higher stakes, closer to bureau-de-change territory). Splitting them means Nigeria's NGN can be fully usable for NGN-denominated loans and NGN subscription billing on day one, while NGN's forex-trading clearance is reviewed and flipped on its own timeline — without touching the Loans module at all.
 
 ---
 
@@ -180,108 +239,106 @@ Adding a country requires **no schema migration** — all eight are already seed
 
 ### Posting a Request (Free plan and above)
 
-- **Free access** — post loan requests without paying to list, in any active EAC market
-- **Structured requests** — title, amount, duration, purpose, district, income source, and repayment ability
-- **Repayment visibility** — show the marketplace how the loan will be repaid
-- **Flexible outcomes** — receive and compare offers from multiple lenders
-- **My Requests** — track posted requests and responses in one place (Positions tab)
-- **Controlled contact** — personal contact details stay hidden until an offer is accepted
+- **Free access** — post loan or forex requests without paying to list, in any active market
+- **Structured loan requests** — title, amount, duration, purpose, district, income source, and repayment ability, in the requester's local currency by default, or USD where `allow_foreign_currency_loans` permits
+- **Structured forex requests** — currency held, currency needed, amount, optional preferred rate, and settlement preference, limited to currency pairs where both currencies have `forex_trading_enabled = TRUE`
+- **Repayment visibility** — show the marketplace how a loan will be repaid
+- **Flexible outcomes** — receive and compare offers from multiple lenders or offer-makers
+- **My Requests** — track posted loan and forex requests and responses in one place (Positions tab)
+- **Controlled contact** — personal contact details stay hidden until an offer is accepted, on either module
 
 ### Making Offers (Lender plan and above)
 
 - **Free browsing** — review requests before subscribing to the Lender plan
-- **Repayment context** — assess loan purpose, requested amount, duration, and repayment plan
-- **My Offers** — manage offer activity in one place (Positions tab)
-- **Custom terms** — offer your own amount, interest rate, late payment fee, and repayment schedule (locked on submit), denominated in the listing's currency
-- **Cross-border capital** — offer on listings outside your home country, subject to the platform's current cross-border policy (see [BUILD_PLAN.md](BUILD_PLAN.md))
-- **Return potential** — fund selected requests directly
+- **Repayment context** — assess loan purpose, requested amount, duration, and repayment plan; or currency pair, amount, and requested rate for forex
+- **My Offers** — manage loan and forex offer activity in one place (Positions tab)
+- **Custom terms** — offer your own amount, interest rate, late payment fee, and repayment schedule for loans (locked on submit); offer your own exchange rate, available amount, and settlement terms for forex (also locked on submit), denominated in the listing's currency
+- **Cross-border capital** — offer on listings outside your home country, subject to the platform's current cross-border policy (see [BUILD_PLAN.md](BUILD_PLAN.md)) — the default and primary path for forex offers
+- **Return potential** — fund selected loan requests directly, or exchange currency directly
 
 ### Suggesting Terms (Pro plan)
 
-- **Negotiating leverage** — suggest a preferred interest rate, late payment fee, and repayment schedule when posting a request (locked on publish)
-- **Priority visibility** — Pro-posted requests get improved placement and matching, in whichever market they're posted
+- **Negotiating leverage** — suggest a preferred interest rate, late payment fee, and repayment schedule when posting a loan request, or a preferred exchange rate when posting a forex request (locked on publish)
+- **Priority visibility** — Pro-posted requests get improved placement and matching, in whichever market they're posted, Loans or Forex
 
 ### Platform Features
 
-- **Free posting** — anyone can create a request without a listing fee, in any active market
+- **Free posting** — anyone can create a loan or forex request without a listing fee, in any active market
 - **Free browsing** — anyone can browse requests before subscribing, defaulting to their own country
-- **Subscription-gated offers** — making offers requires an active Lender (or Pro) plan, independent of country
-- **Locked bidding** — both suggested posting terms and offer terms are locked on submission; no post-publish edits
-- **Contract generation** — a digital contract is auto-generated when a request owner accepts an offer
-- **Single account, one dashboard** — every user posts and offers from the same account and screen, in every country their profile belongs to
-- **Marketplace main screen** — live feed of requests with amount, purpose, district, repayment plan, and currency
-- **Non-custodial architecture** — Nipanze never holds, pools, or moves user funds, anywhere
-- **Controlled contact sharing** — contact details are revealed only after a contract is generated
-- **Selective transparency** — listing detail shows aggregate signals (funded %, offer count, coverage tier) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
-- **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan or country — see [Trust & Reputation Signals](#trust--reputation-signals)
+- **Subscription-gated offers** — making offers requires an active Lender (or Pro) plan, independent of country or module
+- **Locked bidding** — both suggested posting terms and offer terms are locked on submission; no post-publish edits, for loans or forex
+- **Contract generation** — a digital contract (loan agreement or exchange agreement) is auto-generated when a request owner accepts an offer
+- **Single account, one dashboard** — every user posts and offers from the same account and screen, in every country their profile belongs to, across both modules
+- **Marketplace main screen** — live feed of loan and forex requests, filterable by `All / Loans / Forex`, each with its own card design — see [Marketplace Feed & Listing Design](#marketplace-feed--listing-design)
+- **Non-custodial architecture** — Nipanze never holds, pools, converts, or moves user funds or currency, anywhere
+- **Controlled contact sharing** — contact details are revealed only after a contract is generated, loan or forex
+- **Selective transparency** — listing detail shows aggregate signals (funded %/rate-coverage tier, offer count) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
+- **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan, country, or which module the deal history comes from — see [Trust & Reputation Signals](#trust--reputation-signals)
 - **Pro Advanced Filters** — Pro-tier users can use advanced filters (categorical employment type, bucketed income range, suggested-terms, owner KYC verification status) next to the notification bell, with database-level self-gating
-- **Compliance built-in** — append-only audit trail from day one
+- **Compliance built-in** — append-only audit trail from day one, across both modules
 
 ---
 
 ## Business Model
 
-Nipanze generates revenue primarily through subscriptions — not interest spreads — via a single upgrade path, applied consistently across every EAC market it operates in. A small, clearly-disclosed contact-unlock fee is under consideration as a secondary revenue lever; see [Trust & Reputation Signals](#trust--reputation-signals) for how it would fit alongside subscriptions without becoming a fee tied to loan performance.
+Nipanze generates revenue primarily through subscriptions — not interest spreads and not currency-exchange spreads — via a single upgrade path, applied consistently across every market and both modules (Loans and Forex). A small, clearly-disclosed contact-unlock fee is under consideration as a secondary revenue lever; see [Trust & Reputation Signals](#trust--reputation-signals) for how it would fit alongside subscriptions without becoming a fee tied to loan performance or exchange rate.
 
 | Plan | Unlocks |
 |---|---|
-| 🟢 **Free** | Post basic requests (amount, duration, purpose) · browse · accept offers received · full visibility into every counterparty's public trust signals |
-| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms (amount, interest, late fee, schedule) |
-| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (interest, late fee, schedule) + priority visibility + improved matching + verified badge + advanced trust insights |
+| 🟢 **Free** | Post basic requests (loan: amount, duration, purpose · forex: currency pair, amount) · browse · accept offers received · full visibility into every counterparty's public trust signals |
+| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms — loan (amount, interest, late fee, schedule) or forex (rate, amount, terms) |
+| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (loan interest/late fee/schedule, or forex preferred rate) + priority visibility + improved matching + verified badge + advanced trust insights |
 
-Users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage and stronger trust signaling (Pro). A single `subscription_plan` enum drives all of it — there is no separate "Premium Borrower" product, and no "posting add-on" sold independently of a plan. The plan tiers and what they unlock are identical across every market; only the **price** is localized.
+Users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage and stronger trust signaling (Pro) — identically whether they're active in Loans, Forex, or both. A single `subscription_plan` enum drives all of it — there is no separate "Forex Plan" or "Premium Borrower" product. The plan tiers and what they unlock are identical across every market and both modules; only the **price** is localized.
 
-**Subscription pricing is set per country**, reflecting local willingness-to-pay — a UGX price is never simply copy-pasted as the same numeral in KES, TZS, or any other EAC currency. `subscriptions.amount_minor_units` is currency-agnostic on its own and only meaningful alongside the subscriber's `profiles.country`. Pricing for each market is finalized closer to that market's own Stage 6 launch, not assumed from another market's figures.
+**Subscription pricing is set per country**, reflecting local willingness-to-pay — a UGX price is never simply copy-pasted as the same numeral in NGN, ZAR, EGP, or any other market's currency. `subscriptions.amount_minor_units` is currency-agnostic on its own and only meaningful alongside the subscriber's `profiles.country` (or, if the subscriber opts into USD billing, `currencies.code = 'USD'`). Pricing for each market is finalized closer to that market's own Stage 6 launch, not assumed from another market's figures. There is no separate forex subscription price — the same `subscriptions` row and price point governs offer-making and term-suggestion for both Loans and Forex.
 
-Nipanze does **not** earn interest margins, custody fees, lending spreads, or any fee tied to loan performance, in any market. Any future contact-unlock fee is a flat, disclosed marketplace-access fee — never priced off a deal's interest rate, amount, or outcome.
+Nipanze does **not** earn interest margins, custody fees, lending spreads, exchange-rate spreads, or any fee tied to loan or exchange performance, in any market. Any future contact-unlock fee is a flat, disclosed marketplace-access fee — never priced off a deal's interest rate, exchange rate, amount, or outcome.
 
-**Payments (Stage 6):** subscription charges (and, if adopted, the contact-unlock fee) are processed via Flutterwave or a comparable regional aggregator, covering mobile money and cards across each active market. This is scoped **strictly to Nipanze's own revenue** — it never touches money between a borrower and a lender, which stays off-platform per the non-custodial model above. Rail coverage varies by country, so each market's aggregator support is verified before that market's `is_active` flag is flipped, rather than assumed from a neighboring market's success. See [BUILD_PLAN.md](BUILD_PLAN.md#-payments-infrastructure-flutterwave--scoped-addendum) for the `transactions` table design and webhook-verification requirements.
+**Payments (Stage 6):** subscription charges (and, if adopted, the contact-unlock fee) are processed via Flutterwave, Paystack, or a comparable aggregator, covering mobile money, cards, and bank transfer/EFT rails as appropriate per market. This is scoped **strictly to Nipanze's own revenue** — it never touches money or currency exchanged between two matched users, which stays off-platform per the non-custodial model above, for both loans and forex. Rail coverage varies significantly by country across this seven-market list — see [Multi-Market Architecture](#multi-market-architecture) — so each market's aggregator support is verified before that market's `is_active` flag is flipped, rather than assumed from another market's success.
 
 ---
 
 ## Transparency & Controlled Contact
 
-Nipanze is **transparent before matching and controlled by design**, in every country it operates in. Requests show enough structured information for potential lenders to make informed decisions, while personal contact details remain protected until the request owner accepts an offer, and exact offer terms remain protected until a viewer has skin in that specific deal.
+Nipanze is **transparent before matching and controlled by design**, in every country it operates in and for both Loans and Forex. Requests show enough structured information for potential counterparties to make informed decisions, while personal contact details remain protected until the request owner accepts an offer, and exact offer terms remain protected until a viewer has skin in that specific deal.
 
 Contact details are revealed **only after an offer is accepted** — enforced at the API layer, not just the UI.
 
 ### Request Structure
 
-Each request must include:
+Each **loan** request must include:
 
 - **Loan details:** request title, amount needed, duration, purpose, and district
 - **Source of income:** salary, business income, side income, or other repayment source
 - **Repayment preference:** weekly, monthly, or one-time payment
 - **Repayment ability:** amount payable per period and repayment timeline
+- **Currency:** the requester's local currency by default, or USD where the market's `allow_foreign_currency_loans` setting permits it
 
-Example: "I earn 800,000 UGX monthly and can repay 200,000 UGX per month." (Or the equivalent in KES, TZS, RWF, BIF, SSP, CDF, or SOS, depending on the request owner's country.)
+Each **forex** request must include:
 
-Free-plan requests do **not** carry interest rate, late payment fee, or repayment schedule — lenders set all terms in their offers.
+- **Currency held** and **currency needed** — both must have `forex_trading_enabled = TRUE` in `currencies`
+- **Amount** to exchange
+- **Settlement preference** — how and where the two parties intend to meet or settle, disclosed as a preference only, never brokered by the platform
 
-Pro-plan requests can additionally suggest a preferred interest rate, late payment fee, and repayment schedule. These are **locked on publish** and give the request extra negotiating leverage when offers come in.
+Free-plan loan requests do **not** carry interest rate, late payment fee, or repayment schedule — lenders set all terms in their offers. Free-plan forex requests do **not** carry a target rate — offer-makers propose their own rate.
+
+Pro-plan loan requests can additionally suggest a preferred interest rate, late payment fee, and repayment schedule. Pro-plan forex requests can additionally suggest a preferred exchange rate. Both are **locked on publish** and give the request extra negotiating leverage when offers come in.
 
 ### Selective Transparency Model
 
-Listing detail pages use **tiered visibility**, not a single public/private split. Every visitor sees enough to gauge how competitive a request is; only people with skin in that specific deal see its exact offer terms. This tiering logic is identical in every country — only the currency label attached to the numbers changes.
+Listing detail pages use **tiered visibility**, not a single public/private split, for both loan and forex listings. Every visitor sees enough to gauge how competitive a request is; only people with skin in that specific deal see its exact offer terms. This tiering logic is identical in every country and for both modules — only the currency label (or currency pair) attached to the numbers changes.
 
 | Viewer | What they see on a listing |
 |---|---|
-| **Visitor / any logged-in user browsing** | Funded % (progress bar), number of offers, an aggregate coverage tier (e.g. "high" for many/large offers vs "low" for few/small ones), and the full request summary (amount needed, purpose, district, duration, income source category, repayment plan) — in the listing's own currency |
+| **Visitor / any logged-in user browsing** | Loan: funded % (progress bar), number of offers, an aggregate coverage tier, and the full request summary — in the listing's own currency. Forex: currency pair, amount needed, number of offers, and an aggregate rate-coverage tier — never individual offered rates |
 | **Lender/Pro-plan holder who has not offered on this listing** | Same as a visitor — full offer-level detail stays locked until they place an offer on this specific request |
-| **Offer-maker who has placed an offer on this listing** | Everything a visitor sees, **plus** the exact amount, interest rate, late fee, and repayment schedule of every offer on this listing — their competitive position against other offer-makers |
-| **Request owner** | Full detail on every offer submitted to their request: exact amount, interest rate, late fee, repayment schedule, and offer timestamp |
+| **Offer-maker who has placed an offer on this listing** | Everything a visitor sees, **plus** the exact terms of every offer on this listing — amount/interest/late-fee/schedule for a loan, or rate/amount/terms for forex — their competitive position against other offer-makers |
+| **Request owner** | Full detail on every offer submitted to their request, whichever module it's from, plus offer timestamp |
 
-Contact details stay locked for everyone, at every tier, until a contract is generated and unlock is confirmed — that boundary is unchanged by this model or by which country the listing is in; selective transparency only governs *offer terms*, not identity.
+Contact details stay locked for everyone, at every tier, until a contract is generated and unlock is confirmed — that boundary is unchanged by this model, by which country the listing is in, or by whether the listing is a Loan or a Forex request; selective transparency only governs *offer terms*, not identity.
 
-Public trust signals (rating, review count, deal count, badges) are a separate, always-public layer that sits on top of this model — see below. They are not gated by participation the way exact offer terms are, because withholding basic reputation information would undermine trust marketplace-wide rather than protect any one deal.
-
-**Why tiered instead of fully public or fully locked:**
-
-- **Fully public exact terms** invite copy-bidding — offer-makers underpricing each other by a token amount without doing their own risk assessment — and lets outside parties reverse-engineer a request owner's negotiating position without ever participating
-- **Fully locked terms** remove the transparency lenders need to size up how competitive a listing already is, which discourages offers entirely
-- **Tying full offer detail to participation** (having bid, or owning the request) rewards engagement, keeps competition healthy, and gives the platform a natural nudge toward the Lender plan — "Place an offer to see full bid detail on this listing"
-
-This is enforced at the RPC/RLS layer (see [`get_public_listing_offers`](#key-functions-and-triggers) and the `v_lender_offers` view below), not just hidden in the UI.
+Public trust signals (rating, review count, deal count, badges) are a separate, always-public layer that sits on top of this model — see below.
 
 ### Field Masking Rules
 
@@ -291,92 +348,170 @@ This is enforced at the RPC/RLS layer (see [`get_public_listing_offers`](#key-fu
 
 **Masked before acceptance:** request-owner id, income source, employer/salary details, email, phone, full name, national ID, and private verification documents
 
-`offer_coverage_tier` is a derived, anonymized signal (e.g. `low` / `medium` / `high`) computed server-side from the number and size of offers on a listing — it lets any visitor gauge how competitive a request is without exposing any individual offer's exact terms.
+#### Public Forex Listing (`v_forex_listings` view)
 
-#### Offers (`v_lender_offers` view) — participant-gated detail
+**Exposed:** `request_id`, `currency_held`, `currency_needed`, `amount`, `country`, `settlement_preference`, `number_of_offers`, `rate_coverage_tier`, `listed_at`, `expires_at`
 
-**Exposed only to the request owner and to offer-makers who have themselves placed an offer on that same request:** offer amount, interest rate, late payment fee, repayment schedule, timestamp — always shown alongside the listing's `currency_code`, never a bare number
+**Masked before acceptance:** request-owner id, email, phone, full name, national ID, and private verification documents
 
-**Exposed to everyone, including non-participants:** total number of offers on the listing, and the aggregate `offer_coverage_tier` described above
+#### Loan Offers (`v_lender_offers` view) — participant-gated detail
 
-Offer amounts can be full or partial. For example, a UGX 9M request can receive one UGX 9M offer, a UGX 5M offer, and a UGX 3M offer from different offer-makers — but a non-participant viewing that listing only sees "3 offers, high coverage," not the individual figures. The same logic applies identically to a KES, TZS, RWF, BIF, SSP, CDF, or SOS request.
+**Exposed only to the request owner and to offer-makers who have themselves placed an offer on that same request:** offer amount, interest rate, late payment fee, repayment schedule, timestamp
 
-**Masked before acceptance, for everyone:** offer-maker's name, email, phone, and private verification documents
+**Exposed to everyone:** total number of offers on the listing, and the aggregate `offer_coverage_tier`
+
+#### Forex Offers (`v_forex_offers` view) — participant-gated detail
+
+**Exposed only to the request owner and to offer-makers who have themselves placed an offer on that same forex request:** rate offered, amount available, settlement terms, timestamp
+
+**Exposed to everyone:** total number of offers on the listing, and the aggregate `rate_coverage_tier`
 
 #### Post-Acceptance Contact Sharing
 
-Revealed only after the request owner accepts an offer and confirms unlock: legal name, phone, and email — regardless of country.
+Revealed only after the request owner accepts an offer and confirms unlock: legal name, phone, and email — regardless of country, and regardless of whether the underlying request was a loan or a forex exchange.
 
 ### Platform Boundary
 
-Nipanze helps participants discover each other and make informed matching decisions, in whichever EAC market they're in. It does not handle money, track repayments, guarantee repayment, or manage the relationship after contact details are revealed, anywhere.
+Nipanze helps participants discover each other and make informed matching decisions, in whichever market they're in, for loans and for currency exchange alike. It does not handle money, convert or hold currency, track repayments, guarantee repayment, guarantee an exchange rate, or manage the relationship after contact details are revealed, anywhere.
 
 ---
 
 ## Trust & Reputation Signals
 
-Selective transparency (above) governs *deal terms*. Trust & reputation signals are a separate, always-public layer that governs *counterparty credibility* — independent of both deal-term visibility and country. They exist so a request owner or offer-maker can gauge who they're dealing with before ever placing an offer or accepting one, without waiting on participation, and without a trust profile resetting at a border.
-
-**Design rule: reputation is public infrastructure, verification and insight depth are monetized.** Hiding basic trust signals behind a paywall would suppress activity marketplace-wide — new users need to see that a marketplace has real, credible participants before they'll post a request or risk an offer. So the baseline signals below are visible on every profile to every viewer, on every plan, in every market, including logged-out browsing of the public marketplace feed where applicable.
-
-### A user's trust profile is global, not per-country
-
-**A user's trust profile spans every EAC market they've participated in — it does not reset at a border.** A lender who has completed nine deals in Uganda and is browsing Kenyan listings for the first time shows up with their real track record, not a blank slate. See [Multi-Country Architecture](#multi-country-architecture) for the schema rationale (`trust_aggregates` is one row per user, never one row per user per country).
-
-### What Nipanze can and cannot show
-
-Because Nipanze does not track repayments or hold funds (see [Regulatory Compliance](#regulatory-compliance)), every trust signal below is built only from **events that happen on-platform** — requests posted, offers made, contracts generated, and reviews left by a counterparty after a deal — never from off-platform financial behavior Nipanze has no visibility into, in any country. Nipanze does not claim to know, measure, or display whether a loan was actually repaid.
+Selective transparency (above) governs *deal terms*. Trust & reputation signals are a separate, always-public layer that governs *counterparty credibility* — independent of deal-term visibility, country, and module. A user's trust profile spans every market they've used and both Loans and Forex — it does not reset at a border or between the two modules.
 
 ### Public trust signals (Free — visible to everyone, on every profile, in every market)
 
 | Signal | Source | Notes |
 |---|---|---|
-| ⭐ Rating average + review count | Post-deal reviews left by the other party to a completed contract, across all countries | Only the counterparty on a completed deal can leave a review; one review per contract |
-| 📊 Completed deals count | Count of contracts the account has been a party to (as owner or offer-maker), across all countries | Reflects on-platform activity, not repayment outcome |
-| 🔁 Repeat participant badge | Awarded after a second completed deal, anywhere in the region | Signals an account is an active, returning marketplace participant |
+| ⭐ Rating average + review count | Post-deal reviews left by the other party to a completed contract — loan or forex, across all countries | Only the counterparty on a completed deal can leave a review; one review per contract |
+| 📊 Completed deals count | Count of contracts the account has been a party to (as owner or offer-maker), loan and forex combined, across all countries | Reflects on-platform activity, not repayment or settlement outcome |
+| 🔁 Repeat participant badge | Awarded after a second completed deal, loan or forex, anywhere in the region | Signals an account is an active, returning marketplace participant |
 | 📱 Phone verified badge | OTP verification at signup, tracked in `profiles.phone_verified_at` | Free, lightweight — distinct from full KYC |
-| ⏱️ Typical response time | Rolling median time-to-first-action on offers/requests received | Computed server-side; shown as a bucket (e.g. "Responds quickly"), never an exact timestamp pattern |
+| ⏱️ Typical response time | Rolling median time-to-first-action on offers/requests received, loan or forex | Computed server-side; shown as a bucket (e.g. "Responds quickly"), never an exact timestamp pattern |
 
-These render as compact badges on `ListingCard`, the offers panel, and `ProfilePage` — never gated behind a plan check, and never listed as a pricing-table line item, so a Free user browsing the marketplace never has to guess whether a badge is locked.
+A profile with no history yet renders these as **"No reviews yet"** and **"0 completed"** — the same badge slots, just at their zero-state, exactly as shown on fresh listings in the marketplace mockup — never hidden or omitted.
 
 ### Pro-tier trust enhancements (monetized layer)
 
-Pro does not create new trust data that Free users can't see the shape of — it adds **verification weight** and **analytical depth** on top of the same public signals:
-
 | Enhancement | Plan | Description |
 |---|---|---|
-| 🟦 Verified badge | Pro | Awarded after full KYC review (existing `kyc_verifications` flow, using the country-appropriate national ID or document type), distinct from and stronger than the free phone-verified badge |
-| 📊 Offer/request success rate | Pro (on their own profile, and on any counterparty profile they view) | Share of an account's offers accepted, or requests that reached a contract, computed from on-platform events across all markets |
-| 🚀 Priority visibility | Pro | Pro-posted requests and Pro offer-maker profiles get improved placement, in whichever market they're posted or offering — already part of the existing Pro tier |
+| 🟦 Verified badge | Pro | Awarded after full KYC review, distinct from and stronger than the free phone-verified badge |
+| 📊 Offer/request success rate | Pro | Share of an account's offers accepted, or requests that reached a contract, computed across all markets and both modules |
+| 🚀 Priority visibility | Pro | Pro-posted requests and Pro offer-maker profiles get improved placement, loan or forex |
 | 🔍 Reliability score | Pro | A single derived score combining rating, completion count, and response time, shown only to Pro viewers looking at a counterparty |
-
-Advanced insights are explicitly scoped to **on-platform** behavior (ratings, completion counts, response time) rather than claims about real-world repayment, to stay inside the platform boundary in [Regulatory Compliance](#regulatory-compliance). Nipanze does not display or compute anything resembling a "repayment reliability" score based on off-platform loan performance, since that data never reaches the platform, in any country.
 
 ### Reviews
 
-- A review can only be left by the counterparty on a **completed contract** (one review per contract, per direction)
+- A review can only be left by the counterparty on a **completed contract**, loan or forex (one review per contract, per direction)
 - Reviews are a star rating (1–5) plus optional short text
-- Reviews are immutable once submitted and logged to `audit_logs`, consistent with the append-only audit approach used elsewhere
-- Review content is moderated the same way KYC documents are — visible to admins for abuse review, never edited by the platform
+- Reviews are immutable once submitted and logged to `audit_logs`
 
-### Contact-unlock fee (proposed secondary revenue lever — not yet committed)
+---
 
-Feedback from early product review suggested a small, flat contact-unlock fee (a few thousand UGX or the local-currency equivalent) charged at the moment contact is revealed, on top of the subscription model, with a free or discounted unlock for Pro. This is **not yet part of the committed architecture** described elsewhere in this document, and is flagged here rather than folded silently into the Business Model or contract-reveal flow, because it changes two things that are currently stated as fixed:
+## Foreign Exchange (Forex)
 
-1. **"Revenue via subscriptions only"** (see [Business Model](#business-model)) would need to become "subscriptions plus a flat, disclosed contact-unlock fee"
-2. **Contact reveal today is a status-gated action** (request owner accepts → both parties can unlock), not a paid action — adding a fee means `reveal_contact` needs a payment-confirmation step before the existing unlock logic runs
+Nipanze extends the same unified marketplace model beyond lending to **peer-to-peer foreign exchange (forex) requests** — connecting people who hold one currency and need another with people willing to exchange, directly, without a bank or bureau de change sitting in the middle. Forex is the second of Nipanze's two modules — see [Two Projects, One Platform](#two-projects-one-platform) — running on the same shared schema, subscription plans, and non-custodial boundary as Loans.
 
-If adopted, the fee must stay flat and disclosed up front, in each market's own local currency (never a percentage of loan amount, interest rate, or any deal-performance figure), to remain consistent with the "no fee tied to loan performance" principle already stated in Business Model and Regulatory Compliance. This is tracked as a Stage 4 decision point in [BUILD_PLAN.md](BUILD_PLAN.md) rather than assumed here.
+**Core Principle:** Forex is matchmaking, not exchange. Nipanze never holds, converts, or moves currency on anyone's behalf, in any market.
+
+### Fits the existing unified model
+
+- **Post a Forex Request** — free, same as posting a loan request
+- **Make a Forex Offer** — requires the Lender plan, same as making a loan offer
+- **Suggest a preferred rate** on a posted forex request — requires the Pro plan
+- One dashboard, one Positions tab, one `subscription_plan` gates both modules identically
+
+### Request structure
+
+A forex request specifies:
+
+- **Currency held** and **currency needed** — both must have `forex_trading_enabled = TRUE`
+- **Amount** to exchange
+- **Preferred rate** (optional) — Pro-only field, locked on publish
+- **Settlement preference** — in-person, mobile money, bank transfer, or other off-platform method, disclosed as a preference only
+
+An offer against a forex request specifies:
+
+- **Exchange rate offered**
+- **Available amount**
+- **Terms** (settlement method, timing) — locked on submit
+
+### Cross-border and cross-currency by nature
+
+A forex request is inherently about two currencies, and the primary use case (diaspora/cross-border transfer) is inherently cross-border. A Uganda-registered user can post `UGX → KES`, `UGX → NGN`, or `UGX → USD` (where USD is cleared for trading), just as a Nigeria-registered user might post `NGN → ZAR`. `forex_requests.country` still tells you *where the requester is*; it never constrains *which two currencies* the request is about. Nipanze does **not** perform the conversion or quote a "platform rate" anywhere — every rate shown is a specific offer-maker's own proposed rate.
+
+### Selective transparency and trust — same model, no exceptions
+
+Forex listings use the identical tiered-visibility model as loans (see [Transparency & Controlled Contact](#transparency--controlled-contact)) and feed the identical global trust aggregate as loans (see [Trust & Reputation Signals](#trust--reputation-signals)). A user's forex deal history and loan deal history contribute to one combined reputation, not two separate scores.
+
+### Non-custodial by design
+
+- **Does not** hold, pool, or transfer either currency, at any point
+- **Does not** act as a broker, dealer, or counterparty to the exchange
+- **Does not** guarantee a rate, quote a platform rate, or guarantee the exchange completes
+- **Does not** touch settlement — cash, mobile money, or bank transfer between the two parties happens entirely off-platform, after contact is revealed
+
+### A genuinely separate compliance surface
+
+Currency-exchange facilitation can carry its own licensing requirements distinct from loan matchmaking, even within a market where lending is already cleared — this is why `countries.forex_enabled` is a flag independent of `countries.is_active`, and why `currencies.forex_trading_enabled` is independently gated per currency (see [Currencies](#currencies--local-cross-border-and-usd)). Uganda launching with lending active does not imply Uganda launches with forex active on day one.
+
+### Schema
+
+| Table | Purpose |
+|---|---|
+| `forex_requests` | Structured exchange requests: `currency_held`, `currency_needed`, `amount`, optional `preferred_rate` (Pro-only, locked on publish), settlement preference, `country` (locked at insert, same trigger pattern as `loan_requests`) |
+| `forex_offers` | Offers against a forex request: `rate_offered`, `amount_available`, `terms` (locked on submit) — no `country` of its own, read through `request_id → forex_requests.country` |
+
+---
+
+## Marketplace Feed & Listing Design
+
+The Marketplace screen is the one shared surface where both modules meet — a live feed with an `All / Loans / Forex` filter row, and two structurally different listing-card layouts underneath depending on which module a listing belongs to.
+
+### Filter row
+
+`All` · `Loans` (🌾) · `Forex` (🔀) — three pill-style tabs above the feed; `All` interleaves both modules chronologically, `Loans` and `Forex` each show only their own module's listings. Filtering here is purely presentational — it's the same `country`-scoped queries against `v_loan_listings` and `v_forex_listings` described in [Multi-Market Architecture](#multi-market-architecture), just merged or split for display.
+
+### Loan listing card
+
+- **Badge:** `Loan` (green dot)
+- **Meta line:** district/region · duration (e.g. "Eastern · 18 months")
+- **Title** and **amount** (in the listing's currency)
+- **One-line summary** (purpose)
+- **Funded-% progress bar** and **"Xd left"** countdown
+- **Trust badges:** `⭐ No reviews yet` (or the real rating once it has one) and `💎 0 completed` (or the real count)
+- **Star icon** (top-right) — save to watchlist
+
+### Forex listing card
+
+- **Badge:** `Forex` (blue dot)
+- **Meta line:** location · turnaround (e.g. "Kampala · Instant")
+- **Title** as a directional pair (e.g. "USD → UGX Exchange")
+- **Headline amount** in the currency the requester needs
+- **One-line summary**
+- **Send / Rate / Receive panel** — three-part row: `You Send` (amount + currency held), the proposed/aggregate `Rate`, `You Receive` (amount + currency needed) — this replaces the loan card's funded-% bar, since a forex request doesn't have a "funded percentage," it has a rate
+- **`⚡ Urgent` tag** — shown when a forex request is time-sensitive (e.g. near its `expires_at`, or explicitly flagged by the requester at posting — same urgency signal already used for watchlist closing-soon styling, surfaced here as an inline tag instead of a card border)
+- **Trust badges:** same `⭐ No reviews yet` / `💎 0 completed` pattern as loan cards, since trust is module-agnostic
+- **Star icon** (top-right) — save to watchlist
+
+### Shared elements
+
+- **Bottom navigation:** `Markets · Watchlist · Request · Positions · Account` — unchanged by the two-module split, since Positions and Watchlist already span both `loan_requests`/`forex_requests` and `loan_offers`/`forex_offers`
+- **Request FAB:** center action opens the request-type choice (Loan or Forex) before branching into the module-specific create form
+- **Live listing count + status dot** at the top of the feed (e.g. "16 listings • live") — counts across both modules when `All` is selected, or the filtered module's count when `Loans`/`Forex` is selected
 
 ---
 
 ## How It Works
 
 ```
-1. POST       → User posts a structured loan request for free, in their own country and currency
-2. BROWSE     → Marketplace defaults to the user's country; browsing other active EAC markets is optional
-                 → sees funded %, offer count, coverage tier, and counterparty trust signals
-3. OFFER      → Lender/Pro plan holders make offers with their own amount, interest rate, late fee, and repayment schedule
+1. POST       → User posts a structured loan or forex request for free, in their own country and currency
+2. BROWSE     → Marketplace defaults to the user's country; browsing other active markets is optional
+                 (default behavior for forex, given its inherently cross-currency nature)
+                 → sees funded %/rate-coverage tier, offer count, and counterparty trust signals
+3. OFFER      → Lender/Pro plan holders make offers with their own amount and terms —
+                 interest rate/late fee/schedule for a loan, or exchange rate/amount/terms for forex
                  → Placing an offer unlocks full offer-level detail on that listing for that offer-maker
 4. REVIEW     → Request owner compares available offers with full exact-term detail and each offer-maker's trust signals
 5. ACCEPT     → Request owner selects one offer; contract is auto-generated
@@ -396,8 +531,8 @@ If adopted, the fee must stay flat and disclosed up front, in each market's own 
 | Navigation | GoRouter | Declarative routing with auth guards |
 | DI Container | get_it + injectable | Service locator with code-gen |
 | Auth | Supabase Auth | Email login, JWT, session management |
-| Database | Supabase Postgres | Relational data, RLS, triggers, functions — one shared schema for every EAC country |
-| Realtime | Supabase Realtime | WebSocket updates for marketplace requests and offers |
+| Database | Supabase Postgres | Relational data, RLS, triggers, functions — one shared schema for every market and both modules |
+| Realtime | Supabase Realtime | WebSocket updates for marketplace requests and offers, loan and forex |
 | Storage | Supabase Storage | Optional profile and verification documents |
 | Functions | Supabase Edge Functions (Stage 5) | Server-side logic, PDF generation |
 
@@ -412,41 +547,42 @@ lib/
 │   ├── theme/                      # AppTheme — DM Sans / DM Mono, dark/light
 │   ├── router/                     # GoRouter, auth redirect guards, route constants
 │   ├── config/                     # SupabaseConfig — reads --dart-define at build time
-│   ├── constants/                  # Tables, Views, Rpcs, Channels, SettingKeys, Countries
+│   ├── constants/                  # Tables, Views, Rpcs, Channels, SettingKeys, Countries, Currencies
 │   ├── errors/                     # AppException hierarchy, parseSupabaseError()
 │   └── di/                         # Injectable config, GetIt locator
 ├── features/
 │   ├── auth/                       # Login, Register, Verify Email, Reset Password, Onboarding (incl. country select)
 │   ├── dashboard/                  # Home stub (redirects to marketplace post-login)
-│   ├── marketplace/                # Live feed (v_loan_listings), country + other filters, loan detail, offers
-│   ├── watchlist/                  # Saved listings, closing alerts
-│   ├── positions/                  # My Requests · My Offers (same account, two views)
+│   ├── marketplace/                # Live feed (v_loan_listings + v_forex_listings), All/Loans/Forex filter, country filter
+│   ├── loans/                      # 🟢 LOANS PROJECT — create loan request, my loan requests, loan detail, loan-specific widgets
+│   ├── forex/                      # 🔵 FOREX PROJECT — create forex request, my forex requests, forex detail, Send/Rate/Receive widgets
+│   ├── watchlist/                  # Saved listings (loan or forex), closing alerts
+│   ├── positions/                  # My Requests · My Offers (same account, two views, both modules)
 │   ├── account/                    # Subscription plan, profile, verification, country setting
-│   ├── loans/                      # Create request, my requests
-│   ├── offers/                     # My Offers page
+│   ├── offers/                     # My Offers page (loan and forex offers)
 │   ├── notifications/              # Notification centre, unread badge
 │   ├── kyc/                        # Optional verification, status display, country-appropriate document types
-│   ├── trust/                      # Trust badges, ratings, reviews, reputation summary (global, not per-country)
+│   ├── trust/                      # Trust badges, ratings, reviews, reputation summary (global, module-agnostic)
 │   ├── profile/                    # User profile, edit
-│   └── admin/                      # Verification review, user management, audit logs, per-country settings (admin only)
+│   └── admin/                      # Verification review, user management, audit logs, per-country + per-module settings (admin only)
 │       └── */
 │           ├── data/               # DataSources (Supabase) + Models
 │           ├── domain/             # Entities, UseCases, Repository interfaces
 │           └── presentation/       # BLoC + Pages + Widgets
 ├── shared/
-│   ├── models/                     # LoanListingModel, OfferModel, UserModel, TrustProfileModel, CountryModel…
-│   └── widgets/                    # MainScaffold, ProfileSummary, VerificationChip, TrustBadgeRow, CurrencyLabel
+│   ├── models/                     # LoanListingModel, ForexListingModel, OfferModel, UserModel, TrustProfileModel, CountryModel, CurrencyModel…
+│   └── widgets/                    # MainScaffold, ProfileSummary, VerificationChip, TrustBadgeRow, CurrencyLabel, SendRateReceivePanel
 supabase/
 sql/
-│   ├── schema.sql                  # Full schema — tables, triggers, RPCs, views (multi-country, all 8 EAC states, from v5.0)
+│   ├── schema.sql                  # Full schema — tables, triggers, RPCs, views (multi-market, 7 countries, loan + forex, from v6.0)
 │   └── seed.sql                    # Seed data — users, listings, offers (Uganda-only until Stage 4.5 seed additions)
-│   └── migrations/                 # Incremental migrations, including the Stage 4.5 country migration
+│   └── migrations/                 # Incremental migrations, including Stage 4.5 (multi-market) and Stage 4.7 (forex)
 assets/
     ├── fonts/                      # DM Sans (body) + DM Mono (numeric values)
     └── images/                     # Onboarding illustrations
 ```
 
-> Note: `features/loans` and `features/offers` are named after the *actions* they support (posting a request, making an offer), not after a stored role — any user with the right plan can reach either, in any country. `features/trust` renders the same badge row wherever a counterparty is shown (listing cards, offer rows, profile pages), and is deliberately country-agnostic.
+> `features/loans` and `features/forex` are the two "projects" referenced throughout this README — separate directories, separate models, separate create-flows, separate listing-card widgets — sitting inside one shared app and calling one shared Supabase backend. `features/marketplace`, `features/positions`, `features/trust`, and `features/watchlist` are the shared surfaces that read from both.
 
 ---
 
@@ -460,14 +596,17 @@ assets/
 | `/auth/register` | RegisterPage | No |
 | `/auth/verify-email` | VerifyEmailPage | Yes (unverified) |
 | `/auth/forgot-password` | ForgotPasswordPage | No |
-| `/marketplace` | MarketplacePage (tab 1) — defaults to user's country | Yes |
+| `/marketplace` | MarketplacePage (tab 1) — `All / Loans / Forex` filter, defaults to user's country | Yes |
 | `/marketplace/:requestId` | LoanDetailPage + Offers | Yes |
+| `/forex/:requestId` | ForexDetailPage + Offers (Send/Rate/Receive panel) | Yes |
 | `/watchlist` | WatchlistPage (tab 2) | Yes |
-| `/positions` | My Requests + My Offers | Yes |
+| `/positions` | My Requests + My Offers (loan and forex) | Yes |
 | `/account` | AccountPage (tab 4) — includes country setting | Yes |
 | `/loans/create` | LoanCreatePage | Yes (Free plan and up) |
 | `/loans/my-loans` | MyRequestsPage | Yes |
-| `/offers` | MyOffersPage | Yes (Lender/Pro plan) |
+| `/forex/create` | ForexCreatePage | Yes (Free plan and up) |
+| `/forex/my-forex` | MyForexRequestsPage | Yes |
+| `/offers` | MyOffersPage (loan and forex) | Yes (Lender/Pro plan) |
 | `/notifications` | NotificationsPage | Yes |
 | `/kyc` | KycPage | Yes |
 | `/profile` | ProfilePage | Yes |
@@ -478,7 +617,7 @@ assets/
 
 ## Database Schema
 
-The full schema lives in `sql/schema.sql`. Apply against the Supabase Cloud project (via Dashboard SQL Editor or `psql` with the cloud connection string):
+The full schema lives in `sql/schema.sql`. Apply against the Supabase Cloud project:
 
 ```bash
 psql "postgresql://postgres:<password>@<project-ref>.supabase.co:5432/postgres" -f sql/schema.sql
@@ -489,71 +628,75 @@ psql "postgresql://postgres:<password>@<project-ref>.supabase.co:5432/postgres" 
 
 | Table | Purpose |
 | --- | --- |
-| `countries` | **New, v5.0.** Reference table: `code`, `name`, `currency_code`, `phone_prefix`, `is_active`. Seeded with all 8 EAC member states; launching a market is one `UPDATE ... SET is_active = TRUE`. |
-| `profiles` | Core user profile. Extends `auth.users` 1-to-1. Carries `country` (source of truth for the account) and `phone_verified_at` for the free trust badge. One account, no stored role — capability comes from `subscription_plan`. |
-| `system_settings` | Platform config, with an optional `country` column — `NULL` rows are global defaults, non-null rows override per market. |
-| `subscriptions` | `subscription_plan` enum (`free` \| `lender` \| `pro`) — gates offer-making and term-suggestion; same plans in every country, priced per market via `amount_minor_units`. |
+| `countries` | Reference table: `code`, `name`, `currency_code`, `phone_prefix`, `is_active` (lending gate), `forex_enabled` (independent forex gate). Seeded with all 7 launch/expansion markets. |
+| `currencies` | **New, v6.0.** Reference table: `code`, `name`, `is_market_currency`, `market_country`, `forex_trading_enabled`. Seeded with the 7 market currencies + USD, all `forex_trading_enabled = FALSE` by default. |
+| `profiles` | Core user profile. Extends `auth.users` 1-to-1. Carries `country` and `phone_verified_at`. No stored role — capability comes from `subscription_plan`, shared across Loans and Forex. |
+| `system_settings` | Platform config, with an optional `country` column, and (v6.0) `allow_foreign_currency_loans` per country |
+| `subscriptions` | `subscription_plan` enum (`free` \| `lender` \| `pro`) — gates offer-making and term-suggestion on both modules; priced per market via `amount_minor_units`, optionally billed in USD |
 | `kyc_verifications` | Optional verification and admin review. Approval drives the Pro-tier "Verified" badge. |
-| `loan_requests` | Structured funding requests, carrying `country` (copied from the borrower's profile at post time, locked thereafter). |
-| `loan_offers` | Offers made on requests. **No `country` column** — always read via `request_id → loan_requests.country`. Exact terms visible only to the request owner and other offer-makers on the same request. |
-| `watchlist` | User-saved listings. |
-| `contact_reveals` | Post-acceptance contact sharing. Logged in `audit_logs`. |
-| `notifications` | In-app notification feed. |
-| `reviews` | One-time, post-contract star rating + optional text between the two parties to a completed contract. Feeds a user's **global** (not per-country) trust signals. |
-| `audit_logs` | **Append-only** compliance trail. Never update or delete rows. |
-| `refresh_tokens` | JWT refresh token store with rotation chain. |
-| `referrals` | Referral programme tracking. |
-| `transactions` | **Stage 6.** Flutterwave (or equivalent) payment records for subscriptions and contact-unlock fees only — never P2P loan funds. Carries `country` and `currency_code`, webhook-verified status transitions only. |
-
-> The `role` column (`borrower` / `lender` / `both`) has been removed from the schema. All marketplace gating reads `subscription_plan` only; `is_admin` remains the sole stored role. `country` is present on `profiles` and `loan_requests` only — see [Multi-Country Architecture](#multi-country-architecture) for why `loan_offers` doesn't get its own copy.
+| `loan_requests` | Structured funding requests; `country` locked at insert; `currency_code` defaults to local currency, may be `USD` where permitted |
+| `loan_offers` | Offers made on loan requests. No `country` column — read via `request_id → loan_requests.country` |
+| `forex_requests` | Structured currency-exchange requests: `currency_held`, `currency_needed` (both must be `forex_trading_enabled`), `amount`, optional `preferred_rate`, settlement preference, `country` locked at insert |
+| `forex_offers` | Offers made on forex requests: `rate_offered`, `amount_available`, `terms`. No `country` column — read via `request_id → forex_requests.country` |
+| `watchlist` | User-saved listings, loan or forex |
+| `contact_reveals` | Post-acceptance contact sharing, loan or forex, logged in `audit_logs` |
+| `notifications` | In-app notification feed |
+| `reviews` | One-time post-contract review, loan or forex. Feeds a user's global trust signals |
+| `audit_logs` | Append-only compliance trail |
+| `refresh_tokens` | JWT refresh token store with rotation chain |
+| `referrals` | Referral programme tracking |
+| `transactions` | Stage 6. Flutterwave/Paystack (or equivalent) payment records for subscriptions and contact-unlock fees only — never P2P loan funds or exchanged currency |
 
 ### Key Functions and Triggers
 
 | Name | Type | Purpose |
 | --- | --- | --- |
 | `handle_new_auth_user()` | Trigger fn | Syncs `auth.users` → `public.profiles` |
-| `accept_offer(request_id, offer_id, owner_id)` | RPC | Atomic offer acceptance + contact eligibility |
-| `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active listings — returns aggregate coverage tier and offer count only; exact per-offer terms are omitted unless the caller is the request owner or has an offer on that request |
-| `submit_review(contract_id, rating, comment)` | RPC | Records a one-time post-contract review from the calling account onto the counterparty; refreshes that counterparty's cached (global) trust aggregates |
-| `recompute_trust_aggregates(user_id)` | Trigger fn | Recalculates rating average, review count, completed-deal count, and response-time bucket after a review or contract event, across all countries the user has participated in |
-| `trg_fn_set_request_country` | Trigger fn (Stage 4.5) | Copies `country` from the borrower's profile onto a new `loan_requests` row at insert; locked thereafter, same pattern as term-locking |
+| `accept_offer(request_id, offer_id, owner_id)` | RPC | Atomic offer acceptance + contact eligibility, for loan or forex offers |
+| `get_public_listing_offers(request_id)` | RPC | Anonymized public offer book for active loan listings |
+| `get_public_forex_offers(request_id)` | RPC | Anonymized public offer book for active forex listings |
+| `submit_review(contract_id, rating, comment)` | RPC | Records a one-time post-contract review, loan or forex; refreshes global trust aggregates |
+| `recompute_trust_aggregates(user_id)` | Trigger fn | Recalculates trust signals across all countries and both modules |
+| `trg_fn_set_request_country` | Trigger fn | Copies `country` onto a new `loan_requests` row at insert; locked thereafter |
+| `trg_fn_set_forex_request_country` | Trigger fn | Copies `country` onto a new `forex_requests` row at insert; locked thereafter |
+| `trg_fn_validate_forex_offer` | Trigger fn | Validates `currency_held`/`currency_needed` are both `forex_trading_enabled` at request-creation time |
 
 ### Key Views
 
 | View | Purpose |
 | --- | --- |
-| `v_loan_listings` | Public marketplace listings, including `country` and `currency_code`; request-owner contact details excluded; offer detail rolled up into `number_of_offers` + `offer_coverage_tier` |
-| `v_user_marketplace_activity` | Dashboard — requests posted and offers made, in one query |
-| `v_lender_offers` | Offer activity for the current account, participant-scoped exact terms, `country`/`currency_code` joined through the listing |
-| `v_marketplace_activity` | Marketplace request and offer KPIs, filterable/groupable by `country` |
-| `v_marketplace_pro_filters` | Pro-only marketplace filter signals (employment type, income bracket, suggested terms, owner verification status); self-gated to Pro subscribers |
-| `v_trust_profile_public` | Public trust signals for any `user_id` — rating average, review count, completed-deal count, repeat-participant flag, phone-verified flag, response-time bucket. Readable by any authenticated user. **Global, not per-country.** |
-| `v_trust_profile_pro` | Pro-only extension of the above — adds success rate and reliability score; RLS restricts rows to callers on the Pro plan viewing any profile |
+| `v_loan_listings` | Public marketplace loan listings, `country` + `currency_code` |
+| `v_forex_listings` | Public marketplace forex listings, `country` + `currency_held`/`currency_needed` + `rate_coverage_tier` |
+| `v_user_marketplace_activity` | Dashboard — loan and forex requests posted and offers made, in one query |
+| `v_lender_offers` | Loan offer activity, participant-scoped exact terms |
+| `v_forex_offers` | Forex offer activity, participant-scoped exact rate/amount/terms |
+| `v_marketplace_activity` | Marketplace KPIs, filterable/groupable by `country` and `request_type` |
+| `v_marketplace_pro_filters` | Pro-only marketplace filter signals |
+| `v_trust_profile_public` | Public trust signals, global across country and module |
+| `v_trust_profile_pro` | Pro-only extension — success rate and reliability score |
 
 ---
 
 ## Supabase Setup
 
-> This project runs against the **Supabase Cloud** project — there is no local Supabase stack in the current workflow (`./run_cloud.sh chrome` connects directly to cloud).
-
 ### 1. Cloud Project
 
-1. Create (or use the existing) Supabase project — one project serves every EAC country, see [Multi-Country Architecture](#multi-country-architecture)
-2. Apply the schema and seed against the cloud database, either via the Supabase Dashboard → SQL Editor (paste the file contents) or via `psql` pointed at the cloud connection string:
+1. Create (or use the existing) Supabase project — one project serves every market and both modules
+2. Apply the schema and seed:
    ```bash
    psql "postgresql://postgres:<password>@<project-ref>.supabase.co:5432/postgres" -f sql/schema.sql
    psql "postgresql://postgres:<password>@<project-ref>.supabase.co:5432/postgres" -f sql/seed.sql
    ```
-3. Confirm `countries` has all 8 EAC states seeded, with `UG` as the only `is_active = TRUE` row, before onboarding any users
+3. Confirm `countries` has all 7 markets seeded, with `UG` as the only `is_active = TRUE` row, and confirm `currencies` has all 8 rows (`UGX`/`KES`/`TZS`/`RWF`/`NGN`/`ZAR`/`EGP`/`USD`) with `forex_trading_enabled = FALSE` before onboarding any users
 4. Create the `verification-documents` storage bucket (private) if it doesn't already exist
 
 ### 2. Auth Bridge Trigger
 
-The `handle_new_auth_user()` function is defined in `sql/schema.sql` and runs automatically on every `auth.users` INSERT. It creates the corresponding `public.profiles` row for marketplace access.
+The `handle_new_auth_user()` function runs automatically on every `auth.users` INSERT, creating the corresponding `public.profiles` row.
 
 ### 3. Studio
 
-Use the Supabase Dashboard (`https://supabase.com/dashboard/project/<project-ref>`) for table browsing, auth user management, and storage inspection.
+Use the Supabase Dashboard for table browsing, auth user management, and storage inspection.
 
 ---
 
@@ -563,15 +706,14 @@ Use the Supabase Dashboard (`https://supabase.com/dashboard/project/<project-ref
 
 - Flutter SDK `>=3.0.0`
 - Dart SDK `>=3.0.0`
-- Supabase CLI (for `functions deploy` / `db push` only — no local stack needed)
-- A configured Supabase Cloud project (see [Supabase Setup](#supabase-setup))
+- Supabase CLI
+- A configured Supabase Cloud project
 
 ### Installation
 
 ```bash
 git clone https://github.com/your-org/nipanze.git
 cd nipanze
-
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
@@ -579,11 +721,9 @@ dart run build_runner build --delete-conflicting-outputs
 ### Running the App (Cloud)
 
 ```bash
-./run_cloud.sh chrome    # Chrome, against the Supabase cloud project
-flutter run -d android   # Android (emulator or device), reads the same cloud credentials
+./run_cloud.sh chrome
+flutter run -d android
 ```
-
-`./run_cloud.sh` sources `.env.cloud` (or equivalent) and injects the cloud `SUPABASE_URL` / `SUPABASE_ANON_KEY` via `--dart-define` — see [Environment Configuration](#environment-configuration).
 
 ### Building for Production
 
@@ -602,13 +742,10 @@ flutter build web --release \
 ## Environment Configuration
 
 ```env
-# .env.cloud — never commit this file
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...   # Edge Functions only — never bundled into the Flutter client
 ```
-
-Credentials are injected via `--dart-define` at build time and read by `lib/core/config/supabase_config.dart`. The anon key is safe to bundle — RLS enforces access control at the database level, including `subscription_plan` and `country` checks.
 
 ---
 
@@ -626,7 +763,7 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 | `animate_do ^3.x` | FadeIn/SlideIn animations | 1 |
 | `lottie ^3.x` | Loading and empty state animations | 2 |
 | `shimmer ^3.x` | Skeleton loading screens | 2 |
-| `percent_indicator ^4.x` | Request progress and offer coverage indicators | 2 |
+| `percent_indicator ^4.x` | Loan funded-% progress indicators | 2 |
 | `fl_chart ^0.69.x` | Portfolio and analytics charts | 3 |
 | `local_auth ^2.x` | Biometric login | 3 |
 | `flutter_local_notifications ^17.x` | In-app notification banners | 3 |
@@ -635,61 +772,45 @@ Credentials are injected via `--dart-define` at build time and read by `lib/core
 
 ## Edge Functions
 
-Edge Functions (Deno TypeScript) wrap Postgres RPCs for server-side enforcement.
-
-```bash
-supabase functions new accept-offer
-supabase functions serve accept-offer --env-file .env.cloud   # local test against cloud project
-supabase functions deploy accept-offer                         # deploy
-```
-
 | Function | Purpose |
 | --- | --- |
-| `accept-offer` | Atomic offer acceptance with server enforcement |
-| `make-offer` | Server-side subscription-plan validation for offers |
-| `reveal-contact` | Post-acceptance contact sharing |
-| `submit-review` | Server-side validation that the caller was a party to the completed contract before writing a review |
-| `send-sms` | Africa's Talking or Twilio SMS alerts, respecting each market's carrier norms |
-| `flutterwave-webhook` | **Stage 6.** Signature-verified webhook handler; the only writer of `transactions.status = 'successful'`, idempotent on `provider_tx_ref` |
+| `accept-offer` | Atomic offer acceptance with server enforcement, loan or forex |
+| `make-offer` | Server-side subscription-plan validation for loan offers |
+| `make-forex-offer` | Server-side subscription-plan validation for forex offers, plus currency-eligibility check |
+| `reveal-contact` | Post-acceptance contact sharing, loan or forex |
+| `submit-review` | Server-side validation that the caller was a party to the completed contract |
+| `send-sms` | Africa's Talking, Twilio, or Termii, respecting each market's carrier norms |
+| `flutterwave-webhook` | Signature-verified webhook handler; the only writer of `transactions.status = 'successful'` |
 
 ---
 
 ## Testing
 
 ```bash
-# Unit + widget tests (no local stack needed)
 flutter test
-
-# Single test file
 flutter test test/features/auth/auth_bloc_test.dart
-
-# Integration tests — Linux desktop only, runs against the Supabase Cloud project
 flutter test integration_test/integration_test.dart -d linux
-
-# Coverage
 flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
 ```
 
 ### Test Accounts
 
-All accounts are pre-loaded by `sql/seed.sql` with fixed UUIDs and `email_confirmed_at` set.
 **Password for all accounts: `Test1234!`**
-
-The `role` column has been removed — accounts are described purely by activity, `subscription_plan`, and `country`, matching the unified, multi-country model. All original 17 seed accounts currently sit at `country = 'UG'`; Stage 4.5 adds representative accounts for other EAC markets to validate cross-country filtering, currency rendering, and cross-border offers. The full, current list (including per-market test accounts for Kenya, Tanzania, and Rwanda) lives in [BUILD_PLAN.md](BUILD_PLAN.md#test-accounts-password-test1234).
 
 | Email | Country | Subscription | Best for testing |
 |---|---|---|---|
-| `david.mukasa@gmail.com` | UG | Free | Contracted request; contact reveal triggered |
-| `james.okello@outlook.com` | UG | Pro | Active request with two pending offers |
-| `robert.ssemwanga@gmail.com` | UG | Lender | Closing-soon request; pending offer on another listing |
+| `david.mukasa@gmail.com` | UG | Free | Contracted loan request; contact reveal triggered |
+| `james.okello@outlook.com` | UG | Pro | Active loan request with two pending offers |
 | `admin1@nipanze.ug` | UG | Free (`is_admin = true`) | Full admin dashboard access |
-| `wanjiru.kamau@gmail.com` | KE | Free | Confirms a KE user's default feed and currency rendering (KES) |
-| `nairobi.capital@example.co.ke` | KE | Lender | Confirms cross-border offer placement on a UG listing |
-| `amani.mwakalinga@gmail.com` | TZ | Free | Confirms TZS currency rendering on a TZ-posted request |
-| `uwase.claudine@gmail.com` | RW | Pro | Confirms RWF-denominated Pro term suggestions and Pro-gating work identically across countries |
-
-> For trust-signal testing: `invest@pearlcapital.ug` and `david.mukasa@gmail.com` have a completed contract between them and are good candidates for seeding a mutual review pair once the `reviews` table ships — see BUILD_PLAN.md for the complete seed roster and per-scenario test notes.
+| `wanjiru.kamau@gmail.com` | KE | Free | Confirms KE feed/currency rendering (KES) |
+| `amani.mwakalinga@gmail.com` | TZ | Free | Confirms TZS currency rendering |
+| `uwase.claudine@gmail.com` | RW | Pro | Confirms RWF Pro term suggestions |
+| `chidinma.okafor@example.ng` *(new, v6.0)* | NG | Lender | Confirms NGN currency rendering and cross-border offer placement into UG |
+| `thandiwe.dlamini@example.co.za` *(new, v6.0)* | ZA | Pro | Confirms ZAR Pro term suggestions and gating |
+| `youssef.hassan@example.eg` *(new, v6.0)* | EG | Free | Confirms EGP currency rendering; flagged for extra forex-review scrutiny given EGP's currency-control history |
+| `mutesi.grace@gmail.com` | UG | Lender | Active `UGX → KES` forex request with two pending rate offers |
+| `nonparticipant.tester@gmail.com` | UG | Free | Verifies non-participants see only `rate_coverage_tier` on forex listings |
 
 ---
 
@@ -709,33 +830,31 @@ The `role` column has been removed — accounts are described purely by activity
 
 ## Security
 
-- **No fund custody** — Nipanze never holds, pools, or moves user money, in any market
+- **No fund custody** — Nipanze never holds, pools, converts, or moves user money or currency, in any market
 - **RLS on all tables** — Postgres enforces access control, not just the application layer
-- **Plan and country checked server-side** — `subscription_plan` and `country` are validated in RLS/RPCs, never trusted from the client
-- **No JWT country claim assumed** — country-scoped RLS (if adopted) uses a `profiles` subquery, not a custom JWT claim or `user_metadata` (which is client-writable and therefore spoofable for access-control purposes)
-- **Payment status is webhook-verified only** — a `transactions` row only reaches `status = 'successful'`, and a subscription plan only upgrades, after Flutterwave's signed webhook is verified server-side; the client-side payment redirect is never trusted to grant access
+- **Plan, country, and currency-eligibility checked server-side** — never trusted from the client
+- **Payment status is webhook-verified only**
 - **JWT auth** — Supabase issues short-lived JWTs; sessions auto-refresh
-- **Service role key never in client** — only used inside Edge Functions
-- **Controlled contact sharing** — contact details stay hidden until acceptance
-- **Selective offer-term transparency** — exact offer amounts, rates, and fees are gated to the request owner and to offer-makers who have bid on that listing; everyone else sees an aggregate coverage tier only, independent of country
-- **Reviews are participant-gated** — only the counterparty on a completed contract can submit a review, enforced server-side in `submit_review`, not just hidden in the UI
-- **Append-only audit log** — `audit_logs` has no UPDATE/DELETE in app user grants
-- **Private documents** — verification documents are never exposed in marketplace listings
-- **Refresh token rotation** — reuse attack detection via `replaced_by` chain
-- **`--dart-define` credentials** — Supabase keys injected at build time, not hardcoded
-- **Pro Advanced Filters categorical gating** — advanced filters use bucketed income (`fn_income_bracket`) and categorical employment type without ever exposing exact monthly income or employer/bank names. Access to filter details is gated at the DB layer via `v_marketplace_pro_filters` view which checks for the caller's active Pro plan subscription.
+- **Service role key never in client**
+- **Controlled contact sharing** — loan or forex
+- **Selective offer-term transparency** — enforced via RLS/RPC
+- **Reviews are participant-gated** — enforced server-side
+- **Append-only audit log**
+- **Private documents** — verification documents never exposed in listings
+- **Refresh token rotation**
+- **`--dart-define` credentials**
 
 ---
 
 ## Regulatory Compliance
 
-> Nipanze operates as a technology marketplace in every EAC country it serves. We do not hold funds, accept deposits, issue loans, pool capital, or set interest rates, anywhere.
+> Nipanze operates as a technology marketplace. We do not hold funds, accept deposits, issue loans, pool capital, set interest rates, convert or hold currency, or set exchange rates, anywhere. **Nipanze is not a law firm and this document is not legal advice** — every market listed here needs its own local regulatory review before launch, and that review carries meaningfully different weight across this seven-market list than it would across a single regional bloc.
 
-**We DO:** Provide marketplace infrastructure, show requester-provided information, manage controlled contact sharing, facilitate discovery, and surface on-platform trust signals (ratings, review counts, completed-deal counts) so participants can make informed matching decisions — consistently, per market.
+**We DO:** Provide marketplace infrastructure, show requester-provided information, manage controlled contact sharing, facilitate discovery, and surface on-platform trust signals so participants can make informed matching decisions — consistently, per market, for both loan and forex requests.
 
-**We DO NOT:** Accept deposits, hold or pool user funds, issue loans, set interest rates, guarantee returns, act as a bank or financial institution, process payments, track repayments, convert currencies, or claim to measure real-world repayment behavior, in any country.
+**We DO NOT:** Accept deposits, hold or pool user funds or currency, issue loans, set interest rates or exchange rates, guarantee returns or exchange outcomes, act as a bank, financial institution, or currency broker, process P2P payments, track repayments or settlement, convert currencies, or claim to measure real-world repayment or settlement behavior, in any country.
 
-All money movement, loan documentation, and repayment tracking happen directly between matched participants outside the platform. Each new market may carry its own local regulatory review — including sanctions-screening and payment-rail considerations for markets like Burundi, South Sudan, DR Congo, and Somalia — before `countries.is_active` is set to `TRUE`. This is a launch-checklist item per market, not a schema concern.
+Each market carries its own regulatory review, on two independent tracks — lending (`countries.is_active`) and currency-exchange facilitation (`countries.forex_enabled` and `currencies.forex_trading_enabled`) — before either flag is set to `TRUE`. Uganda, Kenya, Tanzania, and Rwanda share a broadly similar regional regulatory and payment-rail context; Nigeria, South Africa, and Egypt each sit in a materially different regulatory and payments environment and should be treated as requiring independent, ground-up review rather than an extension of East African findings. This is a launch-checklist item per market and per module, not a schema concern — and not a substitute for qualified local legal counsel in each market.
 
 ---
 
@@ -744,35 +863,22 @@ All money movement, loan documentation, and repayment tracking happen directly b
 See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage roadmap.
 
 ### Stage 1 — Foundation ✅ Complete
-- Schema v4.0, seed data, Flutter scaffold, auth, navigation, onboarding, unit + integration tests
-
 ### Stage 2 — Core Marketplace ✅ Complete
-- Live marketplace feed, structured requests, free browsing, lender-proposed offer terms, subscription-gated offers, offer acceptance
-
 ### Stage 3 — Polish & Supporting Features ✅ Complete
-- Watchlist alerts, positions, notifications, analytics, profile, error/empty states
-
 ### Stage 3.5 — Cloud Migration & Auth Hardening ✅ Complete
-- Supabase Cloud, RLS audit, token rotation, APK release build (app testing checklist ⏳ in progress — finish before Stage 4.5)
 
 ### Stage 4 — Structured Deal Agreement, Contact Sharing & Trust System ⬜ Planned
-- Locked-term bidding: Pro-plan users suggest interest rate, late fee, and repayment schedule at posting; Lender/Pro-plan users set their own terms at offer time; both locked on submission
-- Selective transparency: listing detail shows funded %, offer count, and coverage tier to everyone; exact offer terms unlock only for the request owner and for offer-makers who have bid on that listing
-- Trust & reputation layer: public rating/review/completed-deal/repeat/phone-verified badges on every profile, global across countries; Pro-tier verified badge and advanced trust insights
-- Contract auto-generated after offer acceptance with all agreed terms, currency, and legal disclaimer
-- Contact reveal only after contract is generated (contact-unlock fee remains an open decision — see [Trust & Reputation Signals](#trust--reputation-signals))
-- `role` column fully removed from schema; all gating reads `subscription_plan` only
+- Locked-term bidding, selective transparency, trust & reputation layer, contract auto-generation, contact reveal, `role` column removal
 
-### Stage 4.5 — Multi-Country Expansion ⬜ Planned
-- `countries` table seeded with all 8 EAC states; `country` added to `profiles`/`loan_requests`; `currency_code` surfaced on every listing/offer view; per-country `system_settings` overrides; marketplace feed defaults to the user's country with an explicit browse-other-markets toggle
+### Stage 4.5 — Multi-Market Expansion ⬜ Planned
+- `countries` + `currencies` tables seeded with all 7 markets and 8 currencies; `country` added to `profiles`/`loan_requests`; marketplace feed defaults to the user's country
+
+### Stage 4.7 — Forex Marketplace Expansion ⬜ Planned
+- `forex_requests` / `forex_offers` tables; `countries.forex_enabled` and `currencies.forex_trading_enabled` gates; same selective-transparency and trust-signal reuse as Loans; `All / Loans / Forex` marketplace filter and forex-specific listing card (Send/Rate/Receive panel)
 
 ### Stage 5 — Admin & Compliance ⬜ Planned
-- Admin dashboard, verification review, audit trails, SMS, review moderation — plus per-country KPI filtering and per-market pause/resume via `countries.is_active`
-
 ### Stage 6 — Launch & Growth ⬜ Planned
-- Play Store, App Store, referral programme, per-market subscription pricing (no role-selection onboarding step; country-select step instead)
-- Flutterwave (or equivalent) payment integration, scoped strictly to Nipanze's own revenue
-- Per-market EAC rollout checklist (Kenya, Tanzania, Rwanda first given deeper payment-rail maturity; Burundi, South Sudan, DR Congo, and Somalia following once each clears its own rail-coverage and compliance review)
+- Per-market rollout in the order: Uganda (live) → Kenya → Tanzania → Rwanda → Nigeria → South Africa → Egypt, each with its own lending *and* separately-timed forex go/no-go
 
 ---
 
@@ -802,4 +908,4 @@ Website: <https://nipanze.ug>
 
 ---
 
-*Made with ❤️ for financial inclusion across East Africa*
+*Made with ❤️ for financial inclusion across Africa*
