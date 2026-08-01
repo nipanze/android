@@ -89,7 +89,7 @@ BEGIN
     -- Every new user gets a free subscription (can browse marketplace and post requests)
     INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units)
     VALUES (NEW.id, 'free', 'active', 0)
-    ON CONFLICT DO NOTHING;
+    ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
 
     RETURN NEW;
 END;

@@ -247,7 +247,7 @@ BEGIN
     -- Every new user gets a free subscription (can browse marketplace and post requests)
     INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units)
     VALUES (NEW.id, 'free', 'active', 0)
-    ON CONFLICT DO NOTHING;
+    ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
 
     RETURN NEW;
 END;
@@ -405,7 +405,7 @@ COMMENT ON TABLE  subscriptions IS
  tiers themselves are identical across every market, only the price is localized.';
 
 -- Only one active subscription per user at a time
-CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active'; ALTER TABLE public.subscriptions ADD CONSTRAINT uidx_sub_user UNIQUE (user_id);
+CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active';
 
 
 -- ============================================
