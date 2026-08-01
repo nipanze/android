@@ -177,14 +177,12 @@ class ListingCard extends StatelessWidget {
               ),
               const SizedBox(height: 9),
               SendRateReceivePanel(listing: forex),
-              if (forex.isUrgent || forex.isClosingSoon24h) ...[
-                const SizedBox(height: 6),
-                const _UrgentTag(),
-              ],
             ],
             const SizedBox(height: 12),
             Text(
-              _shortTimeLabel(listing, AppLocalizations.of(context)!),
+              (forex?.isUrgent == true || forex?.isClosingSoon24h == true)
+                  ? 'Urgent: ${_shortTimeLabel(listing, AppLocalizations.of(context)!)}'
+                  : _shortTimeLabel(listing, AppLocalizations.of(context)!),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -349,29 +347,6 @@ class _SettlementParts {
 
   final String method;
   final String? city;
-}
-
-class _UrgentTag extends StatelessWidget {
-  const _UrgentTag();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.bolt_rounded, size: 15, color: Color(0xFF2E86DE)),
-        SizedBox(width: 2),
-        Text(
-          'Urgent',
-          style: TextStyle(
-            color: Color(0xFF2E86DE),
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _FundedBar extends StatelessWidget {
