@@ -29,6 +29,21 @@ class ListingCard extends StatelessWidget {
     final loan = listing.loan;
     final forex = listing.forex;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final trustRatingAvg =
+        loan != null ? loan.trustRatingAvg : forex!.trustRatingAvg;
+    final trustReviewCount =
+        loan != null ? loan.trustReviewCount : forex!.trustReviewCount;
+    final trustCompletedDealsCount = loan != null
+        ? loan.trustCompletedDealsCount
+        : forex!.trustCompletedDealsCount;
+    final trustIsRepeatParticipant = loan != null
+        ? loan.trustIsRepeatParticipant
+        : forex!.trustIsRepeatParticipant;
+    final trustPhoneVerified =
+        loan != null ? loan.trustPhoneVerified : forex!.trustPhoneVerified;
+    final trustResponseTimeBucket = loan != null
+        ? loan.trustResponseTimeBucket
+        : forex!.trustResponseTimeBucket;
 
     final progressColor =
         (loan?.numberOfOffers ?? forex?.numberOfOffers ?? 0) > 0
@@ -163,16 +178,12 @@ class ListingCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             TrustBadgeRow(
-              ratingAvg: loan?.trustRatingAvg ?? forex!.trustRatingAvg,
-              reviewCount: loan?.trustReviewCount ?? forex!.trustReviewCount,
-              completedDealsCount: loan?.trustCompletedDealsCount ??
-                  forex!.trustCompletedDealsCount,
-              isRepeatParticipant: loan?.trustIsRepeatParticipant ??
-                  forex!.trustIsRepeatParticipant,
-              phoneVerified:
-                  loan?.trustPhoneVerified ?? forex!.trustPhoneVerified,
-              responseTimeBucket: loan?.trustResponseTimeBucket ??
-                  forex!.trustResponseTimeBucket,
+              ratingAvg: trustRatingAvg,
+              reviewCount: trustReviewCount,
+              completedDealsCount: trustCompletedDealsCount,
+              isRepeatParticipant: trustIsRepeatParticipant,
+              phoneVerified: trustPhoneVerified,
+              responseTimeBucket: trustResponseTimeBucket,
             ),
           ],
         ),
