@@ -255,7 +255,7 @@ class _MarketplaceView extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                           itemCount: state.listings.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                           itemBuilder: (context, index) {
                             final listing = state.listings[index];
                             return BlocBuilder<WatchlistCubit, WatchlistState>(
@@ -310,28 +310,34 @@ class _ModuleFilterRow extends StatelessWidget {
     return BlocBuilder<MarketplaceCubit, MarketplaceState>(
       builder: (context, state) {
         final selected = state is MarketplaceLoaded ? state.moduleFilter : null;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 6),
           child: Row(
             children: [
               _FilterPill(
                 label: 'All',
                 selected: selected == null,
+                accentColor: AppColors.accent,
                 onTap: () =>
                     context.read<MarketplaceCubit>().setModuleFilter(null),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _FilterPill(
                 label: 'Loans',
+                icon: Icons.payments_rounded,
                 selected: selected == MarketplaceModule.loan,
+                accentColor: AppColors.success,
                 onTap: () => context
                     .read<MarketplaceCubit>()
                     .setModuleFilter(MarketplaceModule.loan),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _FilterPill(
                 label: 'Forex',
+                icon: Icons.currency_exchange_rounded,
                 selected: selected == MarketplaceModule.forex,
+                accentColor: AppColors.purple,
                 onTap: () => context
                     .read<MarketplaceCubit>()
                     .setModuleFilter(MarketplaceModule.forex),
@@ -348,51 +354,67 @@ class _FilterPill extends StatelessWidget {
   const _FilterPill({
     required this.label,
     required this.selected,
+    required this.accentColor,
     required this.onTap,
+    this.icon,
   });
 
   final String label;
   final bool selected;
+  final Color accentColor;
   final VoidCallback onTap;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fillColor = selected
-        ? (isDark ? const Color(0xFFEAEAE6) : const Color(0xFF1A1A18))
-        : Colors.transparent;
-    final textColor = selected
-        ? (isDark ? const Color(0xFF1A1A18) : const Color(0xFFEAEAE6))
-        : Theme.of(context).colorScheme.onSurface;
+    final shellColor =
+        selected ? accentColor.withValues(alpha: 0.10) : Colors.transparent;
+    final textColor = accentColor.withValues(alpha: selected ? 1 : 0.95);
     final borderColor = selected
-        ? Colors.transparent
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.22);
+        ? accentColor.withValues(alpha: 0.9)
+        : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.16);
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        constraints: const BoxConstraints(minHeight: 28),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: fillColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor, width: 1.2),
+          color: shellColor,
+          borderRadius: BorderRadius.circular(7),
+          border: Border.all(color: borderColor),
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color:
+                        accentColor.withValues(alpha: selected ? 0.16 : 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (selected) ...[
-              Icon(Icons.check_rounded, size: 13, color: textColor),
-              const SizedBox(width: 4),
-            ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 11.5,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
                 color: textColor,
               ),
             ),
+            if (icon != null) ...[
+              const SizedBox(width: 4),
+              Icon(
+                icon,
+                size: 12,
+                color: accentColor.withValues(alpha: selected ? 1 : 0.95),
+              ),
+            ],
           ],
         ),
       ),

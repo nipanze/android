@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
-import '../../../../shared/widgets/trust_badges.dart';
 import '../../../marketplace/domain/models/marketplace_item.dart';
 
 class ListingCard extends StatelessWidget {
@@ -29,22 +28,14 @@ class ListingCard extends StatelessWidget {
     final loan = listing.loan;
     final forex = listing.forex;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final trustRatingAvg =
-        loan != null ? loan.trustRatingAvg : forex!.trustRatingAvg;
-    final trustReviewCount =
-        loan != null ? loan.trustReviewCount : forex!.trustReviewCount;
-    final trustCompletedDealsCount = loan != null
-        ? loan.trustCompletedDealsCount
-        : forex!.trustCompletedDealsCount;
-    final trustIsRepeatParticipant = loan != null
-        ? loan.trustIsRepeatParticipant
-        : forex!.trustIsRepeatParticipant;
-    final trustPhoneVerified =
-        loan != null ? loan.trustPhoneVerified : forex!.trustPhoneVerified;
-    final trustResponseTimeBucket = loan != null
-        ? loan.trustResponseTimeBucket
-        : forex!.trustResponseTimeBucket;
-
+    final theme = Theme.of(context);
+    final isForex = forex != null;
+    final moduleColor = isForex ? AppColors.purple : AppColors.success;
+    final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.borderLight;
+    final mutedColor =
+        isDark ? const Color(0xFFA6ABB7) : theme.colorScheme.onSurfaceVariant;
     final progressColor =
         (loan?.numberOfOffers ?? forex?.numberOfOffers ?? 0) > 0
             ? AppColors.accent
@@ -53,19 +44,19 @@ class ListingCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF2A2A28)
-              : Theme.of(context).colorScheme.surface,
+          color: surfaceColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : const Color(0xFFE1E1DD),
-          ),
+          border: Border.all(color: borderColor, width: 1.2),
           boxShadow: isDark
-              ? null
+              ? [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ]
               : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.035),
@@ -81,23 +72,29 @@ class ListingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 3,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(
-                        loan?.title ??
-                            '${forex!.currencyHeld} to ${forex.currencyNeeded}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      _ModuleBadge(
+                        label: isForex ? 'Forex' : 'Loan',
+                        color: moduleColor,
                       ),
-                      const SizedBox(height: 1),
-                      Text(
-                        loan != null
-                            ? '${loan.district} · ${loan.durationMonths} ${AppLocalizations.of(context)!.months}'
-                            : '${forex!.country} · ${forex.settlementPreference}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      if (loan != null)
+                        Text(
+                          '${loan.district} · ${loan.durationMonths} ${AppLocalizations.of(context)!.months}',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: mutedColor,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else
+                        _ForexHeaderLabel(
+                          settlementPreference: forex!.settlementPreference,
+                          color: mutedColor,
+                        ),
                     ],
                   ),
                 ),
@@ -106,89 +103,111 @@ class ListingCard extends StatelessWidget {
                       ? AppLocalizations.of(context)!.removeFromWatchlist
                       : AppLocalizations.of(context)!.saveToWatchlist,
                   visualDensity: VisualDensity.compact,
+                  constraints:
+                      const BoxConstraints.tightFor(width: 32, height: 32),
+                  padding: EdgeInsets.zero,
                   icon: Icon(
                     isSaved ? Icons.star_rounded : Icons.star_border_rounded,
+                    size: 22,
                     color: isSaved
-                        ? AppColors.accent
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ? AppColors.warning
+                        : isDark
+                            ? Colors.white
+                            : theme.colorScheme.onSurfaceVariant,
                   ),
                   onPressed: onWatchlistToggle,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            if (loan != null) ...[
-              Row(
-                children: [
-                  const _ModuleBadge(label: 'Loan', color: AppColors.accent),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${loan.currency} ${_fmtAmount(loan.requestedAmount)}',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 12),
+            Text(
+              loan?.title ??
+                  '${forex!.currencyHeld} to ${forex.currencyNeeded}',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                height: 1.12,
+                color: theme.colorScheme.onSurface,
               ),
-              const SizedBox(height: 4),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 10),
+            if (loan != null) ...[
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${loan.currency} ${_fmtAmount(loan.requestedAmount)}',
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.success.withValues(alpha: 0.9),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               Text(
                 loan.purpose,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.76),
-                    ),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: mutedColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  height: 1.25,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 10),
               _FundedBar(
                 fraction: fundedFraction,
                 color: progressColor,
               ),
             ] else ...[
-              Row(
-                children: [
-                  const _ModuleBadge(label: 'Forex', color: AppColors.accent),
-                  if (forex!.isUrgent || forex.isClosingSoon24h) ...[
-                    const SizedBox(width: 6),
-                    const _UrgentTag(),
-                  ],
-                ],
+              Text(
+                'Exchange ${_currencySymbol(forex!.currencyHeld)}${_fmtAmount(forex.amount)} to ${forex.currencyNeeded}${forex.preferredRate != null ? ' at preferred rate' : ''}',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: mutedColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  height: 1.25,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 9),
               SendRateReceivePanel(listing: forex),
+              if (forex.isUrgent || forex.isClosingSoon24h) ...[
+                const SizedBox(height: 6),
+                const _UrgentTag(),
+              ],
             ],
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             Text(
               _shortTimeLabel(listing, AppLocalizations.of(context)!),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
                 color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
                     ? AppColors.danger
                     : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
                         ? AppColors.warning
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                        : mutedColor,
               ),
-            ),
-            const SizedBox(height: 10),
-            TrustBadgeRow(
-              ratingAvg: trustRatingAvg,
-              reviewCount: trustReviewCount,
-              completedDealsCount: trustCompletedDealsCount,
-              isRepeatParticipant: trustIsRepeatParticipant,
-              phoneVerified: trustPhoneVerified,
-              responseTimeBucket: trustResponseTimeBucket,
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _currencySymbol(String code) {
+    return switch (code) {
+      'USD' => '\$',
+      'EUR' => '€',
+      'GBP' => '£',
+      _ => '$code ',
+    };
   }
 
   double _fundedFraction(MarketplaceItem item) {
@@ -231,26 +250,27 @@ class _ModuleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.30), width: 1),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.9)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6,
-            height: 6,
+            width: 5,
+            height: 5,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w600,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              height: 1,
               color: color,
             ),
           ),
@@ -260,27 +280,96 @@ class _ModuleBadge extends StatelessWidget {
   }
 }
 
+class _ForexHeaderLabel extends StatelessWidget {
+  const _ForexHeaderLabel({
+    required this.settlementPreference,
+    required this.color,
+  });
 
+  final String settlementPreference;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = _splitSettlement(settlementPreference);
+
+    return Text.rich(
+      TextSpan(
+        children: [
+          if (parts.city != null) ...[
+            TextSpan(
+              text: parts.city,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            TextSpan(
+              text: ' · ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color.withValues(alpha: 0.76),
+              ),
+            ),
+          ],
+          TextSpan(
+            text: parts.method,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+              color: color.withValues(alpha: 0.86),
+            ),
+          ),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  _SettlementParts _splitSettlement(String value) {
+    final pieces = value.split(',');
+    if (pieces.length < 2) {
+      return _SettlementParts(method: value.trim());
+    }
+
+    final city = pieces.last.trim();
+    final method = pieces.sublist(0, pieces.length - 1).join(',').trim();
+    return _SettlementParts(
+      city: city.isEmpty ? null : city,
+      method: method.isEmpty ? value.trim() : method,
+    );
+  }
+}
+
+class _SettlementParts {
+  const _SettlementParts({required this.method, this.city});
+
+  final String method;
+  final String? city;
+}
 
 class _UrgentTag extends StatelessWidget {
   const _UrgentTag();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Text(
-        '⚡ Urgent',
-        style: TextStyle(
-          color: AppColors.warning,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.bolt_rounded, size: 15, color: Color(0xFF2E86DE)),
+        SizedBox(width: 2),
+        Text(
+          'Urgent',
+          style: TextStyle(
+            color: Color(0xFF2E86DE),
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -293,12 +382,14 @@ class _FundedBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(2),
+      borderRadius: BorderRadius.circular(999),
       child: LinearProgressIndicator(
         value: fraction,
-        minHeight: 3,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        minHeight: 5,
+        backgroundColor:
+            (isDark ? Colors.white : Colors.black).withValues(alpha: 0.09),
         valueColor: AlwaysStoppedAnimation<Color>(color),
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_theme.dart';
 import '../models/forex_listing_model.dart';
 
 class SendRateReceivePanel extends StatelessWidget {
@@ -10,35 +9,226 @@ class SendRateReceivePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final rate = listing.preferredRate;
-    return Row(
-      children: [
-        Expanded(
-          child: _PanelPart(
-            label: 'You send',
-            value: '${listing.currencyHeld} ${_fmt(listing.amount)}',
+    final rateText = _formatRateText(listing);
+    final receiveText = rate == null
+        ? listing.currencyNeeded
+        : '${_currencySymbol(listing.currencyNeeded)} ${_fmt(listing.receiveEstimate)}';
+    final sendText =
+        '${_currencySymbol(listing.currencyHeld)} ${_fmt(listing.amount)}';
+
+    final cardBg = isDark
+        ? Colors.black.withValues(alpha: 0.20)
+        : Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.35);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4);
+    final mutedLabelColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final primaryTextColor = Theme.of(context).colorScheme.onSurface;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: Row(
+        children: [
+          // ── 1. I HOLD ───────────────────────────────────────────────────────
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                _CircleIcon(
+                  icon: Icons.arrow_downward_rounded,
+                  color: mutedLabelColor,
+                  bgOpacity: 0.10,
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'I hold',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: mutedLabelColor,
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          sendText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _PanelPart(
-            label: 'Rate',
-            value: rate == null
-                ? listing.rateCoverageTier ?? 'Open'
-                : rate.toStringAsFixed(4),
+
+          // ── 2. RATE (with swap icon) ──────────────────────────────────────
+          Expanded(
+            flex: 4,
+            child: Row(
+              children: [
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.07)
+                        : Colors.black.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.swap_horiz_rounded,
+                    size: 12,
+                    color: mutedLabelColor,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Rate',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: mutedLabelColor,
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          rateText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _PanelPart(
-            label: 'You receive',
-            value: rate == null
-                ? listing.currencyNeeded
-                : '${listing.currencyNeeded} ${_fmt(listing.receiveEstimate)}',
+
+          // ── Divider line ─────────────────────────────────────────────────
+          Container(
+            width: 1,
+            height: 20,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.10)
+                : Colors.black.withValues(alpha: 0.08),
           ),
-        ),
-      ],
+
+          // ── 3. I NEED ──────────────────────────────────────────────────────
+          Expanded(
+            flex: 4,
+            child: Row(
+              children: [
+                _CircleIcon(
+                  icon: Icons.arrow_upward_rounded,
+                  color: mutedLabelColor,
+                  bgOpacity: 0.10,
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'I need',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: mutedLabelColor,
+                        ),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          receiveText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: primaryTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
+  }
+
+  String _formatRateText(ForexListingModel listing) {
+    final rate = listing.preferredRate;
+    if (rate == null) {
+      return listing.rateCoverageTier ?? 'Market rate';
+    }
+    // E.g. USD -> UGX rate = 0.000269 -> 1 USD = 3,717 UGX
+    // Or UGX -> KES rate = 0.0285 -> 1 KES = 35 UGX
+    if (listing.currencyHeld == 'USD' && rate > 1) {
+      return '1 USD = ${_fmtDouble(rate)} ${listing.currencyNeeded}';
+    } else if (listing.currencyNeeded == 'USD' && rate < 1) {
+      final inv = 1 / rate;
+      return '1 USD = ${_fmtDouble(inv)} ${listing.currencyHeld}';
+    } else if (rate < 1) {
+      final inv = 1 / rate;
+      if (inv >= 2) {
+        return '1 ${listing.currencyNeeded} = ${_fmtDouble(inv)} ${listing.currencyHeld}';
+      }
+      return '1 ${listing.currencyHeld} = ${rate.toStringAsFixed(4)} ${listing.currencyNeeded}';
+    } else {
+      return '1 ${listing.currencyHeld} = ${_fmtDouble(rate)} ${listing.currencyNeeded}';
+    }
+  }
+
+  String _currencySymbol(String code) {
+    return switch (code) {
+      'USD' => '\$',
+      'EUR' => '€',
+      'GBP' => '£',
+      _ => code,
+    };
+  }
+
+  String _fmtDouble(double val) {
+    if (val >= 100) {
+      return _fmt(val.round());
+    }
+    return val.toStringAsFixed(2);
   }
 
   String _fmt(int amount) {
@@ -52,46 +242,28 @@ class SendRateReceivePanel extends StatelessWidget {
   }
 }
 
-class _PanelPart extends StatelessWidget {
-  const _PanelPart({required this.label, required this.value});
+class _CircleIcon extends StatelessWidget {
+  const _CircleIcon({
+    required this.icon,
+    required this.color,
+    required this.bgOpacity,
+  });
 
-  final String label;
-  final String value;
+  final IconData icon;
+  final Color color;
+  final double bgOpacity;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 54),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      width: 20,
+      height: 20,
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.18)),
+        color: color.withValues(alpha: bgOpacity),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 3),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              maxLines: 1,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ),
-        ],
-      ),
+      child: Icon(icon, size: 11, color: color),
     );
   }
 }

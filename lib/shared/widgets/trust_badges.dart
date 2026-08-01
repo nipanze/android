@@ -67,7 +67,7 @@ class TrustBadgeRow extends StatelessWidget {
         ),
     ];
 
-    return Wrap(spacing: 6, runSpacing: 6, children: badges);
+    return Wrap(spacing: 5, runSpacing: 4, children: badges);
   }
 
   String _responseLabel(String bucket) => switch (bucket) {
@@ -132,15 +132,15 @@ class _TrustBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          color: color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 4),
           Text(label,
               style: TextStyle(
-                  fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+                  fontSize: 11, fontWeight: FontWeight.w700, color: color)),
         ]),
       );
 }

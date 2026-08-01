@@ -1,5 +1,6 @@
 // lib/features/marketplace/presentation/cubit/marketplace_cubit.dart
 import 'dart:async';
+import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -15,6 +16,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceCubit(this._repository) : super(const MarketplaceInitial());
 
   final MarketplaceRepository _repository;
+  final Random _random = Random();
   StreamSubscription<List<MarketplaceItem>>? _realtimeSub;
   StreamSubscription<List<MarketplaceItem>>? _forexRealtimeSub;
 
@@ -113,9 +115,12 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _emitLoaded({List<MarketplaceItem>? overrideListings}) {
-    final listings = (overrideListings ?? _allListings)
+    final visibleListings = (overrideListings ?? _allListings)
         .where((l) => !_myOfferRequestIds.contains(_offerKey(l)))
         .toList();
+    final listings = _moduleFilter == null
+        ? _interleaveModules(visibleListings)
+        : visibleListings;
     emit(MarketplaceLoaded(
       listings: listings,
       activeFilter: _districtFilter ?? 'all',
@@ -191,4 +196,56 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   String _offerKey(MarketplaceItem item) =>
       '${item.module == MarketplaceModule.loan ? 'loan' : 'forex'}:${item.requestId}';
+
+  List<MarketplaceItem> _interleaveModules(List<MarketplaceItem> listings) {
+    final loans =
+        listings.where((l) => l.module == MarketplaceModule.loan).toList();
+    final forex =
+        listings.where((l) => l.module == MarketplaceModule.forex).toList();
+
+    if (loans.isEmpty || forex.isEmpty) return listings;
+
+    final mixed = <MarketplaceItem>[];
+    var loanIndex = 0;
+    var forexIndex = 0;
+    MarketplaceModule? lastModule;
+    var streak = 0;
+
+    while (loanIndex < loans.length || forexIndex < forex.length) {
+      final canPickLoan = loanIndex < loans.length;
+      final canPickForex = forexIndex < forex.length;
+      final forceSwitch = streak >= 2 && canPickLoan && canPickForex;
+
+      late final MarketplaceModule nextModule;
+      if (!canPickLoan) {
+        nextModule = MarketplaceModule.forex;
+      } else if (!canPickForex) {
+        nextModule = MarketplaceModule.loan;
+      } else if (forceSwitch) {
+        nextModule = lastModule == MarketplaceModule.loan
+            ? MarketplaceModule.forex
+            : MarketplaceModule.loan;
+      } else {
+        final loanWeight = loans.length - loanIndex;
+        final forexWeight = forex.length - forexIndex;
+        final pick = _random.nextInt(loanWeight + forexWeight);
+        nextModule = pick < loanWeight
+            ? MarketplaceModule.loan
+            : MarketplaceModule.forex;
+      }
+
+      mixed.add(nextModule == MarketplaceModule.loan
+          ? loans[loanIndex++]
+          : forex[forexIndex++]);
+
+      if (lastModule == nextModule) {
+        streak++;
+      } else {
+        lastModule = nextModule;
+        streak = 1;
+      }
+    }
+
+    return mixed;
+  }
 }
