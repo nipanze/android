@@ -357,16 +357,45 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onTap(),
-      selectedColor: AppColors.accent.withValues(alpha: 0.16),
-      labelStyle: TextStyle(
-        color: selected ? AppColors.accent : null,
-        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fillColor = selected
+        ? (isDark ? const Color(0xFFEAEAE6) : const Color(0xFF1A1A18))
+        : Colors.transparent;
+    final textColor = selected
+        ? (isDark ? const Color(0xFF1A1A18) : const Color(0xFFEAEAE6))
+        : Theme.of(context).colorScheme.onSurface;
+    final borderColor = selected
+        ? Colors.transparent
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.22);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: fillColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: 1.2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selected) ...[
+              Icon(Icons.check_rounded, size: 13, color: textColor),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 }
