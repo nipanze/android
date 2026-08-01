@@ -25,9 +25,11 @@ class WelcomePage extends StatelessWidget {
 
     final sheetBg = isDark ? const Color(0xFF0F101C) : Colors.white;
     final cardBg = isDark ? const Color(0xFF181928) : const Color(0xFFF1F5F9);
-    final cardBorder = isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
+    final cardBorder =
+        isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
+    final subtitleColor =
+        isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
     const purpleColor = AppColors.purple;
 
     showModalBottomSheet<void>(
@@ -50,7 +52,9 @@ class WelcomePage extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2D2D42) : const Color(0xFFCBD5E1),
+                  color: isDark
+                      ? const Color(0xFF2D2D42)
+                      : const Color(0xFFCBD5E1),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -246,7 +250,8 @@ class WelcomePage extends StatelessWidget {
                 children: [
                   // ── Top: Header Row (Logo + Language Chip) ───────────────
                   Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 8),
+                    padding: const EdgeInsets.only(
+                        left: 16, right: 16, top: 24, bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -260,22 +265,29 @@ class WelcomePage extends StatelessWidget {
                         ValueListenableBuilder<Locale?>(
                           valueListenable: LanguageService.instance.notifier,
                           builder: (context, _, __) {
-                            final currentLang = LanguageService.instance.currentLanguage;
+                            final currentLang =
+                                LanguageService.instance.currentLanguage;
                             return GestureDetector(
                               onTap: () => showLanguageSelectorSheet(context),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF161726) : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: isDark
+                                      ? const Color(0xFF161726)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: isDark ? const Color(0xFF2B2C40) : const Color(0xFFCBD5E1),
+                                    color: isDark
+                                        ? const Color(0xFF2B2C40)
+                                        : const Color(0xFFCBD5E1),
                                   ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(currentLang.flag, style: const TextStyle(fontSize: 14)),
+                                    Text(currentLang.flag,
+                                        style: const TextStyle(fontSize: 14)),
                                     const SizedBox(width: 4),
                                     Text(
                                       currentLang.code.toUpperCase(),
@@ -399,7 +411,7 @@ class WelcomePage extends StatelessWidget {
                               backgroundColor: AppColors.purple,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               elevation: 0,
                             ),

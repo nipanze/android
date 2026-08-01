@@ -42,12 +42,12 @@ import '../widgets/starfield_background.dart';
 // Step enum
 // ─────────────────────────────────────────────────────────────────────────────
 enum _WizardStep {
-  welcome,        // 0
-  phoneEntry,     // 1
-  otp,            // 2 – OTP verification (bypass: any 6-digit)
-  profileSetup,   // 3 – name / email (opt) / country / password
-  success,        // 4 – "You're in!"
-  emailLogin,     // 5 – classic email + password login
+  welcome, // 0
+  phoneEntry, // 1
+  otp, // 2 – OTP verification (bypass: any 6-digit)
+  profileSetup, // 3 – name / email (opt) / country / password
+  success, // 4 – "You're in!"
+  emailLogin, // 5 – classic email + password login
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,8 +164,7 @@ class _RegisterPageState extends State<RegisterPage>
   String get _fullPhone =>
       '${_selectedCountry.dialCode}${_phoneController.text.trim()}';
 
-  String _otpValue() =>
-      _otpControllers.map((c) => c.text).join();
+  String _otpValue() => _otpControllers.map((c) => c.text).join();
 
   bool _isOtpValid() {
     final val = _otpValue();
@@ -307,9 +306,8 @@ class _RegisterPageState extends State<RegisterPage>
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF2D2D42)
-                    : const Color(0xFFCBD5E1),
+                color:
+                    isDark ? const Color(0xFF2D2D42) : const Color(0xFFCBD5E1),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -629,8 +627,7 @@ class _WelcomeScreen extends StatelessWidget {
         isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
     final footerTextColor =
         isDark ? const Color(0xFFD1D5DB) : const Color(0xFF475569);
-    final footerLinkColor =
-        isDark ? AppColors.accentLight : AppColors.accent;
+    final footerLinkColor = isDark ? AppColors.accentLight : AppColors.accent;
 
     return Container(
       width: double.infinity,
@@ -747,7 +744,7 @@ class _WelcomeScreen extends StatelessWidget {
                             backgroundColor: AppColors.accent,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             elevation: 0,
                           ),
@@ -770,7 +767,6 @@ class _WelcomeScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                       
                             const SizedBox(width: 8),
                             RichText(
                               textAlign: TextAlign.center,
@@ -829,7 +825,6 @@ class _NipanzeLogo extends StatelessWidget {
     );
   }
 }
-
 
 // ── 1. Phone Entry ────────────────────────────────────────────────────────────
 class _PhoneEntryScreen extends StatelessWidget {
@@ -1021,8 +1016,7 @@ class _PhoneEntryScreen extends StatelessWidget {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: AppColors.accent
-                                  .withValues(alpha: 0.15),
+                              color: AppColors.accent.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -1103,7 +1097,6 @@ class _PhoneEntryScreen extends StatelessWidget {
     );
   }
 }
-
 
 // ── 2. OTP ────────────────────────────────────────────────────────────────────
 class _OtpScreen extends StatelessWidget {
@@ -1506,9 +1499,7 @@ class _ProfileSetupScreen extends StatelessWidget {
 
                     // ── Titles ─────────────────────────────────────────────
                     Text(
-                      isReturningUser
-                          ? l10n.welcomeBack
-                          : l10n.tellUsAboutYou,
+                      isReturningUser ? l10n.welcomeBack : l10n.tellUsAboutYou,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Sora',
@@ -1754,7 +1745,8 @@ class _ProfileSetupScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 54,
                           child: ElevatedButton(
-                            onPressed: (isLoading || !isValid) ? null : onSubmit,
+                            onPressed:
+                                (isLoading || !isValid) ? null : onSubmit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.accent,
                               foregroundColor: Colors.white,
@@ -1878,8 +1870,7 @@ class _ProfileField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-                  const BorderSide(color: AppColors.accent, width: 1.5),
+              borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -1887,8 +1878,8 @@ class _ProfileField extends StatelessWidget {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                  color: Color(0xFFEF4444), width: 1.5),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 1.5),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1898,8 +1889,6 @@ class _ProfileField extends StatelessWidget {
     );
   }
 }
-
-
 
 // ── 5. Success ────────────────────────────────────────────────────────────────
 class _SuccessScreen extends StatelessWidget {
@@ -2106,7 +2095,6 @@ class _SuccessFeatureCard extends StatelessWidget {
   }
 }
 
-
 // ── 5. Email Login ────────────────────────────────────────────────────────────
 class _EmailLoginScreen extends StatelessWidget {
   const _EmailLoginScreen({
@@ -2152,14 +2140,12 @@ class _EmailLoginScreen extends StatelessWidget {
             Text('Welcome back 👋',
                 style: theme.textTheme.displayLarge?.copyWith(fontSize: 26)),
             const SizedBox(height: 6),
-            Text('Login to your account',
-                style: theme.textTheme.bodyMedium),
+            Text('Login to your account', style: theme.textTheme.bodyMedium),
             if (errorMsg != null) ...[
               const SizedBox(height: 16),
               _ErrorBanner(message: errorMsg!),
             ],
             const SizedBox(height: 28),
-
             AuthField(
               fieldKey: const Key('email_field'),
               label: 'Email',
@@ -2174,7 +2160,6 @@ class _EmailLoginScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 14),
-
             AuthField(
               fieldKey: const Key('password_field'),
               label: 'Password',
@@ -2197,7 +2182,6 @@ class _EmailLoginScreen extends StatelessWidget {
                 return null;
               },
             ),
-
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -2205,31 +2189,25 @@ class _EmailLoginScreen extends StatelessWidget {
                 child: const Text('Forgot password?'),
               ),
             ),
-
             ElevatedButton(
               onPressed: isLoading ? null : onSubmit,
-              child:
-                  isLoading ? const _ButtonLoader() : const Text('Sign in'),
+              child: isLoading ? const _ButtonLoader() : const Text('Sign in'),
             ),
             const SizedBox(height: 20),
-
             Row(children: [
               Expanded(child: Divider(color: theme.dividerColor)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                child:
-                    Text('new here', style: theme.textTheme.bodySmall),
+                child: Text('new here', style: theme.textTheme.bodySmall),
               ),
               Expanded(child: Divider(color: theme.dividerColor)),
             ]),
             const SizedBox(height: 16),
-
             AuthSecondaryButton(
               label: 'Create an account',
               onPressed: onCreateAccount,
             ),
             const SizedBox(height: 28),
-
             Text(
               'Nipanze is a technology marketplace. We do not hold, pool, or move your funds.',
               textAlign: TextAlign.center,
@@ -2274,8 +2252,7 @@ class _CountrySheetState extends State<_CountrySheet> {
         return Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -2306,14 +2283,12 @@ class _CountrySheetState extends State<_CountrySheet> {
                     hintText: 'Search country…',
                     prefixIcon: const Icon(Icons.search_rounded, size: 18),
                     filled: true,
-                    fillColor:
-                        theme.colorScheme.surfaceContainerHighest,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     isDense: true,
                   ),
                 ),
@@ -2326,13 +2301,13 @@ class _CountrySheetState extends State<_CountrySheet> {
                   itemBuilder: (context, i) {
                     final c = _filtered[i];
                     return ListTile(
-                      leading: Text(c.flag,
-                          style: const TextStyle(fontSize: 26)),
+                      leading:
+                          Text(c.flag, style: const TextStyle(fontSize: 26)),
                       title: Text(c.name,
                           style: theme.textTheme.bodyMedium
                               ?.copyWith(fontWeight: FontWeight.w500)),
-                      subtitle: Text(c.dialCode,
-                          style: theme.textTheme.bodySmall),
+                      subtitle:
+                          Text(c.dialCode, style: theme.textTheme.bodySmall),
                       trailing: Text(c.currency,
                           style: theme.textTheme.labelSmall?.copyWith(
                               color: AppColors.accentDark,
@@ -2362,8 +2337,7 @@ class _BackHeader extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          icon:
-              const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: onBack,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
@@ -2382,7 +2356,6 @@ class _StepProgressHeader extends StatelessWidget {
   final VoidCallback onBack;
   final int currentStep;
   static const int totalSteps = 3;
-
 
   @override
   Widget build(BuildContext context) {
@@ -2421,10 +2394,13 @@ class _StepProgressHeader extends StatelessWidget {
           valueListenable: LanguageService.instance.notifier,
           builder: (context, _, __) {
             final currentLang = LanguageService.instance.currentLanguage;
-            final cardBgColor = isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
-            final cardBorderColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+            final cardBgColor =
+                isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
+            final cardBorderColor =
+                isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
             final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-            final subtitleColor = isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+            final subtitleColor =
+                isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
             return GestureDetector(
               onTap: () => showLanguageSelectorSheet(context),
               child: Container(
@@ -2437,7 +2413,8 @@ class _StepProgressHeader extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(currentLang.flag, style: const TextStyle(fontSize: 13)),
+                    Text(currentLang.flag,
+                        style: const TextStyle(fontSize: 13)),
                     const SizedBox(width: 3),
                     Text(
                       currentLang.code.toUpperCase(),
@@ -2464,7 +2441,6 @@ class _StepProgressHeader extends StatelessWidget {
   }
 }
 
-
 class _ErrorBanner extends StatelessWidget {
   const _ErrorBanner({required this.message});
   final String message;
@@ -2485,8 +2461,7 @@ class _ErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style:
-                  const TextStyle(color: AppColors.danger, fontSize: 12),
+              style: const TextStyle(color: AppColors.danger, fontSize: 12),
             ),
           ),
         ],
