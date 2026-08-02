@@ -38,7 +38,6 @@ class ForexRepository {
     required int amount,
     required String settlementPreference,
     double? preferredRate,
-    bool isUrgent = false,
     String country = 'UG',
   }) async {
     try {
@@ -50,7 +49,6 @@ class ForexRepository {
             'currency_needed': currencyNeeded,
             'amount': amount,
             'settlement_preference': settlementPreference,
-            'is_urgent': isUrgent,
             'country': country,
             if (preferredRate != null) 'preferred_rate': preferredRate,
           })

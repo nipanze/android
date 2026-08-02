@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
-import '../../../../shared/widgets/shared_widgets.dart';
+
 import '../../../marketplace/domain/models/marketplace_item.dart';
 
 class ListingCard extends StatelessWidget {
@@ -180,25 +180,17 @@ class ListingCard extends StatelessWidget {
               SendRateReceivePanel(listing: forex),
             ],
             const SizedBox(height: 12),
-            Row(
-              children: [
-                if (forex?.isUrgent == true) ...[
-                  const UrgentBadge(compact: true, showDot: true),
-                  const SizedBox(width: 4),
-                ],
-                Text(
-                  _shortTimeLabel(listing, AppLocalizations.of(context)!),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
-                        ? AppColors.danger
-                        : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
-                            ? AppColors.warning
-                            : mutedColor,
-                  ),
-                ),
-              ],
+            Text(
+              _shortTimeLabel(listing, AppLocalizations.of(context)!),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
+                    ? AppColors.danger
+                    : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
+                        ? AppColors.warning
+                        : mutedColor,
+              ),
             ),
           ],
         ),

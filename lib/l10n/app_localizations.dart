@@ -2102,12 +2102,6 @@ abstract class AppLocalizations {
   /// **'Select settlement'**
   String get selectSettlementHint;
 
-  /// No description provided for @forexMarkUrgent.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark as urgent request'**
-  String get forexMarkUrgent;
-
   /// No description provided for @forexPublishBtn.
   ///
   /// In en, this message translates to:
@@ -2209,12 +2203,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settlement terms'**
   String get settlementTermsLabel;
-
-  /// No description provided for @urgentBadge.
-  ///
-  /// In en, this message translates to:
-  /// **'Urgent'**
-  String get urgentBadge;
 }
 
 class _AppLocalizationsDelegate

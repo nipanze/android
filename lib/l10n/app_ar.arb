@@ -420,7 +420,6 @@
   "forexRateHint": "مثال: 3700",
   "forexSettlementPreference": "تفضيل التسوية",
   "selectSettlementHint": "اختر التسوية",
-  "forexMarkUrgent": "تحديد كطلب عاجل",
   "forexPublishBtn": "نشر طلب العملات",
   "kycGateForex": "أكمل التحقق من الهوية KYC قبل نشر طلب العملات.",
   "couldNotPublishForex": "تعذر نشر طلب العملات هذا.",
@@ -437,6 +436,5 @@
   "couldNotSendOffer": "تعذّر إرسال العرض.",
   "rateOfferedLabel": "السعر المقترح",
   "amountAvailableLabel": "المبلغ المتاح",
-  "settlementTermsLabel": "شروط التسوية",
-  "urgentBadge": "عاجل"
+  "settlementTermsLabel": "شروط التسوية"
 }

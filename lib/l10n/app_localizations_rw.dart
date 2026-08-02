@@ -1108,9 +1108,6 @@ class AppLocalizationsRw extends AppLocalizations {
   String get selectSettlementHint => 'Hitamo uburyo bwo kwishyura';
 
   @override
-  String get forexMarkUrgent => 'Shyiraho ko bishyushye';
-
-  @override
   String get forexPublishBtn => 'Tangaza ubusabe bwa forex';
 
   @override
@@ -1161,7 +1158,4 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Amabwiriza y\'iryozwa';
-
-  @override
-  String get urgentBadge => 'Bihutirwa';
 }

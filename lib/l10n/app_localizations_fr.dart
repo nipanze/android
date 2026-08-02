@@ -1122,9 +1122,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get selectSettlementHint => 'Sélectionner le règlement';
 
   @override
-  String get forexMarkUrgent => 'Marquer comme demande urgente';
-
-  @override
   String get forexPublishBtn => 'Publier la demande de change';
 
   @override
@@ -1176,7 +1173,4 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Conditions de règlement';
-
-  @override
-  String get urgentBadge => 'Urgent';
 }

@@ -1105,9 +1105,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectSettlementHint => 'Select settlement';
 
   @override
-  String get forexMarkUrgent => 'Mark as urgent request';
-
-  @override
   String get forexPublishBtn => 'Publish forex request';
 
   @override
@@ -1158,7 +1155,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Settlement terms';
-
-  @override
-  String get urgentBadge => 'Urgent';
 }

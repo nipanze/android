@@ -100,7 +100,6 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   String? _currencyHeld;
   String? _currencyNeeded;
   String _settlementPreference = _settlementPreferences.first;
-  bool _isUrgent = false;
   bool _submitting = false;
   List<CurrencyModel>? _currencies;
 
@@ -164,7 +163,6 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         preferredRate: canSetPreferredRate
             ? double.tryParse(_preferredRateController.text)
             : null,
-        isUrgent: _isUrgent,
         country: authState.user.country,
       );
       if (!mounted) return;
@@ -321,28 +319,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                               : 'Pro unlocks preferred rate suggestions',
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: Row(
-                          children: [
-                            const Icon(
-                              Icons.bolt_rounded,
-                              size: 20,
-                              color: AppColors.danger,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n?.forexMarkUrgent ?? 'Mark as urgent request',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        value: _isUrgent,
-                        onChanged: (value) => setState(() => _isUrgent = value),
-                      ),
+
                     ],
                   ),
                 ),

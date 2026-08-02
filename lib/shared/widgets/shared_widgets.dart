@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../l10n/app_localizations.dart';
+
 
 // ─── Risk Badge ────────────────────────────────────────────────────────────────
 
@@ -386,41 +386,6 @@ class SubscriptionGateCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ─── Urgent Label ──────────────────────────────────────────────────────────────
-
-class UrgentBadge extends StatelessWidget {
-  const UrgentBadge({super.key, this.compact = false, this.showDot = true});
-
-  final bool compact;
-  final bool showDot;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final label = l10n?.urgentBadge ?? 'Urgent';
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.bolt_rounded,
-          size: compact ? 13 : 15,
-          color: AppColors.accent,
-        ),
-        const SizedBox(width: 3),
-        Text(
-          showDot ? '$label ·' : label,
-          style: TextStyle(
-            fontSize: compact ? 12 : 13,
-            fontWeight: FontWeight.w700,
-            color: AppColors.accent,
-          ),
-        ),
-      ],
     );
   }
 }

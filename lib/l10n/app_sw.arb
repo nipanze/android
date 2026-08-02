@@ -413,7 +413,6 @@
   "forexRateHint": "mfano: 3700",
   "forexSettlementPreference": "Urasimu wa malipo",
   "selectSettlementHint": "Chagua njia ya malipo",
-  "forexMarkUrgent": "Weka kama ombi la dharura",
   "forexPublishBtn": "Chapishe ombi la forex",
   "kycGateForex": "Kamilisha uhakiki wa KYC kabla ya kuchapisha ombi la forex.",
   "couldNotPublishForex": "Haikuweza kuchapisha ombi hili la forex.",
@@ -430,6 +429,5 @@
   "couldNotSendOffer": "Haikuweza kutuma bei.",
   "rateOfferedLabel": "Bei inayotolewa",
   "amountAvailableLabel": "Kiasi kinachopatikana",
-  "settlementTermsLabel": "Masharti ya makubaliano",
-  "urgentBadge": "Dharura"
+  "settlementTermsLabel": "Masharti ya makubaliano"
 }

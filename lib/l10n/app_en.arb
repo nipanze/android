@@ -490,7 +490,6 @@
   "forexRateHint": "e.g. 3700",
   "forexSettlementPreference": "Settlement preference",
   "selectSettlementHint": "Select settlement",
-  "forexMarkUrgent": "Mark as urgent request",
   "forexPublishBtn": "Publish forex request",
   "kycGateForex": "Complete KYC verification before posting a forex request.",
   "couldNotPublishForex": "Could not publish this forex request.",
@@ -507,6 +506,5 @@
   "couldNotSendOffer": "Could not send offer.",
   "rateOfferedLabel": "Rate offered",
   "amountAvailableLabel": "Amount available",
-  "settlementTermsLabel": "Settlement terms",
-  "urgentBadge": "Urgent"
+  "settlementTermsLabel": "Settlement terms"
 }

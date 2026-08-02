@@ -1112,9 +1112,6 @@ class AppLocalizationsSw extends AppLocalizations {
   String get selectSettlementHint => 'Chagua njia ya malipo';
 
   @override
-  String get forexMarkUrgent => 'Weka kama ombi la dharura';
-
-  @override
   String get forexPublishBtn => 'Chapishe ombi la forex';
 
   @override
@@ -1165,7 +1162,4 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Masharti ya makubaliano';
-
-  @override
-  String get urgentBadge => 'Dharura';
 }

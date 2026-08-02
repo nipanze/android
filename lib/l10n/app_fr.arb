@@ -413,7 +413,6 @@
   "forexRateHint": "ex. 3700",
   "forexSettlementPreference": "Préférence de règlement",
   "selectSettlementHint": "Sélectionner le règlement",
-  "forexMarkUrgent": "Marquer comme demande urgente",
   "forexPublishBtn": "Publier la demande de change",
   "kycGateForex": "Complétez la vérification KYC avant de publier une demande de change.",
   "couldNotPublishForex": "Impossible de publier cette demande de change.",
@@ -430,6 +429,5 @@
   "couldNotSendOffer": "Impossible d'envoyer l'offre.",
   "rateOfferedLabel": "Taux proposé",
   "amountAvailableLabel": "Montant disponible",
-  "settlementTermsLabel": "Conditions de règlement",
-  "urgentBadge": "Urgent"
+  "settlementTermsLabel": "Conditions de règlement"
 }

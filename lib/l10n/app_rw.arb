@@ -413,7 +413,6 @@
   "forexRateHint": "urugero: 3700",
   "forexSettlementPreference": "Uburyo bwo kwishyura",
   "selectSettlementHint": "Hitamo uburyo bwo kwishyura",
-  "forexMarkUrgent": "Shyiraho ko bishyushye",
   "forexPublishBtn": "Tangaza ubusabe bwa forex",
   "kycGateForex": "Wuzuza KYC mbere yo gutangaza ubusabe bwa forex.",
   "couldNotPublishForex": "Ntabwo bishobotse gutangaza ubusabe bwa forex.",
@@ -430,6 +429,5 @@
   "couldNotSendOffer": "Ntibyashobotse kohereza igiciro.",
   "rateOfferedLabel": "Igiciro gitangwa",
   "amountAvailableLabel": "Amafaranga aboneka",
-  "settlementTermsLabel": "Amabwiriza y'iryozwa",
-  "urgentBadge": "Bihutirwa"
+  "settlementTermsLabel": "Amabwiriza y'iryozwa"
 }

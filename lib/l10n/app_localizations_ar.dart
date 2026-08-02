@@ -1094,9 +1094,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectSettlementHint => 'اختر التسوية';
 
   @override
-  String get forexMarkUrgent => 'تحديد كطلب عاجل';
-
-  @override
   String get forexPublishBtn => 'نشر طلب العملات';
 
   @override
@@ -1146,7 +1143,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'شروط التسوية';
-
-  @override
-  String get urgentBadge => 'عاجل';
 }

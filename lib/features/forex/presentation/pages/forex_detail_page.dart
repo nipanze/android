@@ -11,7 +11,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
-import '../../../../shared/widgets/shared_widgets.dart';
+
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -101,15 +101,6 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (listing.isUrgent) ...[
-                          const Row(
-                            children: [
-                              UrgentBadge(),
-                              Spacer(),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                        ],
                         // Send → Rate → Receive panel
                         SendRateReceivePanel(
                           listing: listing,
