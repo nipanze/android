@@ -300,6 +300,7 @@
   "stepIncomeRepayment": "Mapato na marejesho",
   "stepReviewPublish": "Kagua na uchapishe",
   "requestALoan": "Omba mkopo",
+  "stepCounter": "Hatua ya {current} kati ya {total} · {subtitle}",
   "subtitleLoanDetails": "maelezo ya mkopo",
   "subtitleRepaymentContext": "muktadha wa marejesho",
   "subtitleReview": "uhakiki",
@@ -423,5 +424,11 @@
   "forexRequestTitle": "Ombi la forex",
   "myForexRequestsTitle": "Maombi yangu ya forex",
   "noForexRequestsYet": "Hujawa na maombi ya forex.",
-  "listingDetailTitle": "Maelezo ya ombi"
+  "listingDetailTitle": "Maelezo ya ombi",
+  "offersLabel": "ORODHA ZA BEI",
+  "makeAnOffer": "Toa bei",
+  "couldNotSendOffer": "Haikuweza kutuma bei.",
+  "rateOfferedLabel": "Bei inayotolewa",
+  "amountAvailableLabel": "Kiasi kinachopatikana",
+  "settlementTermsLabel": "Masharti ya makubaliano"
 }

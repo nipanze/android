@@ -300,6 +300,7 @@
   "stepIncomeRepayment": "Revenu et remboursement",
   "stepReviewPublish": "Vérifier et publier",
   "requestALoan": "Demander un prêt",
+  "stepCounter": "Étape {current} sur {total} · {subtitle}",
   "subtitleLoanDetails": "détails du prêt",
   "subtitleRepaymentContext": "contexte de remboursement",
   "subtitleReview": "vérification",
@@ -423,5 +424,11 @@
   "forexRequestTitle": "Demande de change",
   "myForexRequestsTitle": "Mes demandes de change",
   "noForexRequestsYet": "Aucune demande de change pour le moment.",
-  "listingDetailTitle": "Détail de l'annonce"
+  "listingDetailTitle": "Détail de l'annonce",
+  "offersLabel": "OFFRES",
+  "makeAnOffer": "Faire une offre",
+  "couldNotSendOffer": "Impossible d'envoyer l'offre.",
+  "rateOfferedLabel": "Taux proposé",
+  "amountAvailableLabel": "Montant disponible",
+  "settlementTermsLabel": "Conditions de règlement"
 }

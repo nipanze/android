@@ -299,7 +299,15 @@
 
   "stepIncomeRepayment": "الدخل والسداد",
   "stepReviewPublish": "المراجعة والنشر",
-  "requestALoan": "طلب قرض",
+  "requestALoan": "طلب قروض",
+  "stepCounter": "الخطوة {current} من {total} · {subtitle}",
+  "@stepCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "subtitle": { "type": "String" }
+    }
+  },
   "subtitleLoanDetails": "تفاصيل القرض",
   "subtitleRepaymentContext": "سياق السداد",
   "subtitleReview": "مراجعة",
@@ -423,5 +431,11 @@
   "forexRequestTitle": "طلب عملات",
   "myForexRequestsTitle": "طلبات العملات الخاصة بي",
   "noForexRequestsYet": "لا توجد طلبات عملات حتى الآن.",
-  "listingDetailTitle": "تفاصيل الإعلان"
+  "listingDetailTitle": "تفاصيل الإعلان",
+  "offersLabel": "العروض",
+  "makeAnOffer": "قدّم عرضاً",
+  "couldNotSendOffer": "تعذّر إرسال العرض.",
+  "rateOfferedLabel": "السعر المقترح",
+  "amountAvailableLabel": "المبلغ المتاح",
+  "settlementTermsLabel": "شروط التسوية"
 }

@@ -2173,6 +2173,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Listing detail'**
   String get listingDetailTitle;
+
+  /// No description provided for @offersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OFFERS'**
+  String get offersLabel;
+
+  /// No description provided for @makeAnOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Make an offer'**
+  String get makeAnOffer;
+
+  /// No description provided for @couldNotSendOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send offer.'**
+  String get couldNotSendOffer;
+
+  /// No description provided for @rateOfferedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate offered'**
+  String get rateOfferedLabel;
+
+  /// No description provided for @amountAvailableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount available'**
+  String get amountAvailableLabel;
+
+  /// No description provided for @settlementTermsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement terms'**
+  String get settlementTermsLabel;
 }
 
 class _AppLocalizationsDelegate

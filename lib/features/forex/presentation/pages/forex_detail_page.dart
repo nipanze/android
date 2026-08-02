@@ -14,6 +14,7 @@ import '../../../../shared/widgets/send_rate_receive_panel.dart';
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../marketplace/presentation/widgets/lender_required_sheet.dart';
 import '../../data/forex_repository.dart';
 
 class ForexDetailPage extends StatefulWidget {
@@ -27,6 +28,7 @@ class ForexDetailPage extends StatefulWidget {
 
 class _ForexDetailPageState extends State<ForexDetailPage> {
   late Future<_ForexDetailData> _future;
+  bool _showOfferSheet = false;
 
   @override
   void initState() {
@@ -47,6 +49,12 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    // ForexListingModel does not carry ownerId — offer button is always shown
+    // to non-anonymous users; access is gated by canLend check below.
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -54,9 +62,10 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             Icons.arrow_back_ios_new_rounded,
             size: 18,
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
         ),
-        title: Text(AppLocalizations.of(context)?.forexRequestTitle ?? 'Forex request'),
+        title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
       ),
       body: FutureBuilder<_ForexDetailData>(
         future: _future,
@@ -68,92 +77,173 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             return const Center(child: CircularProgressIndicator());
           }
           final data = snapshot.data!;
+          final listing = data.listing;
+
           return RefreshIndicator(
             onRefresh: () async => _refresh(),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Background carveout card ───────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Send → Rate → Receive panel
+                        SendRateReceivePanel(
+                          listing: listing,
+                          showBorder: false,
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Settlement preference
+                        Text(
+                          listing.settlementPreference,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Trust badges
+                        TrustBadgeRow(
+                          ratingAvg: listing.trustRatingAvg,
+                          reviewCount: listing.trustReviewCount,
+                          completedDealsCount: listing.trustCompletedDealsCount,
+                          isRepeatParticipant: listing.trustIsRepeatParticipant,
+                          phoneVerified: listing.trustPhoneVerified,
+                          responseTimeBucket: listing.trustResponseTimeBucket,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // ── Offers header ────────────────────────────────────
+                        Row(
+                          children: [
+                            Text(
+                              l10n?.offersLabel ?? 'OFFERS',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    letterSpacing: 1.2,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.45),
+                                  ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${listing.numberOfOffers}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            if (listing.rateCoverageTier != null) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '· ${listing.rateCoverageTier}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // ── Offer tiles ──────────────────────────────────────
+                        _OffersSection(
+                          listing: listing,
+                          offers: data.offers,
+                          authState: authState,
+                        ),
+                      ],
+                    ),
                   ),
-                  child: SendRateReceivePanel(
-                    listing: data.listing,
-                    showBorder: false,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  data.listing.settlementPreference,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                TrustBadgeRow(
-                  ratingAvg: data.listing.trustRatingAvg,
-                  reviewCount: data.listing.trustReviewCount,
-                  completedDealsCount: data.listing.trustCompletedDealsCount,
-                  isRepeatParticipant: data.listing.trustIsRepeatParticipant,
-                  phoneVerified: data.listing.trustPhoneVerified,
-                  responseTimeBucket: data.listing.trustResponseTimeBucket,
-                ),
-                const SizedBox(height: 18),
-                _OffersPanel(
-                  listing: data.listing,
-                  offers: data.offers,
-                  onChanged: _refresh,
-                ),
-              ],
+
+                  const SizedBox(height: 16),
+
+                  // ── Make an Offer button (outside card, like loan detail) ──
+                  SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (user == null) {
+                            context.go(AppRoutes.login);
+                            return;
+                          }
+                          if (!user.canLend) {
+                            showLenderRequiredSheet(context);
+                            return;
+                          }
+                          setState(() => _showOfferSheet = true);
+                        },
+                        child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                      ),
+                    ),
+                ],
+              ),
             ),
           );
         },
       ),
+      bottomSheet: _showOfferSheet
+          ? _MakeOfferSheet(
+              requestId: widget.requestId,
+              onClose: () => setState(() => _showOfferSheet = false),
+              onOfferPlaced: () {
+                setState(() => _showOfferSheet = false);
+                _refresh();
+              },
+            )
+          : null,
     );
   }
 }
 
-class _OffersPanel extends StatelessWidget {
-  const _OffersPanel({
+// ── Offers section ────────────────────────────────────────────────────────────
+
+class _OffersSection extends StatelessWidget {
+  const _OffersSection({
     required this.listing,
     required this.offers,
-    required this.onChanged,
+    required this.authState,
   });
 
   final ForexListingModel listing;
   final List<ForexOfferModel> offers;
-  final VoidCallback onChanged;
+  final AuthState authState;
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    final canOffer = authState is AuthAuthenticated && authState.user.canLend;
-    final canSeeProfessionalTags = authState is AuthAuthenticated &&
-        authState.user.subscriptionPlan == SubscriptionPlan.pro;
+    final canSeePro = authState is AuthAuthenticated &&
+        (authState as AuthAuthenticated).user.subscriptionPlan ==
+            SubscriptionPlan.pro;
+
+    if (offers.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Text(
+          'Exact rates are visible only to the request owner and participants.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      );
+    }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text('Offers', style: Theme.of(context).textTheme.titleMedium),
-            const Spacer(),
-            Text(
-              '${listing.numberOfOffers} · ${listing.rateCoverageTier ?? 'low'}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (offers.isEmpty)
-          Text(
-            'Exact rates are visible only to the request owner and participants.',
-            style: Theme.of(context).textTheme.bodySmall,
-          )
-        else
-          ...offers.map(
+      children: offers
+          .map(
             (offer) => ListTile(
               contentPadding: EdgeInsets.zero,
               title: Row(
@@ -161,8 +251,7 @@ class _OffersPanel extends StatelessWidget {
                   Expanded(
                     child: Text('Rate ${offer.rateOffered.toStringAsFixed(4)}'),
                   ),
-                  if (canSeeProfessionalTags &&
-                      offer.professionalTag != null) ...[
+                  if (canSeePro && offer.professionalTag != null) ...[
                     const SizedBox(width: 8),
                     _ProfessionalTag(offer.professionalTag!),
                   ],
@@ -173,20 +262,13 @@ class _OffersPanel extends StatelessWidget {
               ),
               trailing: Text(offer.status),
             ),
-          ),
-        const SizedBox(height: 18),
-        if (canOffer)
-          _MakeOfferForm(requestId: listing.requestId, onChanged: onChanged)
-        else
-          OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.lock_outline_rounded),
-            label: const Text('Lender or Pro required to make offers'),
-          ),
-      ],
+          )
+          .toList(),
     );
   }
 }
+
+// ── Professional tag chip ─────────────────────────────────────────────────────
 
 class _ProfessionalTag extends StatelessWidget {
   const _ProfessionalTag(this.label);
@@ -216,17 +298,24 @@ class _ProfessionalTag extends StatelessWidget {
   }
 }
 
-class _MakeOfferForm extends StatefulWidget {
-  const _MakeOfferForm({required this.requestId, required this.onChanged});
+// ── Make Offer bottom sheet ───────────────────────────────────────────────────
+
+class _MakeOfferSheet extends StatefulWidget {
+  const _MakeOfferSheet({
+    required this.requestId,
+    required this.onClose,
+    required this.onOfferPlaced,
+  });
 
   final String requestId;
-  final VoidCallback onChanged;
+  final VoidCallback onClose;
+  final VoidCallback onOfferPlaced;
 
   @override
-  State<_MakeOfferForm> createState() => _MakeOfferFormState();
+  State<_MakeOfferSheet> createState() => _MakeOfferSheetState();
 }
 
-class _MakeOfferFormState extends State<_MakeOfferForm> {
+class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   final _rateController = TextEditingController();
   final _amountController = TextEditingController();
   final _termsController = TextEditingController();
@@ -241,6 +330,7 @@ class _MakeOfferFormState extends State<_MakeOfferForm> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     final rate = double.tryParse(_rateController.text);
     final amount = int.tryParse(_amountController.text);
     if (rate == null || amount == null || rate <= 0 || amount <= 0) return;
@@ -252,13 +342,14 @@ class _MakeOfferFormState extends State<_MakeOfferForm> {
         amountAvailable: amount,
         terms: _termsController.text.trim(),
       );
-      widget.onChanged();
+      widget.onOfferPlaced();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(e is AppException ? e.message : 'Could not send offer.'),
+          content: Text(
+            e is AppException ? e.message : (l10n?.couldNotSendOffer ?? 'Could not send offer.'),
+          ),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -269,37 +360,76 @@ class _MakeOfferFormState extends State<_MakeOfferForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: _rateController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: 'Rate offered'),
+    final l10n = AppLocalizations.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _amountController,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Amount available'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Text(
+                  l10n?.makeAnOffer ?? 'Make an offer',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: widget.onClose,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _rateController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: l10n?.rateOfferedLabel ?? 'Rate offered',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _amountController,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l10n?.amountAvailableLabel ?? 'Amount available',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _termsController,
+              decoration: InputDecoration(
+                labelText: l10n?.settlementTermsLabel ?? 'Settlement terms',
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _submitting ? null : _submit,
+              child: _submitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n?.makeAnOffer ?? 'Make an offer'),
+            ),
+          ],
         ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _termsController,
-          decoration: const InputDecoration(labelText: 'Settlement terms'),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _submitting ? null : _submit,
-            child: const Text('Make an offer'),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
+
+// ── Data holder ───────────────────────────────────────────────────────────────
 
 class _ForexDetailData {
   const _ForexDetailData({required this.listing, required this.offers});

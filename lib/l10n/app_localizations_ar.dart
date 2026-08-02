@@ -763,11 +763,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get stepReviewPublish => 'المراجعة والنشر';
 
   @override
-  String get requestALoan => 'طلب قرض';
+  String get requestALoan => 'طلب قروض';
 
   @override
   String stepCounter(int current, int total, String subtitle) {
-    return 'Step $current of $total · $subtitle';
+    return 'الخطوة $current من $total · $subtitle';
   }
 
   @override
@@ -1128,4 +1128,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get listingDetailTitle => 'تفاصيل الإعلان';
+
+  @override
+  String get offersLabel => 'العروض';
+
+  @override
+  String get makeAnOffer => 'قدّم عرضاً';
+
+  @override
+  String get couldNotSendOffer => 'تعذّر إرسال العرض.';
+
+  @override
+  String get rateOfferedLabel => 'السعر المقترح';
+
+  @override
+  String get amountAvailableLabel => 'المبلغ المتاح';
+
+  @override
+  String get settlementTermsLabel => 'شروط التسوية';
 }

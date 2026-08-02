@@ -781,7 +781,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String stepCounter(int current, int total, String subtitle) {
-    return 'Step $current of $total · $subtitle';
+    return 'Étape $current sur $total · $subtitle';
   }
 
   @override
@@ -1158,4 +1158,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get listingDetailTitle => 'Détail de l\'annonce';
+
+  @override
+  String get offersLabel => 'OFFRES';
+
+  @override
+  String get makeAnOffer => 'Faire une offre';
+
+  @override
+  String get couldNotSendOffer => 'Impossible d\'envoyer l\'offre.';
+
+  @override
+  String get rateOfferedLabel => 'Taux proposé';
+
+  @override
+  String get amountAvailableLabel => 'Montant disponible';
+
+  @override
+  String get settlementTermsLabel => 'Conditions de règlement';
 }

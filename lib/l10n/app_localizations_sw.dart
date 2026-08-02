@@ -779,7 +779,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String stepCounter(int current, int total, String subtitle) {
-    return 'Step $current of $total · $subtitle';
+    return 'Hatua ya $current kati ya $total · $subtitle';
   }
 
   @override
@@ -1147,4 +1147,22 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get listingDetailTitle => 'Maelezo ya ombi';
+
+  @override
+  String get offersLabel => 'ORODHA ZA BEI';
+
+  @override
+  String get makeAnOffer => 'Toa bei';
+
+  @override
+  String get couldNotSendOffer => 'Haikuweza kutuma bei.';
+
+  @override
+  String get rateOfferedLabel => 'Bei inayotolewa';
+
+  @override
+  String get amountAvailableLabel => 'Kiasi kinachopatikana';
+
+  @override
+  String get settlementTermsLabel => 'Masharti ya makubaliano';
 }

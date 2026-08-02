@@ -777,7 +777,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String stepCounter(int current, int total, String subtitle) {
-    return 'Step $current of $total · $subtitle';
+    return 'Intambwe ya $current kuri $total · $subtitle';
   }
 
   @override
@@ -1143,4 +1143,22 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get listingDetailTitle => 'Ibikubiye mu busabe';
+
+  @override
+  String get offersLabel => 'AMATANGA';
+
+  @override
+  String get makeAnOffer => 'Tanga igiciro';
+
+  @override
+  String get couldNotSendOffer => 'Ntibyashobotse kohereza igiciro.';
+
+  @override
+  String get rateOfferedLabel => 'Igiciro gitangwa';
+
+  @override
+  String get amountAvailableLabel => 'Amafaranga aboneka';
+
+  @override
+  String get settlementTermsLabel => 'Amabwiriza y\'iryozwa';
 }

@@ -300,6 +300,7 @@
   "stepIncomeRepayment": "Inyungu no kwishyura",
   "stepReviewPublish": "Kusuzuma no gutangaza",
   "requestALoan": "Saba inguzanyo",
+  "stepCounter": "Intambwe ya {current} kuri {total} · {subtitle}",
   "subtitleLoanDetails": "iBIKUBIYE MU NGUZANYO",
   "subtitleRepaymentContext": "uburyo bwo kwishyura",
   "subtitleReview": "isuzuma",
@@ -423,5 +424,11 @@
   "forexRequestTitle": "Ubusabe bwa forex",
   "myForexRequestsTitle": "Ubusabe bwanjye bwa forex",
   "noForexRequestsYet": "Nta ubusabe bwa forex buhari.",
-  "listingDetailTitle": "Ibikubiye mu busabe"
+  "listingDetailTitle": "Ibikubiye mu busabe",
+  "offersLabel": "AMATANGA",
+  "makeAnOffer": "Tanga igiciro",
+  "couldNotSendOffer": "Ntibyashobotse kohereza igiciro.",
+  "rateOfferedLabel": "Igiciro gitangwa",
+  "amountAvailableLabel": "Amafaranga aboneka",
+  "settlementTermsLabel": "Amabwiriza y'iryozwa"
 }

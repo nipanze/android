@@ -326,9 +326,6 @@
   "incomeUnder2m": "Under 2M UGX / month",
   "income2m5m": "2M – 5M UGX / month",
   "income5m10m": "5M – 10M UGX / month",
-  "incomeUnder2m": "Under 2M UGX / month",
-  "income2m5m": "2M – 5M UGX / month",
-  "income5m10m": "5M – 10M UGX / month",
   "incomeOver10m": "Over 10M UGX / month",
 
   "iHold": "I hold",
@@ -504,5 +501,11 @@
   "forexRequestTitle": "Forex request",
   "myForexRequestsTitle": "My forex requests",
   "noForexRequestsYet": "No forex requests yet.",
-  "listingDetailTitle": "Listing detail"
+  "listingDetailTitle": "Listing detail",
+  "offersLabel": "OFFERS",
+  "makeAnOffer": "Make an offer",
+  "couldNotSendOffer": "Could not send offer.",
+  "rateOfferedLabel": "Rate offered",
+  "amountAvailableLabel": "Amount available",
+  "settlementTermsLabel": "Settlement terms"
 }
