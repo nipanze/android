@@ -743,4 +743,389 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get incomeOver10m => 'أكثر من 10 مليون UGX / شهر';
+
+  @override
+  String get iHold => 'لدي';
+
+  @override
+  String get rate => 'سعر الصرف';
+
+  @override
+  String get iNeed => 'أحتاج';
+
+  @override
+  String get marketRate => 'سعر السوق';
+
+  @override
+  String get stepIncomeRepayment => 'الدخل والسداد';
+
+  @override
+  String get stepReviewPublish => 'المراجعة والنشر';
+
+  @override
+  String get requestALoan => 'طلب قرض';
+
+  @override
+  String stepCounter(int current, int total, String subtitle) {
+    return 'Step $current of $total · $subtitle';
+  }
+
+  @override
+  String get subtitleLoanDetails => 'تفاصيل القرض';
+
+  @override
+  String get subtitleRepaymentContext => 'سياق السداد';
+
+  @override
+  String get subtitleReview => 'مراجعة';
+
+  @override
+  String get panelTheBasics => 'الأساسيات';
+
+  @override
+  String get panelTheNumbers => 'الأرقام';
+
+  @override
+  String get panelLocationDetails => 'الموقع والتفاصيل';
+
+  @override
+  String get panelRepaymentSource => 'مصدر السداد';
+
+  @override
+  String get panelAbilityToRepay => 'القدرة على السداد';
+
+  @override
+  String get panelPreferredTerms => 'الشروط المفضلة';
+
+  @override
+  String get requestTitleLabel => 'عنوان الطلب';
+
+  @override
+  String get requestTitleHint => 'مثال: شاحنة توصيل لخط كامبالا';
+
+  @override
+  String get purposeLabel => 'الغرض';
+
+  @override
+  String get selectPurposeHint => 'اختر الغرض';
+
+  @override
+  String get describePurposeLabel => 'صف غرضك';
+
+  @override
+  String amountLabelWithCurrency(String currency) {
+    return 'المبلغ ($currency)';
+  }
+
+  @override
+  String get amountHintLoan => '7,000,000';
+
+  @override
+  String get durationLabel => 'المدة';
+
+  @override
+  String get durationHintMonths => '6 أشهر';
+
+  @override
+  String get descriptionOptionalLabel => 'الوصف (اختياري)';
+
+  @override
+  String get descriptionOptionalHint => 'أضف أي تفاصيل يفضل أن يعلمها المقرضون';
+
+  @override
+  String get incomeSourceLabel => 'مصدر الدخل';
+
+  @override
+  String get incomeSourceHint => 'مثال: راتب، دخل متجر، زراعة، عمل إضافي';
+
+  @override
+  String get preferredRepaymentPlanLabel => 'خطة السداد المفضلة';
+
+  @override
+  String get selectRepaymentPlanHint => 'اختر خطة السداد';
+
+  @override
+  String repaymentAmountPerPeriodLabel(String currency) {
+    return 'مبلغ السداد لكل فترة ($currency)';
+  }
+
+  @override
+  String get repaymentAmountHint => 'مثال: 250,000';
+
+  @override
+  String get repaymentTimelineLabel => 'الجدول الزمني للسداد';
+
+  @override
+  String get repaymentTimelineHint =>
+      'مثال: يدفع بحلول اليوم الخامس من كل شهر لمدة 8 أشهر';
+
+  @override
+  String get suggestedInterestRateLabel => 'سعر الفائدة المقترح (%)';
+
+  @override
+  String get suggestedLateFeeLabel => 'رسوم التأخير المقترحة (%)';
+
+  @override
+  String get suggestedRepaymentScheduleLabel => 'جدول السداد المقترح';
+
+  @override
+  String suggestedInstallmentAmountLabel(String currency) {
+    return 'مبلغ القسط المقترح ($currency)';
+  }
+
+  @override
+  String get validationTitleRequired => 'أدخل عنواناً';
+
+  @override
+  String get validationTitleMinLength => 'استخدم 4 أحرف على الأقل';
+
+  @override
+  String get validationPurposeRequired => 'اختر غرضاً';
+
+  @override
+  String get validationPurposeContinue => 'اختر غرضاً للمتابعة.';
+
+  @override
+  String get validationAmountRequired => 'أدخل مبلغا';
+
+  @override
+  String get validationValidNumber => 'أدخل رقماً صالباً';
+
+  @override
+  String validationMinAmount(String currency, String min) {
+    return 'الحد الأدنى $currency $min';
+  }
+
+  @override
+  String validationMaxAmount(String currency, String max) {
+    return 'الحد الأقصى $currency $max';
+  }
+
+  @override
+  String get validationDurationRequired => 'أدخل المدة';
+
+  @override
+  String get validationDurationRange => 'من 1 إلى 60 شهراً';
+
+  @override
+  String get validationIncomeSourceRequired => 'أدخل مصدر السداد الخاص بك';
+
+  @override
+  String get validationIncomeSourceDetail => 'أضف المزيد من التفاصيل';
+
+  @override
+  String get validationRepaymentPlanRequired => 'اختر خطة السداد';
+
+  @override
+  String get validationRepaymentPlanContinue => 'اختر خطة السداد للمتابعة.';
+
+  @override
+  String get validationRepaymentAmountRequired => 'أدخل مبلغ السداد';
+
+  @override
+  String get validationRepaymentAmountValid => 'أدخل مبلغا صالباً';
+
+  @override
+  String get validationRepaymentTimelineRequired => 'أدخل الجدول الزمني للسداد';
+
+  @override
+  String get validationRepaymentTimelineDetail =>
+      'أضف جدولاً زمنيًا أكثر وضوحًا';
+
+  @override
+  String get validationPercentRange => 'استخدم من 0 إلى 100';
+
+  @override
+  String get btnContinue => 'متابعة';
+
+  @override
+  String get btnPublishToMarketplace => 'النشر في السوق';
+
+  @override
+  String get btnBack => 'رجوع';
+
+  @override
+  String get reviewYourRequest => 'راجع طلبك';
+
+  @override
+  String get reviewConfirmDetails => 'تأكد من التفاصيل قبل النشر في السوق.';
+
+  @override
+  String get reviewTitle => 'العنوان';
+
+  @override
+  String get reviewAmount => 'المبلغ';
+
+  @override
+  String get reviewDuration => 'المدة';
+
+  @override
+  String get reviewPurpose => 'الغرض';
+
+  @override
+  String get reviewIncomeSource => 'مصدر الدخل';
+
+  @override
+  String get reviewPreferredRepaymentPlan => 'خطة السداد المفضلة';
+
+  @override
+  String get reviewRepaymentAmount => 'مبلغ السداد';
+
+  @override
+  String get reviewRepaymentTimeline => 'الجدول الزمني للسداد';
+
+  @override
+  String get reviewDescription => 'الوصف';
+
+  @override
+  String get reviewLockedTerms => 'الشروط المفضلة المقفلة';
+
+  @override
+  String get reviewPerPeriod => 'لكل فترة';
+
+  @override
+  String get reviewContactPrivacyNotice =>
+      'تبقى تفاصيل الاتصال بك مخفية حتى قبول العرض وإكمال عملية الفتح.';
+
+  @override
+  String get requestSubmittedTitle => 'تم تقديم الطلب';
+
+  @override
+  String get requestSubmittedContent =>
+      'طلب القرض الخاص بك متاح الآن في السوق. يمكن للمقرضين مراجعته وتقديم العروض.';
+
+  @override
+  String get couldNotPublishRequest => 'تعذر نشر هذا الطلب. حاول مرة أخرى.';
+
+  @override
+  String get kycGateListing => 'أكمل التحقق من الهوية KYC قبل نشر العرض.';
+
+  @override
+  String get notAllowedListing => 'حسابك غير مصرح له بنشر عرض.';
+
+  @override
+  String infoBannerText(String currency, String min, String max) {
+    return '$currency $min-$max · حتى 60 شهراً · تُقفل الشروط عند النشر';
+  }
+
+  @override
+  String get termsLockedNotice => 'مقفل عند نشر الطلب.';
+
+  @override
+  String get upgradeToProForTerms =>
+      'ترقية إلى Pro لاقتراح الفائدة ورسوم التأخير وشروط السداد.';
+
+  @override
+  String get purposeAgri => 'معدات زراعية';
+
+  @override
+  String get purposeBusiness => 'توسيع الأعمال';
+
+  @override
+  String get purposeEdu => 'التعليم / الرسوم الدراسية';
+
+  @override
+  String get purposeMedical => 'طوارئ طبية';
+
+  @override
+  String get purposeFarming => 'زراعة / بيت زجاجي';
+
+  @override
+  String get purposeHome => 'تحسين المنزل';
+
+  @override
+  String get purposeStock => 'المخزون / البضائع';
+
+  @override
+  String get purposeLand => 'شراء أرض';
+
+  @override
+  String get purposeLivestock => 'المواشي';
+
+  @override
+  String get purposeEnergy => 'طاقة شمسية / طاقة';
+
+  @override
+  String get purposeVehicle => 'نقل / مركبة';
+
+  @override
+  String get purposeWater => 'المياه والصرف الصحي';
+
+  @override
+  String get purposeWedding => 'زفاف / مناسبة';
+
+  @override
+  String get purposeOther => 'أخرى';
+
+  @override
+  String get planMonthly => 'شهري';
+
+  @override
+  String get planWeekly => 'أسبوعي';
+
+  @override
+  String get planOneTime => 'دفعة واحدة';
+
+  @override
+  String get createForexRequestTitle => 'إنشاء طلب عملات';
+
+  @override
+  String get forexCurrencyHeld => 'العملة التي تمتلكها';
+
+  @override
+  String get forexCurrencyNeeded => 'العملة التي تحتاجها';
+
+  @override
+  String get forexAmountToExchange => 'المبلغ المراد تبادله';
+
+  @override
+  String get forexAmountHint => 'مثال: 100';
+
+  @override
+  String get forexPreferredRate => 'سعر الصرف المفضل';
+
+  @override
+  String get forexRateHint => 'مثال: 3700';
+
+  @override
+  String get forexSettlementPreference => 'تفضيل التسوية';
+
+  @override
+  String get selectSettlementHint => 'اختر التسوية';
+
+  @override
+  String get forexMarkUrgent => 'تحديد كطلب عاجل';
+
+  @override
+  String get forexPublishBtn => 'نشر طلب العملات';
+
+  @override
+  String get kycGateForex => 'أكمل التحقق من الهوية KYC قبل نشر طلب العملات.';
+
+  @override
+  String get couldNotPublishForex => 'تعذر نشر طلب العملات هذا.';
+
+  @override
+  String get forexSettlementInPerson => 'شخصياً';
+
+  @override
+  String get forexSettlementMobileMoney => 'محفظة إلكترونية';
+
+  @override
+  String get forexSettlementBankTransfer => 'تحويل بنكي';
+
+  @override
+  String get forexSettlementOther => 'أخرى';
+
+  @override
+  String get forexRequestTitle => 'طلب عملات';
+
+  @override
+  String get myForexRequestsTitle => 'طلبات العملات الخاصة بي';
+
+  @override
+  String get noForexRequestsYet => 'لا توجد طلبات عملات حتى الآن.';
+
+  @override
+  String get listingDetailTitle => 'تفاصيل الإعلان';
 }

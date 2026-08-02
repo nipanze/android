@@ -755,4 +755,396 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get incomeOver10m => 'Zaidi ya 10M UGX / mwezi';
+
+  @override
+  String get iHold => 'Ninazo';
+
+  @override
+  String get rate => 'Kiwango';
+
+  @override
+  String get iNeed => 'Nahitaji';
+
+  @override
+  String get marketRate => 'Kiwango cha soko';
+
+  @override
+  String get stepIncomeRepayment => 'Mapato na marejesho';
+
+  @override
+  String get stepReviewPublish => 'Kagua na uchapishe';
+
+  @override
+  String get requestALoan => 'Omba mkopo';
+
+  @override
+  String stepCounter(int current, int total, String subtitle) {
+    return 'Step $current of $total · $subtitle';
+  }
+
+  @override
+  String get subtitleLoanDetails => 'maelezo ya mkopo';
+
+  @override
+  String get subtitleRepaymentContext => 'muktadha wa marejesho';
+
+  @override
+  String get subtitleReview => 'uhakiki';
+
+  @override
+  String get panelTheBasics => 'Mambo ya msingi';
+
+  @override
+  String get panelTheNumbers => 'Nambari';
+
+  @override
+  String get panelLocationDetails => 'Mahali na maelezo';
+
+  @override
+  String get panelRepaymentSource => 'Chanzo cha marejesho';
+
+  @override
+  String get panelAbilityToRepay => 'Uwezo wa kulipa';
+
+  @override
+  String get panelPreferredTerms => 'Vigezo unavyopendelea';
+
+  @override
+  String get requestTitleLabel => 'Kichwa cha ombi';
+
+  @override
+  String get requestTitleHint => 'mfano: Gari la biashara ya Kampala';
+
+  @override
+  String get purposeLabel => 'Dhumuni';
+
+  @override
+  String get selectPurposeHint => 'Chagua dhumuni';
+
+  @override
+  String get describePurposeLabel => 'Eleza dhumuni lako';
+
+  @override
+  String amountLabelWithCurrency(String currency) {
+    return 'Kiasi ($currency)';
+  }
+
+  @override
+  String get amountHintLoan => '7,000,000';
+
+  @override
+  String get durationLabel => 'Muda';
+
+  @override
+  String get durationHintMonths => 'Miezi 6';
+
+  @override
+  String get descriptionOptionalLabel => 'Maelezo (hiari)';
+
+  @override
+  String get descriptionOptionalHint => 'Ongeza maelezo zaidi kwa wakopeshi';
+
+  @override
+  String get incomeSourceLabel => 'Chanzo cha mapato';
+
+  @override
+  String get incomeSourceHint => 'mfano: Mshahara, duka, kilimo, kazi za kando';
+
+  @override
+  String get preferredRepaymentPlanLabel => 'Mpango wa marejesho unaopendelea';
+
+  @override
+  String get selectRepaymentPlanHint => 'Chagua mpango wa marejesho';
+
+  @override
+  String repaymentAmountPerPeriodLabel(String currency) {
+    return 'Kiasi cha marejesho kwa kila kipindi ($currency)';
+  }
+
+  @override
+  String get repaymentAmountHint => 'mfano: 250,000';
+
+  @override
+  String get repaymentTimelineLabel => 'Ratiba ya marejesho';
+
+  @override
+  String get repaymentTimelineHint =>
+      'mfano: Kulipwa tarehe 5 ya kila mwezi kwa miezi 8';
+
+  @override
+  String get suggestedInterestRateLabel =>
+      'Kiwango cha riba kinachopendekezwa (%)';
+
+  @override
+  String get suggestedLateFeeLabel => 'Ada ya kuchelewa inayopendekezwa (%)';
+
+  @override
+  String get suggestedRepaymentScheduleLabel => 'Ratiba inayopendekezwa';
+
+  @override
+  String suggestedInstallmentAmountLabel(String currency) {
+    return 'Kiasi cha awamu kinachopendekezwa ($currency)';
+  }
+
+  @override
+  String get validationTitleRequired => 'Weka kichwa';
+
+  @override
+  String get validationTitleMinLength => 'Tumia angalau herufi 4';
+
+  @override
+  String get validationPurposeRequired => 'Chagua dhumuni';
+
+  @override
+  String get validationPurposeContinue => 'Chagua dhumuni ili kuendelea.';
+
+  @override
+  String get validationAmountRequired => 'Weka kiasi';
+
+  @override
+  String get validationValidNumber => 'Weka nambari sahihi';
+
+  @override
+  String validationMinAmount(String currency, String min) {
+    return 'Kiwango cha chini $currency $min';
+  }
+
+  @override
+  String validationMaxAmount(String currency, String max) {
+    return 'Kiwango cha juu $currency $max';
+  }
+
+  @override
+  String get validationDurationRequired => 'Weka muda';
+
+  @override
+  String get validationDurationRange => 'Miezi 1 hadi 60';
+
+  @override
+  String get validationIncomeSourceRequired =>
+      'Weka chanzo chako cha marejesho';
+
+  @override
+  String get validationIncomeSourceDetail => 'Ongeza maelezo zaidi';
+
+  @override
+  String get validationRepaymentPlanRequired => 'Chagua mpango wa marejesho';
+
+  @override
+  String get validationRepaymentPlanContinue =>
+      'Chagua mpango wa marejesho ili kuendelea.';
+
+  @override
+  String get validationRepaymentAmountRequired => 'Weka kiasi cha marejesho';
+
+  @override
+  String get validationRepaymentAmountValid => 'Weka kiasi sahihi';
+
+  @override
+  String get validationRepaymentTimelineRequired => 'Weka ratiba ya marejesho';
+
+  @override
+  String get validationRepaymentTimelineDetail =>
+      'Weka ratiba inayoeleweka zaidi';
+
+  @override
+  String get validationPercentRange => 'Tumia 0 hadi 100';
+
+  @override
+  String get btnContinue => 'Endelea';
+
+  @override
+  String get btnPublishToMarketplace => 'Chapishe kwenye soko';
+
+  @override
+  String get btnBack => 'Nyuma';
+
+  @override
+  String get reviewYourRequest => 'Kagua ombi lako';
+
+  @override
+  String get reviewConfirmDetails =>
+      'Thibitisha maelezo kabla ya kuchapisha sokoni.';
+
+  @override
+  String get reviewTitle => 'Kichwa';
+
+  @override
+  String get reviewAmount => 'Kiasi';
+
+  @override
+  String get reviewDuration => 'Muda';
+
+  @override
+  String get reviewPurpose => 'Dhumuni';
+
+  @override
+  String get reviewIncomeSource => 'Chanzo cha mapato';
+
+  @override
+  String get reviewPreferredRepaymentPlan => 'Mpango wa marejesho unaopendelea';
+
+  @override
+  String get reviewRepaymentAmount => 'Kiasi cha marejesho';
+
+  @override
+  String get reviewRepaymentTimeline => 'Ratiba ya marejesho';
+
+  @override
+  String get reviewDescription => 'Maelezo';
+
+  @override
+  String get reviewLockedTerms => 'Vigezo vilivyofungwa';
+
+  @override
+  String get reviewPerPeriod => 'kwa kila kipindi';
+
+  @override
+  String get reviewContactPrivacyNotice =>
+      'Maelezo yako ya mawasiliano yanasalia kufichwa hadi ofa ikubaliwe.';
+
+  @override
+  String get requestSubmittedTitle => 'Ombi limewasilishwa';
+
+  @override
+  String get requestSubmittedContent =>
+      'Ombi lako la mkopo sasa liko sokoni. Wakopeshi wanaweza kulikagua na kutoa ofa.';
+
+  @override
+  String get couldNotPublishRequest =>
+      'Haikuweza kuchapisha ombi hili. Jaribu tena.';
+
+  @override
+  String get kycGateListing =>
+      'Kamilisha uhakiki wa KYC kabla ya kuchapisha ombi.';
+
+  @override
+  String get notAllowedListing => 'Akaunti yako hairuhusiwi kuchapisha ombi.';
+
+  @override
+  String infoBannerText(String currency, String min, String max) {
+    return '$currency $min-$max · Hadi miezi 60 · vigezo vinafungwa ukichapisha';
+  }
+
+  @override
+  String get termsLockedNotice => 'Vimfungwa wakati ombi linapochapishwa.';
+
+  @override
+  String get upgradeToProForTerms =>
+      'Boresha hadi Pro ili kupendekeza riba, ada ya kuchelewa, na ratiba.';
+
+  @override
+  String get purposeAgri => 'Vifaa vya kilimo';
+
+  @override
+  String get purposeBusiness => 'Kupanua biashara';
+
+  @override
+  String get purposeEdu => 'Elimu / Karo za shule';
+
+  @override
+  String get purposeMedical => 'Matibabu ya dharura';
+
+  @override
+  String get purposeFarming => 'Kilimo / Nyumba ya kijani';
+
+  @override
+  String get purposeHome => 'Uboreshaji wa nyumba';
+
+  @override
+  String get purposeStock => 'Bidhaa za duka';
+
+  @override
+  String get purposeLand => 'Kununua ardhi';
+
+  @override
+  String get purposeLivestock => 'Mifugo';
+
+  @override
+  String get purposeEnergy => 'Umeme wa jua / Nishati';
+
+  @override
+  String get purposeVehicle => 'Usafiri / Gari';
+
+  @override
+  String get purposeWater => 'Maji na usafi';
+
+  @override
+  String get purposeWedding => 'Harusi / Sherehe';
+
+  @override
+  String get purposeOther => 'Nyingine';
+
+  @override
+  String get planMonthly => 'Kila mwezi';
+
+  @override
+  String get planWeekly => 'Kila wiki';
+
+  @override
+  String get planOneTime => 'Malipo ya mara moja';
+
+  @override
+  String get createForexRequestTitle => 'Tengeneza Ombi la Forex';
+
+  @override
+  String get forexCurrencyHeld => 'Sarafu uliyo nayo';
+
+  @override
+  String get forexCurrencyNeeded => 'Sarafu unayohitaji';
+
+  @override
+  String get forexAmountToExchange => 'Kiasi cha kubadilisha';
+
+  @override
+  String get forexAmountHint => 'mfano: 100';
+
+  @override
+  String get forexPreferredRate => 'Kiwango cha kubadilisha unachopendelea';
+
+  @override
+  String get forexRateHint => 'mfano: 3700';
+
+  @override
+  String get forexSettlementPreference => 'Urasimu wa malipo';
+
+  @override
+  String get selectSettlementHint => 'Chagua njia ya malipo';
+
+  @override
+  String get forexMarkUrgent => 'Weka kama ombi la dharura';
+
+  @override
+  String get forexPublishBtn => 'Chapishe ombi la forex';
+
+  @override
+  String get kycGateForex =>
+      'Kamilisha uhakiki wa KYC kabla ya kuchapisha ombi la forex.';
+
+  @override
+  String get couldNotPublishForex => 'Haikuweza kuchapisha ombi hili la forex.';
+
+  @override
+  String get forexSettlementInPerson => 'Ana kwa ana';
+
+  @override
+  String get forexSettlementMobileMoney => 'Pesa za simu';
+
+  @override
+  String get forexSettlementBankTransfer => 'Benki';
+
+  @override
+  String get forexSettlementOther => 'Nyingine';
+
+  @override
+  String get forexRequestTitle => 'Ombi la forex';
+
+  @override
+  String get myForexRequestsTitle => 'Maombi yangu ya forex';
+
+  @override
+  String get noForexRequestsYet => 'Hujawa na maombi ya forex.';
+
+  @override
+  String get listingDetailTitle => 'Maelezo ya ombi';
 }

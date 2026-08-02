@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../data/forex_repository.dart';
 
@@ -10,8 +12,18 @@ class MyForexRequestsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('My forex requests')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
+          ),
+          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+        ),
+        title: Text(l10n?.myForexRequestsTitle ?? 'My forex requests'),
+      ),
       body: FutureBuilder<List<ForexListingModel>>(
         future: getIt<ForexRepository>().getMyForexRequests(),
         builder: (context, snapshot) {
@@ -20,7 +32,11 @@ class MyForexRequestsPage extends StatelessWidget {
           }
           final requests = snapshot.data!;
           if (requests.isEmpty) {
-            return const Center(child: Text('No forex requests yet.'));
+            return Center(
+              child: Text(
+                l10n?.noForexRequestsYet ?? 'No forex requests yet.',
+              ),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),

@@ -326,5 +326,183 @@
   "incomeUnder2m": "Under 2M UGX / month",
   "income2m5m": "2M – 5M UGX / month",
   "income5m10m": "5M – 10M UGX / month",
-  "incomeOver10m": "Over 10M UGX / month"
+  "incomeUnder2m": "Under 2M UGX / month",
+  "income2m5m": "2M – 5M UGX / month",
+  "income5m10m": "5M – 10M UGX / month",
+  "incomeOver10m": "Over 10M UGX / month",
+
+  "iHold": "I hold",
+  "rate": "Rate",
+  "iNeed": "I need",
+  "marketRate": "Market rate",
+
+  "stepIncomeRepayment": "Income & repayment",
+  "stepReviewPublish": "Review & publish",
+  "requestALoan": "Request a loan",
+  "stepCounter": "Step {current} of {total} · {subtitle}",
+  "@stepCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "subtitle": { "type": "String" }
+    }
+  },
+  "subtitleLoanDetails": "loan details",
+  "subtitleRepaymentContext": "repayment context",
+  "subtitleReview": "review",
+
+  "panelTheBasics": "The basics",
+  "panelTheNumbers": "The numbers",
+  "panelLocationDetails": "Location and details",
+  "panelRepaymentSource": "Repayment source",
+  "panelAbilityToRepay": "Ability to repay",
+  "panelPreferredTerms": "Preferred terms",
+
+  "requestTitleLabel": "Request title",
+  "requestTitleHint": "e.g. Delivery van for Kampala route",
+  "purposeLabel": "Purpose",
+  "selectPurposeHint": "Select purpose",
+  "describePurposeLabel": "Describe your purpose",
+  "amountLabelWithCurrency": "Amount ({currency})",
+  "@amountLabelWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "amountHintLoan": "7,000,000",
+  "durationLabel": "Duration",
+  "durationHintMonths": "6 months",
+  "descriptionOptionalLabel": "Description (optional)",
+  "descriptionOptionalHint": "Add any context lenders should know",
+  "incomeSourceLabel": "Income source",
+  "incomeSourceHint": "e.g. Salary, shop income, farming, side work",
+  "preferredRepaymentPlanLabel": "Preferred repayment plan",
+  "selectRepaymentPlanHint": "Select repayment plan",
+  "repaymentAmountPerPeriodLabel": "Repayment amount per period ({currency})",
+  "@repaymentAmountPerPeriodLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "repaymentAmountHint": "e.g. 250,000",
+  "repaymentTimelineLabel": "Repayment timeline",
+  "repaymentTimelineHint": "e.g. Paid by the 5th of every month for 8 months",
+  "suggestedInterestRateLabel": "Suggested interest rate (%)",
+  "suggestedLateFeeLabel": "Suggested late payment fee (%)",
+  "suggestedRepaymentScheduleLabel": "Suggested repayment schedule",
+  "suggestedInstallmentAmountLabel": "Suggested installment amount ({currency})",
+  "@suggestedInstallmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+
+  "validationTitleRequired": "Enter a title",
+  "validationTitleMinLength": "Use at least 4 characters",
+  "validationPurposeRequired": "Select a purpose",
+  "validationPurposeContinue": "Select a purpose to continue.",
+  "validationAmountRequired": "Enter an amount",
+  "validationValidNumber": "Enter a valid number",
+  "validationMinAmount": "Minimum {currency} {min}",
+  "@validationMinAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" }
+    }
+  },
+  "validationMaxAmount": "Maximum {currency} {max}",
+  "@validationMaxAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "validationDurationRequired": "Enter duration",
+  "validationDurationRange": "1 to 60 months",
+  "validationIncomeSourceRequired": "Enter your repayment source",
+  "validationIncomeSourceDetail": "Add a little more detail",
+  "validationRepaymentPlanRequired": "Select a repayment plan",
+  "validationRepaymentPlanContinue": "Select a repayment plan to continue.",
+  "validationRepaymentAmountRequired": "Enter repayment amount",
+  "validationRepaymentAmountValid": "Enter a valid amount",
+  "validationRepaymentTimelineRequired": "Enter repayment timeline",
+  "validationRepaymentTimelineDetail": "Add a clearer timeline",
+  "validationPercentRange": "Use 0 to 100",
+
+  "btnContinue": "Continue",
+  "btnPublishToMarketplace": "Publish to marketplace",
+  "btnBack": "Back",
+
+  "reviewYourRequest": "Review your request",
+  "reviewConfirmDetails": "Confirm the details before publishing to the marketplace.",
+  "reviewTitle": "Title",
+  "reviewAmount": "Amount",
+  "reviewDuration": "Duration",
+  "reviewPurpose": "Purpose",
+  "reviewIncomeSource": "Income source",
+  "reviewPreferredRepaymentPlan": "Preferred repayment plan",
+  "reviewRepaymentAmount": "Repayment amount",
+  "reviewRepaymentTimeline": "Repayment timeline",
+  "reviewDescription": "Description",
+  "reviewLockedTerms": "Locked preferred terms",
+  "reviewPerPeriod": "per period",
+  "reviewContactPrivacyNotice": "Your contact details stay hidden until an offer is accepted and the unlock flow is completed.",
+
+  "requestSubmittedTitle": "Request submitted",
+  "requestSubmittedContent": "Your loan request is now live on the marketplace. Lenders can review it and make offers.",
+  "couldNotPublishRequest": "Could not publish this request. Try again.",
+  "kycGateListing": "Complete KYC verification before posting a listing.",
+  "notAllowedListing": "Your account is not allowed to post a listing.",
+
+  "infoBannerText": "{currency} {min}-{max} · Up to 60 months · terms lock on publish",
+  "@infoBannerText": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "termsLockedNotice": "Locked when the request is published.",
+  "upgradeToProForTerms": "Upgrade to Pro to suggest interest, late fee, and repayment terms.",
+
+  "purposeAgri": "Agricultural equipment",
+  "purposeBusiness": "Business expansion",
+  "purposeEdu": "Education / School fees",
+  "purposeMedical": "Emergency medical",
+  "purposeFarming": "Greenhouse / Farming",
+  "purposeHome": "Home improvement",
+  "purposeStock": "Inventory / Stock",
+  "purposeLand": "Land purchase",
+  "purposeLivestock": "Livestock",
+  "purposeEnergy": "Solar / Energy",
+  "purposeVehicle": "Transport / Vehicle",
+  "purposeWater": "Water & Sanitation",
+  "purposeWedding": "Wedding / Event",
+  "purposeOther": "Other",
+
+  "planMonthly": "Monthly",
+  "planWeekly": "Weekly",
+  "planOneTime": "One-time payment",
+
+  "createForexRequestTitle": "Create Forex Request",
+  "forexCurrencyHeld": "Currency you hold",
+  "forexCurrencyNeeded": "Currency you need",
+  "forexAmountToExchange": "Amount to exchange",
+  "forexAmountHint": "e.g. 100",
+  "forexPreferredRate": "Preferred exchange rate",
+  "forexRateHint": "e.g. 3700",
+  "forexSettlementPreference": "Settlement preference",
+  "selectSettlementHint": "Select settlement",
+  "forexMarkUrgent": "Mark as urgent request",
+  "forexPublishBtn": "Publish forex request",
+  "kycGateForex": "Complete KYC verification before posting a forex request.",
+  "couldNotPublishForex": "Could not publish this forex request.",
+  "forexSettlementInPerson": "In person",
+  "forexSettlementMobileMoney": "Mobile money",
+  "forexSettlementBankTransfer": "Bank transfer",
+  "forexSettlementOther": "Other",
+  "forexRequestTitle": "Forex request",
+  "myForexRequestsTitle": "My forex requests",
+  "noForexRequestsYet": "No forex requests yet.",
+  "listingDetailTitle": "Listing detail"
 }

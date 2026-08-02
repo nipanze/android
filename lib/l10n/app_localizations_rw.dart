@@ -753,4 +753,394 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get incomeOver10m => 'Hejuru ya 10M UGX / ukwezi';
+
+  @override
+  String get iHold => 'Mfite';
+
+  @override
+  String get rate => 'Igipimo';
+
+  @override
+  String get iNeed => 'Nkeneye';
+
+  @override
+  String get marketRate => 'Igipimo cy\'isoko';
+
+  @override
+  String get stepIncomeRepayment => 'Inyungu no kwishyura';
+
+  @override
+  String get stepReviewPublish => 'Kusuzuma no gutangaza';
+
+  @override
+  String get requestALoan => 'Saba inguzanyo';
+
+  @override
+  String stepCounter(int current, int total, String subtitle) {
+    return 'Step $current of $total · $subtitle';
+  }
+
+  @override
+  String get subtitleLoanDetails => 'iBIKUBIYE MU NGUZANYO';
+
+  @override
+  String get subtitleRepaymentContext => 'uburyo bwo kwishyura';
+
+  @override
+  String get subtitleReview => 'isuzuma';
+
+  @override
+  String get panelTheBasics => 'Iby\'iremezo';
+
+  @override
+  String get panelTheNumbers => 'Imibare';
+
+  @override
+  String get panelLocationDetails => 'Ahantu n\'ibindi';
+
+  @override
+  String get panelRepaymentSource => 'Inkomoko y\'ubwishyu';
+
+  @override
+  String get panelAbilityToRepay => 'Ubushobozi bwo kwishyura';
+
+  @override
+  String get panelPreferredTerms => 'Amasezerano wifuza';
+
+  @override
+  String get requestTitleLabel => 'Umutwe w\'usabe';
+
+  @override
+  String get requestTitleHint => 'urugero: Imodoka y\'ubucuruzi ya Kampala';
+
+  @override
+  String get purposeLabel => 'Impamvu';
+
+  @override
+  String get selectPurposeHint => 'Hitamo impamvu';
+
+  @override
+  String get describePurposeLabel => 'Sobanura impamvu';
+
+  @override
+  String amountLabelWithCurrency(String currency) {
+    return 'Umubare ($currency)';
+  }
+
+  @override
+  String get amountHintLoan => '7,000,000';
+
+  @override
+  String get durationLabel => 'Igihe';
+
+  @override
+  String get durationHintMonths => 'Amezi 6';
+
+  @override
+  String get descriptionOptionalLabel => 'Ibusobanuro (amahitamo)';
+
+  @override
+  String get descriptionOptionalHint =>
+      'Ongeraho ibindi abakuguriza bakwiriye kumenya';
+
+  @override
+  String get incomeSourceLabel => 'Inkomoko y\'inzu';
+
+  @override
+  String get incomeSourceHint => 'urugero: Umushahara, iduka, ubuhinzi';
+
+  @override
+  String get preferredRepaymentPlanLabel => 'Uburyo bwo kwishyura wifuza';
+
+  @override
+  String get selectRepaymentPlanHint => 'Hitamo uburyo bwo kwishyura';
+
+  @override
+  String repaymentAmountPerPeriodLabel(String currency) {
+    return 'Ayishyurwa mu gihe ($currency)';
+  }
+
+  @override
+  String get repaymentAmountHint => 'urugero: 250,000';
+
+  @override
+  String get repaymentTimelineLabel => 'Igihe cyo kwishyura';
+
+  @override
+  String get repaymentTimelineHint =>
+      'urugero: Kwishyurwa ku itariki 5 za buri kwezi mu miezi 8';
+
+  @override
+  String get suggestedInterestRateLabel => 'Inyungu isabwa (%)';
+
+  @override
+  String get suggestedLateFeeLabel => 'Amande y\'ubukererwe (%)';
+
+  @override
+  String get suggestedRepaymentScheduleLabel => 'Igihe cyo kwishyura gisasabwa';
+
+  @override
+  String suggestedInstallmentAmountLabel(String currency) {
+    return 'Kwisbyura mu byiciro ($currency)';
+  }
+
+  @override
+  String get validationTitleRequired => 'Andika umutwe';
+
+  @override
+  String get validationTitleMinLength => 'Andika nibura inyuguti 4';
+
+  @override
+  String get validationPurposeRequired => 'Hitamo impamvu';
+
+  @override
+  String get validationPurposeContinue => 'Hitamo impamvu kugira ngo ukomeze.';
+
+  @override
+  String get validationAmountRequired => 'Andika umubare';
+
+  @override
+  String get validationValidNumber => 'Andika umubare ukwiye';
+
+  @override
+  String validationMinAmount(String currency, String min) {
+    return 'Kuri make $currency $min';
+  }
+
+  @override
+  String validationMaxAmount(String currency, String max) {
+    return 'Kuri menshi $currency $max';
+  }
+
+  @override
+  String get validationDurationRequired => 'Andika igihe';
+
+  @override
+  String get validationDurationRange => 'Amezi 1 kugeza kuri 60';
+
+  @override
+  String get validationIncomeSourceRequired => 'Andika inkomoko y\'ubwishyu';
+
+  @override
+  String get validationIncomeSourceDetail => 'Ongeraho ibindi bisobanuro';
+
+  @override
+  String get validationRepaymentPlanRequired => 'Hitamo uburyo bwo kwishyura';
+
+  @override
+  String get validationRepaymentPlanContinue =>
+      'Hitamo uburyo bwo kwishyura kugira ngo ukomeze.';
+
+  @override
+  String get validationRepaymentAmountRequired => 'Andika ayo kwishyura';
+
+  @override
+  String get validationRepaymentAmountValid => 'Andika umubare ukwiye';
+
+  @override
+  String get validationRepaymentTimelineRequired =>
+      'Andika igihe cyo kwishyura';
+
+  @override
+  String get validationRepaymentTimelineDetail => 'Andika igihe cyumvikana';
+
+  @override
+  String get validationPercentRange => 'Koresha 0 kugeza 100';
+
+  @override
+  String get btnContinue => 'Komeza';
+
+  @override
+  String get btnPublishToMarketplace => 'Tangaza ku isoko';
+
+  @override
+  String get btnBack => 'Subira inyuma';
+
+  @override
+  String get reviewYourRequest => 'Suzuza usabe wabyo';
+
+  @override
+  String get reviewConfirmDetails =>
+      'Emeza ibikubiyemo mbere yo gutangaza ku isoko.';
+
+  @override
+  String get reviewTitle => 'Umutwe';
+
+  @override
+  String get reviewAmount => 'Umubare';
+
+  @override
+  String get reviewDuration => 'Igihe';
+
+  @override
+  String get reviewPurpose => 'Impamvu';
+
+  @override
+  String get reviewIncomeSource => 'Inkomoko y\'inzu';
+
+  @override
+  String get reviewPreferredRepaymentPlan => 'Uburyo bwo kwishyura wifuza';
+
+  @override
+  String get reviewRepaymentAmount => 'Ayishyurwa';
+
+  @override
+  String get reviewRepaymentTimeline => 'Igihe cyo kwishyura';
+
+  @override
+  String get reviewDescription => 'Ibusobanuro';
+
+  @override
+  String get reviewLockedTerms => 'Amasezerano yafunzwe';
+
+  @override
+  String get reviewPerPeriod => 'mu gihe';
+
+  @override
+  String get reviewContactPrivacyNotice =>
+      'Umwirondoro wawe uguma uhishwe kugeza icyifuzo cyemewe.';
+
+  @override
+  String get requestSubmittedTitle => 'Usabe yoherejwe';
+
+  @override
+  String get requestSubmittedContent =>
+      'Inguzanyo usaba iri ku isoko ubu. Abakuguriza bazozi suzuma.';
+
+  @override
+  String get couldNotPublishRequest =>
+      'Ntabwo bishobotse gutangaza ubusabe. Ongera ugerageze.';
+
+  @override
+  String get kycGateListing => 'Wuzuza KYC mbere yo gutangaza.';
+
+  @override
+  String get notAllowedListing => 'Konte yawe ntiyemerewe gutangaza.';
+
+  @override
+  String infoBannerText(String currency, String min, String max) {
+    return '$currency $min-$max · Kugeza ku miezi 60 · amasezerano afungwa gutangazwa';
+  }
+
+  @override
+  String get termsLockedNotice => 'Bifungirwa igihe ubusabe butangajwe.';
+
+  @override
+  String get upgradeToProForTerms =>
+      'Zamura ugeze kuri Pro kugira ngo utange inyungu n\'amande.';
+
+  @override
+  String get purposeAgri => 'Ibyuma by\'ubuhinzi';
+
+  @override
+  String get purposeBusiness => 'Kwagura ubucuruzi';
+
+  @override
+  String get purposeEdu => 'Uburezi / Amafaranga y\'ishuri';
+
+  @override
+  String get purposeMedical => 'Ubwishingizi bw\'ubuzima';
+
+  @override
+  String get purposeFarming => 'Ubuhinzi';
+
+  @override
+  String get purposeHome => 'Gusana inzu';
+
+  @override
+  String get purposeStock => 'Ibicuruzwa';
+
+  @override
+  String get purposeLand => 'Gugura ubutaka';
+
+  @override
+  String get purposeLivestock => 'Ubworozi';
+
+  @override
+  String get purposeEnergy => 'Imirasire y\'izuba / Ningufu';
+
+  @override
+  String get purposeVehicle => 'Ikinyabiziga';
+
+  @override
+  String get purposeWater => 'Azi n\'isuku';
+
+  @override
+  String get purposeWedding => 'Ubukwe / Ibikorwa';
+
+  @override
+  String get purposeOther => 'Ikindi';
+
+  @override
+  String get planMonthly => 'Buri kwezi';
+
+  @override
+  String get planWeekly => 'Buri cyumweru';
+
+  @override
+  String get planOneTime => 'Inshuro imwe';
+
+  @override
+  String get createForexRequestTitle => 'Kurema ubusabe bwa forex';
+
+  @override
+  String get forexCurrencyHeld => 'Icyiciro ufite';
+
+  @override
+  String get forexCurrencyNeeded => 'Icyiciro nkeneye';
+
+  @override
+  String get forexAmountToExchange => 'Ayagomba kuvunjwa';
+
+  @override
+  String get forexAmountHint => 'urugero: 100';
+
+  @override
+  String get forexPreferredRate => 'Igipimo cyo kuvunja wifuza';
+
+  @override
+  String get forexRateHint => 'urugero: 3700';
+
+  @override
+  String get forexSettlementPreference => 'Uburyo bwo kwishyura';
+
+  @override
+  String get selectSettlementHint => 'Hitamo uburyo bwo kwishyura';
+
+  @override
+  String get forexMarkUrgent => 'Shyiraho ko bishyushye';
+
+  @override
+  String get forexPublishBtn => 'Tangaza ubusabe bwa forex';
+
+  @override
+  String get kycGateForex => 'Wuzuza KYC mbere yo gutangaza ubusabe bwa forex.';
+
+  @override
+  String get couldNotPublishForex =>
+      'Ntabwo bishobotse gutangaza ubusabe bwa forex.';
+
+  @override
+  String get forexSettlementInPerson => 'Ana kwa ana';
+
+  @override
+  String get forexSettlementMobileMoney => 'Mobile Money';
+
+  @override
+  String get forexSettlementBankTransfer => 'Banki';
+
+  @override
+  String get forexSettlementOther => 'Ikindi';
+
+  @override
+  String get forexRequestTitle => 'Ubusabe bwa forex';
+
+  @override
+  String get myForexRequestsTitle => 'Ubusabe bwanjye bwa forex';
+
+  @override
+  String get noForexRequestsYet => 'Nta ubusabe bwa forex buhari.';
+
+  @override
+  String get listingDetailTitle => 'Ibikubiye mu busabe';
 }

@@ -750,4 +750,394 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get incomeOver10m => 'Over 10M UGX / month';
+
+  @override
+  String get iHold => 'I hold';
+
+  @override
+  String get rate => 'Rate';
+
+  @override
+  String get iNeed => 'I need';
+
+  @override
+  String get marketRate => 'Market rate';
+
+  @override
+  String get stepIncomeRepayment => 'Income & repayment';
+
+  @override
+  String get stepReviewPublish => 'Review & publish';
+
+  @override
+  String get requestALoan => 'Request a loan';
+
+  @override
+  String stepCounter(int current, int total, String subtitle) {
+    return 'Step $current of $total · $subtitle';
+  }
+
+  @override
+  String get subtitleLoanDetails => 'loan details';
+
+  @override
+  String get subtitleRepaymentContext => 'repayment context';
+
+  @override
+  String get subtitleReview => 'review';
+
+  @override
+  String get panelTheBasics => 'The basics';
+
+  @override
+  String get panelTheNumbers => 'The numbers';
+
+  @override
+  String get panelLocationDetails => 'Location and details';
+
+  @override
+  String get panelRepaymentSource => 'Repayment source';
+
+  @override
+  String get panelAbilityToRepay => 'Ability to repay';
+
+  @override
+  String get panelPreferredTerms => 'Preferred terms';
+
+  @override
+  String get requestTitleLabel => 'Request title';
+
+  @override
+  String get requestTitleHint => 'e.g. Delivery van for Kampala route';
+
+  @override
+  String get purposeLabel => 'Purpose';
+
+  @override
+  String get selectPurposeHint => 'Select purpose';
+
+  @override
+  String get describePurposeLabel => 'Describe your purpose';
+
+  @override
+  String amountLabelWithCurrency(String currency) {
+    return 'Amount ($currency)';
+  }
+
+  @override
+  String get amountHintLoan => '7,000,000';
+
+  @override
+  String get durationLabel => 'Duration';
+
+  @override
+  String get durationHintMonths => '6 months';
+
+  @override
+  String get descriptionOptionalLabel => 'Description (optional)';
+
+  @override
+  String get descriptionOptionalHint => 'Add any context lenders should know';
+
+  @override
+  String get incomeSourceLabel => 'Income source';
+
+  @override
+  String get incomeSourceHint => 'e.g. Salary, shop income, farming, side work';
+
+  @override
+  String get preferredRepaymentPlanLabel => 'Preferred repayment plan';
+
+  @override
+  String get selectRepaymentPlanHint => 'Select repayment plan';
+
+  @override
+  String repaymentAmountPerPeriodLabel(String currency) {
+    return 'Repayment amount per period ($currency)';
+  }
+
+  @override
+  String get repaymentAmountHint => 'e.g. 250,000';
+
+  @override
+  String get repaymentTimelineLabel => 'Repayment timeline';
+
+  @override
+  String get repaymentTimelineHint =>
+      'e.g. Paid by the 5th of every month for 8 months';
+
+  @override
+  String get suggestedInterestRateLabel => 'Suggested interest rate (%)';
+
+  @override
+  String get suggestedLateFeeLabel => 'Suggested late payment fee (%)';
+
+  @override
+  String get suggestedRepaymentScheduleLabel => 'Suggested repayment schedule';
+
+  @override
+  String suggestedInstallmentAmountLabel(String currency) {
+    return 'Suggested installment amount ($currency)';
+  }
+
+  @override
+  String get validationTitleRequired => 'Enter a title';
+
+  @override
+  String get validationTitleMinLength => 'Use at least 4 characters';
+
+  @override
+  String get validationPurposeRequired => 'Select a purpose';
+
+  @override
+  String get validationPurposeContinue => 'Select a purpose to continue.';
+
+  @override
+  String get validationAmountRequired => 'Enter an amount';
+
+  @override
+  String get validationValidNumber => 'Enter a valid number';
+
+  @override
+  String validationMinAmount(String currency, String min) {
+    return 'Minimum $currency $min';
+  }
+
+  @override
+  String validationMaxAmount(String currency, String max) {
+    return 'Maximum $currency $max';
+  }
+
+  @override
+  String get validationDurationRequired => 'Enter duration';
+
+  @override
+  String get validationDurationRange => '1 to 60 months';
+
+  @override
+  String get validationIncomeSourceRequired => 'Enter your repayment source';
+
+  @override
+  String get validationIncomeSourceDetail => 'Add a little more detail';
+
+  @override
+  String get validationRepaymentPlanRequired => 'Select a repayment plan';
+
+  @override
+  String get validationRepaymentPlanContinue =>
+      'Select a repayment plan to continue.';
+
+  @override
+  String get validationRepaymentAmountRequired => 'Enter repayment amount';
+
+  @override
+  String get validationRepaymentAmountValid => 'Enter a valid amount';
+
+  @override
+  String get validationRepaymentTimelineRequired => 'Enter repayment timeline';
+
+  @override
+  String get validationRepaymentTimelineDetail => 'Add a clearer timeline';
+
+  @override
+  String get validationPercentRange => 'Use 0 to 100';
+
+  @override
+  String get btnContinue => 'Continue';
+
+  @override
+  String get btnPublishToMarketplace => 'Publish to marketplace';
+
+  @override
+  String get btnBack => 'Back';
+
+  @override
+  String get reviewYourRequest => 'Review your request';
+
+  @override
+  String get reviewConfirmDetails =>
+      'Confirm the details before publishing to the marketplace.';
+
+  @override
+  String get reviewTitle => 'Title';
+
+  @override
+  String get reviewAmount => 'Amount';
+
+  @override
+  String get reviewDuration => 'Duration';
+
+  @override
+  String get reviewPurpose => 'Purpose';
+
+  @override
+  String get reviewIncomeSource => 'Income source';
+
+  @override
+  String get reviewPreferredRepaymentPlan => 'Preferred repayment plan';
+
+  @override
+  String get reviewRepaymentAmount => 'Repayment amount';
+
+  @override
+  String get reviewRepaymentTimeline => 'Repayment timeline';
+
+  @override
+  String get reviewDescription => 'Description';
+
+  @override
+  String get reviewLockedTerms => 'Locked preferred terms';
+
+  @override
+  String get reviewPerPeriod => 'per period';
+
+  @override
+  String get reviewContactPrivacyNotice =>
+      'Your contact details stay hidden until an offer is accepted and the unlock flow is completed.';
+
+  @override
+  String get requestSubmittedTitle => 'Request submitted';
+
+  @override
+  String get requestSubmittedContent =>
+      'Your loan request is now live on the marketplace. Lenders can review it and make offers.';
+
+  @override
+  String get couldNotPublishRequest =>
+      'Could not publish this request. Try again.';
+
+  @override
+  String get kycGateListing =>
+      'Complete KYC verification before posting a listing.';
+
+  @override
+  String get notAllowedListing =>
+      'Your account is not allowed to post a listing.';
+
+  @override
+  String infoBannerText(String currency, String min, String max) {
+    return '$currency $min-$max · Up to 60 months · terms lock on publish';
+  }
+
+  @override
+  String get termsLockedNotice => 'Locked when the request is published.';
+
+  @override
+  String get upgradeToProForTerms =>
+      'Upgrade to Pro to suggest interest, late fee, and repayment terms.';
+
+  @override
+  String get purposeAgri => 'Agricultural equipment';
+
+  @override
+  String get purposeBusiness => 'Business expansion';
+
+  @override
+  String get purposeEdu => 'Education / School fees';
+
+  @override
+  String get purposeMedical => 'Emergency medical';
+
+  @override
+  String get purposeFarming => 'Greenhouse / Farming';
+
+  @override
+  String get purposeHome => 'Home improvement';
+
+  @override
+  String get purposeStock => 'Inventory / Stock';
+
+  @override
+  String get purposeLand => 'Land purchase';
+
+  @override
+  String get purposeLivestock => 'Livestock';
+
+  @override
+  String get purposeEnergy => 'Solar / Energy';
+
+  @override
+  String get purposeVehicle => 'Transport / Vehicle';
+
+  @override
+  String get purposeWater => 'Water & Sanitation';
+
+  @override
+  String get purposeWedding => 'Wedding / Event';
+
+  @override
+  String get purposeOther => 'Other';
+
+  @override
+  String get planMonthly => 'Monthly';
+
+  @override
+  String get planWeekly => 'Weekly';
+
+  @override
+  String get planOneTime => 'One-time payment';
+
+  @override
+  String get createForexRequestTitle => 'Create Forex Request';
+
+  @override
+  String get forexCurrencyHeld => 'Currency you hold';
+
+  @override
+  String get forexCurrencyNeeded => 'Currency you need';
+
+  @override
+  String get forexAmountToExchange => 'Amount to exchange';
+
+  @override
+  String get forexAmountHint => 'e.g. 100';
+
+  @override
+  String get forexPreferredRate => 'Preferred exchange rate';
+
+  @override
+  String get forexRateHint => 'e.g. 3700';
+
+  @override
+  String get forexSettlementPreference => 'Settlement preference';
+
+  @override
+  String get selectSettlementHint => 'Select settlement';
+
+  @override
+  String get forexMarkUrgent => 'Mark as urgent request';
+
+  @override
+  String get forexPublishBtn => 'Publish forex request';
+
+  @override
+  String get kycGateForex =>
+      'Complete KYC verification before posting a forex request.';
+
+  @override
+  String get couldNotPublishForex => 'Could not publish this forex request.';
+
+  @override
+  String get forexSettlementInPerson => 'In person';
+
+  @override
+  String get forexSettlementMobileMoney => 'Mobile money';
+
+  @override
+  String get forexSettlementBankTransfer => 'Bank transfer';
+
+  @override
+  String get forexSettlementOther => 'Other';
+
+  @override
+  String get forexRequestTitle => 'Forex request';
+
+  @override
+  String get myForexRequestsTitle => 'My forex requests';
+
+  @override
+  String get noForexRequestsYet => 'No forex requests yet.';
+
+  @override
+  String get listingDetailTitle => 'Listing detail';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../models/forex_listing_model.dart';
 
 class SendRateReceivePanel extends StatelessWidget {
@@ -14,9 +15,10 @@ class SendRateReceivePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rate = listing.preferredRate;
-    final rateText = _formatRateText(listing);
+    final rateText = _formatRateText(context, listing);
     final receiveText = rate == null
         ? listing.currencyNeeded
         : '${_currencySymbol(listing.currencyNeeded)} ${_fmt(listing.receiveEstimate)}';
@@ -61,7 +63,7 @@ class SendRateReceivePanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'I hold',
+                        l10n?.iHold ?? 'I hold',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w500,
@@ -114,7 +116,7 @@ class SendRateReceivePanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Rate',
+                        l10n?.rate ?? 'Rate',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w500,
@@ -167,7 +169,7 @@ class SendRateReceivePanel extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'I need',
+                        l10n?.iNeed ?? 'I need',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w500,
@@ -197,10 +199,11 @@ class SendRateReceivePanel extends StatelessWidget {
     );
   }
 
-  String _formatRateText(ForexListingModel listing) {
+  String _formatRateText(BuildContext context, ForexListingModel listing) {
+    final l10n = AppLocalizations.of(context);
     final rate = listing.preferredRate;
     if (rate == null) {
-      return listing.rateCoverageTier ?? 'Market rate';
+      return listing.rateCoverageTier ?? l10n?.marketRate ?? 'Market rate';
     }
     // E.g. USD -> UGX rate = 0.000269 -> 1 USD = 3,717 UGX
     // Or UGX -> KES rate = 0.0285 -> 1 KES = 35 UGX

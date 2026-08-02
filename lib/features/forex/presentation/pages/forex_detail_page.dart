@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
@@ -48,13 +50,13 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Text(
-            '<',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
           ),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
         ),
-        title: const Text('Forex request'),
+        title: Text(AppLocalizations.of(context)?.forexRequestTitle ?? 'Forex request'),
       ),
       body: FutureBuilder<_ForexDetailData>(
         future: _future,

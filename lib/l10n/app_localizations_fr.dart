@@ -757,4 +757,405 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get incomeOver10m => 'Plus de 10M UGX / mois';
+
+  @override
+  String get iHold => 'J\'ai';
+
+  @override
+  String get rate => 'Taux';
+
+  @override
+  String get iNeed => 'J\'ai besoin de';
+
+  @override
+  String get marketRate => 'Taux du marché';
+
+  @override
+  String get stepIncomeRepayment => 'Revenu et remboursement';
+
+  @override
+  String get stepReviewPublish => 'Vérifier et publier';
+
+  @override
+  String get requestALoan => 'Demander un prêt';
+
+  @override
+  String stepCounter(int current, int total, String subtitle) {
+    return 'Step $current of $total · $subtitle';
+  }
+
+  @override
+  String get subtitleLoanDetails => 'détails du prêt';
+
+  @override
+  String get subtitleRepaymentContext => 'contexte de remboursement';
+
+  @override
+  String get subtitleReview => 'vérification';
+
+  @override
+  String get panelTheBasics => 'Les bases';
+
+  @override
+  String get panelTheNumbers => 'Les chiffres';
+
+  @override
+  String get panelLocationDetails => 'Lieu et détails';
+
+  @override
+  String get panelRepaymentSource => 'Source de remboursement';
+
+  @override
+  String get panelAbilityToRepay => 'Capacité de remboursement';
+
+  @override
+  String get panelPreferredTerms => 'Conditions préférées';
+
+  @override
+  String get requestTitleLabel => 'Titre de la demande';
+
+  @override
+  String get requestTitleHint =>
+      'ex. Camionnette de livraison pour trajet Kampala';
+
+  @override
+  String get purposeLabel => 'Motif';
+
+  @override
+  String get selectPurposeHint => 'Sélectionner le motif';
+
+  @override
+  String get describePurposeLabel => 'Décrivez votre motif';
+
+  @override
+  String amountLabelWithCurrency(String currency) {
+    return 'Montant ($currency)';
+  }
+
+  @override
+  String get amountHintLoan => '7 000 000';
+
+  @override
+  String get durationLabel => 'Durée';
+
+  @override
+  String get durationHintMonths => '6 mois';
+
+  @override
+  String get descriptionOptionalLabel => 'Description (optionnel)';
+
+  @override
+  String get descriptionOptionalHint =>
+      'Ajoutez tout contexte utile pour les prêteurs';
+
+  @override
+  String get incomeSourceLabel => 'Source de revenu';
+
+  @override
+  String get incomeSourceHint =>
+      'ex. Salaire, commerce, agriculture, activité secondaire';
+
+  @override
+  String get preferredRepaymentPlanLabel => 'Plan de remboursement préféré';
+
+  @override
+  String get selectRepaymentPlanHint => 'Sélectionner le plan de remboursement';
+
+  @override
+  String repaymentAmountPerPeriodLabel(String currency) {
+    return 'Montant de remboursement par période ($currency)';
+  }
+
+  @override
+  String get repaymentAmountHint => 'ex. 250 000';
+
+  @override
+  String get repaymentTimelineLabel => 'Calendrier de remboursement';
+
+  @override
+  String get repaymentTimelineHint =>
+      'ex. Payé le 5 de chaque mois pendant 8 mois';
+
+  @override
+  String get suggestedInterestRateLabel => 'Taux d\'intérêt suggéré (%)';
+
+  @override
+  String get suggestedLateFeeLabel => 'Frais de retard suggérés (%)';
+
+  @override
+  String get suggestedRepaymentScheduleLabel => 'Échéancier suggéré';
+
+  @override
+  String suggestedInstallmentAmountLabel(String currency) {
+    return 'Montant de versement suggéré ($currency)';
+  }
+
+  @override
+  String get validationTitleRequired => 'Entrez un titre';
+
+  @override
+  String get validationTitleMinLength => 'Utilisez au moins 4 caractères';
+
+  @override
+  String get validationPurposeRequired => 'Sélectionnez un motif';
+
+  @override
+  String get validationPurposeContinue =>
+      'Sélectionnez un motif pour continuer.';
+
+  @override
+  String get validationAmountRequired => 'Entrez un montant';
+
+  @override
+  String get validationValidNumber => 'Entrez un nombre valide';
+
+  @override
+  String validationMinAmount(String currency, String min) {
+    return 'Minimum $currency $min';
+  }
+
+  @override
+  String validationMaxAmount(String currency, String max) {
+    return 'Maximum $currency $max';
+  }
+
+  @override
+  String get validationDurationRequired => 'Entrez la durée';
+
+  @override
+  String get validationDurationRange => '1 à 60 mois';
+
+  @override
+  String get validationIncomeSourceRequired =>
+      'Entrez votre source de remboursement';
+
+  @override
+  String get validationIncomeSourceDetail => 'Ajoutez un peu plus de détails';
+
+  @override
+  String get validationRepaymentPlanRequired =>
+      'Sélectionnez un plan de remboursement';
+
+  @override
+  String get validationRepaymentPlanContinue =>
+      'Sélectionnez un plan de remboursement pour continuer.';
+
+  @override
+  String get validationRepaymentAmountRequired =>
+      'Entrez le montant du remboursement';
+
+  @override
+  String get validationRepaymentAmountValid => 'Entrez un montant valide';
+
+  @override
+  String get validationRepaymentTimelineRequired =>
+      'Entrez le calendrier de remboursement';
+
+  @override
+  String get validationRepaymentTimelineDetail =>
+      'Ajoutez un calendrier plus clair';
+
+  @override
+  String get validationPercentRange => 'Utilisez 0 à 100';
+
+  @override
+  String get btnContinue => 'Continuer';
+
+  @override
+  String get btnPublishToMarketplace => 'Publier sur le marché';
+
+  @override
+  String get btnBack => 'Retour';
+
+  @override
+  String get reviewYourRequest => 'Vérifiez votre demande';
+
+  @override
+  String get reviewConfirmDetails =>
+      'Confirmez les détails avant de publier sur le marché.';
+
+  @override
+  String get reviewTitle => 'Titre';
+
+  @override
+  String get reviewAmount => 'Montant';
+
+  @override
+  String get reviewDuration => 'Durée';
+
+  @override
+  String get reviewPurpose => 'Motif';
+
+  @override
+  String get reviewIncomeSource => 'Source de revenu';
+
+  @override
+  String get reviewPreferredRepaymentPlan => 'Plan de remboursement préféré';
+
+  @override
+  String get reviewRepaymentAmount => 'Montant de remboursement';
+
+  @override
+  String get reviewRepaymentTimeline => 'Calendrier de remboursement';
+
+  @override
+  String get reviewDescription => 'Description';
+
+  @override
+  String get reviewLockedTerms => 'Conditions préférées verrouillées';
+
+  @override
+  String get reviewPerPeriod => 'par période';
+
+  @override
+  String get reviewContactPrivacyNotice =>
+      'Vos coordonnées restent masquées jusqu\'à ce qu\'une offre soit acceptée et le déverrouillage terminé.';
+
+  @override
+  String get requestSubmittedTitle => 'Demande soumise';
+
+  @override
+  String get requestSubmittedContent =>
+      'Votre demande de prêt est maintenant en ligne sur le marché. Les prêteurs peuvent l\'examiner et faire des offres.';
+
+  @override
+  String get couldNotPublishRequest =>
+      'Impossible de publier cette demande. Réessayez.';
+
+  @override
+  String get kycGateListing =>
+      'Complétez la vérification KYC avant de publier une demande.';
+
+  @override
+  String get notAllowedListing =>
+      'Votre compte n\'est pas autorisé à publier une demande.';
+
+  @override
+  String infoBannerText(String currency, String min, String max) {
+    return '$currency $min-$max · Jusqu\'à 60 mois · conditions verrouillées à la publication';
+  }
+
+  @override
+  String get termsLockedNotice =>
+      'Verrouillé lors de la publication de la demande.';
+
+  @override
+  String get upgradeToProForTerms =>
+      'Passez à Pro pour suggérer le taux d\'intérêt, les frais de retard et le calendrier.';
+
+  @override
+  String get purposeAgri => 'Équipement agricole';
+
+  @override
+  String get purposeBusiness => 'Extension d\'entreprise';
+
+  @override
+  String get purposeEdu => 'Éducation / Frais scolaires';
+
+  @override
+  String get purposeMedical => 'Urgence médicale';
+
+  @override
+  String get purposeFarming => 'Serre / Agriculture';
+
+  @override
+  String get purposeHome => 'Rénovation domiciliaire';
+
+  @override
+  String get purposeStock => 'Inventaire / Stock';
+
+  @override
+  String get purposeLand => 'Achat de terrain';
+
+  @override
+  String get purposeLivestock => 'Élevage';
+
+  @override
+  String get purposeEnergy => 'Solaire / Énergie';
+
+  @override
+  String get purposeVehicle => 'Transport / Véhicule';
+
+  @override
+  String get purposeWater => 'Eau et assainissement';
+
+  @override
+  String get purposeWedding => 'Mariage / Événement';
+
+  @override
+  String get purposeOther => 'Autre';
+
+  @override
+  String get planMonthly => 'Mensuel';
+
+  @override
+  String get planWeekly => 'Hebdomadaire';
+
+  @override
+  String get planOneTime => 'Paiement unique';
+
+  @override
+  String get createForexRequestTitle => 'Créer une demande de change';
+
+  @override
+  String get forexCurrencyHeld => 'Devise possédée';
+
+  @override
+  String get forexCurrencyNeeded => 'Devise recherchée';
+
+  @override
+  String get forexAmountToExchange => 'Montant à échanger';
+
+  @override
+  String get forexAmountHint => 'ex. 100';
+
+  @override
+  String get forexPreferredRate => 'Taux de change préféré';
+
+  @override
+  String get forexRateHint => 'ex. 3700';
+
+  @override
+  String get forexSettlementPreference => 'Préférence de règlement';
+
+  @override
+  String get selectSettlementHint => 'Sélectionner le règlement';
+
+  @override
+  String get forexMarkUrgent => 'Marquer comme demande urgente';
+
+  @override
+  String get forexPublishBtn => 'Publier la demande de change';
+
+  @override
+  String get kycGateForex =>
+      'Complétez la vérification KYC avant de publier une demande de change.';
+
+  @override
+  String get couldNotPublishForex =>
+      'Impossible de publier cette demande de change.';
+
+  @override
+  String get forexSettlementInPerson => 'En personne';
+
+  @override
+  String get forexSettlementMobileMoney => 'Mobile Money';
+
+  @override
+  String get forexSettlementBankTransfer => 'Virement bancaire';
+
+  @override
+  String get forexSettlementOther => 'Autre';
+
+  @override
+  String get forexRequestTitle => 'Demande de change';
+
+  @override
+  String get myForexRequestsTitle => 'Mes demandes de change';
+
+  @override
+  String get noForexRequestsYet => 'Aucune demande de change pour le moment.';
+
+  @override
+  String get listingDetailTitle => 'Détail de l\'annonce';
 }

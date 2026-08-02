@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/currency_model.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -139,10 +141,14 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context);
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
     if (!authState.user.kycApproved) {
-      _showMessage('Complete KYC verification before posting a forex request.');
+      _showMessage(
+        l10n?.kycGateForex ??
+            'Complete KYC verification before posting a forex request.',
+      );
       return;
     }
 
@@ -166,9 +172,12 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
-      _showMessage(e is AppException
-          ? e.message
-          : 'Could not publish this forex request.');
+      _showMessage(
+        e is AppException
+            ? e.message
+            : (l10n?.couldNotPublishForex ??
+                'Could not publish this forex request.'),
+      );
     }
   }
 
@@ -182,8 +191,25 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     );
   }
 
+  String _getLocalizedSettlement(BuildContext context, String value) {
+    final l10n = AppLocalizations.of(context);
+    switch (value) {
+      case 'In person':
+        return l10n?.forexSettlementInPerson ?? value;
+      case 'Mobile money':
+        return l10n?.forexSettlementMobileMoney ?? value;
+      case 'Bank transfer':
+        return l10n?.forexSettlementBankTransfer ?? value;
+      case 'Other':
+        return l10n?.forexSettlementOther ?? value;
+      default:
+        return value;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final currencies = _currencies;
     final authState = context.watch<AuthBloc>().state;
     final isPro = authState is AuthAuthenticated &&
@@ -192,13 +218,13 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Text(
-            '<',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
         ),
-        title: const Text('Post forex request'),
+        title: Text(l10n?.createForexRequestTitle ?? 'Post forex request'),
       ),
       body: currencies == null
           ? const Center(child: CircularProgressIndicator())
@@ -219,7 +245,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                         children: [
                           Expanded(
                             child: _CurrencyField(
-                              label: 'You hold',
+                              label: l10n?.forexCurrencyHeld ?? 'You hold',
                               value: _currencyHeld,
                               currencies: currencies,
                               onChanged: (value) =>
@@ -229,7 +255,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: _CurrencyField(
-                              label: 'You need',
+                              label: l10n?.forexCurrencyNeeded ?? 'You need',
                               value: _currencyNeeded,
                               currencies: currencies,
                               onChanged: (value) =>
@@ -245,15 +271,18 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly
                         ],
-                        decoration: const InputDecoration(
-                          labelText: 'Amount you will send',
+                        decoration: InputDecoration(
+                          labelText: l10n?.forexAmountToExchange ??
+                              'Amount you will send',
+                          hintText: l10n?.forexAmountHint ?? 'e.g. 100',
                           helperText:
                               'The amount in the currency you hold. Offers use it to show how much of the currency you need you can receive.',
                         ),
                         validator: (v) {
                           final amount = int.tryParse(v ?? '');
                           if (amount == null || amount <= 0) {
-                            return 'Enter an amount';
+                            return l10n?.validationAmountRequired ??
+                                'Enter an amount';
                           }
                           return null;
                         },
@@ -261,12 +290,14 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       const SizedBox(height: 14),
                       DropdownButtonFormField<String>(
                         initialValue: _settlementPreference,
-                        decoration:
-                            const InputDecoration(labelText: 'Settlement'),
+                        decoration: InputDecoration(
+                          labelText: l10n?.forexSettlementPreference ??
+                              'Settlement',
+                        ),
                         items: _settlementPreferences
                             .map((p) => DropdownMenuItem(
                                   value: p,
-                                  child: Text(p),
+                                  child: Text(_getLocalizedSettlement(context, p)),
                                 ))
                             .toList(),
                         onChanged: (v) => setState(
@@ -282,7 +313,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                           decimal: true,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Preferred rate',
+                          labelText: l10n?.forexPreferredRate ??
+                              'Preferred rate',
+                          hintText: l10n?.forexRateHint ?? 'e.g. 3700',
                           helperText: isPro
                               ? 'Optional'
                               : 'Pro unlocks preferred rate suggestions',
@@ -291,7 +324,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       const SizedBox(height: 10),
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Urgent'),
+                        title: Text(
+                          l10n?.forexMarkUrgent ?? 'Urgent',
+                        ),
                         value: _isUrgent,
                         onChanged: (value) => setState(() => _isUrgent = value),
                       ),
@@ -311,7 +346,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Publish forex request'),
+              : Text(
+                  l10n?.forexPublishBtn ?? 'Publish forex request',
+                ),
         ),
       ),
     );

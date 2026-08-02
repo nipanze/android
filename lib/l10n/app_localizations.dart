@@ -1441,6 +1441,738 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Over 10M UGX / month'**
   String get incomeOver10m;
+
+  /// No description provided for @iHold.
+  ///
+  /// In en, this message translates to:
+  /// **'I hold'**
+  String get iHold;
+
+  /// No description provided for @rate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate'**
+  String get rate;
+
+  /// No description provided for @iNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'I need'**
+  String get iNeed;
+
+  /// No description provided for @marketRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Market rate'**
+  String get marketRate;
+
+  /// No description provided for @stepIncomeRepayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Income & repayment'**
+  String get stepIncomeRepayment;
+
+  /// No description provided for @stepReviewPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Review & publish'**
+  String get stepReviewPublish;
+
+  /// No description provided for @requestALoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a loan'**
+  String get requestALoan;
+
+  /// No description provided for @stepCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total} · {subtitle}'**
+  String stepCounter(int current, int total, String subtitle);
+
+  /// No description provided for @subtitleLoanDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'loan details'**
+  String get subtitleLoanDetails;
+
+  /// No description provided for @subtitleRepaymentContext.
+  ///
+  /// In en, this message translates to:
+  /// **'repayment context'**
+  String get subtitleRepaymentContext;
+
+  /// No description provided for @subtitleReview.
+  ///
+  /// In en, this message translates to:
+  /// **'review'**
+  String get subtitleReview;
+
+  /// No description provided for @panelTheBasics.
+  ///
+  /// In en, this message translates to:
+  /// **'The basics'**
+  String get panelTheBasics;
+
+  /// No description provided for @panelTheNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'The numbers'**
+  String get panelTheNumbers;
+
+  /// No description provided for @panelLocationDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Location and details'**
+  String get panelLocationDetails;
+
+  /// No description provided for @panelRepaymentSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment source'**
+  String get panelRepaymentSource;
+
+  /// No description provided for @panelAbilityToRepay.
+  ///
+  /// In en, this message translates to:
+  /// **'Ability to repay'**
+  String get panelAbilityToRepay;
+
+  /// No description provided for @panelPreferredTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred terms'**
+  String get panelPreferredTerms;
+
+  /// No description provided for @requestTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Request title'**
+  String get requestTitleLabel;
+
+  /// No description provided for @requestTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Delivery van for Kampala route'**
+  String get requestTitleHint;
+
+  /// No description provided for @purposeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get purposeLabel;
+
+  /// No description provided for @selectPurposeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select purpose'**
+  String get selectPurposeHint;
+
+  /// No description provided for @describePurposeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe your purpose'**
+  String get describePurposeLabel;
+
+  /// No description provided for @amountLabelWithCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount ({currency})'**
+  String amountLabelWithCurrency(String currency);
+
+  /// No description provided for @amountHintLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'7,000,000'**
+  String get amountHintLoan;
+
+  /// No description provided for @durationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get durationLabel;
+
+  /// No description provided for @durationHintMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'6 months'**
+  String get durationHintMonths;
+
+  /// No description provided for @descriptionOptionalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get descriptionOptionalLabel;
+
+  /// No description provided for @descriptionOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add any context lenders should know'**
+  String get descriptionOptionalHint;
+
+  /// No description provided for @incomeSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Income source'**
+  String get incomeSourceLabel;
+
+  /// No description provided for @incomeSourceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Salary, shop income, farming, side work'**
+  String get incomeSourceHint;
+
+  /// No description provided for @preferredRepaymentPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred repayment plan'**
+  String get preferredRepaymentPlanLabel;
+
+  /// No description provided for @selectRepaymentPlanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select repayment plan'**
+  String get selectRepaymentPlanHint;
+
+  /// No description provided for @repaymentAmountPerPeriodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment amount per period ({currency})'**
+  String repaymentAmountPerPeriodLabel(String currency);
+
+  /// No description provided for @repaymentAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 250,000'**
+  String get repaymentAmountHint;
+
+  /// No description provided for @repaymentTimelineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment timeline'**
+  String get repaymentTimelineLabel;
+
+  /// No description provided for @repaymentTimelineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Paid by the 5th of every month for 8 months'**
+  String get repaymentTimelineHint;
+
+  /// No description provided for @suggestedInterestRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested interest rate (%)'**
+  String get suggestedInterestRateLabel;
+
+  /// No description provided for @suggestedLateFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested late payment fee (%)'**
+  String get suggestedLateFeeLabel;
+
+  /// No description provided for @suggestedRepaymentScheduleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested repayment schedule'**
+  String get suggestedRepaymentScheduleLabel;
+
+  /// No description provided for @suggestedInstallmentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested installment amount ({currency})'**
+  String suggestedInstallmentAmountLabel(String currency);
+
+  /// No description provided for @validationTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title'**
+  String get validationTitleRequired;
+
+  /// No description provided for @validationTitleMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 4 characters'**
+  String get validationTitleMinLength;
+
+  /// No description provided for @validationPurposeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a purpose'**
+  String get validationPurposeRequired;
+
+  /// No description provided for @validationPurposeContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a purpose to continue.'**
+  String get validationPurposeContinue;
+
+  /// No description provided for @validationAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount'**
+  String get validationAmountRequired;
+
+  /// No description provided for @validationValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get validationValidNumber;
+
+  /// No description provided for @validationMinAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum {currency} {min}'**
+  String validationMinAmount(String currency, String min);
+
+  /// No description provided for @validationMaxAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum {currency} {max}'**
+  String validationMaxAmount(String currency, String max);
+
+  /// No description provided for @validationDurationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter duration'**
+  String get validationDurationRequired;
+
+  /// No description provided for @validationDurationRange.
+  ///
+  /// In en, this message translates to:
+  /// **'1 to 60 months'**
+  String get validationDurationRange;
+
+  /// No description provided for @validationIncomeSourceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your repayment source'**
+  String get validationIncomeSourceRequired;
+
+  /// No description provided for @validationIncomeSourceDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a little more detail'**
+  String get validationIncomeSourceDetail;
+
+  /// No description provided for @validationRepaymentPlanRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a repayment plan'**
+  String get validationRepaymentPlanRequired;
+
+  /// No description provided for @validationRepaymentPlanContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a repayment plan to continue.'**
+  String get validationRepaymentPlanContinue;
+
+  /// No description provided for @validationRepaymentAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter repayment amount'**
+  String get validationRepaymentAmountRequired;
+
+  /// No description provided for @validationRepaymentAmountValid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid amount'**
+  String get validationRepaymentAmountValid;
+
+  /// No description provided for @validationRepaymentTimelineRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter repayment timeline'**
+  String get validationRepaymentTimelineRequired;
+
+  /// No description provided for @validationRepaymentTimelineDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a clearer timeline'**
+  String get validationRepaymentTimelineDetail;
+
+  /// No description provided for @validationPercentRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 0 to 100'**
+  String get validationPercentRange;
+
+  /// No description provided for @btnContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get btnContinue;
+
+  /// No description provided for @btnPublishToMarketplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish to marketplace'**
+  String get btnPublishToMarketplace;
+
+  /// No description provided for @btnBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get btnBack;
+
+  /// No description provided for @reviewYourRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your request'**
+  String get reviewYourRequest;
+
+  /// No description provided for @reviewConfirmDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the details before publishing to the marketplace.'**
+  String get reviewConfirmDetails;
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get reviewTitle;
+
+  /// No description provided for @reviewAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get reviewAmount;
+
+  /// No description provided for @reviewDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get reviewDuration;
+
+  /// No description provided for @reviewPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get reviewPurpose;
+
+  /// No description provided for @reviewIncomeSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Income source'**
+  String get reviewIncomeSource;
+
+  /// No description provided for @reviewPreferredRepaymentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred repayment plan'**
+  String get reviewPreferredRepaymentPlan;
+
+  /// No description provided for @reviewRepaymentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment amount'**
+  String get reviewRepaymentAmount;
+
+  /// No description provided for @reviewRepaymentTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment timeline'**
+  String get reviewRepaymentTimeline;
+
+  /// No description provided for @reviewDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get reviewDescription;
+
+  /// No description provided for @reviewLockedTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked preferred terms'**
+  String get reviewLockedTerms;
+
+  /// No description provided for @reviewPerPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'per period'**
+  String get reviewPerPeriod;
+
+  /// No description provided for @reviewContactPrivacyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your contact details stay hidden until an offer is accepted and the unlock flow is completed.'**
+  String get reviewContactPrivacyNotice;
+
+  /// No description provided for @requestSubmittedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted'**
+  String get requestSubmittedTitle;
+
+  /// No description provided for @requestSubmittedContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your loan request is now live on the marketplace. Lenders can review it and make offers.'**
+  String get requestSubmittedContent;
+
+  /// No description provided for @couldNotPublishRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not publish this request. Try again.'**
+  String get couldNotPublishRequest;
+
+  /// No description provided for @kycGateListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete KYC verification before posting a listing.'**
+  String get kycGateListing;
+
+  /// No description provided for @notAllowedListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is not allowed to post a listing.'**
+  String get notAllowedListing;
+
+  /// No description provided for @infoBannerText.
+  ///
+  /// In en, this message translates to:
+  /// **'{currency} {min}-{max} · Up to 60 months · terms lock on publish'**
+  String infoBannerText(String currency, String min, String max);
+
+  /// No description provided for @termsLockedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked when the request is published.'**
+  String get termsLockedNotice;
+
+  /// No description provided for @upgradeToProForTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Pro to suggest interest, late fee, and repayment terms.'**
+  String get upgradeToProForTerms;
+
+  /// No description provided for @purposeAgri.
+  ///
+  /// In en, this message translates to:
+  /// **'Agricultural equipment'**
+  String get purposeAgri;
+
+  /// No description provided for @purposeBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business expansion'**
+  String get purposeBusiness;
+
+  /// No description provided for @purposeEdu.
+  ///
+  /// In en, this message translates to:
+  /// **'Education / School fees'**
+  String get purposeEdu;
+
+  /// No description provided for @purposeMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency medical'**
+  String get purposeMedical;
+
+  /// No description provided for @purposeFarming.
+  ///
+  /// In en, this message translates to:
+  /// **'Greenhouse / Farming'**
+  String get purposeFarming;
+
+  /// No description provided for @purposeHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home improvement'**
+  String get purposeHome;
+
+  /// No description provided for @purposeStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory / Stock'**
+  String get purposeStock;
+
+  /// No description provided for @purposeLand.
+  ///
+  /// In en, this message translates to:
+  /// **'Land purchase'**
+  String get purposeLand;
+
+  /// No description provided for @purposeLivestock.
+  ///
+  /// In en, this message translates to:
+  /// **'Livestock'**
+  String get purposeLivestock;
+
+  /// No description provided for @purposeEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar / Energy'**
+  String get purposeEnergy;
+
+  /// No description provided for @purposeVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport / Vehicle'**
+  String get purposeVehicle;
+
+  /// No description provided for @purposeWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water & Sanitation'**
+  String get purposeWater;
+
+  /// No description provided for @purposeWedding.
+  ///
+  /// In en, this message translates to:
+  /// **'Wedding / Event'**
+  String get purposeWedding;
+
+  /// No description provided for @purposeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get purposeOther;
+
+  /// No description provided for @planMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get planMonthly;
+
+  /// No description provided for @planWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get planWeekly;
+
+  /// No description provided for @planOneTime.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time payment'**
+  String get planOneTime;
+
+  /// No description provided for @createForexRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Forex Request'**
+  String get createForexRequestTitle;
+
+  /// No description provided for @forexCurrencyHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency you hold'**
+  String get forexCurrencyHeld;
+
+  /// No description provided for @forexCurrencyNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency you need'**
+  String get forexCurrencyNeeded;
+
+  /// No description provided for @forexAmountToExchange.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to exchange'**
+  String get forexAmountToExchange;
+
+  /// No description provided for @forexAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 100'**
+  String get forexAmountHint;
+
+  /// No description provided for @forexPreferredRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred exchange rate'**
+  String get forexPreferredRate;
+
+  /// No description provided for @forexRateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 3700'**
+  String get forexRateHint;
+
+  /// No description provided for @forexSettlementPreference.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement preference'**
+  String get forexSettlementPreference;
+
+  /// No description provided for @selectSettlementHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select settlement'**
+  String get selectSettlementHint;
+
+  /// No description provided for @forexMarkUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as urgent request'**
+  String get forexMarkUrgent;
+
+  /// No description provided for @forexPublishBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish forex request'**
+  String get forexPublishBtn;
+
+  /// No description provided for @kycGateForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete KYC verification before posting a forex request.'**
+  String get kycGateForex;
+
+  /// No description provided for @couldNotPublishForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not publish this forex request.'**
+  String get couldNotPublishForex;
+
+  /// No description provided for @forexSettlementInPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'In person'**
+  String get forexSettlementInPerson;
+
+  /// No description provided for @forexSettlementMobileMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile money'**
+  String get forexSettlementMobileMoney;
+
+  /// No description provided for @forexSettlementBankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer'**
+  String get forexSettlementBankTransfer;
+
+  /// No description provided for @forexSettlementOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get forexSettlementOther;
+
+  /// No description provided for @forexRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex request'**
+  String get forexRequestTitle;
+
+  /// No description provided for @myForexRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My forex requests'**
+  String get myForexRequestsTitle;
+
+  /// No description provided for @noForexRequestsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No forex requests yet.'**
+  String get noForexRequestsYet;
+
+  /// No description provided for @listingDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing detail'**
+  String get listingDetailTitle;
 }
 
 class _AppLocalizationsDelegate

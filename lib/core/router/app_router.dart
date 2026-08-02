@@ -69,6 +69,10 @@ class AppRouter {
     redirect: _redirect,
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
     routes: [
+      GoRoute(
+        path: '/',
+        redirect: (_, __) => AppRoutes.marketplace,
+      ),
       // ── Auth routes (no shell) ──────────────────────────────────────
       GoRoute(
         path: AppRoutes.welcome,
@@ -133,11 +137,6 @@ class AppRouter {
             name: 'listingCreate',
             pageBuilder: (_, state) => _fade(state, const ListingCreatePage()),
           ),
-          GoRoute(
-            path: AppRoutes.forexCreate,
-            name: 'forexCreate',
-            pageBuilder: (_, state) => _fade(state, const ForexCreatePage()),
-          ),
           // ── My listings — accessible via profile/account, not the tab ──
           GoRoute(
             path: AppRoutes.myListings,
@@ -162,6 +161,13 @@ class AppRouter {
         path: AppRoutes.myForexRequests,
         name: 'myForexRequests',
         pageBuilder: (_, state) => _slide(state, const MyForexRequestsPage()),
+      ),
+      // forexCreate MUST come before forexDetail — otherwise the :requestId
+      // wildcard swallows the literal segment "create".
+      GoRoute(
+        path: AppRoutes.forexCreate,
+        name: 'forexCreate',
+        pageBuilder: (_, state) => _slide(state, const ForexCreatePage()),
       ),
       GoRoute(
         path: AppRoutes.forexDetail,

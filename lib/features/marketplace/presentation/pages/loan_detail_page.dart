@@ -9,7 +9,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/ticker_card.dart';
 import '../../../../shared/widgets/trust_badges.dart';
@@ -182,13 +184,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Text(
-            '<',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
           ),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
         ),
-        title: const Text('Listing detail'),
+        title: Text(AppLocalizations.of(context)?.listingDetailTitle ?? 'Listing detail'),
       ),
       body: RefreshIndicator(
         onRefresh: _loadOnce,
