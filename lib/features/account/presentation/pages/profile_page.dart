@@ -54,6 +54,7 @@ class _ProfileViewState extends State<_ProfileView> {
   ];
 
   static const _institutionOptions = [
+    ('', 'Individual / Personal account'),
     ('bank', 'Bank'),
     ('forex_exchange', 'Forex exchange company'),
     ('sacco', 'SACCO'),
@@ -302,16 +303,16 @@ class _ProfileViewState extends State<_ProfileView> {
 
                   // Institution Type Dropdown
                   DropdownButtonFormField<String>(
-                    initialValue: _institutionType,
+                    initialValue: _institutionType ?? '',
                     decoration: const InputDecoration(
                       labelText: 'Account represents',
                       prefixIcon: Icon(Icons.business_center_outlined, size: 20),
                     ),
-                    hint: const Text('Select institution type (optional)'),
                     items: _institutionOptions
                         .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
                         .toList(),
-                    onChanged: (v) => setState(() => _institutionType = v),
+                    onChanged: (v) => setState(
+                        () => _institutionType = (v == null || v.isEmpty) ? null : v),
                   ),
                   const SizedBox(height: 8),
 
@@ -363,7 +364,7 @@ class _ProfileViewState extends State<_ProfileView> {
                                           .isEmpty
                                       ? null
                                       : _preferredBankController.text.trim(),
-                                  institutionType: _institutionType,
+                                  institutionType: _institutionType ?? '',
                                   isBankAgent: _isBankAgent,
                                   showProfessionalTag: _showProfessionalTag,
                                 );

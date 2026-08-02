@@ -215,6 +215,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   ];
 
   static const _institutionOptions = [
+    {'value': '', 'label': 'Individual / Personal account'},
     {'value': 'bank', 'label': 'Bank'},
     {'value': 'forex_exchange', 'label': 'Forex exchange company'},
     {'value': 'sacco', 'label': 'SACCO'},
@@ -305,7 +306,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
           _field('Preferred bank or deposit bank', _preferredBankCtrl),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
-            initialValue: _institutionType,
+            initialValue: _institutionType ?? '',
             decoration: const InputDecoration(
               labelText: 'Account represents',
               border: OutlineInputBorder(),
@@ -317,7 +318,8 @@ class _EditProfilePageState extends State<_EditProfilePage> {
                       child: Text(e['label']!),
                     ))
                 .toList(),
-            onChanged: (v) => setState(() => _institutionType = v),
+            onChanged: (v) => setState(
+                () => _institutionType = (v == null || v.isEmpty) ? null : v),
           ),
           const SizedBox(height: 8),
           SwitchListTile.adaptive(
@@ -392,7 +394,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         preferredBank: _preferredBankCtrl.text.trim().isEmpty
             ? null
             : _preferredBankCtrl.text.trim(),
-        institutionType: _institutionType,
+        institutionType: _institutionType ?? '',
         isBankAgent: _isBankAgent,
         showProfessionalTag: _showProfessionalTag,
       );

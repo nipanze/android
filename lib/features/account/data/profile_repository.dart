@@ -157,8 +157,16 @@ class ProfileRepository {
       if (incomeCurrency != null) {
         updates['income_currency'] = incomeCurrency;
       }
-      if (preferredBank != null) updates['preferred_bank'] = preferredBank;
-      if (institutionType != null) updates['institution_type'] = institutionType;
+      if (preferredBank != null) {
+        updates['preferred_bank'] =
+            preferredBank.trim().isEmpty ? null : preferredBank.trim();
+      }
+      if (institutionType != null) {
+        updates['institution_type'] =
+            (institutionType.isEmpty || institutionType == 'none')
+                ? null
+                : institutionType;
+      }
       if (isBankAgent != null) updates['is_bank_agent'] = isBankAgent;
       if (showProfessionalTag != null) {
         updates['show_professional_tag'] = showProfessionalTag;
