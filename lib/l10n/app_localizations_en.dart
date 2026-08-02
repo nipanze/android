@@ -1158,4 +1158,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Settlement terms';
+
+  @override
+  String get urgentBadge => 'Urgent';
 }

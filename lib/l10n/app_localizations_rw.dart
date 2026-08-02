@@ -1161,4 +1161,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Amabwiriza y\'iryozwa';
+
+  @override
+  String get urgentBadge => 'Bihutirwa';
 }

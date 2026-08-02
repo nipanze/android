@@ -507,5 +507,6 @@
   "couldNotSendOffer": "Could not send offer.",
   "rateOfferedLabel": "Rate offered",
   "amountAvailableLabel": "Amount available",
-  "settlementTermsLabel": "Settlement terms"
+  "settlementTermsLabel": "Settlement terms",
+  "urgentBadge": "Urgent"
 }

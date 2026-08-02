@@ -2209,6 +2209,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settlement terms'**
   String get settlementTermsLabel;
+
+  /// No description provided for @urgentBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get urgentBadge;
 }
 
 class _AppLocalizationsDelegate

@@ -430,5 +430,6 @@
   "couldNotSendOffer": "Haikuweza kutuma bei.",
   "rateOfferedLabel": "Bei inayotolewa",
   "amountAvailableLabel": "Kiasi kinachopatikana",
-  "settlementTermsLabel": "Masharti ya makubaliano"
+  "settlementTermsLabel": "Masharti ya makubaliano",
+  "urgentBadge": "Dharura"
 }

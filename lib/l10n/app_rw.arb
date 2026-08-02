@@ -430,5 +430,6 @@
   "couldNotSendOffer": "Ntibyashobotse kohereza igiciro.",
   "rateOfferedLabel": "Igiciro gitangwa",
   "amountAvailableLabel": "Amafaranga aboneka",
-  "settlementTermsLabel": "Amabwiriza y'iryozwa"
+  "settlementTermsLabel": "Amabwiriza y'iryozwa",
+  "urgentBadge": "Bihutirwa"
 }

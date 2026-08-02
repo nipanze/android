@@ -1176,4 +1176,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Conditions de règlement';
+
+  @override
+  String get urgentBadge => 'Urgent';
 }

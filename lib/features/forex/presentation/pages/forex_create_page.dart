@@ -324,8 +324,21 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       const SizedBox(height: 10),
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          l10n?.forexMarkUrgent ?? 'Urgent',
+                        title: Row(
+                          children: [
+                            const Icon(
+                              Icons.bolt_rounded,
+                              size: 20,
+                              color: AppColors.danger,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n?.forexMarkUrgent ?? 'Mark as urgent request',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                         value: _isUrgent,
                         onChanged: (value) => setState(() => _isUrgent = value),

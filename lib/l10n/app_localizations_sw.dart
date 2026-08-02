@@ -1165,4 +1165,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Masharti ya makubaliano';
+
+  @override
+  String get urgentBadge => 'Dharura';
 }

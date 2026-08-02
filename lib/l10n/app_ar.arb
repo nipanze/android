@@ -437,5 +437,6 @@
   "couldNotSendOffer": "تعذّر إرسال العرض.",
   "rateOfferedLabel": "السعر المقترح",
   "amountAvailableLabel": "المبلغ المتاح",
-  "settlementTermsLabel": "شروط التسوية"
+  "settlementTermsLabel": "شروط التسوية",
+  "urgentBadge": "عاجل"
 }

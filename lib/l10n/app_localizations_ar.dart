@@ -1146,4 +1146,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'شروط التسوية';
+
+  @override
+  String get urgentBadge => 'عاجل';
 }

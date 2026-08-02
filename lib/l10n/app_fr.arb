@@ -430,5 +430,6 @@
   "couldNotSendOffer": "Impossible d'envoyer l'offre.",
   "rateOfferedLabel": "Taux proposé",
   "amountAvailableLabel": "Montant disponible",
-  "settlementTermsLabel": "Conditions de règlement"
+  "settlementTermsLabel": "Conditions de règlement",
+  "urgentBadge": "Urgent"
 }
