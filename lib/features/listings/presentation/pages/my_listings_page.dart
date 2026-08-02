@@ -33,7 +33,6 @@ class _MyListingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.myRequestsTitle)),
       body: BlocConsumer<MyListingsCubit, MyListingsState>(
         listener: (context, state) {
           if (state is MyListingsError) {
