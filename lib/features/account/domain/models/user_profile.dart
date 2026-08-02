@@ -13,6 +13,10 @@ class UserProfile extends Equatable {
     this.monthlyIncome,
     this.incomeCurrency = 'UGX',
     this.country = 'UG',
+    this.preferredBank,
+    this.institutionType,
+    this.isBankAgent = false,
+    this.showProfessionalTag = true,
     this.preferredEmploymentTypes,
     this.preferredIncomeBracket,
     this.prefersSuggestedTerms = false,
@@ -54,6 +58,10 @@ class UserProfile extends Equatable {
   final int? monthlyIncome;
   final String incomeCurrency;
   final String country;
+  final String? preferredBank;
+  final String? institutionType;
+  final bool isBankAgent;
+  final bool showProfessionalTag;
   int? get monthlyIncomeUgx => monthlyIncome;
   final List<String>? preferredEmploymentTypes;
   final String? preferredIncomeBracket;
@@ -125,6 +133,10 @@ class UserProfile extends Equatable {
     int? monthlyIncome,
     String? incomeCurrency,
     String? country,
+    String? preferredBank,
+    String? institutionType,
+    bool? isBankAgent,
+    bool? showProfessionalTag,
     List<String>? preferredEmploymentTypes,
     String? preferredIncomeBracket,
     bool? prefersSuggestedTerms,
@@ -161,6 +173,10 @@ class UserProfile extends Equatable {
       monthlyIncome: monthlyIncome ?? this.monthlyIncome,
       incomeCurrency: incomeCurrency ?? this.incomeCurrency,
       country: country ?? this.country,
+      preferredBank: preferredBank ?? this.preferredBank,
+      institutionType: institutionType ?? this.institutionType,
+      isBankAgent: isBankAgent ?? this.isBankAgent,
+      showProfessionalTag: showProfessionalTag ?? this.showProfessionalTag,
       preferredEmploymentTypes:
           preferredEmploymentTypes ?? this.preferredEmploymentTypes,
       preferredIncomeBracket:

@@ -76,6 +76,10 @@ class ProfileRepository {
         employerName: profile?['employer_name'] as String?,
         monthlyIncome: (profile?['monthly_income'] as num?)?.toInt(),
         incomeCurrency: profile?['income_currency'] as String? ?? 'UGX',
+        preferredBank: profile?['preferred_bank'] as String?,
+        institutionType: profile?['institution_type'] as String?,
+        isBankAgent: profile?['is_bank_agent'] as bool? ?? false,
+        showProfessionalTag: profile?['show_professional_tag'] as bool? ?? true,
         preferredEmploymentTypes: profile?['preferred_employment_types'] == null
             ? null
             : List<String>.from(profile!['preferred_employment_types'] as List),
@@ -135,6 +139,10 @@ class ProfileRepository {
     String? preferredIncomeBracket,
     bool? prefersSuggestedTerms,
     bool? prefersVerifiedOnly,
+    String? preferredBank,
+    String? institutionType,
+    bool? isBankAgent,
+    bool? showProfessionalTag,
   }) async {
     try {
       final updates = <String, dynamic>{};
@@ -148,6 +156,12 @@ class ProfileRepository {
       }
       if (incomeCurrency != null) {
         updates['income_currency'] = incomeCurrency;
+      }
+      if (preferredBank != null) updates['preferred_bank'] = preferredBank;
+      if (institutionType != null) updates['institution_type'] = institutionType;
+      if (isBankAgent != null) updates['is_bank_agent'] = isBankAgent;
+      if (showProfessionalTag != null) {
+        updates['show_professional_tag'] = showProfessionalTag;
       }
       if (preferredEmploymentTypes != null) {
         updates['preferred_employment_types'] = preferredEmploymentTypes;

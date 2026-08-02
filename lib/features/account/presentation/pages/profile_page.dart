@@ -32,11 +32,15 @@ class _ProfileViewState extends State<_ProfileView> {
   final _phoneController = TextEditingController();
   final _employerController = TextEditingController();
   final _incomeController = TextEditingController();
+  final _preferredBankController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
   String? _district;
   String? _employmentType;
+  String? _institutionType;
+  bool _isBankAgent = false;
+  bool _showProfessionalTag = true;
   bool _populated = false;
 
   static const _employmentTypes = [
@@ -49,12 +53,20 @@ class _ProfileViewState extends State<_ProfileView> {
     ('other', 'Other'),
   ];
 
+  static const _institutionOptions = [
+    ('bank', 'Bank'),
+    ('forex_exchange', 'Forex exchange company'),
+    ('sacco', 'SACCO'),
+    ('company', 'Company'),
+  ];
+
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     _employerController.dispose();
     _incomeController.dispose();
+    _preferredBankController.dispose();
     super.dispose();
   }
 
@@ -66,6 +78,10 @@ class _ProfileViewState extends State<_ProfileView> {
     _incomeController.text = p.monthlyIncomeUgx == null
         ? ''
         : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
+    _preferredBankController.text = p.preferredBank ?? '';
+    _institutionType = p.institutionType;
+    _isBankAgent = p.isBankAgent;
+    _showProfessionalTag = p.showProfessionalTag;
 
     // Auto-detect country from phone prefix or default to Uganda
     final matchedCountry = EastAfricaCountries.findByPhone(p.phone);
@@ -264,6 +280,60 @@ class _ProfileViewState extends State<_ProfileView> {
                       prefixIcon: const Icon(Icons.currency_exchange_outlined, size: 20),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // ── Bank & Professional Tag Section ───────────────────────
+                  const Text(
+                    'Bank & Professional Tag',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Preferred / Deposit Bank Field
+                  TextFormField(
+                    controller: _preferredBankController,
+                    decoration: const InputDecoration(
+                      labelText: 'Preferred or deposit bank (optional)',
+                      hintText: 'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB',
+                      prefixIcon: Icon(Icons.account_balance_outlined, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Institution Type Dropdown
+                  DropdownButtonFormField<String>(
+                    initialValue: _institutionType,
+                    decoration: const InputDecoration(
+                      labelText: 'Account represents',
+                      prefixIcon: Icon(Icons.business_center_outlined, size: 20),
+                    ),
+                    hint: const Text('Select institution type (optional)'),
+                    items: _institutionOptions
+                        .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _institutionType = v),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Is Bank Agent Switch
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('I am a bank loan agent'),
+                    subtitle: const Text(
+                        'Shows a bank-agent tag to Pro users seeking bank loans.'),
+                    value: _isBankAgent,
+                    onChanged: (v) => setState(() => _isBankAgent = v),
+                  ),
+
+                  // Show Professional Tag Switch
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Show my professional tag'),
+                    subtitle: const Text(
+                        'Turn off to hide bank, forex company, SACCO, or agent labels on offers.'),
+                    value: _showProfessionalTag,
+                    onChanged: (v) => setState(() => _showProfessionalTag = v),
+                  ),
                   const SizedBox(height: 28),
 
                   // ── Save Button ────────────────────────────────────────────
@@ -288,6 +358,14 @@ class _ProfileViewState extends State<_ProfileView> {
                                           ? null
                                           : _employerController.text.trim(),
                                   monthlyIncome: monthlyIncome,
+                                  preferredBank: _preferredBankController.text
+                                          .trim()
+                                          .isEmpty
+                                      ? null
+                                      : _preferredBankController.text.trim(),
+                                  institutionType: _institutionType,
+                                  isBankAgent: _isBankAgent,
+                                  showProfessionalTag: _showProfessionalTag,
                                 );
                           },
                     child: isSaving
