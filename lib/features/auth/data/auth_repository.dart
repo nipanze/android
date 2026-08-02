@@ -113,7 +113,8 @@ class AuthRepository {
   Future<String?> checkPhoneRegistered(String phone) async {
     try {
       final clean = cleanPhone(phone);
-      final response = await _client.rpc('check_phone_registered', params: {'p_phone': clean});
+      final response = await _client
+          .rpc('check_phone_registered', params: {'p_phone': clean});
       return response as String?;
     } catch (e) {
       debugPrint('Error in checkPhoneRegistered RPC: $e');
@@ -125,11 +126,7 @@ class AuthRepository {
     // ── 1. Profile ──────────────────────────────────────────────────────────
     Map<String, dynamic>? data;
     try {
-      data = await _client
-          .from('profiles')
-          .select('id, full_name, phone, country, district, street_address, employment_type, employer_name, monthly_income, income_currency, is_admin')
-          .eq('id', id)
-          .maybeSingle();
+      data = await _client.from('profiles').select().eq('id', id).maybeSingle();
     } catch (e) {
       debugPrint('DEBUG: profiles fetch error: $e');
       return NipanzeUser(
@@ -219,6 +216,10 @@ class AuthRepository {
     String? employerName,
     int? monthlyIncome,
     String? incomeCurrency,
+    String? preferredBank,
+    String? institutionType,
+    bool? isBankAgent,
+    bool? showProfessionalTag,
   }) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return;
@@ -235,6 +236,12 @@ class AuthRepository {
     if (employerName != null) updates['employer_name'] = employerName;
     if (monthlyIncome != null) updates['monthly_income'] = monthlyIncome;
     if (incomeCurrency != null) updates['income_currency'] = incomeCurrency;
+    if (preferredBank != null) updates['preferred_bank'] = preferredBank;
+    if (institutionType != null) updates['institution_type'] = institutionType;
+    if (isBankAgent != null) updates['is_bank_agent'] = isBankAgent;
+    if (showProfessionalTag != null) {
+      updates['show_professional_tag'] = showProfessionalTag;
+    }
 
     try {
       await _client.from('profiles').upsert(updates);

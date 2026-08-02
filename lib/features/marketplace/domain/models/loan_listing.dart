@@ -34,6 +34,10 @@ class LoanListing extends Equatable {
     this.trustResponseTimeBucket,
     this.trustIsVerified = false,
     this.currency = 'UGX',
+    this.preferredBank,
+    this.institutionType,
+    this.isBankAgent = false,
+    this.showProfessionalTag = false,
   });
 
   final String requestId;
@@ -65,6 +69,24 @@ class LoanListing extends Equatable {
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
   final String currency;
+  final String? preferredBank;
+  final String? institutionType;
+  final bool isBankAgent;
+  final bool showProfessionalTag;
+
+  String? get professionalTag {
+    if (!showProfessionalTag) return null;
+    if (isBankAgent && preferredBank?.isNotEmpty == true) {
+      return '${preferredBank!} agent';
+    }
+    return switch (institutionType) {
+      'bank' => 'Bank',
+      'forex_exchange' => 'Forex exchange',
+      'sacco' => 'SACCO',
+      'company' => 'Company',
+      _ => null,
+    };
+  }
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
   bool get isClosingSoon24h =>
@@ -122,6 +144,10 @@ class LoanListing extends Equatable {
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
       currency: map['currency'] as String? ?? 'UGX',
+      preferredBank: map['preferred_bank'] as String?,
+      institutionType: map['institution_type'] as String?,
+      isBankAgent: map['is_bank_agent'] as bool? ?? false,
+      showProfessionalTag: map['show_professional_tag'] as bool? ?? false,
     );
   }
 
@@ -154,6 +180,10 @@ class LoanOffer extends Equatable {
     this.trustResponseTimeBucket,
     this.trustIsVerified = false,
     this.currency = 'UGX',
+    this.preferredBank,
+    this.institutionType,
+    this.isBankAgent = false,
+    this.showProfessionalTag = false,
   });
 
   final String id;
@@ -177,8 +207,25 @@ class LoanOffer extends Equatable {
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
   final String currency;
+  final String? preferredBank;
+  final String? institutionType;
+  final bool isBankAgent;
+  final bool showProfessionalTag;
 
   bool get hasMaskedLender => lenderId.startsWith('public-offer-');
+  String? get professionalTag {
+    if (!showProfessionalTag) return null;
+    if (isBankAgent && preferredBank?.isNotEmpty == true) {
+      return '${preferredBank!} agent';
+    }
+    return switch (institutionType) {
+      'bank' => 'Bank',
+      'forex_exchange' => 'Forex exchange',
+      'sacco' => 'SACCO',
+      'company' => 'Company',
+      _ => null,
+    };
+  }
 
   factory LoanOffer.fromMap(Map<String, dynamic> map) {
     return LoanOffer(
@@ -210,6 +257,10 @@ class LoanOffer extends Equatable {
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
       currency: map['currency'] as String? ?? 'UGX',
+      preferredBank: map['preferred_bank'] as String?,
+      institutionType: map['institution_type'] as String?,
+      isBankAgent: map['is_bank_agent'] as bool? ?? false,
+      showProfessionalTag: map['show_professional_tag'] as bool? ?? false,
     );
   }
 

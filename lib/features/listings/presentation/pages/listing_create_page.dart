@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/listing_repository.dart';
@@ -27,28 +29,6 @@ const _purposes = [
   'Transport / Vehicle',
   'Water & Sanitation',
   'Wedding / Event',
-  'Other',
-];
-
-// ─── Districts ────────────────────────────────────────────────────────────────
-const _districts = [
-  'Central',
-  'Eastern',
-  'Western',
-  'Northern',
-  'Kampala',
-  'Wakiso',
-  'Mukono',
-  'Jinja',
-  'Mbale',
-  'Gulu',
-  'Mbarara',
-  'Masaka',
-  'Lira',
-  'Soroti',
-  'Arua',
-  'Fort Portal',
-  'Kabale',
   'Other',
 ];
 
@@ -75,7 +55,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   final _descriptionController = TextEditingController();
   String? _selectedPurpose;
   String? _customPurpose;
-  String _district = 'Kampala';
+  String? _district;
 
   // Step 2 fields
   final _incomeSourceController = TextEditingController();
@@ -201,7 +181,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         purpose: _purposeValue.trim(),
         requestedAmount: int.parse(_amountController.text),
         durationMonths: int.parse(_durationController.text),
-        district: _district,
+        district: _selectedRegion,
         incomeSource: _incomeSourceController.text.trim(),
         preferredRepaymentPlan: _preferredRepaymentPlan!,
         repaymentAmountPerPeriod: int.parse(_repaymentAmountController.text),
@@ -217,6 +197,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         suggestedInstallmentAmount: canSuggestTerms
             ? int.tryParse(_suggestedInstallmentController.text)
             : null,
+        country: authState.user.country,
       );
     } catch (e) {
       if (!mounted) return;
@@ -286,14 +267,40 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   }
 
   String _titleForStep() {
+    final l10n = AppLocalizations.of(context);
     switch (_step) {
       case 1:
         return 'Income & repayment';
       case 2:
         return 'Review & publish';
       default:
-        return 'Request a loan';
+        return l10n?.createLoanRequest ?? 'Request a loan';
     }
+  }
+
+  String get _currencyCode {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return 'UGX';
+    if (authState.user.incomeCurrency.isNotEmpty) {
+      return authState.user.incomeCurrency;
+    }
+    return EastAfricaCountries.findByCode(authState.user.country).currency;
+  }
+
+  CountryInfo get _countryInfo {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) {
+      return EastAfricaCountries.defaultCountry;
+    }
+    return EastAfricaCountries.findByCode(authState.user.country);
+  }
+
+  String get _selectedRegion {
+    final country = _countryInfo;
+    if (_district != null && country.regions.contains(_district)) {
+      return _district!;
+    }
+    return country.regions.first;
   }
 
   String _subtitleForStep() {
@@ -310,6 +317,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   // ─── Step 1: Loan details ───────────────────────────────────────────────────
 
   Widget _buildStep1() {
+    final currency = _currencyCode;
+    final country = _countryInfo;
+    final region = _selectedRegion;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Form(
@@ -317,7 +327,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _InfoBanner(
             text:
-                'UGX ${_fmt(_limits.minLoanAmount)}-${_fmt(_limits.maxLoanAmount)} · Up to 60 months · terms lock on publish',
+                '$currency ${_fmt(_limits.minLoanAmount)}-${_fmt(_limits.maxLoanAmount)} · Up to 60 months · terms lock on publish',
           ),
           const SizedBox(height: 14),
           _FormPanel(
@@ -381,18 +391,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: const InputDecoration(
-                        labelText: 'Amount (UGX)',
                         hintText: '7,000,000',
-                      ),
+                      ).copyWith(labelText: 'Amount ($currency)'),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter an amount';
                         final n = int.tryParse(v);
                         if (n == null) return 'Enter a valid number';
                         if (n < _limits.minLoanAmount) {
-                          return 'Minimum UGX ${_fmt(_limits.minLoanAmount)}';
+                          return 'Minimum $currency ${_fmt(_limits.minLoanAmount)}';
                         }
                         if (n > _limits.maxLoanAmount) {
-                          return 'Maximum UGX ${_fmt(_limits.maxLoanAmount)}';
+                          return 'Maximum $currency ${_fmt(_limits.maxLoanAmount)}';
                         }
                         return null;
                       },
@@ -427,12 +436,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             title: 'Location and details',
             children: [
               DropdownButtonFormField<String>(
-                initialValue: _district,
-                decoration: const InputDecoration(labelText: 'District'),
-                items: _districts
+                initialValue: region,
+                decoration: InputDecoration(labelText: country.regionsLabel),
+                items: country.regions
                     .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                     .toList(),
-                onChanged: (v) => setState(() => _district = v ?? 'Kampala'),
+                onChanged: (v) => setState(() => _district = v ?? region),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -458,6 +467,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final authState = context.watch<AuthBloc>().state;
     final canSuggestTerms = authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
+    final currency = _currencyCode;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -512,10 +522,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
-                  labelText: 'Repayment amount per period (UGX)',
                   hintText: 'e.g. 250,000',
                   prefixIcon: Icon(Icons.savings_outlined, size: 20),
-                ),
+                ).copyWith(
+                    labelText: 'Repayment amount per period ($currency)'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter repayment amount';
                   final n = int.tryParse(v);
@@ -613,9 +623,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
-                  labelText: 'Suggested installment amount (UGX)',
                   prefixIcon: Icon(Icons.price_check_outlined, size: 20),
-                ),
+                ).copyWith(
+                    labelText: 'Suggested installment amount ($currency)'),
                 validator: (v) {
                   if (!canSuggestTerms || v == null || v.isEmpty) return null;
                   final n = int.tryParse(v);
@@ -640,6 +650,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final authState = context.watch<AuthBloc>().state;
     final canSuggestTerms = authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
+    final currency = _currencyCode;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -668,7 +679,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             _ReviewRow(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Amount',
-              value: 'UGX ${_fmtAmount(amount)}',
+              value: '$currency ${_fmtAmount(amount)}',
               highlight: true,
             ),
             _divider(),
@@ -686,8 +697,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             _divider(),
             _ReviewRow(
               icon: Icons.location_on_outlined,
-              label: 'District',
-              value: _district,
+              label: _countryInfo.regionsLabel,
+              value: _selectedRegion,
             ),
             _divider(),
             _ReviewRow(
@@ -705,7 +716,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             _ReviewRow(
               icon: Icons.savings_outlined,
               label: 'Repayment amount',
-              value: 'UGX ${_fmtAmount(repaymentAmount)} per period',
+              value: '$currency ${_fmtAmount(repaymentAmount)} per period',
             ),
             _divider(),
             _ReviewRow(
@@ -738,7 +749,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   if (_suggestedRepaymentPlan != null)
                     _planLabel(_suggestedRepaymentPlan),
                   if (_suggestedInstallmentController.text.isNotEmpty)
-                    'UGX ${_fmtAmount(int.tryParse(_suggestedInstallmentController.text) ?? 0)} installment',
+                    '$currency ${_fmtAmount(int.tryParse(_suggestedInstallmentController.text) ?? 0)} installment',
                 ].join(' · '),
               ),
             ],
@@ -852,8 +863,11 @@ class _TemplateHeader extends StatelessWidget {
                   height: 34,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon:
-                        const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+                    icon: const Text(
+                      '<',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                    ),
                     onPressed: onBack,
                   ),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -9,6 +10,7 @@ import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
 import '../../../../shared/widgets/trust_badges.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/forex_repository.dart';
 
@@ -44,7 +46,16 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Forex request')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Text(
+            '<',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          ),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Forex request'),
+      ),
       body: FutureBuilder<_ForexDetailData>(
         future: _future,
         builder: (context, snapshot) {
@@ -60,7 +71,19 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                SendRateReceivePanel(listing: data.listing),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SendRateReceivePanel(
+                    listing: data.listing,
+                    showBorder: false,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 Text(
                   data.listing.settlementPreference,
@@ -105,6 +128,8 @@ class _OffersPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final canOffer = authState is AuthAuthenticated && authState.user.canLend;
+    final canSeeProfessionalTags = authState is AuthAuthenticated &&
+        authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +154,18 @@ class _OffersPanel extends StatelessWidget {
           ...offers.map(
             (offer) => ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('Rate ${offer.rateOffered.toStringAsFixed(4)}'),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text('Rate ${offer.rateOffered.toStringAsFixed(4)}'),
+                  ),
+                  if (canSeeProfessionalTags &&
+                      offer.professionalTag != null) ...[
+                    const SizedBox(width: 8),
+                    _ProfessionalTag(offer.professionalTag!),
+                  ],
+                ],
+              ),
               subtitle: Text(
                 'Available ${listing.currencyHeld} ${offer.amountAvailable}',
               ),
@@ -146,6 +182,34 @@ class _OffersPanel extends StatelessWidget {
             label: const Text('Lender or Pro required to make offers'),
           ),
       ],
+    );
+  }
+}
+
+class _ProfessionalTag extends StatelessWidget {
+  const _ProfessionalTag(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 120),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.accent,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }
@@ -227,7 +291,7 @@ class _MakeOfferFormState extends State<_MakeOfferForm> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: _submitting ? null : _submit,
-            child: const Text('Make forex offer'),
+            child: const Text('Make an offer'),
           ),
         ),
       ],

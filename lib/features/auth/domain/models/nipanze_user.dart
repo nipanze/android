@@ -29,6 +29,10 @@ class NipanzeUser extends Equatable {
     this.employerName,
     this.monthlyIncome,
     this.incomeCurrency = 'UGX',
+    this.preferredBank,
+    this.institutionType,
+    this.isBankAgent = false,
+    this.showProfessionalTag = true,
     this.country = 'UG',
     this.subscriptionPlan = SubscriptionPlan.free,
     this.kycStatus = KycStatus.notSubmitted,
@@ -46,6 +50,10 @@ class NipanzeUser extends Equatable {
   final String? employerName;
   final int? monthlyIncome;
   final String incomeCurrency;
+  final String? preferredBank;
+  final String? institutionType;
+  final bool isBankAgent;
+  final bool showProfessionalTag;
   final String country;
   int? get monthlyIncomeUgx => monthlyIncome;
   final SubscriptionPlan subscriptionPlan;
@@ -72,6 +80,10 @@ class NipanzeUser extends Equatable {
       employerName: map['employer_name'] as String?,
       monthlyIncome: (map['monthly_income'] as num?)?.toInt(),
       incomeCurrency: map['income_currency'] as String? ?? 'UGX',
+      preferredBank: map['preferred_bank'] as String?,
+      institutionType: map['institution_type'] as String?,
+      isBankAgent: map['is_bank_agent'] as bool? ?? false,
+      showProfessionalTag: map['show_professional_tag'] as bool? ?? true,
       country: map['country'] as String? ?? 'UG',
       subscriptionPlan:
           _planFromString(map['subscription_plan'] as String? ?? 'free'),
@@ -151,6 +163,18 @@ class NipanzeUser extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, email, subscriptionPlan, kycStatus, isAdmin, employmentType, streetAddress, country];
+  List<Object?> get props => [
+        id,
+        email,
+        subscriptionPlan,
+        kycStatus,
+        isAdmin,
+        employmentType,
+        streetAddress,
+        country,
+        preferredBank,
+        institutionType,
+        isBankAgent,
+        showProfessionalTag,
+      ];
 }

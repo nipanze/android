@@ -11,6 +11,72 @@ import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/forex_repository.dart';
 
+const _defaultTradeableCurrencies = [
+  CurrencyModel(
+    code: 'UGX',
+    name: 'Ugandan Shilling',
+    isMarketCurrency: true,
+    marketCountry: 'UG',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'KES',
+    name: 'Kenyan Shilling',
+    isMarketCurrency: true,
+    marketCountry: 'KE',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'TZS',
+    name: 'Tanzanian Shilling',
+    isMarketCurrency: true,
+    marketCountry: 'TZ',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'RWF',
+    name: 'Rwandan Franc',
+    isMarketCurrency: true,
+    marketCountry: 'RW',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'BIF',
+    name: 'Burundian Franc',
+    isMarketCurrency: true,
+    marketCountry: 'BI',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'SSP',
+    name: 'South Sudanese Pound',
+    isMarketCurrency: true,
+    marketCountry: 'SS',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'CDF',
+    name: 'Congolese Franc',
+    isMarketCurrency: true,
+    marketCountry: 'CD',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(
+    code: 'SOS',
+    name: 'Somali Shilling',
+    isMarketCurrency: true,
+    marketCountry: 'SO',
+    forexTradingEnabled: true,
+  ),
+  CurrencyModel(code: 'USD', name: 'US Dollar', forexTradingEnabled: true),
+  CurrencyModel(code: 'EUR', name: 'Euro', forexTradingEnabled: true),
+  CurrencyModel(code: 'GBP', name: 'British Pound', forexTradingEnabled: true),
+  CurrencyModel(code: 'AED', name: 'UAE Dirham', forexTradingEnabled: true),
+  CurrencyModel(code: 'SAR', name: 'Saudi Riyal', forexTradingEnabled: true),
+  CurrencyModel(code: 'CNY', name: 'Chinese Yuan', forexTradingEnabled: true),
+  CurrencyModel(code: 'INR', name: 'Indian Rupee', forexTradingEnabled: true),
+];
+
 const _settlementPreferences = [
   'In person',
   'Mobile money',
@@ -46,11 +112,22 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     try {
       final data = await getIt<ForexRepository>().getTradeableCurrencies();
       if (!mounted) return;
-      setState(() => _currencies = data);
+      setState(() => _currencies = _mergeCurrencies(data));
     } catch (_) {
       if (!mounted) return;
-      setState(() => _currencies = const []);
+      setState(() => _currencies = _defaultTradeableCurrencies);
     }
+  }
+
+  List<CurrencyModel> _mergeCurrencies(List<CurrencyModel> fetched) {
+    final byCode = <String, CurrencyModel>{
+      for (final currency in _defaultTradeableCurrencies)
+        currency.code: currency,
+    };
+    for (final currency in fetched) {
+      byCode[currency.code] = currency;
+    }
+    return byCode.values.toList();
   }
 
   @override
@@ -113,7 +190,16 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Post forex request')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Text(
+            '<',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          ),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
+        title: const Text('Post forex request'),
+      ),
       body: currencies == null
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -161,6 +247,8 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                         ],
                         decoration: const InputDecoration(
                           labelText: 'Amount you will send',
+                          helperText:
+                              'The amount in the currency you hold. Offers use it to show how much of the currency you need you can receive.',
                         ),
                         validator: (v) {
                           final amount = int.tryParse(v ?? '');

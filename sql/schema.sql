@@ -286,6 +286,13 @@ CREATE TABLE profiles (
     employer_name    TEXT,
     monthly_income     BIGINT,
     income_currency    VARCHAR(3) NOT NULL DEFAULT 'UGX',  -- ISO 4217; derived from profiles.country
+    preferred_bank      TEXT,
+    institution_type    TEXT CHECK (
+        institution_type IS NULL OR
+        institution_type IN ('bank', 'forex_exchange', 'sacco', 'company')
+    ),
+    is_bank_agent       BOOLEAN NOT NULL DEFAULT FALSE,
+    show_professional_tag BOOLEAN NOT NULL DEFAULT TRUE,
 
     -- Marketplace filter preferences (v4.5) — mirrors Advanced Filters defaults
     preferred_employment_types  TEXT[],

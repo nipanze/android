@@ -182,7 +182,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          icon: const Text(
+            '<',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text('Listing detail'),
@@ -200,7 +203,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               child: Column(
@@ -761,6 +763,7 @@ class _OfferCardState extends State<_OfferCard>
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
     final isFull = offer.offerAmount >= widget.requestedAmount;
     final offerType = isFull ? 'Full offer' : 'Partial · $coverage%';
+    final professionalTag = widget.isProBorrower ? offer.professionalTag : null;
     final dotColor = widget.dotColor;
     final isActiveParticipant = widget.isOwner || widget.isParticipant;
 
@@ -818,6 +821,10 @@ class _OfferCardState extends State<_OfferCard>
                     ),
                   ),
                   const SizedBox(width: 6),
+                  if (professionalTag != null) ...[
+                    _ProfessionalTag(professionalTag),
+                    const SizedBox(width: 6),
+                  ],
                   // Offer type badge
                   Text(
                     offerType,
@@ -2008,6 +2015,34 @@ class _StatBox extends StatelessWidget {
                   color: valueColor)),
         ]),
       );
+}
+
+class _ProfessionalTag extends StatelessWidget {
+  const _ProfessionalTag(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 120),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.accent,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
 }
 
 class _MakeOfferSheet extends StatefulWidget {

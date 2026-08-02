@@ -19,6 +19,10 @@ class ForexOfferModel extends Equatable {
     this.trustPhoneVerified = false,
     this.trustResponseTimeBucket,
     this.trustIsVerified = false,
+    this.preferredBank,
+    this.institutionType,
+    this.isBankAgent = false,
+    this.showProfessionalTag = false,
   });
 
   final String id;
@@ -38,8 +42,25 @@ class ForexOfferModel extends Equatable {
   final bool trustPhoneVerified;
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
+  final String? preferredBank;
+  final String? institutionType;
+  final bool isBankAgent;
+  final bool showProfessionalTag;
 
   bool get hasMaskedOfferMaker => offerMakerId.startsWith('public-offer-');
+  String? get professionalTag {
+    if (!showProfessionalTag) return null;
+    if (isBankAgent && preferredBank?.isNotEmpty == true) {
+      return '${preferredBank!} agent';
+    }
+    return switch (institutionType) {
+      'bank' => 'Bank',
+      'forex_exchange' => 'Forex exchange',
+      'sacco' => 'SACCO',
+      'company' => 'Company',
+      _ => null,
+    };
+  }
 
   factory ForexOfferModel.fromMap(Map<String, dynamic> map) {
     return ForexOfferModel(
@@ -70,6 +91,10 @@ class ForexOfferModel extends Equatable {
       trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
+      preferredBank: map['preferred_bank'] as String?,
+      institutionType: map['institution_type'] as String?,
+      isBankAgent: map['is_bank_agent'] as bool? ?? false,
+      showProfessionalTag: map['show_professional_tag'] as bool? ?? false,
     );
   }
 

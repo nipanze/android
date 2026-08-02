@@ -12,6 +12,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/widgets/language_selector_sheet.dart';
 import '../../domain/models/user_profile.dart';
 import '../cubit/profile_cubit.dart';
 
@@ -37,8 +38,8 @@ class _AccountView extends StatelessWidget {
         child: BlocConsumer<ProfileCubit, ProfileCubitState>(
           listener: (context, state) {
             if (state is ProfileCubitLoaded && state.justSaved) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated)));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(AppLocalizations.of(context)!.profileUpdated)));
             }
             if (state is ProfileCubitError) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -51,8 +52,8 @@ class _AccountView extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
 
-             final profile = state is ProfileCubitLoaded ? state.profile : null;
-             final authState = context.read<AuthBloc>().state;
+            final profile = state is ProfileCubitLoaded ? state.profile : null;
+            final authState = context.read<AuthBloc>().state;
 
             return RefreshIndicator(
               onRefresh: () => context.read<ProfileCubit>().refresh(),
@@ -102,7 +103,8 @@ class _AccountView extends StatelessWidget {
                       children: [
                         _StatChip(
                           label: AppLocalizations.of(context)!.statListings,
-                          subtitle: AppLocalizations.of(context)!.statListingsSubtitle,
+                          subtitle: AppLocalizations.of(context)!
+                              .statListingsSubtitle,
                           value: '${profile?.activeListings ?? 0}',
                           color: AppColors.accent,
                           icon: Icons.article_outlined,
@@ -110,7 +112,8 @@ class _AccountView extends StatelessWidget {
                         const SizedBox(width: 8),
                         _StatChip(
                           label: AppLocalizations.of(context)!.statOffers,
-                          subtitle: AppLocalizations.of(context)!.statOffersSubtitle,
+                          subtitle:
+                              AppLocalizations.of(context)!.statOffersSubtitle,
                           value: '${profile?.activeOffers ?? 0}',
                           color: AppColors.success,
                           icon: Icons.handshake_outlined,
@@ -118,7 +121,8 @@ class _AccountView extends StatelessWidget {
                         const SizedBox(width: 8),
                         _StatChip(
                           label: AppLocalizations.of(context)!.statMatches,
-                          subtitle: AppLocalizations.of(context)!.statMatchesSubtitle,
+                          subtitle:
+                              AppLocalizations.of(context)!.statMatchesSubtitle,
                           value: '${profile?.revealedContacts ?? 0}',
                           color: AppColors.purple,
                           icon: Icons.track_changes_outlined,
@@ -151,7 +155,8 @@ class _AccountView extends StatelessWidget {
                     const SizedBox(height: 4),
 
                     // ── Subscription ──────────────────────────────────────
-                    SectionHeader(AppLocalizations.of(context)?.subscription ?? 'Subscription'),
+                    SectionHeader(AppLocalizations.of(context)?.subscription ??
+                        'Subscription'),
                     _SubscriptionCard(profile: profile),
                     const SizedBox(height: 8),
                     if (authState is AuthAuthenticated &&
@@ -160,8 +165,10 @@ class _AccountView extends StatelessWidget {
                         onTap: () => context.push(AppRoutes.pricing),
                         label: authState.user.subscriptionPlan ==
                                 SubscriptionPlan.lender
-                            ? (AppLocalizations.of(context)?.upgradeToPro ?? 'Upgrade to Pro')
-                            : (AppLocalizations.of(context)?.viewPlansUpgrade ?? 'View plans'),
+                            ? (AppLocalizations.of(context)?.upgradeToPro ??
+                                'Upgrade to Pro')
+                            : (AppLocalizations.of(context)?.viewPlansUpgrade ??
+                                'View plans'),
                       ),
 
                     if (context.read<AuthBloc>().state is AuthAuthenticated &&
@@ -172,14 +179,16 @@ class _AccountView extends StatelessWidget {
                       Card(
                           child: _ActionRow(
                         icon: Icons.admin_panel_settings_outlined,
-                        label: AppLocalizations.of(context)?.adminDashboard ?? 'Admin Dashboard',
+                        label: AppLocalizations.of(context)?.adminDashboard ??
+                            'Admin Dashboard',
                         onTap: () => context.push(AppRoutes.admin),
                       )),
                     ],
                     const SizedBox(height: 20),
 
                     Text(
-                      AppLocalizations.of(context)?.nipanzeDisclaimer ?? 'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
+                      AppLocalizations.of(context)?.nipanzeDisclaimer ??
+                          'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontSize: 10,
@@ -208,8 +217,8 @@ class _AccountView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.howTrustWorks,
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Text(l10n.trustExplanation),
             ]),
@@ -242,6 +251,15 @@ class _AccountView extends StatelessWidget {
               ),
               const Divider(height: 1),
               _ThemeToggleRow(),
+              const Divider(height: 1),
+              _ActionRow(
+                icon: Icons.language_rounded,
+                label: AppLocalizations.of(sheetCtx)!.selectLanguage,
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  showLanguageSelectorSheet(context);
+                },
+              ),
               const Divider(height: 1),
               _ActionRow(
                 icon: Icons.chat_bubble_outline_rounded,
@@ -305,7 +323,8 @@ class _AccountView extends StatelessWidget {
             SizedBox(height: 12),
             Text(
               'support@nipanze.com',
-              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.accent),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: AppColors.accent),
             ),
             SizedBox(height: 8),
             Text('We typically respond within 24 hours.'),
@@ -330,13 +349,16 @@ class _AccountView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Join the conversation, ask questions, and share feedback with other users:'),
+            Text(
+                'Join the conversation, ask questions, and share feedback with other users:'),
             SizedBox(height: 16),
             Row(
               children: [
-                Icon(Icons.chat_bubble_outline_rounded, color: AppColors.accent),
+                Icon(Icons.chat_bubble_outline_rounded,
+                    color: AppColors.accent),
                 SizedBox(width: 8),
-                Text('Telegram Community', style: TextStyle(fontWeight: FontWeight.w600)),
+                Text('Telegram Community',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
             SizedBox(height: 12),
@@ -344,7 +366,8 @@ class _AccountView extends StatelessWidget {
               children: [
                 Icon(Icons.forum_outlined, color: AppColors.purple),
                 SizedBox(width: 8),
-                Text('Discord Server', style: TextStyle(fontWeight: FontWeight.w600)),
+                Text('Discord Server',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
           ],
@@ -432,7 +455,8 @@ class _AccountView extends StatelessWidget {
                 label: AppLocalizations.of(sheetCtx)!.editProfile,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
-                  final currentLocation = GoRouterState.of(context).matchedLocation;
+                  final currentLocation =
+                      GoRouterState.of(context).matchedLocation;
                   if (currentLocation != AppRoutes.profile) {
                     router.push(AppRoutes.profile);
                   }
@@ -619,8 +643,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                         child: Text(
                           profile?.displayName ?? 'User',
                           style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700),
+                              fontSize: 16, fontWeight: FontWeight.w700),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -645,7 +668,8 @@ class _ProfileHeaderCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          profile?.district ?? AppLocalizations.of(context)!.districtNotSet,
+                          profile?.district ??
+                              AppLocalizations.of(context)!.districtNotSet,
                           style: const TextStyle(
                               fontSize: 11, color: AppColors.text2Dark),
                           overflow: TextOverflow.ellipsis,
@@ -660,7 +684,9 @@ class _ProfileHeaderCard extends StatelessWidget {
                             size: 11, color: AppColors.text3Dark),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)!.memberSince(DateFormat('MMM yyyy').format(profile!.memberSince!)),
+                          AppLocalizations.of(context)!.memberSince(
+                              DateFormat('MMM yyyy')
+                                  .format(profile!.memberSince!)),
                           style: const TextStyle(
                               fontSize: 11, color: AppColors.text2Dark),
                         ),
@@ -756,8 +782,8 @@ class _StatChip extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(label,
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
             const SizedBox(height: 1),
             Text(subtitle,
                 style: const TextStyle(
@@ -787,9 +813,7 @@ class _TrustPanel extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: IntrinsicHeight(
-          child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Expanded(
               flex: 5,
               child: Container(
@@ -806,8 +830,8 @@ class _TrustPanel extends StatelessWidget {
                         size: 22, color: AppColors.accent),
                     const SizedBox(height: 4),
                     Text(l10n.trustScore,
-                        style:
-                            const TextStyle(fontSize: 9, color: AppColors.text2Dark),
+                        style: const TextStyle(
+                            fontSize: 9, color: AppColors.text2Dark),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 4),
                     Text(
@@ -820,8 +844,8 @@ class _TrustPanel extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       l10n.completeDealsToBuild,
-                      style:
-                          const TextStyle(fontSize: 8, color: AppColors.text3Dark),
+                      style: const TextStyle(
+                          fontSize: 8, color: AppColors.text3Dark),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -892,7 +916,8 @@ class _TrustPanel extends StatelessWidget {
                   _TrustBadgeItem(
                     icon: Icons.handshake_outlined,
                     color: AppColors.success,
-                    label: l10n.successfulDeals(profile.trustCompletedDealsCount),
+                    label:
+                        l10n.successfulDeals(profile.trustCompletedDealsCount),
                   ),
                   _TrustBadgeItem(
                     icon: Icons.repeat_rounded,
@@ -961,11 +986,11 @@ class _PublicTrustInfoCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(children: [
-            const Icon(Icons.shield_outlined, size: 18, color: AppColors.accent),
+            const Icon(Icons.shield_outlined,
+                size: 18, color: AppColors.accent),
             const SizedBox(width: 10),
             Expanded(
-                child: Text(
-                    l10n.publicTrustSignals,
+                child: Text(l10n.publicTrustSignals,
                     style: const TextStyle(fontSize: 10, height: 1.3))),
             const Icon(Icons.chevron_right_rounded,
                 size: 18, color: AppColors.text3Dark),
@@ -1009,18 +1034,16 @@ class _SubscriptionCard extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n?.planTitle(_planLabel(plan)) ?? '${_planLabel(plan)} Plan',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: color)),
-                const SizedBox(height: 2),
-                Text(l10n?.nonCustodialAccess ?? 'Non-custodial access',
-                    style: const TextStyle(fontSize: 11)),
-              ]),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+                l10n?.planTitle(_planLabel(plan)) ?? '${_planLabel(plan)} Plan',
+                style: TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+            const SizedBox(height: 2),
+            Text(l10n?.nonCustodialAccess ?? 'Non-custodial access',
+                style: const TextStyle(fontSize: 11)),
+          ]),
         ),
         _StatusPill(label: status.toUpperCase(), color: color),
       ]),
@@ -1103,8 +1126,7 @@ class _ActionRow extends StatelessWidget {
           child: Row(children: [
             Icon(icon, size: 18, color: AppColors.text2Dark),
             const SizedBox(width: 12),
-            Expanded(
-                child: Text(label, style: const TextStyle(fontSize: 13))),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
             if (trailing != null) ...[trailing!, const SizedBox(width: 6)],
             const Icon(Icons.chevron_right,
                 size: 18, color: AppColors.text3Dark),
@@ -1129,8 +1151,8 @@ class _ThemeToggleRow extends StatelessWidget {
                 child: Text('Appearance', style: TextStyle(fontSize: 13))),
             SegmentedButton<ThemeMode>(
               style: SegmentedButton.styleFrom(
-                textStyle: const TextStyle(
-                    fontSize: 10, fontWeight: FontWeight.w500),
+                textStyle:
+                    const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
                 visualDensity: VisualDensity.compact,
               ),
               segments: const [
@@ -1148,8 +1170,7 @@ class _ThemeToggleRow extends StatelessWidget {
                     icon: Icon(Icons.dark_mode_outlined, size: 14)),
               ],
               selected: {mode},
-              onSelectionChanged: (s) =>
-                  ThemeService.instance.setMode(s.first),
+              onSelectionChanged: (s) => ThemeService.instance.setMode(s.first),
             ),
           ]),
         );

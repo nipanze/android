@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import '../models/forex_listing_model.dart';
 
 class SendRateReceivePanel extends StatelessWidget {
-  const SendRateReceivePanel({super.key, required this.listing});
+  const SendRateReceivePanel({
+    super.key,
+    required this.listing,
+    this.showBorder = true,
+  });
 
   final ForexListingModel listing;
+  final bool showBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +40,7 @@ class SendRateReceivePanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor, width: 1),
+        border: showBorder ? Border.all(color: borderColor, width: 1) : null,
       ),
       child: Row(
         children: [

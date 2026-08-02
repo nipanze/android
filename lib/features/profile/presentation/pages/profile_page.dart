@@ -77,10 +77,32 @@ class ProfilePage extends StatelessWidget {
                       const Divider(height: 16),
                       _Row('Employer', user?.employerName ?? '—'),
                       const Divider(height: 16),
-                      _Row('Monthly income',
+                      _Row(
+                          'Monthly income',
                           user?.monthlyIncomeUgx != null
                               ? 'UGX ${_fmtAmount(user!.monthlyIncomeUgx!)}'
                               : '—'),
+                    ]))),
+            const SizedBox(height: 16),
+            SectionHeader('Bank & institution'),
+            Card(
+                child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(children: [
+                      _Row(
+                          'Preferred bank',
+                          user?.preferredBank?.isNotEmpty == true
+                              ? user!.preferredBank!
+                              : '—'),
+                      const Divider(height: 16),
+                      _Row('Institution type',
+                          _institutionLabel(user?.institutionType)),
+                      const Divider(height: 16),
+                      _Row('Bank loan agent',
+                          user?.isBankAgent == true ? 'Yes' : 'No'),
+                      const Divider(height: 16),
+                      _Row('Show public tag',
+                          user?.showProfessionalTag == true ? 'Yes' : 'No'),
                     ]))),
             const SizedBox(height: 20),
             SizedBox(
@@ -125,6 +147,16 @@ class ProfilePage extends StatelessWidget {
     return buffer.toString();
   }
 
+  String _institutionLabel(String? value) {
+    return switch (value) {
+      'bank' => 'Bank',
+      'forex_exchange' => 'Forex exchange company',
+      'sacco' => 'SACCO',
+      'company' => 'Company',
+      _ => '—',
+    };
+  }
+
   void _openEditProfile(BuildContext context, NipanzeUser? user) {
     if (user == null) return;
     Navigator.of(context).push(
@@ -165,7 +197,11 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   late final TextEditingController _streetCtrl;
   late final TextEditingController _employerCtrl;
   late final TextEditingController _incomeCtrl;
+  late final TextEditingController _preferredBankCtrl;
   EmploymentType? _employmentType;
+  String? _institutionType;
+  late bool _isBankAgent;
+  late bool _showProfessionalTag;
   bool _saving = false;
 
   static const _employmentOptions = [
@@ -176,6 +212,13 @@ class _EditProfilePageState extends State<_EditProfilePage> {
     EmploymentType.businessOwner,
     EmploymentType.student,
     EmploymentType.other,
+  ];
+
+  static const _institutionOptions = [
+    {'value': 'bank', 'label': 'Bank'},
+    {'value': 'forex_exchange', 'label': 'Forex exchange company'},
+    {'value': 'sacco', 'label': 'SACCO'},
+    {'value': 'company', 'label': 'Company'},
   ];
 
   @override
@@ -190,7 +233,12 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         text: widget.user.monthlyIncomeUgx != null
             ? widget.user.monthlyIncomeUgx.toString()
             : '');
+    _preferredBankCtrl =
+        TextEditingController(text: widget.user.preferredBank ?? '');
     _employmentType = widget.user.employmentType;
+    _institutionType = widget.user.institutionType;
+    _isBankAgent = widget.user.isBankAgent;
+    _showProfessionalTag = widget.user.showProfessionalTag;
   }
 
   @override
@@ -201,6 +249,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
     _streetCtrl.dispose();
     _employerCtrl.dispose();
     _incomeCtrl.dispose();
+    _preferredBankCtrl.dispose();
     super.dispose();
   }
 
@@ -251,13 +300,49 @@ class _EditProfilePageState extends State<_EditProfilePage> {
           _field('Employer name', _employerCtrl),
           const SizedBox(height: 14),
           _field('Monthly income (UGX)', _incomeCtrl, numeric: true),
+          const SizedBox(height: 24),
+          SectionHeader('Bank & public tag'),
+          _field('Preferred bank or deposit bank', _preferredBankCtrl),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<String>(
+            initialValue: _institutionType,
+            decoration: const InputDecoration(
+              labelText: 'Account represents',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: _institutionOptions
+                .map((e) => DropdownMenuItem(
+                      value: e['value'],
+                      child: Text(e['label']!),
+                    ))
+                .toList(),
+            onChanged: (v) => setState(() => _institutionType = v),
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('I am a bank loan agent'),
+            subtitle: const Text('Used to show a bank-agent tag to Pro users.'),
+            value: _isBankAgent,
+            onChanged: (v) => setState(() => _isBankAgent = v),
+          ),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Show my professional tag'),
+            subtitle: const Text(
+                'Turn off to hide bank, forex company, SACCO, or agent labels.'),
+            value: _showProfessionalTag,
+            onChanged: (v) => setState(() => _showProfessionalTag = v),
+          ),
           const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  Widget _field(String label, TextEditingController ctrl, {bool numeric = false}) {
+  Widget _field(String label, TextEditingController ctrl,
+      {bool numeric = false}) {
     return TextField(
       controller: ctrl,
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
@@ -294,14 +379,22 @@ class _EditProfilePageState extends State<_EditProfilePage> {
       final repo = getIt<AuthRepository>();
       await repo.updateProfile(
         fullName: _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
-        district:
-            _districtCtrl.text.trim().isEmpty ? null : _districtCtrl.text.trim(),
+        district: _districtCtrl.text.trim().isEmpty
+            ? null
+            : _districtCtrl.text.trim(),
         streetAddress:
             _streetCtrl.text.trim().isEmpty ? null : _streetCtrl.text.trim(),
         employmentType: NipanzeUser.employmentToString(_employmentType),
-        employerName:
-            _employerCtrl.text.trim().isEmpty ? null : _employerCtrl.text.trim(),
+        employerName: _employerCtrl.text.trim().isEmpty
+            ? null
+            : _employerCtrl.text.trim(),
         monthlyIncome: int.tryParse(_incomeCtrl.text.trim()),
+        preferredBank: _preferredBankCtrl.text.trim().isEmpty
+            ? null
+            : _preferredBankCtrl.text.trim(),
+        institutionType: _institutionType,
+        isBankAgent: _isBankAgent,
+        showProfessionalTag: _showProfessionalTag,
       );
       // Refresh auth state so the profile page updates
       if (mounted) {
