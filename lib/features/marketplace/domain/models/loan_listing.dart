@@ -76,8 +76,11 @@ class LoanListing extends Equatable {
 
   String? get professionalTag {
     if (!showProfessionalTag) return null;
-    if (isBankAgent && preferredBank?.isNotEmpty == true) {
-      return '${preferredBank!} agent';
+    if (isBankAgent) {
+      if (preferredBank?.isNotEmpty == true) {
+        return '${preferredBank!} agent';
+      }
+      return 'Bank loan agent';
     }
     return switch (institutionType) {
       'bank' => 'Bank',
@@ -215,8 +218,11 @@ class LoanOffer extends Equatable {
   bool get hasMaskedLender => lenderId.startsWith('public-offer-');
   String? get professionalTag {
     if (!showProfessionalTag) return null;
-    if (isBankAgent && preferredBank?.isNotEmpty == true) {
-      return '${preferredBank!} agent';
+    if (isBankAgent) {
+      if (preferredBank?.isNotEmpty == true) {
+        return '${preferredBank!} agent';
+      }
+      return 'Bank loan agent';
     }
     return switch (institutionType) {
       'bank' => 'Bank',

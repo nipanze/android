@@ -50,8 +50,11 @@ class ForexOfferModel extends Equatable {
   bool get hasMaskedOfferMaker => offerMakerId.startsWith('public-offer-');
   String? get professionalTag {
     if (!showProfessionalTag) return null;
-    if (isBankAgent && preferredBank?.isNotEmpty == true) {
-      return '${preferredBank!} agent';
+    if (isBankAgent) {
+      if (preferredBank?.isNotEmpty == true) {
+        return '${preferredBank!} agent';
+      }
+      return 'Bank loan agent';
     }
     return switch (institutionType) {
       'bank' => 'Bank',
