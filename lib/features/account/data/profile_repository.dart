@@ -1,4 +1,6 @@
 // lib/features/account/data/profile_repository.dart
+import 'dart:typed_data';
+
 import 'package:injectable/injectable.dart';
 import 'package:nipanze/features/account/domain/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -70,6 +72,7 @@ class ProfileRepository {
         id: _uid,
         email: email,
         fullName: profile?['full_name'] as String?,
+        avatarUrl: profile?['avatar_url'] as String?,
         phone: profile?['phone'] as String?,
         district: profile?['district'] as String?,
         employmentType: profile?['employment_type'] as String?,
@@ -125,10 +128,38 @@ class ProfileRepository {
     }
   }
 
+  /// Upload avatar image bytes to Supabase Storage bucket and return public URL.
+  Future<String> uploadAvatarBytes(List<int> bytes, String fileExt) async {
+    try {
+      final path = '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      
+      try {
+        await _client.storage.from('avatars').uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: const FileOptions(upsert: true),
+            );
+        return _client.storage.from('avatars').getPublicUrl(path);
+      } catch (_) {
+        // Fallback to kyc-documents bucket if avatars bucket does not exist
+        await _client.storage.from(StorageBuckets.kycDocuments).uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: const FileOptions(upsert: true),
+            );
+        return await _client.storage
+            .from(StorageBuckets.kycDocuments)
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
+      }
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
 
   /// Update editable profile fields.
   Future<void> updateProfile({
     String? fullName,
+    String? avatarUrl,
     String? phone,
     String? district,
     String? employmentType,
@@ -147,6 +178,7 @@ class ProfileRepository {
     try {
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;
+      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
       if (phone != null) updates['phone'] = phone;
       if (district != null) updates['district'] = district;
       if (employmentType != null) updates['employment_type'] = employmentType;

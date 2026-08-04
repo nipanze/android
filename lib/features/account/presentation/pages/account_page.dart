@@ -601,23 +601,31 @@ class _ProfileHeaderCard extends StatelessWidget {
                   Container(
                     width: 58,
                     height: 58,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
                         colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
+                      image: profile?.avatarUrl?.isNotEmpty == true
+                          ? DecorationImage(
+                              image: NetworkImage(profile!.avatarUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        profile?.initials ?? 'U',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700),
-                      ),
-                    ),
+                    child: profile?.avatarUrl?.isNotEmpty == true
+                        ? null
+                        : Center(
+                            child: Text(
+                              profile?.initials ?? 'U',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
                   ),
                   if (isVerified)
                     Positioned(

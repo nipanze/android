@@ -22,6 +22,7 @@ class NipanzeUser extends Equatable {
     required this.id,
     required this.email,
     this.fullName,
+    this.avatarUrl,
     this.phone,
     this.district,
     this.streetAddress,
@@ -43,6 +44,7 @@ class NipanzeUser extends Equatable {
   final String id;
   final String email;
   final String? fullName;
+  final String? avatarUrl;
   final String? phone;
   final String? district;
   final String? streetAddress;
@@ -61,6 +63,17 @@ class NipanzeUser extends Equatable {
   final bool isAdmin;
   final bool isEmailVerified;
 
+  String get initials {
+    if (fullName?.isNotEmpty == true) {
+      final parts = fullName!.trim().split(' ');
+      if (parts.length >= 2) {
+        return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+      }
+      return fullName![0].toUpperCase();
+    }
+    return email.isNotEmpty ? email[0].toUpperCase() : 'U';
+  }
+
   bool get canBorrow => true;
   bool get canSuggestBorrowerTerms => subscriptionPlan == SubscriptionPlan.pro;
   bool get canLend =>
@@ -73,6 +86,7 @@ class NipanzeUser extends Equatable {
       id: map['id'] as String,
       email: map['email'] as String? ?? '',
       fullName: map['full_name'] as String?,
+      avatarUrl: map['avatar_url'] as String?,
       phone: map['phone'] as String?,
       district: map['district'] as String?,
       streetAddress: map['street_address'] as String?,
@@ -166,6 +180,7 @@ class NipanzeUser extends Equatable {
   List<Object?> get props => [
         id,
         email,
+        avatarUrl,
         subscriptionPlan,
         kycStatus,
         isAdmin,

@@ -208,6 +208,7 @@ class AuthRepository {
   /// Update the current user's profile fields.
   Future<void> updateProfile({
     String? fullName,
+    String? avatarUrl,
     String? phone,
     String? country,
     String? district,
@@ -228,6 +229,7 @@ class AuthRepository {
       'updated_at': DateTime.now().toIso8601String(),
     };
     if (fullName != null) updates['full_name'] = fullName;
+    if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
     if (phone != null) updates['phone'] = phone;
     if (country != null) updates['country'] = country;
     if (district != null) updates['district'] = district;

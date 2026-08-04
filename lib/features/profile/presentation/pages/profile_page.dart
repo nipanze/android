@@ -1,12 +1,16 @@
 // lib/features/profile/presentation/pages/profile_page.dart
 // ignore_for_file: unused_import, prefer_const_constructors
 
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../account/data/profile_repository.dart';
 import '../../../auth/data/auth_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -17,6 +21,8 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
+    final hasAvatar = user?.avatarUrl?.isNotEmpty == true;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -29,23 +35,33 @@ class ProfilePage extends StatelessWidget {
           child: Column(children: [
             const SizedBox(height: 8),
             Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(32)),
-                child: Center(
-                    child: Text(
-                        user?.fullName?.isNotEmpty == true
-                            ? user!.fullName![0].toUpperCase()
-                            : 'U',
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(36),
+                image: hasAvatar
+                    ? DecorationImage(
+                        image: NetworkImage(user!.avatarUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: hasAvatar
+                  ? null
+                  : Center(
+                      child: Text(
+                        user?.initials ?? 'U',
                         style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700)))),
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+            ),
             const SizedBox(height: 12),
             Text(user?.fullName ?? 'User',
                 style: Theme.of(context).textTheme.titleMedium),
@@ -202,6 +218,9 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   String? _institutionType;
   late bool _isBankAgent;
   late bool _showProfessionalTag;
+  
+  Uint8List? _newAvatarBytes;
+  String? _currentAvatarUrl;
   bool _saving = false;
 
   static const _employmentOptions = [
@@ -240,6 +259,7 @@ class _EditProfilePageState extends State<_EditProfilePage> {
     _institutionType = widget.user.institutionType;
     _isBankAgent = widget.user.isBankAgent;
     _showProfessionalTag = widget.user.showProfessionalTag;
+    _currentAvatarUrl = widget.user.avatarUrl;
   }
 
   @override
@@ -254,8 +274,32 @@ class _EditProfilePageState extends State<_EditProfilePage> {
     super.dispose();
   }
 
+  Future<void> _pickAvatar() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      setState(() => _newAvatarBytes = bytes);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not select image: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasNewAvatar = _newAvatarBytes != null;
+    final hasCurrentAvatar = _currentAvatarUrl?.isNotEmpty == true;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -277,6 +321,81 @@ class _EditProfilePageState extends State<_EditProfilePage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ── Profile Picture Picker ───────────────────────────────────────
+          Center(
+            child: GestureDetector(
+              onTap: _pickAvatar,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      image: hasNewAvatar
+                          ? DecorationImage(
+                              image: MemoryImage(_newAvatarBytes!),
+                              fit: BoxFit.cover,
+                            )
+                          : hasCurrentAvatar
+                              ? DecorationImage(
+                                  image: NetworkImage(_currentAvatarUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                    ),
+                    child: (!hasNewAvatar && !hasCurrentAvatar)
+                        ? Center(
+                            child: Text(
+                              widget.user.initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton(
+              onPressed: _pickAvatar,
+              child: const Text('Change profile picture',
+                  style: TextStyle(fontSize: 12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           _field('Full name', _nameCtrl),
           const SizedBox(height: 14),
           _field('Phone', _phoneCtrl),
@@ -378,9 +497,22 @@ class _EditProfilePageState extends State<_EditProfilePage> {
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      final repo = getIt<AuthRepository>();
-      await repo.updateProfile(
+      String? finalAvatarUrl = _currentAvatarUrl;
+
+      // 1. Upload new avatar if picked
+      if (_newAvatarBytes != null) {
+        final profileRepo = getIt<ProfileRepository>();
+        finalAvatarUrl = await profileRepo.uploadAvatarBytes(
+          _newAvatarBytes!,
+          'jpg',
+        );
+      }
+
+      // 2. Save profile fields
+      final authRepo = getIt<AuthRepository>();
+      await authRepo.updateProfile(
         fullName: _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
+        avatarUrl: finalAvatarUrl,
         district: _districtCtrl.text.trim().isEmpty
             ? null
             : _districtCtrl.text.trim(),
@@ -398,7 +530,8 @@ class _EditProfilePageState extends State<_EditProfilePage> {
         isBankAgent: _isBankAgent,
         showProfessionalTag: _showProfessionalTag,
       );
-      // Refresh auth state so the profile page updates
+
+      // 3. Refresh auth state so the profile page updates
       if (mounted) {
         context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
         Navigator.of(context).pop();

@@ -6,6 +6,7 @@ class UserProfile extends Equatable {
     required this.id,
     required this.email,
     this.fullName,
+    this.avatarUrl,
     this.phone,
     this.district,
     this.employmentType,
@@ -51,6 +52,7 @@ class UserProfile extends Equatable {
   final String id;
   final String email;
   final String? fullName;
+  final String? avatarUrl;
   final String? phone;
   final String? district;
   final String? employmentType;
@@ -126,6 +128,7 @@ class UserProfile extends Equatable {
     String? id,
     String? email,
     String? fullName,
+    String? avatarUrl,
     String? phone,
     String? district,
     String? employmentType,
@@ -166,6 +169,7 @@ class UserProfile extends Equatable {
       id: id ?? this.id,
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       phone: phone ?? this.phone,
       district: district ?? this.district,
       employmentType: employmentType ?? this.employmentType,
