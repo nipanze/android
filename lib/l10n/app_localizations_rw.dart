@@ -1145,7 +1145,14 @@ class AppLocalizationsRw extends AppLocalizations {
   String get offersLabel => 'AMATANGA';
 
   @override
+  String get loanRequestTitle => 'Ubusabe bw\'inguzanyo';
+
+  @override
   String get makeAnOffer => 'Tanga igiciro';
+
+  @override
+  String get makeAnOfferToUnlock =>
+      'Tanga igiciro kugirango ubone amakuru yose';
 
   @override
   String get couldNotSendOffer => 'Ntibyashobotse kohereza igiciro.';

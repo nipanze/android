@@ -1130,7 +1130,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get offersLabel => 'العروض';
 
   @override
+  String get loanRequestTitle => 'طلب قرض';
+
+  @override
   String get makeAnOffer => 'قدّم عرضاً';
+
+  @override
+  String get makeAnOfferToUnlock => 'قدّم عرضاً للاطلاع على كافة التفاصيل';
 
   @override
   String get couldNotSendOffer => 'تعذّر إرسال العرض.';

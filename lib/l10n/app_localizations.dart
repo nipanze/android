@@ -2174,11 +2174,23 @@ abstract class AppLocalizations {
   /// **'OFFERS'**
   String get offersLabel;
 
+  /// No description provided for @loanRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan request'**
+  String get loanRequestTitle;
+
   /// No description provided for @makeAnOffer.
   ///
   /// In en, this message translates to:
   /// **'Make an offer'**
   String get makeAnOffer;
+
+  /// No description provided for @makeAnOfferToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Make an offer to unlock full details'**
+  String get makeAnOfferToUnlock;
 
   /// No description provided for @couldNotSendOffer.
   ///

@@ -1149,7 +1149,13 @@ class AppLocalizationsSw extends AppLocalizations {
   String get offersLabel => 'ORODHA ZA BEI';
 
   @override
+  String get loanRequestTitle => 'Ombi la mkopo';
+
+  @override
   String get makeAnOffer => 'Toa bei';
+
+  @override
+  String get makeAnOfferToUnlock => 'Toa bei ili ufikie maelezo kamili';
 
   @override
   String get couldNotSendOffer => 'Haikuweza kutuma bei.';

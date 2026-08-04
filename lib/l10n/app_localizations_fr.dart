@@ -1160,7 +1160,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get offersLabel => 'OFFRES';
 
   @override
+  String get loanRequestTitle => 'Demande de prêt';
+
+  @override
   String get makeAnOffer => 'Faire une offre';
+
+  @override
+  String get makeAnOfferToUnlock =>
+      'Faire une offre pour accéder aux détails complets';
 
   @override
   String get couldNotSendOffer => 'Impossible d\'envoyer l\'offre.';

@@ -162,6 +162,7 @@ class MainScaffold extends StatelessWidget {
   }
 
   void _showRequestChoice(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -173,7 +174,7 @@ class MainScaffold extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.account_balance_wallet_outlined),
-                title: const Text('Loan request'),
+                title: Text(l10n?.loanRequestTitle ?? 'Loan request'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.listingCreate);
@@ -181,7 +182,7 @@ class MainScaffold extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.currency_exchange_rounded),
-                title: const Text('Forex request'),
+                title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.forexCreate);

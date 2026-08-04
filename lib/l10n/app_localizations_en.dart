@@ -1142,7 +1142,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offersLabel => 'OFFERS';
 
   @override
+  String get loanRequestTitle => 'Loan request';
+
+  @override
   String get makeAnOffer => 'Make an offer';
+
+  @override
+  String get makeAnOfferToUnlock => 'Make an offer to unlock full details';
 
   @override
   String get couldNotSendOffer => 'Could not send offer.';

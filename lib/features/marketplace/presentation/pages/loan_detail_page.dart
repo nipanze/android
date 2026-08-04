@@ -434,7 +434,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: const Text('Make an offer'),
+                child: Text(AppLocalizations.of(context)?.makeAnOffer ?? 'Make an offer'),
               ),
           ]),
         ),
@@ -1168,7 +1168,7 @@ class _OfferCardState extends State<_OfferCard>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Make an offer to unlock full details',
+                                    AppLocalizations.of(context)?.makeAnOfferToUnlock ?? 'Make an offer to unlock full details',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Theme.of(context)
@@ -2158,7 +2158,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      Text('Make an offer',
+                      Text(AppLocalizations.of(context)?.makeAnOffer ?? 'Make an offer',
                           style: Theme.of(context).textTheme.titleMedium),
                       const Spacer(),
                       IconButton(
