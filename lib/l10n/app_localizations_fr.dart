@@ -1173,4 +1173,71 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Conditions de règlement';
+
+  @override
+  String get activeListingLabel => 'Annonce active';
+
+  @override
+  String get flutterwaveCheckoutTitle => 'Paiement Flutterwave';
+
+  @override
+  String get orderSummary => 'Résumé de la commande';
+
+  @override
+  String get paymentMethod => 'Mode de paiement';
+
+  @override
+  String get mobileMoney => 'Mobile Money';
+
+  @override
+  String get creditOrDebitCard => 'Carte bancaire';
+
+  @override
+  String get phoneOrAccount => 'N° de téléphone / compte';
+
+  @override
+  String get enterMobileNumber => 'Entrez le numéro Mobile Money';
+
+  @override
+  String get payWithFlutterwave => 'Payer avec Flutterwave';
+
+  @override
+  String get processingPayment => 'Traitement du paiement Flutterwave…';
+
+  @override
+  String get paymentSuccessful => 'Paiement réussi !';
+
+  @override
+  String subscriptionActivated(Object plan) {
+    return 'Votre abonnement $plan est maintenant actif.';
+  }
+
+  @override
+  String get paymentFailed => 'Le paiement a échoué. Veuillez réessayer.';
+
+  @override
+  String get paymentStep1 => 'Détails';
+
+  @override
+  String get paymentStep2 => 'Traitement';
+
+  @override
+  String get paymentStep3 => 'Terminé';
+
+  @override
+  String get paymentProcessingStep1 => 'Connexion à Flutterwave…';
+
+  @override
+  String get paymentProcessingStep2 => 'Vérification du paiement…';
+
+  @override
+  String get paymentProcessingStep3 => 'Activation de l\'abonnement…';
+
+  @override
+  String transactionRef(String ref) {
+    return 'Réf. : $ref';
+  }
+
+  @override
+  String get poweredByFlutterwave => 'Propulsé par Flutterwave';
 }

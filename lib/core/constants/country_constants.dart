@@ -24,6 +24,8 @@ class CountryInfo {
   final String proPriceFormatted; // Charm pricing, e.g. 'UGX 49,900'
 }
 
+typedef EastAfricaCountry = CountryInfo;
+
 class EastAfricaCountries {
   EastAfricaCountries._();
 

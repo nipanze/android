@@ -429,5 +429,31 @@
   "couldNotSendOffer": "Ntibyashobotse kohereza igiciro.",
   "rateOfferedLabel": "Igiciro gitangwa",
   "amountAvailableLabel": "Amafaranga aboneka",
-  "settlementTermsLabel": "Amabwiriza y'iryozwa"
+  "settlementTermsLabel": "Amabwiriza y'iryozwa",
+  "activeListingLabel": "Ubusabe buri gukora",
+  "flutterwaveCheckoutTitle": "Kwishyura kuri Flutterwave",
+  "orderSummary": "Inshamake y'igiciro",
+  "paymentMethod": "Uburyo bwo kwishyura",
+  "mobileMoney": "Mobile Money",
+  "creditOrDebitCard": "Ikarita ya banki",
+  "phoneOrAccount": "Numero ya terefone / Konti",
+  "enterMobileNumber": "Shyiramo numero ya Mobile Money",
+  "payWithFlutterwave": "Ishyura ukoresheje Flutterwave",
+  "processingPayment": "Kwishyura kuri Flutterwave birikugenda…",
+  "paymentSuccessful": "Kwishyura byagenze neza!",
+  "subscriptionActivated": "Ifatabuguzi ryawe rya {plan} ubu riri gukora.",
+  "paymentFailed": "Kwishyura ntabwo byakunze. Ongera ugerageze.",
+  "paymentStep1": "Amakuru",
+  "paymentStep2": "Birakora",
+  "paymentStep3": "Byarangiye",
+  "paymentProcessingStep1": "Guhuza na Flutterwave\u2026",
+  "paymentProcessingStep2": "Kwemeza kwishyura\u2026",
+  "paymentProcessingStep3": "Gufungura ifatabuguzi\u2026",
+  "transactionRef": "Inomero: {ref}",
+  "@transactionRef": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "poweredByFlutterwave": "Ishyirwa mu bikorwa na Flutterwave"
 }

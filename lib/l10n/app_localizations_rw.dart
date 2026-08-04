@@ -1158,4 +1158,71 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Amabwiriza y\'iryozwa';
+
+  @override
+  String get activeListingLabel => 'Ubusabe buri gukora';
+
+  @override
+  String get flutterwaveCheckoutTitle => 'Kwishyura kuri Flutterwave';
+
+  @override
+  String get orderSummary => 'Inshamake y\'igiciro';
+
+  @override
+  String get paymentMethod => 'Uburyo bwo kwishyura';
+
+  @override
+  String get mobileMoney => 'Mobile Money';
+
+  @override
+  String get creditOrDebitCard => 'Ikarita ya banki';
+
+  @override
+  String get phoneOrAccount => 'Numero ya terefone / Konti';
+
+  @override
+  String get enterMobileNumber => 'Shyiramo numero ya Mobile Money';
+
+  @override
+  String get payWithFlutterwave => 'Ishyura ukoresheje Flutterwave';
+
+  @override
+  String get processingPayment => 'Kwishyura kuri Flutterwave birikugenda…';
+
+  @override
+  String get paymentSuccessful => 'Kwishyura byagenze neza!';
+
+  @override
+  String subscriptionActivated(Object plan) {
+    return 'Ifatabuguzi ryawe rya $plan ubu riri gukora.';
+  }
+
+  @override
+  String get paymentFailed => 'Kwishyura ntabwo byakunze. Ongera ugerageze.';
+
+  @override
+  String get paymentStep1 => 'Amakuru';
+
+  @override
+  String get paymentStep2 => 'Birakora';
+
+  @override
+  String get paymentStep3 => 'Byarangiye';
+
+  @override
+  String get paymentProcessingStep1 => 'Guhuza na Flutterwave…';
+
+  @override
+  String get paymentProcessingStep2 => 'Kwemeza kwishyura…';
+
+  @override
+  String get paymentProcessingStep3 => 'Gufungura ifatabuguzi…';
+
+  @override
+  String transactionRef(String ref) {
+    return 'Inomero: $ref';
+  }
+
+  @override
+  String get poweredByFlutterwave => 'Ishyirwa mu bikorwa na Flutterwave';
 }

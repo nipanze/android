@@ -1155,4 +1155,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Settlement terms';
+
+  @override
+  String get activeListingLabel => 'Active listing';
+
+  @override
+  String get flutterwaveCheckoutTitle => 'Flutterwave Checkout';
+
+  @override
+  String get orderSummary => 'Order Summary';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get mobileMoney => 'Mobile Money';
+
+  @override
+  String get creditOrDebitCard => 'Credit / Debit Card';
+
+  @override
+  String get phoneOrAccount => 'Phone / Account Number';
+
+  @override
+  String get enterMobileNumber => 'Enter Mobile Money phone number';
+
+  @override
+  String get payWithFlutterwave => 'Pay with Flutterwave';
+
+  @override
+  String get processingPayment => 'Processing Flutterwave Payment…';
+
+  @override
+  String get paymentSuccessful => 'Payment Successful!';
+
+  @override
+  String subscriptionActivated(Object plan) {
+    return 'Your $plan subscription is now active.';
+  }
+
+  @override
+  String get paymentFailed => 'Payment failed. Please try again.';
+
+  @override
+  String get paymentStep1 => 'Details';
+
+  @override
+  String get paymentStep2 => 'Processing';
+
+  @override
+  String get paymentStep3 => 'Done';
+
+  @override
+  String get paymentProcessingStep1 => 'Connecting to Flutterwave…';
+
+  @override
+  String get paymentProcessingStep2 => 'Verifying payment…';
+
+  @override
+  String get paymentProcessingStep3 => 'Activating subscription…';
+
+  @override
+  String transactionRef(String ref) {
+    return 'Ref: $ref';
+  }
+
+  @override
+  String get poweredByFlutterwave => 'Powered by Flutterwave';
 }

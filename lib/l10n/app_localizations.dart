@@ -2203,6 +2203,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settlement terms'**
   String get settlementTermsLabel;
+
+  /// No description provided for @activeListingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Active listing'**
+  String get activeListingLabel;
+
+  /// No description provided for @flutterwaveCheckoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flutterwave Checkout'**
+  String get flutterwaveCheckoutTitle;
+
+  /// No description provided for @orderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Summary'**
+  String get orderSummary;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// No description provided for @mobileMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money'**
+  String get mobileMoney;
+
+  /// No description provided for @creditOrDebitCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit / Debit Card'**
+  String get creditOrDebitCard;
+
+  /// No description provided for @phoneOrAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone / Account Number'**
+  String get phoneOrAccount;
+
+  /// No description provided for @enterMobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Mobile Money phone number'**
+  String get enterMobileNumber;
+
+  /// No description provided for @payWithFlutterwave.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with Flutterwave'**
+  String get payWithFlutterwave;
+
+  /// No description provided for @processingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing Flutterwave Payment…'**
+  String get processingPayment;
+
+  /// No description provided for @paymentSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Successful!'**
+  String get paymentSuccessful;
+
+  /// No description provided for @subscriptionActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {plan} subscription is now active.'**
+  String subscriptionActivated(Object plan);
+
+  /// No description provided for @paymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed. Please try again.'**
+  String get paymentFailed;
+
+  /// No description provided for @paymentStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get paymentStep1;
+
+  /// No description provided for @paymentStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get paymentStep2;
+
+  /// No description provided for @paymentStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get paymentStep3;
+
+  /// No description provided for @paymentProcessingStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to Flutterwave…'**
+  String get paymentProcessingStep1;
+
+  /// No description provided for @paymentProcessingStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying payment…'**
+  String get paymentProcessingStep2;
+
+  /// No description provided for @paymentProcessingStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Activating subscription…'**
+  String get paymentProcessingStep3;
+
+  /// No description provided for @transactionRef.
+  ///
+  /// In en, this message translates to:
+  /// **'Ref: {ref}'**
+  String transactionRef(String ref);
+
+  /// No description provided for @poweredByFlutterwave.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by Flutterwave'**
+  String get poweredByFlutterwave;
 }
 
 class _AppLocalizationsDelegate

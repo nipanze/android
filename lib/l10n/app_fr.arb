@@ -429,5 +429,36 @@
   "couldNotSendOffer": "Impossible d'envoyer l'offre.",
   "rateOfferedLabel": "Taux proposé",
   "amountAvailableLabel": "Montant disponible",
-  "settlementTermsLabel": "Conditions de règlement"
+  "settlementTermsLabel": "Conditions de règlement",
+  "activeListingLabel": "Annonce active",
+  "flutterwaveCheckoutTitle": "Paiement Flutterwave",
+  "orderSummary": "Résumé de la commande",
+  "paymentMethod": "Mode de paiement",
+  "mobileMoney": "Mobile Money",
+  "creditOrDebitCard": "Carte bancaire",
+  "phoneOrAccount": "N° de téléphone / compte",
+  "enterMobileNumber": "Entrez le numéro Mobile Money",
+  "payWithFlutterwave": "Payer avec Flutterwave",
+  "processingPayment": "Traitement du paiement Flutterwave\u2026",
+  "paymentSuccessful": "Paiement réussi !",
+  "subscriptionActivated": "Votre abonnement {plan} est maintenant actif.",
+  "@subscriptionActivated": {
+    "placeholders": {
+      "plan": { "type": "Object" }
+    }
+  },
+  "paymentFailed": "Le paiement a échoué. Veuillez réessayer.",
+  "paymentStep1": "Détails",
+  "paymentStep2": "Traitement",
+  "paymentStep3": "Terminé",
+  "paymentProcessingStep1": "Connexion à Flutterwave\u2026",
+  "paymentProcessingStep2": "Vérification du paiement\u2026",
+  "paymentProcessingStep3": "Activation de l'abonnement\u2026",
+  "transactionRef": "Réf. : {ref}",
+  "@transactionRef": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "poweredByFlutterwave": "Propulsé par Flutterwave"
 }

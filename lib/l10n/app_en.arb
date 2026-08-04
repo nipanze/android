@@ -506,5 +506,31 @@
   "couldNotSendOffer": "Could not send offer.",
   "rateOfferedLabel": "Rate offered",
   "amountAvailableLabel": "Amount available",
-  "settlementTermsLabel": "Settlement terms"
+  "settlementTermsLabel": "Settlement terms",
+  "activeListingLabel": "Active listing",
+  "flutterwaveCheckoutTitle": "Flutterwave Checkout",
+  "orderSummary": "Order Summary",
+  "paymentMethod": "Payment Method",
+  "mobileMoney": "Mobile Money",
+  "creditOrDebitCard": "Credit / Debit Card",
+  "phoneOrAccount": "Phone / Account Number",
+  "enterMobileNumber": "Enter Mobile Money phone number",
+  "payWithFlutterwave": "Pay with Flutterwave",
+  "processingPayment": "Processing Flutterwave Payment…",
+  "paymentSuccessful": "Payment Successful!",
+  "subscriptionActivated": "Your {plan} subscription is now active.",
+  "paymentFailed": "Payment failed. Please try again.",
+  "paymentStep1": "Details",
+  "paymentStep2": "Processing",
+  "paymentStep3": "Done",
+  "paymentProcessingStep1": "Connecting to Flutterwave\u2026",
+  "paymentProcessingStep2": "Verifying payment\u2026",
+  "paymentProcessingStep3": "Activating subscription\u2026",
+  "transactionRef": "Ref: {ref}",
+  "@transactionRef": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "poweredByFlutterwave": "Powered by Flutterwave"
 }

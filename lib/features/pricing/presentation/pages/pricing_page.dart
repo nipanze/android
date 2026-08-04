@@ -8,6 +8,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
+import '../widgets/flutterwave_checkout_sheet.dart';
+
 /// The single place where marketplace capability and subscription prices are explained.
 class PricingPage extends StatelessWidget {
   const PricingPage({super.key});
@@ -84,7 +86,7 @@ class PricingPage extends StatelessWidget {
               l10n?.freeFeature3 ?? 'Accept offers received',
             ],
             current: current,
-            onChoose: () => _choosePlan(context, SubscriptionPlan.free),
+            onChoose: () => _choosePlan(context, SubscriptionPlan.free, country),
           ),
           const SizedBox(height: 12),
           _PlanCard(
@@ -97,7 +99,7 @@ class PricingPage extends StatelessWidget {
               l10n?.lenderFeature2 ?? 'See offer detail where you participate',
             ],
             current: current,
-            onChoose: () => _choosePlan(context, SubscriptionPlan.lender),
+            onChoose: () => _choosePlan(context, SubscriptionPlan.lender, country),
           ),
           const SizedBox(height: 12),
           _PlanCard(
@@ -111,7 +113,7 @@ class PricingPage extends StatelessWidget {
               l10n?.proFeature3 ?? 'Verified badge, reliability score and priority visibility',
             ],
             current: current,
-            onChoose: () => _choosePlan(context, SubscriptionPlan.pro),
+            onChoose: () => _choosePlan(context, SubscriptionPlan.pro, country),
             highlighted: true,
           ),
           const SizedBox(height: 24),
@@ -125,13 +127,27 @@ class PricingPage extends StatelessWidget {
     );
   }
 
-  void _choosePlan(BuildContext context, SubscriptionPlan plan) {
-    final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-        l10n?.planSelectedMessage(_label(plan)) ?? 'Selected: ${_label(plan)}',
-      ),
-    ));
+  void _choosePlan(BuildContext context, SubscriptionPlan plan, EastAfricaCountry country) {
+    if (plan == SubscriptionPlan.free) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          l10n?.planSelectedMessage(_label(plan)) ?? 'Selected: ${_label(plan)}',
+        ),
+      ));
+      return;
+    }
+
+    final priceFormatted = plan == SubscriptionPlan.lender
+        ? '${country.lenderPriceFormatted} / month'
+        : '${country.proPriceFormatted} / month';
+
+    FlutterwaveCheckoutSheet.show(
+      context,
+      plan: plan,
+      priceFormatted: priceFormatted,
+      country: country,
+    );
   }
 
   static bool _isUpgrade(SubscriptionPlan from, SubscriptionPlan to) =>

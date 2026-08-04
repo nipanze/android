@@ -1162,4 +1162,71 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'Masharti ya makubaliano';
+
+  @override
+  String get activeListingLabel => 'Ombi linaloendelea';
+
+  @override
+  String get flutterwaveCheckoutTitle => 'Malipo ya Flutterwave';
+
+  @override
+  String get orderSummary => 'Muhtasari wa Agizo';
+
+  @override
+  String get paymentMethod => 'Njia ya Malipo';
+
+  @override
+  String get mobileMoney => 'Pesa za Simu (Mobile Money)';
+
+  @override
+  String get creditOrDebitCard => 'Kadi ya Benki';
+
+  @override
+  String get phoneOrAccount => 'Nambari ya Simu / Akaunti';
+
+  @override
+  String get enterMobileNumber => 'Weka nambari ya simu ya Mobile Money';
+
+  @override
+  String get payWithFlutterwave => 'Lipa na Flutterwave';
+
+  @override
+  String get processingPayment => 'Inashughulikia Malipo ya Flutterwave…';
+
+  @override
+  String get paymentSuccessful => 'Malipo Yamefanikiwa!';
+
+  @override
+  String subscriptionActivated(Object plan) {
+    return 'Usajili wako wa $plan sasa ni amilifu.';
+  }
+
+  @override
+  String get paymentFailed => 'Malipo yameshindikana. Tafadhali jaribu tena.';
+
+  @override
+  String get paymentStep1 => 'Maelezo';
+
+  @override
+  String get paymentStep2 => 'Inashughulikia';
+
+  @override
+  String get paymentStep3 => 'Imekamilika';
+
+  @override
+  String get paymentProcessingStep1 => 'Kuunganisha na Flutterwave…';
+
+  @override
+  String get paymentProcessingStep2 => 'Kuthibitisha malipo…';
+
+  @override
+  String get paymentProcessingStep3 => 'Kuamilisha usajili…';
+
+  @override
+  String transactionRef(String ref) {
+    return 'Kumb: $ref';
+  }
+
+  @override
+  String get poweredByFlutterwave => 'Inaendeshwa na Flutterwave';
 }

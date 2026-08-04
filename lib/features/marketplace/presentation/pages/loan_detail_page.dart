@@ -283,6 +283,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     offers: _offers,
                     requestedAmount: listing.requestedAmount,
                     kycStatus: listing.kycStatus,
+                    isOwner: isOwner,
                   ),
 
                   const SizedBox(height: 12),
@@ -484,24 +485,32 @@ class _FundedProgressBar extends StatelessWidget {
     required this.offers,
     required this.requestedAmount,
     this.kycStatus,
+    this.isOwner = false,
   });
 
   final List<LoanOffer> offers;
   final int requestedAmount;
   final String? kycStatus;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final totalFunded = offers.fold<int>(0, (s, o) => s + o.offerAmount);
     final pct = requestedAmount > 0
         ? (totalFunded / requestedAmount).clamp(0.0, 1.0)
         : 0.0;
     final pctInt = (pct * 100).round();
+    // Offer count is only ever shown to the listing owner.
+    // Lenders and participants see a generic "Active listing" label so they
+    // cannot discover how many competing bids are in the book.
     final bidsLabel = kycStatus != null
         ? 'User verification status: ${kycStatus!.toUpperCase()}'
-        : (offers.isEmpty
-            ? 'No offers'
-            : '${offers.length} offer${offers.length > 1 ? 's' : ''}');
+        : (isOwner
+            ? (offers.isEmpty
+                ? (l10n?.noOffersYet ?? 'No offers yet')
+                : '${offers.length} offer${offers.length > 1 ? 's' : ''}')
+            : (l10n?.activeListingLabel ?? 'Active listing'));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,7 +554,31 @@ class _FundedProgressBar extends StatelessWidget {
                     color: Theme.of(context).dividerColor,
                   );
                 }
-                final total = offers.fold<int>(0, (s, o) => s + o.offerAmount);
+
+                // ── Non-owners (lenders / bidders): flat single-colour bar ──
+                // A segmented bar reveals exactly how many competing bids
+                // exist (one segment = one offer). Lenders must not see
+                // that count, so we render a plain filled bar instead.
+                if (!isOwner) {
+                  return Row(
+                    children: [
+                      Flexible(
+                        flex: (pct * 1000).round().clamp(1, 1000),
+                        child: Container(color: AppColors.accent),
+                      ),
+                      if (pct < 1.0)
+                        Flexible(
+                          flex: ((1 - pct) * 1000).round().clamp(1, 1000),
+                          child: Container(
+                              color: Theme.of(context).dividerColor),
+                        ),
+                    ],
+                  );
+                }
+
+                // ── Owner: full segmented bar (one colour per offer) ────────
+                final total =
+                    offers.fold<int>(0, (s, o) => s + o.offerAmount);
                 return Row(
                   children: [
                     for (int i = 0; i < offers.length; i++) ...[

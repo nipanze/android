@@ -1143,4 +1143,71 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settlementTermsLabel => 'شروط التسوية';
+
+  @override
+  String get activeListingLabel => 'طلب نشط';
+
+  @override
+  String get flutterwaveCheckoutTitle => 'الدفع عبر فلوترفيلف';
+
+  @override
+  String get orderSummary => 'ملخص الطلب';
+
+  @override
+  String get paymentMethod => 'طريقة الدفع';
+
+  @override
+  String get mobileMoney => 'محفظة جوال (Mobile Money)';
+
+  @override
+  String get creditOrDebitCard => 'بطاقة ائتمان / مدى';
+
+  @override
+  String get phoneOrAccount => 'رقم الهاتف / الحساب';
+
+  @override
+  String get enterMobileNumber => 'أدخل رقم محفظة الجوال';
+
+  @override
+  String get payWithFlutterwave => 'ادفع بواسطة Flutterwave';
+
+  @override
+  String get processingPayment => 'جاري معالجة الدفع عبر Flutterwave…';
+
+  @override
+  String get paymentSuccessful => 'تم الدفع بنجاح!';
+
+  @override
+  String subscriptionActivated(Object plan) {
+    return 'اشتراكك في باقة $plan أصبح نشطاً الآن.';
+  }
+
+  @override
+  String get paymentFailed => 'فشلت عملية الدفع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get paymentStep1 => 'التفاصيل';
+
+  @override
+  String get paymentStep2 => 'المعالجة';
+
+  @override
+  String get paymentStep3 => 'تم';
+
+  @override
+  String get paymentProcessingStep1 => 'الاتصال بـ Flutterwave…';
+
+  @override
+  String get paymentProcessingStep2 => 'التحقق من الدفع…';
+
+  @override
+  String get paymentProcessingStep3 => 'تفعيل الاشتراك…';
+
+  @override
+  String transactionRef(String ref) {
+    return 'المرجع: $ref';
+  }
+
+  @override
+  String get poweredByFlutterwave => 'مدعوم من Flutterwave';
 }

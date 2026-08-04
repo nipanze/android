@@ -436,5 +436,31 @@
   "couldNotSendOffer": "تعذّر إرسال العرض.",
   "rateOfferedLabel": "السعر المقترح",
   "amountAvailableLabel": "المبلغ المتاح",
-  "settlementTermsLabel": "شروط التسوية"
+  "settlementTermsLabel": "شروط التسوية",
+  "activeListingLabel": "طلب نشط",
+  "flutterwaveCheckoutTitle": "الدفع عبر فلوترفيلف",
+  "orderSummary": "ملخص الطلب",
+  "paymentMethod": "طريقة الدفع",
+  "mobileMoney": "محفظة جوال (Mobile Money)",
+  "creditOrDebitCard": "بطاقة ائتمان / مدى",
+  "phoneOrAccount": "رقم الهاتف / الحساب",
+  "enterMobileNumber": "أدخل رقم محفظة الجوال",
+  "payWithFlutterwave": "ادفع بواسطة Flutterwave",
+  "processingPayment": "جاري معالجة الدفع عبر Flutterwave…",
+  "paymentSuccessful": "تم الدفع بنجاح!",
+  "subscriptionActivated": "اشتراكك في باقة {plan} أصبح نشطاً الآن.",
+  "paymentFailed": "فشلت عملية الدفع. يرجى المحاولة مرة أخرى.",
+  "paymentStep1": "التفاصيل",
+  "paymentStep2": "المعالجة",
+  "paymentStep3": "تم",
+  "paymentProcessingStep1": "الاتصال بـ Flutterwave\u2026",
+  "paymentProcessingStep2": "التحقق من الدفع\u2026",
+  "paymentProcessingStep3": "تفعيل الاشتراك\u2026",
+  "transactionRef": "المرجع: {ref}",
+  "@transactionRef": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "poweredByFlutterwave": "مدعوم من Flutterwave"
 }

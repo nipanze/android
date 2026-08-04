@@ -429,5 +429,31 @@
   "couldNotSendOffer": "Haikuweza kutuma bei.",
   "rateOfferedLabel": "Bei inayotolewa",
   "amountAvailableLabel": "Kiasi kinachopatikana",
-  "settlementTermsLabel": "Masharti ya makubaliano"
+  "settlementTermsLabel": "Masharti ya makubaliano",
+  "activeListingLabel": "Ombi linaloendelea",
+  "flutterwaveCheckoutTitle": "Malipo ya Flutterwave",
+  "orderSummary": "Muhtasari wa Agizo",
+  "paymentMethod": "Njia ya Malipo",
+  "mobileMoney": "Pesa za Simu (Mobile Money)",
+  "creditOrDebitCard": "Kadi ya Benki",
+  "phoneOrAccount": "Nambari ya Simu / Akaunti",
+  "enterMobileNumber": "Weka nambari ya simu ya Mobile Money",
+  "payWithFlutterwave": "Lipa na Flutterwave",
+  "processingPayment": "Inashughulikia Malipo ya Flutterwave…",
+  "paymentSuccessful": "Malipo Yamefanikiwa!",
+  "subscriptionActivated": "Usajili wako wa {plan} sasa ni amilifu.",
+  "paymentFailed": "Malipo yameshindikana. Tafadhali jaribu tena.",
+  "paymentStep1": "Maelezo",
+  "paymentStep2": "Inashughulikia",
+  "paymentStep3": "Imekamilika",
+  "paymentProcessingStep1": "Kuunganisha na Flutterwave\u2026",
+  "paymentProcessingStep2": "Kuthibitisha malipo\u2026",
+  "paymentProcessingStep3": "Kuamilisha usajili\u2026",
+  "transactionRef": "Kumb: {ref}",
+  "@transactionRef": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "poweredByFlutterwave": "Inaendeshwa na Flutterwave"
 }
