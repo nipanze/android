@@ -26,17 +26,22 @@ class FlutterwaveCheckoutSheet extends StatefulWidget {
     required this.plan,
     required this.priceFormatted,
     required this.country,
+    this.priceMinorUnits = 0,
   });
 
   final SubscriptionPlan plan;
   final String priceFormatted;
   final EastAfricaCountry country;
+  /// The exact integer minor-unit amount from `subscription_prices.price_minor_units`.
+  /// Written to `subscriptions.amount_minor_units` on checkout completion.
+  final int priceMinorUnits;
 
   static void show(
     BuildContext context, {
     required SubscriptionPlan plan,
     required String priceFormatted,
     required EastAfricaCountry country,
+    int priceMinorUnits = 0,
   }) {
     showModalBottomSheet(
       context: context,
@@ -48,6 +53,7 @@ class FlutterwaveCheckoutSheet extends StatefulWidget {
           plan: plan,
           priceFormatted: priceFormatted,
           country: country,
+          priceMinorUnits: priceMinorUnits,
         ),
       ),
     );
@@ -163,6 +169,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
           'user_id': userId,
           'plan': _planName.toLowerCase(),
           'status': 'active',
+          'amount_minor_units': widget.priceMinorUnits,
           'updated_at': DateTime.now().toIso8601String(),
         }, onConflict: 'user_id');
 

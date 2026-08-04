@@ -20,6 +20,7 @@ class TableNames {
   static const String systemSettings = 'system_settings';
   static const String refreshTokens = 'refresh_tokens';
   static const String referrals = 'referrals';
+  static const String subscriptionPrices = 'subscription_prices';
 }
 
 class ViewNames {
