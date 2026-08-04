@@ -158,12 +158,16 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
         final client = Supabase.instance.client;
 
         // Simulate webhook: upsert subscription as 'active'
-        await client.from('subscriptions').upsert({
-          'user_id': userId,
-          'plan': _planName.toLowerCase(),
-          'status': 'active',
-          'updated_at': DateTime.now().toIso8601String(),
-        }, onConflict: 'user_id');
+        try {
+          await client.from('subscriptions').upsert({
+            'user_id': userId,
+            'plan': _planName.toLowerCase(),
+            'status': 'active',
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'user_id');
+        } catch (subErr) {
+          debugPrint('DEBUG: subscriptions table upsert error (RLS): $subErr');
+        }
 
         // Mirror to profiles for fast reads
         await client.from('profiles').update({

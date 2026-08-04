@@ -2512,8 +2512,15 @@ CREATE POLICY "profiles: own update"
 CREATE POLICY "subscriptions: own or admin read"
     ON subscriptions FOR SELECT TO authenticated
     USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "subscriptions: own insert"
+    ON subscriptions FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "subscriptions: own update"
+    ON subscriptions FOR UPDATE TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 CREATE POLICY "subscriptions: admin write"
     ON subscriptions FOR ALL TO authenticated USING (private.is_admin());
+
 
 -- kyc_verifications
 CREATE POLICY "kyc: own or admin read"

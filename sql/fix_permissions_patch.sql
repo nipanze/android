@@ -53,3 +53,24 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id OR auth.uid() IS NOT NULL);
+
+-- 6. Subscriptions RLS Policies (ensure authenticated users can insert and update their own subscription rows)
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "subscriptions: own or admin read" ON public.subscriptions;
+DROP POLICY IF EXISTS "subscriptions: own read" ON public.subscriptions;
+CREATE POLICY "subscriptions: own or admin read"
+  ON public.subscriptions FOR SELECT TO authenticated
+  USING (auth.uid() = user_id OR (private.is_admin() IS NOT NULL AND private.is_admin()));
+
+DROP POLICY IF EXISTS "subscriptions: own insert" ON public.subscriptions;
+CREATE POLICY "subscriptions: own insert"
+  ON public.subscriptions FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "subscriptions: own update" ON public.subscriptions;
+CREATE POLICY "subscriptions: own update"
+  ON public.subscriptions FOR UPDATE TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
