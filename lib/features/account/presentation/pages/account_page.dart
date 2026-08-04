@@ -35,19 +35,31 @@ class _AccountView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocConsumer<ProfileCubit, ProfileCubitState>(
-          listener: (context, state) {
-            if (state is ProfileCubitLoaded && state.justSaved) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(AppLocalizations.of(context)!.profileUpdated)));
-            }
-            if (state is ProfileCubitError) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: AppColors.danger));
-            }
-          },
-          builder: (context, state) {
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<ProfileCubit, ProfileCubitState>(
+              listener: (context, state) {
+                if (state is ProfileCubitLoaded && state.justSaved) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(AppLocalizations.of(context)!.profileUpdated)));
+                }
+                if (state is ProfileCubitError) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: AppColors.danger));
+                }
+              },
+            ),
+            BlocListener<AuthBloc, AuthState>(
+              listener: (context, authState) {
+                if (authState is AuthAuthenticated) {
+                  context.read<ProfileCubit>().refresh();
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<ProfileCubit, ProfileCubitState>(
+            builder: (context, state) {
             if (state is ProfileCubitLoading || state is ProfileCubitInitial) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -202,8 +214,9 @@ class _AccountView extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showTrustExplainer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1010,7 +1023,11 @@ class _SubscriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final plan = profile?.subscriptionPlan ?? 'free';
+    final authState = context.watch<AuthBloc>().state;
+    final authPlan = authState is AuthAuthenticated
+        ? authState.user.subscriptionPlan.name.toLowerCase()
+        : null;
+    final plan = authPlan ?? profile?.subscriptionPlan ?? 'free';
     final status = profile?.subscriptionStatus ?? 'active';
     final color = _planColor(plan);
 

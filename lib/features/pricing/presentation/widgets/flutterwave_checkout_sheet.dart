@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
@@ -158,26 +159,28 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
         final client = Supabase.instance.client;
 
         // Simulate webhook: upsert subscription as 'active'
-        try {
-          await client.from('subscriptions').upsert({
-            'user_id': userId,
-            'plan': _planName.toLowerCase(),
-            'status': 'active',
-            'updated_at': DateTime.now().toIso8601String(),
-          }, onConflict: 'user_id');
-        } catch (subErr) {
-          debugPrint('DEBUG: subscriptions table upsert error (RLS): $subErr');
-        }
-
-        // Mirror to profiles for fast reads
-        await client.from('profiles').update({
-          'subscription_plan': _planName.toLowerCase(),
+        await client.from('subscriptions').upsert({
+          'user_id': userId,
+          'plan': _planName.toLowerCase(),
+          'status': 'active',
           'updated_at': DateTime.now().toIso8601String(),
-        }).eq('id', userId);
+        }, onConflict: 'user_id');
+
+        // Touch profile updated_at
+        try {
+          await client.from('profiles').update({
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', userId);
+        } catch (profileErr) {
+          debugPrint('DEBUG: profiles update error: $profileErr');
+        }
 
         if (!mounted) return;
         // Refresh AuthBloc so UI immediately reflects new plan
         context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+        try {
+          unawaited(context.read<ProfileCubit>().refresh());
+        } catch (_) {}
       }
 
       if (!mounted) return;
