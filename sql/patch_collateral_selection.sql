@@ -89,10 +89,22 @@ SELECT
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN TRUE ELSE FALSE END                                               AS show_professional_tag,
-    lr.has_collateral,
-    lr.collateral_details,
-    lr.collateral_estimated_value,
-    lr.collateral_location
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.has_collateral ELSE FALSE END                                  AS has_collateral,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_details ELSE NULL END                               AS collateral_details,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_estimated_value ELSE NULL END                       AS collateral_estimated_value,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_location ELSE NULL END                              AS collateral_location
 FROM  public.loan_requests lr
 JOIN  public.profiles p ON p.id = lr.borrower_id
 JOIN  public.countries c ON c.code = lr.country

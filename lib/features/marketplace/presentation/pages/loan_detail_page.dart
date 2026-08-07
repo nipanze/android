@@ -180,9 +180,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     final isProBorrower = isOwner &&
         authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
-    final canViewFullCollateral = isOwner ||
-        (authState is AuthAuthenticated &&
-            authState.user.subscriptionPlan == SubscriptionPlan.pro);
+    final canViewCollateral = authState is AuthAuthenticated &&
+        authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
     return Scaffold(
       appBar: AppBar(
@@ -282,9 +281,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  const SizedBox(height: 12),
-
-                  _CollateralStatusBadge(listing: listing),
+                  if (canViewCollateral && listing.hasCollateral) ...[
+                    const SizedBox(height: 12),
+                    _CollateralStatusBadge(listing: listing),
+                  ],
 
                   const SizedBox(height: 16),
 
@@ -420,10 +420,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             const SizedBox(height: 16),
 
             // ── Additional details card ──────────────────────────────────────
-            if (listing.hasCollateral) ...[
+            if (canViewCollateral && listing.hasCollateral) ...[
               _CollateralDetailsSection(
                 listing: listing,
-                canViewFullDetails: canViewFullCollateral,
                 currency: listing.currency,
               ),
               const SizedBox(height: 12),
@@ -533,12 +532,10 @@ class _CollateralStatusBadge extends StatelessWidget {
 class _CollateralDetailsSection extends StatelessWidget {
   const _CollateralDetailsSection({
     required this.listing,
-    required this.canViewFullDetails,
     required this.currency,
   });
 
   final LoanListing listing;
-  final bool canViewFullDetails;
   final String currency;
 
   @override
@@ -547,17 +544,14 @@ class _CollateralDetailsSection extends StatelessWidget {
     final location = listing.collateralLocation?.trim();
     final value = listing.collateralEstimatedValue;
 
-    final body = canViewFullDetails
-        ? [
-            if (details?.isNotEmpty == true) details!,
-            if (value != null) '$currency ${_fmt(value)} estimated value',
-            if (location?.isNotEmpty == true) 'Location: $location',
-          ].join('\n')
-        : (listing.collateralPreview ??
-            'Collateral details are available to Pro users.');
+    final body = [
+      if (details?.isNotEmpty == true) details!,
+      if (value != null) '$currency ${_fmt(value)} estimated value',
+      if (location?.isNotEmpty == true) 'Location: $location',
+    ].join('\n');
 
     return _DescriptionSection(
-      title: canViewFullDetails ? 'Collateral details' : 'Collateral preview',
+      title: 'Collateral details',
       body: body,
     );
   }

@@ -2,10 +2,13 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 
 import '../../../marketplace/domain/models/marketplace_item.dart';
 
@@ -41,6 +44,11 @@ class ListingCard extends StatelessWidget {
         (loan?.numberOfOffers ?? forex?.numberOfOffers ?? 0) > 0
             ? AppColors.accent
             : Theme.of(context).colorScheme.onSurfaceVariant;
+    final authState = context.watch<AuthBloc>().state;
+    final canSeeCollateral = authState is AuthAuthenticated &&
+        authState.user.subscriptionPlan == SubscriptionPlan.pro;
+    final showCollateralBadge =
+        canSeeCollateral && loan != null && loan.hasCollateral;
 
     return GestureDetector(
       onTap: onTap,
@@ -82,14 +90,6 @@ class ListingCard extends StatelessWidget {
                         label: isForex ? 'Forex' : 'Loan',
                         color: moduleColor,
                       ),
-                      if (loan != null)
-                        _ModuleBadge(
-                          label:
-                              loan.hasCollateral ? 'Secured' : 'No Collateral',
-                          color: loan.hasCollateral
-                              ? AppColors.accent
-                              : mutedColor,
-                        ),
                       if (loan != null)
                         Text(
                           '${loan.district} · ${loan.durationMonths} ${AppLocalizations.of(context)!.months}',
@@ -167,33 +167,6 @@ class ListingCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (loan.hasCollateral &&
-                  loan.collateralPreview?.isNotEmpty == true) ...[
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.verified_user_outlined,
-                      size: 14,
-                      color: AppColors.accent.withValues(alpha: 0.9),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        loan.collateralPreview!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.72),
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
               const SizedBox(height: 10),
               _FundedBar(
                 fraction: fundedFraction,
@@ -215,17 +188,27 @@ class ListingCard extends StatelessWidget {
               SendRateReceivePanel(listing: forex),
             ],
             const SizedBox(height: 12),
-            Text(
-              _shortTimeLabel(listing, AppLocalizations.of(context)!),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
-                    ? AppColors.danger
-                    : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
-                        ? AppColors.warning
-                        : mutedColor,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _shortTimeLabel(listing, AppLocalizations.of(context)!),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
+                          ? AppColors.danger
+                          : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
+                              ? AppColors.warning
+                              : mutedColor,
+                    ),
+                  ),
+                ),
+                if (showCollateralBadge) ...[
+                  const SizedBox(width: 8),
+                  _SecuredBadge(),
+                ],
+              ],
             ),
           ],
         ),
@@ -270,6 +253,37 @@ class ListingCard extends StatelessWidget {
       buffer.write(s[i]);
     }
     return buffer.toString();
+  }
+}
+
+class _SecuredBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const color = AppColors.warning;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.75)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified_user_outlined, size: 12, color: color),
+          SizedBox(width: 4),
+          Text(
+            'Secured',
+            style: TextStyle(
+              color: color,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
