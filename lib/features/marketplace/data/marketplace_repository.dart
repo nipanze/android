@@ -60,7 +60,7 @@ class MarketplaceRepository {
   Future<LoanListing> getListingDetail(String requestId) async {
     try {
       final data = await _client
-          .from(ViewNames.loanListings)
+          .from(ViewNames.loanListingDetails)
           .select()
           .eq('request_id', requestId)
           .single();

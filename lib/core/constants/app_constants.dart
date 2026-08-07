@@ -27,6 +27,7 @@ class ViewNames {
   ViewNames._();
 
   static const String loanListings = 'v_loan_listings';
+  static const String loanListingDetails = 'v_loan_listing_details';
   static const String forexListings = 'v_forex_listings';
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
