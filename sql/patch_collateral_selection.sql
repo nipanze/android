@@ -73,6 +73,22 @@ SELECT
     GREATEST(lr.expires_at - NOW(), INTERVAL '0')                            AS time_remaining,
     (lr.expires_at < NOW() + INTERVAL '24 hours')                            AS closing_soon_24h,
     (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.preferred_bank ELSE NULL END                                    AS preferred_bank,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.institution_type ELSE NULL END                                  AS institution_type,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.is_bank_agent ELSE FALSE END                                    AS is_bank_agent,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN TRUE ELSE FALSE END                                               AS show_professional_tag,
     lr.has_collateral,
     lr.collateral_details,
     lr.collateral_estimated_value,
