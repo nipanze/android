@@ -53,9 +53,13 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   final _amountController = TextEditingController();
   final _durationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _collateralDetailsController = TextEditingController();
+  final _collateralValueController = TextEditingController();
+  final _collateralLocationController = TextEditingController();
   String? _selectedPurpose;
   String? _customPurpose;
   String? _district;
+  bool _hasCollateral = false;
 
   // Step 2 fields
   final _incomeSourceController = TextEditingController();
@@ -95,6 +99,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     _amountController.dispose();
     _durationController.dispose();
     _descriptionController.dispose();
+    _collateralDetailsController.dispose();
+    _collateralValueController.dispose();
+    _collateralLocationController.dispose();
     _incomeSourceController.dispose();
     _repaymentAmountController.dispose();
     _repaymentTimelineController.dispose();
@@ -192,6 +199,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     }
 
     final canSuggestTerms = authState.user.canSuggestBorrowerTerms;
+    final collateralDetails = _collateralDetailsController.text.trim();
+    final collateralLocation = _collateralLocationController.text.trim();
     setState(() => _submitting = true);
     try {
       await getIt<ListingRepository>().createListing(
@@ -214,6 +223,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             canSuggestTerms ? _suggestedRepaymentPlan : null,
         suggestedInstallmentAmount: canSuggestTerms
             ? int.tryParse(_suggestedInstallmentController.text)
+            : null,
+        hasCollateral: _hasCollateral,
+        collateralDetails: _hasCollateral ? collateralDetails : null,
+        collateralEstimatedValue: _hasCollateral
+            ? int.tryParse(_collateralValueController.text)
+            : null,
+        collateralLocation: _hasCollateral && collateralLocation.isNotEmpty
+            ? collateralLocation
             : null,
         country: authState.user.country,
       );
@@ -346,31 +363,50 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   String _getLocalizedPurpose(String purpose) {
     final l10n = AppLocalizations.of(context);
     switch (purpose) {
-      case 'Agricultural equipment': return l10n?.purposeAgri ?? purpose;
-      case 'Business expansion': return l10n?.purposeBusiness ?? purpose;
-      case 'Education / School fees': return l10n?.purposeEdu ?? purpose;
-      case 'Emergency medical': return l10n?.purposeMedical ?? purpose;
-      case 'Greenhouse / Farming': return l10n?.purposeFarming ?? purpose;
-      case 'Home improvement': return l10n?.purposeHome ?? purpose;
-      case 'Inventory / Stock': return l10n?.purposeStock ?? purpose;
-      case 'Land purchase': return l10n?.purposeLand ?? purpose;
-      case 'Livestock': return l10n?.purposeLivestock ?? purpose;
-      case 'Solar / Energy': return l10n?.purposeEnergy ?? purpose;
-      case 'Transport / Vehicle': return l10n?.purposeVehicle ?? purpose;
-      case 'Water & Sanitation': return l10n?.purposeWater ?? purpose;
-      case 'Wedding / Event': return l10n?.purposeWedding ?? purpose;
-      case 'Other': return l10n?.purposeOther ?? purpose;
-      default: return purpose;
+      case 'Agricultural equipment':
+        return l10n?.purposeAgri ?? purpose;
+      case 'Business expansion':
+        return l10n?.purposeBusiness ?? purpose;
+      case 'Education / School fees':
+        return l10n?.purposeEdu ?? purpose;
+      case 'Emergency medical':
+        return l10n?.purposeMedical ?? purpose;
+      case 'Greenhouse / Farming':
+        return l10n?.purposeFarming ?? purpose;
+      case 'Home improvement':
+        return l10n?.purposeHome ?? purpose;
+      case 'Inventory / Stock':
+        return l10n?.purposeStock ?? purpose;
+      case 'Land purchase':
+        return l10n?.purposeLand ?? purpose;
+      case 'Livestock':
+        return l10n?.purposeLivestock ?? purpose;
+      case 'Solar / Energy':
+        return l10n?.purposeEnergy ?? purpose;
+      case 'Transport / Vehicle':
+        return l10n?.purposeVehicle ?? purpose;
+      case 'Water & Sanitation':
+        return l10n?.purposeWater ?? purpose;
+      case 'Wedding / Event':
+        return l10n?.purposeWedding ?? purpose;
+      case 'Other':
+        return l10n?.purposeOther ?? purpose;
+      default:
+        return purpose;
     }
   }
 
   String _getLocalizedRepaymentPlan(String? value) {
     final l10n = AppLocalizations.of(context);
     switch (value) {
-      case 'monthly': return l10n?.planMonthly ?? 'Monthly';
-      case 'weekly': return l10n?.planWeekly ?? 'Weekly';
-      case 'one_time': return l10n?.planOneTime ?? 'One-time payment';
-      default: return '';
+      case 'monthly':
+        return l10n?.planMonthly ?? 'Monthly';
+      case 'weekly':
+        return l10n?.planWeekly ?? 'Weekly';
+      case 'one_time':
+        return l10n?.planOneTime ?? 'One-time payment';
+      default:
+        return '';
     }
   }
 
@@ -443,8 +479,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 const SizedBox(height: 12),
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: l10n?.describePurposeLabel ??
-                        'Describe your purpose',
+                    labelText:
+                        l10n?.describePurposeLabel ?? 'Describe your purpose',
                   ),
                   onChanged: (v) => _customPurpose = v,
                   validator: (v) {
@@ -559,6 +595,102 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          _FormPanel(
+            title: 'Collateral',
+            subtitle: 'Choose whether this request is backed by an asset.',
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment<bool>(
+                      value: false,
+                      icon: Icon(Icons.block_rounded),
+                      label: Text('No Collateral'),
+                    ),
+                    ButtonSegment<bool>(
+                      value: true,
+                      icon: Icon(Icons.verified_user_outlined),
+                      label: Text('Has Collateral'),
+                    ),
+                  ],
+                  selected: {_hasCollateral},
+                  onSelectionChanged: (selection) {
+                    final hasCollateral = selection.first;
+                    setState(() {
+                      _hasCollateral = hasCollateral;
+                      if (!hasCollateral) {
+                        _collateralDetailsController.clear();
+                        _collateralValueController.clear();
+                        _collateralLocationController.clear();
+                      }
+                    });
+                  },
+                ),
+              ),
+              if (_hasCollateral) ...[
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _collateralDetailsController,
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLines: 3,
+                  maxLength: 240,
+                  decoration: const InputDecoration(
+                    labelText: 'Collateral details',
+                    hintText: 'e.g. Land title, car, electronics, equipment',
+                    alignLabelWithHint: true,
+                    prefixIcon: Icon(Icons.inventory_2_outlined, size: 20),
+                  ),
+                  validator: (v) {
+                    if (!_hasCollateral) return null;
+                    final value = v?.trim() ?? '';
+                    if (value.isEmpty) {
+                      return 'Describe the collateral asset';
+                    }
+                    if (value.length < 3) {
+                      return 'Add a little more detail';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _collateralValueController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Est. value ($currency)',
+                          hintText: 'Optional',
+                          prefixIcon: const Icon(
+                            Icons.price_check_outlined,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _collateralLocationController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'Location',
+                          hintText: 'Optional',
+                          prefixIcon: Icon(Icons.place_outlined, size: 20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
         ]),
       ),
     );
@@ -590,8 +722,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   hintText: l10n?.incomeSourceHint ??
                       'e.g. Salary, shop income, farming, side work',
                   alignLabelWithHint: true,
-                  prefixIcon:
-                      const Icon(Icons.work_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.work_outline_rounded, size: 20),
                 ),
                 validator: (v) {
                   final value = v?.trim() ?? '';
@@ -612,11 +743,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 decoration: InputDecoration(
                   labelText: l10n?.preferredRepaymentPlanLabel ??
                       'Preferred repayment plan',
-                  prefixIcon:
-                      const Icon(Icons.payments_outlined, size: 20),
+                  prefixIcon: const Icon(Icons.payments_outlined, size: 20),
                 ),
-                hint: Text(l10n?.selectRepaymentPlanHint ??
-                    'Select repayment plan'),
+                hint: Text(
+                    l10n?.selectRepaymentPlanHint ?? 'Select repayment plan'),
                 items: _repaymentPlans
                     .map((p) => DropdownMenuItem(
                           value: p['value'],
@@ -641,8 +771,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   hintText: l10n?.repaymentAmountHint ?? 'e.g. 250,000',
-                  prefixIcon:
-                      const Icon(Icons.savings_outlined, size: 20),
+                  prefixIcon: const Icon(Icons.savings_outlined, size: 20),
                 ).copyWith(
                   labelText: l10n?.repaymentAmountPerPeriodLabel(currency) ??
                       'Repayment amount per period ($currency)',
@@ -671,8 +800,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   hintText: l10n?.repaymentTimelineHint ??
                       'e.g. Paid by the 5th of every month for 8 months',
                   alignLabelWithHint: true,
-                  prefixIcon:
-                      const Icon(Icons.event_repeat_outlined, size: 20),
+                  prefixIcon: const Icon(Icons.event_repeat_outlined, size: 20),
                 ),
                 validator: (v) {
                   final value = v?.trim() ?? '';
@@ -709,8 +837,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 decoration: InputDecoration(
                   labelText: l10n?.suggestedInterestRateLabel ??
                       'Suggested interest rate (%)',
-                  prefixIcon:
-                      const Icon(Icons.percent_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.percent_rounded, size: 20),
                 ),
                 validator: (v) {
                   if (!canSuggestTerms || v == null || v.isEmpty) return null;
@@ -733,8 +860,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 decoration: InputDecoration(
                   labelText: l10n?.suggestedLateFeeLabel ??
                       'Suggested late payment fee (%)',
-                  prefixIcon:
-                      const Icon(Icons.warning_amber_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.warning_amber_rounded, size: 20),
                 ),
                 validator: (v) {
                   if (!canSuggestTerms || v == null || v.isEmpty) return null;
@@ -773,9 +899,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.price_check_outlined, size: 20),
                 ).copyWith(
-                  labelText:
-                      l10n?.suggestedInstallmentAmountLabel(currency) ??
-                          'Suggested installment amount ($currency)',
+                  labelText: l10n?.suggestedInstallmentAmountLabel(currency) ??
+                      'Suggested installment amount ($currency)',
                 ),
                 validator: (v) {
                   if (!canSuggestTerms || v == null || v.isEmpty) return null;
@@ -802,6 +927,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final duration = _durationController.text;
     final repaymentAmount = int.tryParse(_repaymentAmountController.text) ?? 0;
     final description = _descriptionController.text.trim();
+    final collateralDetails = _collateralDetailsController.text.trim();
+    final collateralValue = int.tryParse(_collateralValueController.text);
+    final collateralLocation = _collateralLocationController.text.trim();
     final authState = context.watch<AuthBloc>().state;
     final canSuggestTerms = authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
@@ -894,6 +1022,21 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 value: description,
               ),
             ],
+            _divider(),
+            _ReviewRow(
+              icon: _hasCollateral
+                  ? Icons.verified_user_outlined
+                  : Icons.block_rounded,
+              label: 'Collateral',
+              value: _hasCollateral
+                  ? [
+                      collateralDetails,
+                      if (collateralValue != null)
+                        '$currency ${_fmtAmount(collateralValue)} estimated value',
+                      if (collateralLocation.isNotEmpty) collateralLocation,
+                    ].join(' · ')
+                  : 'No Collateral',
+            ),
             if (canSuggestTerms &&
                 (_suggestedInterestController.text.isNotEmpty ||
                     _suggestedLateFeeController.text.isNotEmpty ||
@@ -926,8 +1069,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           decoration: BoxDecoration(
             color: AppColors.success.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(10),
-            border:
-                Border.all(color: AppColors.success.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
           ),
           child: Row(children: [
             const Icon(Icons.verified_outlined,

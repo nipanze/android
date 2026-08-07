@@ -19,6 +19,10 @@ class MyListing extends Equatable {
     this.suggestedRepaymentFrequency,
     this.suggestedInstallmentAmount,
     this.termsLockedAt,
+    this.hasCollateral = false,
+    this.collateralDetails,
+    this.collateralEstimatedValue,
+    this.collateralLocation,
     required this.status,
     required this.numberOfOffers,
     required this.listedAt,
@@ -43,6 +47,10 @@ class MyListing extends Equatable {
   final String? suggestedRepaymentFrequency;
   final int? suggestedInstallmentAmount;
   final DateTime? termsLockedAt;
+  final bool hasCollateral;
+  final String? collateralDetails;
+  final int? collateralEstimatedValue;
+  final String? collateralLocation;
   final ListingStatus status;
   final int numberOfOffers;
   final DateTime listedAt;
@@ -92,6 +100,11 @@ class MyListing extends Equatable {
       termsLockedAt: map['terms_locked_at'] != null
           ? DateTime.tryParse(map['terms_locked_at'] as String)
           : null,
+      hasCollateral: map['has_collateral'] as bool? ?? false,
+      collateralDetails: map['collateral_details'] as String?,
+      collateralEstimatedValue:
+          (map['collateral_estimated_value'] as num?)?.toInt(),
+      collateralLocation: map['collateral_location'] as String?,
       status: _statusFromString(map['status'] as String? ?? 'active'),
       numberOfOffers: map['number_of_offers'] as int? ?? 0,
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
@@ -104,9 +117,12 @@ class MyListing extends Equatable {
       cancelledAt: map['cancelled_at'] != null
           ? DateTime.tryParse(map['cancelled_at'] as String)
           : null,
-      currency: (map['countries'] is Map && (map['countries'] as Map)['currency_code'] != null)
+      currency: (map['countries'] is Map &&
+              (map['countries'] as Map)['currency_code'] != null)
           ? (map['countries'] as Map)['currency_code'] as String
-          : map['currency_code'] as String? ?? map['currency'] as String? ?? 'UGX',
+          : map['currency_code'] as String? ??
+              map['currency'] as String? ??
+              'UGX',
     );
   }
 

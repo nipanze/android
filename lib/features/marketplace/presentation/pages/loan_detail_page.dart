@@ -180,6 +180,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     final isProBorrower = isOwner &&
         authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
+    final canViewFullCollateral = isOwner ||
+        (authState is AuthAuthenticated &&
+            authState.user.subscriptionPlan == SubscriptionPlan.pro);
 
     return Scaffold(
       appBar: AppBar(
@@ -188,9 +191,12 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             Icons.arrow_back_ios_new_rounded,
             size: 18,
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.marketplace),
         ),
-        title: Text(AppLocalizations.of(context)?.listingDetailTitle ?? 'Listing detail'),
+        title: Text(AppLocalizations.of(context)?.listingDetailTitle ??
+            'Listing detail'),
       ),
       body: RefreshIndicator(
         onRefresh: _loadOnce,
@@ -275,6 +281,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+
+                  const SizedBox(height: 12),
+
+                  _CollateralStatusBadge(listing: listing),
 
                   const SizedBox(height: 16),
 
@@ -410,6 +420,15 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             const SizedBox(height: 16),
 
             // ── Additional details card ──────────────────────────────────────
+            if (listing.hasCollateral) ...[
+              _CollateralDetailsSection(
+                listing: listing,
+                canViewFullDetails: canViewFullCollateral,
+                currency: listing.currency,
+              ),
+              const SizedBox(height: 12),
+            ],
+
             if (listing.suggestedInterestRatePct != null ||
                 listing.suggestedLateFeePct != null) ...[
               _DescriptionSection(
@@ -434,7 +453,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: Text(AppLocalizations.of(context)?.makeAnOffer ?? 'Make an offer'),
+                child: Text(AppLocalizations.of(context)?.makeAnOffer ??
+                    'Make an offer'),
               ),
           ]),
         ),
@@ -468,6 +488,89 @@ class _DescriptionSection extends StatelessWidget {
           Text(body, style: Theme.of(context).textTheme.bodyMedium),
         ],
       );
+}
+
+class _CollateralStatusBadge extends StatelessWidget {
+  const _CollateralStatusBadge({required this.listing});
+
+  final LoanListing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = listing.hasCollateral ? AppColors.accent : AppColors.warning;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            listing.hasCollateral
+                ? Icons.verified_user_outlined
+                : Icons.block_rounded,
+            size: 15,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            listing.hasCollateral ? 'Secured' : 'No Collateral',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollateralDetailsSection extends StatelessWidget {
+  const _CollateralDetailsSection({
+    required this.listing,
+    required this.canViewFullDetails,
+    required this.currency,
+  });
+
+  final LoanListing listing;
+  final bool canViewFullDetails;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final details = listing.collateralDetails?.trim();
+    final location = listing.collateralLocation?.trim();
+    final value = listing.collateralEstimatedValue;
+
+    final body = canViewFullDetails
+        ? [
+            if (details?.isNotEmpty == true) details!,
+            if (value != null) '$currency ${_fmt(value)} estimated value',
+            if (location?.isNotEmpty == true) 'Location: $location',
+          ].join('\n')
+        : (listing.collateralPreview ??
+            'Collateral details are available to Pro users.');
+
+    return _DescriptionSection(
+      title: canViewFullDetails ? 'Collateral details' : 'Collateral preview',
+      body: body,
+    );
+  }
+
+  String _fmt(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
 }
 
 // ─── Funded Progress Bar ─────────────────────────────────────────────────────
@@ -569,16 +672,15 @@ class _FundedProgressBar extends StatelessWidget {
                       if (pct < 1.0)
                         Flexible(
                           flex: ((1 - pct) * 1000).round().clamp(1, 1000),
-                          child: Container(
-                              color: Theme.of(context).dividerColor),
+                          child:
+                              Container(color: Theme.of(context).dividerColor),
                         ),
                     ],
                   );
                 }
 
                 // ── Owner: full segmented bar (one colour per offer) ────────
-                final total =
-                    offers.fold<int>(0, (s, o) => s + o.offerAmount);
+                final total = offers.fold<int>(0, (s, o) => s + o.offerAmount);
                 return Row(
                   children: [
                     for (int i = 0; i < offers.length; i++) ...[
@@ -1168,7 +1270,9 @@ class _OfferCardState extends State<_OfferCard>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    AppLocalizations.of(context)?.makeAnOfferToUnlock ?? 'Make an offer to unlock full details',
+                                    AppLocalizations.of(context)
+                                            ?.makeAnOfferToUnlock ??
+                                        'Make an offer to unlock full details',
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: Theme.of(context)
@@ -2158,7 +2262,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      Text(AppLocalizations.of(context)?.makeAnOffer ?? 'Make an offer',
+                      Text(
+                          AppLocalizations.of(context)?.makeAnOffer ??
+                              'Make an offer',
                           style: Theme.of(context).textTheme.titleMedium),
                       const Spacer(),
                       IconButton(

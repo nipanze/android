@@ -23,6 +23,7 @@ class ListingRepository {
             'income_source, preferred_repayment_plan, repayment_amount_per_period, '
             'repayment_timeline, suggested_interest_rate_pct, suggested_late_fee_pct, '
             'suggested_repayment_frequency, suggested_installment_amount, terms_locked_at, '
+            'has_collateral, collateral_details, collateral_estimated_value, collateral_location, '
             'status, number_of_offers, '
             'listed_at, expires_at, contracted_at, cancelled_at',
           )
@@ -51,9 +52,15 @@ class ListingRepository {
     double? suggestedLateFeePct,
     String? suggestedRepaymentFrequency,
     int? suggestedInstallmentAmount,
+    bool hasCollateral = false,
+    String? collateralDetails,
+    int? collateralEstimatedValue,
+    String? collateralLocation,
     String country = 'UG',
   }) async {
     try {
+      final cleanCollateralDetails = collateralDetails?.trim();
+      final cleanCollateralLocation = collateralLocation?.trim();
       final data = await _client
           .from(TableNames.loanRequests)
           .insert({
@@ -68,6 +75,19 @@ class ListingRepository {
             'repayment_amount_per_period': repaymentAmountPerPeriod,
             'repayment_timeline': repaymentTimeline,
             'country': country,
+            'has_collateral': hasCollateral,
+            'collateral_details': hasCollateral &&
+                    cleanCollateralDetails != null &&
+                    cleanCollateralDetails.isNotEmpty
+                ? cleanCollateralDetails
+                : null,
+            'collateral_estimated_value':
+                hasCollateral ? collateralEstimatedValue : null,
+            'collateral_location': hasCollateral &&
+                    cleanCollateralLocation != null &&
+                    cleanCollateralLocation.isNotEmpty
+                ? cleanCollateralLocation
+                : null,
             if (suggestedInterestRatePct != null)
               'suggested_interest_rate_pct': suggestedInterestRatePct,
             if (suggestedLateFeePct != null)

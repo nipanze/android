@@ -20,6 +20,10 @@ class LoanListing extends Equatable {
     this.suggestedRepaymentFrequency,
     this.suggestedInstallmentAmount,
     this.termsLockedAt,
+    this.hasCollateral = false,
+    this.collateralDetails,
+    this.collateralEstimatedValue,
+    this.collateralLocation,
     required this.status,
     required this.listedAt,
     required this.expiresAt,
@@ -55,6 +59,10 @@ class LoanListing extends Equatable {
   final String? suggestedRepaymentFrequency;
   final int? suggestedInstallmentAmount;
   final DateTime? termsLockedAt;
+  final bool hasCollateral;
+  final String? collateralDetails;
+  final int? collateralEstimatedValue;
+  final String? collateralLocation;
   final String status;
   final DateTime listedAt;
   final DateTime expiresAt;
@@ -89,6 +97,13 @@ class LoanListing extends Equatable {
       'company' => 'Company',
       _ => null,
     };
+  }
+
+  String? get collateralPreview {
+    final details = collateralDetails?.trim();
+    if (!hasCollateral || details == null || details.isEmpty) return null;
+    if (details.length <= 80) return details;
+    return '${details.substring(0, 77)}...';
   }
 
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
@@ -129,6 +144,11 @@ class LoanListing extends Equatable {
       termsLockedAt: map['terms_locked_at'] != null
           ? DateTime.tryParse(map['terms_locked_at'] as String)
           : null,
+      hasCollateral: map['has_collateral'] as bool? ?? false,
+      collateralDetails: map['collateral_details'] as String?,
+      collateralEstimatedValue:
+          (map['collateral_estimated_value'] as num?)?.toInt(),
+      collateralLocation: map['collateral_location'] as String?,
       status: map['status'] as String? ?? 'active',
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
           DateTime.now(),

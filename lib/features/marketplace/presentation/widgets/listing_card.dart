@@ -83,6 +83,14 @@ class ListingCard extends StatelessWidget {
                         color: moduleColor,
                       ),
                       if (loan != null)
+                        _ModuleBadge(
+                          label:
+                              loan.hasCollateral ? 'Secured' : 'No Collateral',
+                          color: loan.hasCollateral
+                              ? AppColors.accent
+                              : mutedColor,
+                        ),
+                      if (loan != null)
                         Text(
                           '${loan.district} · ${loan.durationMonths} ${AppLocalizations.of(context)!.months}',
                           style: theme.textTheme.titleSmall?.copyWith(
@@ -159,6 +167,33 @@ class ListingCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (loan.hasCollateral &&
+                  loan.collateralPreview?.isNotEmpty == true) ...[
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.verified_user_outlined,
+                      size: 14,
+                      color: AppColors.accent.withValues(alpha: 0.9),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        loan.collateralPreview!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.72),
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 10),
               _FundedBar(
                 fraction: fundedFraction,

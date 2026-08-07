@@ -57,6 +57,8 @@ class MyListingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                _CollateralBadge(hasCollateral: listing.hasCollateral),
+                const SizedBox(width: 8),
                 _StatusBadge(listing.status),
               ],
             ),
@@ -64,7 +66,8 @@ class MyListingCard extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Amount
-            CurrencyAmount(listing.requestedAmount, currency: listing.currency, fontSize: 19),
+            CurrencyAmount(listing.requestedAmount,
+                currency: listing.currency, fontSize: 19),
 
             const SizedBox(height: 8),
 
@@ -207,6 +210,32 @@ class _StatusBadge extends StatelessWidget {
         label,
         style:
             TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color),
+      ),
+    );
+  }
+}
+
+class _CollateralBadge extends StatelessWidget {
+  const _CollateralBadge({required this.hasCollateral});
+
+  final bool hasCollateral;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = hasCollateral ? AppColors.accent : AppColors.text2Dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        hasCollateral ? 'Secured' : 'No Collateral',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
     );
   }

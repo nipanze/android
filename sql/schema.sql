@@ -484,6 +484,15 @@ CREATE TABLE loan_requests (
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
 
+    -- Borrower-declared collateral. Details/value/location are public risk
+    -- signals only when has_collateral is true; value and location are optional.
+    has_collateral              BOOLEAN NOT NULL DEFAULT FALSE,
+    collateral_details          TEXT,
+    collateral_estimated_value  BIGINT
+                                    CONSTRAINT chk_lr_collateral_value_positive
+                                    CHECK (collateral_estimated_value IS NULL OR collateral_estimated_value > 0),
+    collateral_location         TEXT,
+
     -- Pro-tier term suggestions. These are optional, public, and
     -- locked by trigger at publish time.
     suggested_interest_rate_pct NUMERIC(5,2)
@@ -1019,7 +1028,11 @@ SELECT
     -- time-remaining helpers
     GREATEST(lr.expires_at - NOW(), INTERVAL '0')                            AS time_remaining,
     (lr.expires_at < NOW() + INTERVAL '24 hours')                            AS closing_soon_24h,
-    (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h
+    (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h,
+    lr.has_collateral,
+    lr.collateral_details,
+    lr.collateral_estimated_value,
+    lr.collateral_location
 FROM  loan_requests   lr
 JOIN  profiles p ON p.id = lr.borrower_id
 JOIN  countries c ON c.code = lr.country
