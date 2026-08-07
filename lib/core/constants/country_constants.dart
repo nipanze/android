@@ -11,6 +11,7 @@ class CountryInfo {
     required this.regions,
     required this.lenderPriceFormatted,
     required this.proPriceFormatted,
+    this.mobileMoneyProviderName = 'Mobile Money',
   });
 
   final String code; // e.g. 'UG', 'KE', 'NG'
@@ -22,6 +23,7 @@ class CountryInfo {
   final List<String> regions;
   final String lenderPriceFormatted; // Charm pricing, e.g. 'UGX 19,900'
   final String proPriceFormatted; // Charm pricing, e.g. 'UGX 49,900'
+  final String mobileMoneyProviderName; // e.g. 'M-Pesa', 'MTN / Airtel Money'
 }
 
 typedef EastAfricaCountry = CountryInfo;
@@ -38,6 +40,7 @@ class EastAfricaCountries {
     regionsLabel: 'District',
     lenderPriceFormatted: 'UGX 19,900',
     proPriceFormatted: 'UGX 49,900',
+    mobileMoneyProviderName: 'MTN / Airtel Money',
     regions: [
       'Central',
       'Eastern',
@@ -69,6 +72,7 @@ class EastAfricaCountries {
     regionsLabel: 'County',
     lenderPriceFormatted: 'KES 690',
     proPriceFormatted: 'KES 1,790',
+    mobileMoneyProviderName: 'M-Pesa',
     regions: [
       'Nairobi',
       'Mombasa',
@@ -90,6 +94,7 @@ class EastAfricaCountries {
     regionsLabel: 'Region',
     lenderPriceFormatted: 'TZS 12,900',
     proPriceFormatted: 'TZS 32,900',
+    mobileMoneyProviderName: 'M-Pesa / Tigo Pesa',
     regions: [
       'Dar es Salaam',
       'Dodoma',
@@ -110,6 +115,7 @@ class EastAfricaCountries {
     regionsLabel: 'Province / District',
     lenderPriceFormatted: 'RWF 6,900',
     proPriceFormatted: 'RWF 17,900',
+    mobileMoneyProviderName: 'MTN MoMo / Airtel',
     regions: [
       'Kigali',
       'Northern Province',
@@ -129,6 +135,7 @@ class EastAfricaCountries {
     regionsLabel: 'State',
     lenderPriceFormatted: 'NGN 2,900',
     proPriceFormatted: 'NGN 7,900',
+    mobileMoneyProviderName: 'Mobile Money',
     regions: [
       'Lagos',
       'Abuja (FCT)',
@@ -150,6 +157,7 @@ class EastAfricaCountries {
     regionsLabel: 'Province',
     lenderPriceFormatted: 'ZAR 99',
     proPriceFormatted: 'ZAR 249',
+    mobileMoneyProviderName: 'Capitec Pay / Mobile Money',
     regions: [
       'Gauteng',
       'Western Cape',
@@ -171,6 +179,7 @@ class EastAfricaCountries {
     regionsLabel: 'Governorate',
     lenderPriceFormatted: 'EGP 199',
     proPriceFormatted: 'EGP 499',
+    mobileMoneyProviderName: 'Vodafone Cash',
     regions: [
       'Cairo',
       'Alexandria',

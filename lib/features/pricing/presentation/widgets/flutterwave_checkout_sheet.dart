@@ -77,6 +77,9 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   late TextEditingController _cardExpiryController;
   late TextEditingController _cardCvvController;
 
+  bool _isPhoneLocked = false;
+  bool _isPrefilledFromAccount = false;
+
   String? _errorMessage;
   String _txRef = '';
   int _processingStep = 0;
@@ -89,9 +92,19 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   void initState() {
     super.initState();
     final authState = context.read<AuthBloc>().state;
-    final initialPhone =
-        authState is AuthAuthenticated ? authState.user.phone : '';
-    _phoneController = TextEditingController(text: initialPhone ?? '');
+    final userPhone = authState is AuthAuthenticated ? authState.user.phone : null;
+    final cleanPhone = userPhone?.trim();
+
+    if (cleanPhone != null && cleanPhone.isNotEmpty) {
+      _phoneController = TextEditingController(text: cleanPhone);
+      _isPrefilledFromAccount = true;
+      _isPhoneLocked = true;
+    } else {
+      _phoneController = TextEditingController(text: widget.country.dialCode);
+      _isPrefilledFromAccount = false;
+      _isPhoneLocked = false;
+    }
+
     _cardController = TextEditingController(text: '4111 2222 3333 4444');
     _cardNameController = TextEditingController();
     _cardExpiryController = TextEditingController(text: '12/27');
@@ -123,6 +136,14 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
         SubscriptionPlan.pro => 'Pro',
       };
 
+  String _getProviderName(AppLocalizations? l10n) {
+    if (widget.country.code == 'EG' &&
+        (l10n?.localeName.startsWith('ar') ?? false)) {
+      return 'فودافون كاش';
+    }
+    return widget.country.mobileMoneyProviderName;
+  }
+
   String _generateTxRef() {
     final ts = DateTime.now().millisecondsSinceEpoch;
     final rand = Random().nextInt(9999).toString().padLeft(4, '0');
@@ -132,9 +153,10 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   // ─── Payment logic ──────────────────────────────────────────────────────────
 
   Future<void> _processPayment() async {
+    final providerName = _getProviderName(AppLocalizations.of(context));
     if (_selectedMethod == PaymentMethod.mobileMoney &&
         _phoneController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'Please enter your mobile number.');
+      setState(() => _errorMessage = 'Please enter your $providerName phone number.');
       return;
     }
 
@@ -357,6 +379,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   // ─── Details body ────────────────────────────────────────────────────────────
 
   Widget _buildDetailsBody(BuildContext context, AppLocalizations? l10n) {
+    final providerName = _getProviderName(l10n);
+
     return Column(
       key: const ValueKey('details'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +404,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
             Expanded(
               child: _MethodChip(
                 icon: Icons.phone_android_rounded,
-                label: l10n?.mobileMoney ?? 'Mobile Money',
+                label: providerName,
                 selected: _selectedMethod == PaymentMethod.mobileMoney,
                 onTap: () => setState(
                     () => _selectedMethod = PaymentMethod.mobileMoney),
@@ -459,16 +483,122 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   }
 
   Widget _buildMobileFields(BuildContext context, AppLocalizations? l10n) {
-    return TextField(
-      controller: _phoneController,
-      decoration: InputDecoration(
-        labelText: l10n?.enterMobileNumber ?? 'Mobile Money number',
-        hintText: '+256 7XX XXX XXX',
-        prefixIcon: const Icon(Icons.phone_rounded, size: 20),
-        border:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-      keyboardType: TextInputType.phone,
+    final providerName = _getProviderName(l10n);
+    final fieldLabel = l10n?.enterMobileNumberForProvider(providerName) ??
+        '$providerName phone number';
+    final promptHint = l10n?.mobileMoneyPromptHint(providerName) ??
+        'You’ll receive an $providerName prompt on your phone to approve the payment.';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _phoneController,
+          readOnly: _isPhoneLocked,
+          decoration: InputDecoration(
+            labelText: fieldLabel,
+            hintText: '${widget.country.dialCode} 7XX XXX XXX',
+            prefixIcon: const Icon(Icons.phone_rounded, size: 20),
+            suffixIcon: _phoneController.text.trim().isNotEmpty
+                ? TextButton.icon(
+                    onPressed: () {
+                      setState(() => _isPhoneLocked = !_isPhoneLocked);
+                    },
+                    icon: Icon(
+                      _isPhoneLocked
+                          ? Icons.lock_outline_rounded
+                          : Icons.lock_open_rounded,
+                      size: 16,
+                      color: _isPhoneLocked
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                    ),
+                    label: Text(
+                      _isPhoneLocked
+                          ? (l10n?.editPhoneNumber ?? 'Edit')
+                          : (l10n?.lockPhoneNumber ?? 'Lock'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _isPhoneLocked
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                      ),
+                    ),
+                  )
+                : null,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            filled: _isPhoneLocked,
+            fillColor: _isPhoneLocked
+                ? Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.04)
+                : null,
+          ),
+          keyboardType: TextInputType.phone,
+        ),
+        if (_isPrefilledFromAccount && _isPhoneLocked) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_outline_rounded,
+                  size: 14,
+                  color: Color(0xFF10B981),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  l10n?.prefilledFromAccount ?? 'Pre-filled from your account',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFF10B981),
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5A623).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFF5A623).withValues(alpha: 0.25),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.touch_app_rounded,
+                color: Color(0xFFE8480C),
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  promptHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                        height: 1.3,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

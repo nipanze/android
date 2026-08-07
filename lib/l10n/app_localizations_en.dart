@@ -1228,4 +1228,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get poweredByFlutterwave => 'Powered by Flutterwave';
+
+  @override
+  String enterMobileNumberForProvider(String provider) {
+    return '$provider phone number';
+  }
+
+  @override
+  String mobileMoneyPromptHint(String provider) {
+    return 'You\'ll receive a $provider prompt on your phone to approve the payment.';
+  }
+
+  @override
+  String get prefilledFromAccount => 'Pre-filled from your account';
+
+  @override
+  String get editPhoneNumber => 'Edit';
+
+  @override
+  String get lockPhoneNumber => 'Lock';
 }

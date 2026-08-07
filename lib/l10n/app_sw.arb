@@ -457,5 +457,10 @@
       "ref": { "type": "String" }
     }
   },
-  "poweredByFlutterwave": "Inaendeshwa na Flutterwave"
+  "poweredByFlutterwave": "Inaendeshwa na Flutterwave",
+  "enterMobileNumberForProvider": "Nambari ya simu ya {provider}",
+  "mobileMoneyPromptHint": "Utapokea arifa ya {provider} kwenye simu yako ili kuthibitisha malipo.",
+  "prefilledFromAccount": "Imejazwa kutoka kwa akaunti yako",
+  "editPhoneNumber": "Hariri",
+  "lockPhoneNumber": "Funga"
 }

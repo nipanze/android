@@ -534,5 +534,20 @@
       "ref": { "type": "String" }
     }
   },
-  "poweredByFlutterwave": "Powered by Flutterwave"
+  "poweredByFlutterwave": "Powered by Flutterwave",
+  "enterMobileNumberForProvider": "{provider} phone number",
+  "@enterMobileNumberForProvider": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "mobileMoneyPromptHint": "You'll receive a {provider} prompt on your phone to approve the payment.",
+  "@mobileMoneyPromptHint": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "prefilledFromAccount": "Pre-filled from your account",
+  "editPhoneNumber": "Edit",
+  "lockPhoneNumber": "Lock"
 }

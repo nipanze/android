@@ -2341,6 +2341,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Powered by Flutterwave'**
   String get poweredByFlutterwave;
+
+  /// No description provided for @enterMobileNumberForProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} phone number'**
+  String enterMobileNumberForProvider(String provider);
+
+  /// No description provided for @mobileMoneyPromptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll receive a {provider} prompt on your phone to approve the payment.'**
+  String mobileMoneyPromptHint(String provider);
+
+  /// No description provided for @prefilledFromAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-filled from your account'**
+  String get prefilledFromAccount;
+
+  /// No description provided for @editPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editPhoneNumber;
+
+  /// No description provided for @lockPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get lockPhoneNumber;
 }
 
 class _AppLocalizationsDelegate

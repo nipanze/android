@@ -1235,4 +1235,23 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get poweredByFlutterwave => 'Inaendeshwa na Flutterwave';
+
+  @override
+  String enterMobileNumberForProvider(String provider) {
+    return 'Nambari ya simu ya $provider';
+  }
+
+  @override
+  String mobileMoneyPromptHint(String provider) {
+    return 'Utapokea arifa ya $provider kwenye simu yako ili kuthibitisha malipo.';
+  }
+
+  @override
+  String get prefilledFromAccount => 'Imejazwa kutoka kwa akaunti yako';
+
+  @override
+  String get editPhoneNumber => 'Hariri';
+
+  @override
+  String get lockPhoneNumber => 'Funga';
 }

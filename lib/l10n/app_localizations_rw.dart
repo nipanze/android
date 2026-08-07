@@ -1232,4 +1232,23 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get poweredByFlutterwave => 'Ishyirwa mu bikorwa na Flutterwave';
+
+  @override
+  String enterMobileNumberForProvider(String provider) {
+    return 'Numero ya terefone ya $provider';
+  }
+
+  @override
+  String mobileMoneyPromptHint(String provider) {
+    return 'Urakira ubutumwa bwa $provider kuri terefone yawe wemeze kwishyura.';
+  }
+
+  @override
+  String get prefilledFromAccount => 'Yatanzwe na konti yawe';
+
+  @override
+  String get editPhoneNumber => 'Hindura';
+
+  @override
+  String get lockPhoneNumber => 'Funga';
 }

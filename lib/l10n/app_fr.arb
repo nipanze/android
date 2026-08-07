@@ -462,5 +462,10 @@
       "ref": { "type": "String" }
     }
   },
-  "poweredByFlutterwave": "Propulsé par Flutterwave"
+  "poweredByFlutterwave": "Propulsé par Flutterwave",
+  "enterMobileNumberForProvider": "Numéro de téléphone {provider}",
+  "mobileMoneyPromptHint": "Vous recevrez une invite {provider} sur votre téléphone pour valider le paiement.",
+  "prefilledFromAccount": "Pré-rempli depuis votre compte",
+  "editPhoneNumber": "Modifier",
+  "lockPhoneNumber": "Verrouiller"
 }

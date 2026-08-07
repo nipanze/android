@@ -457,5 +457,10 @@
       "ref": { "type": "String" }
     }
   },
-  "poweredByFlutterwave": "Ishyirwa mu bikorwa na Flutterwave"
+  "poweredByFlutterwave": "Ishyirwa mu bikorwa na Flutterwave",
+  "enterMobileNumberForProvider": "Numero ya terefone ya {provider}",
+  "mobileMoneyPromptHint": "Urakira ubutumwa bwa {provider} kuri terefone yawe wemeze kwishyura.",
+  "prefilledFromAccount": "Yatanzwe na konti yawe",
+  "editPhoneNumber": "Hindura",
+  "lockPhoneNumber": "Funga"
 }

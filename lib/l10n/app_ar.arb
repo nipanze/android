@@ -464,5 +464,10 @@
       "ref": { "type": "String" }
     }
   },
-  "poweredByFlutterwave": "مدعوم من Flutterwave"
+  "poweredByFlutterwave": "مدعوم من Flutterwave",
+  "enterMobileNumberForProvider": "رقم هاتف {provider}",
+  "mobileMoneyPromptHint": "ستتلقى إشعارًا من {provider} على هاتفك لتأكيد الدفع.",
+  "prefilledFromAccount": "تم التعبئة تلقائيًا من حسابك",
+  "editPhoneNumber": "تعديل",
+  "lockPhoneNumber": "قفل"
 }
