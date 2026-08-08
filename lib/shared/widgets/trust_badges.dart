@@ -15,6 +15,8 @@ class TrustBadgeRow extends StatelessWidget {
     this.responseTimeBucket,
     this.isVerified = false,
     this.showProVerification = false,
+    this.showReviews = true,
+    this.showCompletedDeals = true,
   });
 
   final double? ratingAvg;
@@ -25,22 +27,26 @@ class TrustBadgeRow extends StatelessWidget {
   final String? responseTimeBucket;
   final bool isVerified;
   final bool showProVerification;
+  final bool showReviews;
+  final bool showCompletedDeals;
 
   @override
   Widget build(BuildContext context) {
     final badges = <Widget>[
-      _TrustBadge(
-        icon: Icons.star_rounded,
-        label: ratingAvg == null
-            ? 'No reviews yet'
-            : '${ratingAvg!.toStringAsFixed(1)} ($reviewCount)',
-        color: AppColors.warning,
-      ),
-      _TrustBadge(
-        icon: Icons.handshake_outlined,
-        label: '$completedDealsCount completed',
-        color: AppColors.accent,
-      ),
+      if (showReviews)
+        _TrustBadge(
+          icon: Icons.star_rounded,
+          label: ratingAvg == null
+              ? 'No reviews yet'
+              : '${ratingAvg!.toStringAsFixed(1)} ($reviewCount)',
+          color: AppColors.warning,
+        ),
+      if (showCompletedDeals)
+        _TrustBadge(
+          icon: Icons.handshake_outlined,
+          label: '$completedDealsCount completed',
+          color: AppColors.accent,
+        ),
       if (isRepeatParticipant)
         const _TrustBadge(
           icon: Icons.repeat_rounded,

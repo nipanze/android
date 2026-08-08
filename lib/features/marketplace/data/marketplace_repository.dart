@@ -96,15 +96,36 @@ class MarketplaceRepository {
     try {
       final data = await _client
           .from(TableNames.loanOffers)
-          .select()
+          .select('''
+            *,
+            profiles!loan_offers_lender_id_fkey(
+              preferred_bank,
+              institution_type,
+              is_bank_agent,
+              show_professional_tag
+            )
+          ''')
           .eq('request_id', requestId)
           .eq('status', 'pending')
           .order('offered_at', ascending: false);
 
-      return (data as List).map((e) => LoanOffer.fromMap(e)).toList();
+      return (data as List).map(_loanOfferFromPrivateRow).toList();
     } catch (e) {
       throw parseSupabaseError(e);
     }
+  }
+
+  LoanOffer _loanOfferFromPrivateRow(dynamic row) {
+    final map = Map<String, dynamic>.from(row as Map);
+    final profile = map['profiles'];
+    if (profile is Map && profile['show_professional_tag'] == true) {
+      map['preferred_bank'] = profile['preferred_bank'];
+      map['institution_type'] = profile['institution_type'];
+      map['is_bank_agent'] = profile['is_bank_agent'];
+      map['show_professional_tag'] = profile['show_professional_tag'];
+    }
+    map.remove('profiles');
+    return LoanOffer.fromMap(map);
   }
 
   /// Place an offer on a listing. Requires lender/pro subscription.

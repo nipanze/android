@@ -2192,6 +2192,48 @@ abstract class AppLocalizations {
   /// **'Make an offer to unlock full details'**
   String get makeAnOfferToUnlock;
 
+  /// No description provided for @onlyYourOfferVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your offer is visible here. The full bid book is visible to the borrower.'**
+  String get onlyYourOfferVisible;
+
+  /// No description provided for @securedCollateralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Secured'**
+  String get securedCollateralLabel;
+
+  /// No description provided for @noCollateralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No collateral'**
+  String get noCollateralLabel;
+
+  /// No description provided for @collateralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Collateral'**
+  String get collateralLabel;
+
+  /// No description provided for @estimatedValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated value'**
+  String get estimatedValueLabel;
+
+  /// No description provided for @locationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationLabel;
+
+  /// No description provided for @offerSubmittedReviewNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer submitted. You can review your offer above.'**
+  String get offerSubmittedReviewNotice;
+
   /// No description provided for @couldNotSendOffer.
   ///
   /// In en, this message translates to:

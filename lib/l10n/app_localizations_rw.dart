@@ -1155,6 +1155,29 @@ class AppLocalizationsRw extends AppLocalizations {
       'Tanga igiciro kugirango ubone amakuru yose';
 
   @override
+  String get onlyYourOfferVisible =>
+      'Igiciro watanze ni cyo gusa kigaragara hano. Urutonde rwose rw\'ibiciro rubonwa n\'usaba inguzanyo.';
+
+  @override
+  String get securedCollateralLabel => 'Gifite ingwate';
+
+  @override
+  String get noCollateralLabel => 'Nta ngwate';
+
+  @override
+  String get collateralLabel => 'Ingwate';
+
+  @override
+  String get estimatedValueLabel => 'Agaciro kagereranyijwe';
+
+  @override
+  String get locationLabel => 'Ahantu';
+
+  @override
+  String get offerSubmittedReviewNotice =>
+      'Igiciro cyoherejwe. Ushobora kukireba hejuru.';
+
+  @override
   String get couldNotSendOffer => 'Ntibyashobotse kohereza igiciro.';
 
   @override

@@ -1158,6 +1158,29 @@ class AppLocalizationsSw extends AppLocalizations {
   String get makeAnOfferToUnlock => 'Toa bei ili ufikie maelezo kamili';
 
   @override
+  String get onlyYourOfferVisible =>
+      'Bei yako pekee inaonekana hapa. Orodha kamili ya bei inaonekana kwa mkopaji.';
+
+  @override
+  String get securedCollateralLabel => 'Imewekewa dhamana';
+
+  @override
+  String get noCollateralLabel => 'Hakuna dhamana';
+
+  @override
+  String get collateralLabel => 'Dhamana';
+
+  @override
+  String get estimatedValueLabel => 'Thamani iliyokadiriwa';
+
+  @override
+  String get locationLabel => 'Mahali';
+
+  @override
+  String get offerSubmittedReviewNotice =>
+      'Bei imetumwa. Unaweza kuikagua hapo juu.';
+
+  @override
   String get couldNotSendOffer => 'Haikuweza kutuma bei.';
 
   @override

@@ -28,8 +28,12 @@ SELECT
     lr.suggested_installment_amount,
     lr.terms_locked_at,
     lr.status,
-    lr.number_of_offers,
     CASE
+        WHEN auth.uid() = lr.borrower_id THEN lr.number_of_offers
+        ELSE 0
+    END                                                                       AS number_of_offers,
+    CASE
+        WHEN auth.uid() <> lr.borrower_id OR auth.uid() IS NULL THEN NULL
         WHEN lr.number_of_offers = 0 THEN 'low'
         WHEN lr.number_of_offers <= 2 THEN 'medium'
         ELSE 'high'
@@ -63,19 +67,19 @@ SELECT
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN TRUE ELSE FALSE END                                               AS show_professional_tag,
-    CASE WHEN EXISTS (
+    CASE WHEN auth.uid() = lr.borrower_id OR EXISTS (
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN lr.has_collateral ELSE FALSE END                                  AS has_collateral,
-    CASE WHEN EXISTS (
+    CASE WHEN auth.uid() = lr.borrower_id OR EXISTS (
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN lr.collateral_details ELSE NULL END                               AS collateral_details,
-    CASE WHEN EXISTS (
+    CASE WHEN auth.uid() = lr.borrower_id OR EXISTS (
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN lr.collateral_estimated_value ELSE NULL END                       AS collateral_estimated_value,
-    CASE WHEN EXISTS (
+    CASE WHEN auth.uid() = lr.borrower_id OR EXISTS (
       SELECT 1 FROM public.subscriptions s
       WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
     ) THEN lr.collateral_location ELSE NULL END                              AS collateral_location

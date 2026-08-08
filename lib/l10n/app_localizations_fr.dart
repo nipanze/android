@@ -1170,6 +1170,29 @@ class AppLocalizationsFr extends AppLocalizations {
       'Faire une offre pour accéder aux détails complets';
 
   @override
+  String get onlyYourOfferVisible =>
+      'Seule votre offre est visible ici. Le carnet complet des offres est visible par l\'emprunteur.';
+
+  @override
+  String get securedCollateralLabel => 'Garanti';
+
+  @override
+  String get noCollateralLabel => 'Sans garantie';
+
+  @override
+  String get collateralLabel => 'Garantie';
+
+  @override
+  String get estimatedValueLabel => 'Valeur estimée';
+
+  @override
+  String get locationLabel => 'Lieu';
+
+  @override
+  String get offerSubmittedReviewNotice =>
+      'Offre envoyée. Vous pouvez la consulter ci-dessus.';
+
+  @override
   String get couldNotSendOffer => 'Impossible d\'envoyer l\'offre.';
 
   @override

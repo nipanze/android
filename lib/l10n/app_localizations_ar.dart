@@ -1139,6 +1139,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get makeAnOfferToUnlock => 'قدّم عرضاً للاطلاع على كافة التفاصيل';
 
   @override
+  String get onlyYourOfferVisible =>
+      'يظهر عرضك فقط هنا. سجل العروض الكامل ظاهر للمقترض.';
+
+  @override
+  String get securedCollateralLabel => 'مضمون';
+
+  @override
+  String get noCollateralLabel => 'لا يوجد ضمان';
+
+  @override
+  String get collateralLabel => 'الضمان';
+
+  @override
+  String get estimatedValueLabel => 'القيمة التقديرية';
+
+  @override
+  String get locationLabel => 'الموقع';
+
+  @override
+  String get offerSubmittedReviewNotice =>
+      'تم إرسال العرض. يمكنك مراجعته أعلاه.';
+
+  @override
   String get couldNotSendOffer => 'تعذّر إرسال العرض.';
 
   @override

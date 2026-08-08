@@ -174,14 +174,18 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
     final listing = _listing!;
     final authState = context.watch<AuthBloc>().state;
+    final l10n = AppLocalizations.of(context);
     final user = authState is AuthAuthenticated ? authState.user : null;
     final isOwner = _isOwnerValue;
+    final hasMadeOffer = _isParticipant;
+    final canMakeOffer = !isOwner && !hasMadeOffer;
     // Pro borrowers see term-comparison arrows on each offer card
     final isProBorrower = isOwner &&
         authState is AuthAuthenticated &&
         authState.user.canSuggestBorrowerTerms;
-    final canViewCollateral = authState is AuthAuthenticated &&
-        authState.user.subscriptionPlan == SubscriptionPlan.pro;
+    final canViewCollateral = isOwner ||
+        (authState is AuthAuthenticated &&
+            authState.user.subscriptionPlan == SubscriptionPlan.pro);
 
     return Scaffold(
       appBar: AppBar(
@@ -354,7 +358,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Only your offer is visible here — the full bid book is visible to the borrower.',
+                              l10n?.onlyYourOfferVisible ??
+                                  'Only your offer is visible here. The full bid book is visible to the borrower.',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -376,7 +381,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Center(
                         child: Text(
-                          'No offers yet.',
+                          l10n?.noOffersYet ?? 'No offers yet',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
@@ -439,7 +444,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
             const SizedBox(height: 8),
 
-            if (!isOwner)
+            if (canMakeOffer)
               ElevatedButton(
                 onPressed: () {
                   if (user == null) {
@@ -452,9 +457,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   }
                   setState(() => _showOfferSheet = true);
                 },
-                child: Text(AppLocalizations.of(context)?.makeAnOffer ??
-                    'Make an offer'),
-              ),
+                child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+              )
+            else if (hasMadeOffer)
+              _OfferPlacedNotice(),
           ]),
         ),
       ),
@@ -496,9 +502,10 @@ class _CollateralStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = listing.hasCollateral ? AppColors.accent : AppColors.warning;
+    final l10n = AppLocalizations.of(context);
+    final color = listing.hasCollateral ? AppColors.success : AppColors.warning;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
@@ -509,14 +516,16 @@ class _CollateralStatusBadge extends StatelessWidget {
         children: [
           Icon(
             listing.hasCollateral
-                ? Icons.verified_user_outlined
+                ? Icons.security_rounded
                 : Icons.block_rounded,
             size: 15,
             color: color,
           ),
           const SizedBox(width: 6),
           Text(
-            listing.hasCollateral ? 'Secured' : 'No Collateral',
+            listing.hasCollateral
+                ? (l10n?.securedCollateralLabel ?? 'Secured')
+                : (l10n?.noCollateralLabel ?? 'No collateral'),
             style: TextStyle(
               color: color,
               fontSize: 11,
@@ -540,19 +549,82 @@ class _CollateralDetailsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final details = listing.collateralDetails?.trim();
     final location = listing.collateralLocation?.trim();
     final value = listing.collateralEstimatedValue;
 
-    final body = [
-      if (details?.isNotEmpty == true) details!,
-      if (value != null) '$currency ${_fmt(value)} estimated value',
-      if (location?.isNotEmpty == true) 'Location: $location',
-    ].join('\n');
-
-    return _DescriptionSection(
-      title: 'Collateral details',
-      body: body,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.success.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.security_rounded,
+                  size: 17,
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  (l10n?.collateralLabel ?? 'Collateral').toUpperCase(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          if (details?.isNotEmpty == true) ...[
+            const SizedBox(height: 12),
+            Text(
+              details!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (value != null)
+                _CollateralFact(
+                  icon: Icons.payments_outlined,
+                  label: l10n?.estimatedValueLabel ?? 'Estimated value',
+                  value: '$currency ${_fmt(value)}',
+                ),
+              if (location?.isNotEmpty == true)
+                _CollateralFact(
+                  icon: Icons.location_on_outlined,
+                  label: l10n?.locationLabel ?? 'Location',
+                  value: location!,
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -564,6 +636,96 @@ class _CollateralDetailsSection extends StatelessWidget {
       buf.write(s[i]);
     }
     return buf.toString();
+  }
+}
+
+class _CollateralFact extends StatelessWidget {
+  const _CollateralFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 140),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppColors.success),
+          const SizedBox(width: 7),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontSize: 10,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.5),
+                      ),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfferPlacedNotice extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_outline_rounded,
+              size: 18, color: AppColors.accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n?.offerSubmittedReviewNotice ??
+                  'Offer submitted. You can review your offer above.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -894,7 +1056,7 @@ class _OfferCardState extends State<_OfferCard>
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
     final isFull = offer.offerAmount >= widget.requestedAmount;
     final offerType = isFull ? 'Full offer' : 'Partial · $coverage%';
-    final professionalTag = widget.isProBorrower ? offer.professionalTag : null;
+    final professionalTag = widget.isOwner ? offer.professionalTag : null;
     final dotColor = widget.dotColor;
     final isActiveParticipant = widget.isOwner || widget.isParticipant;
 
@@ -1053,6 +1215,8 @@ class _OfferCardState extends State<_OfferCard>
                 isRepeatParticipant: offer.trustIsRepeatParticipant,
                 phoneVerified: offer.trustPhoneVerified,
                 responseTimeBucket: offer.trustResponseTimeBucket,
+                showReviews: false,
+                showCompletedDeals: false,
               ),
             ),
           ),

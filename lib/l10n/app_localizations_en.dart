@@ -1151,6 +1151,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get makeAnOfferToUnlock => 'Make an offer to unlock full details';
 
   @override
+  String get onlyYourOfferVisible =>
+      'Only your offer is visible here. The full bid book is visible to the borrower.';
+
+  @override
+  String get securedCollateralLabel => 'Secured';
+
+  @override
+  String get noCollateralLabel => 'No collateral';
+
+  @override
+  String get collateralLabel => 'Collateral';
+
+  @override
+  String get estimatedValueLabel => 'Estimated value';
+
+  @override
+  String get locationLabel => 'Location';
+
+  @override
+  String get offerSubmittedReviewNotice =>
+      'Offer submitted. You can review your offer above.';
+
+  @override
   String get couldNotSendOffer => 'Could not send offer.';
 
   @override
