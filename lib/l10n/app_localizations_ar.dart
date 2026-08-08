@@ -407,7 +407,95 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileUpdated => 'تم تحديث الملف الشخصي.';
 
   @override
+  String get profileSaved => 'تم حفظ الملف الشخصي.';
+
+  @override
   String get editProfile => 'تعديل الملف الشخصي';
+
+  @override
+  String get changeProfilePicture => 'تغيير صورة الملف الشخصي';
+
+  @override
+  String get phoneNumberLabel => 'رقم الهاتف';
+
+  @override
+  String selectRegionLabel(String label) {
+    return 'اختر $label';
+  }
+
+  @override
+  String get incomeTypeLabel => 'نوع الدخل';
+
+  @override
+  String get selectIncomeType => 'اختر نوع الدخل';
+
+  @override
+  String get employerBusinessOptionalLabel =>
+      'اسم جهة العمل / النشاط (اختياري)';
+
+  @override
+  String monthlyIncomeWithCurrency(String currency) {
+    return 'الدخل الشهري ($currency)';
+  }
+
+  @override
+  String get bankProfessionalTagLabel => 'البنك والوسم المهني';
+
+  @override
+  String get preferredDepositBankLabel =>
+      'البنك المفضل أو بنك الإيداع (اختياري)';
+
+  @override
+  String get preferredDepositBankHint =>
+      'مثال: Equity Bank, Bank of Kigali, Stanbic, KCB';
+
+  @override
+  String get accountRepresentsLabel => 'يمثل الحساب';
+
+  @override
+  String get individualPersonalAccountLabel => 'فرد / حساب شخصي';
+
+  @override
+  String get bankLabel => 'بنك';
+
+  @override
+  String get forexExchangeCompanyLabel => 'شركة صرافة';
+
+  @override
+  String get saccoLabel => 'SACCO';
+
+  @override
+  String get companyLabel => 'شركة';
+
+  @override
+  String get bankLoanAgentLabel => 'أنا وكيل قروض بنكية';
+
+  @override
+  String get bankLoanAgentSubtitle =>
+      'يعرض وسم وكيل بنك لمستخدمي Pro الباحثين عن قروض بنكية.';
+
+  @override
+  String get showProfessionalTagLabel => 'إظهار الوسم المهني الخاص بي';
+
+  @override
+  String get showProfessionalTagSubtitle =>
+      'أوقفه لإخفاء وسوم البنك أو شركة الصرافة أو SACCO أو الوكيل على العروض.';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get enterFullName => 'أدخل اسمك الكامل';
+
+  @override
+  String avatarUploadFailed(String error) {
+    return 'فشل رفع الصورة: $error';
+  }
+
+  @override
+  String couldNotSelectImage(String error) {
+    return 'تعذر اختيار الصورة: $error';
+  }
 
   @override
   String get identityVerification => 'التحقق من الهوية';
@@ -1296,6 +1384,72 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get activeListingLabel => 'طلب نشط';
+
+  @override
+  String get fundedLabel => 'ممول';
+
+  @override
+  String userVerificationStatus(String status) {
+    return 'حالة تحقق المستخدم: $status';
+  }
+
+  @override
+  String interestPercent(String value) {
+    return 'فائدة $value%';
+  }
+
+  @override
+  String get proposedRepaymentPlanLabel => 'خطة السداد المقترحة';
+
+  @override
+  String get yourOfferLabel => 'عرضك';
+
+  @override
+  String lenderNumberLabel(int number) {
+    return 'المقرض #$number';
+  }
+
+  @override
+  String lenderTextLabel(String id) {
+    return 'المقرض #$id';
+  }
+
+  @override
+  String get fullOfferLabel => 'عرض كامل';
+
+  @override
+  String partialOfferLabel(int coverage) {
+    return 'جزئي · $coverage%';
+  }
+
+  @override
+  String vsAskLabel(String value) {
+    return '$value مقارنة بالطلب';
+  }
+
+  @override
+  String get lenderNotesLabel => 'ملاحظات المقرض';
+
+  @override
+  String get acceptOfferLabel => 'قبول العرض';
+
+  @override
+  String get fullCoverageOfferLabel => 'عرض تغطية كاملة';
+
+  @override
+  String partialCoverageLabel(int coverage) {
+    return 'تغطية جزئية · $coverage%';
+  }
+
+  @override
+  String totalPayablePaymentsLabel(int periods) {
+    return 'إجمالي السداد ($periods دفعات)';
+  }
+
+  @override
+  String borrowingCostLabel(String amount) {
+    return 'تكلفة الاقتراض: $amount';
+  }
 
   @override
   String get flutterwaveCheckoutTitle => 'الدفع عبر فلوترفيلف';

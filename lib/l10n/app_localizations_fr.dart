@@ -412,7 +412,95 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileUpdated => 'Profil mis à jour.';
 
   @override
+  String get profileSaved => 'Profil enregistré.';
+
+  @override
   String get editProfile => 'Modifier le profil';
+
+  @override
+  String get changeProfilePicture => 'Changer la photo de profil';
+
+  @override
+  String get phoneNumberLabel => 'Numéro de téléphone';
+
+  @override
+  String selectRegionLabel(String label) {
+    return 'Sélectionner $label';
+  }
+
+  @override
+  String get incomeTypeLabel => 'Type de revenu';
+
+  @override
+  String get selectIncomeType => 'Sélectionner le type de revenu';
+
+  @override
+  String get employerBusinessOptionalLabel =>
+      'Employeur / nom de l\'entreprise (facultatif)';
+
+  @override
+  String monthlyIncomeWithCurrency(String currency) {
+    return 'Revenu mensuel ($currency)';
+  }
+
+  @override
+  String get bankProfessionalTagLabel => 'Banque & badge professionnel';
+
+  @override
+  String get preferredDepositBankLabel =>
+      'Banque préférée ou de dépôt (facultatif)';
+
+  @override
+  String get preferredDepositBankHint =>
+      'ex. Equity Bank, Bank of Kigali, Stanbic, KCB';
+
+  @override
+  String get accountRepresentsLabel => 'Le compte représente';
+
+  @override
+  String get individualPersonalAccountLabel => 'Personne / compte personnel';
+
+  @override
+  String get bankLabel => 'Banque';
+
+  @override
+  String get forexExchangeCompanyLabel => 'Société de change';
+
+  @override
+  String get saccoLabel => 'SACCO';
+
+  @override
+  String get companyLabel => 'Société';
+
+  @override
+  String get bankLoanAgentLabel => 'Je suis agent de crédit bancaire';
+
+  @override
+  String get bankLoanAgentSubtitle =>
+      'Affiche un badge d\'agent bancaire aux utilisateurs Pro recherchant des prêts bancaires.';
+
+  @override
+  String get showProfessionalTagLabel => 'Afficher mon badge professionnel';
+
+  @override
+  String get showProfessionalTagSubtitle =>
+      'Désactivez pour masquer les labels banque, société forex, SACCO ou agent sur les offres.';
+
+  @override
+  String get saveChanges => 'Enregistrer les modifications';
+
+  @override
+  String get enterFullName => 'Entrez votre nom complet';
+
+  @override
+  String avatarUploadFailed(String error) {
+    return 'Échec du téléversement de l\'avatar : $error';
+  }
+
+  @override
+  String couldNotSelectImage(String error) {
+    return 'Impossible de sélectionner l\'image : $error';
+  }
 
   @override
   String get identityVerification => 'Vérification d\'identité';
@@ -1328,6 +1416,72 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get activeListingLabel => 'Annonce active';
+
+  @override
+  String get fundedLabel => 'Financé';
+
+  @override
+  String userVerificationStatus(String status) {
+    return 'Statut de vérification utilisateur : $status';
+  }
+
+  @override
+  String interestPercent(String value) {
+    return '$value% d\'intérêt';
+  }
+
+  @override
+  String get proposedRepaymentPlanLabel => 'Plan de remboursement proposé';
+
+  @override
+  String get yourOfferLabel => 'Votre offre';
+
+  @override
+  String lenderNumberLabel(int number) {
+    return 'Prêteur n° $number';
+  }
+
+  @override
+  String lenderTextLabel(String id) {
+    return 'Prêteur n° $id';
+  }
+
+  @override
+  String get fullOfferLabel => 'Offre complète';
+
+  @override
+  String partialOfferLabel(int coverage) {
+    return 'Partielle · $coverage%';
+  }
+
+  @override
+  String vsAskLabel(String value) {
+    return '$value vs demandé';
+  }
+
+  @override
+  String get lenderNotesLabel => 'Notes du prêteur';
+
+  @override
+  String get acceptOfferLabel => 'Accepter l\'offre';
+
+  @override
+  String get fullCoverageOfferLabel => 'Offre de couverture complète';
+
+  @override
+  String partialCoverageLabel(int coverage) {
+    return 'Couverture partielle · $coverage%';
+  }
+
+  @override
+  String totalPayablePaymentsLabel(int periods) {
+    return 'Total à payer ($periods paiements)';
+  }
+
+  @override
+  String borrowingCostLabel(String amount) {
+    return 'Coût d\'emprunt : $amount';
+  }
 
   @override
   String get flutterwaveCheckoutTitle => 'Paiement Flutterwave';

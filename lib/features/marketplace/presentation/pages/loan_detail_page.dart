@@ -306,18 +306,27 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   Row(
                     children: [
                       Expanded(
-                          child:
-                              _TermBadge('${listing.durationMonths} months')),
+                        child: _TermBadge(
+                          '${listing.durationMonths} ${l10n?.months ?? 'months'}',
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         flex: 2,
                         child: _TermBadge(
-                            '${listing.currency} ${_fmt(listing.repaymentAmountPerPeriod)} / month'),
+                          '${listing.currency} ${_fmt(listing.repaymentAmountPerPeriod)}${l10n?.perMonth ?? ' / month'}',
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _TermBadge(
-                            '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest'),
+                          l10n?.interestPercent(
+                                listing.suggestedInterestRatePct
+                                        ?.toStringAsFixed(0) ??
+                                    '0',
+                              ) ??
+                              '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest',
+                        ),
                       ),
                     ],
                   ),
@@ -328,7 +337,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   Row(
                     children: [
                       Text(
-                        'OFFERS',
+                        l10n?.offersLabel ?? 'OFFERS',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               letterSpacing: 1.2,
                               fontWeight: FontWeight.bold,
@@ -436,7 +445,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             if (listing.suggestedInterestRatePct != null ||
                 listing.suggestedLateFeePct != null) ...[
               _DescriptionSection(
-                  title: 'Proposed repayment plan',
+                  title: l10n?.proposedRepaymentPlanLabel ??
+                      'Proposed repayment plan',
                   body:
                       '${listing.preferredRepaymentPlan}  ·  ${listing.repaymentTimeline}'),
               const SizedBox(height: 12),
@@ -764,11 +774,13 @@ class _FundedProgressBar extends StatelessWidget {
     // Lenders and participants see a generic "Active listing" label so they
     // cannot discover how many competing bids are in the book.
     final bidsLabel = kycStatus != null
-        ? 'User verification status: ${kycStatus!.toUpperCase()}'
+        ? (l10n?.userVerificationStatus(kycStatus!.toUpperCase()) ??
+            'User verification status: ${kycStatus!.toUpperCase()}')
         : (isOwner
             ? (offers.isEmpty
                 ? (l10n?.noOffersYet ?? 'No offers yet')
-                : '${offers.length} offer${offers.length > 1 ? 's' : ''}')
+                : (l10n?.listingOfferCount(offers.length) ??
+                    '${offers.length} offer${offers.length > 1 ? 's' : ''}'))
             : (l10n?.activeListingLabel ?? 'Active listing'));
 
     return Column(
@@ -777,7 +789,7 @@ class _FundedProgressBar extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Funded',
+              l10n?.fundedLabel ?? 'Funded',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -1045,17 +1057,22 @@ class _OfferCardState extends State<_OfferCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final offer = widget.offer;
     final lenderLabel = offer.lenderId == 'your-offer'
-        ? 'Your offer'
+        ? (l10n?.yourOfferLabel ?? 'Your offer')
         : offer.hasMaskedLender
-            ? 'Lender #${widget.index + 1}'
-            : 'Lender #${offer.lenderId.substring(0, 5)}';
+            ? (l10n?.lenderNumberLabel(widget.index + 1) ??
+                'Lender #${widget.index + 1}')
+            : (l10n?.lenderTextLabel(offer.lenderId.substring(0, 5)) ??
+                'Lender #${offer.lenderId.substring(0, 5)}');
     final coverage = widget.requestedAmount <= 0
         ? 0
         : ((offer.offerAmount / widget.requestedAmount) * 100).round();
     final isFull = offer.offerAmount >= widget.requestedAmount;
-    final offerType = isFull ? 'Full offer' : 'Partial · $coverage%';
+    final offerType = isFull
+        ? (l10n?.fullOfferLabel ?? 'Full offer')
+        : (l10n?.partialOfferLabel(coverage) ?? 'Partial · $coverage%');
     final professionalTag = widget.isOwner ? offer.professionalTag : null;
     final dotColor = widget.dotColor;
     final isActiveParticipant = widget.isOwner || widget.isParticipant;
@@ -1250,11 +1267,14 @@ class _OfferCardState extends State<_OfferCard>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           TickerCard(
-                            label: 'Interest',
+                            label: l10n?.interestLabel ?? 'Interest',
                             value:
                                 '${offer.interestRatePct.toStringAsFixed(1)}%',
                             deltaLabel: widget.suggestedInterestRatePct != null
-                                ? '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask'
+                                ? (l10n?.vsAskLabel(
+                                      '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)}',
+                                    ) ??
+                                    '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask')
                                 : '—',
                             isPositive:
                                 widget.suggestedInterestRatePct == null ||
@@ -1276,10 +1296,13 @@ class _OfferCardState extends State<_OfferCard>
                               color: Theme.of(context).dividerColor),
                           const SizedBox(width: 70),
                           TickerCard(
-                            label: 'Late fee',
+                            label: l10n?.lateFeeLabel ?? 'Late fee',
                             value: '${offer.lateFeePct.toStringAsFixed(1)}%',
                             deltaLabel: widget.suggestedLateFeePct != null
-                                ? '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask'
+                                ? (l10n?.vsAskLabel(
+                                      '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)}',
+                                    ) ??
+                                    '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask')
                                 : '—',
                             isPositive: widget.suggestedLateFeePct == null ||
                                 offer.lateFeePct <= widget.suggestedLateFeePct!,
@@ -1344,7 +1367,7 @@ class _OfferCardState extends State<_OfferCard>
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                         child: Text(
-                          'Lender notes',
+                          l10n?.lenderNotesLabel ?? 'Lender notes',
                           style: Theme.of(context)
                               .textTheme
                               .labelSmall
@@ -1368,7 +1391,8 @@ class _OfferCardState extends State<_OfferCard>
                           width: double.infinity,
                           child: OutlinedButton(
                             onPressed: () => widget.onAccept(offer),
-                            child: const Text('Accept offer'),
+                            child:
+                                Text(l10n?.acceptOfferLabel ?? 'Accept offer'),
                           ),
                         ),
                       ),
@@ -1398,8 +1422,10 @@ class _OfferCardState extends State<_OfferCard>
                               const SizedBox(width: 8),
                               Text(
                                 isFull
-                                    ? 'Full coverage offer'
-                                    : 'Partial coverage · $coverage%',
+                                    ? (l10n?.fullCoverageOfferLabel ??
+                                        'Full coverage offer')
+                                    : (l10n?.partialCoverageLabel(coverage) ??
+                                        'Partial coverage · $coverage%'),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -1619,6 +1645,7 @@ class _TotalPayableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final periods = offer.repaymentFrequency == 'monthly'
         ? durationMonths
         : (offer.repaymentFrequency == 'weekly' ? durationMonths * 4 : 1);
@@ -1652,7 +1679,8 @@ class _TotalPayableRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  'Total payable ($periods payments)',
+                  l10n?.totalPayablePaymentsLabel(periods) ??
+                      'Total payable ($periods payments)',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -1684,7 +1712,10 @@ class _TotalPayableRow extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Borrowing cost: ${offer.currency} ${_fmt(totalCost)}',
+                    l10n?.borrowingCostLabel(
+                          '${offer.currency} ${_fmt(totalCost)}',
+                        ) ??
+                        'Borrowing cost: ${offer.currency} ${_fmt(totalCost)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 10.5,
                           color: Theme.of(context)

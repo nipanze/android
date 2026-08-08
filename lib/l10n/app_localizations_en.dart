@@ -409,7 +409,95 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUpdated => 'Profile updated.';
 
   @override
+  String get profileSaved => 'Profile saved.';
+
+  @override
   String get editProfile => 'Edit Profile';
+
+  @override
+  String get changeProfilePicture => 'Change profile picture';
+
+  @override
+  String get phoneNumberLabel => 'Phone number';
+
+  @override
+  String selectRegionLabel(String label) {
+    return 'Select $label';
+  }
+
+  @override
+  String get incomeTypeLabel => 'Income type';
+
+  @override
+  String get selectIncomeType => 'Select income type';
+
+  @override
+  String get employerBusinessOptionalLabel =>
+      'Employer / Business name (optional)';
+
+  @override
+  String monthlyIncomeWithCurrency(String currency) {
+    return 'Monthly income ($currency)';
+  }
+
+  @override
+  String get bankProfessionalTagLabel => 'Bank & Professional Tag';
+
+  @override
+  String get preferredDepositBankLabel =>
+      'Preferred or deposit bank (optional)';
+
+  @override
+  String get preferredDepositBankHint =>
+      'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB';
+
+  @override
+  String get accountRepresentsLabel => 'Account represents';
+
+  @override
+  String get individualPersonalAccountLabel => 'Individual / Personal account';
+
+  @override
+  String get bankLabel => 'Bank';
+
+  @override
+  String get forexExchangeCompanyLabel => 'Forex exchange company';
+
+  @override
+  String get saccoLabel => 'SACCO';
+
+  @override
+  String get companyLabel => 'Company';
+
+  @override
+  String get bankLoanAgentLabel => 'I am a bank loan agent';
+
+  @override
+  String get bankLoanAgentSubtitle =>
+      'Shows a bank-agent tag to Pro users seeking bank loans.';
+
+  @override
+  String get showProfessionalTagLabel => 'Show my professional tag';
+
+  @override
+  String get showProfessionalTagSubtitle =>
+      'Turn off to hide bank, forex company, SACCO, or agent labels on offers.';
+
+  @override
+  String get saveChanges => 'Save changes';
+
+  @override
+  String get enterFullName => 'Enter your full name';
+
+  @override
+  String avatarUploadFailed(String error) {
+    return 'Avatar upload failed: $error';
+  }
+
+  @override
+  String couldNotSelectImage(String error) {
+    return 'Could not select image: $error';
+  }
 
   @override
   String get identityVerification => 'Identity Verification';
@@ -1308,6 +1396,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activeListingLabel => 'Active listing';
+
+  @override
+  String get fundedLabel => 'Funded';
+
+  @override
+  String userVerificationStatus(String status) {
+    return 'User verification status: $status';
+  }
+
+  @override
+  String interestPercent(String value) {
+    return '$value% interest';
+  }
+
+  @override
+  String get proposedRepaymentPlanLabel => 'Proposed repayment plan';
+
+  @override
+  String get yourOfferLabel => 'Your offer';
+
+  @override
+  String lenderNumberLabel(int number) {
+    return 'Lender #$number';
+  }
+
+  @override
+  String lenderTextLabel(String id) {
+    return 'Lender #$id';
+  }
+
+  @override
+  String get fullOfferLabel => 'Full offer';
+
+  @override
+  String partialOfferLabel(int coverage) {
+    return 'Partial · $coverage%';
+  }
+
+  @override
+  String vsAskLabel(String value) {
+    return '$value vs ask';
+  }
+
+  @override
+  String get lenderNotesLabel => 'Lender notes';
+
+  @override
+  String get acceptOfferLabel => 'Accept offer';
+
+  @override
+  String get fullCoverageOfferLabel => 'Full coverage offer';
+
+  @override
+  String partialCoverageLabel(int coverage) {
+    return 'Partial coverage · $coverage%';
+  }
+
+  @override
+  String totalPayablePaymentsLabel(int periods) {
+    return 'Total payable ($periods payments)';
+  }
+
+  @override
+  String borrowingCostLabel(String amount) {
+    return 'Borrowing cost: $amount';
+  }
 
   @override
   String get flutterwaveCheckoutTitle => 'Flutterwave Checkout';

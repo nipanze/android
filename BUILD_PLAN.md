@@ -456,6 +456,7 @@ Three pill tabs: `All` (default), `Loans` 🌾, `Forex` 🔀. Selecting a tab sw
 | Progress bar | Derived from `number_of_offers` × average offer size vs. `requested_amount` | Server-computed `funded_pct` field on `v_loan_listings`, not client-computed |
 | Countdown | `expires_at` − now, rendered "Xd left" | |
 | Offer countdown | `loan_offers.expires_at` − now on participant-visible offer rows | Requires `get_public_listing_offers` to return `expires_at` |
+| Localization and currency labels | App language setting + listing/profile currency | Listing detail, edit profile, and Pro filters must not hardcode English labels or UGX-only money labels |
 | Trust badges | `v_trust_profile_public` for `owner_id` | Renders `⭐ No reviews yet` / `💎 0 completed` at zero-state |
 | Watchlist star | `watchlist` membership for current user | |
 

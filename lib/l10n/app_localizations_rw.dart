@@ -410,7 +410,96 @@ class AppLocalizationsRw extends AppLocalizations {
   String get profileUpdated => 'Umwirondoro wasuzumwe.';
 
   @override
+  String get profileSaved => 'Umwirondoro wabitswe.';
+
+  @override
   String get editProfile => 'Hindura Umwirondoro';
+
+  @override
+  String get changeProfilePicture => 'Hindura ifoto y\'umwirondoro';
+
+  @override
+  String get phoneNumberLabel => 'Nomero ya telefone';
+
+  @override
+  String selectRegionLabel(String label) {
+    return 'Hitamo $label';
+  }
+
+  @override
+  String get incomeTypeLabel => 'Ubwoko bw\'inyungu';
+
+  @override
+  String get selectIncomeType => 'Hitamo ubwoko bw\'inyungu';
+
+  @override
+  String get employerBusinessOptionalLabel =>
+      'Umukoresha / izina ry\'ubucuruzi (si ngombwa)';
+
+  @override
+  String monthlyIncomeWithCurrency(String currency) {
+    return 'Amafaranga winjiza buri kwezi ($currency)';
+  }
+
+  @override
+  String get bankProfessionalTagLabel => 'Banki & ikirango cy\'umwuga';
+
+  @override
+  String get preferredDepositBankLabel =>
+      'Banki ukunda cyangwa ubitsamo (si ngombwa)';
+
+  @override
+  String get preferredDepositBankHint =>
+      'urug. Equity Bank, Bank of Kigali, Stanbic, KCB';
+
+  @override
+  String get accountRepresentsLabel => 'Konti ihagarariye';
+
+  @override
+  String get individualPersonalAccountLabel =>
+      'Umuntu ku giti cye / konti bwite';
+
+  @override
+  String get bankLabel => 'Banki';
+
+  @override
+  String get forexExchangeCompanyLabel => 'Ikigo kivunjisha amafaranga';
+
+  @override
+  String get saccoLabel => 'SACCO';
+
+  @override
+  String get companyLabel => 'Ikigo';
+
+  @override
+  String get bankLoanAgentLabel => 'Ndi umukozi wa banki ushinzwe inguzanyo';
+
+  @override
+  String get bankLoanAgentSubtitle =>
+      'Yerekana ikirango cy\'umukozi wa banki ku bakoresha Pro bashaka inguzanyo za banki.';
+
+  @override
+  String get showProfessionalTagLabel => 'Erekana ikirango cyanjye cy\'umwuga';
+
+  @override
+  String get showProfessionalTagSubtitle =>
+      'Zimya kugira ngo uhishe ibirango bya banki, forex, SACCO, cyangwa umukozi ku byifuzo.';
+
+  @override
+  String get saveChanges => 'Bika impinduka';
+
+  @override
+  String get enterFullName => 'Shyiramo amazina yawe yose';
+
+  @override
+  String avatarUploadFailed(String error) {
+    return 'Kohereza ifoto byanze: $error';
+  }
+
+  @override
+  String couldNotSelectImage(String error) {
+    return 'Ntibyashobotse guhitamo ifoto: $error';
+  }
 
   @override
   String get identityVerification => 'Kwemeza Indangamuntu';
@@ -1313,6 +1402,72 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get activeListingLabel => 'Ubusabe buri gukora';
+
+  @override
+  String get fundedLabel => 'Byamaze guterwa inkunga';
+
+  @override
+  String userVerificationStatus(String status) {
+    return 'Imiterere yo kwemeza umukoresha: $status';
+  }
+
+  @override
+  String interestPercent(String value) {
+    return '$value% inyungu';
+  }
+
+  @override
+  String get proposedRepaymentPlanLabel => 'Gahunda yo kwishyura yatanzwe';
+
+  @override
+  String get yourOfferLabel => 'Igiciro cyawe';
+
+  @override
+  String lenderNumberLabel(int number) {
+    return 'Utanga inguzanyo #$number';
+  }
+
+  @override
+  String lenderTextLabel(String id) {
+    return 'Utanga inguzanyo #$id';
+  }
+
+  @override
+  String get fullOfferLabel => 'Igiciro cyuzuye';
+
+  @override
+  String partialOfferLabel(int coverage) {
+    return 'Igice · $coverage%';
+  }
+
+  @override
+  String vsAskLabel(String value) {
+    return '$value ugereranyije n\'icyasabwe';
+  }
+
+  @override
+  String get lenderNotesLabel => 'Ibisobanuro by\'utanga inguzanyo';
+
+  @override
+  String get acceptOfferLabel => 'Emera igiciro';
+
+  @override
+  String get fullCoverageOfferLabel => 'Igiciro gifata byose';
+
+  @override
+  String partialCoverageLabel(int coverage) {
+    return 'Igice gifashwa · $coverage%';
+  }
+
+  @override
+  String totalPayablePaymentsLabel(int periods) {
+    return 'Amafaranga yose yo kwishyura ($periods kwishyura)';
+  }
+
+  @override
+  String borrowingCostLabel(String amount) {
+    return 'Ikiguzi cy\'inguzanyo: $amount';
+  }
 
   @override
   String get flutterwaveCheckoutTitle => 'Kwishyura kuri Flutterwave';

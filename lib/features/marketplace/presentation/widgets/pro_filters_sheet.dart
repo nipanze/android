@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../cubit/marketplace_cubit.dart';
@@ -49,7 +50,11 @@ const _kIncomeBracketOptions = [
 ];
 
 /// Resolves a labelKey to a localized string.
-String _resolveLabel(AppLocalizations? l10n, String key) {
+String _resolveLabel(
+  AppLocalizations? l10n,
+  String key, {
+  String currency = 'UGX',
+}) {
   switch (key) {
     case 'empGovEmployee':
       return l10n?.empGovEmployee ?? 'Government employee';
@@ -66,13 +71,17 @@ String _resolveLabel(AppLocalizations? l10n, String key) {
     case 'empOther':
       return l10n?.empOther ?? 'Other';
     case 'incomeUnder2m':
-      return l10n?.incomeUnder2m ?? 'Under 2M UGX / month';
+      return (l10n?.incomeUnder2m ?? 'Under 2M UGX / month')
+          .replaceAll('UGX', currency);
     case 'income2m5m':
-      return l10n?.income2m5m ?? '2M – 5M UGX / month';
+      return (l10n?.income2m5m ?? '2M – 5M UGX / month')
+          .replaceAll('UGX', currency);
     case 'income5m10m':
-      return l10n?.income5m10m ?? '5M – 10M UGX / month';
+      return (l10n?.income5m10m ?? '5M – 10M UGX / month')
+          .replaceAll('UGX', currency);
     case 'incomeOver10m':
-      return l10n?.incomeOver10m ?? 'Over 10M UGX / month';
+      return (l10n?.incomeOver10m ?? 'Over 10M UGX / month')
+          .replaceAll('UGX', currency);
     default:
       return key;
   }
@@ -119,6 +128,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   late Set<String> _selectedIncome;
   late bool _suggestedTermsOnly;
   late bool _verifiedOnly;
+  String _currencyCode = EastAfricaCountries.defaultCountry.currency;
 
   @override
   void initState() {
@@ -143,7 +153,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       final data = await client
           .from(TableNames.profiles)
           .select(
-              'employment_type, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only')
+              'country, employment_type, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only')
           .eq('id', uid)
           .maybeSingle();
 
@@ -159,6 +169,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
           data?['prefers_suggested_terms'] as bool? ?? false;
       final prefersVerifiedOnly =
           data?['prefers_verified_only'] as bool? ?? false;
+      final currencyCode =
+          EastAfricaCountries.findByCode(data?['country'] as String?).currency;
 
       final employmentTypes = preferredEmploymentTypes ??
           (data?['employment_type'] == null
@@ -169,10 +181,12 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
             (data?['monthly_income_ugx'] as num?)?.toInt(),
           );
 
-      if (employmentTypes != null || incomeBracket != null ||
-          prefersSuggestedTerms ||
-          prefersVerifiedOnly) {
-        setState(() {
+      setState(() {
+        _currencyCode = currencyCode;
+        if (employmentTypes != null ||
+            incomeBracket != null ||
+            prefersSuggestedTerms ||
+            prefersVerifiedOnly) {
           if (employmentTypes != null) {
             _selectedEmployment = employmentTypes.toSet();
           }
@@ -181,8 +195,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
           }
           _suggestedTermsOnly = prefersSuggestedTerms;
           _verifiedOnly = prefersVerifiedOnly;
-        });
-      }
+        }
+      });
     } catch (_) {
       // Silently ignore — user simply keeps an empty selection.
     }
@@ -226,6 +240,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final l10n = AppLocalizations.of(context);
+    final currencyCode = _currencyCode;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.82,
@@ -282,7 +297,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                             ),
                           ),
                           Text(
-                            l10n?.advancedFiltersBadge ?? 'Pro · Narrow the marketplace feed',
+                            l10n?.advancedFiltersBadge ??
+                                'Pro · Narrow the marketplace feed',
                             style: TextStyle(
                               fontSize: 11,
                               color: AppColors.purple.withValues(alpha: 0.85),
@@ -334,9 +350,14 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       spacing: 8,
                       runSpacing: 8,
                       children: _kEmploymentOptions.map((opt) {
-                        final selected = _selectedEmployment.contains(opt.value);
+                        final selected =
+                            _selectedEmployment.contains(opt.value);
                         return _FilterChip(
-                          label: _resolveLabel(l10n, opt.labelKey),
+                          label: _resolveLabel(
+                            l10n,
+                            opt.labelKey,
+                            currency: currencyCode,
+                          ),
                           selected: selected,
                           onTap: () => setState(() {
                             if (selected) {
@@ -364,7 +385,11 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       children: _kIncomeBracketOptions.map((opt) {
                         final selected = _selectedIncome.contains(opt.value);
                         return _FilterChip(
-                          label: _resolveLabel(l10n, opt.labelKey),
+                          label: _resolveLabel(
+                            l10n,
+                            opt.labelKey,
+                            currency: currencyCode,
+                          ),
                           selected: selected,
                           onTap: () => setState(() {
                             if (selected) {
@@ -380,14 +405,16 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     // Boolean toggles
                     _SectionHeader(
                       icon: Icons.shield_outlined,
-                      label: l10n?.filterQualitySignals ?? 'Listing quality signals',
+                      label: l10n?.filterQualitySignals ??
+                          'Listing quality signals',
                       textColor: text2,
                     ),
                     const SizedBox(height: 10),
                     _ToggleTile(
                       icon: Icons.receipt_long_outlined,
                       iconColor: AppColors.accent,
-                      title: l10n?.filterHasSuggestedTerms ?? 'Has suggested terms',
+                      title: l10n?.filterHasSuggestedTerms ??
+                          'Has suggested terms',
                       subtitle: l10n?.filterHasSuggestedTermsSubtitle ??
                           'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule',
                       value: _suggestedTermsOnly,
@@ -398,7 +425,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     _ToggleTile(
                       icon: Icons.verified_outlined,
                       iconColor: AppColors.success,
-                      title: l10n?.filterVerifiedBorrower ?? 'Verified borrower',
+                      title:
+                          l10n?.filterVerifiedBorrower ?? 'Verified borrower',
                       subtitle: l10n?.filterVerifiedBorrowerSubtitle ??
                           'Only requests from KYC-approved account holders',
                       value: _verifiedOnly,
@@ -428,8 +456,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                             child: Text(
                               l10n?.filterPrivacyNote ??
                                   'Employer names and exact income are never shown. '
-                                  'Income brackets and employment categories are the '
-                                  'only signals available, by design.',
+                                      'Income brackets and employment categories are the '
+                                      'only signals available, by design.',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 color: text2,

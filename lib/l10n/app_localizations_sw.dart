@@ -411,7 +411,95 @@ class AppLocalizationsSw extends AppLocalizations {
   String get profileUpdated => 'Wasifu umesasishwa.';
 
   @override
+  String get profileSaved => 'Wasifu umehifadhiwa.';
+
+  @override
   String get editProfile => 'Hariri Wasifu';
+
+  @override
+  String get changeProfilePicture => 'Badilisha picha ya wasifu';
+
+  @override
+  String get phoneNumberLabel => 'Nambari ya simu';
+
+  @override
+  String selectRegionLabel(String label) {
+    return 'Chagua $label';
+  }
+
+  @override
+  String get incomeTypeLabel => 'Aina ya mapato';
+
+  @override
+  String get selectIncomeType => 'Chagua aina ya mapato';
+
+  @override
+  String get employerBusinessOptionalLabel =>
+      'Mwajiri / jina la biashara (si lazima)';
+
+  @override
+  String monthlyIncomeWithCurrency(String currency) {
+    return 'Mapato ya mwezi ($currency)';
+  }
+
+  @override
+  String get bankProfessionalTagLabel => 'Benki & Lebo ya Kitaalamu';
+
+  @override
+  String get preferredDepositBankLabel =>
+      'Benki unayopendelea au ya kuweka pesa (si lazima)';
+
+  @override
+  String get preferredDepositBankHint =>
+      'mf. Equity Bank, Bank of Kigali, Stanbic, KCB';
+
+  @override
+  String get accountRepresentsLabel => 'Akaunti inawakilisha';
+
+  @override
+  String get individualPersonalAccountLabel => 'Mtu binafsi / akaunti binafsi';
+
+  @override
+  String get bankLabel => 'Benki';
+
+  @override
+  String get forexExchangeCompanyLabel => 'Kampuni ya ubadilishaji fedha';
+
+  @override
+  String get saccoLabel => 'SACCO';
+
+  @override
+  String get companyLabel => 'Kampuni';
+
+  @override
+  String get bankLoanAgentLabel => 'Mimi ni wakala wa mikopo wa benki';
+
+  @override
+  String get bankLoanAgentSubtitle =>
+      'Huonyesha lebo ya wakala wa benki kwa watumiaji wa Pro wanaotafuta mikopo ya benki.';
+
+  @override
+  String get showProfessionalTagLabel => 'Onyesha lebo yangu ya kitaalamu';
+
+  @override
+  String get showProfessionalTagSubtitle =>
+      'Zima ili kuficha lebo za benki, kampuni ya forex, SACCO, au wakala kwenye bei.';
+
+  @override
+  String get saveChanges => 'Hifadhi mabadiliko';
+
+  @override
+  String get enterFullName => 'Weka jina lako kamili';
+
+  @override
+  String avatarUploadFailed(String error) {
+    return 'Kupakia picha kumeshindikana: $error';
+  }
+
+  @override
+  String couldNotSelectImage(String error) {
+    return 'Haikuweza kuchagua picha: $error';
+  }
 
   @override
   String get identityVerification => 'Uthibitisho wa Utambulisho';
@@ -1315,6 +1403,72 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get activeListingLabel => 'Ombi linaloendelea';
+
+  @override
+  String get fundedLabel => 'Imefadhiliwa';
+
+  @override
+  String userVerificationStatus(String status) {
+    return 'Hali ya uthibitisho wa mtumiaji: $status';
+  }
+
+  @override
+  String interestPercent(String value) {
+    return '$value% riba';
+  }
+
+  @override
+  String get proposedRepaymentPlanLabel => 'Mpango wa malipo uliopendekezwa';
+
+  @override
+  String get yourOfferLabel => 'Bei yako';
+
+  @override
+  String lenderNumberLabel(int number) {
+    return 'Mkopeshi #$number';
+  }
+
+  @override
+  String lenderTextLabel(String id) {
+    return 'Mkopeshi #$id';
+  }
+
+  @override
+  String get fullOfferLabel => 'Bei kamili';
+
+  @override
+  String partialOfferLabel(int coverage) {
+    return 'Sehemu · $coverage%';
+  }
+
+  @override
+  String vsAskLabel(String value) {
+    return '$value dhidi ya ombi';
+  }
+
+  @override
+  String get lenderNotesLabel => 'Maelezo ya mkopeshaji';
+
+  @override
+  String get acceptOfferLabel => 'Kubali bei';
+
+  @override
+  String get fullCoverageOfferLabel => 'Bei ya kufadhili yote';
+
+  @override
+  String partialCoverageLabel(int coverage) {
+    return 'Ufadhili wa sehemu · $coverage%';
+  }
+
+  @override
+  String totalPayablePaymentsLabel(int periods) {
+    return 'Jumla ya kulipa ($periods malipo)';
+  }
+
+  @override
+  String borrowingCostLabel(String amount) {
+    return 'Gharama ya mkopo: $amount';
+  }
 
   @override
   String get flutterwaveCheckoutTitle => 'Malipo ya Flutterwave';

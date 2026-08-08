@@ -481,6 +481,7 @@ The Marketplace screen is the one shared surface where both modules meet — a l
 - **One-line summary** (purpose)
 - **Funded-% progress bar** and **"Xd left"** countdown
 - **Offer countdown** on participant-visible offer rows, driven by `loan_offers.expires_at`
+- **Localized detail copy** for listing terms, offer cards, collateral, countdowns, and profile-driven labels; currency labels come from the listing/user market instead of assuming UGX
 - **Trust badges:** `⭐ No reviews yet` (or the real rating once it has one) and `💎 0 completed` (or the real count)
 - **Star icon** (top-right) — save to watchlist
 

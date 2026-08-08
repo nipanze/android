@@ -812,11 +812,161 @@ abstract class AppLocalizations {
   /// **'Profile updated.'**
   String get profileUpdated;
 
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved.'**
+  String get profileSaved;
+
   /// No description provided for @editProfile.
   ///
   /// In en, this message translates to:
   /// **'Edit Profile'**
   String get editProfile;
+
+  /// No description provided for @changeProfilePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Change profile picture'**
+  String get changeProfilePicture;
+
+  /// No description provided for @phoneNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phoneNumberLabel;
+
+  /// No description provided for @selectRegionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select {label}'**
+  String selectRegionLabel(String label);
+
+  /// No description provided for @incomeTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Income type'**
+  String get incomeTypeLabel;
+
+  /// No description provided for @selectIncomeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select income type'**
+  String get selectIncomeType;
+
+  /// No description provided for @employerBusinessOptionalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Employer / Business name (optional)'**
+  String get employerBusinessOptionalLabel;
+
+  /// No description provided for @monthlyIncomeWithCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly income ({currency})'**
+  String monthlyIncomeWithCurrency(String currency);
+
+  /// No description provided for @bankProfessionalTagLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank & Professional Tag'**
+  String get bankProfessionalTagLabel;
+
+  /// No description provided for @preferredDepositBankLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred or deposit bank (optional)'**
+  String get preferredDepositBankLabel;
+
+  /// No description provided for @preferredDepositBankHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB'**
+  String get preferredDepositBankHint;
+
+  /// No description provided for @accountRepresentsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account represents'**
+  String get accountRepresentsLabel;
+
+  /// No description provided for @individualPersonalAccountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual / Personal account'**
+  String get individualPersonalAccountLabel;
+
+  /// No description provided for @bankLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get bankLabel;
+
+  /// No description provided for @forexExchangeCompanyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex exchange company'**
+  String get forexExchangeCompanyLabel;
+
+  /// No description provided for @saccoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SACCO'**
+  String get saccoLabel;
+
+  /// No description provided for @companyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get companyLabel;
+
+  /// No description provided for @bankLoanAgentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'I am a bank loan agent'**
+  String get bankLoanAgentLabel;
+
+  /// No description provided for @bankLoanAgentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows a bank-agent tag to Pro users seeking bank loans.'**
+  String get bankLoanAgentSubtitle;
+
+  /// No description provided for @showProfessionalTagLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my professional tag'**
+  String get showProfessionalTagLabel;
+
+  /// No description provided for @showProfessionalTagSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off to hide bank, forex company, SACCO, or agent labels on offers.'**
+  String get showProfessionalTagSubtitle;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @enterFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get enterFullName;
+
+  /// No description provided for @avatarUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar upload failed: {error}'**
+  String avatarUploadFailed(String error);
+
+  /// No description provided for @couldNotSelectImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select image: {error}'**
+  String couldNotSelectImage(String error);
 
   /// No description provided for @identityVerification.
   ///
@@ -2467,6 +2617,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Active listing'**
   String get activeListingLabel;
+
+  /// No description provided for @fundedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Funded'**
+  String get fundedLabel;
+
+  /// No description provided for @userVerificationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'User verification status: {status}'**
+  String userVerificationStatus(String status);
+
+  /// No description provided for @interestPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}% interest'**
+  String interestPercent(String value);
+
+  /// No description provided for @proposedRepaymentPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed repayment plan'**
+  String get proposedRepaymentPlanLabel;
+
+  /// No description provided for @yourOfferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your offer'**
+  String get yourOfferLabel;
+
+  /// No description provided for @lenderNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender #{number}'**
+  String lenderNumberLabel(int number);
+
+  /// No description provided for @lenderTextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender #{id}'**
+  String lenderTextLabel(String id);
+
+  /// No description provided for @fullOfferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full offer'**
+  String get fullOfferLabel;
+
+  /// No description provided for @partialOfferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial · {coverage}%'**
+  String partialOfferLabel(int coverage);
+
+  /// No description provided for @vsAskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} vs ask'**
+  String vsAskLabel(String value);
+
+  /// No description provided for @lenderNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lender notes'**
+  String get lenderNotesLabel;
+
+  /// No description provided for @acceptOfferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept offer'**
+  String get acceptOfferLabel;
+
+  /// No description provided for @fullCoverageOfferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full coverage offer'**
+  String get fullCoverageOfferLabel;
+
+  /// No description provided for @partialCoverageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial coverage · {coverage}%'**
+  String partialCoverageLabel(int coverage);
+
+  /// No description provided for @totalPayablePaymentsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total payable ({periods} payments)'**
+  String totalPayablePaymentsLabel(int periods);
+
+  /// No description provided for @borrowingCostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing cost: {amount}'**
+  String borrowingCostLabel(String amount);
 
   /// No description provided for @flutterwaveCheckoutTitle.
   ///

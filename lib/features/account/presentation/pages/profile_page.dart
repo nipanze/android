@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -52,22 +53,28 @@ class _ProfileViewState extends State<_ProfileView> {
   String _userInitials = 'U';
 
   static const _employmentTypes = [
-    ('employed', 'Employed'),
-    ('government_employee', 'Government employee'),
-    ('self_employed', 'Self-employed'),
-    ('small_business_owner', 'Small business owner'),
-    ('business_owner', 'Business owner'),
-    ('student', 'Student'),
-    ('other', 'Other'),
+    'employed',
+    'government_employee',
+    'self_employed',
+    'small_business_owner',
+    'business_owner',
+    'student',
+    'other',
   ];
 
   static const _institutionOptions = [
-    ('', 'Individual / Personal account'),
-    ('bank', 'Bank'),
-    ('forex_exchange', 'Forex exchange company'),
-    ('sacco', 'SACCO'),
-    ('company', 'Company'),
+    '',
+    'bank',
+    'forex_exchange',
+    'sacco',
+    'company',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -101,7 +108,8 @@ class _ProfileViewState extends State<_ProfileView> {
     // Strip dial code for local phone field display
     final rawPhone = p.phone ?? '';
     if (rawPhone.startsWith(matchedCountry.dialCode)) {
-      _phoneController.text = rawPhone.substring(matchedCountry.dialCode.length).trim();
+      _phoneController.text =
+          rawPhone.substring(matchedCountry.dialCode.length).trim();
     } else {
       _phoneController.text = rawPhone;
     }
@@ -109,15 +117,15 @@ class _ProfileViewState extends State<_ProfileView> {
     // Validate district against selected country's regions
     if (p.district != null && matchedCountry.regions.contains(p.district)) {
       _district = p.district;
-    } else if (p.district != null && EastAfricaCountries.uganda.regions.contains(p.district)) {
+    } else if (p.district != null &&
+        EastAfricaCountries.uganda.regions.contains(p.district)) {
       _district = p.district;
     } else {
       _district = null;
     }
 
-    _employmentType = _employmentTypes.any((e) => e.$1 == p.employmentType)
-        ? p.employmentType
-        : null;
+    _employmentType =
+        _employmentTypes.contains(p.employmentType) ? p.employmentType : null;
 
     _populated = true;
   }
@@ -145,28 +153,75 @@ class _ProfileViewState extends State<_ProfileView> {
       setState(() => _newAvatarBytes = bytes);
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not select image: $e')),
+          SnackBar(
+            content: Text(
+              l10n?.couldNotSelectImage(e.toString()) ??
+                  'Could not select image: $e',
+            ),
+          ),
         );
       }
     }
   }
 
+  bool get _isReadyToSave => _nameController.text.trim().isNotEmpty;
+
+  String _employmentLabel(AppLocalizations? l10n, String value) {
+    switch (value) {
+      case 'government_employee':
+        return l10n?.empGovEmployee ?? 'Government employee';
+      case 'employed':
+        return l10n?.empEmployedPrivate ?? 'Employed (private)';
+      case 'self_employed':
+        return l10n?.empSelfEmployed ?? 'Self-employed';
+      case 'small_business_owner':
+        return l10n?.empSmallBusinessOwner ?? 'Small business owner';
+      case 'business_owner':
+        return l10n?.empBusinessOwner ?? 'Business owner';
+      case 'student':
+        return l10n?.empStudent ?? 'Student';
+      default:
+        return l10n?.empOther ?? 'Other';
+    }
+  }
+
+  String _institutionLabel(AppLocalizations? l10n, String value) {
+    switch (value) {
+      case 'bank':
+        return l10n?.bankLabel ?? 'Bank';
+      case 'forex_exchange':
+        return l10n?.forexExchangeCompanyLabel ?? 'Forex exchange company';
+      case 'sacco':
+        return l10n?.saccoLabel ?? 'SACCO';
+      case 'company':
+        return l10n?.companyLabel ?? 'Company';
+      default:
+        return l10n?.individualPersonalAccountLabel ??
+            'Individual / Personal account';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Edit profile'),
+        title: Text(l10n?.editProfile ?? 'Edit profile'),
       ),
       body: BlocConsumer<ProfileCubit, ProfileCubitState>(
         listener: (context, state) {
           if (state is ProfileCubitLoaded && state.justSaved) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text('Profile saved.')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n?.profileSaved ?? 'Profile saved.'),
+              ),
+            );
             // Refresh AuthBloc so top bars update immediately
             try {
               context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
@@ -194,7 +249,8 @@ class _ProfileViewState extends State<_ProfileView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                    const Icon(Icons.error_outline,
+                        size: 48, color: AppColors.danger),
                     const SizedBox(height: 16),
                     Text(
                       state.message,
@@ -205,7 +261,7 @@ class _ProfileViewState extends State<_ProfileView> {
                     ElevatedButton.icon(
                       onPressed: () => context.read<ProfileCubit>().load(),
                       icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Retry'),
+                      label: Text(l10n?.tryAgain ?? 'Retry'),
                     ),
                   ],
                 ),
@@ -249,7 +305,8 @@ class _ProfileViewState extends State<_ProfileView> {
                                     )
                                   : hasCurrentAvatar
                                       ? DecorationImage(
-                                          image: NetworkImage(_currentAvatarUrl!),
+                                          image:
+                                              NetworkImage(_currentAvatarUrl!),
                                           fit: BoxFit.cover,
                                         )
                                       : null,
@@ -276,7 +333,8 @@ class _ProfileViewState extends State<_ProfileView> {
                                 color: Theme.of(context).colorScheme.primary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                   width: 2,
                                 ),
                               ),
@@ -295,9 +353,9 @@ class _ProfileViewState extends State<_ProfileView> {
                   Center(
                     child: TextButton(
                       onPressed: _pickAvatar,
-                      child: const Text(
-                        'Change profile picture',
-                        style: TextStyle(fontSize: 12),
+                      child: Text(
+                        l10n?.changeProfilePicture ?? 'Change profile picture',
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
                   ),
@@ -306,12 +364,12 @@ class _ProfileViewState extends State<_ProfileView> {
                   // ── Full Name ─────────────────────────────────────────────
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full name',
-                      prefixIcon: Icon(Icons.person_outline, size: 20),
+                    decoration: InputDecoration(
+                      labelText: l10n?.fullName ?? 'Full name',
+                      prefixIcon: const Icon(Icons.person_outline, size: 20),
                     ),
                     validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Enter your full name'
+                        ? (l10n?.enterFullName ?? 'Enter your full name')
                         : null,
                   ),
                   const SizedBox(height: 14),
@@ -321,14 +379,15 @@ class _ProfileViewState extends State<_ProfileView> {
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      labelText: 'Phone number',
+                      labelText: l10n?.phoneNumberLabel ?? 'Phone number',
                       hintText: '7XX XXX XXX',
                       prefixIcon: Padding(
                         padding: const EdgeInsets.only(left: 4, right: 8),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
+                            Text(_selectedCountry.flag,
+                                style: const TextStyle(fontSize: 20)),
                             const SizedBox(width: 5),
                             Text(
                               _selectedCountry.dialCode,
@@ -350,9 +409,15 @@ class _ProfileViewState extends State<_ProfileView> {
                     initialValue: _district,
                     decoration: InputDecoration(
                       labelText: _selectedCountry.regionsLabel,
-                      prefixIcon: const Icon(Icons.location_on_outlined, size: 20),
+                      prefixIcon:
+                          const Icon(Icons.location_on_outlined, size: 20),
                     ),
-                    hint: Text('Select ${_selectedCountry.regionsLabel.toLowerCase()}'),
+                    hint: Text(
+                      l10n?.selectRegionLabel(
+                            _selectedCountry.regionsLabel.toLowerCase(),
+                          ) ??
+                          'Select ${_selectedCountry.regionsLabel.toLowerCase()}',
+                    ),
                     items: _selectedCountry.regions
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
@@ -363,14 +428,17 @@ class _ProfileViewState extends State<_ProfileView> {
                   // ── Income Type Dropdown ──────────────────────────────────
                   DropdownButtonFormField<String>(
                     initialValue: _employmentType,
-                    decoration: const InputDecoration(
-                      labelText: 'Income type',
-                      prefixIcon: Icon(Icons.work_outline_rounded, size: 20),
+                    decoration: InputDecoration(
+                      labelText: l10n?.incomeTypeLabel ?? 'Income type',
+                      prefixIcon:
+                          const Icon(Icons.work_outline_rounded, size: 20),
                     ),
-                    hint: const Text('Select income type'),
+                    hint: Text(l10n?.selectIncomeType ?? 'Select income type'),
                     items: _employmentTypes
-                        .map((e) =>
-                            DropdownMenuItem(value: e.$1, child: Text(e.$2)))
+                        .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(_employmentLabel(l10n, e)),
+                            ))
                         .toList(),
                     onChanged: (v) => setState(() => _employmentType = v),
                   ),
@@ -379,9 +447,10 @@ class _ProfileViewState extends State<_ProfileView> {
                   // ── Employer Name ──────────────────────────────────────────
                   TextFormField(
                     controller: _employerController,
-                    decoration: const InputDecoration(
-                      labelText: 'Employer / Business name (optional)',
-                      prefixIcon: Icon(Icons.business_outlined, size: 20),
+                    decoration: InputDecoration(
+                      labelText: l10n?.employerBusinessOptionalLabel ??
+                          'Employer / Business name (optional)',
+                      prefixIcon: const Icon(Icons.business_outlined, size: 20),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -391,27 +460,39 @@ class _ProfileViewState extends State<_ProfileView> {
                     controller: _incomeController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Monthly income (${_selectedCountry.currency})',
+                      labelText: l10n?.monthlyIncomeWithCurrency(
+                            _selectedCountry.currency,
+                          ) ??
+                          'Monthly income (${_selectedCountry.currency})',
                       hintText: 'e.g. 1,500,000',
-                      prefixIcon: const Icon(Icons.currency_exchange_outlined, size: 20),
+                      prefixIcon: const Icon(Icons.currency_exchange_outlined,
+                          size: 20),
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   // ── Bank & Professional Tag Section ───────────────────────
-                  const Text(
-                    'Bank & Professional Tag',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  Text(
+                    l10n?.bankProfessionalTagLabel ?? 'Bank & Professional Tag',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
                   // Preferred / Deposit Bank Field
                   TextFormField(
                     controller: _preferredBankController,
-                    decoration: const InputDecoration(
-                      labelText: 'Preferred or deposit bank (optional)',
-                      hintText: 'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB',
-                      prefixIcon: Icon(Icons.account_balance_outlined, size: 20),
+                    decoration: InputDecoration(
+                      labelText: l10n?.preferredDepositBankLabel ??
+                          'Preferred or deposit bank (optional)',
+                      hintText: l10n?.preferredDepositBankHint ??
+                          'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB',
+                      prefixIcon: const Icon(
+                        Icons.account_balance_outlined,
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -419,24 +500,35 @@ class _ProfileViewState extends State<_ProfileView> {
                   // Institution Type Dropdown
                   DropdownButtonFormField<String>(
                     initialValue: _institutionType ?? '',
-                    decoration: const InputDecoration(
-                      labelText: 'Account represents',
-                      prefixIcon: Icon(Icons.business_center_outlined, size: 20),
+                    decoration: InputDecoration(
+                      labelText:
+                          l10n?.accountRepresentsLabel ?? 'Account represents',
+                      prefixIcon: const Icon(
+                        Icons.business_center_outlined,
+                        size: 20,
+                      ),
                     ),
                     items: _institutionOptions
-                        .map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2)))
+                        .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(_institutionLabel(l10n, e)),
+                            ))
                         .toList(),
-                    onChanged: (v) => setState(
-                        () => _institutionType = (v == null || v.isEmpty) ? null : v),
+                    onChanged: (v) => setState(() =>
+                        _institutionType = (v == null || v.isEmpty) ? null : v),
                   ),
                   const SizedBox(height: 8),
 
                   // Is Bank Agent Switch
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('I am a bank loan agent'),
-                    subtitle: const Text(
-                        'Shows a bank-agent tag to Pro users seeking bank loans.'),
+                    title: Text(
+                      l10n?.bankLoanAgentLabel ?? 'I am a bank loan agent',
+                    ),
+                    subtitle: Text(
+                      l10n?.bankLoanAgentSubtitle ??
+                          'Shows a bank-agent tag to Pro users seeking bank loans.',
+                    ),
                     value: _isBankAgent,
                     onChanged: (v) => setState(() => _isBankAgent = v),
                   ),
@@ -444,9 +536,14 @@ class _ProfileViewState extends State<_ProfileView> {
                   // Show Professional Tag Switch
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Show my professional tag'),
-                    subtitle: const Text(
-                        'Turn off to hide bank, forex company, SACCO, or agent labels on offers.'),
+                    title: Text(
+                      l10n?.showProfessionalTagLabel ??
+                          'Show my professional tag',
+                    ),
+                    subtitle: Text(
+                      l10n?.showProfessionalTagSubtitle ??
+                          'Turn off to hide bank, forex company, SACCO, or agent labels on offers.',
+                    ),
                     value: _showProfessionalTag,
                     onChanged: (v) => setState(() => _showProfessionalTag = v),
                   ),
@@ -454,7 +551,7 @@ class _ProfileViewState extends State<_ProfileView> {
 
                   // ── Save Button ────────────────────────────────────────────
                   ElevatedButton(
-                    onPressed: isSaving
+                    onPressed: isSaving || !_isReadyToSave
                         ? null
                         : () async {
                             if (!_formKey.currentState!.validate()) return;
@@ -475,7 +572,12 @@ class _ProfileViewState extends State<_ProfileView> {
                                 if (mounted) {
                                   messenger.showSnackBar(
                                     SnackBar(
-                                      content: Text('Avatar upload failed: $uploadErr'),
+                                      content: Text(
+                                        l10n?.avatarUploadFailed(
+                                              uploadErr.toString(),
+                                            ) ??
+                                            'Avatar upload failed: $uploadErr',
+                                      ),
                                       backgroundColor: AppColors.danger,
                                     ),
                                   );
@@ -502,11 +604,10 @@ class _ProfileViewState extends State<_ProfileView> {
                                         ? null
                                         : _employerController.text.trim(),
                                 monthlyIncome: monthlyIncome,
-                                preferredBank: _preferredBankController.text
-                                        .trim()
-                                        .isEmpty
-                                    ? null
-                                    : _preferredBankController.text.trim(),
+                                preferredBank:
+                                    _preferredBankController.text.trim().isEmpty
+                                        ? null
+                                        : _preferredBankController.text.trim(),
                                 institutionType: _institutionType ?? '',
                                 isBankAgent: _isBankAgent,
                                 showProfessionalTag: _showProfessionalTag,
@@ -519,7 +620,7 @@ class _ProfileViewState extends State<_ProfileView> {
                             width: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : const Text('Save changes'),
+                        : Text(l10n?.saveChanges ?? 'Save changes'),
                   ),
                 ],
               ),

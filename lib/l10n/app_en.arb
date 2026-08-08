@@ -198,7 +198,52 @@
   "signOutConfirm": "Are you sure you want to sign out of your account?",
   "cancel": "Cancel",
   "profileUpdated": "Profile updated.",
+  "profileSaved": "Profile saved.",
   "editProfile": "Edit Profile",
+  "changeProfilePicture": "Change profile picture",
+  "phoneNumberLabel": "Phone number",
+  "selectRegionLabel": "Select {label}",
+  "@selectRegionLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "incomeTypeLabel": "Income type",
+  "selectIncomeType": "Select income type",
+  "employerBusinessOptionalLabel": "Employer / Business name (optional)",
+  "monthlyIncomeWithCurrency": "Monthly income ({currency})",
+  "@monthlyIncomeWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "bankProfessionalTagLabel": "Bank & Professional Tag",
+  "preferredDepositBankLabel": "Preferred or deposit bank (optional)",
+  "preferredDepositBankHint": "e.g. Equity Bank, Bank of Kigali, Stanbic, KCB",
+  "accountRepresentsLabel": "Account represents",
+  "individualPersonalAccountLabel": "Individual / Personal account",
+  "bankLabel": "Bank",
+  "forexExchangeCompanyLabel": "Forex exchange company",
+  "saccoLabel": "SACCO",
+  "companyLabel": "Company",
+  "bankLoanAgentLabel": "I am a bank loan agent",
+  "bankLoanAgentSubtitle": "Shows a bank-agent tag to Pro users seeking bank loans.",
+  "showProfessionalTagLabel": "Show my professional tag",
+  "showProfessionalTagSubtitle": "Turn off to hide bank, forex company, SACCO, or agent labels on offers.",
+  "saveChanges": "Save changes",
+  "enterFullName": "Enter your full name",
+  "avatarUploadFailed": "Avatar upload failed: {error}",
+  "@avatarUploadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "couldNotSelectImage": "Could not select image: {error}",
+  "@couldNotSelectImage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "identityVerification": "Identity Verification",
   "security": "Security",
   "notifications": "Notifications",
@@ -581,6 +626,67 @@
   "amountAvailableLabel": "Amount available",
   "settlementTermsLabel": "Settlement terms",
   "activeListingLabel": "Active listing",
+  "fundedLabel": "Funded",
+  "userVerificationStatus": "User verification status: {status}",
+  "@userVerificationStatus": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "interestPercent": "{value}% interest",
+  "@interestPercent": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "proposedRepaymentPlanLabel": "Proposed repayment plan",
+  "yourOfferLabel": "Your offer",
+  "lenderNumberLabel": "Lender #{number}",
+  "@lenderNumberLabel": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "lenderTextLabel": "Lender #{id}",
+  "@lenderTextLabel": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "fullOfferLabel": "Full offer",
+  "partialOfferLabel": "Partial · {coverage}%",
+  "@partialOfferLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "vsAskLabel": "{value} vs ask",
+  "@vsAskLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "lenderNotesLabel": "Lender notes",
+  "acceptOfferLabel": "Accept offer",
+  "fullCoverageOfferLabel": "Full coverage offer",
+  "partialCoverageLabel": "Partial coverage · {coverage}%",
+  "@partialCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "totalPayablePaymentsLabel": "Total payable ({periods} payments)",
+  "@totalPayablePaymentsLabel": {
+    "placeholders": {
+      "periods": { "type": "int" }
+    }
+  },
+  "borrowingCostLabel": "Borrowing cost: {amount}",
+  "@borrowingCostLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
   "flutterwaveCheckoutTitle": "Flutterwave Checkout",
   "orderSummary": "Order Summary",
   "paymentMethod": "Payment Method",
