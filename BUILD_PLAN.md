@@ -455,6 +455,7 @@ Three pill tabs: `All` (default), `Loans` 🌾, `Forex` 🔀. Selecting a tab sw
 | Summary | `purpose`, truncated | |
 | Progress bar | Derived from `number_of_offers` × average offer size vs. `requested_amount` | Server-computed `funded_pct` field on `v_loan_listings`, not client-computed |
 | Countdown | `expires_at` − now, rendered "Xd left" | |
+| Offer countdown | `loan_offers.expires_at` − now on participant-visible offer rows | Requires `get_public_listing_offers` to return `expires_at` |
 | Trust badges | `v_trust_profile_public` for `owner_id` | Renders `⭐ No reviews yet` / `💎 0 completed` at zero-state |
 | Watchlist star | `watchlist` membership for current user | |
 
@@ -595,8 +596,9 @@ Introduces locked bidding, the Selective Transparency Model, and the Trust & Rep
 
 ```
 REQUEST POSTED (locked on publish)          → amount, duration, purpose, [PRO] suggested interest/late fee/schedule
-LISTING DETAIL VIEWED (tiered)              → everyone: funded %, offer count, coverage tier, owner trust badges
-                                               owner/participants only: exact offer detail + offer-maker trust badges
+LISTING DETAIL VIEWED (tiered)              → everyone: broad listing context
+                                               owner only: offer count/coverage and full bid book
+                                               owner/participants only: exact offer detail + offer expiry countdown + offer-maker trust badges
 OFFER SUBMITTED (locked on submit)          → amount, interest rate, late fee, schedule → unlocks full detail for offer-maker
 CONTRACT GENERATED (on acceptance)          → final terms locked, contact revealed to both parties
 DEAL COMPLETES (off-platform)               → either party may review the other, feeding global trust aggregates
@@ -853,11 +855,13 @@ Full model in the README's "Foreign Exchange (Forex)" section and this document'
 5. **Friendly errors** — `parseSupabaseError()` everywhere; raw trigger codes never reach the user
 6. **Append-only audit log** — `audit_logs` never writable via UPDATE or DELETE
 7. **No stored role** — the only role is `is_admin`; all marketplace capability comes from `subscription_plan`, applied identically to Loans and Forex
-8. **Selective transparency** — exact offer-level terms visible only to the request owner and to offer-makers with a live offer on that request; everyone else sees only the aggregate coverage tier and offer count, enforced via RLS/RPC
-9. **Trust signals are public, platform-scoped, country-agnostic, and module-agnostic** — reflecting a user's full on-platform history across all markets and both projects; never implying knowledge of off-platform repayment or settlement behavior
-10. **Country is explicit, indexed, and locked-at-creation** — `profiles.country` is the source of truth; `loan_requests.country`/`forex_requests.country` are copied and frozen at insert; offers never store their own country
-11. **Two projects, one platform** — Loans and Forex share auth, trust, contracts, and contact-reveal, but keep separate request/offer tables, separate create-flows, and separate listing-card designs. Neither module gets its own subscription plan, price point, or account type
-12. **Currency gating is three independent flags, not one** — `system_settings.allow_foreign_currency_loans` (loans in a non-local currency), free USD billing (subscriptions, no gate), and `currencies.forex_trading_enabled` (forex pairs, the highest-scrutiny gate, defaults off for every currency including market-local ones)
+8. **Selective transparency** — exact offer-level terms visible only to the request owner and to offer-makers with a live offer on that request; offer count and coverage are borrower-only on listing detail, enforced via RLS/RPC/view masking
+9. **Input-gated actions** — create/publish/send buttons stay disabled until required inputs for the current step are present; validators still provide detailed messages after interaction
+10. **Notification deep links use current app routes only** — loan notifications go to `/marketplace/:requestId`, forex notifications go to `/forex/:requestId`; removed legacy contract routes are not emitted by the client
+11. **Trust signals are public, platform-scoped, country-agnostic, and module-agnostic** — reflecting a user's full on-platform history across all markets and both projects; never implying knowledge of off-platform repayment or settlement behavior
+12. **Country is explicit, indexed, and locked-at-creation** — `profiles.country` is the source of truth; `loan_requests.country`/`forex_requests.country` are copied and frozen at insert; offers never store their own country
+13. **Two projects, one platform** — Loans and Forex share auth, trust, contracts, and contact-reveal, but keep separate request/offer tables, separate create-flows, and separate listing-card designs. Neither module gets its own subscription plan, price point, or account type
+14. **Currency gating is three independent flags, not one** — `system_settings.allow_foreign_currency_loans` (loans in a non-local currency), free USD billing (subscriptions, no gate), and `currencies.forex_trading_enabled` (forex pairs, the highest-scrutiny gate, defaults off for every currency including market-local ones)
 13. **Regulatory review is per-market and per-module, never inherited** — a market's lending clearance (`countries.is_active`) never implies its forex clearance (`countries.forex_enabled`); one market's clearance never implies another's, and this applies with particular force across the Uganda/Kenya/Tanzania/Rwanda vs. Nigeria/South Africa/Egypt boundary, given how different these markets' regulatory and payment landscapes are from each other
 
 ---

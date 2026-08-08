@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../domain/models/my_listing.dart';
 
@@ -21,6 +22,7 @@ class MyListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: listing.isContracted ? onViewAgreement : onTap,
       child: Container(
@@ -79,14 +81,15 @@ class MyListingCard extends StatelessWidget {
                       size: 12, color: AppColors.success),
                   const SizedBox(width: 3),
                   Text(
-                    '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
+                    l10n?.listingOfferCount(listing.numberOfOffers) ??
+                        '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
                     style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AppColors.success),
                   ),
                 ] else
-                  Text('No offers yet',
+                  Text(l10n?.noOffersYet ?? 'No offers yet',
                       style: Theme.of(context).textTheme.bodySmall),
                 const Spacer(),
                 Text(
@@ -132,7 +135,7 @@ class MyListingCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       textStyle: const TextStyle(fontSize: 11),
                     ),
-                    child: const Text('View offers'),
+                    child: Text(l10n?.viewOffers ?? 'View offers'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -146,7 +149,7 @@ class MyListingCard extends StatelessWidget {
                       side: const BorderSide(color: AppColors.danger),
                       textStyle: const TextStyle(fontSize: 11),
                     ),
-                    child: const Text('Cancel'),
+                    child: Text(l10n?.cancel ?? 'Cancel'),
                   ),
                 ),
               ]),
@@ -165,7 +168,7 @@ class MyListingCard extends StatelessWidget {
                     side: const BorderSide(color: AppColors.success),
                     textStyle: const TextStyle(fontSize: 11),
                   ),
-                  child: const Text('View Contract'),
+                  child: Text(l10n?.viewContract ?? 'View contract'),
                 ),
               ),
             ],

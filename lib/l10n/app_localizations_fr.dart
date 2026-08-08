@@ -332,6 +332,59 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contractNotGenerated => 'Contrat pas encore généré.';
 
   @override
+  String get viewOffers => 'Voir les offres';
+
+  @override
+  String get viewContract => 'Voir le contrat';
+
+  @override
+  String get viewListing => 'Voir l\'annonce';
+
+  @override
+  String get offeredAmountLabel => 'Montant proposé';
+
+  @override
+  String get statusLabel => 'Statut';
+
+  @override
+  String get interestLabel => 'Intérêt';
+
+  @override
+  String get lateFeeLabel => 'Frais de retard';
+
+  @override
+  String lateFeePerMissedInstallment(String value) {
+    return '$value par échéance manquée';
+  }
+
+  @override
+  String get repaymentLabel => 'Remboursement';
+
+  @override
+  String get totalPayableLabel => 'Total à payer';
+
+  @override
+  String sentDateLabel(String date) {
+    return 'Envoyée le $date';
+  }
+
+  @override
+  String errorLoadingContract(String error) {
+    return 'Erreur lors du chargement du contrat : $error';
+  }
+
+  @override
+  String listingOfferCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'offres',
+      one: 'offre',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
   String get accountTitle => 'Compte';
 
   @override
@@ -369,6 +422,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get notifications => 'Notifications';
+
+  @override
+  String get markAllRead => 'Tout marquer comme lu';
+
+  @override
+  String get noNotificationsYet => 'Aucune notification pour le moment';
+
+  @override
+  String get noNotificationsSubtitle =>
+      'Vous serez averti ici lorsque des offres arrivent, que les taux changent ou que les contrats sont prêts.';
+
+  @override
+  String get todayLabel => 'AUJOURD\'HUI';
+
+  @override
+  String get yesterdayLabel => 'HIER';
+
+  @override
+  String get earlierLabel => 'PLUS TÔT';
+
+  @override
+  String get tapToView => 'Appuyer pour voir';
+
+  @override
+  String get justNow => 'à l\'instant';
 
   @override
   String get statListings => 'Annonces';
@@ -1191,6 +1269,50 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get offerSubmittedReviewNotice =>
       'Offre envoyée. Vous pouvez la consulter ci-dessus.';
+
+  @override
+  String offerCountdownLabel(String time) {
+    return '$time restantes';
+  }
+
+  @override
+  String get expiredLabel => 'Expiré';
+
+  @override
+  String get offerSentSuccessfully => 'Offre envoyée avec succès.';
+
+  @override
+  String get interestRateLabel => 'Taux d\'intérêt (%)';
+
+  @override
+  String get latePaymentFeeLabel => 'Frais de retard (%)';
+
+  @override
+  String get repaymentScheduleLabel => 'Calendrier de remboursement';
+
+  @override
+  String get monthly => 'Mensuel';
+
+  @override
+  String get weekly => 'Hebdomadaire';
+
+  @override
+  String get oneTimePayment => 'Paiement unique';
+
+  @override
+  String installmentAmountLabel(String currency) {
+    return 'Montant de l\'échéance ($currency)';
+  }
+
+  @override
+  String get additionalExpectationsLabel => 'Attentes supplémentaires';
+
+  @override
+  String get optionalBorrowerNotesHint =>
+      'Notes facultatives pour l\'emprunteur';
+
+  @override
+  String get sendOffer => 'Envoyer l\'offre';
 
   @override
   String get couldNotSendOffer => 'Impossible d\'envoyer l\'offre.';

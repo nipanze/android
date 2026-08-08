@@ -155,6 +155,39 @@
   "keepIt": "Bika",
   "cancelListingBtn": "Kuraho inguzanyo",
   "contractNotGenerated": "Amasezerano ntiyateguwe.",
+  "viewOffers": "Reba ibiciro",
+  "viewContract": "Reba amasezerano",
+  "viewListing": "Reba ubusabe",
+  "offeredAmountLabel": "Amafaranga yatanzwe",
+  "statusLabel": "Imiterere",
+  "interestLabel": "Inyungu",
+  "lateFeeLabel": "Amafaranga yo gukererwa",
+  "lateFeePerMissedInstallment": "{value} kuri buri gice cyakererewe",
+  "@lateFeePerMissedInstallment": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "repaymentLabel": "Kwishyura",
+  "totalPayableLabel": "Igiteranyo cyo kwishyura",
+  "sentDateLabel": "Byoherejwe {date}",
+  "@sentDateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "errorLoadingContract": "Ikosa mu gufungura amasezerano: {error}",
+  "@errorLoadingContract": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "listingOfferCount": "{count} {count, plural, one {igiciro} other {ibiciro}}",
+  "@listingOfferCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "accountTitle": "Konti",
   "settingsTitle": "Igenamiterere",
@@ -169,6 +202,14 @@
   "identityVerification": "Kwemeza Indangamuntu",
   "security": "Umutekano",
   "notifications": "Amatangazo",
+  "markAllRead": "Shyira byose nk'ibyasomwe",
+  "noNotificationsYet": "Nta matangazo arahari",
+  "noNotificationsSubtitle": "Uzabona amatangazo hano igihe ibiciro bigeze, ibipimo bihindutse, cyangwa amasezerano aboneka.",
+  "todayLabel": "UYU MUNSI",
+  "yesterdayLabel": "EJO HASHIZE",
+  "earlierLabel": "MBERE",
+  "tapToView": "Kanda urebe",
+  "justNow": "ubu",
   "statListings": "Inguzanyo",
   "statListingsSubtitle": "Izimusaba zatangiwe",
   "statOffers": "Ibirego",
@@ -435,6 +476,29 @@
   "estimatedValueLabel": "Agaciro kagereranyijwe",
   "locationLabel": "Ahantu",
   "offerSubmittedReviewNotice": "Igiciro cyoherejwe. Ushobora kukireba hejuru.",
+  "offerCountdownLabel": "Hasigaye {time}",
+  "@offerCountdownLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "expiredLabel": "Byarangiye",
+  "offerSentSuccessfully": "Igiciro cyoherejwe neza.",
+  "interestRateLabel": "Inyungu (%)",
+  "latePaymentFeeLabel": "Amafaranga yo gukererwa (%)",
+  "repaymentScheduleLabel": "Gahunda yo kwishyura",
+  "monthly": "Buri kwezi",
+  "weekly": "Buri cyumweru",
+  "oneTimePayment": "Kwishyura rimwe",
+  "installmentAmountLabel": "Amafaranga ya buri gice ({currency})",
+  "@installmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "additionalExpectationsLabel": "Ibindi wifuza",
+  "optionalBorrowerNotesHint": "Ibisobanuro bitari itegeko ku usaba inguzanyo",
+  "sendOffer": "Ohereza igiciro",
   "couldNotSendOffer": "Ntibyashobotse kohereza igiciro.",
   "rateOfferedLabel": "Igiciro gitangwa",
   "amountAvailableLabel": "Amafaranga aboneka",

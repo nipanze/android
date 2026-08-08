@@ -28,8 +28,8 @@ class AppNotification extends Equatable {
     required this.isRead,
     required this.createdAt,
     this.requestId,
-    this.contractId,
-    this.bidId,
+    this.forexRequestId,
+    this.offerId,
     this.data,
   });
 
@@ -41,16 +41,15 @@ class AppNotification extends Equatable {
   final bool isRead;
   final DateTime createdAt;
   final String? requestId;
-  final String? contractId;
-  final String? bidId;
+  final String? forexRequestId;
+  final String? offerId;
   final Map<String, dynamic>? data;
 
-  bool get hasDeepLink =>
-      requestId != null || contractId != null || bidId != null;
+  bool get hasDeepLink => deepLinkRoute != null;
 
   /// Deep link route — used to navigate on tap.
   String? get deepLinkRoute {
-    if (contractId != null) return '/contracts/$contractId';
+    if (forexRequestId != null) return '/forex/$forexRequestId';
     if (requestId != null) return '/marketplace/$requestId';
     return null;
   }
@@ -66,8 +65,8 @@ class AppNotification extends Equatable {
       createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
           DateTime.now(),
       requestId: map['request_id'] as String?,
-      contractId: map['contract_id'] as String?,
-      bidId: map['bid_id'] as String?,
+      forexRequestId: map['forex_request_id'] as String?,
+      offerId: (map['offer_id'] ?? map['forex_offer_id']) as String?,
       data: map['data'] != null
           ? Map<String, dynamic>.from(map['data'] as Map)
           : null,

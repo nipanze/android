@@ -327,6 +327,59 @@ class AppLocalizationsAr extends AppLocalizations {
   String get contractNotGenerated => 'لم يتم إنشاء العقد بعد.';
 
   @override
+  String get viewOffers => 'عرض العروض';
+
+  @override
+  String get viewContract => 'عرض العقد';
+
+  @override
+  String get viewListing => 'عرض الإعلان';
+
+  @override
+  String get offeredAmountLabel => 'المبلغ المعروض';
+
+  @override
+  String get statusLabel => 'الحالة';
+
+  @override
+  String get interestLabel => 'الفائدة';
+
+  @override
+  String get lateFeeLabel => 'رسوم التأخير';
+
+  @override
+  String lateFeePerMissedInstallment(String value) {
+    return '$value لكل قسط فائت';
+  }
+
+  @override
+  String get repaymentLabel => 'السداد';
+
+  @override
+  String get totalPayableLabel => 'إجمالي المستحق';
+
+  @override
+  String sentDateLabel(String date) {
+    return 'أُرسل في $date';
+  }
+
+  @override
+  String errorLoadingContract(String error) {
+    return 'خطأ في تحميل العقد: $error';
+  }
+
+  @override
+  String listingOfferCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'عروض',
+      one: 'عرض',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
   String get accountTitle => 'الحساب';
 
   @override
@@ -364,6 +417,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notifications => 'الإشعارات';
+
+  @override
+  String get markAllRead => 'تعليم الكل كمقروء';
+
+  @override
+  String get noNotificationsYet => 'لا توجد إشعارات حتى الآن';
+
+  @override
+  String get noNotificationsSubtitle =>
+      'ستظهر الإشعارات هنا عند وصول العروض أو تغير الأسعار أو جاهزية العقود.';
+
+  @override
+  String get todayLabel => 'اليوم';
+
+  @override
+  String get yesterdayLabel => 'أمس';
+
+  @override
+  String get earlierLabel => 'سابقاً';
+
+  @override
+  String get tapToView => 'اضغط للعرض';
+
+  @override
+  String get justNow => 'الآن';
 
   @override
   String get statListings => 'الإعلانات';
@@ -1160,6 +1238,49 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get offerSubmittedReviewNotice =>
       'تم إرسال العرض. يمكنك مراجعته أعلاه.';
+
+  @override
+  String offerCountdownLabel(String time) {
+    return 'متبقٍ $time';
+  }
+
+  @override
+  String get expiredLabel => 'منتهي';
+
+  @override
+  String get offerSentSuccessfully => 'تم إرسال العرض بنجاح.';
+
+  @override
+  String get interestRateLabel => 'معدل الفائدة (%)';
+
+  @override
+  String get latePaymentFeeLabel => 'رسوم التأخير (%)';
+
+  @override
+  String get repaymentScheduleLabel => 'جدول السداد';
+
+  @override
+  String get monthly => 'شهرياً';
+
+  @override
+  String get weekly => 'أسبوعياً';
+
+  @override
+  String get oneTimePayment => 'دفعة واحدة';
+
+  @override
+  String installmentAmountLabel(String currency) {
+    return 'قيمة القسط ($currency)';
+  }
+
+  @override
+  String get additionalExpectationsLabel => 'توقعات إضافية';
+
+  @override
+  String get optionalBorrowerNotesHint => 'ملاحظات اختيارية للمقترض';
+
+  @override
+  String get sendOffer => 'إرسال العرض';
 
   @override
   String get couldNotSendOffer => 'تعذّر إرسال العرض.';

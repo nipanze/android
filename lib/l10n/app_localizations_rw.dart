@@ -330,6 +330,59 @@ class AppLocalizationsRw extends AppLocalizations {
   String get contractNotGenerated => 'Amasezerano ntiyateguwe.';
 
   @override
+  String get viewOffers => 'Reba ibiciro';
+
+  @override
+  String get viewContract => 'Reba amasezerano';
+
+  @override
+  String get viewListing => 'Reba ubusabe';
+
+  @override
+  String get offeredAmountLabel => 'Amafaranga yatanzwe';
+
+  @override
+  String get statusLabel => 'Imiterere';
+
+  @override
+  String get interestLabel => 'Inyungu';
+
+  @override
+  String get lateFeeLabel => 'Amafaranga yo gukererwa';
+
+  @override
+  String lateFeePerMissedInstallment(String value) {
+    return '$value kuri buri gice cyakererewe';
+  }
+
+  @override
+  String get repaymentLabel => 'Kwishyura';
+
+  @override
+  String get totalPayableLabel => 'Igiteranyo cyo kwishyura';
+
+  @override
+  String sentDateLabel(String date) {
+    return 'Byoherejwe $date';
+  }
+
+  @override
+  String errorLoadingContract(String error) {
+    return 'Ikosa mu gufungura amasezerano: $error';
+  }
+
+  @override
+  String listingOfferCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ibiciro',
+      one: 'igiciro',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
   String get accountTitle => 'Konti';
 
   @override
@@ -367,6 +420,31 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get notifications => 'Amatangazo';
+
+  @override
+  String get markAllRead => 'Shyira byose nk\'ibyasomwe';
+
+  @override
+  String get noNotificationsYet => 'Nta matangazo arahari';
+
+  @override
+  String get noNotificationsSubtitle =>
+      'Uzabona amatangazo hano igihe ibiciro bigeze, ibipimo bihindutse, cyangwa amasezerano aboneka.';
+
+  @override
+  String get todayLabel => 'UYU MUNSI';
+
+  @override
+  String get yesterdayLabel => 'EJO HASHIZE';
+
+  @override
+  String get earlierLabel => 'MBERE';
+
+  @override
+  String get tapToView => 'Kanda urebe';
+
+  @override
+  String get justNow => 'ubu';
 
   @override
   String get statListings => 'Inguzanyo';
@@ -1176,6 +1254,50 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get offerSubmittedReviewNotice =>
       'Igiciro cyoherejwe. Ushobora kukireba hejuru.';
+
+  @override
+  String offerCountdownLabel(String time) {
+    return 'Hasigaye $time';
+  }
+
+  @override
+  String get expiredLabel => 'Byarangiye';
+
+  @override
+  String get offerSentSuccessfully => 'Igiciro cyoherejwe neza.';
+
+  @override
+  String get interestRateLabel => 'Inyungu (%)';
+
+  @override
+  String get latePaymentFeeLabel => 'Amafaranga yo gukererwa (%)';
+
+  @override
+  String get repaymentScheduleLabel => 'Gahunda yo kwishyura';
+
+  @override
+  String get monthly => 'Buri kwezi';
+
+  @override
+  String get weekly => 'Buri cyumweru';
+
+  @override
+  String get oneTimePayment => 'Kwishyura rimwe';
+
+  @override
+  String installmentAmountLabel(String currency) {
+    return 'Amafaranga ya buri gice ($currency)';
+  }
+
+  @override
+  String get additionalExpectationsLabel => 'Ibindi wifuza';
+
+  @override
+  String get optionalBorrowerNotesHint =>
+      'Ibisobanuro bitari itegeko ku usaba inguzanyo';
+
+  @override
+  String get sendOffer => 'Ohereza igiciro';
 
   @override
   String get couldNotSendOffer => 'Ntibyashobotse kohereza igiciro.';

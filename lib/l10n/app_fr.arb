@@ -155,6 +155,39 @@
   "keepIt": "Garder",
   "cancelListingBtn": "Annuler l'annonce",
   "contractNotGenerated": "Contrat pas encore généré.",
+  "viewOffers": "Voir les offres",
+  "viewContract": "Voir le contrat",
+  "viewListing": "Voir l'annonce",
+  "offeredAmountLabel": "Montant proposé",
+  "statusLabel": "Statut",
+  "interestLabel": "Intérêt",
+  "lateFeeLabel": "Frais de retard",
+  "lateFeePerMissedInstallment": "{value} par échéance manquée",
+  "@lateFeePerMissedInstallment": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "repaymentLabel": "Remboursement",
+  "totalPayableLabel": "Total à payer",
+  "sentDateLabel": "Envoyée le {date}",
+  "@sentDateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "errorLoadingContract": "Erreur lors du chargement du contrat : {error}",
+  "@errorLoadingContract": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "listingOfferCount": "{count} {count, plural, one {offre} other {offres}}",
+  "@listingOfferCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "accountTitle": "Compte",
   "settingsTitle": "Paramètres",
@@ -169,6 +202,14 @@
   "identityVerification": "Vérification d'identité",
   "security": "Sécurité",
   "notifications": "Notifications",
+  "markAllRead": "Tout marquer comme lu",
+  "noNotificationsYet": "Aucune notification pour le moment",
+  "noNotificationsSubtitle": "Vous serez averti ici lorsque des offres arrivent, que les taux changent ou que les contrats sont prêts.",
+  "todayLabel": "AUJOURD'HUI",
+  "yesterdayLabel": "HIER",
+  "earlierLabel": "PLUS TÔT",
+  "tapToView": "Appuyer pour voir",
+  "justNow": "à l'instant",
   "statListings": "Annonces",
   "statListingsSubtitle": "Demandes publiées",
   "statOffers": "Offres",
@@ -435,6 +476,29 @@
   "estimatedValueLabel": "Valeur estimée",
   "locationLabel": "Lieu",
   "offerSubmittedReviewNotice": "Offre envoyée. Vous pouvez la consulter ci-dessus.",
+  "offerCountdownLabel": "{time} restantes",
+  "@offerCountdownLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "expiredLabel": "Expiré",
+  "offerSentSuccessfully": "Offre envoyée avec succès.",
+  "interestRateLabel": "Taux d'intérêt (%)",
+  "latePaymentFeeLabel": "Frais de retard (%)",
+  "repaymentScheduleLabel": "Calendrier de remboursement",
+  "monthly": "Mensuel",
+  "weekly": "Hebdomadaire",
+  "oneTimePayment": "Paiement unique",
+  "installmentAmountLabel": "Montant de l'échéance ({currency})",
+  "@installmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "additionalExpectationsLabel": "Attentes supplémentaires",
+  "optionalBorrowerNotesHint": "Notes facultatives pour l'emprunteur",
+  "sendOffer": "Envoyer l'offre",
   "couldNotSendOffer": "Impossible d'envoyer l'offre.",
   "rateOfferedLabel": "Taux proposé",
   "amountAvailableLabel": "Montant disponible",

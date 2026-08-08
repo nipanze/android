@@ -680,6 +680,84 @@ abstract class AppLocalizations {
   /// **'Contract not yet generated.'**
   String get contractNotGenerated;
 
+  /// No description provided for @viewOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'View offers'**
+  String get viewOffers;
+
+  /// No description provided for @viewContract.
+  ///
+  /// In en, this message translates to:
+  /// **'View contract'**
+  String get viewContract;
+
+  /// No description provided for @viewListing.
+  ///
+  /// In en, this message translates to:
+  /// **'View listing'**
+  String get viewListing;
+
+  /// No description provided for @offeredAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Offered amount'**
+  String get offeredAmountLabel;
+
+  /// No description provided for @statusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get statusLabel;
+
+  /// No description provided for @interestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest'**
+  String get interestLabel;
+
+  /// No description provided for @lateFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Late fee'**
+  String get lateFeeLabel;
+
+  /// No description provided for @lateFeePerMissedInstallment.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} per missed installment'**
+  String lateFeePerMissedInstallment(String value);
+
+  /// No description provided for @repaymentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment'**
+  String get repaymentLabel;
+
+  /// No description provided for @totalPayableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total payable'**
+  String get totalPayableLabel;
+
+  /// No description provided for @sentDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent {date}'**
+  String sentDateLabel(String date);
+
+  /// No description provided for @errorLoadingContract.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading contract: {error}'**
+  String errorLoadingContract(String error);
+
+  /// No description provided for @listingOfferCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} {count, plural, one {offer} other {offers}}'**
+  String listingOfferCount(int count);
+
   /// No description provided for @accountTitle.
   ///
   /// In en, this message translates to:
@@ -757,6 +835,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notifications'**
   String get notifications;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @noNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll be notified here when offers arrive, rates change, or contracts are ready.'**
+  String get noNotificationsSubtitle;
+
+  /// No description provided for @todayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get todayLabel;
+
+  /// No description provided for @yesterdayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'YESTERDAY'**
+  String get yesterdayLabel;
+
+  /// No description provided for @earlierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'EARLIER'**
+  String get earlierLabel;
+
+  /// No description provided for @tapToView.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view'**
+  String get tapToView;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
 
   /// No description provided for @statListings.
   ///
@@ -2233,6 +2359,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Offer submitted. You can review your offer above.'**
   String get offerSubmittedReviewNotice;
+
+  /// No description provided for @offerCountdownLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{time} left'**
+  String offerCountdownLabel(String time);
+
+  /// No description provided for @expiredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expiredLabel;
+
+  /// No description provided for @offerSentSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer sent successfully.'**
+  String get offerSentSuccessfully;
+
+  /// No description provided for @interestRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest rate (%)'**
+  String get interestRateLabel;
+
+  /// No description provided for @latePaymentFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Late payment fee (%)'**
+  String get latePaymentFeeLabel;
+
+  /// No description provided for @repaymentScheduleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment schedule'**
+  String get repaymentScheduleLabel;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @oneTimePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time payment'**
+  String get oneTimePayment;
+
+  /// No description provided for @installmentAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment amount ({currency})'**
+  String installmentAmountLabel(String currency);
+
+  /// No description provided for @additionalExpectationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional expectations'**
+  String get additionalExpectationsLabel;
+
+  /// No description provided for @optionalBorrowerNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional notes for the borrower'**
+  String get optionalBorrowerNotesHint;
+
+  /// No description provided for @sendOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Send offer'**
+  String get sendOffer;
 
   /// No description provided for @couldNotSendOffer.
   ///

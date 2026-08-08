@@ -195,6 +195,7 @@ class LoanOffer extends Equatable {
     required this.status,
     required this.offeredAt,
     this.acceptedAt,
+    this.expiresAt,
     this.trustRatingAvg,
     this.trustReviewCount = 0,
     this.trustCompletedDealsCount = 0,
@@ -222,6 +223,7 @@ class LoanOffer extends Equatable {
   final String status;
   final DateTime offeredAt;
   final DateTime? acceptedAt;
+  final DateTime? expiresAt;
   final double? trustRatingAvg;
   final int trustReviewCount;
   final int trustCompletedDealsCount;
@@ -236,6 +238,18 @@ class LoanOffer extends Equatable {
   final bool showProfessionalTag;
 
   bool get hasMaskedLender => lenderId.startsWith('public-offer-');
+  Duration? get timeRemaining => expiresAt?.difference(DateTime.now());
+  bool get isExpired => timeRemaining != null && timeRemaining!.isNegative;
+
+  String? get timeRemainingLabel {
+    final d = timeRemaining;
+    if (d == null) return null;
+    if (d.isNegative) return 'Expired';
+    if (d.inDays > 0) return '${d.inDays}d ${d.inHours % 24}h left';
+    if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m left';
+    return '${d.inMinutes}m left';
+  }
+
   String? get professionalTag {
     if (!showProfessionalTag) return null;
     if (isBankAgent) {
@@ -272,6 +286,9 @@ class LoanOffer extends Equatable {
           DateTime.now(),
       acceptedAt: map['accepted_at'] != null
           ? DateTime.tryParse(map['accepted_at'] as String)
+          : null,
+      expiresAt: map['expires_at'] != null
+          ? DateTime.tryParse(map['expires_at'] as String)
           : null,
       trustRatingAvg: (map['trust_rating_avg'] as num?)?.toDouble(),
       trustReviewCount: (map['trust_review_count'] as num?)?.toInt() ?? 0,

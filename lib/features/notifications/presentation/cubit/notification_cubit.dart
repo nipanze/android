@@ -62,8 +62,8 @@ class NotificationCubit extends Cubit<NotificationState> {
                 isRead: true,
                 createdAt: n.createdAt,
                 requestId: n.requestId,
-                contractId: n.contractId,
-                bidId: n.bidId,
+                forexRequestId: n.forexRequestId,
+                offerId: n.offerId,
                 data: n.data)
             : n)
         .toList();
@@ -91,8 +91,8 @@ class NotificationCubit extends Cubit<NotificationState> {
             isRead: true,
             createdAt: n.createdAt,
             requestId: n.requestId,
-            contractId: n.contractId,
-            bidId: n.bidId,
+            forexRequestId: n.forexRequestId,
+            offerId: n.offerId,
             data: n.data))
         .toList();
     emit(NotificationLoaded(notifications: updated, unreadCount: 0));

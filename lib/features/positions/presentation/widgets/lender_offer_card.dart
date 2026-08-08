@@ -1,9 +1,12 @@
 // lib/features/positions/presentation/widgets/lender_offer_card.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/lender_offer.dart';
@@ -20,6 +23,7 @@ class LenderOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -52,13 +56,15 @@ class LenderOfferCard extends StatelessWidget {
         // Offer amount
         Row(children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Offered Amount',
+            Text(l10n?.offeredAmountLabel ?? 'Offered amount',
                 style: Theme.of(context).textTheme.bodySmall),
-            CurrencyAmount(offer.offerAmount, currency: offer.currency, fontSize: 16),
+            CurrencyAmount(offer.offerAmount,
+                currency: offer.currency, fontSize: 16),
           ]),
           const Spacer(),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('Status', style: Theme.of(context).textTheme.bodySmall),
+            Text(l10n?.statusLabel ?? 'Status',
+                style: Theme.of(context).textTheme.bodySmall),
             Text(offer.status.name.toUpperCase(),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -71,26 +77,29 @@ class LenderOfferCard extends StatelessWidget {
         const SizedBox(height: 10),
         _TermRow(
           icon: Icons.percent,
-          label: 'Interest',
+          label: l10n?.interestLabel ?? 'Interest',
           value: '${offer.interestRatePct.toStringAsFixed(1)}%',
         ),
         const SizedBox(height: 4),
         _TermRow(
           icon: Icons.gavel_outlined,
-          label: 'Late fee',
-          value: '${offer.lateFeePct.toStringAsFixed(1)}% per missed installment',
+          label: l10n?.lateFeeLabel ?? 'Late fee',
+          value: l10n?.lateFeePerMissedInstallment(
+                '${offer.lateFeePct.toStringAsFixed(1)}%',
+              ) ??
+              '${offer.lateFeePct.toStringAsFixed(1)}% per missed installment',
         ),
         const SizedBox(height: 4),
         _TermRow(
           icon: Icons.calendar_today,
-          label: 'Repayment',
+          label: l10n?.repaymentLabel ?? 'Repayment',
           value:
               '${offer.currency} ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
         ),
         const SizedBox(height: 4),
         _TermRow(
           icon: Icons.account_balance_wallet,
-          label: 'Total payable',
+          label: l10n?.totalPayableLabel ?? 'Total payable',
           value: '${offer.currency} ${_fmt(offer.totalRepayment)}',
         ),
 
@@ -117,9 +126,18 @@ class LenderOfferCard extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Placed at
-        Text(
-          'Sent ${_fmtDate(offer.placedAt)}',
-          style: Theme.of(context).textTheme.bodySmall,
+        Row(
+          children: [
+            Text(
+              l10n?.sentDateLabel(_fmtDate(offer.placedAt)) ??
+                  'Sent ${_fmtDate(offer.placedAt)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (offer.expiresAt != null && offer.isPending) ...[
+              const SizedBox(width: 8),
+              _OfferCountdownChip(expiresAt: offer.expiresAt!),
+            ],
+          ],
         ),
 
         // Actions
@@ -131,7 +149,7 @@ class LenderOfferCard extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   textStyle: const TextStyle(fontSize: 11)),
-              child: const Text('View Listing'),
+              child: Text(l10n?.viewListing ?? 'View listing'),
             ),
           ),
           if (offer.isAccepted) ...[
@@ -145,7 +163,7 @@ class LenderOfferCard extends StatelessWidget {
                   side: const BorderSide(color: AppColors.success),
                   textStyle: const TextStyle(fontSize: 11),
                 ),
-                child: const Text('View Contract'),
+                child: Text(l10n?.viewContract ?? 'View contract'),
               ),
             ),
           ],
@@ -160,7 +178,7 @@ class LenderOfferCard extends StatelessWidget {
                   side: const BorderSide(color: AppColors.danger),
                   textStyle: const TextStyle(fontSize: 11),
                   minimumSize: Size.zero),
-              child: const Text('Withdraw'),
+              child: Text(l10n?.withdraw ?? 'Withdraw'),
             ),
           ],
         ]),
@@ -177,8 +195,11 @@ class LenderOfferCard extends StatelessWidget {
         await context.push('/marketplace/agreement/${agreement.id}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Contract not yet generated.'),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.contractNotGenerated ??
+                  'Contract not yet generated.',
+            ),
           ),
         );
       }
@@ -186,7 +207,10 @@ class LenderOfferCard extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading contract: $e'),
+          content: Text(
+            AppLocalizations.of(context)?.errorLoadingContract('$e') ??
+                'Error loading contract: $e',
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -216,6 +240,78 @@ class LenderOfferCard extends StatelessWidget {
 
   String _fmtDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+class _OfferCountdownChip extends StatefulWidget {
+  const _OfferCountdownChip({required this.expiresAt});
+
+  final DateTime expiresAt;
+
+  @override
+  State<_OfferCountdownChip> createState() => _OfferCountdownChipState();
+}
+
+class _OfferCountdownChipState extends State<_OfferCountdownChip> {
+  late final Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final remaining = widget.expiresAt.difference(DateTime.now());
+    final expired = remaining.isNegative;
+    final label = expired
+        ? (l10n?.expiredLabel ?? 'Expired')
+        : (l10n?.offerCountdownLabel(_formatRemaining(remaining)) ??
+            '${_formatRemaining(remaining)} left');
+    final color = expired || remaining.inHours < 6
+        ? AppColors.danger
+        : remaining.inHours < 24
+            ? AppColors.warning
+            : AppColors.accent;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatRemaining(Duration d) {
+    if (d.inDays > 0) return '${d.inDays}d ${d.inHours % 24}h';
+    if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
+    return '${d.inMinutes.clamp(0, 59)}m';
+  }
 }
 
 class _TermRow extends StatelessWidget {

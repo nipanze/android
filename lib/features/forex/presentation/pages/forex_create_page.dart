@@ -106,6 +106,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   @override
   void initState() {
     super.initState();
+    _amountController.addListener(_refreshButtonState);
     _loadCurrencies();
   }
 
@@ -133,9 +134,23 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
 
   @override
   void dispose() {
+    _amountController.removeListener(_refreshButtonState);
     _amountController.dispose();
     _preferredRateController.dispose();
     super.dispose();
+  }
+
+  void _refreshButtonState() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _isReadyToPublish {
+    final amount = int.tryParse(_amountController.text);
+    return amount != null &&
+        amount > 0 &&
+        _currencyHeld != null &&
+        _currencyNeeded != null &&
+        _currencyHeld != _currencyNeeded;
   }
 
   Future<void> _submit() async {
@@ -220,7 +235,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
             Icons.arrow_back_ios_new_rounded,
             size: 18,
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.marketplace),
         ),
         title: Text(l10n?.createForexRequestTitle ?? 'Post forex request'),
       ),
@@ -289,13 +306,14 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       DropdownButtonFormField<String>(
                         initialValue: _settlementPreference,
                         decoration: InputDecoration(
-                          labelText: l10n?.forexSettlementPreference ??
-                              'Settlement',
+                          labelText:
+                              l10n?.forexSettlementPreference ?? 'Settlement',
                         ),
                         items: _settlementPreferences
                             .map((p) => DropdownMenuItem(
                                   value: p,
-                                  child: Text(_getLocalizedSettlement(context, p)),
+                                  child:
+                                      Text(_getLocalizedSettlement(context, p)),
                                 ))
                             .toList(),
                         onChanged: (v) => setState(
@@ -311,15 +329,14 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                           decimal: true,
                         ),
                         decoration: InputDecoration(
-                          labelText: l10n?.forexPreferredRate ??
-                              'Preferred rate',
+                          labelText:
+                              l10n?.forexPreferredRate ?? 'Preferred rate',
                           hintText: l10n?.forexRateHint ?? 'e.g. 3700',
                           helperText: isPro
                               ? 'Optional'
                               : 'Pro unlocks preferred rate suggestions',
                         ),
                       ),
-
                     ],
                   ),
                 ),
@@ -329,7 +346,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         minimum: const EdgeInsets.all(16),
         child: ElevatedButton(
           onPressed:
-              _submitting || (currencies?.length ?? 0) < 2 ? null : _submit,
+              _submitting || (currencies?.length ?? 0) < 2 || !_isReadyToPublish
+                  ? null
+                  : _submit,
           child: _submitting
               ? const SizedBox(
                   width: 18,

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/models/app_notification.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -16,6 +17,7 @@ class NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final (icon, color) = _iconAndColor(notification.type);
 
     return InkWell(
@@ -64,7 +66,7 @@ class NotificationTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _timeAgo(notification.createdAt),
+                      _timeAgo(context, notification.createdAt),
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -92,7 +94,7 @@ class NotificationTile extends StatelessWidget {
                   if (notification.hasDeepLink) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Tap to view →',
+                      l10n?.tapToView ?? 'Tap to view',
                       style: TextStyle(
                         fontSize: 10,
                         color: color,
@@ -140,9 +142,10 @@ class NotificationTile extends StatelessWidget {
     }
   }
 
-  String _timeAgo(DateTime dt) {
+  String _timeAgo(BuildContext context, DateTime dt) {
+    final l10n = AppLocalizations.of(context);
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 1) return l10n?.justNow ?? 'just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m';
     if (diff.inHours < 24) return '${diff.inHours}h';
     if (diff.inDays < 7) return '${diff.inDays}d';

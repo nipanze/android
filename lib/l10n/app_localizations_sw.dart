@@ -330,6 +330,59 @@ class AppLocalizationsSw extends AppLocalizations {
   String get contractNotGenerated => 'Mkataba bado haujatengenezwa.';
 
   @override
+  String get viewOffers => 'Tazama bei';
+
+  @override
+  String get viewContract => 'Tazama mkataba';
+
+  @override
+  String get viewListing => 'Tazama ombi';
+
+  @override
+  String get offeredAmountLabel => 'Kiasi kilichotolewa';
+
+  @override
+  String get statusLabel => 'Hali';
+
+  @override
+  String get interestLabel => 'Riba';
+
+  @override
+  String get lateFeeLabel => 'Ada ya kuchelewa';
+
+  @override
+  String lateFeePerMissedInstallment(String value) {
+    return '$value kwa awamu iliyokosekana';
+  }
+
+  @override
+  String get repaymentLabel => 'Marejesho';
+
+  @override
+  String get totalPayableLabel => 'Jumla ya kulipa';
+
+  @override
+  String sentDateLabel(String date) {
+    return 'Ilitumwa $date';
+  }
+
+  @override
+  String errorLoadingContract(String error) {
+    return 'Hitilafu kupakia mkataba: $error';
+  }
+
+  @override
+  String listingOfferCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'bei',
+      one: 'bei',
+    );
+    return '$count $_temp0';
+  }
+
+  @override
   String get accountTitle => 'Akaunti';
 
   @override
@@ -368,6 +421,31 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get notifications => 'Arifa';
+
+  @override
+  String get markAllRead => 'Weka zote kuwa zimesomwa';
+
+  @override
+  String get noNotificationsYet => 'Hakuna arifa bado';
+
+  @override
+  String get noNotificationsSubtitle =>
+      'Utaarifiwa hapa bei zikifika, viwango vikibadilika, au mikataba ikiwa tayari.';
+
+  @override
+  String get todayLabel => 'LEO';
+
+  @override
+  String get yesterdayLabel => 'JANA';
+
+  @override
+  String get earlierLabel => 'ZAMANI';
+
+  @override
+  String get tapToView => 'Gusa kutazama';
+
+  @override
+  String get justNow => 'sasa hivi';
 
   @override
   String get statListings => 'Orodha';
@@ -1179,6 +1257,49 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get offerSubmittedReviewNotice =>
       'Bei imetumwa. Unaweza kuikagua hapo juu.';
+
+  @override
+  String offerCountdownLabel(String time) {
+    return '$time zimesalia';
+  }
+
+  @override
+  String get expiredLabel => 'Imeisha';
+
+  @override
+  String get offerSentSuccessfully => 'Bei imetumwa kikamilifu.';
+
+  @override
+  String get interestRateLabel => 'Riba (%)';
+
+  @override
+  String get latePaymentFeeLabel => 'Ada ya kuchelewa (%)';
+
+  @override
+  String get repaymentScheduleLabel => 'Ratiba ya marejesho';
+
+  @override
+  String get monthly => 'Kila mwezi';
+
+  @override
+  String get weekly => 'Kila wiki';
+
+  @override
+  String get oneTimePayment => 'Malipo ya mara moja';
+
+  @override
+  String installmentAmountLabel(String currency) {
+    return 'Kiasi cha awamu ($currency)';
+  }
+
+  @override
+  String get additionalExpectationsLabel => 'Matarajio ya ziada';
+
+  @override
+  String get optionalBorrowerNotesHint => 'Maelezo ya hiari kwa mkopaji';
+
+  @override
+  String get sendOffer => 'Tuma bei';
 
   @override
   String get couldNotSendOffer => 'Haikuweza kutuma bei.';

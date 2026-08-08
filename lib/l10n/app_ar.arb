@@ -155,6 +155,39 @@
   "keepIt": "الإبقاء عليه",
   "cancelListingBtn": "إلغاء الإعلان",
   "contractNotGenerated": "لم يتم إنشاء العقد بعد.",
+  "viewOffers": "عرض العروض",
+  "viewContract": "عرض العقد",
+  "viewListing": "عرض الإعلان",
+  "offeredAmountLabel": "المبلغ المعروض",
+  "statusLabel": "الحالة",
+  "interestLabel": "الفائدة",
+  "lateFeeLabel": "رسوم التأخير",
+  "lateFeePerMissedInstallment": "{value} لكل قسط فائت",
+  "@lateFeePerMissedInstallment": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "repaymentLabel": "السداد",
+  "totalPayableLabel": "إجمالي المستحق",
+  "sentDateLabel": "أُرسل في {date}",
+  "@sentDateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "errorLoadingContract": "خطأ في تحميل العقد: {error}",
+  "@errorLoadingContract": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "listingOfferCount": "{count} {count, plural, one {عرض} other {عروض}}",
+  "@listingOfferCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "accountTitle": "الحساب",
   "settingsTitle": "الإعدادات",
@@ -169,6 +202,14 @@
   "identityVerification": "التحقق من الهوية",
   "security": "الأمان",
   "notifications": "الإشعارات",
+  "markAllRead": "تعليم الكل كمقروء",
+  "noNotificationsYet": "لا توجد إشعارات حتى الآن",
+  "noNotificationsSubtitle": "ستظهر الإشعارات هنا عند وصول العروض أو تغير الأسعار أو جاهزية العقود.",
+  "todayLabel": "اليوم",
+  "yesterdayLabel": "أمس",
+  "earlierLabel": "سابقاً",
+  "tapToView": "اضغط للعرض",
+  "justNow": "الآن",
   "statListings": "الإعلانات",
   "statListingsSubtitle": "الطلبات المنشورة",
   "statOffers": "العروض",
@@ -442,6 +483,29 @@
   "estimatedValueLabel": "القيمة التقديرية",
   "locationLabel": "الموقع",
   "offerSubmittedReviewNotice": "تم إرسال العرض. يمكنك مراجعته أعلاه.",
+  "offerCountdownLabel": "متبقٍ {time}",
+  "@offerCountdownLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "expiredLabel": "منتهي",
+  "offerSentSuccessfully": "تم إرسال العرض بنجاح.",
+  "interestRateLabel": "معدل الفائدة (%)",
+  "latePaymentFeeLabel": "رسوم التأخير (%)",
+  "repaymentScheduleLabel": "جدول السداد",
+  "monthly": "شهرياً",
+  "weekly": "أسبوعياً",
+  "oneTimePayment": "دفعة واحدة",
+  "installmentAmountLabel": "قيمة القسط ({currency})",
+  "@installmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "additionalExpectationsLabel": "توقعات إضافية",
+  "optionalBorrowerNotesHint": "ملاحظات اختيارية للمقترض",
+  "sendOffer": "إرسال العرض",
   "couldNotSendOffer": "تعذّر إرسال العرض.",
   "rateOfferedLabel": "السعر المقترح",
   "amountAvailableLabel": "المبلغ المتاح",

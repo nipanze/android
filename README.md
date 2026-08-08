@@ -272,7 +272,7 @@ A single `countries.currency_tradeable` flag was considered and rejected, becaus
 - **Marketplace main screen** — live feed of loan and forex requests, filterable by `All / Loans / Forex`, each with its own card design — see [Marketplace Feed & Listing Design](#marketplace-feed--listing-design)
 - **Non-custodial architecture** — Nipanze never holds, pools, converts, or moves user funds or currency, anywhere
 - **Controlled contact sharing** — contact details are revealed only after a contract is generated, loan or forex
-- **Selective transparency** — listing detail shows aggregate signals (funded %/rate-coverage tier, offer count) to everyone, but exact offer terms unlock only for the request owner and for offer-makers who have themselves bid on that listing
+- **Selective transparency** — listing detail shows broad listing signals to non-participants, keeps offer count/coverage visible to the request owner, and unlocks exact offer terms only for the request owner and for offer-makers who have themselves bid on that listing
 - **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan, country, or which module the deal history comes from — see [Trust & Reputation Signals](#trust--reputation-signals)
 - **Pro Advanced Filters** — Pro-tier users can use advanced filters (categorical employment type, bucketed income range, suggested-terms, owner KYC verification status) next to the notification bell, with database-level self-gating
 - **Compliance built-in** — append-only audit trail from day one, across both modules
@@ -344,7 +344,7 @@ Public trust signals (rating, review count, deal count, badges) are a separate, 
 
 #### Public Loan Listing (`v_loan_listings` view)
 
-**Exposed:** `request_id`, `title`, `purpose`, `district`, `country`, `currency_code`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `repayment_amount_per_period`, `repayment_timeline`, `number_of_offers`, `offer_coverage_tier`, `listed_at`, `expires_at`
+**Exposed:** `request_id`, `title`, `purpose`, `district`, `country`, `currency_code`, `duration_months`, `requested_amount`, `preferred_repayment_plan`, `repayment_amount_per_period`, `repayment_timeline`, `listed_at`, `expires_at`; `number_of_offers` and `offer_coverage_tier` are borrower-only on listing detail
 
 **Masked before acceptance:** request-owner id, income source, employer/salary details, email, phone, full name, national ID, and private verification documents
 
@@ -480,6 +480,7 @@ The Marketplace screen is the one shared surface where both modules meet — a l
 - **Title** and **amount** (in the listing's currency)
 - **One-line summary** (purpose)
 - **Funded-% progress bar** and **"Xd left"** countdown
+- **Offer countdown** on participant-visible offer rows, driven by `loan_offers.expires_at`
 - **Trust badges:** `⭐ No reviews yet` (or the real rating once it has one) and `💎 0 completed` (or the real count)
 - **Star icon** (top-right) — save to watchlist
 
@@ -509,7 +510,7 @@ The Marketplace screen is the one shared surface where both modules meet — a l
 1. POST       → User posts a structured loan or forex request for free, in their own country and currency
 2. BROWSE     → Marketplace defaults to the user's country; browsing other active markets is optional
                  (default behavior for forex, given its inherently cross-currency nature)
-                 → sees funded %/rate-coverage tier, offer count, and counterparty trust signals
+                 → sees broad listing signals; request owners see offer count/coverage, while offer-makers unlock their own exact offer detail
 3. OFFER      → Lender/Pro plan holders make offers with their own amount and terms —
                  interest rate/late fee/schedule for a loan, or exchange rate/amount/terms for forex
                  → Placing an offer unlocks full offer-level detail on that listing for that offer-maker

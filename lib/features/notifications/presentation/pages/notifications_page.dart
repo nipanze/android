@@ -6,7 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../domain/models/app_notification.dart';
 import '../cubit/notification_cubit.dart';
@@ -33,9 +35,12 @@ class _NotificationsView extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.marketplace),
         ),
-        title: const Text('Notifications'),
+        title: Text(
+            AppLocalizations.of(context)?.notifications ?? 'Notifications'),
         actions: [
           BlocBuilder<NotificationCubit, NotificationState>(
             builder: (context, state) {
@@ -45,8 +50,10 @@ class _NotificationsView extends StatelessWidget {
               return TextButton(
                 onPressed: () =>
                     context.read<NotificationCubit>().markAllAsRead(),
-                child:
-                    const Text('Mark all read', style: TextStyle(fontSize: 12)),
+                child: Text(
+                  AppLocalizations.of(context)?.markAllRead ?? 'Mark all read',
+                  style: const TextStyle(fontSize: 12),
+                ),
               );
             },
           ),
@@ -67,16 +74,17 @@ class _NotificationsView extends StatelessWidget {
 
           if (state is NotificationLoaded) {
             if (state.notifications.isEmpty) {
-              return const EmptyState(
+              final l10n = AppLocalizations.of(context);
+              return EmptyState(
                 icon: Icons.notifications_outlined,
-                title: 'No notifications yet',
-                subtitle: 'You\'ll be notified here when offers arrive, '
-                    'rates change, or contracts are ready.',
+                title: l10n?.noNotificationsYet ?? 'No notifications yet',
+                subtitle: l10n?.noNotificationsSubtitle ??
+                    'You\'ll be notified here when offers arrive, rates change, or contracts are ready.',
               );
             }
 
             // Group by date
-            final groups = _groupByDate(state.notifications);
+            final groups = _groupByDate(context, state.notifications);
 
             return RefreshIndicator(
               onRefresh: () => context.read<NotificationCubit>().refresh(),
@@ -122,11 +130,14 @@ class _NotificationsView extends StatelessWidget {
   void _onTap(BuildContext context, AppNotification n) {
     context.read<NotificationCubit>().markAsRead(n.id);
     if (n.deepLinkRoute != null) {
-      context.push(n.deepLinkRoute!);
+      context.go(n.deepLinkRoute!);
     }
   }
 
-  List<_NotifGroup> _groupByDate(List<AppNotification> items) {
+  List<_NotifGroup> _groupByDate(
+    BuildContext context,
+    List<AppNotification> items,
+  ) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
@@ -146,9 +157,15 @@ class _NotificationsView extends StatelessWidget {
     }
 
     return [
-      if (todayItems.isNotEmpty) _NotifGroup('TODAY', todayItems),
-      if (yesterdayItems.isNotEmpty) _NotifGroup('YESTERDAY', yesterdayItems),
-      if (olderItems.isNotEmpty) _NotifGroup('EARLIER', olderItems),
+      if (todayItems.isNotEmpty)
+        _NotifGroup(
+            AppLocalizations.of(context)?.todayLabel ?? 'TODAY', todayItems),
+      if (yesterdayItems.isNotEmpty)
+        _NotifGroup(AppLocalizations.of(context)?.yesterdayLabel ?? 'YESTERDAY',
+            yesterdayItems),
+      if (olderItems.isNotEmpty)
+        _NotifGroup(AppLocalizations.of(context)?.earlierLabel ?? 'EARLIER',
+            olderItems),
     ];
   }
 }

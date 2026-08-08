@@ -22,6 +22,7 @@ class LenderOffer extends Equatable {
     required this.status,
     required this.offeredAt,
     this.acceptedAt,
+    this.expiresAt,
     this.revealStatus,
     this.revealedAt,
     this.currency = 'UGX',
@@ -44,6 +45,7 @@ class LenderOffer extends Equatable {
   final OfferStatus status;
   final DateTime offeredAt;
   final DateTime? acceptedAt;
+  final DateTime? expiresAt;
   final String? revealStatus;
   final DateTime? revealedAt;
   final String currency;
@@ -65,8 +67,7 @@ class LenderOffer extends Equatable {
     }
   }
 
-  int get totalRepayment =>
-      (offerAmount * (1 + interestRatePct / 100)).round();
+  int get totalRepayment => (offerAmount * (1 + interestRatePct / 100)).round();
 
   LenderOffer copyWith({
     OfferStatus? status,
@@ -90,8 +91,10 @@ class LenderOffer extends Equatable {
         status: status ?? this.status,
         offeredAt: offeredAt,
         acceptedAt: acceptedAt,
+        expiresAt: expiresAt,
         revealStatus: revealStatus ?? this.revealStatus,
         revealedAt: revealedAt,
+        currency: currency,
       );
 
   factory LenderOffer.fromMap(Map<String, dynamic> map) {
@@ -104,13 +107,10 @@ class LenderOffer extends Equatable {
       durationMonths: map['duration_months'] as int? ?? 0,
       requestedAmount: (map['requested_amount'] as num?)?.toInt() ?? 0,
       offerAmount: (map['offer_amount'] as num?)?.toInt() ?? 0,
-      interestRatePct:
-          (map['interest_rate_pct'] as num?)?.toDouble() ?? 0,
+      interestRatePct: (map['interest_rate_pct'] as num?)?.toDouble() ?? 0,
       lateFeePct: (map['late_fee_pct'] as num?)?.toDouble() ?? 0,
-      repaymentFrequency:
-          map['repayment_frequency'] as String? ?? 'monthly',
-      installmentAmount:
-          (map['installment_amount'] as num?)?.toInt() ?? 0,
+      repaymentFrequency: map['repayment_frequency'] as String? ?? 'monthly',
+      installmentAmount: (map['installment_amount'] as num?)?.toInt() ?? 0,
       proposedExpectations: map['proposed_expectations'] as String?,
       termsLockedAt: map['terms_locked_at'] != null
           ? DateTime.tryParse(map['terms_locked_at'] as String)
@@ -121,11 +121,16 @@ class LenderOffer extends Equatable {
       acceptedAt: map['accepted_at'] != null
           ? DateTime.tryParse(map['accepted_at'] as String)
           : null,
+      expiresAt: map['expires_at'] != null
+          ? DateTime.tryParse(map['expires_at'] as String)
+          : null,
       revealStatus: map['reveal_status'] as String?,
       revealedAt: map['revealed_at'] != null
           ? DateTime.tryParse(map['revealed_at'] as String)
           : null,
-      currency: map['currency_code'] as String? ?? map['currency'] as String? ?? 'UGX',
+      currency: map['currency_code'] as String? ??
+          map['currency'] as String? ??
+          'UGX',
     );
   }
 

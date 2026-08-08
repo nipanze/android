@@ -1131,6 +1131,10 @@ class _OfferCardState extends State<_OfferCard>
                               .withValues(alpha: 0.45),
                     ),
                   ),
+                  if (offer.expiresAt != null) ...[
+                    const SizedBox(width: 6),
+                    _OfferCountdownChip(expiresAt: offer.expiresAt!),
+                  ],
                   const SizedBox(width: 8),
                   // Amount + chevron, pinned to the true right edge.
                   // Fix: this used to rely on `const Spacer()` to push the
@@ -1455,6 +1459,78 @@ class _OfferCardState extends State<_OfferCard>
         ],
       ),
     );
+  }
+}
+
+class _OfferCountdownChip extends StatefulWidget {
+  const _OfferCountdownChip({required this.expiresAt});
+
+  final DateTime expiresAt;
+
+  @override
+  State<_OfferCountdownChip> createState() => _OfferCountdownChipState();
+}
+
+class _OfferCountdownChipState extends State<_OfferCountdownChip> {
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final remaining = widget.expiresAt.difference(DateTime.now());
+    final expired = remaining.isNegative;
+    final label = expired
+        ? (l10n?.expiredLabel ?? 'Expired')
+        : (l10n?.offerCountdownLabel(_formatRemaining(remaining)) ??
+            '${_formatRemaining(remaining)} left');
+    final color = expired || remaining.inHours < 6
+        ? AppColors.danger
+        : remaining.inHours < 24
+            ? AppColors.warning
+            : AppColors.accent;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatRemaining(Duration d) {
+    if (d.inDays > 0) return '${d.inDays}d ${d.inHours % 24}h';
+    if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
+    return '${d.inMinutes.clamp(0, 59)}m';
   }
 }
 
@@ -2365,13 +2441,56 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    for (final controller in [
+      _amountController,
+      _interestController,
+      _lateFeeController,
+      _installmentController,
+    ]) {
+      controller.addListener(_refreshButtonState);
+    }
+  }
+
+  @override
   void dispose() {
+    for (final controller in [
+      _amountController,
+      _interestController,
+      _lateFeeController,
+      _installmentController,
+    ]) {
+      controller.removeListener(_refreshButtonState);
+    }
     _amountController.dispose();
     _expController.dispose();
     _interestController.dispose();
     _lateFeeController.dispose();
     _installmentController.dispose();
     super.dispose();
+  }
+
+  void _refreshButtonState() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _isOfferReady {
+    final amount = int.tryParse(_amountController.text.replaceAll(',', ''));
+    final interest = double.tryParse(_interestController.text);
+    final lateFee = double.tryParse(_lateFeeController.text);
+    final installment =
+        int.tryParse(_installmentController.text.replaceAll(',', ''));
+    return amount != null &&
+        amount > 0 &&
+        interest != null &&
+        interest >= 0 &&
+        interest <= 100 &&
+        lateFee != null &&
+        lateFee >= 0 &&
+        lateFee <= 100 &&
+        installment != null &&
+        installment > 0;
   }
 
   Future<void> _submit() async {
@@ -2391,7 +2510,13 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       widget.onOfferPlaced();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Offer sent successfully.')));
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.offerSentSuccessfully ??
+                  'Offer sent successfully.',
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -2404,129 +2529,144 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: EdgeInsets.fromLTRB(
-            20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border:
-                Border(top: BorderSide(color: Theme.of(context).dividerColor))),
-        child: SingleChildScrollView(
-          child: Form(
-              key: _formKey,
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Text(
-                          AppLocalizations.of(context)?.makeAnOffer ??
-                              'Make an offer',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      const Spacer(),
-                      IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: widget.onClose)
-                    ]),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                          labelText: 'Amount (${widget.listing.currency})',
-                          prefixIcon: const Icon(Icons.payments_outlined)),
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Enter amount' : null,
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+          20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+      decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border:
+              Border(top: BorderSide(color: Theme.of(context).dividerColor))),
+      child: SingleChildScrollView(
+        child: Form(
+            key: _formKey,
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Text(l10n?.makeAnOffer ?? 'Make an offer',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const Spacer(),
+                    IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: widget.onClose)
+                  ]),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                        labelText: l10n?.amountLabelWithCurrency(
+                                widget.listing.currency) ??
+                            'Amount (${widget.listing.currency})',
+                        prefixIcon: const Icon(Icons.payments_outlined)),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? (l10n?.validationAmountRequired ?? 'Enter an amount')
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _interestController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
+                    decoration: InputDecoration(
+                        labelText:
+                            l10n?.interestRateLabel ?? 'Interest rate (%)',
+                        prefixIcon: const Icon(Icons.percent_rounded)),
+                    validator: (v) {
+                      final n = double.tryParse(v ?? '');
+                      if (n == null || n < 0 || n > 100) {
+                        return l10n?.validationPercentRange ?? 'Use 0 to 100';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _lateFeeController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                    ],
+                    decoration: InputDecoration(
+                        labelText:
+                            l10n?.latePaymentFeeLabel ?? 'Late payment fee (%)',
+                        prefixIcon: const Icon(Icons.warning_amber_rounded)),
+                    validator: (v) {
+                      final n = double.tryParse(v ?? '');
+                      if (n == null || n < 0 || n > 100) {
+                        return l10n?.validationPercentRange ?? 'Use 0 to 100';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _repaymentFrequency,
+                    decoration: InputDecoration(
+                      labelText:
+                          l10n?.repaymentScheduleLabel ?? 'Repayment schedule',
+                      prefixIcon: const Icon(Icons.event_repeat_outlined),
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _interestController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      decoration: const InputDecoration(
-                          labelText: 'Interest rate (%)',
-                          prefixIcon: Icon(Icons.percent_rounded)),
-                      validator: (v) {
-                        final n = double.tryParse(v ?? '');
-                        if (n == null || n < 0 || n > 100) {
-                          return 'Use 0 to 100';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _lateFeeController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                      ],
-                      decoration: const InputDecoration(
-                          labelText: 'Late payment fee (%)',
-                          prefixIcon: Icon(Icons.warning_amber_rounded)),
-                      validator: (v) {
-                        final n = double.tryParse(v ?? '');
-                        if (n == null || n < 0 || n > 100) {
-                          return 'Use 0 to 100';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _repaymentFrequency,
-                      decoration: const InputDecoration(
-                        labelText: 'Repayment schedule',
-                        prefixIcon: Icon(Icons.event_repeat_outlined),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'monthly', child: Text('Monthly')),
-                        DropdownMenuItem(
-                            value: 'weekly', child: Text('Weekly')),
-                        DropdownMenuItem(
-                            value: 'one_time', child: Text('One-time payment')),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) {
-                          setState(() => _repaymentFrequency = v);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _installmentController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                          labelText:
-                              'Installment amount (${widget.listing.currency})',
-                          prefixIcon: const Icon(Icons.price_check_outlined)),
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Enter amount' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _expController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                          labelText: 'Additional expectations',
-                          hintText: 'Optional notes for the borrower',
-                          alignLabelWithHint: true),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                        onPressed: _loading ? null : _submit,
-                        child: _loading
-                            ? const CircularProgressIndicator()
-                            : const Text('Send offer')),
-                  ])),
-        ),
-      );
+                    items: [
+                      DropdownMenuItem(
+                          value: 'monthly',
+                          child: Text(l10n?.monthly ?? 'Monthly')),
+                      DropdownMenuItem(
+                          value: 'weekly',
+                          child: Text(l10n?.weekly ?? 'Weekly')),
+                      DropdownMenuItem(
+                          value: 'one_time',
+                          child:
+                              Text(l10n?.oneTimePayment ?? 'One-time payment')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        setState(() => _repaymentFrequency = v);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _installmentController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                        labelText: l10n?.installmentAmountLabel(
+                                widget.listing.currency) ??
+                            'Installment amount (${widget.listing.currency})',
+                        prefixIcon: const Icon(Icons.price_check_outlined)),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? (l10n?.validationAmountRequired ?? 'Enter an amount')
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _expController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                        labelText: l10n?.additionalExpectationsLabel ??
+                            'Additional expectations',
+                        hintText: l10n?.optionalBorrowerNotesHint ??
+                            'Optional notes for the borrower',
+                        alignLabelWithHint: true),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                      onPressed: _loading || !_isOfferReady ? null : _submit,
+                      child: _loading
+                          ? const CircularProgressIndicator()
+                          : Text(l10n?.sendOffer ?? 'Send offer')),
+                ])),
+      ),
+    );
+  }
 }

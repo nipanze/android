@@ -155,6 +155,39 @@
   "keepIt": "Iacha",
   "cancelListingBtn": "Futa orodha",
   "contractNotGenerated": "Mkataba bado haujatengenezwa.",
+  "viewOffers": "Tazama bei",
+  "viewContract": "Tazama mkataba",
+  "viewListing": "Tazama ombi",
+  "offeredAmountLabel": "Kiasi kilichotolewa",
+  "statusLabel": "Hali",
+  "interestLabel": "Riba",
+  "lateFeeLabel": "Ada ya kuchelewa",
+  "lateFeePerMissedInstallment": "{value} kwa awamu iliyokosekana",
+  "@lateFeePerMissedInstallment": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "repaymentLabel": "Marejesho",
+  "totalPayableLabel": "Jumla ya kulipa",
+  "sentDateLabel": "Ilitumwa {date}",
+  "@sentDateLabel": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "errorLoadingContract": "Hitilafu kupakia mkataba: {error}",
+  "@errorLoadingContract": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "listingOfferCount": "{count} {count, plural, one {bei} other {bei}}",
+  "@listingOfferCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "accountTitle": "Akaunti",
   "settingsTitle": "Mipangilio",
@@ -169,6 +202,14 @@
   "identityVerification": "Uthibitisho wa Utambulisho",
   "security": "Usalama",
   "notifications": "Arifa",
+  "markAllRead": "Weka zote kuwa zimesomwa",
+  "noNotificationsYet": "Hakuna arifa bado",
+  "noNotificationsSubtitle": "Utaarifiwa hapa bei zikifika, viwango vikibadilika, au mikataba ikiwa tayari.",
+  "todayLabel": "LEO",
+  "yesterdayLabel": "JANA",
+  "earlierLabel": "ZAMANI",
+  "tapToView": "Gusa kutazama",
+  "justNow": "sasa hivi",
   "statListings": "Orodha",
   "statListingsSubtitle": "Maombi yaliyowasilishwa",
   "statOffers": "Mapendekezo",
@@ -435,6 +476,29 @@
   "estimatedValueLabel": "Thamani iliyokadiriwa",
   "locationLabel": "Mahali",
   "offerSubmittedReviewNotice": "Bei imetumwa. Unaweza kuikagua hapo juu.",
+  "offerCountdownLabel": "{time} zimesalia",
+  "@offerCountdownLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "expiredLabel": "Imeisha",
+  "offerSentSuccessfully": "Bei imetumwa kikamilifu.",
+  "interestRateLabel": "Riba (%)",
+  "latePaymentFeeLabel": "Ada ya kuchelewa (%)",
+  "repaymentScheduleLabel": "Ratiba ya marejesho",
+  "monthly": "Kila mwezi",
+  "weekly": "Kila wiki",
+  "oneTimePayment": "Malipo ya mara moja",
+  "installmentAmountLabel": "Kiasi cha awamu ({currency})",
+  "@installmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "additionalExpectationsLabel": "Matarajio ya ziada",
+  "optionalBorrowerNotesHint": "Maelezo ya hiari kwa mkopaji",
+  "sendOffer": "Tuma bei",
   "couldNotSendOffer": "Haikuweza kutuma bei.",
   "rateOfferedLabel": "Bei inayotolewa",
   "amountAvailableLabel": "Kiasi kinachopatikana",

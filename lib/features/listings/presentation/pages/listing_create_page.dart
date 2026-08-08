@@ -80,6 +80,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   @override
   void initState() {
     super.initState();
+    for (final controller in [
+      _titleController,
+      _amountController,
+      _durationController,
+      _collateralDetailsController,
+      _incomeSourceController,
+      _repaymentAmountController,
+      _repaymentTimelineController,
+    ]) {
+      controller.addListener(_refreshButtonState);
+    }
     _loadLimits();
   }
 
@@ -94,6 +105,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
 
   @override
   void dispose() {
+    for (final controller in [
+      _titleController,
+      _amountController,
+      _durationController,
+      _collateralDetailsController,
+      _incomeSourceController,
+      _repaymentAmountController,
+      _repaymentTimelineController,
+    ]) {
+      controller.removeListener(_refreshButtonState);
+    }
     _pageController.dispose();
     _titleController.dispose();
     _amountController.dispose();
@@ -110,6 +132,43 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     _suggestedInstallmentController.dispose();
     super.dispose();
   }
+
+  void _refreshButtonState() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _loanDetailsReady {
+    final title = _titleController.text.trim();
+    final amount = int.tryParse(_amountController.text);
+    final duration = int.tryParse(_durationController.text);
+    final purposeReady = _selectedPurpose != null &&
+        (_selectedPurpose != 'Other' ||
+            (_customPurpose?.trim().isNotEmpty ?? false));
+    final collateralReady =
+        !_hasCollateral || _collateralDetailsController.text.trim().isNotEmpty;
+    return title.isNotEmpty &&
+        amount != null &&
+        amount > 0 &&
+        duration != null &&
+        duration > 0 &&
+        purposeReady &&
+        collateralReady;
+  }
+
+  bool get _repaymentReady {
+    final amount = int.tryParse(_repaymentAmountController.text);
+    return _incomeSourceController.text.trim().isNotEmpty &&
+        _preferredRepaymentPlan != null &&
+        amount != null &&
+        amount > 0 &&
+        _repaymentTimelineController.text.trim().isNotEmpty;
+  }
+
+  bool get _currentStepReady => switch (_step) {
+        0 => _loanDetailsReady,
+        1 => _repaymentReady,
+        _ => _loanDetailsReady && _repaymentReady,
+      };
 
   String get _purposeValue => _selectedPurpose == 'Other'
       ? (_customPurpose ?? '')
@@ -482,7 +541,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     labelText:
                         l10n?.describePurposeLabel ?? 'Describe your purpose',
                   ),
-                  onChanged: (v) => _customPurpose = v,
+                  onChanged: (v) => setState(() => _customPurpose = v),
                   validator: (v) {
                     if (_selectedPurpose == 'Other' &&
                         (v == null || v.trim().isEmpty)) {
@@ -1100,7 +1159,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ElevatedButton(
-            onPressed: _submitting ? null : (_step < 2 ? _next : _submit),
+            onPressed: _submitting || !_currentStepReady
+                ? null
+                : (_step < 2 ? _next : _submit),
             child: _submitting
                 ? const SizedBox(
                     height: 20,
