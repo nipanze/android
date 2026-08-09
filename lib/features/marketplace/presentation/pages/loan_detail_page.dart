@@ -285,11 +285,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  if (canViewCollateral && listing.hasCollateral) ...[
-                    const SizedBox(height: 12),
-                    _CollateralStatusBadge(listing: listing),
-                  ],
-
                   const SizedBox(height: 16),
 
                   // ── Funded progress bar ──────────────────────────────────
@@ -330,6 +325,15 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       ),
                     ],
                   ),
+
+                  if (canViewCollateral && listing.hasCollateral) ...[
+                    const SizedBox(height: 16),
+                    _CollateralDetailsSection(
+                      listing: listing,
+                      currency: listing.currency,
+                      embedded: true,
+                    ),
+                  ],
 
                   const SizedBox(height: 20),
 
@@ -433,15 +437,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
             const SizedBox(height: 16),
 
-            // ── Additional details card ──────────────────────────────────────
-            if (canViewCollateral && listing.hasCollateral) ...[
-              _CollateralDetailsSection(
-                listing: listing,
-                currency: listing.currency,
-              ),
-              const SizedBox(height: 12),
-            ],
-
             if (listing.suggestedInterestRatePct != null ||
                 listing.suggestedLateFeePct != null) ...[
               _DescriptionSection(
@@ -505,57 +500,16 @@ class _DescriptionSection extends StatelessWidget {
       );
 }
 
-class _CollateralStatusBadge extends StatelessWidget {
-  const _CollateralStatusBadge({required this.listing});
-
-  final LoanListing listing;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final color = listing.hasCollateral ? AppColors.success : AppColors.warning;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            listing.hasCollateral
-                ? Icons.security_rounded
-                : Icons.block_rounded,
-            size: 15,
-            color: color,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            listing.hasCollateral
-                ? (l10n?.securedCollateralLabel ?? 'Secured')
-                : (l10n?.noCollateralLabel ?? 'No collateral'),
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _CollateralDetailsSection extends StatelessWidget {
   const _CollateralDetailsSection({
     required this.listing,
     required this.currency,
+    this.embedded = false,
   });
 
   final LoanListing listing;
   final String currency;
+  final bool embedded;
 
   @override
   Widget build(BuildContext context) {
@@ -566,13 +520,21 @@ class _CollateralDetailsSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      padding: embedded
+          ? const EdgeInsets.fromLTRB(0, 14, 0, 0)
+          : const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: embedded
+            ? Colors.transparent
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.22),
-        ),
+        border: embedded
+            ? Border(
+                top: BorderSide(color: Theme.of(context).dividerColor),
+              )
+            : Border.all(
+                color: AppColors.success.withValues(alpha: 0.22),
+              ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
