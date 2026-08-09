@@ -520,21 +520,13 @@ class _CollateralDetailsSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: embedded
-          ? const EdgeInsets.fromLTRB(0, 14, 0, 0)
-          : const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: embedded
-            ? Colors.transparent
-            : Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: embedded
-            ? Border(
-                top: BorderSide(color: Theme.of(context).dividerColor),
-              )
-            : Border.all(
-                color: AppColors.success.withValues(alpha: 0.22),
-              ),
+        color: AppColors.success.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.success.withValues(alpha: 0.22),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,8 +537,8 @@ class _CollateralDetailsSection extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
+                  color: AppColors.success.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
                   Icons.security_rounded,
@@ -565,18 +557,43 @@ class _CollateralDetailsSection extends StatelessWidget {
                       ),
                 ),
               ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle_rounded,
+                        size: 11, color: AppColors.success),
+                    const SizedBox(width: 4),
+                    Text(
+                      l10n?.securedCollateralLabel ?? 'Secured',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           if (details?.isNotEmpty == true) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               details!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
+                    height: 1.35,
                   ),
             ),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -625,18 +642,23 @@ class _CollateralFact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 140),
+      constraints: const BoxConstraints(minWidth: 135),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context)
+              .colorScheme
+              .outlineVariant
+              .withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 15, color: AppColors.success),
-          const SizedBox(width: 7),
+          const SizedBox(width: 8),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -649,13 +671,15 @@ class _CollateralFact extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withValues(alpha: 0.5),
+                            .withValues(alpha: 0.55),
                       ),
                 ),
+                const SizedBox(height: 1),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w700,
+                        fontSize: 12,
                       ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
