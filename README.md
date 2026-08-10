@@ -720,11 +720,35 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-### Running the App (Cloud)
+### Running the App
+
+#### Cloud
+
+Create a `.env.local` file with `SUPABASE_URL` and `SUPABASE_ANON_KEY`, then run:
 
 ```bash
 ./run_cloud.sh chrome
-flutter run -d android
+```
+
+You can also target Android or Linux with the same script:
+
+```bash
+./run_cloud.sh android
+./run_cloud.sh linux
+```
+
+#### Local
+
+Create a `.env.local` file with `LOCAL_SUPABASE_URL` and `LOCAL_ANON_KEY`, then run:
+
+```bash
+./run_local.sh
+```
+
+For Linux desktop local development:
+
+```bash
+./run_linux.sh
 ```
 
 ### Building for Production
@@ -743,10 +767,21 @@ flutter build web --release \
 
 ## Environment Configuration
 
+Create `.env.local` from `.env.example` and fill in values.
+
 ```env
+# Cloud
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...   # Edge Functions only — never bundled into the Flutter client
+
+# Local development
+LOCAL_SUPABASE_URL=http://localhost:54321
+LOCAL_ANON_KEY=your-local-anon-key
+
+# Service role key — only for Edge Functions or server-side testing.
+# NEVER bundle this in the Flutter client.
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+LOCAL_SERVICE_ROLE_KEY=your-local-service-role-key
 ```
 
 ---
@@ -759,16 +794,19 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...   # Edge Functions only — never bundled into 
 | `flutter_bloc ^8.x` | BLoC state management | 1 |
 | `go_router ^14.x` | Declarative routing with auth guards | 1 |
 | `get_it + injectable` | Dependency injection with code-gen | 1 |
-| `google_fonts` | DM Sans + DM Mono typography | 1 |
-| `flutter_secure_storage ^9.x` | Secure token storage | 1 |
-| `hive_flutter ^1.x` | UI-layer cache only | 1 |
-| `animate_do ^3.x` | FadeIn/SlideIn animations | 1 |
-| `lottie ^3.x` | Loading and empty state animations | 2 |
-| `shimmer ^3.x` | Skeleton loading screens | 2 |
-| `percent_indicator ^4.x` | Loan funded-% progress indicators | 2 |
-| `fl_chart ^0.69.x` | Portfolio and analytics charts | 3 |
-| `local_auth ^2.x` | Biometric login | 3 |
-| `flutter_local_notifications ^17.x` | In-app notification banners | 3 |
+| `flutter_secure_storage ^10.x` | Secure token storage | 1 |
+| `hive_flutter ^1.1.0` | UI-layer cache only | 1 |
+| `animate_do ^4.2.0` | FadeIn/SlideIn animations | 1 |
+| `lottie ^3.1.2` | Loading and empty state animations | 2 |
+| `shimmer ^3.0.0` | Skeleton loading screens | 2 |
+| `percent_indicator ^4.2.3` | Loan funded-% progress indicators | 2 |
+| `fl_chart ^1.2.0` | Portfolio and analytics charts | 3 |
+| `cached_network_image ^3.3.1` | Network image caching and placeholders | 2 |
+| `image_picker ^1.1.2` | Camera and gallery image selection | 2 |
+| `intl ^0.20.2` | Formatting and localization utilities | 1 |
+| `equatable ^2.0.5` | Value equality for models and states | 1 |
+| `dartz ^0.10.1` | Functional programming helpers | 1 |
+| `shared_preferences ^2.3.2` | Simple on-device key-value storage | 2 |
 
 ---
 
@@ -776,13 +814,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...   # Edge Functions only — never bundled into 
 
 | Function | Purpose |
 | --- | --- |
-| `accept-offer` | Atomic offer acceptance with server enforcement, loan or forex |
-| `make-offer` | Server-side subscription-plan validation for loan offers |
-| `make-forex-offer` | Server-side subscription-plan validation for forex offers, plus currency-eligibility check |
-| `reveal-contact` | Post-acceptance contact sharing, loan or forex |
-| `submit-review` | Server-side validation that the caller was a party to the completed contract |
-| `send-sms` | Africa's Talking, Twilio, or Termii, respecting each market's carrier norms |
-| `flutterwave-webhook` | Signature-verified webhook handler; the only writer of `transactions.status = 'successful'` |
+| `flutterwave-checkout` | Mock Flutterwave checkout session initialization and verification |
+| `send-notification` | Push / notification request handler for the app |
 
 ---
 
