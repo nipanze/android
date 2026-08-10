@@ -1125,16 +1125,20 @@ class _OfferCardState extends State<_OfferCard>
                           _ProfessionalTag(professionalTag),
                           const SizedBox(width: 6),
                         ],
-                        Text(
-                          offerType,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isFull
-                                ? AppColors.success.withValues(alpha: 0.75)
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.45),
+                        Flexible(
+                          child: Text(
+                            offerType,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isFull
+                                  ? AppColors.success.withValues(alpha: 0.75)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.45),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (offer.expiresAt != null) ...[
@@ -1149,18 +1153,22 @@ class _OfferCardState extends State<_OfferCard>
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        height: 20,
-                        child: Center(
-                          child: Text(
-                            isActiveParticipant
-                                ? _fmt(offer.offerAmount)
-                                : '≈$coverage%',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              height: 1.0,
-                              color: isFull ? AppColors.success : null,
+                      Flexible(
+                        child: SizedBox(
+                          height: 20,
+                          child: Center(
+                            child: Text(
+                              isActiveParticipant
+                                  ? _fmt(offer.offerAmount)
+                                  : '≈$coverage%',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                height: 1.0,
+                                color: isFull ? AppColors.success : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),

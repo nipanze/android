@@ -242,7 +242,7 @@ Planned items:
 Planned items:
 - [ ] App store / play store packaging and compliance
 - [ ] Onboarding without role selection, with country selection step
-- [ ] Localized pricing finalized per market
+- [ ] Admin-finalized local subscription pricing per market/currency
 - [ ] Payment integration for subscriptions only
 - [ ] Launch checklist for Kenya, Tanzania, Rwanda, Nigeria, South Africa, Egypt
 
