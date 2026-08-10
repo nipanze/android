@@ -16,4 +16,10 @@ Let me see the full results to understand how many actually passed:
 1
 integration_test.dart
 
+
+
+rebuild the apk and paste it in outputs: 
+remember am working from supabase cloud
+the app is sowing phone number nt found. create a ccount 
+i created account it still shows the same but it entered. then shows something went wrong
  

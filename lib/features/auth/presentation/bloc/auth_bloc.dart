@@ -153,14 +153,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final clean = _authRepository.cleanPhone(event.phone);
-      final resolvedEmail = await _authRepository.checkPhoneRegistered(clean);
+      var resolvedEmail = await _authRepository.checkPhoneRegistered(clean);
       if (resolvedEmail == null) {
-        emit(const AuthError('Phone number not found. Please create an account.'));
-        return;
+        // Fallback: derive mock email format from digits if phone lookup didn't return an email
+        final digits = clean.replaceAll('+', '');
+        resolvedEmail = '$digits@nipanze.test';
       }
       final user = await _authRepository.signIn(
         email: resolvedEmail,
         password: event.password,
+      );
+      // Ensure profile has phone updated
+      await _authRepository.updateProfile(
+        targetUserId: user.id,
+        phone: clean,
       );
       emit(AuthAuthenticated(
         user: user,
@@ -206,6 +212,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: mockEmail,
         password: event.password,
         fullName: event.fullName,
+        phone: clean,
+        countryCode: event.countryCode,
       );
 
       NipanzeUser? user;
@@ -227,12 +235,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       }
 
-      // Persist the collected profile data.
-      await _authRepository.updateProfile(
-        fullName: event.fullName,
-        phone: clean,
-        country: event.countryCode,
-      );
+      // Persist the collected profile data using explicit user ID if available.
+      final targetId = user?.id ?? createdUser?.id;
+      if (targetId != null) {
+        await _authRepository.updateProfile(
+          targetUserId: targetId,
+          fullName: event.fullName,
+          phone: clean,
+          country: event.countryCode,
+        );
+      }
 
       if (user != null) {
         emit(AuthAuthenticated(

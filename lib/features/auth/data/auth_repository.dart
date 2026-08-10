@@ -54,12 +54,18 @@ class AuthRepository {
     required String email,
     required String password,
     required String fullName,
+    String? phone,
+    String? countryCode,
   }) async {
     try {
       final res = await _client.auth.signUp(
         email: email,
         password: password,
-        data: {'full_name': fullName},
+        data: {
+          'full_name': fullName,
+          if (phone != null) 'phone': phone,
+          if (countryCode != null) 'country_code': countryCode,
+        },
       );
       return res.user;
     } catch (e) {
@@ -104,7 +110,9 @@ class AuthRepository {
 
   String cleanPhone(String phone) {
     var clean = phone.replaceAll(RegExp(r'[\s\-()]+'), '');
-    if (!clean.startsWith('+')) {
+    if (clean.startsWith('0') && clean.length == 10) {
+      clean = '+256${clean.substring(1)}';
+    } else if (!clean.startsWith('+')) {
       clean = '+$clean';
     }
     return clean;
@@ -205,8 +213,9 @@ class AuthRepository {
     });
   }
 
-  /// Update the current user's profile fields.
+  /// Update profile fields for a user. Accepts an optional explicit [targetUserId].
   Future<void> updateProfile({
+    String? targetUserId,
     String? fullName,
     String? avatarUrl,
     String? phone,
@@ -222,8 +231,11 @@ class AuthRepository {
     bool? isBankAgent,
     bool? showProfessionalTag,
   }) async {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) return;
+    final userId = targetUserId ?? _client.auth.currentUser?.id;
+    if (userId == null) {
+      debugPrint('updateProfile called but userId is null');
+      return;
+    }
     final updates = <String, dynamic>{
       'id': userId,
       'updated_at': DateTime.now().toIso8601String(),
