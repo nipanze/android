@@ -1253,6 +1253,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forexCurrencyNeeded => 'Currency you need';
 
   @override
+  String get forexAmountToServe => 'Amount to be served';
+
+  @override
+  String get forexServesLabel => 'Serves';
+
+  @override
+  String get amountToExchangeOut => 'Amount to exchange out';
+
+  @override
   String get forexAmountToExchange => 'Amount to exchange';
 
   @override

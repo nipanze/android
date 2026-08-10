@@ -231,6 +231,7 @@ class _OffersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final canSeePro = authState is AuthAuthenticated &&
         (authState as AuthAuthenticated).user.subscriptionPlan ==
             SubscriptionPlan.pro;
@@ -246,14 +247,42 @@ class _OffersSection extends StatelessWidget {
     }
 
     return Column(
-      children: offers
-          .map(
-            (offer) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Row(
+      children: offers.map((offer) {
+        final servedAmount = offer.amountAvailable * offer.rateOffered;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceVariant,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withOpacity(0.16),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text('Rate ${offer.rateOffered.toStringAsFixed(4)}'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${l10n?.rateOfferedLabel ?? 'Rate offered'} ${offer.rateOffered.toStringAsFixed(4)}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${l10n?.forexServesLabel ?? 'Serves'} ${listing.currencyNeeded} ${_fmtAmount(servedAmount)}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
                   ),
                   if (canSeePro && offer.professionalTag != null) ...[
                     const SizedBox(width: 8),
@@ -261,14 +290,56 @@ class _OffersSection extends StatelessWidget {
                   ],
                 ],
               ),
-              subtitle: Text(
-                'Available ${listing.currencyHeld} ${offer.amountAvailable}',
+              const SizedBox(height: 10),
+              Text(
+                '${l10n?.amountToExchangeOut ?? 'Amount to exchange out'}: ${listing.currencyHeld} ${_fmtAmount(offer.amountAvailable)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+                    ),
               ),
-              trailing: Text(offer.status),
-            ),
-          )
-          .toList(),
+              const SizedBox(height: 10),
+              TrustBadgeRow(
+                ratingAvg: offer.trustRatingAvg,
+                reviewCount: offer.trustReviewCount,
+                completedDealsCount: offer.trustCompletedDealsCount,
+                isRepeatParticipant: offer.trustIsRepeatParticipant,
+                phoneVerified: offer.trustPhoneVerified,
+                responseTimeBucket: offer.trustResponseTimeBucket,
+                isVerified: offer.trustIsVerified,
+                showReviews: true,
+                showCompletedDeals: true,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                offer.status,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
+  }
+
+  String _fmtAmount(num amount) {
+    final formatted = amount % 1 == 0
+        ? amount.toInt().toString()
+        : amount.toStringAsFixed(2);
+    final parts = formatted.split('.');
+    final integer = parts[0];
+    final buffer = StringBuffer();
+    for (int i = 0; i < integer.length; i++) {
+      if (i > 0 && (integer.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(integer[i]);
+    }
+    if (parts.length > 1) buffer.write('.${parts[1]}');
+    return buffer.toString();
   }
 }
 
@@ -340,6 +411,28 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
 
   void _refreshButtonState() {
     if (mounted) setState(() {});
+  }
+
+  double? get _calculatedAmountToServe {
+    final rate = double.tryParse(_rateController.text);
+    final amount = int.tryParse(_amountController.text);
+    if (rate == null || amount == null) return null;
+    return amount * rate;
+  }
+
+  String _fmtAmount(num amount) {
+    final formatted = amount % 1 == 0
+        ? amount.toInt().toString()
+        : amount.toStringAsFixed(2);
+    final parts = formatted.split('.');
+    final integer = parts[0];
+    final buffer = StringBuffer();
+    for (int i = 0; i < integer.length; i++) {
+      if (i > 0 && (integer.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(integer[i]);
+    }
+    if (parts.length > 1) buffer.write('.${parts[1]}');
+    return buffer.toString();
   }
 
   bool get _isFormReady {
@@ -435,6 +528,41 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
               ),
             ),
             const SizedBox(height: 10),
+            if (_calculatedAmountToServe != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n?.forexAmountToServe ?? 'Amount to be served',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${widget.listing?.currencyNeeded ?? ''} ${_fmtAmount(_calculatedAmountToServe!)}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${l10n?.amountToExchangeOut ?? 'Amount to exchange out'}: ${widget.listing?.currencyHeld ?? ''} ${_fmtAmount(int.tryParse(_amountController.text) ?? 0)}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             TextField(
               controller: _termsController,
               decoration: InputDecoration(

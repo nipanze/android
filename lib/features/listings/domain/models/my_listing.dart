@@ -67,6 +67,8 @@ class MyListing extends Equatable {
   Duration get timeRemaining => expiresAt.difference(DateTime.now());
   bool get isClosingSoon =>
       timeRemaining.inHours < 24 && !timeRemaining.isNegative;
+  bool get isClosingSoon6h =>
+      timeRemaining.inHours < 6 && !timeRemaining.isNegative;
   bool get hasExpired => timeRemaining.isNegative;
 
   String get timeRemainingLabel {

@@ -1260,6 +1260,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get forexCurrencyNeeded => 'Sarafu unayohitaji';
 
   @override
+  String get forexAmountToServe => 'Kiasi cha kuhudumiwa';
+
+  @override
+  String get forexServesLabel => 'Inahudumia';
+
+  @override
+  String get amountToExchangeOut => 'Kiasi cha kutoa';
+
+  @override
   String get forexAmountToExchange => 'Kiasi cha kubadilisha';
 
   @override

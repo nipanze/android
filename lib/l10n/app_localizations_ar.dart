@@ -1242,6 +1242,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forexCurrencyNeeded => 'العملة التي تحتاجها';
 
   @override
+  String get forexAmountToServe => 'المبلغ الذي سيتم تقديمه';
+
+  @override
+  String get forexServesLabel => 'يخدم';
+
+  @override
+  String get amountToExchangeOut => 'المبلغ المراد صرفه';
+
+  @override
   String get forexAmountToExchange => 'المبلغ المراد تبادله';
 
   @override

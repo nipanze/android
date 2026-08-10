@@ -1270,6 +1270,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get forexCurrencyNeeded => 'Devise recherchée';
 
   @override
+  String get forexAmountToServe => 'Montant à servir';
+
+  @override
+  String get forexServesLabel => 'Dessert';
+
+  @override
+  String get amountToExchangeOut => 'Montant à échanger';
+
+  @override
   String get forexAmountToExchange => 'Montant à échanger';
 
   @override
