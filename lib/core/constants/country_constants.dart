@@ -1,4 +1,5 @@
 // lib/core/constants/country_constants.dart
+import 'dart:ui' show Locale;
 
 class CountryInfo {
   const CountryInfo({
