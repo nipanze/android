@@ -1380,7 +1380,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionalBorrowerNotesHint => 'Optional notes for the borrower';
 
   @override
-  String get sendOffer => 'Send offer';
+  String get sendOffer => 'Send Offer';
 
   @override
   String get couldNotSendOffer => 'Could not send offer.';

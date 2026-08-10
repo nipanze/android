@@ -2681,7 +2681,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                       onPressed: _loading || !_isOfferReady ? null : _submit,
                       child: _loading
                           ? const CircularProgressIndicator()
-                          : Text(l10n?.sendOffer ?? 'Send offer')),
+                          : Text(l10n?.sendOffer ?? 'Send Offer')),
                 ])),
       ),
     );

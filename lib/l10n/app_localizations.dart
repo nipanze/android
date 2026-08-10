@@ -2585,7 +2585,7 @@ abstract class AppLocalizations {
   /// No description provided for @sendOffer.
   ///
   /// In en, this message translates to:
-  /// **'Send offer'**
+  /// **'Send Offer'**
   String get sendOffer;
 
   /// No description provided for @couldNotSendOffer.

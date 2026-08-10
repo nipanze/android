@@ -323,7 +323,26 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _rateController.addListener(_refreshButtonState);
+    _amountController.addListener(_refreshButtonState);
+  }
+
+  void _refreshButtonState() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _isFormReady {
+    final rate = double.tryParse(_rateController.text);
+    final amount = int.tryParse(_amountController.text);
+    return rate != null && rate > 0 && amount != null && amount > 0;
+  }
+
+  @override
   void dispose() {
+    _rateController.removeListener(_refreshButtonState);
+    _amountController.removeListener(_refreshButtonState);
     _rateController.dispose();
     _amountController.dispose();
     _termsController.dispose();
@@ -414,14 +433,14 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _submitting ? null : _submit,
+              onPressed: _submitting || !_isFormReady ? null : _submit,
               child: _submitting
                   ? const SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                  : Text(l10n?.sendOffer ?? 'Send Offer'),
             ),
           ],
         ),

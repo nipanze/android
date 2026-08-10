@@ -620,7 +620,7 @@
   },
   "additionalExpectationsLabel": "Additional expectations",
   "optionalBorrowerNotesHint": "Optional notes for the borrower",
-  "sendOffer": "Send offer",
+  "sendOffer": "Send Offer",
   "couldNotSendOffer": "Could not send offer.",
   "rateOfferedLabel": "Rate offered",
   "amountAvailableLabel": "Amount available",
