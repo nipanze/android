@@ -1089,7 +1089,7 @@ class _OfferCardState extends State<_OfferCard>
           InkWell(
             onTap: _toggle,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -1103,109 +1103,90 @@ class _OfferCardState extends State<_OfferCard>
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Lender label
-                  Flexible(
-                    child: Text(
-                      lenderLabel,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isFull ? AppColors.success : null,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  if (professionalTag != null) ...[
-                    _ProfessionalTag(professionalTag),
-                    const SizedBox(width: 6),
-                  ],
-                  // Offer type badge
-                  Text(
-                    offerType,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isFull
-                          ? AppColors.success.withValues(alpha: 0.75)
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.45),
-                    ),
-                  ),
-                  if (offer.expiresAt != null) ...[
-                    const SizedBox(width: 6),
-                    _OfferCountdownChip(expiresAt: offer.expiresAt!),
-                  ],
-                  const SizedBox(width: 8),
-                  // Amount + chevron, pinned to the true right edge.
-                  // Fix: this used to rely on `const Spacer()` to push the
-                  // trailing group right, which only works if this Row is
-                  // the sole width-determining child of its ancestors. Any
-                  // ancestor that lets the Row shrink-wrap (e.g. an
-                  // IntrinsicWidth, a Wrap, or a scroll view that measures
-                  // children at their natural size) collapses the Spacer to
-                  // zero and the trailing group ends up sitting right after
-                  // the label instead of at the edge. Wrapping the trailing
-                  // group in Expanded + Align(centerRight) guarantees it's
-                  // flush against the row's actual right edge regardless of
-                  // how the ancestor chain measures this Row.
+                  // Lender label + offer meta on the left
                   Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Fix: these two used to sit directly in the row as
-                          // a bare Text and a bare Icon. Text's layout box
-                          // follows the font's line-height metrics while
-                          // Icon's follows its literal `size`, so even with
-                          // the Row's default crossAxisAlignment.center the
-                          // two visually sat a couple pixels off from each
-                          // other. Giving both a matching fixed-height
-                          // SizedBox + Center pins them to the same box, so
-                          // centering is exact regardless of font metrics.
-                          SizedBox(
-                            height: 20,
-                            child: Center(
-                              child: Text(
-                                isActiveParticipant
-                                    ? _fmt(offer.offerAmount)
-                                    : '≈$coverage%',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.0,
-                                  color: isFull ? AppColors.success : null,
-                                ),
-                              ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            lenderLabel,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isFull ? AppColors.success : null,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                        ),
+                        const SizedBox(width: 6),
+                        if (professionalTag != null) ...[
+                          _ProfessionalTag(professionalTag),
                           const SizedBox(width: 6),
-                          SizedBox(
-                            height: 20,
-                            width: 18,
-                            child: Center(
-                              child: AnimatedRotation(
-                                turns: _expanded ? 0.5 : 0,
-                                duration: const Duration(milliseconds: 200),
-                                child: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 18,
-                                  color: isFull
-                                      ? AppColors.success.withValues(alpha: 0.7)
-                                      : Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.4),
-                                ),
-                              ),
+                        ],
+                        Text(
+                          offerType,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isFull
+                                ? AppColors.success.withValues(alpha: 0.75)
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.45),
+                          ),
+                        ),
+                        if (offer.expiresAt != null) ...[
+                          const SizedBox(width: 6),
+                          _OfferCountdownChip(expiresAt: offer.expiresAt!),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Amount + chevron on the right
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 20,
+                        child: Center(
+                          child: Text(
+                            isActiveParticipant
+                                ? _fmt(offer.offerAmount)
+                                : '≈$coverage%',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              height: 1.0,
+                              color: isFull ? AppColors.success : null,
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        height: 20,
+                        width: 18,
+                        child: Center(
+                          child: AnimatedRotation(
+                            turns: _expanded ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 18,
+                              color: isFull
+                                  ? AppColors.success.withValues(alpha: 0.7)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -2460,6 +2441,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   @override
   void initState() {
     super.initState();
+    // Auto-fill amount with the requested amount
+    _amountController.text = widget.listing.requestedAmount.toString();
     for (final controller in [
       _amountController,
       _interestController,

@@ -260,6 +260,11 @@ class EastAfricaCountries {
     return legacyDecodable[code] ?? defaultCountry;
   }
 
+  static CountryInfo findByLocale(Locale? locale) {
+    if (locale == null || locale.countryCode == null) return defaultCountry;
+    return findByCode(locale.countryCode!.toUpperCase());
+  }
+
   /// Tries to match phone number prefix to country or defaults to Uganda.
   static CountryInfo findByPhone(String? phone) {
     if (phone == null || phone.isEmpty) return defaultCountry;

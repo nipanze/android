@@ -30,6 +30,7 @@ class ForexDetailPage extends StatefulWidget {
 class _ForexDetailPageState extends State<ForexDetailPage> {
   late Future<_ForexDetailData> _future;
   bool _showOfferSheet = false;
+  ForexListingModel? _cachedListing;
 
   @override
   void initState() {
@@ -79,6 +80,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
           }
           final data = snapshot.data!;
           final listing = data.listing;
+          _cachedListing = listing;
 
           return RefreshIndicator(
             onRefresh: () async => _refresh(),
@@ -202,6 +204,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
       bottomSheet: _showOfferSheet
           ? _MakeOfferSheet(
               requestId: widget.requestId,
+              listing: _cachedListing,
               onClose: () => setState(() => _showOfferSheet = false),
               onOfferPlaced: () {
                 setState(() => _showOfferSheet = false);
@@ -304,11 +307,13 @@ class _ProfessionalTag extends StatelessWidget {
 class _MakeOfferSheet extends StatefulWidget {
   const _MakeOfferSheet({
     required this.requestId,
+    this.listing,
     required this.onClose,
     required this.onOfferPlaced,
   });
 
   final String requestId;
+  final ForexListingModel? listing;
   final VoidCallback onClose;
   final VoidCallback onOfferPlaced;
 
@@ -325,6 +330,10 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   @override
   void initState() {
     super.initState();
+    // Auto-fill amount with the requested amount
+    if (widget.listing != null) {
+      _amountController.text = widget.listing!.amount.toString();
+    }
     _rateController.addListener(_refreshButtonState);
     _amountController.addListener(_refreshButtonState);
   }
@@ -382,17 +391,18 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Row(
               children: [
                 Text(
@@ -442,7 +452,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                     )
                   : Text(l10n?.sendOffer ?? 'Send Offer'),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

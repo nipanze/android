@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage>
   bool _usePhone = true;
 
   // phone
-  CountryInfo _country = EastAfricaCountries.defaultCountry;
+  late CountryInfo _country;
   final _phoneCtrl = TextEditingController();
   final _phonePassCtrl = TextEditingController(text: 'Test1234!');
   bool _obscurePhone = true;
@@ -46,6 +46,9 @@ class _LoginPageState extends State<LoginPage>
   @override
   void initState() {
     super.initState();
+    _country = EastAfricaCountries.findByLocale(
+      WidgetsBinding.instance.platformDispatcher.locale,
+    );
     _tabCtrl = TabController(length: 2, vsync: this);
     for (final c in [_phoneCtrl, _phonePassCtrl, _emailCtrl, _emailPassCtrl]) {
       c.addListener(() => setState(() {}));
