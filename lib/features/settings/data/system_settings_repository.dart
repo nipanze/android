@@ -78,3 +78,4 @@ class SystemSettingsRepository {
       return PlatformLimits.defaults;
     }
   }
+}

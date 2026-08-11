@@ -437,6 +437,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         onAccept: _acceptOffer,
                         durationMonths: listing.durationMonths,
                         isProBorrower: isProBorrower,
+                        marketBaselinePct: _marketBaselinePct,
                         suggestedInterestRatePct:
                             listing.suggestedInterestRatePct,
                         suggestedLateFeePct: listing.suggestedLateFeePct,
@@ -926,6 +927,7 @@ class _OfferList extends StatelessWidget {
     required this.onAccept,
     required this.durationMonths,
     required this.onUpgrade,
+    required this.marketBaselinePct,
     this.suggestedInterestRatePct,
     this.suggestedLateFeePct,
     this.suggestedRepaymentFrequency,
@@ -934,6 +936,7 @@ class _OfferList extends StatelessWidget {
   });
 
   final List<LoanOffer> offers;
+  final double marketBaselinePct;
   final int requestedAmount;
   final bool isOwner;
   final bool isParticipant;
@@ -961,6 +964,7 @@ class _OfferList extends StatelessWidget {
         isParticipant: isParticipant,
         onAccept: onAccept,
         durationMonths: durationMonths,
+        marketBaselinePct: marketBaselinePct,
         suggestedInterestRatePct: suggestedInterestRatePct,
         suggestedLateFeePct: suggestedLateFeePct,
         suggestedInstallmentAmount: suggestedInstallmentAmount,
@@ -986,6 +990,7 @@ class _OfferCard extends StatefulWidget {
     required this.durationMonths,
     required this.onUpgrade,
     required this.dotColor,
+    required this.marketBaselinePct,
     this.suggestedInterestRatePct,
     this.suggestedLateFeePct,
     this.suggestedInstallmentAmount,
@@ -994,6 +999,7 @@ class _OfferCard extends StatefulWidget {
   });
 
   final LoanOffer offer;
+  final double marketBaselinePct;
   final int index;
   final int requestedAmount;
   final bool isOwner;
@@ -1273,7 +1279,7 @@ class _OfferCardState extends State<_OfferCard>
                                     offer.interestRatePct <=
                                         widget.suggestedInterestRatePct!,
                             sparklineValues: [offer.interestRatePct],
-                            baselineValue: _marketBaselinePct,
+                            baselineValue: widget.marketBaselinePct,
                             baselineColor: AppColors.warning,
                           ),
                           const SizedBox(width: 70),
@@ -1294,7 +1300,7 @@ class _OfferCardState extends State<_OfferCard>
                             isPositive: widget.suggestedLateFeePct == null ||
                                 offer.lateFeePct <= widget.suggestedLateFeePct!,
                             sparklineValues: [offer.lateFeePct],
-                            baselineValue: _marketBaselinePct,
+                            baselineValue: widget.marketBaselinePct,
                             baselineColor: AppColors.warning,
                           ),
                         ],
