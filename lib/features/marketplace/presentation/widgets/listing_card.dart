@@ -196,11 +196,9 @@ class ListingCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: (loan?.isClosingSoon6h ?? forex!.isClosingSoon6h)
-                          ? AppColors.danger
-                          : (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
-                              ? AppColors.warning
-                              : mutedColor,
+                      color: (loan?.isClosingSoon24h ?? forex!.isClosingSoon24h)
+                        ? AppColors.danger
+                        : mutedColor,
                     ),
                   ),
                 ),

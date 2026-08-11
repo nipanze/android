@@ -107,7 +107,7 @@ class MyListingCard extends StatelessWidget {
                 Icon(
                   Icons.schedule_rounded,
                   size: 11,
-                  color: listing.isClosingSoon6h
+                  color: listing.isClosingSoon
                       ? AppColors.danger
                       : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -116,7 +116,7 @@ class MyListingCard extends StatelessWidget {
                   listing.timeRemainingLabel,
                   style: TextStyle(
                     fontSize: 10,
-                    color: listing.isClosingSoon6h
+                    color: listing.isClosingSoon
                         ? AppColors.danger
                         : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
