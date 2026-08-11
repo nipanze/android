@@ -1257,15 +1257,6 @@ class AppLocalizationsRw extends AppLocalizations {
   String get forexCurrencyNeeded => 'Icyiciro nkeneye';
 
   @override
-  String get forexAmountToServe => 'Ayazatangwa';
-
-  @override
-  String get forexServesLabel => 'Ibikora';
-
-  @override
-  String get amountToExchangeOut => 'Ayavunjwa';
-
-  @override
   String get forexAmountToExchange => 'Ayagomba kuvunjwa';
 
   @override
@@ -1405,6 +1396,15 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get amountAvailableLabel => 'Amafaranga aboneka';
+
+  @override
+  String get forexAmountToServe => 'Ayazatangwa';
+
+  @override
+  String get forexServesLabel => 'Ibikora';
+
+  @override
+  String get amountToExchangeOut => 'Ayavunjwa';
 
   @override
   String get settlementTermsLabel => 'Amabwiriza y\'iryozwa';

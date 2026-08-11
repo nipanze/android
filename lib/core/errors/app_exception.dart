@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 /// Typed exception hierarchy for Nipanze.
 /// All exceptions carry a user-friendly [message] — internal codes are never shown to users.
@@ -50,6 +51,21 @@ class ListingNotFoundException extends AppException {
 /// Parses Supabase exceptions into user-friendly [AppException]s.
 /// Raw Supabase error codes and messages are NEVER returned to the UI.
 AppException parseSupabaseError(Object error) {
+  // Treat low-level network/socket failures as NetworkException so UI shows
+  // a clear, actionable message when the local backend is unreachable.
+  try {
+    if (error is SocketException) {
+      return const NetworkException('Cannot reach the backend. Check your network or start the local backend.');
+    }
+    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('connection refused') ||
+        errStr.contains('failed host lookup') ||
+        errStr.contains('socketexception')) {
+      return const NetworkException('Cannot reach the backend. Check your network or start the local backend.');
+    }
+  } catch (_) {
+    // ignore and fall through to other handlers
+  }
   if (error is AuthException) {
     return _parseAuthError(error.message);
   }

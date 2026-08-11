@@ -2342,24 +2342,6 @@ abstract class AppLocalizations {
   /// **'Currency you need'**
   String get forexCurrencyNeeded;
 
-  /// No description provided for @forexAmountToServe.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount to be served'**
-  String get forexAmountToServe;
-
-  /// No description provided for @forexServesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Serves'**
-  String get forexServesLabel;
-
-  /// No description provided for @amountToExchangeOut.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount to exchange out'**
-  String get amountToExchangeOut;
-
   /// No description provided for @forexAmountToExchange.
   ///
   /// In en, this message translates to:
@@ -2623,6 +2605,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount available'**
   String get amountAvailableLabel;
+
+  /// No description provided for @forexAmountToServe.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to be served'**
+  String get forexAmountToServe;
+
+  /// No description provided for @forexServesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Serves'**
+  String get forexServesLabel;
+
+  /// No description provided for @amountToExchangeOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to exchange out'**
+  String get amountToExchangeOut;
 
   /// No description provided for @settlementTermsLabel.
   ///
