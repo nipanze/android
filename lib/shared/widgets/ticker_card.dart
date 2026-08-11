@@ -28,10 +28,11 @@ class TickerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isPositive ? AppColors.success : AppColors.danger;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label,
+            textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context)
                     .colorScheme
@@ -43,6 +44,7 @@ class TickerCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(value,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontSize: 17, fontWeight: FontWeight.w600)),
             if (showSparkline) ...[
@@ -64,6 +66,7 @@ class TickerCard extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(deltaLabel,
+            textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w500, color: color)),
       ],
@@ -107,30 +110,41 @@ class _SparklinePainter extends CustomPainter {
       );
     }
 
-    if (values.length < 2) return;
-    final path = Path();
-    final stepX = size.width / (values.length - 1);
-    for (int i = 0; i < values.length; i++) {
-      final x = i * stepX;
-      final normalized = (values[i] - minV) / range;
+    // If there is only one value, draw a single colored marker at center.
+    if (values.length == 1) {
+      final v = values.first;
+      final normalized = (v - minV) / range;
       final y = size.height - (normalized * size.height);
-      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+      final x = size.width / 2;
+      canvas.drawCircle(Offset(x, y), 2.0, Paint()..color = color);
+      return;
     }
 
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
+    if (values.length >= 2) {
+      final path = Path();
+      final stepX = size.width / (values.length - 1);
+      for (int i = 0; i < values.length; i++) {
+        final x = i * stepX;
+        final normalized = (values[i] - minV) / range;
+        final y = size.height - (normalized * size.height);
+        i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+      }
 
-    final lastX = (values.length - 1) * stepX;
-    final lastY = size.height -
-        (((values.last - minV) / range) * size.height);
-    canvas.drawCircle(Offset(lastX, lastY), 2, Paint()..color = color);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.6
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round,
+      );
+
+      final lastX = (values.length - 1) * stepX;
+      final lastY = size.height -
+          (((values.last - minV) / range) * size.height);
+      canvas.drawCircle(Offset(lastX, lastY), 2, Paint()..color = color);
+    }
   }
 
   @override

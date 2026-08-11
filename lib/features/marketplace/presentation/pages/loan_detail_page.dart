@@ -1262,46 +1262,53 @@ class _OfferCardState extends State<_OfferCard>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TickerCard(
-                            label: l10n?.interestLabel ?? 'Interest',
-                            value:
-                                '${offer.interestRatePct.toStringAsFixed(1)}%',
-                            deltaLabel: widget.suggestedInterestRatePct != null
-                                ? (l10n?.vsAskLabel(
-                                      '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)}',
-                                    ) ??
-                                    '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask')
-                                : '—',
-                            isPositive:
-                                widget.suggestedInterestRatePct == null ||
-                                    offer.interestRatePct <=
-                                        widget.suggestedInterestRatePct!,
-                            sparklineValues: [offer.interestRatePct],
-                            baselineValue: widget.marketBaselinePct,
-                            baselineColor: AppColors.warning,
+                          Expanded(
+                            child: Center(
+                              child: TickerCard(
+                                label: l10n?.interestLabel ?? 'Interest',
+                                value:
+                                    '${offer.interestRatePct.toStringAsFixed(1)}%',
+                                deltaLabel: widget.suggestedInterestRatePct != null
+                                    ? (l10n?.vsAskLabel(
+                                          '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)}',
+                                        ) ??
+                                        '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)} vs ask')
+                                    : '—',
+                                isPositive:
+                                    widget.suggestedInterestRatePct == null ||
+                                        offer.interestRatePct <=
+                                            widget.suggestedInterestRatePct!,
+                                sparklineValues: [offer.interestRatePct],
+                                baselineValue: widget.marketBaselinePct,
+                                baselineColor: AppColors.warning,
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 70),
+                          const SizedBox(width: 12),
                           Container(
                               width: 1,
                               height: 40,
                               color: Theme.of(context).dividerColor),
-                          const SizedBox(width: 70),
-                          TickerCard(
-                            label: l10n?.lateFeeLabel ?? 'Late fee',
-                            value: '${offer.lateFeePct.toStringAsFixed(1)}%',
-                            deltaLabel: widget.suggestedLateFeePct != null
-                                ? (l10n?.vsAskLabel(
-                                      '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)}',
-                                    ) ??
-                                    '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask')
-                                : '—',
-                            isPositive: widget.suggestedLateFeePct == null ||
-                                offer.lateFeePct <= widget.suggestedLateFeePct!,
-                            sparklineValues: [offer.lateFeePct],
-                            baselineValue: widget.marketBaselinePct,
-                            baselineColor: AppColors.warning,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Center(
+                              child: TickerCard(
+                                label: l10n?.lateFeeLabel ?? 'Late fee',
+                                value: '${offer.lateFeePct.toStringAsFixed(1)}%',
+                                deltaLabel: widget.suggestedLateFeePct != null
+                                    ? (l10n?.vsAskLabel(
+                                          '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)}',
+                                        ) ??
+                                        '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask')
+                                    : '—',
+                                isPositive: widget.suggestedLateFeePct == null ||
+                                    offer.lateFeePct <= widget.suggestedLateFeePct!,
+                                sparklineValues: [offer.lateFeePct],
+                                baselineValue: widget.marketBaselinePct,
+                                baselineColor: AppColors.warning,
+                              ),
+                            ),
                           ),
                         ],
                       ),
