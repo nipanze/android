@@ -1925,14 +1925,44 @@ abstract class AppLocalizations {
   /// No description provided for @repaymentTimelineLabel.
   ///
   /// In en, this message translates to:
-  /// **'Repayment timeline'**
+  /// **'Repayment timeline & schedule'**
   String get repaymentTimelineLabel;
 
   /// No description provided for @repaymentTimelineHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g. Paid by the 5th of every month for 8 months'**
+  /// **'e.g. Paid by the 5th of every month by 5:00 PM for 8 months'**
   String get repaymentTimelineHint;
+
+  /// No description provided for @dueDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due day / frequency'**
+  String get dueDayLabel;
+
+  /// No description provided for @dueDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select due day (e.g. 5th of every month)'**
+  String get dueDayHint;
+
+  /// No description provided for @dueCutoffTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Due cutoff time (for late fee timing)'**
+  String get dueCutoffTimeLabel;
+
+  /// No description provided for @dueCutoffTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select due time (e.g. 5:00 PM)'**
+  String get dueCutoffTimeHint;
+
+  /// No description provided for @timelineHelperText.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact day & cutoff time used for late fee calculations'**
+  String get timelineHelperText;
 
   /// No description provided for @suggestedInterestRateLabel.
   ///
@@ -2881,6 +2911,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lock'**
   String get lockPhoneNumber;
+
+  /// No description provided for @liveCalcTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment breakdown'**
+  String get liveCalcTitle;
+
+  /// No description provided for @liveCalcLoanAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan amount'**
+  String get liveCalcLoanAmount;
+
+  /// No description provided for @liveCalcPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment plan'**
+  String get liveCalcPlan;
+
+  /// No description provided for @liveCalcDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get liveCalcDuration;
+
+  /// No description provided for @liveCalcInstallment.
+  ///
+  /// In en, this message translates to:
+  /// **'Per period installment'**
+  String get liveCalcInstallment;
+
+  /// No description provided for @liveCalcTotalPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Total payments'**
+  String get liveCalcTotalPayments;
+
+  /// No description provided for @liveCalcTotalPayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Total payback'**
+  String get liveCalcTotalPayback;
+
+  /// No description provided for @liveCalcBorrowingCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing cost'**
+  String get liveCalcBorrowingCost;
+
+  /// No description provided for @liveCalcNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the fields above to see your repayment breakdown.'**
+  String get liveCalcNoData;
+
+  /// No description provided for @freeTermsBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.'**
+  String get freeTermsBanner;
+
+  /// No description provided for @offerReadOnlyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the lender\'s proposed terms below. Accept or wait for a better offer.'**
+  String get offerReadOnlyNotice;
+
+  /// No description provided for @sponsoredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sponsored'**
+  String get sponsoredLabel;
+
+  /// No description provided for @borrowerTermsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'—'**
+  String get borrowerTermsMissing;
+
+  /// No description provided for @repaymentCalcFormula.
+  ///
+  /// In en, this message translates to:
+  /// **'installment × number of payments = total payback'**
+  String get repaymentCalcFormula;
+
+  /// No description provided for @liveCalcWeeklyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly plan: {months} months × 4 = {count} payments'**
+  String liveCalcWeeklyNote(int months, int count);
+
+  /// No description provided for @liveCalcMonthlyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} monthly payments'**
+  String liveCalcMonthlyNote(int count);
+
+  /// No description provided for @liveCalcOneTimeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'1 lump-sum payment'**
+  String get liveCalcOneTimeNote;
 }
 
 class _AppLocalizationsDelegate

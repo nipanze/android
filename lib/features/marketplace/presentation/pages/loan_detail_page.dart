@@ -234,12 +234,39 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          listing.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(fontSize: 12.5),
+                        child: Row(
+                          children: [
+                            if (listing.isSponsored) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.purple.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                      color: AppColors.purple.withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  l10n?.sponsoredLabel ?? 'Sponsored',
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.purple,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            Expanded(
+                              child: Text(
+                                listing.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(fontSize: 12.5),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -331,12 +358,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _TermBadge(
-                          l10n?.interestPercent(
-                                listing.suggestedInterestRatePct
-                                        ?.toStringAsFixed(0) ??
-                                    '0',
-                              ) ??
-                              '${listing.suggestedInterestRatePct?.toStringAsFixed(0) ?? '0'}% interest',
+                          listing.suggestedInterestRatePct == null
+                              ? (l10n?.borrowerTermsMissing ?? '—')
+                              : (l10n?.interestPercent(
+                                    listing.suggestedInterestRatePct!
+                                        .toStringAsFixed(0),
+                                  ) ??
+                                  '${listing.suggestedInterestRatePct!.toStringAsFixed(0)}% interest'),
                         ),
                       ),
                     ],

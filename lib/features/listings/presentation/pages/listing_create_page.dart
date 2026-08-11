@@ -38,6 +38,40 @@ const _repaymentPlans = [
   {'value': 'one_time', 'label': 'One-time payment'},
 ];
 
+const _monthlyDueDayOptions = [
+  '1st of every month',
+  '5th of every month',
+  '10th of every month',
+  '15th of every month',
+  '20th of every month',
+  '25th of every month',
+  'Last day of every month',
+  'Custom day',
+];
+
+const _weeklyDueDayOptions = [
+  'Every Monday',
+  'Every Wednesday',
+  'Every Friday',
+  'Every Sunday',
+  'Custom day',
+];
+
+const _oneTimeDueDayOptions = [
+  'Maturity date / End of term',
+  '1st of target month',
+  '15th of target month',
+  'Custom day',
+];
+
+const _dueTimeOptions = [
+  '5:00 PM (End of business day)',
+  '12:00 PM (Noon)',
+  '8:00 PM (Evening)',
+  '11:59 PM (End of day)',
+  'Custom time',
+];
+
 class ListingCreatePage extends StatefulWidget {
   const ListingCreatePage({super.key});
   @override
@@ -70,6 +104,36 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   final _suggestedInstallmentController = TextEditingController();
   String? _preferredRepaymentPlan;
   String? _suggestedRepaymentPlan;
+  String? _selectedDueDay;
+  String? _selectedDueTime;
+
+  void _updateRepaymentTimeline() {
+    final parts = <String>[];
+
+    if (_selectedDueDay != null && _selectedDueDay != 'Custom day') {
+      if (_preferredRepaymentPlan == 'weekly') {
+        parts.add('Paid $_selectedDueDay');
+      } else if (_preferredRepaymentPlan == 'one_time') {
+        parts.add('Paid on $_selectedDueDay');
+      } else {
+        parts.add('Paid by the $_selectedDueDay');
+      }
+    }
+
+    if (_selectedDueTime != null && _selectedDueTime != 'Custom time') {
+      final cleanTime = _selectedDueTime!.split(' (').first;
+      parts.add('by $cleanTime');
+    }
+
+    final durationMonths = int.tryParse(_durationController.text) ?? 0;
+    if (durationMonths > 0) {
+      parts.add('for $durationMonths months');
+    }
+
+    if (parts.isNotEmpty) {
+      _repaymentTimelineController.text = parts.join(' ');
+    }
+  }
 
   final _loanDetailsFormKey = GlobalKey<FormState>();
   final _repaymentFormKey = GlobalKey<FormState>();
@@ -161,7 +225,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         _preferredRepaymentPlan != null &&
         amount != null &&
         amount > 0 &&
-        _repaymentTimelineController.text.trim().isNotEmpty;
+        _selectedDueDay != null &&
+        _selectedDueTime != null &&
+        _repaymentTimelineController.text.trim().length >= 10;
   }
 
   bool get _currentStepReady => switch (_step) {
@@ -187,6 +253,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   bool get _repaymentValid {
     if (!_repaymentFormKey.currentState!.validate()) return false;
     if (_preferredRepaymentPlan == null) return false;
+    if (_selectedDueDay == null) return false;
+    if (_selectedDueTime == null) return false;
     return true;
   }
 
@@ -812,7 +880,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                           child: Text(_getLocalizedRepaymentPlan(p['value'])),
                         ))
                     .toList(),
-                onChanged: (v) => setState(() => _preferredRepaymentPlan = v),
+                onChanged: (v) => setState(() {
+                  _preferredRepaymentPlan = v;
+                  _selectedDueDay = null;
+                  _updateRepaymentTimeline();
+                }),
                 validator: (v) => v == null
                     ? (l10n?.validationRepaymentPlanRequired ??
                         'Select a repayment plan')
@@ -849,16 +921,61 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 },
               ),
               const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedDueDay,
+                decoration: InputDecoration(
+                  labelText: l10n?.dueDayLabel ?? 'Due day / frequency',
+                  prefixIcon: const Icon(Icons.today_outlined, size: 20),
+                ),
+                hint: Text(l10n?.dueDayHint ?? 'Select due day (e.g. 5th of every month)'),
+                items: (_preferredRepaymentPlan == 'weekly'
+                        ? _weeklyDueDayOptions
+                        : _preferredRepaymentPlan == 'one_time'
+                            ? _oneTimeDueDayOptions
+                            : _monthlyDueDayOptions)
+                    .map((day) => DropdownMenuItem(
+                          value: day,
+                          child: Text(day),
+                        ))
+                    .toList(),
+                onChanged: (v) => setState(() {
+                  _selectedDueDay = v;
+                  _updateRepaymentTimeline();
+                }),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedDueTime,
+                decoration: InputDecoration(
+                  labelText: l10n?.dueCutoffTimeLabel ??
+                      'Due cutoff time (for late fee timing)',
+                  prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
+                ),
+                hint: Text(l10n?.dueCutoffTimeHint ?? 'Select due time (e.g. 5:00 PM)'),
+                items: _dueTimeOptions
+                    .map((time) => DropdownMenuItem(
+                          value: time,
+                          child: Text(time),
+                        ))
+                    .toList(),
+                onChanged: (v) => setState(() {
+                  _selectedDueTime = v;
+                  _updateRepaymentTimeline();
+                }),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _repaymentTimelineController,
                 textCapitalization: TextCapitalization.sentences,
-                maxLines: 3,
+                maxLines: 2,
                 decoration: InputDecoration(
                   labelText:
-                      l10n?.repaymentTimelineLabel ?? 'Repayment timeline',
+                      l10n?.repaymentTimelineLabel ?? 'Repayment timeline & schedule',
                   hintText: l10n?.repaymentTimelineHint ??
-                      'e.g. Paid by the 5th of every month for 8 months',
+                      'e.g. Paid by the 5th of every month by 5:00 PM for 8 months',
                   alignLabelWithHint: true,
+                  helperText: l10n?.timelineHelperText ??
+                      'Exact day & cutoff time used for late fee calculations',
                   prefixIcon: const Icon(Icons.event_repeat_outlined, size: 20),
                 ),
                 validator: (v) {
@@ -877,101 +994,128 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             ],
           ),
           const SizedBox(height: 10),
+          _LiveRepaymentMathPanel(
+            currency: currency,
+            principal: int.tryParse(_amountController.text) ?? 0,
+            durationMonths: int.tryParse(_durationController.text) ?? 0,
+            repaymentPlan: _preferredRepaymentPlan,
+            installmentAmount: int.tryParse(_repaymentAmountController.text) ?? 0,
+          ),
+          const SizedBox(height: 10),
           _FormPanel(
             title: l10n?.panelPreferredTerms ?? 'Preferred terms',
             subtitle: canSuggestTerms
                 ? (l10n?.termsLockedNotice ??
                     'Locked when the request is published.')
-                : (l10n?.upgradeToProForTerms ??
-                    'Upgrade to Pro to suggest interest, late fee, and repayment terms.'),
-            children: [
-              TextFormField(
-                controller: _suggestedInterestController,
-                enabled: canSuggestTerms,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                ],
-                decoration: InputDecoration(
-                  labelText: l10n?.suggestedInterestRateLabel ??
-                      'Suggested interest rate (%)',
-                  prefixIcon: const Icon(Icons.percent_rounded, size: 20),
-                ),
-                validator: (v) {
-                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
-                  final n = double.tryParse(v);
-                  if (n == null || n < 0 || n > 100) {
-                    return l10n?.validationPercentRange ?? 'Use 0 to 100';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _suggestedLateFeeController,
-                enabled: canSuggestTerms,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                ],
-                decoration: InputDecoration(
-                  labelText: l10n?.suggestedLateFeeLabel ??
-                      'Suggested late payment fee (%)',
-                  prefixIcon: const Icon(Icons.warning_amber_rounded, size: 20),
-                ),
-                validator: (v) {
-                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
-                  final n = double.tryParse(v);
-                  if (n == null || n < 0 || n > 100) {
-                    return l10n?.validationPercentRange ?? 'Use 0 to 100';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _suggestedRepaymentPlan,
-                decoration: InputDecoration(
-                  labelText: l10n?.suggestedRepaymentScheduleLabel ??
-                      'Suggested repayment schedule',
-                  prefixIcon:
-                      const Icon(Icons.event_available_outlined, size: 20),
-                ),
-                items: _repaymentPlans
-                    .map((p) => DropdownMenuItem(
-                          value: p['value'],
-                          child: Text(_getLocalizedRepaymentPlan(p['value'])),
-                        ))
-                    .toList(),
-                onChanged: canSuggestTerms
-                    ? (v) => setState(() => _suggestedRepaymentPlan = v)
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _suggestedInstallmentController,
-                enabled: canSuggestTerms,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.price_check_outlined, size: 20),
-                ).copyWith(
-                  labelText: l10n?.suggestedInstallmentAmountLabel(currency) ??
-                      'Suggested installment amount ($currency)',
-                ),
-                validator: (v) {
-                  if (!canSuggestTerms || v == null || v.isEmpty) return null;
-                  final n = int.tryParse(v);
-                  if (n == null || n <= 0) {
-                    return l10n?.validationRepaymentAmountValid ??
-                        'Enter a valid amount';
-                  }
-                  return null;
-                },
-              ),
-            ],
+                : (l10n?.freeTermsBanner ??
+                    'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.'),
+            children: canSuggestTerms
+                ? [
+                    TextFormField(
+                      controller: _suggestedInterestController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: l10n?.suggestedInterestRateLabel ??
+                            'Suggested interest rate (%)',
+                        prefixIcon: const Icon(Icons.percent_rounded, size: 20),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return null;
+                        final n = double.tryParse(v);
+                        if (n == null || n < 0 || n > 100) {
+                          return l10n?.validationPercentRange ?? 'Use 0 to 100';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _suggestedLateFeeController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: l10n?.suggestedLateFeeLabel ??
+                            'Suggested late payment fee (%)',
+                        prefixIcon: const Icon(Icons.warning_amber_rounded, size: 20),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return null;
+                        final n = double.tryParse(v);
+                        if (n == null || n < 0 || n > 100) {
+                          return l10n?.validationPercentRange ?? 'Use 0 to 100';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _suggestedRepaymentPlan,
+                      decoration: InputDecoration(
+                        labelText: l10n?.suggestedRepaymentScheduleLabel ??
+                            'Suggested repayment schedule',
+                        prefixIcon:
+                            const Icon(Icons.event_available_outlined, size: 20),
+                      ),
+                      items: _repaymentPlans
+                          .map((p) => DropdownMenuItem(
+                                value: p['value'],
+                                child: Text(_getLocalizedRepaymentPlan(p['value'])),
+                              ))
+                          .toList(),
+                      onChanged: (v) => setState(() => _suggestedRepaymentPlan = v),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _suggestedInstallmentController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.price_check_outlined, size: 20),
+                      ).copyWith(
+                        labelText: l10n?.suggestedInstallmentAmountLabel(currency) ??
+                            'Suggested installment amount ($currency)',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return null;
+                        final n = int.tryParse(v);
+                        if (n == null || n <= 0) {
+                          return l10n?.validationRepaymentAmountValid ??
+                              'Enter a valid amount';
+                        }
+                        return null;
+                      },
+                    ),
+                  ]
+                : [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_outline_rounded,
+                              size: 18, color: AppColors.accent),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              l10n?.freeTermsBanner ??
+                                  'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
           ),
         ]),
       ),
@@ -1397,6 +1541,193 @@ class _ReviewRow extends StatelessWidget {
           ]),
         ),
       ]),
+    );
+  }
+}
+
+// ─── Live Repayment Math Panel ────────────────────────────────────────────────
+
+class _LiveRepaymentMathPanel extends StatelessWidget {
+  const _LiveRepaymentMathPanel({
+    required this.currency,
+    required this.principal,
+    required this.durationMonths,
+    required this.repaymentPlan,
+    required this.installmentAmount,
+  });
+
+  final String currency;
+  final int principal;
+  final int durationMonths;
+  final String? repaymentPlan;
+  final int installmentAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    if (principal <= 0 || durationMonths <= 0 || repaymentPlan == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Text(
+          l10n?.liveCalcNoData ??
+              'Fill in the fields above to see your repayment breakdown.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+        ),
+      );
+    }
+
+    final int periods = switch (repaymentPlan) {
+      'weekly' => durationMonths * 4,
+      'one_time' => 1,
+      _ => durationMonths,
+    };
+
+    final int totalPayback = installmentAmount > 0
+        ? installmentAmount * periods
+        : 0;
+
+    final int borrowingCost = totalPayback > principal
+        ? totalPayback - principal
+        : 0;
+
+    final planNote = switch (repaymentPlan) {
+      'weekly' => l10n?.liveCalcWeeklyNote(durationMonths, periods) ??
+          'Weekly plan: $durationMonths months × 4 = $periods payments',
+      'one_time' => l10n?.liveCalcOneTimeNote ?? '1 lump-sum payment',
+      _ => l10n?.liveCalcMonthlyNote(periods) ?? '$periods monthly payments',
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.calculate_outlined,
+                  size: 16, color: AppColors.accent),
+              const SizedBox(width: 6),
+              Text(
+                (l10n?.liveCalcTitle ?? 'Repayment breakdown').toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n?.repaymentCalcFormula ??
+                'installment × number of payments = total payback',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 10,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+          ),
+          const SizedBox(height: 10),
+          _MathRow(
+            label: l10n?.liveCalcLoanAmount ?? 'Loan amount',
+            value: '$currency ${_fmt(principal)}',
+          ),
+          _MathRow(
+            label: l10n?.liveCalcDuration ?? 'Duration',
+            value: '$durationMonths ${l10n?.months ?? "months"}',
+          ),
+          _MathRow(
+            label: l10n?.liveCalcTotalPayments ?? 'Total payments',
+            value: planNote,
+          ),
+          if (installmentAmount > 0) ...[
+            const Divider(height: 12),
+            _MathRow(
+              label: l10n?.liveCalcInstallment ?? 'Per period installment',
+              value: '$currency ${_fmt(installmentAmount)}',
+            ),
+            _MathRow(
+              label: l10n?.liveCalcTotalPayback ?? 'Total payback',
+              value: '$currency ${_fmt(totalPayback)}',
+              isBold: true,
+            ),
+            if (borrowingCost > 0)
+              _MathRow(
+                label: l10n?.liveCalcBorrowingCost ?? 'Borrowing cost',
+                value: '$currency ${_fmt(borrowingCost)}',
+                valueColor: AppColors.success,
+                isBold: true,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _fmt(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+}
+
+class _MathRow extends StatelessWidget {
+  const _MathRow({
+    required this.label,
+    required this.value,
+    this.isBold = false,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final bool isBold;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                  color: valueColor,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

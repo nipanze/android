@@ -1031,11 +1031,28 @@ class AppLocalizationsRw extends AppLocalizations {
   String get repaymentAmountHint => 'urugero: 250,000';
 
   @override
-  String get repaymentTimelineLabel => 'Igihe cyo kwishyura';
+  String get repaymentTimelineLabel => 'Igihe n\'isaha yo kwishyura';
 
   @override
   String get repaymentTimelineHint =>
-      'urugero: Kwishyurwa ku itariki 5 za buri kwezi mu miezi 8';
+      'urugero: Kwishyurwa ku itariki 5 za buri kwezi mbele ya saa kumi n\'imwe z\'umugoroba mu miezi 8';
+
+  @override
+  String get dueDayLabel => 'Umunsi wo kwishyura';
+
+  @override
+  String get dueDayHint =>
+      'Hitamo umunsi wo kwishyura (urugero: itariki 5 za buri kwezi)';
+
+  @override
+  String get dueCutoffTimeLabel => 'Isaha ntarengwa (y\'amande y\'ubukererwe)';
+
+  @override
+  String get dueCutoffTimeHint => 'Hitamo isaha ntarengwa (urugero: 17:00)';
+
+  @override
+  String get timelineHelperText =>
+      'Itariki n\'isaha nyawo bikoreshwa mu kubara amande y\'ubukererwe';
 
   @override
   String get suggestedInterestRateLabel => 'Inyungu isabwa (%)';
@@ -1560,4 +1577,63 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get lockPhoneNumber => 'Funga';
+
+  @override
+  String get liveCalcTitle => 'Imyanzuro y\'ibisubizo';
+
+  @override
+  String get liveCalcLoanAmount => 'Ingano y\'inguzanyo';
+
+  @override
+  String get liveCalcPlan => 'Gahunda yo gusubiza';
+
+  @override
+  String get liveCalcDuration => 'Igihe';
+
+  @override
+  String get liveCalcInstallment => 'Igishoro cya buri gihe';
+
+  @override
+  String get liveCalcTotalPayments => 'Umubare wose w\'ibisubizo';
+
+  @override
+  String get liveCalcTotalPayback => 'Igiteranyo cy\'ibisubizo';
+
+  @override
+  String get liveCalcBorrowingCost => 'Igiciro cy\'inguzanyo';
+
+  @override
+  String get liveCalcNoData =>
+      'Uzuza ibice hejuru kugira ngo ubone imyanzuro y\'ibisubizo byawe.';
+
+  @override
+  String get freeTermsBanner =>
+      'Siga ubusa — abatangira inguzanyo bazatanga amategeko yabo. Muze ku Pro gutanga ibyifuzo.';
+
+  @override
+  String get offerReadOnlyNotice =>
+      'Reba amategeko asabwa n\'umuguzi hepfo. Emera cyangwa tegereza ikirushijeho.';
+
+  @override
+  String get sponsoredLabel => 'Yongewe';
+
+  @override
+  String get borrowerTermsMissing => '—';
+
+  @override
+  String get repaymentCalcFormula =>
+      'igishoro × umubare w\'ibisubizo = igiteranyo';
+
+  @override
+  String liveCalcWeeklyNote(int months, int count) {
+    return 'Gahunda ya buri cyumweru: amezi $months × 4 = $count bisubizo';
+  }
+
+  @override
+  String liveCalcMonthlyNote(int count) {
+    return 'Bisubizo $count bya buri kwezi';
+  }
+
+  @override
+  String get liveCalcOneTimeNote => 'Isubizwa 1 rimwe';
 }

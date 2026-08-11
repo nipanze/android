@@ -43,12 +43,39 @@ class MyListingCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        listing.title,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          if (listing.isSponsored) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.purple.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                    color: AppColors.purple.withValues(alpha: 0.4)),
+                              ),
+                              child: Text(
+                                l10n?.sponsoredLabel ?? 'Sponsored',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.purple,
+                                ),
+                              ),
+                            ),
+                          ],
+                          Expanded(
+                            child: Text(
+                              listing.title,
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(

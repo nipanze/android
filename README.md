@@ -144,9 +144,9 @@ There is no "select your role" step anywhere in the app. A user simply acts:
 
 | Plan | Access |
 |---|---|
-| 🟢 **Free** | Post basic loan or forex requests (loan: amount, duration, purpose · forex: currency pair, amount, settlement preference) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting |
+| 🟢 **Free** | Post basic loan or forex requests (loan: amount, duration, purpose with live repayment math calculation · forex: currency pair, amount, settlement preference) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting (lenders propose terms; borrower detail shows `—` when no terms suggested) |
 | 🔵 **Lender** | Everything in Free, **plus**: make offers on any listing, loan or forex (in-country or cross-border, see [Multi-Market Architecture](#multi-market-architecture)) · set interest rate, late payment fee, and repayment schedule on loan offers · set exchange rate, available amount, and terms on forex offers |
-| 🟣 **Pro** | Everything in Lender, **plus**: suggest terms when posting a request — interest rate, late fee, and repayment schedule for a loan request, or a preferred exchange rate for a forex request · priority visibility for posted requests · improved matching · Verified badge · advanced trust insights |
+| 🟣 **Pro** | Everything in Lender, **plus**: suggest terms when posting a request — interest rate, late fee, and repayment schedule for a loan request, or a preferred exchange rate for a forex request · priority visibility for posted requests · live comparison sparklines & delta analytics · Sponsored post support · improved matching · Verified badge · advanced trust insights |
 
 No plan is ever labeled "Borrower Plan," "Lender-only," or "Forex Plan," and no plan is ever country- or module-specific — a single `subscription_plan` applies to the account regardless of which country's marketplace they're viewing or whether they're acting in Loans or Forex. Each plan name describes the *unlocked capability*, not the person holding it or the module. A single user can hold only **one** `subscription_plan` at a time (`free | lender | pro`), and Pro is a strict superset of Lender, which is a strict superset of Free.
 
@@ -312,7 +312,7 @@ Each **loan** request must include:
 - **Loan details:** request title, amount needed, duration, purpose, and district
 - **Source of income:** salary, business income, side income, or other repayment source
 - **Repayment preference:** weekly, monthly, or one-time payment
-- **Repayment ability:** amount payable per period and repayment timeline
+- **Repayment ability:** amount payable per period and structured repayment timeline (including specific Due Day of month/week and Due Cutoff Time for precise late-payment fee timing)
 - **Currency:** the requester's local currency by default, or USD where the market's `allow_foreign_currency_loans` setting permits it
 
 Each **forex** request must include:

@@ -30,6 +30,7 @@ class MyListing extends Equatable {
     this.contractedAt,
     this.cancelledAt,
     this.currency = 'UGX',
+    this.isSponsored = false,
   });
 
   final String id;
@@ -58,6 +59,7 @@ class MyListing extends Equatable {
   final DateTime? contractedAt;
   final DateTime? cancelledAt;
   final String currency;
+  final bool isSponsored;
 
   bool get isActive => status == ListingStatus.active;
   bool get isContracted => status == ListingStatus.contracted;
@@ -119,6 +121,7 @@ class MyListing extends Equatable {
       cancelledAt: map['cancelled_at'] != null
           ? DateTime.tryParse(map['cancelled_at'] as String)
           : null,
+      isSponsored: map['is_sponsored'] as bool? ?? false,
       currency: (map['countries'] is Map &&
               (map['countries'] as Map)['currency_code'] != null)
           ? (map['countries'] as Map)['currency_code'] as String

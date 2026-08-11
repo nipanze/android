@@ -190,6 +190,27 @@ class ListingCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
+                if (loan?.isSponsored == true) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    margin: const EdgeInsets.only(right: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.purple.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                          color: AppColors.purple.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)?.sponsoredLabel ?? 'Sponsored',
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.purple,
+                      ),
+                    ),
+                  ),
+                ],
                 Expanded(
                   child: Text(
                     _shortTimeLabel(listing, AppLocalizations.of(context)!),

@@ -1019,11 +1019,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get repaymentAmountHint => 'مثال: 250,000';
 
   @override
-  String get repaymentTimelineLabel => 'الجدول الزمني للسداد';
+  String get repaymentTimelineLabel => 'الجدول والوقت المحدد للسداد';
 
   @override
   String get repaymentTimelineHint =>
-      'مثال: يدفع بحلول اليوم الخامس من كل شهر لمدة 8 أشهر';
+      'مثال: يدفع بحلول اليوم الخامس من كل شهر الساعة 5:00 مساءً لمدة 8 أشهر';
+
+  @override
+  String get dueDayLabel => 'يوم الاستحقاق / التكرار';
+
+  @override
+  String get dueDayHint => 'اختر يوم الاستحقاق (مثال: اليوم الخامس من كل شهر)';
+
+  @override
+  String get dueCutoffTimeLabel =>
+      'الوقت النهائي للاستحقاق (لحساب رسوم التأخير)';
+
+  @override
+  String get dueCutoffTimeHint => 'اختر الوقت النهائي (مثال: 5:00 مساءً)';
+
+  @override
+  String get timelineHelperText =>
+      'اليوم والوقت الدقيق المستخدمان لحساب رسوم التأخير';
 
   @override
   String get suggestedInterestRateLabel => 'سعر الفائدة المقترح (%)';
@@ -1542,4 +1559,61 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get lockPhoneNumber => 'قفل';
+
+  @override
+  String get liveCalcTitle => 'تفاصيل السداد';
+
+  @override
+  String get liveCalcLoanAmount => 'مبلغ القرض';
+
+  @override
+  String get liveCalcPlan => 'خطة السداد';
+
+  @override
+  String get liveCalcDuration => 'المدة';
+
+  @override
+  String get liveCalcInstallment => 'القسط لكل فترة';
+
+  @override
+  String get liveCalcTotalPayments => 'إجمالي المدفوعات';
+
+  @override
+  String get liveCalcTotalPayback => 'إجمالي السداد';
+
+  @override
+  String get liveCalcBorrowingCost => 'تكلفة الاقتراض';
+
+  @override
+  String get liveCalcNoData => 'أكمل الحقول أعلاه لعرض تفاصيل السداد.';
+
+  @override
+  String get freeTermsBanner =>
+      'اتركه فارغًا — سيقترح المُقرضون شروطهم. ترقّ إلى Pro لاقتراح النسب.';
+
+  @override
+  String get offerReadOnlyNotice =>
+      'راجع الشروط المقترحة من المُقرض أدناه. اقبل أو انتظر عرضًا أفضل.';
+
+  @override
+  String get sponsoredLabel => 'ممول';
+
+  @override
+  String get borrowerTermsMissing => '—';
+
+  @override
+  String get repaymentCalcFormula => 'القسط × عدد المدفوعات = إجمالي السداد';
+
+  @override
+  String liveCalcWeeklyNote(int months, int count) {
+    return 'خطة أسبوعية: $months أشهر × 4 = $count دفعة';
+  }
+
+  @override
+  String liveCalcMonthlyNote(int count) {
+    return '$count دفعة شهرية';
+  }
+
+  @override
+  String get liveCalcOneTimeNote => 'دفعة واحدة';
 }

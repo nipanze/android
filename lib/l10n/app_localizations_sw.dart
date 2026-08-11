@@ -1031,11 +1031,29 @@ class AppLocalizationsSw extends AppLocalizations {
   String get repaymentAmountHint => 'mfano: 250,000';
 
   @override
-  String get repaymentTimelineLabel => 'Ratiba ya marejesho';
+  String get repaymentTimelineLabel => 'Ratiba na muda wa marejesho';
 
   @override
   String get repaymentTimelineHint =>
-      'mfano: Kulipwa tarehe 5 ya kila mwezi kwa miezi 8';
+      'mfano: Kulipwa tarehe 5 ya kila mwezi saa 11:00 jioni kwa miezi 8';
+
+  @override
+  String get dueDayLabel => 'Siku ya malipo / marudio';
+
+  @override
+  String get dueDayHint =>
+      'Chagua siku ya malipo (mfano: tarehe 5 ya kila mwezi)';
+
+  @override
+  String get dueCutoffTimeLabel =>
+      'Muda wa mwisho wa malipo (kwa ada ya kuchelewa)';
+
+  @override
+  String get dueCutoffTimeHint => 'Chagua muda wa mwisho (mfano: 11:00 jioni)';
+
+  @override
+  String get timelineHelperText =>
+      'Tarehe na muda kamili unaotumika kukokotoa ada za kuchelewa';
 
   @override
   String get suggestedInterestRateLabel =>
@@ -1561,4 +1579,63 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get lockPhoneNumber => 'Funga';
+
+  @override
+  String get liveCalcTitle => 'Muhtasari wa malipo';
+
+  @override
+  String get liveCalcLoanAmount => 'Kiasi cha mkopo';
+
+  @override
+  String get liveCalcPlan => 'Mpango wa malipo';
+
+  @override
+  String get liveCalcDuration => 'Muda';
+
+  @override
+  String get liveCalcInstallment => 'Malipo kwa kila kipindi';
+
+  @override
+  String get liveCalcTotalPayments => 'Jumla ya malipo';
+
+  @override
+  String get liveCalcTotalPayback => 'Jumla ya kulipa';
+
+  @override
+  String get liveCalcBorrowingCost => 'Gharama ya kukopa';
+
+  @override
+  String get liveCalcNoData =>
+      'Jaza sehemu zilizo juu ili uone muhtasari wa malipo yako.';
+
+  @override
+  String get freeTermsBanner =>
+      'Acha wazi — wakopeshaji watapendekezwa masharti yao. Boresha hadi Pro ili upendekeze viwango.';
+
+  @override
+  String get offerReadOnlyNotice =>
+      'Angalia masharti yanayopendekezwa na mkopeshaji hapa chini. Kubali au subiri ofa bora.';
+
+  @override
+  String get sponsoredLabel => 'Imesponsorwa';
+
+  @override
+  String get borrowerTermsMissing => '—';
+
+  @override
+  String get repaymentCalcFormula =>
+      'malipo × idadi ya malipo = jumla ya kulipa';
+
+  @override
+  String liveCalcWeeklyNote(int months, int count) {
+    return 'Mpango wa wiki: miezi $months × 4 = malipo $count';
+  }
+
+  @override
+  String liveCalcMonthlyNote(int count) {
+    return 'Malipo $count ya kila mwezi';
+  }
+
+  @override
+  String get liveCalcOneTimeNote => 'Malipo 1 ya mara moja';
 }

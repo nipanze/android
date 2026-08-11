@@ -1036,11 +1036,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get repaymentAmountHint => 'ex. 250 000';
 
   @override
-  String get repaymentTimelineLabel => 'Calendrier de remboursement';
+  String get repaymentTimelineLabel => 'Calendrier et horaire de remboursement';
 
   @override
   String get repaymentTimelineHint =>
-      'ex. Payé le 5 de chaque mois pendant 8 mois';
+      'ex. Payé le 5 de chaque mois avant 17h00 pendant 8 mois';
+
+  @override
+  String get dueDayLabel => 'Jour / fréquence d\'échéance';
+
+  @override
+  String get dueDayHint =>
+      'Sélectionner le jour d\'échéance (ex. 5 de chaque mois)';
+
+  @override
+  String get dueCutoffTimeLabel =>
+      'Heure limite d\'échéance (pour frais de retard)';
+
+  @override
+  String get dueCutoffTimeHint => 'Sélectionner l\'heure limite (ex. 17h00)';
+
+  @override
+  String get timelineHelperText =>
+      'Jour et heure exacts utilisés pour le calcul des frais de retard';
 
   @override
   String get suggestedInterestRateLabel => 'Taux d\'intérêt suggéré (%)';
@@ -1574,4 +1592,63 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get lockPhoneNumber => 'Verrouiller';
+
+  @override
+  String get liveCalcTitle => 'Détail du remboursement';
+
+  @override
+  String get liveCalcLoanAmount => 'Montant du prêt';
+
+  @override
+  String get liveCalcPlan => 'Plan de remboursement';
+
+  @override
+  String get liveCalcDuration => 'Durée';
+
+  @override
+  String get liveCalcInstallment => 'Versement par période';
+
+  @override
+  String get liveCalcTotalPayments => 'Nombre total de paiements';
+
+  @override
+  String get liveCalcTotalPayback => 'Total à rembourser';
+
+  @override
+  String get liveCalcBorrowingCost => 'Coût total des intérêts';
+
+  @override
+  String get liveCalcNoData =>
+      'Remplissez les champs ci-dessus pour voir votre plan de remboursement.';
+
+  @override
+  String get freeTermsBanner =>
+      'Laissez vide — les prêteurs proposeront leurs propres conditions. Passez à Pro pour suggérer des taux.';
+
+  @override
+  String get offerReadOnlyNotice =>
+      'Consultez les conditions proposées par le prêteur ci-dessous. Acceptez ou attendez une meilleure offre.';
+
+  @override
+  String get sponsoredLabel => 'Sponsorisé';
+
+  @override
+  String get borrowerTermsMissing => '—';
+
+  @override
+  String get repaymentCalcFormula =>
+      'versement × nombre de paiements = total à rembourser';
+
+  @override
+  String liveCalcWeeklyNote(int months, int count) {
+    return 'Plan hebdomadaire : $months mois × 4 = $count paiements';
+  }
+
+  @override
+  String liveCalcMonthlyNote(int count) {
+    return '$count paiements mensuels';
+  }
+
+  @override
+  String get liveCalcOneTimeNote => '1 paiement unique';
 }

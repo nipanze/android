@@ -1026,11 +1026,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repaymentAmountHint => 'e.g. 250,000';
 
   @override
-  String get repaymentTimelineLabel => 'Repayment timeline';
+  String get repaymentTimelineLabel => 'Repayment timeline & schedule';
 
   @override
   String get repaymentTimelineHint =>
-      'e.g. Paid by the 5th of every month for 8 months';
+      'e.g. Paid by the 5th of every month by 5:00 PM for 8 months';
+
+  @override
+  String get dueDayLabel => 'Due day / frequency';
+
+  @override
+  String get dueDayHint => 'Select due day (e.g. 5th of every month)';
+
+  @override
+  String get dueCutoffTimeLabel => 'Due cutoff time (for late fee timing)';
+
+  @override
+  String get dueCutoffTimeHint => 'Select due time (e.g. 5:00 PM)';
+
+  @override
+  String get timelineHelperText =>
+      'Exact day & cutoff time used for late fee calculations';
 
   @override
   String get suggestedInterestRateLabel => 'Suggested interest rate (%)';
@@ -1554,4 +1570,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lockPhoneNumber => 'Lock';
+
+  @override
+  String get liveCalcTitle => 'Repayment breakdown';
+
+  @override
+  String get liveCalcLoanAmount => 'Loan amount';
+
+  @override
+  String get liveCalcPlan => 'Repayment plan';
+
+  @override
+  String get liveCalcDuration => 'Duration';
+
+  @override
+  String get liveCalcInstallment => 'Per period installment';
+
+  @override
+  String get liveCalcTotalPayments => 'Total payments';
+
+  @override
+  String get liveCalcTotalPayback => 'Total payback';
+
+  @override
+  String get liveCalcBorrowingCost => 'Borrowing cost';
+
+  @override
+  String get liveCalcNoData =>
+      'Fill in the fields above to see your repayment breakdown.';
+
+  @override
+  String get freeTermsBanner =>
+      'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.';
+
+  @override
+  String get offerReadOnlyNotice =>
+      'Review the lender\'s proposed terms below. Accept or wait for a better offer.';
+
+  @override
+  String get sponsoredLabel => 'Sponsored';
+
+  @override
+  String get borrowerTermsMissing => '—';
+
+  @override
+  String get repaymentCalcFormula =>
+      'installment × number of payments = total payback';
+
+  @override
+  String liveCalcWeeklyNote(int months, int count) {
+    return 'Weekly plan: $months months × 4 = $count payments';
+  }
+
+  @override
+  String liveCalcMonthlyNote(int count) {
+    return '$count monthly payments';
+  }
+
+  @override
+  String get liveCalcOneTimeNote => '1 lump-sum payment';
 }
