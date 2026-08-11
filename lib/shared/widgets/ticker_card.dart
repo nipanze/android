@@ -9,7 +9,10 @@ class TickerCard extends StatelessWidget {
     required this.value,
     required this.deltaLabel,
     required this.isPositive,
-    required this.sparklineValues,
+    this.sparklineValues = const [],
+    this.showSparkline = true,
+    this.baselineValue,
+    this.baselineColor,
   });
 
   final String label;
@@ -17,6 +20,9 @@ class TickerCard extends StatelessWidget {
   final String deltaLabel;
   final bool isPositive;
   final List<double> sparklineValues;
+  final bool showSparkline;
+  final double? baselineValue;
+  final Color? baselineColor;
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +45,21 @@ class TickerCard extends StatelessWidget {
             Text(value,
                 style: const TextStyle(
                     fontSize: 17, fontWeight: FontWeight.w600)),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 46,
-              height: 18,
-              child: CustomPaint(
-                painter:
-                    _SparklinePainter(values: sparklineValues, color: color),
+            if (showSparkline) ...[
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 46,
+                height: 18,
+                child: CustomPaint(
+                  painter: _SparklinePainter(
+                    values: sparklineValues,
+                    color: color,
+                    baselineValue: baselineValue,
+                    baselineColor: baselineColor ?? AppColors.warning,
+                  ),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 2),
@@ -60,17 +72,42 @@ class TickerCard extends StatelessWidget {
 }
 
 class _SparklinePainter extends CustomPainter {
-  _SparklinePainter({required this.values, required this.color});
+  _SparklinePainter({
+    required this.values,
+    required this.color,
+    this.baselineValue,
+    required this.baselineColor,
+  });
   final List<double> values;
   final Color color;
+  final double? baselineValue;
+  final Color baselineColor;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (values.length < 2) return;
-    final minV = values.reduce((a, b) => a < b ? a : b);
-    final maxV = values.reduce((a, b) => a > b ? a : b);
+    final allValues = [...values];
+    if (baselineValue != null) {
+      allValues.add(baselineValue!);
+    }
+    if (allValues.isEmpty) return;
+    final minV = allValues.reduce((a, b) => a < b ? a : b);
+    final maxV = allValues.reduce((a, b) => a > b ? a : b);
     final range = (maxV - minV) == 0 ? 1 : maxV - minV;
 
+    if (baselineValue != null) {
+      final baselineY = size.height -
+          (((baselineValue! - minV) / range) * size.height);
+      canvas.drawLine(
+        Offset(0, baselineY),
+        Offset(size.width, baselineY),
+        Paint()
+          ..color = baselineColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2,
+      );
+    }
+
+    if (values.length < 2) return;
     final path = Path();
     final stepX = size.width / (values.length - 1);
     for (int i = 0; i < values.length; i++) {

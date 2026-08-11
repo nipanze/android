@@ -387,6 +387,8 @@ INSERT INTO system_settings (setting_key, setting_value, setting_type, category,
     ('listing_duration_days',   '7',        'number',  'marketplace', 'Days a loan request stays listed before expiry',       TRUE),
     ('kyc_validity_months',     '12',       'number',  'compliance',  'Months until KYC expires and re-verification required', TRUE),
     ('platform_currency',       'UGX',      'string',  'general',     'Fallback/global-default operating currency (each market''s actual currency comes from countries.currency_code)', TRUE),
+    ('market_interest_rate_baseline_pct', '10.0', 'number', 'marketplace', 'Global default market baseline interest rate percentage, controlled by admin.', TRUE),
+    ('market_late_payment_rate_baseline_pct', '5.0', 'number', 'marketplace', 'Global default market baseline late-payment rate percentage, controlled by admin.', TRUE),
     ('auto_logout_minutes',     '30',       'number',  'security',    'Idle session timeout in minutes',                      FALSE),
     ('access_token_minutes',    '15',       'number',  'security',    'Access JWT TTL in minutes',                            FALSE),
     ('refresh_token_days',      '7',        'number',  'security',    'Refresh token TTL in days',                            FALSE);

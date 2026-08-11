@@ -17,6 +17,7 @@ import '../../../../shared/widgets/ticker_card.dart';
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../settings/data/system_settings_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
 import '../../domain/models/marketplace_item.dart';
@@ -42,13 +43,22 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   bool _isParticipant = false;
 
   final _repo = getIt<MarketplaceRepository>();
+  final _settingsRepo = getIt<SystemSettingsRepository>();
+  double _marketBaselinePct = 10.0;
   StreamSubscription<List<LoanOffer>>? _offersSub;
   StreamSubscription<List<MarketplaceItem>>? _listingSub;
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _loadOnce();
+  }
+
+  Future<void> _loadSettings() async {
+    final limits = await _settingsRepo.getLimits();
+    if (!mounted) return;
+    setState(() => _marketBaselinePct = limits.marketRateBaselinePct);
   }
 
   @override
@@ -233,30 +243,36 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Theme fix: was a hardcoded Color(0xFF6E1717) box that
-                      // never adapted to light mode. Now built from
-                      // AppColors.danger so both themes read as an urgency tag,
-                      // consistent with the success/warning tint pattern used
-                      // elsewhere on this screen.
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withValues(alpha: 0.14),
+                          color: (listing.isClosingSoon24h
+                                  ? AppColors.danger
+                                  : AppColors.warning)
+                              .withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.access_time_rounded,
-                                size: 11, color: AppColors.danger),
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 11,
+                              color: listing.isClosingSoon24h
+                                  ? AppColors.danger
+                                  : AppColors.warning,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               listing.timeRemainingLabel,
-                              style: const TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.danger),
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: listing.isClosingSoon24h
+                                    ? AppColors.danger
+                                    : AppColors.warning,
+                              ),
                             ),
                           ],
                         ),
@@ -1256,14 +1272,9 @@ class _OfferCardState extends State<_OfferCard>
                                 widget.suggestedInterestRatePct == null ||
                                     offer.interestRatePct <=
                                         widget.suggestedInterestRatePct!,
-                            sparklineValues: (_rateHistory != null &&
-                                    _rateHistory!.length >= 3)
-                                ? _rateHistory!
-                                : [
-                                    widget.suggestedInterestRatePct ??
-                                        offer.interestRatePct,
-                                    offer.interestRatePct,
-                                  ],
+                            sparklineValues: [offer.interestRatePct],
+                            baselineValue: _marketBaselinePct,
+                            baselineColor: AppColors.warning,
                           ),
                           const SizedBox(width: 70),
                           Container(
@@ -1282,10 +1293,9 @@ class _OfferCardState extends State<_OfferCard>
                                 : '—',
                             isPositive: widget.suggestedLateFeePct == null ||
                                 offer.lateFeePct <= widget.suggestedLateFeePct!,
-                            sparklineValues: [
-                              widget.suggestedLateFeePct ?? offer.lateFeePct,
-                              offer.lateFeePct,
-                            ],
+                            sparklineValues: [offer.lateFeePct],
+                            baselineValue: _marketBaselinePct,
+                            baselineColor: AppColors.warning,
                           ),
                         ],
                       ),

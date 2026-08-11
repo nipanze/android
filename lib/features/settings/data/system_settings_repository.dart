@@ -18,6 +18,7 @@ class PlatformLimits {
     this.minLenderInvestment = 100000,
     this.maxConcurrentLoans = 3,
     this.listingDurationDays = 7,
+    this.marketRateBaselinePct = 10.0,
   });
 
   final int minLoanAmount;
@@ -27,6 +28,7 @@ class PlatformLimits {
   final int minLenderInvestment;
   final int maxConcurrentLoans;
   final int listingDurationDays;
+  final double marketRateBaselinePct;
 
   /// Fallback defaults match the schema v5.0 seed values.
   static const PlatformLimits defaults = PlatformLimits();
@@ -68,15 +70,11 @@ class SystemSettingsRepository {
             int.tryParse(map['max_concurrent_loans'] ?? '') ?? 3,
         listingDurationDays:
             int.tryParse(map['listing_duration_days'] ?? '') ?? 7,
+        marketRateBaselinePct:
+            double.tryParse(map['market_rate_baseline_pct'] ?? '') ?? 10.0,
       );
-
       return _cached!;
-    } catch (e) {
-      // Never block the UI — return defaults silently
+    } catch (_) {
       return PlatformLimits.defaults;
     }
   }
-
-  /// Invalidate cache (e.g. after admin changes a setting).
-  void invalidate() => _cached = null;
-}
