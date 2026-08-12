@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/domain/models/nipanze_user.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 class KycGateScreen extends StatelessWidget {
@@ -20,6 +22,13 @@ class KycGateScreen extends StatelessWidget {
   /// Override message — used when KYC is approved but the account is otherwise
   /// ineligible (e.g. canBorrow == false).
   final String? reason;
+
+  Future<void> _openKyc(BuildContext context) async {
+    await context.push(AppRoutes.kyc);
+    if (context.mounted) {
+      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +67,8 @@ class KycGateScreen extends StatelessWidget {
         ),
     };
 
-    final showKycButton = kycStatus != KycStatus.pending;
+    final isNotSubmitted = kycStatus == KycStatus.notSubmitted;
+    final isPending = kycStatus == KycStatus.pending;
 
     return Scaffold(
       body: SafeArea(
@@ -131,8 +141,8 @@ class KycGateScreen extends StatelessWidget {
 
                     const SizedBox(height: 36),
 
-                    // Steps
-                    if (kycStatus == KycStatus.notSubmitted) ...[
+                    // Steps for notSubmitted
+                    if (isNotSubmitted) ...[
                       _GateStep(
                         number: '1',
                         label: l10n?.kycStep1 ??
@@ -153,23 +163,44 @@ class KycGateScreen extends StatelessWidget {
                       const SizedBox(height: 36),
                     ],
 
-                    if (showKycButton)
+                    // Under Review info card for pending status
+                    if (isPending) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.warning.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.hourglass_top_rounded,
+                                color: AppColors.warning, size: 22),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                l10n?.kycPendingNotice ??
+                                    'Documents submitted — admin review in progress. This usually takes 1–2 business days.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          icon: const Icon(Icons.verified_user_outlined, size: 18),
-                          label: Text(
-                            kycStatus == KycStatus.notSubmitted
-                                ? (l10n?.kycGateCta ?? 'Start verification')
-                                : (l10n?.kycGateResubmitCta ??
-                                    'Re-submit verification'),
-                          ),
-                          onPressed: () => context.push(AppRoutes.kyc),
+                          icon: const Icon(Icons.visibility_outlined, size: 18),
+                          label: Text(l10n?.kycStatusPending ?? 'View verification details'),
+                          onPressed: () => _openKyc(context),
                         ),
                       ),
-
-                    if (kycStatus == KycStatus.pending) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
@@ -179,7 +210,21 @@ class KycGateScreen extends StatelessWidget {
                       ),
                     ],
 
-                    if (showKycButton) ...[
+                    // Buttons for notSubmitted, rejected, or expired
+                    if (!isPending) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.verified_user_outlined, size: 18),
+                          label: Text(
+                            isNotSubmitted
+                                ? (l10n?.kycGateCta ?? 'Start verification')
+                                : (l10n?.kycGateResubmitCta ??
+                                    'Re-submit verification'),
+                          ),
+                          onPressed: () => _openKyc(context),
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () => context.canPop()

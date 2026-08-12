@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../data/kyc_repository.dart';
 import '../../domain/models/kyc_verification.dart';
 
@@ -35,10 +36,15 @@ class KycCubit extends Cubit<KycState> {
       final updated =
           await _repository.saveDocumentUrl(docType: docType, url: url);
       emit(KycLoaded(updated));
-    } catch (e) {
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[KycCubit] uploadDocument error: $e\n$st');
       // Restore previous state with error
       final kyc = current is KycLoaded ? current.kyc : null;
-      emit(KycError(e.toString(), kyc: kyc));
+      final msg = e is AppException
+          ? e.message
+          : e.toString().replaceAll('Exception: ', '');
+      emit(KycError(msg, kyc: kyc));
     }
   }
 

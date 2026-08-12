@@ -65,7 +65,7 @@ class StorageKeys {
 class StorageBuckets {
   StorageBuckets._();
 
-  static const String kycDocuments = 'kyc-documents';
+  static const String kycDocuments = 'verification-documents';
   static const String contracts = 'contracts';
 }
 

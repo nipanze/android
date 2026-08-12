@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
 
@@ -38,6 +39,9 @@ class _KycView extends StatelessWidget {
       ),
       body: BlocConsumer<KycCubit, KycState>(
         listener: (context, state) {
+          if (state is KycLoaded && state.kyc != null) {
+            context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+          }
           if (state is KycError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.message),
