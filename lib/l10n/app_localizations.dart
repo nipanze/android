@@ -3236,6 +3236,12 @@ abstract class AppLocalizations {
   /// **'Uploaded — tap to replace'**
   String get kycDocUploadedTapReplace;
 
+  /// No description provided for @kycDocUploadedUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded — under review'**
+  String get kycDocUploadedUnderReview;
+
   /// No description provided for @kycPrivacyNote.
   ///
   /// In en, this message translates to:

@@ -185,10 +185,12 @@ class _KycView extends StatelessWidget {
                   icon: Icons.badge_outlined,
                   title: l10n.kycDocNationalIdFront,
                   subtitle: l10n.kycDocNationalIdFrontSubtitle,
-                  uploadedLabel: l10n.kycDocUploadedTapReplace,
+                  uploadedLabel: kyc?.isPending == true
+                      ? l10n.kycDocUploadedUnderReview
+                      : l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.nationalIdFrontUrl,
                   isUploading: uploadingDoc == 'national_id_front',
-                  enabled: !isSubmitting,
+                  enabled: !isSubmitting && kyc?.isPending != true,
                   onPick: () => _pickAndUpload(context, 'national_id_front'),
                 ),
 
@@ -197,10 +199,12 @@ class _KycView extends StatelessWidget {
                   icon: Icons.badge_outlined,
                   title: l10n.kycDocNationalIdBack,
                   subtitle: l10n.kycDocNationalIdBackSubtitle,
-                  uploadedLabel: l10n.kycDocUploadedTapReplace,
+                  uploadedLabel: kyc?.isPending == true
+                      ? l10n.kycDocUploadedUnderReview
+                      : l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.nationalIdBackUrl,
                   isUploading: uploadingDoc == 'national_id_back',
-                  enabled: !isSubmitting,
+                  enabled: !isSubmitting && kyc?.isPending != true,
                   onPick: () => _pickAndUpload(context, 'national_id_back'),
                 ),
 
@@ -209,10 +213,12 @@ class _KycView extends StatelessWidget {
                   icon: Icons.face_outlined,
                   title: l10n.kycDocSelfie,
                   subtitle: l10n.kycDocSelfieSubtitle,
-                  uploadedLabel: l10n.kycDocUploadedTapReplace,
+                  uploadedLabel: kyc?.isPending == true
+                      ? l10n.kycDocUploadedUnderReview
+                      : l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.selfieUrl,
                   isUploading: uploadingDoc == 'selfie',
-                  enabled: !isSubmitting,
+                  enabled: !isSubmitting && kyc?.isPending != true,
                   onPick: () =>
                       _pickAndUpload(context, 'selfie', preferCamera: true),
                 ),

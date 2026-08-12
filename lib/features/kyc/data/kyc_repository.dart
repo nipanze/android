@@ -41,7 +41,8 @@ class KycRepository {
 
   /// Upload a single document to Supabase storage.
   /// Uses XFile & Uint8List (cross-platform) so it works on web, mobile, desktop.
-  /// Automatically creates missing storage buckets on Supabase if needed.
+  /// Uploads strictly to the [StorageBuckets.kycDocuments] bucket.
+  /// Throws a clear [AppException] if the upload fails — no silent fallback.
   Future<String> uploadDocument(XFile xfile, String docType) async {
     try {
       final uid = _uid;
@@ -55,72 +56,30 @@ class KycRepository {
       final path =
           '$uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
-      final candidateBuckets = [
-        StorageBuckets.kycDocuments, // 'kyc-documents'
-        'avatars',
-        'public',
-        'documents',
-        'kyc',
-      ];
+      final bucket = StorageBuckets.kycDocuments; // 'verification-documents'
 
-      for (final bucket in candidateBuckets) {
-        try {
-          // ignore: avoid_print
-          print('[Storage] Trying upload to bucket "$bucket"...');
-          await _client.storage.from(bucket).uploadBinary(
-                path,
-                bytes,
-                fileOptions: FileOptions(upsert: true, contentType: mimeType),
-              );
-          // ignore: avoid_print
-          print('[Storage] Upload to bucket "$bucket" succeeded!');
-
-          try {
-            return await _client.storage
-                .from(bucket)
-                .createSignedUrl(path, 60 * 60 * 24 * 365);
-          } catch (_) {
-            return _client.storage.from(bucket).getPublicUrl(path);
-          }
-        } catch (e) {
-          // ignore: avoid_print
-          print('[Storage] Bucket "$bucket" failed: $e');
-
-          // If bucket does not exist (404 / Bucket not found), try creating it dynamically!
-          if (e.toString().contains('Bucket not found') ||
-              e.toString().contains('404')) {
-            try {
-              // ignore: avoid_print
-              print('[Storage] Creating missing bucket "$bucket"...');
-              await _client.storage.createBucket(
-                bucket,
-                const BucketOptions(public: true),
-              );
-              await _client.storage.from(bucket).uploadBinary(
-                    path,
-                    bytes,
-                    fileOptions:
-                        FileOptions(upsert: true, contentType: mimeType),
-                  );
-              // ignore: avoid_print
-              print('[Storage] Upload to newly created bucket "$bucket" succeeded!');
-              return _client.storage.from(bucket).getPublicUrl(path);
-            } catch (createErr) {
-              // ignore: avoid_print
-              print('[Storage] Bucket creation failed for "$bucket": $createErr');
-            }
-          }
-        }
-      }
-
-      // Fallback: If Supabase Storage instance has no storage buckets configured,
-      // return a valid fallback storage URL so document upload never blocks the user.
       // ignore: avoid_print
-      print('[Storage] Storage buckets unprovisioned. Using fallback document URL.');
-      return 'https://storage.nipanze.ug/kyc/$uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      print('[Storage] Uploading to bucket "$bucket" at path "$path"...');
+
+      await _client.storage.from(bucket).uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(upsert: true, contentType: mimeType),
+          );
+
+      // ignore: avoid_print
+      print('[Storage] Upload succeeded. Creating signed URL...');
+
+      try {
+        return await _client.storage
+            .from(bucket)
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
+      } catch (_) {
+        return _client.storage.from(bucket).getPublicUrl(path);
+      }
     } catch (e, st) {
       // ignore: avoid_print
-      print('[Storage] uploadDocument fatal error: $e\n$st');
+      print('[Storage] uploadDocument error (${e.runtimeType}): $e\n$st');
       throw parseSupabaseError(e);
     }
   }

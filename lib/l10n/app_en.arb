@@ -795,6 +795,7 @@
   "kycDocSelfie": "Selfie with ID",
   "kycDocSelfieSubtitle": "Hold your National ID next to your face",
   "kycDocUploadedTapReplace": "Uploaded — tap to replace",
+  "kycDocUploadedUnderReview": "Uploaded — under review",
   "kycPrivacyNote": "Your identity is never shown to other marketplace participants. Documents are reviewed by Nipanze admin only.",
   "kycSubmitForReview": "Submit for review",
   "kycUploadAllDocs": "Upload all three documents to enable submission.",

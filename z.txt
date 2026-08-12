@@ -18,6 +18,10 @@ integration_test.dart
 
 
 
+show both the 10% and the one available different colors cz lets say 10% is the current market price bt make it be controlled by the admin
+create a patch to pate in supabase sql editor cloud so that all rates for each market will be cotrolled by admin
+
+
 rebuild the apk and paste it in outputs: 
 remember am working from supabase cloud
 the app is sowing phone number nt found. create a ccount 

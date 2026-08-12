@@ -2866,6 +2866,81 @@ END $$;
 --   supabase storage create verification-documents --public=false
 
 -- ============================================
+-- STORAGE RLS POLICIES: verification-documents
+-- ============================================
+-- Files are stored under <user_uuid>/<docType>_<timestamp>.<ext>
+-- Policy: each user may only access their own folder.
+
+-- Users can upload their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can upload their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can upload their own KYC documents"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Users can read (view) their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can view their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can view their own KYC documents"
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Users can replace (upsert) their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can update their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can update their own KYC documents"
+    ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Admins (service_role) can read all KYC documents for review
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Admins can view all KYC documents'
+  ) THEN
+    CREATE POLICY "Admins can view all KYC documents"
+    ON storage.objects FOR SELECT
+    TO service_role
+    USING (bucket_id = 'verification-documents');
+  END IF;
+END $$;
+
+-- ============================================
 -- FUNCTION SECURITY (Disable public access for SECURITY DEFINER functions)
 -- ============================================
 

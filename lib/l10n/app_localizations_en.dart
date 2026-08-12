@@ -1754,6 +1754,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycDocUploadedTapReplace => 'Uploaded — tap to replace';
+  String get kycDocUploadedUnderReview => 'Uploaded — under review';
 
   @override
   String get kycPrivacyNote =>

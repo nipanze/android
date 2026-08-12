@@ -1765,6 +1765,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get kycDocUploadedTapReplace => 'Imepakiwa — gusa ili kubadilisha';
+  String get kycDocUploadedUnderReview => 'Imepakiwa — inakaguliwa';
 
   @override
   String get kycPrivacyNote =>

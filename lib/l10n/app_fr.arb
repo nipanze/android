@@ -645,6 +645,7 @@
   "kycDocSelfie": "Selfie avec pièce d'identité",
   "kycDocSelfieSubtitle": "Tenez votre carte nationale d'identité à côté de votre visage",
   "kycDocUploadedTapReplace": "Téléversé — appuyez pour remplacer",
+  "kycDocUploadedUnderReview": "Téléversé — en cours d'examen",
   "kycPrivacyNote": "Votre identité n'est jamais montrée aux autres participants du marché. Les documents sont examinés uniquement par l'administration Nipanze.",
   "kycSubmitForReview": "Soumettre pour examen",
   "kycUploadAllDocs": "Téléversez les trois documents pour activer la soumission.",

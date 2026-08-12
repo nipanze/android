@@ -1779,6 +1779,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get kycDocUploadedTapReplace => 'Téléversé — appuyez pour remplacer';
+  String get kycDocUploadedUnderReview => 'Téléversé — en cours d’examen';
 
   @override
   String get kycPrivacyNote =>

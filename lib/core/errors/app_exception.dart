@@ -74,6 +74,24 @@ AppException parseSupabaseError(Object error) {
     return _parsePostgrestError(error.code ?? '', error.message);
   }
   if (error is StorageException) {
+    // Storage policy violations (403) surface as StorageException
+    final msg = error.message.toLowerCase();
+    if (msg.contains('policy') ||
+        msg.contains('unauthorized') ||
+        msg.contains('403') ||
+        msg.contains('violates')) {
+      return const PermissionException(
+          'Upload permission denied. Please contact support.');
+    }
+    return const DatabaseException('File upload failed. Please try again.');
+  }
+  // Supabase web client sometimes wraps StorageException inside a generic
+  // Exception — check the string representation as a fallback.
+  final errStr = error.toString().toLowerCase();
+  if (errStr.contains('storageerror') ||
+      errStr.contains('storage') && errStr.contains('policy') ||
+      errStr.contains('storage') && errStr.contains('upload') ||
+      errStr.contains('403')) {
     return const DatabaseException('File upload failed. Please try again.');
   }
   return const DatabaseException('Something went wrong. Please try again.');
