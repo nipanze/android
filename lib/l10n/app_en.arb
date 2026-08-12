@@ -754,5 +754,19 @@
   "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
   "liveCalcMonthlyNote": "{count} monthly payments",
   "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
-  "liveCalcOneTimeNote": "1 lump-sum payment"
+  "liveCalcOneTimeNote": "1 lump-sum payment",
+  "kycGateTitle": "Verify your identity first",
+  "kycGateBody": "To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.",
+  "kycGatePendingTitle": "Verification in review",
+  "kycGatePendingBody": "Your identity documents are being reviewed. You'll be notified as soon as your account is approved.",
+  "kycGateRejectedTitle": "Verification rejected",
+  "kycGateRejectedBody": "Your KYC submission was not approved. Please re-submit with valid documents.",
+  "kycGateExpiredTitle": "Verification expired",
+  "kycGateExpiredBody": "Your KYC verification has expired. Please re-submit to continue posting requests.",
+  "kycStep1": "Submit your national ID or passport",
+  "kycStep2": "Wait for review (usually within 24 hours)",
+  "kycStep3": "Post requests once approved",
+  "kycGateCta": "Start verification",
+  "kycGateResubmitCta": "Re-submit verification",
+  "browseMarketplace": "Browse marketplace"
 }

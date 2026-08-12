@@ -606,5 +606,19 @@
   "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
   "liveCalcMonthlyNote": "{count} دفعة شهرية",
   "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
-  "liveCalcOneTimeNote": "دفعة واحدة"
+  "liveCalcOneTimeNote": "دفعة واحدة",
+  "kycGateTitle": "تأكيد الهوية أولاً",
+  "kycGateBody": "لإرسال طلبات القروض أو العملات الأجنبية والتواصل مع المُقرضين، يلزم إكمال التحقق من الهوية. يستغرق ذلك بضع دقائق فقط.",
+  "kycGatePendingTitle": "التحقق قيد المراجعة",
+  "kycGatePendingBody": "مستندات الهوية الخاصة بك قيد المراجعة حاليًا. سيتم إخطارك بمجرد الموافقة على حسابك.",
+  "kycGateRejectedTitle": "تم رفض التحقق",
+  "kycGateRejectedBody": "لم يتم تقديم الموافقة على مستندات KYC الخاصة بك. يُرجى إعادة التقديم بمستندات صالحة.",
+  "kycGateExpiredTitle": "انتهت صلاحية التحقق",
+  "kycGateExpiredBody": "انتهت صلاحية التحقق من الهوية الخاصة بك. يُرجى إعادة التقديم لمتابعة نشر الطلبات.",
+  "kycStep1": "قدّم بطاقة الهوية الوطنية أو جواز السفر",
+  "kycStep2": "انتظر المراجعة (عادةً خلال 24 ساعة)",
+  "kycStep3": "أنشئ طلباتك بمجرد الموافقة",
+  "kycGateCta": "بدء التحقق",
+  "kycGateResubmitCta": "إعادة تقديم التحقق",
+  "browseMarketplace": "تصفح السوق"
 }

@@ -1616,4 +1616,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get liveCalcOneTimeNote => 'دفعة واحدة';
+
+  @override
+  String get kycGateTitle => 'تأكيد الهوية أولاً';
+
+  @override
+  String get kycGateBody =>
+      'لإرسال طلبات القروض أو العملات الأجنبية والتواصل مع المُقرضين، يلزم إكمال التحقق من الهوية. يستغرق ذلك بضع دقائق فقط.';
+
+  @override
+  String get kycGatePendingTitle => 'التحقق قيد المراجعة';
+
+  @override
+  String get kycGatePendingBody =>
+      'مستندات الهوية الخاصة بك قيد المراجعة حاليًا. سيتم إخطارك بمجرد الموافقة على حسابك.';
+
+  @override
+  String get kycGateRejectedTitle => 'تم رفض التحقق';
+
+  @override
+  String get kycGateRejectedBody =>
+      'لم يتم تقديم الموافقة على مستندات KYC الخاصة بك. يُرجى إعادة التقديم بمستندات صالحة.';
+
+  @override
+  String get kycGateExpiredTitle => 'انتهت صلاحية التحقق';
+
+  @override
+  String get kycGateExpiredBody =>
+      'انتهت صلاحية التحقق من الهوية الخاصة بك. يُرجى إعادة التقديم لمتابعة نشر الطلبات.';
+
+  @override
+  String get kycStep1 => 'قدّم بطاقة الهوية الوطنية أو جواز السفر';
+
+  @override
+  String get kycStep2 => 'انتظر المراجعة (عادةً خلال 24 ساعة)';
+
+  @override
+  String get kycStep3 => 'أنشئ طلباتك بمجرد الموافقة';
+
+  @override
+  String get kycGateCta => 'بدء التحقق';
+
+  @override
+  String get kycGateResubmitCta => 'إعادة تقديم التحقق';
 }

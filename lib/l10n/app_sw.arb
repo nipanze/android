@@ -602,5 +602,19 @@
   "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
   "liveCalcMonthlyNote": "Malipo {count} ya kila mwezi",
   "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
-  "liveCalcOneTimeNote": "Malipo 1 ya mara moja"
+  "liveCalcOneTimeNote": "Malipo 1 ya mara moja",
+  "kycGateTitle": "Thibitisha kitambulisho chako kwanza",
+  "kycGateBody": "Ili kuchapisha maombi ya mkopo au sarafu na kuungana na wakopeshaji, unahitaji kukamilisha uhakiki wa kitambulisho. Inachukua dakika chache tu.",
+  "kycGatePendingTitle": "Uhakiki unakaguliwa",
+  "kycGatePendingBody": "Stakabadhi zako za kitambulisho zinakaguliwa. Utaarifiwa mara tu akaunti yako itakapoidhinishwa.",
+  "kycGateRejectedTitle": "Uhakiki umekataliwa",
+  "kycGateRejectedBody": "Stakabadhi zako za KYC hazikuidhinishwa. Tafadhali tuma tena na stakabadhi halali.",
+  "kycGateExpiredTitle": "Uhakiki umepita muda",
+  "kycGateExpiredBody": "Uhakiki wako wa KYC umepita muda. Tafadhali tuma tena ili kuendelea kuchapisha maombi.",
+  "kycStep1": "Tuma kitambulisho cha taifa au pasipoti",
+  "kycStep2": "Subiri ukaguzi (kawaida ndani ya masaa 24)",
+  "kycStep3": "Chapisha maombi mara tu unapoidhinishwa",
+  "kycGateCta": "Anza uhakiki",
+  "kycGateResubmitCta": "Tuma tena uhakiki",
+  "browseMarketplace": "Vinjari soko"
 }

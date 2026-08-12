@@ -604,5 +604,19 @@
   "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
   "liveCalcMonthlyNote": "{count} paiements mensuels",
   "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
-  "liveCalcOneTimeNote": "1 paiement unique"
+  "liveCalcOneTimeNote": "1 paiement unique",
+  "kycGateTitle": "Vérifiez d'abord votre identité",
+  "kycGateBody": "Pour publier des demandes de prêt ou de devises et vous connecter avec des prêteurs, vous devez effectuer une vérification d'identité. Cela ne prend que quelques minutes.",
+  "kycGatePendingTitle": "Vérification en cours d'examen",
+  "kycGatePendingBody": "Vos documents d'identité sont en cours d'examen. Vous serez notifié dès la validation de votre compte.",
+  "kycGateRejectedTitle": "Vérification rejetée",
+  "kycGateRejectedBody": "Votre dossier KYC n'a pas été approuvé. Veuillez soumettre à nouveau des documents valides.",
+  "kycGateExpiredTitle": "Vérification expirée",
+  "kycGateExpiredBody": "Votre vérification KYC a expiré. Veuillez soumettre à nouveau pour continuer à publier des demandes.",
+  "kycStep1": "Soumettez votre carte nationale d'identité ou passeport",
+  "kycStep2": "Attendez la validation (généralement sous 24 heures)",
+  "kycStep3": "Publiez vos demandes une fois approuvé",
+  "kycGateCta": "Commencer la vérification",
+  "kycGateResubmitCta": "Re-soumettre la vérification",
+  "browseMarketplace": "Parcourir le marché"
 }

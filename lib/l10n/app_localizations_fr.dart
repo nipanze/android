@@ -1651,4 +1651,48 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get liveCalcOneTimeNote => '1 paiement unique';
+
+  @override
+  String get kycGateTitle => 'Vérifiez d\'abord votre identité';
+
+  @override
+  String get kycGateBody =>
+      'Pour publier des demandes de prêt ou de devises et vous connecter avec des prêteurs, vous devez effectuer une vérification d\'identité. Cela ne prend que quelques minutes.';
+
+  @override
+  String get kycGatePendingTitle => 'Vérification en cours d\'examen';
+
+  @override
+  String get kycGatePendingBody =>
+      'Vos documents d\'identité sont en cours d\'examen. Vous serez notifié dès la validation de votre compte.';
+
+  @override
+  String get kycGateRejectedTitle => 'Vérification rejetée';
+
+  @override
+  String get kycGateRejectedBody =>
+      'Votre dossier KYC n\'a pas été approuvé. Veuillez soumettre à nouveau des documents valides.';
+
+  @override
+  String get kycGateExpiredTitle => 'Vérification expirée';
+
+  @override
+  String get kycGateExpiredBody =>
+      'Votre vérification KYC a expiré. Veuillez soumettre à nouveau pour continuer à publier des demandes.';
+
+  @override
+  String get kycStep1 =>
+      'Soumettez votre carte nationale d\'identité ou passeport';
+
+  @override
+  String get kycStep2 => 'Attendez la validation (généralement sous 24 heures)';
+
+  @override
+  String get kycStep3 => 'Publiez vos demandes une fois approuvé';
+
+  @override
+  String get kycGateCta => 'Commencer la vérification';
+
+  @override
+  String get kycGateResubmitCta => 'Re-soumettre la vérification';
 }

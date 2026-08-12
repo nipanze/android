@@ -602,5 +602,19 @@
   "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
   "liveCalcMonthlyNote": "Bisubizo {count} bya buri kwezi",
   "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
-  "liveCalcOneTimeNote": "Isubizwa 1 rimwe"
+  "liveCalcOneTimeNote": "Isubizwa 1 rimwe",
+  "kycGateTitle": "Banza wemeze umwirondoro wawe",
+  "kycGateBody": "Kugira ngo usabe inguzanyo cyangwa ivunjisha kandi uhuzwe n'abategereje kugukopa, ugomba kubanza kwemeza umwirondoro. Bitwara iminota mike gusa.",
+  "kycGatePendingTitle": "Kwikora kwasuzumwe",
+  "kycGatePendingBody": "Inyandiko zawe z'umwirondoro ziri gusuzumwa. Uramenyeshwa mugihe konti yawe yemewe.",
+  "kycGateRejectedTitle": "Kwemeza kwateshejwe agaciro",
+  "kycGateRejectedBody": "Ibyangombwa byawe ntibyemewe. Nyamuneka yongera utange inyandiko zikora.",
+  "kycGateExpiredTitle": "Kwemeza kwarangiye",
+  "kycGateExpiredBody": "Kwemeza umwirondoro wawe kwarangiye. Nyamuneka yongera wemeze utange ubusabe.",
+  "kycStep1": "Tanga indangamuntu cyangwa pasiporo",
+  "kycStep2": "Tegereza isuzuma (bizwi munsi y'amasaha 24)",
+  "kycStep3": "Saba inguzanyo mugihe wamaze kwemerwa",
+  "kycGateCta": "Tanga umwirondoro",
+  "kycGateResubmitCta": "Yongera utange umwirondoro",
+  "browseMarketplace": "Reba isoko"
 }

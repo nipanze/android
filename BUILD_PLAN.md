@@ -25,7 +25,7 @@ The goal is to help the team track progress across systems, screens, operations,
 | 2 | Core Marketplace | ✅ Complete | Loan marketplace, request posting, offer flow, realtime feed |
 | 3 | Polish & Supporting Features | ✅ Complete | Watchlist, Positions, notifications, profile/account, stable local app flows |
 | 3.5 | Cloud Migration & Auth Hardening | ✅ Complete | Supabase cloud migration, RLS foundation, `private` schema, auth flow hardened |
-| 3.8 | Loan Request System & Calculations Redesign | ✅ Complete | Live repayment math calculator on Step 2, Free vs Pro plan controls split, dash '—' display for missing borrower terms, sponsored post badge, structured Due Day & Cutoff Time selectors for late-fee timing precision, full localization support across 5 languages, and strict button-disable validation when inputs are missing |
+| 3.8 | Loan & Forex Request System, Upfront KYC Gate & Calculations Redesign | ✅ Complete | Live repayment math calculator on Step 2, Free vs Pro plan controls split, dash '—' display for missing borrower terms, sponsored post badge, structured Due Day & Cutoff Time selectors for late-fee timing precision, shared upfront `KycGateScreen` on both Loan (`/listings/create`) & Forex (`/forex/create`) request creation, complete 5-language localization (EN, FR, AR, RW, SW), and strict button-disable validation when inputs are missing |
 | 4 | Structured Deal Agreement, Contact Sharing & Trust System | ⬜ In progress | Design and stage checklist defined; implementation pending |
 | 4.5 | Multi-Market Expansion | ⬜ In progress | Country/currency readiness is documented; database migration not yet applied |
 | 4.7 | Forex Marketplace Expansion | ⬜ Planned | Forex module design exists; full schema/UI integration remains to be built |
@@ -132,6 +132,7 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-10`: Confirmed `login_page.dart` uses locale-based default and country constants. Carrier/infrastructure-based country detection is not implemented.
 - `2026-08-10`: Confirmed `loan_detail_page.dart` fix addresses row overflow and amount/chevron alignment.
 - `2026-08-10`: Confirmed README package list and edge function list are stale; the repo currently has only `supabase/functions/flutterwave-checkout` and `supabase/functions/send-notification`.
+- `2026-08-12`: Implemented shared `KycGateScreen` for upfront KYC checking on both Loan (`/listings/create`) and Forex (`/forex/create`) request creation flows before form rendering. Added 5-language localized keys (EN, FR, AR, RW, SW) and enforced strict button disabling when required inputs are missing.
 
 ---
 

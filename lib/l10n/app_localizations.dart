@@ -3013,6 +3013,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1 lump-sum payment'**
   String get liveCalcOneTimeNote;
+
+  /// No description provided for @kycGateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity first'**
+  String get kycGateTitle;
+
+  /// No description provided for @kycGateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.'**
+  String get kycGateBody;
+
+  /// No description provided for @kycGatePendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification in review'**
+  String get kycGatePendingTitle;
+
+  /// No description provided for @kycGatePendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity documents are being reviewed. You\'ll be notified as soon as your account is approved.'**
+  String get kycGatePendingBody;
+
+  /// No description provided for @kycGateRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification rejected'**
+  String get kycGateRejectedTitle;
+
+  /// No description provided for @kycGateRejectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC submission was not approved. Please re-submit with valid documents.'**
+  String get kycGateRejectedBody;
+
+  /// No description provided for @kycGateExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification expired'**
+  String get kycGateExpiredTitle;
+
+  /// No description provided for @kycGateExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC verification has expired. Please re-submit to continue posting requests.'**
+  String get kycGateExpiredBody;
+
+  /// No description provided for @kycStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your national ID or passport'**
+  String get kycStep1;
+
+  /// No description provided for @kycStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for review (usually within 24 hours)'**
+  String get kycStep2;
+
+  /// No description provided for @kycStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Post requests once approved'**
+  String get kycStep3;
+
+  /// No description provided for @kycGateCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Start verification'**
+  String get kycGateCta;
+
+  /// No description provided for @kycGateResubmitCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-submit verification'**
+  String get kycGateResubmitCta;
 }
 
 class _AppLocalizationsDelegate

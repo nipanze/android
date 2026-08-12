@@ -1629,4 +1629,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liveCalcOneTimeNote => '1 lump-sum payment';
+
+  @override
+  String get kycGateTitle => 'Verify your identity first';
+
+  @override
+  String get kycGateBody =>
+      'To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.';
+
+  @override
+  String get kycGatePendingTitle => 'Verification in review';
+
+  @override
+  String get kycGatePendingBody =>
+      'Your identity documents are being reviewed. You\'ll be notified as soon as your account is approved.';
+
+  @override
+  String get kycGateRejectedTitle => 'Verification rejected';
+
+  @override
+  String get kycGateRejectedBody =>
+      'Your KYC submission was not approved. Please re-submit with valid documents.';
+
+  @override
+  String get kycGateExpiredTitle => 'Verification expired';
+
+  @override
+  String get kycGateExpiredBody =>
+      'Your KYC verification has expired. Please re-submit to continue posting requests.';
+
+  @override
+  String get kycStep1 => 'Submit your national ID or passport';
+
+  @override
+  String get kycStep2 => 'Wait for review (usually within 24 hours)';
+
+  @override
+  String get kycStep3 => 'Post requests once approved';
+
+  @override
+  String get kycGateCta => 'Start verification';
+
+  @override
+  String get kycGateResubmitCta => 'Re-submit verification';
 }

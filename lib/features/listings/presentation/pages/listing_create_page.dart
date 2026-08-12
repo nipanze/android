@@ -10,6 +10,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/listing_repository.dart';
@@ -437,6 +438,28 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    // ── KYC / eligibility gate ─────────────────────────────────────────────
+    // Check before rendering the form so users are never blocked mid-flow.
+    final authState = context.watch<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      if (!authState.user.kycApproved) {
+        return KycGateScreen(
+          kycStatus: authState.user.kycStatus,
+          pageTitle: l10n?.requestALoan ?? 'Request a loan',
+        );
+      }
+      if (!authState.user.canBorrow) {
+        return KycGateScreen(
+          kycStatus: authState.user.kycStatus,
+          pageTitle: l10n?.requestALoan ?? 'Request a loan',
+          reason: l10n?.notAllowedListing ??
+              'Your account is not eligible to post a listing.',
+        );
+      }
+    }
+    // ── Normal multi-step form ─────────────────────────────────────────────
+
     return Scaffold(
       body: SafeArea(
         child: Column(

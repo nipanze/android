@@ -223,7 +223,7 @@ class AppLocalizationsRw extends AppLocalizations {
       'Shakisha isoko hanyuma kanda \"Bika mu byo ukurikira\" ku nguzanyo iyo ari yo yose.';
 
   @override
-  String get browseMarketplace => 'Shakisha isoko';
+  String get browseMarketplace => 'Reba isoko';
 
   @override
   String get removedFromWatchlist => 'Yakuwe mu byo ukurikira';
@@ -1636,4 +1636,47 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get liveCalcOneTimeNote => 'Isubizwa 1 rimwe';
+
+  @override
+  String get kycGateTitle => 'Banza wemeze umwirondoro wawe';
+
+  @override
+  String get kycGateBody =>
+      'Kugira ngo usabe inguzanyo cyangwa ivunjisha kandi uhuzwe n\'abategereje kugukopa, ugomba kubanza kwemeza umwirondoro. Bitwara iminota mike gusa.';
+
+  @override
+  String get kycGatePendingTitle => 'Kwikora kwasuzumwe';
+
+  @override
+  String get kycGatePendingBody =>
+      'Inyandiko zawe z\'umwirondoro ziri gusuzumwa. Uramenyeshwa mugihe konti yawe yemewe.';
+
+  @override
+  String get kycGateRejectedTitle => 'Kwemeza kwateshejwe agaciro';
+
+  @override
+  String get kycGateRejectedBody =>
+      'Ibyangombwa byawe ntibyemewe. Nyamuneka yongera utange inyandiko zikora.';
+
+  @override
+  String get kycGateExpiredTitle => 'Kwemeza kwarangiye';
+
+  @override
+  String get kycGateExpiredBody =>
+      'Kwemeza umwirondoro wawe kwarangiye. Nyamuneka yongera wemeze utange ubusabe.';
+
+  @override
+  String get kycStep1 => 'Tanga indangamuntu cyangwa pasiporo';
+
+  @override
+  String get kycStep2 => 'Tegereza isuzuma (bizwi munsi y\'amasaha 24)';
+
+  @override
+  String get kycStep3 => 'Saba inguzanyo mugihe wamaze kwemerwa';
+
+  @override
+  String get kycGateCta => 'Tanga umwirondoro';
+
+  @override
+  String get kycGateResubmitCta => 'Yongera utange umwirondoro';
 }

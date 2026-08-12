@@ -9,6 +9,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/currency_model.dart';
+import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/forex_repository.dart';
@@ -223,8 +224,27 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final currencies = _currencies;
     final authState = context.watch<AuthBloc>().state;
+
+    // ── KYC / eligibility gate ─────────────────────────────────────────────
+    if (authState is AuthAuthenticated) {
+      if (!authState.user.kycApproved) {
+        return KycGateScreen(
+          kycStatus: authState.user.kycStatus,
+          pageTitle: l10n?.createForexRequestTitle ?? 'Post forex request',
+        );
+      }
+      if (!authState.user.canBorrow) {
+        return KycGateScreen(
+          kycStatus: authState.user.kycStatus,
+          pageTitle: l10n?.createForexRequestTitle ?? 'Post forex request',
+          reason: l10n?.notAllowedListing ??
+              'Your account is not eligible to post a request.',
+        );
+      }
+    }
+
+    final currencies = _currencies;
     final isPro = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 

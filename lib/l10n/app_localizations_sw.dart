@@ -1638,4 +1638,47 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get liveCalcOneTimeNote => 'Malipo 1 ya mara moja';
+
+  @override
+  String get kycGateTitle => 'Thibitisha kitambulisho chako kwanza';
+
+  @override
+  String get kycGateBody =>
+      'Ili kuchapisha maombi ya mkopo au sarafu na kuungana na wakopeshaji, unahitaji kukamilisha uhakiki wa kitambulisho. Inachukua dakika chache tu.';
+
+  @override
+  String get kycGatePendingTitle => 'Uhakiki unakaguliwa';
+
+  @override
+  String get kycGatePendingBody =>
+      'Stakabadhi zako za kitambulisho zinakaguliwa. Utaarifiwa mara tu akaunti yako itakapoidhinishwa.';
+
+  @override
+  String get kycGateRejectedTitle => 'Uhakiki umekataliwa';
+
+  @override
+  String get kycGateRejectedBody =>
+      'Stakabadhi zako za KYC hazikuidhinishwa. Tafadhali tuma tena na stakabadhi halali.';
+
+  @override
+  String get kycGateExpiredTitle => 'Uhakiki umepita muda';
+
+  @override
+  String get kycGateExpiredBody =>
+      'Uhakiki wako wa KYC umepita muda. Tafadhali tuma tena ili kuendelea kuchapisha maombi.';
+
+  @override
+  String get kycStep1 => 'Tuma kitambulisho cha taifa au pasipoti';
+
+  @override
+  String get kycStep2 => 'Subiri ukaguzi (kawaida ndani ya masaa 24)';
+
+  @override
+  String get kycStep3 => 'Chapisha maombi mara tu unapoidhinishwa';
+
+  @override
+  String get kycGateCta => 'Anza uhakiki';
+
+  @override
+  String get kycGateResubmitCta => 'Tuma tena uhakiki';
 }

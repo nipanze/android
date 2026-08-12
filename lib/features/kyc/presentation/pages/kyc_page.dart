@@ -460,11 +460,11 @@ class _DocUploadTile extends StatelessWidget {
             ],
           )),
 
-          // Action icon
+          // Action icon (shows green tick checkmark when uploaded/placed)
           if (!isUploading)
             Icon(
-              isUploaded ? Icons.refresh_rounded : Icons.upload_rounded,
-              size: 18,
+              isUploaded ? Icons.check_circle_rounded : Icons.upload_rounded,
+              size: 22,
               color: isUploaded
                   ? AppColors.success
                   : Theme.of(context).colorScheme.onSurfaceVariant,
