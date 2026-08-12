@@ -241,7 +241,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       : (_selectedPurpose ?? '');
 
   bool get _loanDetailsValid {
-    if (!_loanDetailsFormKey.currentState!.validate()) return false;
+    // currentState may be null when PageView has disposed the page (step 3 view).
+    // Fall back to the field-level readiness check so validation still works.
+    final formValid =
+        _loanDetailsFormKey.currentState?.validate() ?? _loanDetailsReady;
+    if (!formValid) return false;
     if (_selectedPurpose == null) return false;
     if (_selectedPurpose == 'Other' &&
         (_customPurpose == null || _customPurpose!.trim().isEmpty)) {
@@ -251,7 +255,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   }
 
   bool get _repaymentValid {
-    if (!_repaymentFormKey.currentState!.validate()) return false;
+    // Same null-safe guard as _loanDetailsValid above.
+    final formValid =
+        _repaymentFormKey.currentState?.validate() ?? _repaymentReady;
+    if (!formValid) return false;
     if (_preferredRepaymentPlan == null) return false;
     if (_selectedDueDay == null) return false;
     if (_selectedDueTime == null) return false;
@@ -261,7 +268,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   void _next() {
     final l10n = AppLocalizations.of(context);
     if (_step == 0 && !_loanDetailsValid) {
-      _loanDetailsFormKey.currentState!.validate();
+      _loanDetailsFormKey.currentState?.validate();
       if (_selectedPurpose == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -275,7 +282,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       return;
     }
     if (_step == 1 && !_repaymentValid) {
-      _repaymentFormKey.currentState!.validate();
+      _repaymentFormKey.currentState?.validate();
       if (_preferredRepaymentPlan == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

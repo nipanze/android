@@ -1,5 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Typed exception hierarchy for Nipanze.
 /// All exceptions carry a user-friendly [message] — internal codes are never shown to users.

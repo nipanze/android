@@ -253,10 +253,10 @@ class _OffersSection extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.16),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.16),
             ),
           ),
           child: Column(
@@ -535,7 +535,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .colorScheme
-                      .surfaceVariant,
+                      .surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
