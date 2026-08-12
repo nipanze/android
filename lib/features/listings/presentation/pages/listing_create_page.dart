@@ -305,7 +305,28 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
-    if (!_loanDetailsValid || !_repaymentValid) return;
+    if (!_loanDetailsValid || !_repaymentValid) {
+      _loanDetailsFormKey.currentState?.validate();
+      _repaymentFormKey.currentState?.validate();
+      if (!mounted) return;
+
+      if (!_loanDetailsValid) {
+        _pageController.jumpToPage(0);
+        setState(() => _step = 0);
+        _showGate(
+          l10n?.validationPurposeContinue ??
+              'Please fix your loan details before publishing.',
+        );
+      } else if (!_repaymentValid) {
+        _pageController.jumpToPage(1);
+        setState(() => _step = 1);
+        _showGate(
+          l10n?.validationRepaymentPlanContinue ??
+              'Please fix your repayment details before publishing.',
+        );
+      }
+      return;
+    }
 
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;

@@ -112,6 +112,9 @@ AppException _parsePostgrestError(String code, String message) {
       message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
     return const SubscriptionRequiredException('Lender');
   }
+  if (message.contains('NIPANZE_PRO_REQUIRED')) {
+    return const SubscriptionRequiredException('Pro');
+  }
   if (message.contains('NIPANZE_MAX_REQUESTS')) {
     return const DatabaseException(
         'You have reached the maximum number of active listings.');
