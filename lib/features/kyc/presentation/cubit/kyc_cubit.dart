@@ -1,8 +1,7 @@
 // lib/features/kyc/presentation/cubit/kyc_cubit.dart
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../data/kyc_repository.dart';
@@ -27,7 +26,7 @@ class KycCubit extends Cubit<KycState> {
   }
 
   /// Upload a file for a given doc type and save the URL to the DB.
-  Future<void> uploadDocument(File file, String docType) async {
+  Future<void> uploadDocument(XFile file, String docType) async {
     final current = state;
     emit(KycUploading(
         docType: docType, kyc: current is KycLoaded ? current.kyc : null));

@@ -1,5 +1,5 @@
 // lib/features/kyc/presentation/pages/kyc_page.dart
-import 'dart:io';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -303,7 +303,7 @@ class _KycView extends StatelessWidget {
     if (picked == null) return;
 
     if (!context.mounted) return;
-    await context.read<KycCubit>().uploadDocument(File(picked.path), docType);
+    await context.read<KycCubit>().uploadDocument(picked, docType);
   }
 
   String _fmtDate(DateTime d) =>

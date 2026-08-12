@@ -1,7 +1,7 @@
 // lib/features/kyc/data/kyc_repository.dart
-import 'dart:io';
-
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
+import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -33,17 +33,26 @@ class KycRepository {
   }
 
   /// Upload a single document to the kyc-documents bucket.
-  /// Returns the public URL stored in the DB.
-  /// Path: {user_id}/{docType}_{timestamp}.jpg
-  Future<String> uploadDocument(File file, String docType) async {
+  /// Uses XFile (cross-platform) so it works on web (no dart:io).
+  /// Returns a signed URL valid for 1 year.
+  Future<String> uploadDocument(XFile xfile, String docType) async {
     try {
-      final ext = file.path.split('.').last.toLowerCase();
+      final bytes = await xfile.readAsBytes();
+
+      // Derive extension: prefer MIME sniffing, fall back to path extension.
+      final mimeType =
+          lookupMimeType(xfile.name, headerBytes: bytes) ?? 'image/jpeg';
+      final ext = (extensionFromMime(mimeType) ?? 'jpg').replaceAll('.', '');
       final path =
           '$_uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       await _client.storage
           .from(StorageBuckets.kycDocuments)
-          .upload(path, file, fileOptions: const FileOptions(upsert: true));
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(upsert: true, contentType: mimeType),
+          );
 
       // Return signed URL valid for 1 year (admin review window)
       final url = await _client.storage
