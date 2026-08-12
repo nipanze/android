@@ -1672,4 +1672,109 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycGateResubmitCta => 'Re-submit verification';
+
+  @override
+  String get kycPageTitle => 'Identity verification';
+
+  @override
+  String get kycStatusApproved => 'KYC Approved';
+
+  @override
+  String get kycStatusApprovedDesc =>
+      'Identity verified. You can now create listings.';
+
+  @override
+  String get kycStatusPending => 'Under review';
+
+  @override
+  String get kycStatusPendingDesc =>
+      'Documents submitted. Admin review in progress.';
+
+  @override
+  String get kycStatusRejected => 'Rejected';
+
+  @override
+  String get kycStatusRejectedDesc =>
+      'Submission rejected. Please re-upload and resubmit.';
+
+  @override
+  String get kycStatusExpired => 'Expired';
+
+  @override
+  String get kycStatusExpiredDesc => 'Your KYC has expired. Please re-verify.';
+
+  @override
+  String get kycStatusNotSubmitted => 'Not submitted';
+
+  @override
+  String get kycStatusNotSubmittedDesc =>
+      'Submit documents to unlock listing creation.';
+
+  @override
+  String get kycRejectionReason => 'Rejection reason';
+
+  @override
+  String get kycIdentityVerified => 'Identity verified';
+
+  @override
+  String kycExpires(String date) {
+    return 'Expires $date';
+  }
+
+  @override
+  String get kycPendingNotice =>
+      'Documents submitted — admin review in progress. This usually takes 1–2 business days.';
+
+  @override
+  String get kycRequiredDocs => 'Required documents';
+
+  @override
+  String get kycRequiredDocsSubtitle =>
+      'Upload clear, well-lit photos. All documents are stored securely.';
+
+  @override
+  String get kycDocNationalIdFront => 'National ID — front';
+
+  @override
+  String get kycDocNationalIdFrontSubtitle =>
+      'Clear photo of the front of your Ugandan National ID';
+
+  @override
+  String get kycDocNationalIdBack => 'National ID — back';
+
+  @override
+  String get kycDocNationalIdBackSubtitle =>
+      'Clear photo of the back of your National ID';
+
+  @override
+  String get kycDocSelfie => 'Selfie with ID';
+
+  @override
+  String get kycDocSelfieSubtitle => 'Hold your National ID next to your face';
+
+  @override
+  String get kycDocUploadedTapReplace => 'Uploaded — tap to replace';
+
+  @override
+  String get kycPrivacyNote =>
+      'Your identity is never shown to other marketplace participants. Documents are reviewed by Nipanze admin only.';
+
+  @override
+  String get kycSubmitForReview => 'Submit for review';
+
+  @override
+  String get kycUploadAllDocs =>
+      'Upload all three documents to enable submission.';
+
+  @override
+  String get kycChooseSource => 'Choose source';
+
+  @override
+  String get kycSourceCamera => 'Camera';
+
+  @override
+  String get kycSourceLibrary => 'Photo library';
+
+  @override
+  String get kycDismiss => 'Dismiss';
 }

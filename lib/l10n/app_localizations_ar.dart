@@ -1659,4 +1659,108 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kycGateResubmitCta => 'إعادة تقديم التحقق';
+
+  @override
+  String get kycPageTitle => 'التحقق من الهوية';
+
+  @override
+  String get kycStatusApproved => 'تمت الموافقة على KYC';
+
+  @override
+  String get kycStatusApprovedDesc =>
+      'تم التحقق من الهوية. يمكنك الآن إنشاء الإعلانات.';
+
+  @override
+  String get kycStatusPending => 'قيد المراجعة';
+
+  @override
+  String get kycStatusPendingDesc => 'تم تقديم المستندات. مراجعة المشرف جارية.';
+
+  @override
+  String get kycStatusRejected => 'مرفوض';
+
+  @override
+  String get kycStatusRejectedDesc =>
+      'تم رفض الطلب. يُرجى إعادة الرفع وإعادة التقديم.';
+
+  @override
+  String get kycStatusExpired => 'منتهية الصلاحية';
+
+  @override
+  String get kycStatusExpiredDesc =>
+      'انتهت صلاحية KYC الخاص بك. يُرجى إعادة التحقق.';
+
+  @override
+  String get kycStatusNotSubmitted => 'لم يُقدَّم';
+
+  @override
+  String get kycStatusNotSubmittedDesc =>
+      'قدّم مستنداتك لفتح إمكانية إنشاء الإعلانات.';
+
+  @override
+  String get kycRejectionReason => 'سبب الرفض';
+
+  @override
+  String get kycIdentityVerified => 'تم التحقق من الهوية';
+
+  @override
+  String kycExpires(String date) {
+    return 'ينتهي في $date';
+  }
+
+  @override
+  String get kycPendingNotice =>
+      'تم تقديم المستندات — مراجعة المشرف جارية. يستغرق هذا عادةً من 1 إلى 2 يوم عمل.';
+
+  @override
+  String get kycRequiredDocs => 'المستندات المطلوبة';
+
+  @override
+  String get kycRequiredDocsSubtitle =>
+      'ارفع صوراً واضحة وجيدة الإضاءة. جميع المستندات مخزّنة بأمان.';
+
+  @override
+  String get kycDocNationalIdFront => 'بطاقة الهوية الوطنية — الوجه الأمامي';
+
+  @override
+  String get kycDocNationalIdFrontSubtitle =>
+      'صورة واضحة للوجه الأمامي لبطاقة هويتك الوطنية الأوغندية';
+
+  @override
+  String get kycDocNationalIdBack => 'بطاقة الهوية الوطنية — الوجه الخلفي';
+
+  @override
+  String get kycDocNationalIdBackSubtitle =>
+      'صورة واضحة للوجه الخلفي لبطاقة هويتك الوطنية';
+
+  @override
+  String get kycDocSelfie => 'صورة سيلفي مع الهوية';
+
+  @override
+  String get kycDocSelfieSubtitle => 'أمسك بطاقة هويتك الوطنية بجانب وجهك';
+
+  @override
+  String get kycDocUploadedTapReplace => 'تم الرفع — اضغط للاستبدال';
+
+  @override
+  String get kycPrivacyNote =>
+      'لا تُعرض هويتك أبداً على المشاركين الآخرين في السوق. يراجع المستندات مشرفو Nipanze فقط.';
+
+  @override
+  String get kycSubmitForReview => 'إرسال للمراجعة';
+
+  @override
+  String get kycUploadAllDocs => 'ارفع الوثائق الثلاث لتفعيل التقديم.';
+
+  @override
+  String get kycChooseSource => 'اختر المصدر';
+
+  @override
+  String get kycSourceCamera => 'الكاميرا';
+
+  @override
+  String get kycSourceLibrary => 'مكتبة الصور';
+
+  @override
+  String get kycDismiss => 'تجاهل';
 }

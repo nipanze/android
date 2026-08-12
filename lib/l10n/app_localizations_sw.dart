@@ -1681,4 +1681,110 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get kycGateResubmitCta => 'Tuma tena uhakiki';
+
+  @override
+  String get kycPageTitle => 'Uthibitisho wa kitambulisho';
+
+  @override
+  String get kycStatusApproved => 'KYC Imeidhinishwa';
+
+  @override
+  String get kycStatusApprovedDesc =>
+      'Kitambulisho kimethibitishwa. Sasa unaweza kuunda matangazo.';
+
+  @override
+  String get kycStatusPending => 'Inakaguliwa';
+
+  @override
+  String get kycStatusPendingDesc =>
+      'Stakabadhi zimewasilishwa. Ukaguzi wa msimamizi unaendelea.';
+
+  @override
+  String get kycStatusRejected => 'Imekataliwa';
+
+  @override
+  String get kycStatusRejectedDesc =>
+      'Ombi limekataliwa. Tafadhali pakia tena na uwasilishe upya.';
+
+  @override
+  String get kycStatusExpired => 'Imepita muda';
+
+  @override
+  String get kycStatusExpiredDesc =>
+      'KYC yako imepita muda. Tafadhali thibitisha upya.';
+
+  @override
+  String get kycStatusNotSubmitted => 'Haijwasilishwa';
+
+  @override
+  String get kycStatusNotSubmittedDesc =>
+      'Wasilisha hati zako ili kufungua uwezo wa kuunda matangazo.';
+
+  @override
+  String get kycRejectionReason => 'Sababu ya kukataliwa';
+
+  @override
+  String get kycIdentityVerified => 'Kitambulisho kimethibitishwa';
+
+  @override
+  String kycExpires(String date) {
+    return 'Inaisha tarehe $date';
+  }
+
+  @override
+  String get kycPendingNotice =>
+      'Stakabadhi zimewasilishwa — ukaguzi wa msimamizi unaendelea. Hii kawaida huchukua siku 1–2 za kazi.';
+
+  @override
+  String get kycRequiredDocs => 'Hati zinazohitajika';
+
+  @override
+  String get kycRequiredDocsSubtitle =>
+      'Pakia picha wazi na zenye mwanga mzuri. Hati zote zimehifadhiwa kwa usalama.';
+
+  @override
+  String get kycDocNationalIdFront => 'Kitambulisho cha taifa — mbele';
+
+  @override
+  String get kycDocNationalIdFrontSubtitle =>
+      'Picha wazi ya upande wa mbele wa kitambulisho chako cha taifa cha Uganda';
+
+  @override
+  String get kycDocNationalIdBack => 'Kitambulisho cha taifa — nyuma';
+
+  @override
+  String get kycDocNationalIdBackSubtitle =>
+      'Picha wazi ya upande wa nyuma wa kitambulisho chako cha taifa';
+
+  @override
+  String get kycDocSelfie => 'Selfie na kitambulisho';
+
+  @override
+  String get kycDocSelfieSubtitle =>
+      'Shikilia kitambulisho chako cha taifa karibu na uso wako';
+
+  @override
+  String get kycDocUploadedTapReplace => 'Imepakiwa — gusa ili kubadilisha';
+
+  @override
+  String get kycPrivacyNote =>
+      'Utambulisho wako hauonyeshwi kwa washiriki wengine wa soko. Hati zinakaguliwa na wasimamizi wa Nipanze peke yao.';
+
+  @override
+  String get kycSubmitForReview => 'Wasilisha kwa ukaguzi';
+
+  @override
+  String get kycUploadAllDocs => 'Pakia hati tatu zote kuwezesha uwasilishaji.';
+
+  @override
+  String get kycChooseSource => 'Chagua chanzo';
+
+  @override
+  String get kycSourceCamera => 'Kamera';
+
+  @override
+  String get kycSourceLibrary => 'Maktaba ya picha';
+
+  @override
+  String get kycDismiss => 'Ondoa';
 }

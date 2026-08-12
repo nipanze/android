@@ -3091,6 +3091,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Re-submit verification'**
   String get kycGateResubmitCta;
+
+  /// No description provided for @kycPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification'**
+  String get kycPageTitle;
+
+  /// No description provided for @kycStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'KYC Approved'**
+  String get kycStatusApproved;
+
+  /// No description provided for @kycStatusApprovedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verified. You can now create listings.'**
+  String get kycStatusApprovedDesc;
+
+  /// No description provided for @kycStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get kycStatusPending;
+
+  /// No description provided for @kycStatusPendingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents submitted. Admin review in progress.'**
+  String get kycStatusPendingDesc;
+
+  /// No description provided for @kycStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get kycStatusRejected;
+
+  /// No description provided for @kycStatusRejectedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission rejected. Please re-upload and resubmit.'**
+  String get kycStatusRejectedDesc;
+
+  /// No description provided for @kycStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get kycStatusExpired;
+
+  /// No description provided for @kycStatusExpiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your KYC has expired. Please re-verify.'**
+  String get kycStatusExpiredDesc;
+
+  /// No description provided for @kycStatusNotSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not submitted'**
+  String get kycStatusNotSubmitted;
+
+  /// No description provided for @kycStatusNotSubmittedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit documents to unlock listing creation.'**
+  String get kycStatusNotSubmittedDesc;
+
+  /// No description provided for @kycRejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get kycRejectionReason;
+
+  /// No description provided for @kycIdentityVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verified'**
+  String get kycIdentityVerified;
+
+  /// No description provided for @kycExpires.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires {date}'**
+  String kycExpires(String date);
+
+  /// No description provided for @kycPendingNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents submitted — admin review in progress. This usually takes 1–2 business days.'**
+  String get kycPendingNotice;
+
+  /// No description provided for @kycRequiredDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Required documents'**
+  String get kycRequiredDocs;
+
+  /// No description provided for @kycRequiredDocsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload clear, well-lit photos. All documents are stored securely.'**
+  String get kycRequiredDocsSubtitle;
+
+  /// No description provided for @kycDocNationalIdFront.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID — front'**
+  String get kycDocNationalIdFront;
+
+  /// No description provided for @kycDocNationalIdFrontSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear photo of the front of your Ugandan National ID'**
+  String get kycDocNationalIdFrontSubtitle;
+
+  /// No description provided for @kycDocNationalIdBack.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID — back'**
+  String get kycDocNationalIdBack;
+
+  /// No description provided for @kycDocNationalIdBackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear photo of the back of your National ID'**
+  String get kycDocNationalIdBackSubtitle;
+
+  /// No description provided for @kycDocSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie with ID'**
+  String get kycDocSelfie;
+
+  /// No description provided for @kycDocSelfieSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold your National ID next to your face'**
+  String get kycDocSelfieSubtitle;
+
+  /// No description provided for @kycDocUploadedTapReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded — tap to replace'**
+  String get kycDocUploadedTapReplace;
+
+  /// No description provided for @kycPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity is never shown to other marketplace participants. Documents are reviewed by Nipanze admin only.'**
+  String get kycPrivacyNote;
+
+  /// No description provided for @kycSubmitForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for review'**
+  String get kycSubmitForReview;
+
+  /// No description provided for @kycUploadAllDocs.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload all three documents to enable submission.'**
+  String get kycUploadAllDocs;
+
+  /// No description provided for @kycChooseSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose source'**
+  String get kycChooseSource;
+
+  /// No description provided for @kycSourceCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get kycSourceCamera;
+
+  /// No description provided for @kycSourceLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo library'**
+  String get kycSourceLibrary;
+
+  /// No description provided for @kycDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get kycDismiss;
 }
 
 class _AppLocalizationsDelegate

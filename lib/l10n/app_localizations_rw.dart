@@ -1679,4 +1679,111 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get kycGateResubmitCta => 'Yongera utange umwirondoro';
+
+  @override
+  String get kycPageTitle => 'Kwemeza indangamuntu';
+
+  @override
+  String get kycStatusApproved => 'KYC Yemejwe';
+
+  @override
+  String get kycStatusApprovedDesc =>
+      'Umwirondoro wemejwe. Ubu urashobora gushyira amakuru ku isoko.';
+
+  @override
+  String get kycStatusPending => 'Irasuzumwa';
+
+  @override
+  String get kycStatusPendingDesc =>
+      'Inyandiko zatanzwe. Isuzuma ry\'umunyamabanga riragenda.';
+
+  @override
+  String get kycStatusRejected => 'Yateshejwe agaciro';
+
+  @override
+  String get kycStatusRejectedDesc =>
+      'Ubusabe bwateshejwe agaciro. Nyamuneka ongera utange maze wongereshe.';
+
+  @override
+  String get kycStatusExpired => 'Yarangiye';
+
+  @override
+  String get kycStatusExpiredDesc =>
+      'KYC yawe yarangiye. Nyamuneka ongera kwemeza.';
+
+  @override
+  String get kycStatusNotSubmitted => 'Ntibyatanzwe';
+
+  @override
+  String get kycStatusNotSubmittedDesc =>
+      'Tanga inyandiko zawe kugira ngo ubone uburenganzira bwo gushyira amakuru.';
+
+  @override
+  String get kycRejectionReason => 'Impamvu yo guteshwa agaciro';
+
+  @override
+  String get kycIdentityVerified => 'Umwirondoro wemejwe';
+
+  @override
+  String kycExpires(String date) {
+    return 'Irarangira kuwa $date';
+  }
+
+  @override
+  String get kycPendingNotice =>
+      'Inyandiko zatanzwe — isuzuma ry\'umunyamabanga riragenda. Ibi bisanzwe bitwara iminsi 1–2 y\'akazi.';
+
+  @override
+  String get kycRequiredDocs => 'Inyandiko zisabwa';
+
+  @override
+  String get kycRequiredDocsSubtitle =>
+      'Shiraho amafoto akera neza n\'umucyo mwiza. Inyandiko zose zibikwa mu buryo bw\'umutekano.';
+
+  @override
+  String get kycDocNationalIdFront => 'Indangamuntu — imbere';
+
+  @override
+  String get kycDocNationalIdFrontSubtitle =>
+      'Ifoto ikera y\'imbere y\'indangamuntu yawe y\'u Rwanda';
+
+  @override
+  String get kycDocNationalIdBack => 'Indangamuntu — inyuma';
+
+  @override
+  String get kycDocNationalIdBackSubtitle =>
+      'Ifoto ikera y\'inyuma y\'indangamuntu yawe';
+
+  @override
+  String get kycDocSelfie => 'Selfie n\'indangamuntu';
+
+  @override
+  String get kycDocSelfieSubtitle =>
+      'Shyira indangamuntu yawe iruhande rw\'mu maso wawe';
+
+  @override
+  String get kycDocUploadedTapReplace => 'Yakoherejwe — kanda ubasangire';
+
+  @override
+  String get kycPrivacyNote =>
+      'Umwirondoro wawe ntugaragarira abandi bagize isoko. Inyandiko zisuzumwa n\'ubutegetsi bwa Nipanze gusa.';
+
+  @override
+  String get kycSubmitForReview => 'Tanga isuzuma';
+
+  @override
+  String get kycUploadAllDocs =>
+      'Kohereza inyandiko eshatu kugira ngo ushoboze gutanga.';
+
+  @override
+  String get kycChooseSource => 'Hitamo isoko';
+
+  @override
+  String get kycSourceCamera => 'Kamera';
+
+  @override
+  String get kycSourceLibrary => 'Ububiko bw\'amafoto';
+
+  @override
+  String get kycDismiss => 'Reka';
 }

@@ -1,6 +1,3 @@
-// lib/features/kyc/presentation/pages/kyc_page.dart
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
 
@@ -28,13 +26,15 @@ class _KycView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Identity verification'),
+        title: Text(l10n.kycPageTitle),
       ),
       body: BlocConsumer<KycCubit, KycState>(
         listener: (context, state) {
@@ -43,7 +43,7 @@ class _KycView extends StatelessWidget {
               content: Text(state.message),
               backgroundColor: AppColors.danger,
               action: SnackBarAction(
-                label: 'Dismiss',
+                label: l10n.kycDismiss,
                 textColor: Colors.white,
                 onPressed: () => context.read<KycCubit>().clearError(),
               ),
@@ -95,8 +95,8 @@ class _KycView extends StatelessWidget {
                           child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Rejection reason',
-                              style: TextStyle(
+                          Text(l10n.kycRejectionReason,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.danger)),
@@ -128,14 +128,14 @@ class _KycView extends StatelessWidget {
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Identity verified',
-                              style: TextStyle(
+                          Text(l10n.kycIdentityVerified,
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.success,
                                   fontSize: 13)),
                           if (kyc?.expiresAt != null)
                             Text(
-                              'Expires ${_fmtDate(kyc!.expiresAt!)}',
+                              l10n.kycExpires(_fmtDate(kyc!.expiresAt!)),
                               style: const TextStyle(fontSize: 11),
                             ),
                         ]),
@@ -144,7 +144,7 @@ class _KycView extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
 
-              // Pending
+              // Pending notice
               if (kyc?.isPending == true) ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -154,16 +154,12 @@ class _KycView extends StatelessWidget {
                     border: Border.all(
                         color: AppColors.warning.withValues(alpha: 0.25)),
                   ),
-                  child: const Row(children: [
-                    Icon(Icons.hourglass_top_rounded,
+                  child: Row(children: [
+                    const Icon(Icons.hourglass_top_rounded,
                         color: AppColors.warning, size: 20),
-                    SizedBox(width: 12),
-                    Expanded(
-                        child: Text(
-                      'Documents submitted — admin review in progress. '
-                      'This usually takes 1–2 business days.',
-                      style: TextStyle(fontSize: 12),
-                    )),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(l10n.kycPendingNotice,
+                        style: const TextStyle(fontSize: 12))),
                   ]),
                 ),
                 const SizedBox(height: 16),
@@ -171,11 +167,11 @@ class _KycView extends StatelessWidget {
 
               // Document upload section
               if (kyc?.isApproved != true) ...[
-                Text('Required documents',
+                Text(l10n.kycRequiredDocs,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
                 Text(
-                  'Upload clear, well-lit photos. All documents are stored securely.',
+                  l10n.kycRequiredDocsSubtitle,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 14),
@@ -183,9 +179,9 @@ class _KycView extends StatelessWidget {
                 _DocUploadTile(
                   docType: 'national_id_front',
                   icon: Icons.badge_outlined,
-                  title: 'National ID — front',
-                  subtitle:
-                      'Clear photo of the front of your Ugandan National ID',
+                  title: l10n.kycDocNationalIdFront,
+                  subtitle: l10n.kycDocNationalIdFrontSubtitle,
+                  uploadedLabel: l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.nationalIdFrontUrl,
                   isUploading: uploadingDoc == 'national_id_front',
                   enabled: !isSubmitting,
@@ -195,8 +191,9 @@ class _KycView extends StatelessWidget {
                 _DocUploadTile(
                   docType: 'national_id_back',
                   icon: Icons.badge_outlined,
-                  title: 'National ID — back',
-                  subtitle: 'Clear photo of the back of your National ID',
+                  title: l10n.kycDocNationalIdBack,
+                  subtitle: l10n.kycDocNationalIdBackSubtitle,
+                  uploadedLabel: l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.nationalIdBackUrl,
                   isUploading: uploadingDoc == 'national_id_back',
                   enabled: !isSubmitting,
@@ -206,8 +203,9 @@ class _KycView extends StatelessWidget {
                 _DocUploadTile(
                   docType: 'selfie',
                   icon: Icons.face_outlined,
-                  title: 'Selfie with ID',
-                  subtitle: 'Hold your National ID next to your face',
+                  title: l10n.kycDocSelfie,
+                  subtitle: l10n.kycDocSelfieSubtitle,
+                  uploadedLabel: l10n.kycDocUploadedTapReplace,
                   uploadedUrl: kyc?.selfieUrl,
                   isUploading: uploadingDoc == 'selfie',
                   enabled: !isSubmitting,
@@ -224,22 +222,22 @@ class _KycView extends StatelessWidget {
                     color: AppColors.accent.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Row(children: [
-                    Icon(Icons.lock_outline_rounded,
+                  child: Row(children: [
+                    const Icon(Icons.lock_outline_rounded,
                         size: 14, color: AppColors.accent),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                         child: Text(
-                      'Your identity is never shown to other marketplace '
-                      'participants. Documents are reviewed by Nipanze admin only.',
-                      style: TextStyle(fontSize: 10, color: AppColors.accent),
+                      l10n.kycPrivacyNote,
+                      style: const TextStyle(
+                          fontSize: 10, color: AppColors.accent),
                     )),
                   ]),
                 ),
 
                 const SizedBox(height: 24),
 
-                // Submit button
+                // Submit button — disabled until all 3 docs uploaded
                 if (kyc?.isPending != true)
                   ElevatedButton(
                     onPressed: (isSubmitting ||
@@ -253,14 +251,15 @@ class _KycView extends StatelessWidget {
                             width: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : const Text('Submit for review'),
+                        : Text(l10n.kycSubmitForReview),
                   ),
 
+                // Hint shown when docs are incomplete
                 if (kyc?.allDocsUploaded != true && !isUploading)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'Upload all three documents to enable submission.',
+                      l10n.kycUploadAllDocs,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
@@ -278,21 +277,13 @@ class _KycView extends StatelessWidget {
     String docType, {
     bool preferCamera = false,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final picker = ImagePicker();
 
-    // Show source selector unless preferCamera
-    ImageSource? source;
-    if (preferCamera) {
-      source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (_) => const _SourcePicker(),
-      );
-    } else {
-      source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (_) => const _SourcePicker(),
-      );
-    }
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => _SourcePicker(l10n: l10n),
+    );
     if (source == null) return;
 
     final picked = await picker.pickImage(
@@ -318,36 +309,37 @@ class _StatusBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final status = kyc?.status ?? 'not_submitted';
 
     final (label, description, icon, color) = switch (status) {
       'approved' => (
-          'KYC Approved',
-          'Identity verified. You can now create listings.',
+          l10n.kycStatusApproved,
+          l10n.kycStatusApprovedDesc,
           Icons.verified_rounded,
           AppColors.success
         ),
       'pending' => (
-          'Under review',
-          'Documents submitted. Admin review in progress.',
+          l10n.kycStatusPending,
+          l10n.kycStatusPendingDesc,
           Icons.hourglass_top_rounded,
           AppColors.warning
         ),
       'rejected' => (
-          'Rejected',
-          'Submission rejected. Please re-upload and resubmit.',
+          l10n.kycStatusRejected,
+          l10n.kycStatusRejectedDesc,
           Icons.cancel_outlined,
           AppColors.danger
         ),
       'expired' => (
-          'Expired',
-          'Your KYC has expired. Please re-verify.',
+          l10n.kycStatusExpired,
+          l10n.kycStatusExpiredDesc,
           Icons.timer_off_outlined,
           AppColors.warning
         ),
       _ => (
-          'Not submitted',
-          'Submit documents to unlock listing creation.',
+          l10n.kycStatusNotSubmitted,
+          l10n.kycStatusNotSubmittedDesc,
           Icons.upload_file_outlined,
           AppColors.accent
         ),
@@ -387,6 +379,7 @@ class _DocUploadTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.uploadedLabel,
     required this.uploadedUrl,
     required this.isUploading,
     required this.enabled,
@@ -397,6 +390,7 @@ class _DocUploadTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String uploadedLabel;
   final String? uploadedUrl;
   final bool isUploading;
   final bool enabled;
@@ -406,70 +400,76 @@ class _DocUploadTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled && !isUploading ? onPick : null,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isUploaded
-                ? AppColors.success.withValues(alpha: 0.5)
-                : Theme.of(context).dividerColor,
-            width: isUploaded ? 1.5 : 1,
-          ),
-        ),
-        child: Row(children: [
-          // Doc icon or uploaded thumbnail
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isUploaded
-                  ? AppColors.success.withValues(alpha: 0.1)
-                  : Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: isUploading
-                ? const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : Icon(isUploaded ? Icons.check_circle_rounded : icon,
-                    size: 20,
-                    color: isUploaded ? AppColors.success : AppColors.accent),
-          ),
-          const SizedBox(width: 12),
+    final interactive = enabled && !isUploading;
 
-          Expanded(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 2),
-              Text(
-                isUploaded ? 'Uploaded — tap to replace' : subtitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: isUploaded ? AppColors.success : null),
+    return Opacity(
+      // Visual disabled state: dim tile when blocked (e.g. while submitting)
+      opacity: interactive ? 1.0 : 0.5,
+      child: GestureDetector(
+        onTap: interactive ? onPick : null,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isUploaded
+                  ? AppColors.success.withValues(alpha: 0.5)
+                  : Theme.of(context).dividerColor,
+              width: isUploaded ? 1.5 : 1,
+            ),
+          ),
+          child: Row(children: [
+            // Doc icon or uploaded indicator
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isUploaded
+                    ? AppColors.success.withValues(alpha: 0.1)
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          )),
-
-          // Action icon (shows green tick checkmark when uploaded/placed)
-          if (!isUploading)
-            Icon(
-              isUploaded ? Icons.check_circle_rounded : Icons.upload_rounded,
-              size: 22,
-              color: isUploaded
-                  ? AppColors.success
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+              child: isUploading
+                  ? const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : Icon(isUploaded ? Icons.check_circle_rounded : icon,
+                      size: 20,
+                      color: isUploaded ? AppColors.success : AppColors.accent),
             ),
-        ]),
+            const SizedBox(width: 12),
+
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(
+                  isUploaded ? uploadedLabel : subtitle,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: isUploaded ? AppColors.success : null),
+                ),
+              ],
+            )),
+
+            // Action icon
+            if (!isUploading)
+              Icon(
+                isUploaded ? Icons.check_circle_rounded : Icons.upload_rounded,
+                size: 22,
+                color: isUploaded
+                    ? AppColors.success
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+          ]),
+        ),
       ),
     );
   }
@@ -478,7 +478,8 @@ class _DocUploadTile extends StatelessWidget {
 // ─── Image source picker ──────────────────────────────────────────────────────
 
 class _SourcePicker extends StatelessWidget {
-  const _SourcePicker();
+  const _SourcePicker({required this.l10n});
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -492,16 +493,17 @@ class _SourcePicker extends StatelessWidget {
                 color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2))),
         const SizedBox(height: 16),
-        Text('Choose source', style: Theme.of(context).textTheme.titleMedium),
+        Text(l10n.kycChooseSource,
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 16),
         ListTile(
           leading: const Icon(Icons.camera_alt_outlined),
-          title: const Text('Camera'),
+          title: Text(l10n.kycSourceCamera),
           onTap: () => Navigator.pop(context, ImageSource.camera),
         ),
         ListTile(
           leading: const Icon(Icons.photo_library_outlined),
-          title: const Text('Photo library'),
+          title: Text(l10n.kycSourceLibrary),
           onTap: () => Navigator.pop(context, ImageSource.gallery),
         ),
         const SizedBox(height: 8),

@@ -132,7 +132,7 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-10`: Confirmed `login_page.dart` uses locale-based default and country constants. Carrier/infrastructure-based country detection is not implemented.
 - `2026-08-10`: Confirmed `loan_detail_page.dart` fix addresses row overflow and amount/chevron alignment.
 - `2026-08-10`: Confirmed README package list and edge function list are stale; the repo currently has only `supabase/functions/flutterwave-checkout` and `supabase/functions/send-notification`.
-- `2026-08-12`: Implemented shared `KycGateScreen` for upfront KYC checking on both Loan (`/listings/create`) and Forex (`/forex/create`) request creation flows before form rendering. Added 5-language localized keys (EN, FR, AR, RW, SW) and enforced strict button disabling when required inputs are missing.
+- `2026-08-12`: Implemented shared `KycGateScreen` for upfront KYC checking on both Loan (`/listings/create`) and Forex (`/forex/create`) request creation flows before form rendering. Refactored KYC document upload (`kyc_repository.dart`, `kyc_cubit.dart`, `kyc_page.dart`) to use cross-platform byte streaming (`XFile.readAsBytes()` + `uploadBinary`), resolving Web/Chrome `dart:io` file path runtime crashes. Added complete 5-language localization (EN, FR, AR, RW, SW) across all KYC components with full green checkmark / tick UI feedback, and enforced strict button disabling when required inputs/documents are missing.
 
 ---
 

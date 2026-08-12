@@ -1695,4 +1695,111 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get kycGateResubmitCta => 'Re-soumettre la vérification';
+
+  @override
+  String get kycPageTitle => 'Vérification d\'identité';
+
+  @override
+  String get kycStatusApproved => 'KYC approuvé';
+
+  @override
+  String get kycStatusApprovedDesc =>
+      'Identité vérifiée. Vous pouvez maintenant créer des annonces.';
+
+  @override
+  String get kycStatusPending => 'En cours d\'examen';
+
+  @override
+  String get kycStatusPendingDesc =>
+      'Documents soumis. Examen administrateur en cours.';
+
+  @override
+  String get kycStatusRejected => 'Rejeté';
+
+  @override
+  String get kycStatusRejectedDesc =>
+      'Soumission rejetée. Veuillez re-téléverser et resoumettre.';
+
+  @override
+  String get kycStatusExpired => 'Expiré';
+
+  @override
+  String get kycStatusExpiredDesc =>
+      'Votre KYC a expiré. Veuillez vous re-vérifier.';
+
+  @override
+  String get kycStatusNotSubmitted => 'Non soumis';
+
+  @override
+  String get kycStatusNotSubmittedDesc =>
+      'Soumettez vos documents pour débloquer la création d\'annonces.';
+
+  @override
+  String get kycRejectionReason => 'Motif de rejet';
+
+  @override
+  String get kycIdentityVerified => 'Identité vérifiée';
+
+  @override
+  String kycExpires(String date) {
+    return 'Expire le $date';
+  }
+
+  @override
+  String get kycPendingNotice =>
+      'Documents soumis — examen administrateur en cours. Cela prend généralement 1 à 2 jours ouvrables.';
+
+  @override
+  String get kycRequiredDocs => 'Documents requis';
+
+  @override
+  String get kycRequiredDocsSubtitle =>
+      'Téléversez des photos claires et bien éclairées. Tous les documents sont stockés en toute sécurité.';
+
+  @override
+  String get kycDocNationalIdFront => 'Carte nationale d\'identité — recto';
+
+  @override
+  String get kycDocNationalIdFrontSubtitle =>
+      'Photo claire du recto de votre carte nationale d\'identité ougandaise';
+
+  @override
+  String get kycDocNationalIdBack => 'Carte nationale d\'identité — verso';
+
+  @override
+  String get kycDocNationalIdBackSubtitle =>
+      'Photo claire du verso de votre carte nationale d\'identité';
+
+  @override
+  String get kycDocSelfie => 'Selfie avec pièce d\'identité';
+
+  @override
+  String get kycDocSelfieSubtitle =>
+      'Tenez votre carte nationale d\'identité à côté de votre visage';
+
+  @override
+  String get kycDocUploadedTapReplace => 'Téléversé — appuyez pour remplacer';
+
+  @override
+  String get kycPrivacyNote =>
+      'Votre identité n\'est jamais montrée aux autres participants du marché. Les documents sont examinés uniquement par l\'administration Nipanze.';
+
+  @override
+  String get kycSubmitForReview => 'Soumettre pour examen';
+
+  @override
+  String get kycUploadAllDocs =>
+      'Téléversez les trois documents pour activer la soumission.';
+
+  @override
+  String get kycChooseSource => 'Choisir la source';
+
+  @override
+  String get kycSourceCamera => 'Appareil photo';
+
+  @override
+  String get kycSourceLibrary => 'Bibliothèque de photos';
+
+  @override
+  String get kycDismiss => 'Fermer';
 }
