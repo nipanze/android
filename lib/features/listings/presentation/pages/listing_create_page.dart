@@ -1007,8 +1007,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             subtitle: canSuggestTerms
                 ? (l10n?.termsLockedNotice ??
                     'Locked when the request is published.')
-                : (l10n?.freeTermsBanner ??
-                    'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.'),
+                : null,
             children: canSuggestTerms
                 ? [
                     TextFormField(
