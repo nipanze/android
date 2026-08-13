@@ -26,11 +26,21 @@ class KycCubit extends Cubit<KycState> {
     }
   }
 
+  KycVerification? get _currentKyc {
+    final s = state;
+    return switch (s) {
+      KycLoaded() => s.kyc,
+      KycUploading() => s.kyc,
+      KycSubmitting() => s.kyc,
+      KycError() => s.kyc,
+      _ => null,
+    };
+  }
+
   /// Upload a file for a given doc type and save the URL to the DB.
   Future<void> uploadDocument(XFile file, String docType) async {
-    final current = state;
-    emit(KycUploading(
-        docType: docType, kyc: current is KycLoaded ? current.kyc : null));
+    final kyc = _currentKyc;
+    emit(KycUploading(docType: docType, kyc: kyc));
     try {
       final url = await _repository.uploadDocument(file, docType);
       final updated =
@@ -39,8 +49,6 @@ class KycCubit extends Cubit<KycState> {
     } catch (e, st) {
       // ignore: avoid_print
       print('[KycCubit] uploadDocument error: $e\n$st');
-      // Restore previous state with error
-      final kyc = current is KycLoaded ? current.kyc : null;
       final msg = e is AppException
           ? e.message
           : e.toString().replaceAll('Exception: ', '');
@@ -50,14 +58,14 @@ class KycCubit extends Cubit<KycState> {
 
   /// Submit all uploaded docs for admin review.
   Future<void> submit() async {
-    final current = state;
-    if (current is! KycLoaded || current.kyc == null) return;
-    if (!current.kyc!.allDocsUploaded) {
+    final kyc = _currentKyc;
+    if (kyc == null) return;
+    if (!kyc.allDocsUploaded) {
       emit(KycError('Please upload all three documents before submitting.',
-          kyc: current.kyc));
+          kyc: kyc));
       return;
     }
-    emit(KycSubmitting(current.kyc!));
+    emit(KycSubmitting(kyc));
     try {
       final updated = await _repository.submitForReview();
       emit(KycLoaded(updated));
@@ -65,14 +73,12 @@ class KycCubit extends Cubit<KycState> {
       final msg = e is AppException
           ? e.message
           : e.toString().replaceAll('Exception: ', '');
-      emit(KycError(msg, kyc: current.kyc));
+      emit(KycError(msg, kyc: kyc));
     }
   }
 
   void clearError() {
-    final current = state;
-    if (current is KycError) {
-      emit(KycLoaded(current.kyc));
-    }
+    final kyc = _currentKyc;
+    emit(KycLoaded(kyc));
   }
 }
