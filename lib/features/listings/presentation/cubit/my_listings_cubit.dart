@@ -40,7 +40,9 @@ class MyListingsCubit extends Cubit<MyListingsState> {
   Future<void> cancelListing(String requestId) async {
     try {
       await _repository.cancelListing(requestId);
-      // Realtime stream will trigger a reload automatically
+      final refreshed = await _repository.getMyListings();
+      if (!isClosed) emit(MyListingsLoaded(refreshed));
+      _subscribeRealtime();
     } catch (e) {
       // Bubble error to UI via a transient error state while keeping existing list
       final current = state;
