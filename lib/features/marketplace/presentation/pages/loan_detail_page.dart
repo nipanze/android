@@ -374,7 +374,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     const SizedBox(height: 16),
                     _CollateralDetailsSection(
                       listing: listing,
-                      currency: listing.currency,
+                      currency: (authState is AuthAuthenticated && authState.user.incomeCurrency.isNotEmpty)
+                          ? authState.user.incomeCurrency
+                          : listing.currency,
                       embedded: true,
                     ),
                   ],

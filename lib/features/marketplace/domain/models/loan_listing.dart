@@ -1,6 +1,8 @@
 // lib/features/marketplace/domain/models/loan_listing.dart
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/constants/country_constants.dart';
+
 // ─── LoanListing ──────────────────────────────────────────────────────────────
 
 class LoanListing extends Equatable {
@@ -9,6 +11,7 @@ class LoanListing extends Equatable {
     required this.title,
     required this.purpose,
     required this.district,
+    required this.country,
     required this.durationMonths,
     required this.requestedAmount,
     required this.incomeSource,
@@ -49,6 +52,7 @@ class LoanListing extends Equatable {
   final String title;
   final String purpose;
   final String district;
+  final String country;
   final int durationMonths;
   final int requestedAmount;
   final String incomeSource;
@@ -168,7 +172,11 @@ class LoanListing extends Equatable {
       trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
-      currency: map['currency'] as String? ?? 'UGX',
+        country: map['country'] as String? ?? 'UG',
+        currency: map['currency'] as String? ??
+          (map['country'] is String
+            ? EastAfricaCountries.findByCode(map['country'] as String).currency
+            : 'UGX'),
       preferredBank: map['preferred_bank'] as String?,
       institutionType: map['institution_type'] as String?,
       isBankAgent: map['is_bank_agent'] as bool? ?? false,
