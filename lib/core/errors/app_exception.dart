@@ -85,14 +85,19 @@ AppException parseSupabaseError(Object error) {
     }
     return const DatabaseException('File upload failed. Please try again.');
   }
-  // Supabase web client sometimes wraps StorageException inside a generic
+  // Supabase web client sometimes wraps StorageException or PostgrestException inside a generic
   // Exception — check the string representation as a fallback.
   final errStr = error.toString().toLowerCase();
   if (errStr.contains('storageerror') ||
-      errStr.contains('storage') && errStr.contains('policy') ||
-      errStr.contains('storage') && errStr.contains('upload') ||
+      (errStr.contains('storage') && errStr.contains('policy')) ||
+      (errStr.contains('storage') && errStr.contains('upload')) ||
+      errStr.contains('bucket not found') ||
+      errStr.contains('404') ||
       errStr.contains('403')) {
     return const DatabaseException('File upload failed. Please try again.');
+  }
+  if (errStr.contains('permission denied') || errStr.contains('42501')) {
+    return const PermissionException();
   }
   return const DatabaseException('Something went wrong. Please try again.');
 }

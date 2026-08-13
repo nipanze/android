@@ -62,7 +62,10 @@ class KycCubit extends Cubit<KycState> {
       final updated = await _repository.submitForReview();
       emit(KycLoaded(updated));
     } catch (e) {
-      emit(KycError(e.toString(), kyc: current.kyc));
+      final msg = e is AppException
+          ? e.message
+          : e.toString().replaceAll('Exception: ', '');
+      emit(KycError(msg, kyc: current.kyc));
     }
   }
 
