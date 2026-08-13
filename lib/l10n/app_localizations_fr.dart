@@ -1364,7 +1364,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noCollateralLabel => 'Sans garantie';
 
   @override
+  String get hasCollateralLabel => 'Avec garantie';
+
+  @override
   String get collateralLabel => 'Garantie';
+
+  @override
+  String get collateralPromptText =>
+      'Choisissez si cette demande est garantie par un bien.';
+
+  @override
+  String get collateralDetailsLabel => 'Détails de la garantie';
+
+  @override
+  String get collateralDetailsHint =>
+      'ex. titre de propriété, voiture, électronique, équipement';
+
+  @override
+  String get collateralAssetRequired => 'Décrivez le bien de garantie';
+
+  @override
+  String get collateralAssetDetailShort => 'Ajoutez un peu plus de détails';
+
+  @override
+  String collateralValueLabel(String currency) {
+    return 'Valeur estimée ($currency)';
+  }
 
   @override
   String get estimatedValueLabel => 'Valeur estimée';
@@ -1430,13 +1455,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get amountAvailableLabel => 'Montant disponible';
 
   @override
-  String get forexAmountToServe => 'Amount to be served';
+  String get forexAmountToServe => 'Montant à servir';
 
   @override
-  String get forexServesLabel => 'Serves';
+  String get forexServesLabel => 'Servir';
 
   @override
-  String get amountToExchangeOut => 'Amount to exchange out';
+  String get amountToExchangeOut => 'Montant à échanger';
 
   @override
   String get settlementTermsLabel => 'Conditions de règlement';

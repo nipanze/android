@@ -1352,7 +1352,32 @@ class AppLocalizationsSw extends AppLocalizations {
   String get noCollateralLabel => 'Hakuna dhamana';
 
   @override
+  String get hasCollateralLabel => 'Ina dhamana';
+
+  @override
   String get collateralLabel => 'Dhamana';
+
+  @override
+  String get collateralPromptText =>
+      'Chagua kama ombi hili limetegemezwa na mali.';
+
+  @override
+  String get collateralDetailsLabel => 'Maelezo ya dhamana';
+
+  @override
+  String get collateralDetailsHint =>
+      'mfano: hati ya ardhi, gari, vifaa vya elektroniki, vifaa';
+
+  @override
+  String get collateralAssetRequired => 'Eleza mali ya dhamana';
+
+  @override
+  String get collateralAssetDetailShort => 'Ongeza maelezo zaidi';
+
+  @override
+  String collateralValueLabel(String currency) {
+    return 'Thamani ya kukadiria ($currency)';
+  }
 
   @override
   String get estimatedValueLabel => 'Thamani iliyokadiriwa';

@@ -650,7 +650,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String chooseAccessSubtitle(String flag, String country) {
-    return 'يمكن لحساب واحد نشر الطلبات تقديم العروض. تتطابق الأسعار مع منطقة حسابك ($flag $country).';
+    return 'يمكن لحساب واحد نشر الطلبات وتقديم العروض. تتطابق الأسعار مع منطقة حسابك ($flag $country).';
   }
 
   @override
@@ -709,7 +709,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String welcomeGiftUnlocks(int count) {
-    return '🎁 هدية الترحيب — متبقي $count عملية فتح مجانية';
+    return '🎁 هدية الترحيب — $count فتح مجاني متبقي';
   }
 
   @override
@@ -1332,7 +1332,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noCollateralLabel => 'لا يوجد ضمان';
 
   @override
+  String get hasCollateralLabel => 'يوجد ضمان';
+
+  @override
   String get collateralLabel => 'الضمان';
+
+  @override
+  String get collateralPromptText => 'اختر ما إذا كان هذا الطلب مدعومًا بأصل.';
+
+  @override
+  String get collateralDetailsLabel => 'تفاصيل الضمان';
+
+  @override
+  String get collateralDetailsHint =>
+      'مثل: سند ملكية، سيارة، إلكترونيات، معدات';
+
+  @override
+  String get collateralAssetRequired => 'صف أصل الضمان';
+
+  @override
+  String get collateralAssetDetailShort => 'أضف مزيدًا من التفاصيل';
+
+  @override
+  String collateralValueLabel(String currency) {
+    return 'القيمة التقريبية ($currency)';
+  }
 
   @override
   String get estimatedValueLabel => 'القيمة التقديرية';
@@ -1397,13 +1421,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get amountAvailableLabel => 'المبلغ المتاح';
 
   @override
-  String get forexAmountToServe => 'Amount to be served';
+  String get forexAmountToServe => 'المبلغ المراد تقديمه';
 
   @override
-  String get forexServesLabel => 'Serves';
+  String get forexServesLabel => 'يخدم';
 
   @override
-  String get amountToExchangeOut => 'Amount to exchange out';
+  String get amountToExchangeOut => 'المبلغ المراد تحويله';
 
   @override
   String get settlementTermsLabel => 'شروط التسوية';

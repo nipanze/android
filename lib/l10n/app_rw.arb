@@ -203,6 +203,11 @@
   "changeProfilePicture": "Hindura ifoto y'umwirondoro",
   "phoneNumberLabel": "Nomero ya telefone",
   "selectRegionLabel": "Hitamo {label}",
+  "@selectRegionLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "incomeTypeLabel": "Ubwoko bw'inyungu",
   "selectIncomeType": "Hitamo ubwoko bw'inyungu",
   "employerBusinessOptionalLabel": "Umukoresha / izina ry'ubucuruzi (si ngombwa)",
@@ -223,7 +228,17 @@
   "saveChanges": "Bika impinduka",
   "enterFullName": "Shyiramo amazina yawe yose",
   "avatarUploadFailed": "Kohereza ifoto byanze: {error}",
+  "@avatarUploadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "couldNotSelectImage": "Ntibyashobotse guhitamo ifoto: {error}",
+  "@couldNotSelectImage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "identityVerification": "Kwemeza Indangamuntu",
   "security": "Umutekano",
   "notifications": "Amatangazo",
@@ -367,9 +382,168 @@
   "stepReviewPublish": "Kusuzuma no gutangaza",
   "requestALoan": "Saba inguzanyo",
   "stepCounter": "Intambwe ya {current} kuri {total} · {subtitle}",
+  "@stepCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "subtitle": { "type": "String" }
+    }
+  },
   "subtitleLoanDetails": "iBIKUBIYE MU NGUZANYO",
   "subtitleRepaymentContext": "uburyo bwo kwishyura",
   "subtitleReview": "isuzuma",
+  "amountLabelWithCurrency": "Umubare ({currency})",
+  "@amountLabelWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "amountToExchangeOut": "Umubare wo guhana",
+  "forexAmountToServe": "Umubare wo gutanga",
+  "forexServesLabel": "Gutanga",
+  "repaymentAmountPerPeriodLabel": "Ayishyurwa mu gihe ({currency})",
+  "@repaymentAmountPerPeriodLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "suggestedInstallmentAmountLabel": "Kwisbyura mu byiciro ({currency})",
+  "@suggestedInstallmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "validationMinAmount": "Kuri make {currency} {min}",
+  "@validationMinAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" }
+    }
+  },
+  "validationMaxAmount": "Kuri menshi {currency} {max}",
+  "@validationMaxAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "userVerificationStatus": "Imiterere y'ukemezwa: {status}",
+  "@userVerificationStatus": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "interestPercent": "{value}% y'inyungu",
+  "@interestPercent": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "lenderNumberLabel": "Umuguriza #{number}",
+  "@lenderNumberLabel": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "lenderTextLabel": "Umuguriza #{id}",
+  "@lenderTextLabel": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "partialOfferLabel": "Igice · {coverage}%",
+  "@partialOfferLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "vsAskLabel": "{value} vs ibisabwa",
+  "@vsAskLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "successfulDeals": "Amasezerano {count} yagezweho neza",
+  "@successfulDeals": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "totalPayablePaymentsLabel": "Igiteranyo cyo kwishyura ({periods} byishyurwa)",
+  "@totalPayablePaymentsLabel": {
+    "placeholders": {
+      "periods": { "type": "int" }
+    }
+  },
+  "borrowingCostLabel": "Igiciro cy'inguzanyo: {amount}",
+  "@borrowingCostLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "infoBannerText": "{currency} {min}-{max} · Kubera amezi 60 · amasezerano afungwa igihe atangazwa",
+  "@infoBannerText": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "welcomeGiftUnlocks": "🎁 Impano y'ikaze — haracyari fursa {count} zo gufungura kubuntu",
+  "@welcomeGiftUnlocks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "planTitle": "Ipulani ya {plan}",
+  "@planTitle": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "choosePlan": "Hitamo {plan}",
+  "@choosePlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "planSelectedMessage": "{plan} yatoranyijwe. Kwishyura kwizewe bizaboneka vuba.",
+  "@planSelectedMessage": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "includedInPlan": "Biri mu ipulani yawe ya {plan}",
+  "@includedInPlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "monthlyIncomeWithCurrency": "Amafaranga winjiza buri kwezi ({currency})",
+  "@monthlyIncomeWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "enterMobileNumberForProvider": "Nomero ya telefone {provider}",
+  "@enterMobileNumberForProvider": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "mobileMoneyPromptHint": "Uzahabwa ibimenyetso {provider} kuri telefone yawe kugira ngo wemere kwishyura.",
+  "@mobileMoneyPromptHint": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "chooseAccessSubtitle": "Konti imwe ishobora gusaba no gutanga ibyifuzo. Ibiciro bihura n'akarere ka konti yawe ({flag} {country}).",
+  "@chooseAccessSubtitle": {
+    "placeholders": {
+      "flag": { "type": "String" },
+      "country": { "type": "String" }
+    }
+  },
 
   "panelTheBasics": "Iby'iremezo",
   "panelTheNumbers": "Imibare",
@@ -505,7 +679,19 @@
   "onlyYourOfferVisible": "Igiciro watanze ni cyo gusa kigaragara hano. Urutonde rwose rw'ibiciro rubonwa n'usaba inguzanyo.",
   "securedCollateralLabel": "Gifite ingwate",
   "noCollateralLabel": "Nta ngwate",
+  "hasCollateralLabel": "Ifite ingwate",
   "collateralLabel": "Ingwate",
+  "collateralPromptText": "Hitamo niba uyu mubazo ufite ingwate.",
+  "collateralDetailsLabel": "Ibisobanuro by'ingwate",
+  "collateralDetailsHint": "urugero: urupapuro rw'umutungo, imodoka, ibikoresho, ibikoresho by'ubuhinzi",
+  "collateralAssetRequired": "Sobanura ingwate",
+  "collateralAssetDetailShort": "Ongeraho ibisobanuro bike",
+  "collateralValueLabel": "Agaciro kagereranyijwe ({currency})",
+  "@collateralValueLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
   "estimatedValueLabel": "Agaciro kagereranyijwe",
   "locationLabel": "Ahantu",
   "offerSubmittedReviewNotice": "Igiciro cyoherejwe. Ushobora kukireba hejuru.",
@@ -551,6 +737,11 @@
   "acceptOfferLabel": "Emera igiciro",
   "fullCoverageOfferLabel": "Igiciro gifata byose",
   "partialCoverageLabel": "Igice gifashwa · {coverage}%",
+  "@partialCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
   "totalPayablePaymentsLabel": "Amafaranga yose yo kwishyura ({periods} kwishyura)",
   "borrowingCostLabel": "Ikiguzi cy'inguzanyo: {amount}",
   "flutterwaveCheckoutTitle": "Kwishyura kuri Flutterwave",

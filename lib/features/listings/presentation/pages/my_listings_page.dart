@@ -161,12 +161,16 @@ class _ListingsBody extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final navigator = Navigator.of(context, rootNavigator: true);
+              if (navigator.canPop()) navigator.pop();
+            },
             child: Text(AppLocalizations.of(context)!.keepIt),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              final navigator = Navigator.of(context, rootNavigator: true);
+              if (navigator.canPop()) navigator.pop();
               context.read<MyListingsCubit>().cancelListing(listing.id);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),

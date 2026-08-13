@@ -203,6 +203,11 @@
   "changeProfilePicture": "تغيير صورة الملف الشخصي",
   "phoneNumberLabel": "رقم الهاتف",
   "selectRegionLabel": "اختر {label}",
+  "@selectRegionLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "incomeTypeLabel": "نوع الدخل",
   "selectIncomeType": "اختر نوع الدخل",
   "employerBusinessOptionalLabel": "اسم جهة العمل / النشاط (اختياري)",
@@ -223,7 +228,17 @@
   "saveChanges": "حفظ التغييرات",
   "enterFullName": "أدخل اسمك الكامل",
   "avatarUploadFailed": "فشل رفع الصورة: {error}",
+  "@avatarUploadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "couldNotSelectImage": "تعذر اختيار الصورة: {error}",
+  "@couldNotSelectImage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "identityVerification": "التحقق من الهوية",
   "security": "الأمان",
   "notifications": "الإشعارات",
@@ -377,6 +392,158 @@
   "subtitleLoanDetails": "تفاصيل القرض",
   "subtitleRepaymentContext": "سياق السداد",
   "subtitleReview": "مراجعة",
+  "amountLabelWithCurrency": "المبلغ ({currency})",
+  "@amountLabelWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "amountToExchangeOut": "المبلغ المراد تحويله",
+  "forexAmountToServe": "المبلغ المراد تقديمه",
+  "forexServesLabel": "يخدم",
+  "repaymentAmountPerPeriodLabel": "مبلغ السداد لكل فترة ({currency})",
+  "@repaymentAmountPerPeriodLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "suggestedInstallmentAmountLabel": "مبلغ القسط المقترح ({currency})",
+  "@suggestedInstallmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "validationMinAmount": "الحد الأدنى {currency} {min}",
+  "@validationMinAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" }
+    }
+  },
+  "validationMaxAmount": "الحد الأقصى {currency} {max}",
+  "@validationMaxAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "userVerificationStatus": "حالة التحقق من المستخدم: {status}",
+  "@userVerificationStatus": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "interestPercent": "{value}% فائدة",
+  "@interestPercent": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "lenderNumberLabel": "المقرض #{number}",
+  "@lenderNumberLabel": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "lenderTextLabel": "المقرض #{id}",
+  "@lenderTextLabel": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "partialOfferLabel": "جزئي · {coverage}%",
+  "@partialOfferLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "vsAskLabel": "{value} مقابل الطلب",
+  "@vsAskLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "successfulDeals": "{count} صفقات ناجحة",
+  "@successfulDeals": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "totalPayablePaymentsLabel": "الإجمالي المستحق ({periods} دفعات)",
+  "@totalPayablePaymentsLabel": {
+    "placeholders": {
+      "periods": { "type": "int" }
+    }
+  },
+  "borrowingCostLabel": "تكلفة القرض: {amount}",
+  "@borrowingCostLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "infoBannerText": "{currency} {min}-{max} · حتى 60 شهرًا · يتم قفل الشروط عند النشر",
+  "@infoBannerText": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "welcomeGiftUnlocks": "🎁 هدية الترحيب — {count} فتح مجاني متبقي",
+  "@welcomeGiftUnlocks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "planTitle": "خطة {plan}",
+  "@planTitle": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "choosePlan": "اختيار {plan}",
+  "@choosePlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "planSelectedMessage": "تم اختيار {plan}. ستتوفر عملية تفعيل الدفع الآمن قريبًا.",
+  "@planSelectedMessage": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "includedInPlan": "مضمن في خطة {plan} الخاصة بك",
+  "@includedInPlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "monthlyIncomeWithCurrency": "الدخل الشهري ({currency})",
+  "@monthlyIncomeWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "enterMobileNumberForProvider": "رقم هاتف {provider}",
+  "@enterMobileNumberForProvider": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "mobileMoneyPromptHint": "سيتلقى هاتفك تنبيه {provider} للموافقة على الدفع.",
+  "@mobileMoneyPromptHint": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "chooseAccessSubtitle": "يمكن لحساب واحد نشر الطلبات وتقديم العروض. تتطابق الأسعار مع منطقة حسابك ({flag} {country}).",
+  "@chooseAccessSubtitle": {
+    "placeholders": {
+      "flag": { "type": "String" },
+      "country": { "type": "String" }
+    }
+  },
 
   "panelTheBasics": "الأساسيات",
   "panelTheNumbers": "الأرقام",
@@ -509,7 +676,19 @@
   "onlyYourOfferVisible": "يظهر عرضك فقط هنا. سجل العروض الكامل ظاهر للمقترض.",
   "securedCollateralLabel": "مضمون",
   "noCollateralLabel": "لا يوجد ضمان",
+  "hasCollateralLabel": "يوجد ضمان",
   "collateralLabel": "الضمان",
+  "collateralPromptText": "اختر ما إذا كان هذا الطلب مدعومًا بأصل.",
+  "collateralDetailsLabel": "تفاصيل الضمان",
+  "collateralDetailsHint": "مثل: سند ملكية، سيارة، إلكترونيات، معدات",
+  "collateralAssetRequired": "صف أصل الضمان",
+  "collateralAssetDetailShort": "أضف مزيدًا من التفاصيل",
+  "collateralValueLabel": "القيمة التقريبية ({currency})",
+  "@collateralValueLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
   "estimatedValueLabel": "القيمة التقديرية",
   "locationLabel": "الموقع",
   "offerSubmittedReviewNotice": "تم إرسال العرض. يمكنك مراجعته أعلاه.",
@@ -555,6 +734,11 @@
   "acceptOfferLabel": "قبول العرض",
   "fullCoverageOfferLabel": "عرض تغطية كاملة",
   "partialCoverageLabel": "تغطية جزئية · {coverage}%",
+  "@partialCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
   "totalPayablePaymentsLabel": "إجمالي السداد ({periods} دفعات)",
   "borrowingCostLabel": "تكلفة الاقتراض: {amount}",
   "flutterwaveCheckoutTitle": "الدفع عبر فلوترفيلف",

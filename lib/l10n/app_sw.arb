@@ -203,6 +203,11 @@
   "changeProfilePicture": "Badilisha picha ya wasifu",
   "phoneNumberLabel": "Nambari ya simu",
   "selectRegionLabel": "Chagua {label}",
+  "@selectRegionLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "incomeTypeLabel": "Aina ya mapato",
   "selectIncomeType": "Chagua aina ya mapato",
   "employerBusinessOptionalLabel": "Mwajiri / jina la biashara (si lazima)",
@@ -223,7 +228,17 @@
   "saveChanges": "Hifadhi mabadiliko",
   "enterFullName": "Weka jina lako kamili",
   "avatarUploadFailed": "Kupakia picha kumeshindikana: {error}",
+  "@avatarUploadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "couldNotSelectImage": "Haikuweza kuchagua picha: {error}",
+  "@couldNotSelectImage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "identityVerification": "Uthibitisho wa Utambulisho",
   "security": "Usalama",
   "notifications": "Arifa",
@@ -367,9 +382,168 @@
   "stepReviewPublish": "Kagua na uchapishe",
   "requestALoan": "Omba mkopo",
   "stepCounter": "Hatua ya {current} kati ya {total} · {subtitle}",
+  "@stepCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "subtitle": { "type": "String" }
+    }
+  },
   "subtitleLoanDetails": "maelezo ya mkopo",
   "subtitleRepaymentContext": "muktadha wa marejesho",
   "subtitleReview": "uhakiki",
+  "amountLabelWithCurrency": "Kiasi ({currency})",
+  "@amountLabelWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "amountToExchangeOut": "Kiasi cha kubadilisha",
+  "forexAmountToServe": "Kiasi cha kutumika",
+  "forexServesLabel": "Hutumikia",
+  "repaymentAmountPerPeriodLabel": "Kiasi cha marejesho kwa kila kipindi ({currency})",
+  "@repaymentAmountPerPeriodLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "suggestedInstallmentAmountLabel": "Kiasi cha awamu kinachopendekezwa ({currency})",
+  "@suggestedInstallmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "validationMinAmount": "Kiwango cha chini {currency} {min}",
+  "@validationMinAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" }
+    }
+  },
+  "validationMaxAmount": "Kiwango cha juu {currency} {max}",
+  "@validationMaxAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "userVerificationStatus": "Hali ya uthibitisho wa mtumiaji: {status}",
+  "@userVerificationStatus": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "interestPercent": "{value}% riba",
+  "@interestPercent": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "lenderNumberLabel": "Mkopeshi #{number}",
+  "@lenderNumberLabel": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "lenderTextLabel": "Mkopeshi #{id}",
+  "@lenderTextLabel": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "partialOfferLabel": "Sehemu · {coverage}%",
+  "@partialOfferLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "vsAskLabel": "{value} dhidi ya ombi",
+  "@vsAskLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "successfulDeals": "Mikataba {count} iliyofanikiwa",
+  "@successfulDeals": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "totalPayablePaymentsLabel": "Jumla ya kulipa ({periods} malipo)",
+  "@totalPayablePaymentsLabel": {
+    "placeholders": {
+      "periods": { "type": "int" }
+    }
+  },
+  "borrowingCostLabel": "Gharama ya mkopo: {amount}",
+  "@borrowingCostLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "infoBannerText": "{currency} {min}-{max} · Hadi miezi 60 · masharti yanafungwa kwenye uchapishaji",
+  "@infoBannerText": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "welcomeGiftUnlocks": "🎁 Zawadi ya kuwakaribisha — zimebaki fursa {count} za kufungua bure",
+  "@welcomeGiftUnlocks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "planTitle": "Mpango wa {plan}",
+  "@planTitle": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "choosePlan": "Chagua {plan}",
+  "@choosePlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "planSelectedMessage": "{plan} imechaguliwa. Uwashaji wa malipo salama utapatikana hivi karibuni.",
+  "@planSelectedMessage": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "includedInPlan": "Imejumuishwa kwenye mpango wako wa {plan}",
+  "@includedInPlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "monthlyIncomeWithCurrency": "Mapato ya mwezi ({currency})",
+  "@monthlyIncomeWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "enterMobileNumberForProvider": "Nambari ya simu {provider}",
+  "@enterMobileNumberForProvider": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "mobileMoneyPromptHint": "Utapokea prompt ya {provider} kwenye simu yako ili kuthibitisha malipo.",
+  "@mobileMoneyPromptHint": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "chooseAccessSubtitle": "Akaunti moja inaweza kuchapisha maombi na kutoa dau. Bei zinarandana na eneo la akaunti yako ({flag} {country}).",
+  "@chooseAccessSubtitle": {
+    "placeholders": {
+      "flag": { "type": "String" },
+      "country": { "type": "String" }
+    }
+  },
 
   "panelTheBasics": "Mambo ya msingi",
   "panelTheNumbers": "Nambari",
@@ -502,7 +676,19 @@
   "onlyYourOfferVisible": "Bei yako pekee inaonekana hapa. Orodha kamili ya bei inaonekana kwa mkopaji.",
   "securedCollateralLabel": "Imewekewa dhamana",
   "noCollateralLabel": "Hakuna dhamana",
+  "hasCollateralLabel": "Ina dhamana",
   "collateralLabel": "Dhamana",
+  "collateralPromptText": "Chagua kama ombi hili limetegemezwa na mali.",
+  "collateralDetailsLabel": "Maelezo ya dhamana",
+  "collateralDetailsHint": "mfano: hati ya ardhi, gari, vifaa vya elektroniki, vifaa",
+  "collateralAssetRequired": "Eleza mali ya dhamana",
+  "collateralAssetDetailShort": "Ongeza maelezo zaidi",
+  "collateralValueLabel": "Thamani ya kukadiria ({currency})",
+  "@collateralValueLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
   "estimatedValueLabel": "Thamani iliyokadiriwa",
   "locationLabel": "Mahali",
   "offerSubmittedReviewNotice": "Bei imetumwa. Unaweza kuikagua hapo juu.",
@@ -551,6 +737,11 @@
   "acceptOfferLabel": "Kubali bei",
   "fullCoverageOfferLabel": "Bei ya kufadhili yote",
   "partialCoverageLabel": "Ufadhili wa sehemu · {coverage}%",
+  "@partialCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
   "totalPayablePaymentsLabel": "Jumla ya kulipa ({periods} malipo)",
   "borrowingCostLabel": "Gharama ya mkopo: {amount}",
   "flutterwaveCheckoutTitle": "Malipo ya Flutterwave",

@@ -203,6 +203,11 @@
   "changeProfilePicture": "Changer la photo de profil",
   "phoneNumberLabel": "Numéro de téléphone",
   "selectRegionLabel": "Sélectionner {label}",
+  "@selectRegionLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
   "incomeTypeLabel": "Type de revenu",
   "selectIncomeType": "Sélectionner le type de revenu",
   "employerBusinessOptionalLabel": "Employeur / nom de l'entreprise (facultatif)",
@@ -223,7 +228,17 @@
   "saveChanges": "Enregistrer les modifications",
   "enterFullName": "Entrez votre nom complet",
   "avatarUploadFailed": "Échec du téléversement de l'avatar : {error}",
+  "@avatarUploadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "couldNotSelectImage": "Impossible de sélectionner l'image : {error}",
+  "@couldNotSelectImage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "identityVerification": "Vérification d'identité",
   "security": "Sécurité",
   "notifications": "Notifications",
@@ -367,9 +382,168 @@
   "stepReviewPublish": "Vérifier et publier",
   "requestALoan": "Demander un prêt",
   "stepCounter": "Étape {current} sur {total} · {subtitle}",
+  "@stepCounter": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "subtitle": { "type": "String" }
+    }
+  },
   "subtitleLoanDetails": "détails du prêt",
   "subtitleRepaymentContext": "contexte de remboursement",
   "subtitleReview": "vérification",
+  "amountLabelWithCurrency": "Montant ({currency})",
+  "@amountLabelWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "amountToExchangeOut": "Montant à échanger",
+  "forexAmountToServe": "Montant à servir",
+  "forexServesLabel": "Servir",
+  "repaymentAmountPerPeriodLabel": "Montant de remboursement par période ({currency})",
+  "@repaymentAmountPerPeriodLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "suggestedInstallmentAmountLabel": "Montant de versement suggéré ({currency})",
+  "@suggestedInstallmentAmountLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "validationMinAmount": "Minimum {currency} {min}",
+  "@validationMinAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" }
+    }
+  },
+  "validationMaxAmount": "Maximum {currency} {max}",
+  "@validationMaxAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "userVerificationStatus": "Statut de vérification de l'utilisateur : {status}",
+  "@userVerificationStatus": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "interestPercent": "{value}% d'intérêt",
+  "@interestPercent": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "lenderNumberLabel": "Prêteur #{number}",
+  "@lenderNumberLabel": {
+    "placeholders": {
+      "number": { "type": "int" }
+    }
+  },
+  "lenderTextLabel": "Prêteur #{id}",
+  "@lenderTextLabel": {
+    "placeholders": {
+      "id": { "type": "String" }
+    }
+  },
+  "partialOfferLabel": "Partiel · {coverage}%",
+  "@partialOfferLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "vsAskLabel": "{value} vs demande",
+  "@vsAskLabel": {
+    "placeholders": {
+      "value": { "type": "String" }
+    }
+  },
+  "successfulDeals": "{count} transactions réussies",
+  "@successfulDeals": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "totalPayablePaymentsLabel": "Total payable ({periods} paiements)",
+  "@totalPayablePaymentsLabel": {
+    "placeholders": {
+      "periods": { "type": "int" }
+    }
+  },
+  "borrowingCostLabel": "Coût d'emprunt : {amount}",
+  "@borrowingCostLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "infoBannerText": "{currency} {min}-{max} · Jusqu'à 60 mois · les conditions sont verrouillées lors de la publication",
+  "@infoBannerText": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "welcomeGiftUnlocks": "🎁 Cadeau de bienvenue — {count} déblocage(s) gratuit(s) restant(s)",
+  "@welcomeGiftUnlocks": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "planTitle": "Plan {plan}",
+  "@planTitle": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "choosePlan": "Choisir {plan}",
+  "@choosePlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "planSelectedMessage": "{plan} sélectionné. L'activation du paiement sécurisé sera bientôt disponible.",
+  "@planSelectedMessage": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "includedInPlan": "Inclus dans votre plan {plan}",
+  "@includedInPlan": {
+    "placeholders": {
+      "plan": { "type": "String" }
+    }
+  },
+  "monthlyIncomeWithCurrency": "Revenu mensuel ({currency})",
+  "@monthlyIncomeWithCurrency": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "enterMobileNumberForProvider": "Numéro de téléphone {provider}",
+  "@enterMobileNumberForProvider": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "mobileMoneyPromptHint": "Vous recevrez une demande {provider} sur votre téléphone pour approuver le paiement.",
+  "@mobileMoneyPromptHint": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+  "chooseAccessSubtitle": "Un seul compte peut publier des demandes et faire des offres. Les prix correspondent à votre région ({flag} {country}).",
+  "@chooseAccessSubtitle": {
+    "placeholders": {
+      "flag": { "type": "String" },
+      "country": { "type": "String" }
+    }
+  },
 
   "panelTheBasics": "Les bases",
   "panelTheNumbers": "Les chiffres",
@@ -502,7 +676,19 @@
   "onlyYourOfferVisible": "Seule votre offre est visible ici. Le carnet complet des offres est visible par l'emprunteur.",
   "securedCollateralLabel": "Garanti",
   "noCollateralLabel": "Sans garantie",
+  "hasCollateralLabel": "Avec garantie",
   "collateralLabel": "Garantie",
+  "collateralPromptText": "Choisissez si cette demande est garantie par un bien.",
+  "collateralDetailsLabel": "Détails de la garantie",
+  "collateralDetailsHint": "ex. titre de propriété, voiture, électronique, équipement",
+  "collateralAssetRequired": "Décrivez le bien de garantie",
+  "collateralAssetDetailShort": "Ajoutez un peu plus de détails",
+  "collateralValueLabel": "Valeur estimée ({currency})",
+  "@collateralValueLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
   "estimatedValueLabel": "Valeur estimée",
   "locationLabel": "Lieu",
   "offerSubmittedReviewNotice": "Offre envoyée. Vous pouvez la consulter ci-dessus.",
@@ -548,6 +734,11 @@
   "acceptOfferLabel": "Accepter l'offre",
   "fullCoverageOfferLabel": "Offre de couverture complète",
   "partialCoverageLabel": "Couverture partielle · {coverage}%",
+  "@partialCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
   "totalPayablePaymentsLabel": "Total à payer ({periods} paiements)",
   "borrowingCostLabel": "Coût d'emprunt : {amount}",
   "flutterwaveCheckoutTitle": "Paiement Flutterwave",

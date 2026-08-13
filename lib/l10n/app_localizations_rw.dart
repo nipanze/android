@@ -1349,7 +1349,31 @@ class AppLocalizationsRw extends AppLocalizations {
   String get noCollateralLabel => 'Nta ngwate';
 
   @override
+  String get hasCollateralLabel => 'Ifite ingwate';
+
+  @override
   String get collateralLabel => 'Ingwate';
+
+  @override
+  String get collateralPromptText => 'Hitamo niba uyu mubazo ufite ingwate.';
+
+  @override
+  String get collateralDetailsLabel => 'Ibisobanuro by\'ingwate';
+
+  @override
+  String get collateralDetailsHint =>
+      'urugero: urupapuro rw\'umutungo, imodoka, ibikoresho, ibikoresho by\'ubuhinzi';
+
+  @override
+  String get collateralAssetRequired => 'Sobanura ingwate';
+
+  @override
+  String get collateralAssetDetailShort => 'Ongeraho ibisobanuro bike';
+
+  @override
+  String collateralValueLabel(String currency) {
+    return 'Agaciro kagereranyijwe ($currency)';
+  }
 
   @override
   String get estimatedValueLabel => 'Agaciro kagereranyijwe';

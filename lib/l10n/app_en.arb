@@ -599,7 +599,19 @@
   "onlyYourOfferVisible": "Only your offer is visible here. The full bid book is visible to the borrower.",
   "securedCollateralLabel": "Secured",
   "noCollateralLabel": "No collateral",
+  "hasCollateralLabel": "Has collateral",
   "collateralLabel": "Collateral",
+  "collateralPromptText": "Choose whether this request is backed by an asset.",
+  "collateralDetailsLabel": "Collateral details",
+  "collateralDetailsHint": "e.g. Land title, car, electronics, equipment",
+  "collateralAssetRequired": "Describe the collateral asset",
+  "collateralAssetDetailShort": "Add a little more detail",
+  "collateralValueLabel": "Est. value ({currency})",
+  "@collateralValueLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
   "estimatedValueLabel": "Estimated value",
   "locationLabel": "Location",
   "offerSubmittedReviewNotice": "Offer submitted. You can review your offer above.",

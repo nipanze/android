@@ -778,22 +778,27 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           ),
           const SizedBox(height: 10),
           _FormPanel(
-            title: 'Collateral',
-            subtitle: 'Choose whether this request is backed by an asset.',
+            title: l10n?.collateralLabel ?? 'Collateral',
+            subtitle: l10n?.collateralPromptText ??
+                'Choose whether this request is backed by an asset.',
             children: [
               SizedBox(
                 width: double.infinity,
                 child: SegmentedButton<bool>(
-                  segments: const [
+                  segments: [
                     ButtonSegment<bool>(
                       value: false,
-                      icon: Icon(Icons.block_rounded),
-                      label: Text('No Collateral'),
+                      icon: const Icon(Icons.block_rounded),
+                      label: Text(
+                        l10n?.noCollateralLabel ?? 'No collateral',
+                      ),
                     ),
                     ButtonSegment<bool>(
                       value: true,
-                      icon: Icon(Icons.verified_user_outlined),
-                      label: Text('Has Collateral'),
+                      icon: const Icon(Icons.verified_user_outlined),
+                      label: Text(
+                        l10n?.hasCollateralLabel ?? 'Has collateral',
+                      ),
                     ),
                   ],
                   selected: {_hasCollateral},
@@ -817,20 +822,27 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   textCapitalization: TextCapitalization.sentences,
                   maxLines: 3,
                   maxLength: 240,
-                  decoration: const InputDecoration(
-                    labelText: 'Collateral details',
-                    hintText: 'e.g. Land title, car, electronics, equipment',
+                  decoration: InputDecoration(
+                    labelText:
+                        l10n?.collateralDetailsLabel ?? 'Collateral details',
+                    hintText: l10n?.collateralDetailsHint ??
+                        'e.g. Land title, car, electronics, equipment',
                     alignLabelWithHint: true,
-                    prefixIcon: Icon(Icons.inventory_2_outlined, size: 20),
+                    prefixIcon: const Icon(
+                      Icons.inventory_2_outlined,
+                      size: 20,
+                    ),
                   ),
                   validator: (v) {
                     if (!_hasCollateral) return null;
                     final value = v?.trim() ?? '';
                     if (value.isEmpty) {
-                      return 'Describe the collateral asset';
+                      return l10n?.collateralAssetRequired ??
+                          'Describe the collateral asset';
                     }
                     if (value.length < 3) {
-                      return 'Add a little more detail';
+                      return l10n?.collateralAssetDetailShort ??
+                          'Add a little more detail';
                     }
                     return null;
                   },
@@ -846,7 +858,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                           FilteringTextInputFormatter.digitsOnly,
                         ],
                         decoration: InputDecoration(
-                          labelText: 'Est. value ($currency)',
+                          labelText: l10n?.collateralValueLabel(currency) ??
+                              'Est. value ($currency)',
                           hintText: 'Optional',
                           prefixIcon: const Icon(
                             Icons.price_check_outlined,
@@ -860,10 +873,13 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       child: TextFormField(
                         controller: _collateralLocationController,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                          labelText: 'Location',
+                        decoration: InputDecoration(
+                          labelText: l10n?.locationLabel ?? 'Location',
                           hintText: 'Optional',
-                          prefixIcon: Icon(Icons.place_outlined, size: 20),
+                          prefixIcon: const Icon(
+                            Icons.place_outlined,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),

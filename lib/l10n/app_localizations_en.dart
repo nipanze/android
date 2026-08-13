@@ -1343,7 +1343,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCollateralLabel => 'No collateral';
 
   @override
+  String get hasCollateralLabel => 'Has collateral';
+
+  @override
   String get collateralLabel => 'Collateral';
+
+  @override
+  String get collateralPromptText =>
+      'Choose whether this request is backed by an asset.';
+
+  @override
+  String get collateralDetailsLabel => 'Collateral details';
+
+  @override
+  String get collateralDetailsHint =>
+      'e.g. Land title, car, electronics, equipment';
+
+  @override
+  String get collateralAssetRequired => 'Describe the collateral asset';
+
+  @override
+  String get collateralAssetDetailShort => 'Add a little more detail';
+
+  @override
+  String collateralValueLabel(String currency) {
+    return 'Est. value ($currency)';
+  }
 
   @override
   String get estimatedValueLabel => 'Estimated value';

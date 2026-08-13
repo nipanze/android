@@ -2516,11 +2516,53 @@ abstract class AppLocalizations {
   /// **'No collateral'**
   String get noCollateralLabel;
 
+  /// No description provided for @hasCollateralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Has collateral'**
+  String get hasCollateralLabel;
+
   /// No description provided for @collateralLabel.
   ///
   /// In en, this message translates to:
   /// **'Collateral'**
   String get collateralLabel;
+
+  /// No description provided for @collateralPromptText.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether this request is backed by an asset.'**
+  String get collateralPromptText;
+
+  /// No description provided for @collateralDetailsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Collateral details'**
+  String get collateralDetailsLabel;
+
+  /// No description provided for @collateralDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Land title, car, electronics, equipment'**
+  String get collateralDetailsHint;
+
+  /// No description provided for @collateralAssetRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the collateral asset'**
+  String get collateralAssetRequired;
+
+  /// No description provided for @collateralAssetDetailShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a little more detail'**
+  String get collateralAssetDetailShort;
+
+  /// No description provided for @collateralValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. value ({currency})'**
+  String collateralValueLabel(String currency);
 
   /// No description provided for @estimatedValueLabel.
   ///
