@@ -1763,6 +1763,8 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get kycDocUploadedTapReplace => 'Yakoherejwe — kanda ubasangire';
+
+  @override
   String get kycDocUploadedUnderReview => 'Yakoherejwe — irimo gusuzumwa';
 
   @override

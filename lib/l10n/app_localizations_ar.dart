@@ -1741,6 +1741,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get kycDocUploadedTapReplace => 'تم الرفع — اضغط للاستبدال';
+
+  @override
   String get kycDocUploadedUnderReview => 'تم الرفع — قيد المراجعة';
 
   @override

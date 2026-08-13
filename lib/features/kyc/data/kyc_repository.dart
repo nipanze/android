@@ -56,7 +56,7 @@ class KycRepository {
       final path =
           '$uid/${docType}_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
-      final bucket = StorageBuckets.kycDocuments; // 'verification-documents'
+      const bucket = StorageBuckets.kycDocuments; // 'verification-documents'
 
       // ignore: avoid_print
       print('[Storage] Uploading to bucket "$bucket" at path "$path"...');
