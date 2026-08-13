@@ -256,10 +256,12 @@ class WelcomePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const SizedBox(width: 60), // balance space
-                        Image.asset(
-                          'assets/images/nipanze_logo.png',
-                          height: 80,
-                          fit: BoxFit.contain,
+                        Flexible(
+                          child: Image.asset(
+                            'assets/images/nipanze_logo.png',
+                            height: 80,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                         // Language Chip Button
                         ValueListenableBuilder<Locale?>(

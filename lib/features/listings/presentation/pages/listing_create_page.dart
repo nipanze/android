@@ -404,9 +404,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     if (!mounted) return;
     setState(() => _submitting = false);
 
-    await showDialog(
+    final dialogResult = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text(l10n?.requestSubmittedTitle ?? 'Request submitted'),
         content: Text(
           l10n?.requestSubmittedContent ??
@@ -415,14 +415,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              context.go(AppRoutes.myListings);
+              Navigator.pop(dialogCtx, true);
             },
             child: Text(l10n?.done ?? 'Done'),
           ),
         ],
       ),
     );
+
+    if (dialogResult == true && mounted) {
+      context.go(AppRoutes.myListings);
+    }
   }
 
   void _showGate(String message) {

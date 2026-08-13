@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +10,7 @@ import '../../features/auth/domain/models/nipanze_user.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../l10n/app_localizations.dart';
 
-class KycGateScreen extends StatelessWidget {
+class KycGateScreen extends StatefulWidget {
   const KycGateScreen({
     super.key,
     required this.kycStatus,
@@ -23,6 +25,13 @@ class KycGateScreen extends StatelessWidget {
   /// ineligible (e.g. canBorrow == false).
   final String? reason;
 
+  @override
+  State<KycGateScreen> createState() => _KycGateScreenState();
+}
+
+class _KycGateScreenState extends State<KycGateScreen> {
+  Timer? _pollTimer;
+
   Future<void> _openKyc(BuildContext context) async {
     await context.push(AppRoutes.kyc);
     if (context.mounted) {
@@ -30,10 +39,52 @@ class KycGateScreen extends StatelessWidget {
     }
   }
 
+  void _startPolling() {
+    // Only poll while pending; dispatch a profile refresh every 5 seconds.
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+    });
+  }
+
+  void _stopPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.kycStatus == KycStatus.pending) {
+      _startPolling();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant KycGateScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.kycStatus != widget.kycStatus) {
+      if (widget.kycStatus == KycStatus.pending) {
+        _startPolling();
+      } else {
+        _stopPolling();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _stopPolling();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+
+    final kycStatus = widget.kycStatus;
 
     final (IconData icon, Color iconColor, String title, String body) =
         switch (kycStatus) {
@@ -87,7 +138,7 @@ class KycGateScreen extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      pageTitle,
+                      widget.pageTitle,
                       style: theme.textTheme.headlineSmall,
                     ),
                   ),
@@ -130,7 +181,7 @@ class KycGateScreen extends StatelessWidget {
                     const SizedBox(height: 14),
 
                     Text(
-                      reason ?? body,
+                      widget.reason ?? body,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface
                             .withValues(alpha: 0.65),
