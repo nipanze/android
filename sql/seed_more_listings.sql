@@ -72,6 +72,21 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- ======= FOREX REQUESTS =======
+-- Ensure currencies used by these seeds exist and are enabled for forex trading.
+-- Idempotent: safe to run multiple times in Supabase SQL editor.
+INSERT INTO currencies (code, name, is_market_currency, market_country, forex_trading_enabled)
+VALUES
+    ('EUR', 'Euro', FALSE, NULL, TRUE),
+    ('USD', 'US Dollar', FALSE, NULL, TRUE),
+    ('UGX', 'Ugandan Shilling', TRUE, 'UG', TRUE),
+    ('KES', 'Kenyan Shilling', TRUE, 'KE', TRUE),
+    ('NGN', 'Nigerian Naira', TRUE, 'NG', TRUE)
+ON CONFLICT (code) DO UPDATE
+SET name = EXCLUDED.name,
+    is_market_currency = EXCLUDED.is_market_currency,
+    market_country = EXCLUDED.market_country,
+    forex_trading_enabled = EXCLUDED.forex_trading_enabled;
+
 INSERT INTO forex_requests (
     id, requester_id, country, currency_held, currency_needed, amount, preferred_rate,
     settlement_preference, is_urgent, terms_locked_at, number_of_offers, status, listed_at, created_at, updated_at
@@ -112,5 +127,4 @@ INSERT INTO forex_offers (
 ) VALUES
 ('31000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000007', 0.000101, 2000000, 'Mobile money within 2 hours', NOW(), 'pending', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '12 hours', NOW() - INTERVAL '12 hours')
 ON CONFLICT (id) DO NOTHING;
-
--- End of additional marketplace seeds
+-- Extra rows moved to seed_more_listings_extras.sql
