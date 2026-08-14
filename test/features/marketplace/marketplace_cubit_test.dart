@@ -18,7 +18,7 @@ void main() {
       title: 'Medical Expense',
       purpose: 'Medical',
       district: 'Kampala',
-        country: 'UG',
+      country: 'UG',
       durationMonths: 12,
       requestedAmount: 1000000,
       incomeSource: 'Salaried',
@@ -35,7 +35,7 @@ void main() {
       title: 'Business Growth',
       purpose: 'Business',
       district: 'Wakiso',
-        country: 'UG',
+      country: 'UG',
       durationMonths: 6,
       requestedAmount: 500000,
       incomeSource: 'Business',
@@ -51,6 +51,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockMarketplaceRepository();
+    when(() => mockRepo.currentViewerId).thenReturn('viewer-default');
     when(() => mockRepo.watchListings(module: any(named: 'module')))
         .thenAnswer((_) => const Stream.empty());
     when(() => mockRepo.watchForexListings(module: any(named: 'module')))
@@ -148,5 +149,56 @@ void main() {
                 (s) => s.proFilterCriteria.isActive, 'filters active', false),
       ],
     );
+
+    test('personalizes listing order for different viewers', () async {
+      final now = DateTime.utc(2026, 1, 1, 12);
+      final sameSignalListings = ['req-a', 'req-b', 'req-c', 'req-d', 'req-e']
+          .map((id) => MarketplaceItem.loan(LoanListing(
+                requestId: id,
+                title: 'Working Capital',
+                purpose: 'Business',
+                district: 'Kampala',
+                country: 'UG',
+                durationMonths: 6,
+                requestedAmount: 500000,
+                incomeSource: 'Business',
+                preferredRepaymentPlan: 'Monthly',
+                repaymentAmountPerPeriod: 90000,
+                repaymentTimeline: '6 months',
+                status: 'active',
+                listedAt: now,
+                expiresAt: now.add(const Duration(days: 5)),
+                numberOfOffers: 1,
+              )))
+          .toList();
+
+      Future<List<String>> loadOrderFor(String viewerId) async {
+        final repo = MockMarketplaceRepository();
+        when(() => repo.currentViewerId).thenReturn(viewerId);
+        when(() => repo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => sameSignalListings);
+        when(() => repo.watchListings(module: any(named: 'module')))
+            .thenAnswer((_) => const Stream.empty());
+        when(() => repo.watchForexListings(module: any(named: 'module')))
+            .thenAnswer((_) => const Stream.empty());
+
+        final cubit = MarketplaceCubit(repo);
+        await cubit.load(module: MarketplaceModule.loan);
+        final loaded = cubit.state as MarketplaceLoaded;
+        await cubit.close();
+        return loaded.listings.map((listing) => listing.requestId).toList();
+      }
+
+      final firstViewerOrder = await loadOrderFor('viewer-one');
+      final secondViewerOrder = await loadOrderFor('viewer-two');
+
+      expect(firstViewerOrder, isNot(secondViewerOrder));
+      expect(firstViewerOrder.toSet(),
+          sameSignalListings.map((l) => l.requestId).toSet());
+      expect(secondViewerOrder.toSet(),
+          sameSignalListings.map((l) => l.requestId).toSet());
+    });
   });
 }

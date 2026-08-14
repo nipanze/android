@@ -14,6 +14,8 @@ class MarketplaceRepository {
 
   final SupabaseClient _client;
 
+  String? get currentViewerId => _client.auth.currentUser?.id;
+
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
   Future<List<MarketplaceItem>> getListings({
