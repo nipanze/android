@@ -20,7 +20,16 @@ import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initApp();
+  runApp(const NipanzeApp());
+}
 
+/// Initializes all app-wide dependencies: Hive cache, Supabase, persisted
+/// theme/language settings, dependency injection, and the BLoC observer.
+/// Kept separate from [main] so integration tests can reuse it before
+/// pumping [NipanzeApp] directly (calling `runApp` from a test conflicts
+/// with the live test binding).
+Future<void> initApp() async {
   // Hive local cache init
   await Hive.initFlutter();
 
@@ -40,8 +49,6 @@ void main() async {
 
   // BLoC observer for debugging
   Bloc.observer = AppBlocObserver();
-
-  runApp(const NipanzeApp());
 }
 
 class NipanzeApp extends StatelessWidget {

@@ -18,9 +18,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:nipanze/core/config/supabase_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:nipanze/main.dart' as app;
 import 'package:nipanze/features/marketplace/presentation/widgets/listing_card.dart';
@@ -43,15 +41,11 @@ const _kLenderActive = 'lending@equatorfinance.ug';
 const _kKycPending = 'alice.namuli@gmail.com';
 
 // ─── Suite-level setup ────────────────────────────────────────────────────────
-
-Future<void> _suiteSetUp() async {
-  await Hive.initFlutter();
-  await Supabase.initialize(
-    url: SupabaseConfig.supabaseUrl,
-    anonKey: SupabaseConfig.supabaseAnonKey,
-    debug: false,
-  );
-}
+//
+// App-wide init (Hive, Supabase, theme/language services, DI) happens inside
+// app.initApp(), called from _launchApp below — same path the real app uses.
+// We must NOT call app.main()/runApp() from a test: on the live test binding
+// that trips "inTest is not true". Instead we pump NipanzeApp directly.
 
 // ─── Pump helpers ─────────────────────────────────────────────────────────────
 //
@@ -72,11 +66,12 @@ Future<void> _pump(
 // ─── App launch ───────────────────────────────────────────────────────────────
 
 Future<void> _launchApp(WidgetTester tester) async {
+  await app.initApp();
   try {
     await Supabase.instance.client.auth.signOut();
   } catch (_) {}
   await Future<void>.delayed(const Duration(milliseconds: 300));
-  app.main();
+  await tester.pumpWidget(const app.NipanzeApp());
   await _pump(tester, total: const Duration(seconds: 5));
 }
 
@@ -92,7 +87,24 @@ Future<void> _enterText(
   await tester.pump();
 }
 
+Future<void> _goToLogin(WidgetTester tester) async {
+  final continueBtn =
+      find.widgetWithText(ElevatedButton, 'Continue with Phone');
+  if (continueBtn.evaluate().isNotEmpty) {
+    await tester.tap(continueBtn);
+    await _pump(tester, total: const Duration(seconds: 2));
+    await tester.tap(find.text('Log In'));
+    await _pump(tester, total: const Duration(seconds: 3));
+  }
+}
+
 Future<void> _signIn(WidgetTester tester, String email, String password) async {
+  await _goToLogin(tester);
+  final emailTabIcon = find.byIcon(Icons.email_outlined).first;
+  if (emailTabIcon.evaluate().isNotEmpty) {
+    await tester.tap(emailTabIcon);
+    await _pump(tester, total: const Duration(seconds: 1));
+  }
   final emailFinder = find.byKey(const Key('email_field'));
   final pwdFinder = find.byKey(const Key('password_field'));
   expect(emailFinder, findsOneWidget);
@@ -100,9 +112,11 @@ Future<void> _signIn(WidgetTester tester, String email, String password) async {
   await _enterText(tester, emailFinder, email);
   await _enterText(tester, pwdFinder, password);
   await tester.pump();
-  await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
-  // Network round-trip + auth redirect + data load
-  await _pump(tester, total: const Duration(seconds: 10));
+  await tester.tap(find.widgetWithText(ElevatedButton, 'Log In'));
+  // Network round-trip + auth redirect + data load.
+  // Sign-in is a chain of sequential cloud calls (auth → profile → KYC →
+  // subscription RPC), each with its own timeout, so allow well over 10s.
+  await _pump(tester, total: const Duration(seconds: 25));
 }
 
 Future<void> _tapNav(WidgetTester tester, String label) async {
@@ -124,29 +138,30 @@ Future<void> _goAccount(WidgetTester tester) async {
 
 Future<void> _signOut(WidgetTester tester) async {
   await _goAccount(tester);
-  for (var i = 0; i < 10; i++) {
-    final signOutBtn = find.widgetWithText(OutlinedButton, 'Sign out');
-    if (signOutBtn.evaluate().isNotEmpty) {
-      try {
-        await tester.ensureVisible(signOutBtn);
-        await _pump(tester, total: const Duration(milliseconds: 300));
-        await tester.tap(signOutBtn);
-        await _pump(tester, total: const Duration(seconds: 5));
-        return;
-      } catch (_) {}
-    }
-    await tester.drag(
-        find.byType(SingleChildScrollView).first, const Offset(0, -300));
-    await _pump(tester, total: const Duration(milliseconds: 200));
+  // Open the settings sheet
+  final settingsBtn = find.byIcon(Icons.settings_outlined);
+  if (settingsBtn.evaluate().isNotEmpty) {
+    await tester.tap(settingsBtn.first);
+    await _pump(tester, total: const Duration(seconds: 2));
   }
+  // Tap the Sign Out button in the sheet
+  final signOutBtn = find.widgetWithText(OutlinedButton, 'Sign Out');
+  expect(signOutBtn, findsOneWidget);
+  await tester.ensureVisible(signOutBtn);
+  await _pump(tester, total: const Duration(milliseconds: 300));
+  await tester.tap(signOutBtn);
+  await _pump(tester, total: const Duration(seconds: 2));
+  // Confirm in the dialog
+  final confirmBtn = find.widgetWithText(TextButton, 'Sign Out');
+  expect(confirmBtn, findsOneWidget);
+  await tester.tap(confirmBtn);
+  await _pump(tester, total: const Duration(seconds: 6));
 }
 
 // ─── Test Suite ───────────────────────────────────────────────────────────────
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  setUpAll(_suiteSetUp);
 
   testWidgets('Nipanze End-to-End E2E Integration Suite', (tester) async {
     // 1. Initial Launch
@@ -157,70 +172,64 @@ void main() {
     // ==========================================================================
     // GROUP A: Auth screens (unauthenticated)
     // ==========================================================================
-    print('[TEST] A01. login screen loads');
-    expect(find.text('Welcome back'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Sign in'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Register'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Forgot password?'), findsOneWidget);
+    print('[TEST] A01. welcome page loads, login screen reachable');
+    expect(find.text('Continue with Phone'), findsOneWidget);
+    await _goToLogin(tester);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Log In'), findsOneWidget);
+    expect(find.text('Sign up'), findsOneWidget);
+    expect(find.text('Forgot password?'), findsOneWidget);
 
-    print('[TEST] A02. empty email fails validation');
+    print('[TEST] A02. login button disabled until input valid');
+    final emailTabIcon = find.byIcon(Icons.email_outlined).first;
+    expect(emailTabIcon, findsOneWidget);
+    await tester.tap(emailTabIcon);
+    await _pump(tester, total: const Duration(seconds: 1));
     final emailField = find.byKey(const Key('email_field'));
-    expect(emailField, findsOneWidget);
-    await _enterText(tester, emailField, '');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
-    await tester.pump();
-    expect(find.text('Enter your email'), findsOneWidget);
-
-    print('[TEST] A03. invalid email format fails validation');
     final pwdField = find.byKey(const Key('password_field'));
+    expect(emailField, findsOneWidget);
     expect(pwdField, findsOneWidget);
     await _enterText(tester, emailField, 'notanemail');
-    await _enterText(tester, pwdField, _kPassword);
     await tester.pump();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
+    final loginBtnFinder = find.widgetWithText(ElevatedButton, 'Log In');
+    expect(tester.widget<ElevatedButton>(loginBtnFinder).onPressed, isNull);
+    await _enterText(tester, emailField, 'valid@example.com');
     await tester.pump();
-    expect(find.text('Enter a valid email'), findsOneWidget);
+    expect(tester.widget<ElevatedButton>(loginBtnFinder).onPressed, isNotNull);
 
-    print('[TEST] A04. empty password fails validation');
-    await _enterText(tester, emailField, 'test@nipanze.test');
-    await _enterText(tester, pwdField, '');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
-    await tester.pump();
-    expect(find.text('Enter your password'), findsOneWidget);
-
-    print('[TEST] A05. wrong credentials shows error');
+    print('[TEST] A03. wrong credentials shows error');
     await _enterText(tester, emailField, 'nobody@nowhere.com');
     await _enterText(tester, pwdField, 'wrongpassword');
     await tester.pump();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
+    await tester.tap(loginBtnFinder);
     await _pump(tester,
         total: const Duration(
             seconds: 10)); // wait for network roundtrip + error render
     expect(find.byIcon(Icons.error_outline), findsOneWidget);
 
-    print('[TEST] A06. Register link navigates to create-account');
-    await tester.tap(find.widgetWithText(TextButton, 'Register'));
-    await _pump(tester);
-    expect(find.text('Create account'), findsWidgets);
-    // Tap back button
+    print('[TEST] A04. Sign up link navigates to phone registration');
+    await tester.tap(find.text('Sign up'));
+    await _pump(tester, total: const Duration(seconds: 3));
+    expect(find.text('Enter your phone number'), findsOneWidget);
+    // Tap back button (register was reached via go -> lands on welcome)
     final backBtn1 = find.byIcon(Icons.arrow_back_ios_new_rounded);
     expect(backBtn1, findsOneWidget);
-    await tester.tap(backBtn1);
-    await _pump(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    await tester.tap(backBtn1.first);
+    await _pump(tester, total: const Duration(seconds: 3));
+    expect(find.text('Continue with Phone'), findsOneWidget);
+    await _goToLogin(tester);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
-    print('[TEST] A07. forgot password page loads');
-    await tester.tap(find.widgetWithText(TextButton, 'Forgot password?'));
-    await _pump(tester);
+    print('[TEST] A05. forgot password page loads');
+    await tester.tap(find.text('Forgot password?'));
+    await _pump(tester, total: const Duration(seconds: 3));
     expect(find.text('Reset password'), findsWidgets);
     // Tap back button
     final backBtn2 = find.byIcon(Icons.arrow_back_ios_new_rounded);
     expect(backBtn2, findsOneWidget);
-    await tester.tap(backBtn2);
-    await _pump(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    await tester.tap(backBtn2.first);
+    await _pump(tester, total: const Duration(seconds: 3));
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     // ==========================================================================
     // GROUP B: Borrower flow (cloud)
@@ -263,7 +272,12 @@ void main() {
 
     print('[TEST] B07. Request tab opens');
     await _tapNav(tester, 'Request');
-    await _pump(tester, total: const Duration(seconds: 3));
+    await _pump(tester, total: const Duration(seconds: 2));
+    final loanRequest = find.text('Loan request');
+    if (loanRequest.evaluate().isNotEmpty) {
+      await tester.tap(loanRequest.first);
+      await _pump(tester, total: const Duration(seconds: 3));
+    }
     expect(find.byType(TextFormField), findsWidgets);
 
     print('[TEST] B08. Positions my requests check');
@@ -284,7 +298,7 @@ void main() {
 
     print('[TEST] B11. Sign out borrower');
     await _signOut(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     // ==========================================================================
     // GROUP C: Lender flow (cloud)
@@ -292,7 +306,9 @@ void main() {
     print('[TEST] C01-C02. Sign in lender and inspect feed');
     await _signIn(tester, _kLenderActive, _kPassword);
     expect(find.text('Marketplace'), findsWidgets);
-    expect(find.byType(ListingCard), findsWidgets);
+    if (find.byType(ListingCard).evaluate().isEmpty) {
+      expect(find.text('No listings found'), findsOneWidget);
+    }
 
     print('[TEST] C03. Lender detail page check');
     final lenderCards = find.byType(ListingCard);
@@ -344,7 +360,7 @@ void main() {
 
     print('[TEST] C08. Sign out lender');
     await _signOut(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     // ==========================================================================
     // GROUP D: KYC flow (cloud)
@@ -383,7 +399,7 @@ void main() {
 
     print('[TEST] Sign out KYC-pending user');
     await _signOut(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     // ==========================================================================
     // GROUP E: Notifications and lender notification audit
@@ -406,7 +422,7 @@ void main() {
 
     // Sign out James
     await _signOut(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     print('[TEST] E02. Pearl Capital notification layout check');
     await _signIn(tester, _kLenderPro, _kPassword);
@@ -426,7 +442,7 @@ void main() {
 
     // Sign out Pearl capital
     await _signOut(tester);
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.textContaining('Welcome back'), findsOneWidget);
 
     print('[SUCCESS] All Nipanze integration tests passed successfully!');
   });

@@ -100,9 +100,8 @@ class _WatchlistView extends StatelessWidget {
               child: BlocBuilder<WatchlistCubit, WatchlistState>(
                 builder: (context, state) {
                   if (state is WatchlistLoading) {
-                    return Center(
+                    return SingleChildScrollView(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
                           3,
                           (i) => const Padding(

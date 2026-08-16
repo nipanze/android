@@ -50,7 +50,6 @@ class AppRoutes {
   static const String forexCreate = '/forex/create';
   static const String forexDetail = '/forex/:requestId';
   static const String myForexRequests = '/forex/my-forex';
-  static const String revealContact = '/marketplace/reveal/:revealId';
   static const String notifications = '/notifications';
   static const String kyc = '/kyc';
   static const String profile = '/profile';
@@ -205,17 +204,6 @@ class AppRouter {
           DealUnlockPage(
             agreementId: state.pathParameters['agreementId']!,
           ),
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.revealContact,
-        name: 'revealContact',
-        pageBuilder: (_, state) => _slide(
-          state,
-          // Placeholder for RevealContactPage — to be implemented in Stage 2.4
-          Scaffold(
-              appBar: AppBar(title: const Text('Contact Details')),
-              body: const Center(child: Text('Revealed Contact Details'))),
         ),
       ),
       GoRoute(

@@ -197,17 +197,17 @@ class _LenderTab extends StatelessWidget {
   void _confirmWithdraw(BuildContext context, LenderOffer offer) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.withdrawOffer),
         content: Text(
             AppLocalizations.of(context)!.withdrawConfirm(offer.offerAmount)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogCtx),
               child: Text(AppLocalizations.of(context)!.keepOffer)),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogCtx);
               context.read<PositionsCubit>().withdrawOffer(offer.offerId);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),

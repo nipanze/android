@@ -46,3 +46,9 @@ ios/Runner/GoogleService-Info.plist
 *.apk
 *.aab
 *.ipa
+
+# Local scratch / personal files
+*.log
+/Screenshot*.png
+*.deb
+outputs/

@@ -522,6 +522,7 @@ class _LoginPageState extends State<LoginPage>
           const SizedBox(width: 10),
           Expanded(
             child: TextFormField(
+              key: const Key('email_field'),
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
@@ -579,6 +580,7 @@ class _LoginPageState extends State<LoginPage>
           const SizedBox(width: 10),
           Expanded(
             child: TextFormField(
+              key: const Key('password_field'),
               controller: ctrl,
               obscureText: obscure,
               textInputAction: TextInputAction.done,

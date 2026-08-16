@@ -19,12 +19,15 @@ class WatchlistCubit extends Cubit<WatchlistState> {
   StreamSubscription<List<MarketplaceItem>>? _realtimeSubscription;
 
   Future<void> load() async {
+    if (isClosed) return;
     emit(const WatchlistLoading());
     try {
       final listings = await _repository.getWatchedListings();
+      if (isClosed) return;
       emit(WatchlistLoaded(listings: listings));
       _subscribeToRealtime();
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistError(userFacingErrorMessage(e)));
     }
   }
