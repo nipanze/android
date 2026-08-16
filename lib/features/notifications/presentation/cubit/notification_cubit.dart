@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../data/notification_repository.dart';
 import '../../domain/models/app_notification.dart';
 
@@ -28,7 +29,7 @@ class NotificationCubit extends Cubit<NotificationState> {
           notifications: notifications, unreadCount: unread));
       _subscribeRealtime();
     } catch (e) {
-      emit(NotificationError(e.toString()));
+      emit(NotificationError(userFacingErrorMessage(e)));
     }
   }
 

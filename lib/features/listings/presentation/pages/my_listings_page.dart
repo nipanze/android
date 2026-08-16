@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -93,7 +94,8 @@ class _ListingsBody extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
         children: [
           if (_active.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.sectionActive(_active.length)),
+            SectionHeader(
+                AppLocalizations.of(context)!.sectionActive(_active.length)),
             ..._active.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: MyListingCard(
@@ -104,7 +106,8 @@ class _ListingsBody extends StatelessWidget {
                 )),
           ],
           if (_contracted.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.sectionContracted(_contracted.length)),
+            SectionHeader(AppLocalizations.of(context)!
+                .sectionContracted(_contracted.length)),
             ..._contracted.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: MyListingCard(
@@ -116,7 +119,8 @@ class _ListingsBody extends StatelessWidget {
                 )),
           ],
           if (_closed.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.sectionClosed(_closed.length)),
+            SectionHeader(
+                AppLocalizations.of(context)!.sectionClosed(_closed.length)),
             ..._closed.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child:
@@ -137,14 +141,16 @@ class _ListingsBody extends StatelessWidget {
         await context.push('/marketplace/agreement/${agreement.id}');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.contractNotGenerated)),
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.contractNotGenerated)),
         );
       }
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading contract: $e'),
+          content: Text(userFacingErrorMessage(e)),
           backgroundColor: AppColors.danger,
         ),
       );

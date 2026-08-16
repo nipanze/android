@@ -22,7 +22,7 @@ class KycCubit extends Cubit<KycState> {
       final kyc = await _repository.getMyKyc();
       emit(KycLoaded(kyc));
     } catch (e) {
-      emit(KycError(e.toString()));
+      emit(KycError(userFacingErrorMessage(e)));
     }
   }
 
@@ -49,10 +49,7 @@ class KycCubit extends Cubit<KycState> {
     } catch (e, st) {
       // ignore: avoid_print
       print('[KycCubit] uploadDocument error: $e\n$st');
-      final msg = e is AppException
-          ? e.message
-          : e.toString().replaceAll('Exception: ', '');
-      emit(KycError(msg, kyc: kyc));
+      emit(KycError(userFacingErrorMessage(e), kyc: kyc));
     }
   }
 
@@ -70,10 +67,7 @@ class KycCubit extends Cubit<KycState> {
       final updated = await _repository.submitForReview();
       emit(KycLoaded(updated));
     } catch (e) {
-      final msg = e is AppException
-          ? e.message
-          : e.toString().replaceAll('Exception: ', '');
-      emit(KycError(msg, kyc: kyc));
+      emit(KycError(userFacingErrorMessage(e), kyc: kyc));
     }
   }
 

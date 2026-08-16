@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -110,7 +111,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = userFacingErrorMessage(e);
         _loading = false;
       });
     }
@@ -162,7 +163,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString()), backgroundColor: AppColors.danger));
+        content: Text(userFacingErrorMessage(e)),
+        backgroundColor: AppColors.danger,
+      ));
     }
   }
 
@@ -242,10 +245,12 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                                     horizontal: 6, vertical: 2),
                                 margin: const EdgeInsets.only(right: 6),
                                 decoration: BoxDecoration(
-                                  color: AppColors.purple.withValues(alpha: 0.15),
+                                  color:
+                                      AppColors.purple.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
-                                      color: AppColors.purple.withValues(alpha: 0.4)),
+                                      color: AppColors.purple
+                                          .withValues(alpha: 0.4)),
                                 ),
                                 child: Text(
                                   l10n?.sponsoredLabel ?? 'Sponsored',
@@ -374,7 +379,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     const SizedBox(height: 16),
                     _CollateralDetailsSection(
                       listing: listing,
-                      currency: (authState is AuthAuthenticated && authState.user.incomeCurrency.isNotEmpty)
+                      currency: (authState is AuthAuthenticated &&
+                              authState.user.incomeCurrency.isNotEmpty)
                           ? authState.user.incomeCurrency
                           : listing.currency,
                       embedded: true,
@@ -605,8 +611,7 @@ class _CollateralDetailsSection extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
@@ -1299,7 +1304,8 @@ class _OfferCardState extends State<_OfferCard>
                                 label: l10n?.interestLabel ?? 'Interest',
                                 value:
                                     '${offer.interestRatePct.toStringAsFixed(1)}%',
-                                deltaLabel: widget.suggestedInterestRatePct != null
+                                deltaLabel: widget.suggestedInterestRatePct !=
+                                        null
                                     ? (l10n?.vsAskLabel(
                                           '${(offer.interestRatePct - widget.suggestedInterestRatePct!) >= 0 ? '+' : ''}${(offer.interestRatePct - widget.suggestedInterestRatePct!).toStringAsFixed(1)}',
                                         ) ??
@@ -1325,15 +1331,18 @@ class _OfferCardState extends State<_OfferCard>
                             child: Center(
                               child: TickerCard(
                                 label: l10n?.lateFeeLabel ?? 'Late fee',
-                                value: '${offer.lateFeePct.toStringAsFixed(1)}%',
+                                value:
+                                    '${offer.lateFeePct.toStringAsFixed(1)}%',
                                 deltaLabel: widget.suggestedLateFeePct != null
                                     ? (l10n?.vsAskLabel(
                                           '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)}',
                                         ) ??
                                         '${(offer.lateFeePct - widget.suggestedLateFeePct!) >= 0 ? '+' : ''}${(offer.lateFeePct - widget.suggestedLateFeePct!).toStringAsFixed(1)} vs ask')
                                     : '—',
-                                isPositive: widget.suggestedLateFeePct == null ||
-                                    offer.lateFeePct <= widget.suggestedLateFeePct!,
+                                isPositive:
+                                    widget.suggestedLateFeePct == null ||
+                                        offer.lateFeePct <=
+                                            widget.suggestedLateFeePct!,
                                 sparklineValues: [offer.lateFeePct],
                                 baselineValue: widget.marketBaselinePct,
                                 baselineColor: AppColors.warning,
@@ -2583,7 +2592,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString()), backgroundColor: AppColors.danger));
+          content: Text(userFacingErrorMessage(e)),
+          backgroundColor: AppColors.danger,
+        ));
       }
     } finally {
       if (mounted) setState(() => _loading = false);

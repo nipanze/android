@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 
@@ -79,7 +80,8 @@ class _Overview extends StatelessWidget {
           }
           if (snapshot.hasError) {
             return ErrorState(
-                message: snapshot.error.toString(), onRetry: onRefresh);
+                message: userFacingErrorMessage(snapshot.error!),
+                onRetry: onRefresh);
           }
           final rows = snapshot.data ?? [];
           final total = <String, num>{};
@@ -209,7 +211,7 @@ class _KycReviewState extends State<_KycReview> {
         }
         if (s.hasError) {
           return ErrorState(
-              message: s.error.toString(),
+              message: userFacingErrorMessage(s.error!),
               onRetry: () async => setState(() => _items = _load()));
         }
         final items = s.data ?? [];
@@ -312,7 +314,7 @@ class _UsersState extends State<_Users> {
             }
             if (s.hasError) {
               return ErrorState(
-                  message: s.error.toString(),
+                  message: userFacingErrorMessage(s.error!),
                   onRetry: () async => setState(() => _rows = _load()));
             }
             return RefreshIndicator(
@@ -391,7 +393,7 @@ class _AdminListState extends State<_AdminList> {
             }
             if (s.hasError) {
               return ErrorState(
-                  message: s.error.toString(),
+                  message: userFacingErrorMessage(s.error!),
                   onRetry: () async => setState(() => _rows = _load()));
             }
             return RefreshIndicator(
@@ -467,7 +469,7 @@ class _SettingsState extends State<_Settings> {
             }
             if (s.hasError) {
               return ErrorState(
-                  message: s.error.toString(),
+                  message: userFacingErrorMessage(s.error!),
                   onRetry: () async => setState(() => _rows = _load()));
             }
             return ListView(

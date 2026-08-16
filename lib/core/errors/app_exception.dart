@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -49,20 +50,38 @@ class ListingNotFoundException extends AppException {
   const ListingNotFoundException() : super('This request could not be found.');
 }
 
+String userFacingErrorMessage(Object error) {
+  if (error is AppException) return error.message;
+  return parseSupabaseError(error).message;
+}
+
 /// Parses Supabase exceptions into user-friendly [AppException]s.
 /// Raw Supabase error codes and messages are NEVER returned to the UI.
 AppException parseSupabaseError(Object error) {
-  // Treat low-level network/socket failures as NetworkException so UI shows
-  // a clear, actionable message when the local backend is unreachable.
+  // Treat low-level network/socket failures as NetworkException so UI shows a
+  // clear, actionable message when the app cannot reach the service.
   try {
     if (error is SocketException) {
-      return const NetworkException('Cannot reach the backend. Check your network or start the local backend.');
+      return const NetworkException(
+        'We could not connect. Check your internet and try again.',
+      );
+    }
+    if (error is TimeoutException) {
+      return const NetworkException(
+        'The connection is taking too long. Try again on a stronger network.',
+      );
     }
     final errStr = error.toString().toLowerCase();
     if (errStr.contains('connection refused') ||
         errStr.contains('failed host lookup') ||
+        errStr.contains('connection timed out') ||
+        errStr.contains('connection closed') ||
+        errStr.contains('clientexception') ||
+        errStr.contains('xmlhttprequest error') ||
         errStr.contains('socketexception')) {
-      return const NetworkException('Cannot reach the backend. Check your network or start the local backend.');
+      return const NetworkException(
+        'We could not connect. Check your internet and try again.',
+      );
     }
   } catch (_) {
     // ignore and fall through to other handlers

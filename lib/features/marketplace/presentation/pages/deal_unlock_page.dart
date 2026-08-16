@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -61,7 +62,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = userFacingErrorMessage(e);
         _loading = false;
       });
     }
@@ -190,7 +191,8 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
                 l10n.unlockContactDetails,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
             // Fee info card
@@ -450,7 +452,8 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
               _UnlockCostBanner(
                 icon: Icons.workspace_premium_rounded,
                 color: AppColors.purple,
-                title: l10n.includedInPlan(plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'),
+                title: l10n.includedInPlan(
+                    plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'),
                 subtitle: l10n.unlimitedUnlocksSubtitle,
               )
             else if (hasFreeCredit)

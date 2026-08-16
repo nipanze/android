@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/models/user_profile.dart';
 
@@ -26,7 +27,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       }
       emit(ProfileCubitLoaded(profile));
     } catch (e) {
-      emit(ProfileCubitError(e.toString()));
+      emit(ProfileCubitError(userFacingErrorMessage(e)));
     }
   }
 
@@ -80,7 +81,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       emit(ProfileCubitLoaded(updated, justSaved: true));
     } catch (e) {
       emit(current);
-      emit(ProfileCubitError(e.toString()));
+      emit(ProfileCubitError(userFacingErrorMessage(e)));
     }
   }
 

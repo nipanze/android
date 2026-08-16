@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/country_constants.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
@@ -32,6 +33,7 @@ class FlutterwaveCheckoutSheet extends StatefulWidget {
   final SubscriptionPlan plan;
   final String priceFormatted;
   final EastAfricaCountry country;
+
   /// The exact integer minor-unit amount from `subscription_prices.price_minor_units`.
   /// Written to `subscriptions.amount_minor_units` on checkout completion.
   final int priceMinorUnits;
@@ -92,7 +94,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   void initState() {
     super.initState();
     final authState = context.read<AuthBloc>().state;
-    final userPhone = authState is AuthAuthenticated ? authState.user.phone : null;
+    final userPhone =
+        authState is AuthAuthenticated ? authState.user.phone : null;
     final cleanPhone = userPhone?.trim();
 
     if (cleanPhone != null && cleanPhone.isNotEmpty) {
@@ -156,7 +159,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
     final providerName = _getProviderName(AppLocalizations.of(context));
     if (_selectedMethod == PaymentMethod.mobileMoney &&
         _phoneController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'Please enter your $providerName phone number.');
+      setState(() =>
+          _errorMessage = 'Please enter your $providerName phone number.');
       return;
     }
 
@@ -222,7 +226,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
       if (!mounted) return;
       setState(() {
         _step = _PayStep.error;
-        _errorMessage = e.toString();
+        _errorMessage = userFacingErrorMessage(e);
       });
     }
   }
@@ -288,20 +292,18 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                   children: [
                     Text(
                       l10n?.flutterwaveCheckoutTitle ?? 'Flutterwave Checkout',
-                      style:
-                          Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
                       '${widget.country.flag} ${widget.country.name}  \u00B7  ${widget.country.currency}',
-                      style:
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.55),
-                              ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.55),
+                          ),
                     ),
                   ],
                 ),
@@ -360,13 +362,12 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                 const SizedBox(width: 4),
                 Text(
                   l10n?.poweredByFlutterwave ?? 'Powered by Flutterwave',
-                  style:
-                      Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.4),
-                          ),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.4),
+                      ),
                 ),
               ],
             ),
@@ -406,8 +407,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                 icon: Icons.phone_android_rounded,
                 label: providerName,
                 selected: _selectedMethod == PaymentMethod.mobileMoney,
-                onTap: () => setState(
-                    () => _selectedMethod = PaymentMethod.mobileMoney),
+                onTap: () =>
+                    setState(() => _selectedMethod = PaymentMethod.mobileMoney),
               ),
             ),
             const SizedBox(width: 10),
@@ -443,8 +444,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                 Expanded(
                   child: Text(
                     _errorMessage!,
-                    style: const TextStyle(
-                        color: AppColors.danger, fontSize: 12),
+                    style:
+                        const TextStyle(color: AppColors.danger, fontSize: 12),
                   ),
                 ),
               ],
@@ -610,8 +611,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
           decoration: InputDecoration(
             labelText: 'Card Number',
             prefixIcon: const Icon(Icons.credit_card_rounded, size: 20),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [
@@ -625,8 +625,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
           decoration: InputDecoration(
             labelText: 'Name on card',
             prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
           textCapitalization: TextCapitalization.words,
         ),
@@ -722,9 +721,8 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                     Text(
                       steps[i],
                       style: TextStyle(
-                        fontWeight: isActive
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.normal,
                         fontSize: 13,
                       ),
                     ),
@@ -793,8 +791,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
           ),
           const SizedBox(height: 16),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(10),
@@ -899,8 +896,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
                     backgroundColor: const Color(0xFFE8480C),
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () =>
-                      setState(() => _step = _PayStep.details),
+                  onPressed: () => setState(() => _step = _PayStep.details),
                   child: const Text('Try Again'),
                 ),
               ),
@@ -926,9 +922,8 @@ class _StepIndicator extends StatelessWidget {
       children: List.generate(labels.length, (i) {
         final isDone = i < currentStep;
         final isActive = i == currentStep;
-        final color = (isDone || isActive)
-            ? orange
-            : Theme.of(context).dividerColor;
+        final color =
+            (isDone || isActive) ? orange : Theme.of(context).dividerColor;
         return Expanded(
           child: Row(
             children: [
@@ -961,8 +956,7 @@ class _StepIndicator extends StatelessWidget {
                   labels[i],
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                     color: isActive
                         ? orange
                         : Theme.of(context)
@@ -977,9 +971,7 @@ class _StepIndicator extends StatelessWidget {
                 Expanded(
                   child: Container(
                     height: 1.5,
-                    color: isDone
-                        ? orange
-                        : Theme.of(context).dividerColor,
+                    color: isDone ? orange : Theme.of(context).dividerColor,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                   ),
                 ),
@@ -1092,8 +1084,7 @@ class _MethodChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         decoration: BoxDecoration(
           color: selected
               ? orange.withValues(alpha: 0.10)
@@ -1120,8 +1111,7 @@ class _MethodChip extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight:
-                      selected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                   color: selected
                       ? orange
                       : Theme.of(context)

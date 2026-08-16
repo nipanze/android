@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -54,7 +55,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _subscribeRealtime();
     } catch (e) {
       if (isClosed) return;
-      emit(MarketplaceError(e.toString()));
+      emit(MarketplaceError(userFacingErrorMessage(e)));
     }
   }
 

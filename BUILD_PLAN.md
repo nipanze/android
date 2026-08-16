@@ -124,7 +124,11 @@ The app expects a single Supabase project and shared schema with:
    - make the forex module a full second project on the shared app
    - support forex-specific listing cards, request creation, selective transparency, and contract wording
 4. **Documentation alignment**
-   - update `README.md` and repo docs to reflect actual package list, current edge-function surface, and current cloud run commands
+   - keep `README.md` and repo docs aligned with actual package list, current edge-function surface, cloud run commands, release policy, and active SQL patches
+5. **Release and resilience hardening**
+   - add app-version policy checks using `system_settings`
+   - keep user-facing network and submit errors free of developer language
+   - verify Material Icons render in release builds after Flutter/package upgrades
 
 ### 5.2 Technical log entries
 
@@ -133,6 +137,11 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-10`: Confirmed `loan_detail_page.dart` fix addresses row overflow and amount/chevron alignment.
 - `2026-08-10`: Confirmed README package list and edge function list are stale; the repo currently has only `supabase/functions/flutterwave-checkout` and `supabase/functions/send-notification`.
 - `2026-08-12`: Implemented shared `KycGateScreen` for upfront KYC checking on both Loan (`/listings/create`) and Forex (`/forex/create`) request creation flows before form rendering. Refactored KYC document upload (`kyc_repository.dart`, `kyc_cubit.dart`, `kyc_page.dart`) to use cross-platform byte streaming (`XFile.readAsBytes()` + `uploadBinary`), resolving Web/Chrome `dart:io` file path runtime crashes. Added complete 5-language localization (EN, FR, AR, RW, SW) across all KYC components with full green checkmark / tick UI feedback, and enforced strict button disabling when required inputs/documents are missing.
+- `2026-08-16`: Added plan-based active loan request limits: Free = 2, Lender = 5, Pro = 15. Fresh installs read this from `sql/schema.sql`; existing databases should apply only `sql/patch_plan_active_request_limits.sql`, not the full combined `sql/patch.sql`.
+- `2026-08-16`: Updated Pro positioning: Pro is sold primarily as priority visibility, improved matching, preferred loan terms/Forex rate, verified badge, and advanced trust insights. Active-listing capacity is documented as a supporting benefit.
+- `2026-08-16`: Hardened user-facing error messages in key submit and loading flows so network/service failures do not expose terms like "backend" or raw exception strings. Added timeout-aware auth/profile lookup handling for slow mobile-data conditions.
+- `2026-08-16`: Documented app update policy: store minimum/latest supported build numbers in `system_settings`, show a dismissible update prompt for optional releases, and block old builds only when security, payment, contract, auth, or schema compatibility requires it.
+- `2026-08-16`: Confirmed `pubspec.yaml` already has `uses-material-design: true`; Material Icons build warnings are non-blocking if the APK builds and icons render. If warnings persist after upgrades, run `flutter clean`, `flutter pub get`, and rebuild.
 
 ---
 
@@ -157,6 +166,7 @@ Completed items:
 - [x] Loan request creation form and review flow
 - [x] Offer creation and submission logic
 - [x] Subscription gating for offer creation
+- [x] Plan-based active loan request limits: Free 2, Lender 5, Pro 15
 - [x] Request owner acceptance flow
 - [x] Realtime feed updates
 - [x] Watchlist and Positions app surfaces
@@ -243,6 +253,9 @@ Planned items:
 
 Planned items:
 - [ ] App store / play store packaging and compliance
+- [ ] App version policy check at startup/resume using `system_settings`
+- [ ] Full-screen required-update page for builds below `*_min_supported_build_number`
+- [ ] Dismissible optional-update prompt for builds below `*_latest_build_number`
 - [ ] Onboarding without role selection, with country selection step
 - [ ] Admin-finalized local subscription pricing per market/currency
 - [ ] Payment integration for subscriptions only
@@ -289,16 +302,18 @@ Planned items:
 - Actual forex module completion and currency gating
 
 ### Documentation gaps
-- README package list needs to match `pubspec.yaml`
-- README edge-function list needs to reflect repo contents
-- README deployment and env guidance should match actual run scripts and cloud flow
+- Keep README package list matched to `pubspec.yaml`
+- Keep README edge-function list matched to repo contents
+- Keep README deployment/env guidance matched to actual run scripts and cloud flow
+- Keep SQL patches separated by purpose so Supabase SQL Editor pastes stay small and non-repetitive
 
 ### Practical short-term plan
-1. Update `README.md` to align with current repo state
+1. Keep `README.md` aligned with current repo state and release policy
 2. Complete Stage 4 backend and frontend gating for selective transparency and contract/contact flow
 3. Apply Stage 4.5 schema migrations and country/currency seeding in a dedicated branch
 4. Build Stage 4.7 forex request/offer flow and verify with direct API tests
 5. Review and test the `login_page.dart` country default behavior; decide whether locale is sufficient or if carrier detection should be added later
+6. Implement version-check UI before public store rollout
 
 ---
 

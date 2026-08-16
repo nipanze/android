@@ -1,4 +1,6 @@
 // lib/features/auth/data/auth_repository.dart
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
@@ -34,10 +36,12 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      final response = await _client.auth
+          .signInWithPassword(
+            email: email,
+            password: password,
+          )
+          .timeout(const Duration(seconds: 15));
       final user = response.user;
       if (user == null) {
         throw const AuthException('Sign in failed. Please try again.');
@@ -66,7 +70,7 @@ class AuthRepository {
           if (phone != null) 'phone': phone,
           if (countryCode != null) 'country_code': countryCode,
         },
-      );
+      ).timeout(const Duration(seconds: 15));
       return res.user;
     } catch (e) {
       debugPrint('signUp error: $e');
@@ -121,8 +125,8 @@ class AuthRepository {
   Future<String?> checkPhoneRegistered(String phone) async {
     try {
       final clean = cleanPhone(phone);
-      final response = await _client
-          .rpc('check_phone_registered', params: {'p_phone': clean});
+      final response = await _client.rpc('check_phone_registered',
+          params: {'p_phone': clean}).timeout(const Duration(seconds: 10));
       return response as String?;
     } catch (e) {
       debugPrint('Error in checkPhoneRegistered RPC: $e');
@@ -134,7 +138,12 @@ class AuthRepository {
     // ── 1. Profile ──────────────────────────────────────────────────────────
     Map<String, dynamic>? data;
     try {
-      data = await _client.from('profiles').select().eq('id', id).maybeSingle();
+      data = await _client
+          .from('profiles')
+          .select()
+          .eq('id', id)
+          .maybeSingle()
+          .timeout(const Duration(seconds: 10));
     } catch (e) {
       debugPrint('DEBUG: profiles fetch error: $e');
       return NipanzeUser(
@@ -159,7 +168,8 @@ class AuthRepository {
           .from('kyc_verifications')
           .select('status')
           .eq('user_id', id)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(const Duration(seconds: 8));
       if (kycData != null) {
         kycStatus = (kycData['status'] as String?) ?? 'not_submitted';
       }
@@ -170,7 +180,9 @@ class AuthRepository {
     // ── 3. Subscription via SECURITY DEFINER RPC ─────────────────────────────
     String subPlan = 'free';
     try {
-      final result = await _client.rpc('get_my_subscription_plan');
+      final result = await _client
+          .rpc('get_my_subscription_plan')
+          .timeout(const Duration(seconds: 8));
       if (result != null) {
         subPlan = result.toString();
       } else {
@@ -180,7 +192,8 @@ class AuthRepository {
             .select('plan')
             .eq('user_id', id)
             .eq('status', 'active')
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
         if (subData != null) {
           subPlan = (subData['plan'] as String?) ?? 'free';
         }
@@ -195,7 +208,8 @@ class AuthRepository {
             .select('plan')
             .eq('user_id', id)
             .eq('status', 'active')
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
         if (subData != null) {
           subPlan = (subData['plan'] as String?) ?? 'free';
         }

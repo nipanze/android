@@ -144,11 +144,13 @@ There is no "select your role" step anywhere in the app. A user simply acts:
 
 | Plan | Access |
 |---|---|
-| 🟢 **Free** | Post basic loan or forex requests (loan: amount, duration, purpose with live repayment math calculation · forex: currency pair, amount, settlement preference) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting (lenders propose terms; borrower detail shows `—` when no terms suggested) |
-| 🔵 **Lender** | Everything in Free, **plus**: make offers on any listing, loan or forex (in-country or cross-border, see [Multi-Market Architecture](#multi-market-architecture)) · set interest rate, late payment fee, and repayment schedule on loan offers · set exchange rate, available amount, and terms on forex offers |
-| 🟣 **Pro** | Everything in Lender, **plus**: suggest terms when posting a request — interest rate, late fee, and repayment schedule for a loan request, or a preferred exchange rate for a forex request · priority visibility for posted requests · live comparison sparklines & delta analytics · Sponsored post support · improved matching · Verified badge · advanced trust insights |
+| 🟢 **Free** | Up to **2 active loan requests** · post basic loan or forex requests (loan: amount, duration, purpose with live repayment math calculation · forex: currency pair, amount, settlement preference) · Browse marketplace · Accept received offers · Watchlist, Positions, Notifications, KYC · Full visibility into public trust signals on every profile · ❌ Cannot make offers · ❌ Cannot suggest terms when posting (lenders propose terms; borrower detail shows `—` when no terms suggested) |
+| 🔵 **Lender** | Up to **5 active loan requests** · everything in Free, **plus**: make offers on any listing, loan or forex (in-country or cross-border, see [Multi-Market Architecture](#multi-market-architecture)) · set interest rate, late payment fee, and repayment schedule on loan offers · set exchange rate, available amount, and terms on forex offers |
+| 🟣 **Pro** | Up to **15 active loan requests** · everything in Lender, **plus**: preferred loan terms and Forex rate · priority visibility · improved matching · Verified badge · advanced trust insights |
 
 No plan is ever labeled "Borrower Plan," "Lender-only," or "Forex Plan," and no plan is ever country- or module-specific — a single `subscription_plan` applies to the account regardless of which country's marketplace they're viewing or whether they're acting in Loans or Forex. Each plan name describes the *unlocked capability*, not the person holding it or the module. A single user can hold only **one** `subscription_plan` at a time (`free | lender | pro`), and Pro is a strict superset of Lender, which is a strict superset of Free.
+
+Active request limits count only requests whose `status = 'active'`. A user who reaches the limit must wait until one request expires, contracts, or is cancelled before posting another. Completed or closed requests do not continue to block posting.
 
 ### The one exception: `is_admin`
 
@@ -285,11 +287,11 @@ Nipanze generates revenue primarily through subscriptions — not interest sprea
 
 | Plan | Unlocks |
 |---|---|
-| 🟢 **Free** | Post basic requests (loan: amount, duration, purpose · forex: currency pair, amount) · browse · accept offers received · full visibility into every counterparty's public trust signals |
-| 🔵 **Lender** *(subscription)* | Everything in Free + make offers with full terms — loan (amount, interest, late fee, schedule) or forex (rate, amount, terms) |
-| 🟣 **Pro** *(subscription)* | Everything in Lender + suggest terms when posting a request (loan interest/late fee/schedule, or forex preferred rate) + priority visibility + improved matching + verified badge + advanced trust insights |
+| 🟢 **Free** | Up to 2 active loan requests · post basic requests (loan: amount, duration, purpose · forex: currency pair, amount) · browse · accept offers received · full visibility into every counterparty's public trust signals |
+| 🔵 **Lender** *(subscription)* | Up to 5 active loan requests · everything in Free + make offers with full terms — loan (amount, interest, late fee, schedule) or forex (rate, amount, terms) |
+| 🟣 **Pro** *(subscription)* | Up to 15 active loan requests · everything in Lender + preferred loan terms and Forex rate + priority visibility + improved matching + verified badge + advanced trust insights |
 
-Users pay to unlock offer-making (Lender), and pay more to also unlock posting leverage and stronger trust signaling (Pro) — identically whether they're active in Loans, Forex, or both. A single `subscription_plan` enum drives all of it — there is no separate "Forex Plan" or "Premium Borrower" product. The plan tiers and what they unlock are identical across every market and both modules; only the **subscription price** varies by market and currency.
+Users pay to unlock offer-making (Lender), and pay more to unlock stronger marketplace performance (Pro) — priority visibility, improved matching, preferred terms/rate positioning, verified badge, and advanced trust insights. Active-listing capacity is a supporting benefit, not the primary Pro pitch. A single `subscription_plan` enum drives all of it — there is no separate "Forex Plan" or "Premium Borrower" product. The plan tiers and what they unlock are identical across every market and both modules; only the **subscription price** varies by market and currency.
 
 **Local subscription pricing is configured per country/currency and finalized by admin for each market.** A UGX amount is never reused as the same numeric price in NGN, ZAR, EGP, or another market's currency; each market's published price reflects its own local willingness-to-pay and launch readiness. `subscriptions.amount_minor_units` is currency-agnostic on its own and only meaningful together with the subscriber's `profiles.country` (or, if the user opts into USD billing, `currencies.code = 'USD'`). There is no separate forex subscription price — the same `subscriptions` row and price point governs offer-making and term-suggestion for both Loans and Forex.
 
@@ -763,6 +765,68 @@ flutter build web --release \
   --dart-define=SUPABASE_ANON_KEY=eyJ...
 ```
 
+If a release build prints a warning about missing Material Icons but still generates the APK, first confirm `pubspec.yaml` still has:
+
+```yaml
+flutter:
+  uses-material-design: true
+```
+
+That setting is already present in this repo. If the warning persists after dependency or Flutter upgrades, run `flutter clean`, `flutter pub get`, and rebuild. Treat it as blocking only if icons render as empty boxes in the installed APK.
+
+### Database Patches
+
+For an existing Supabase database, do not paste the full combined patch when only applying active request limits. Use the focused patch:
+
+```sql
+-- sql/patch_plan_active_request_limits.sql
+```
+
+It applies the current loan request policy:
+
+| Plan | Active loan requests |
+|---|---:|
+| Free | 2 |
+| Lender | 5 |
+| Pro | 15 |
+
+Fresh installs get the same policy directly from `sql/schema.sql`.
+
+### App Updates and Version Blocking
+
+To handle app updates like Facebook and other large apps do, use two layers:
+
+1. **Store release policy in `system_settings`**
+   - `android_latest_build_number`
+   - `android_min_supported_build_number`
+   - `ios_latest_build_number`
+   - `ios_min_supported_build_number`
+   - optional: `update_message`, `android_store_url`, `ios_store_url`
+
+2. **Check policy at app startup and resume**
+   - If installed build `< min_supported_build_number`, show a full-screen **Update required** page and block app usage.
+   - If installed build `< latest_build_number` but still supported, show a dismissible **Update available** prompt.
+   - Keep emergency blocks server-controlled so a broken APK can be disabled without shipping another APK.
+
+Recommended release rhythm:
+
+| Update type | What users see | When to use |
+|---|---|---|
+| Optional | Dismissible update prompt | UI polish, small improvements |
+| Required | Blocking update screen | Security, payment, contract, auth, or schema compatibility changes |
+| Sunset | Older build disabled | Old app can no longer safely talk to the current database/API |
+
+Use `version` in `pubspec.yaml` as `major.minor.patch+buildNumber`; increase the build number for every Play Store/App Store release.
+
+### Mobile Data and Slow Connections
+
+Mobile data can take longer than Wi-Fi because DNS lookup, TLS setup, Supabase auth refresh, profile fetches, and Realtime socket setup all happen over a weaker or higher-latency network. The app should not expose developer terms like "backend" to users. User-facing network failures should say things like:
+
+- `We could not connect. Check your internet and try again.`
+- `The connection is taking too long. Try again on a stronger network.`
+
+Developer details belong in logs only. The app now uses shared user-friendly error parsing for the main request, offer, profile, KYC, watchlist, positions, marketplace, and checkout flows.
+
 ---
 
 ## Environment Configuration
@@ -790,11 +854,13 @@ LOCAL_SERVICE_ROLE_KEY=your-local-service-role-key
 
 | Package | Purpose | Stage |
 | --- | --- | --- |
-| `supabase_flutter ^2.x` | Auth, database, Realtime, storage | 1 |
-| `flutter_bloc ^8.x` | BLoC state management | 1 |
-| `go_router ^14.x` | Declarative routing with auth guards | 1 |
-| `get_it + injectable` | Dependency injection with code-gen | 1 |
+| `supabase_flutter ^2.5.0` | Auth, database, Realtime, storage | 1 |
+| `flutter_bloc ^9.1.1` / `bloc ^9.2.0` | BLoC state management | 1 |
+| `go_router ^17.1.0` | Declarative routing with auth guards | 1 |
+| `get_it ^9.2.1` + `injectable ^2.4.2` | Dependency injection with code-gen | 1 |
+| `connectivity_plus ^7.1.0` | Connectivity status checks | 1 |
 | `flutter_secure_storage ^10.x` | Secure token storage | 1 |
+| `reactive_forms ^18.1.0` | Form state and validation helpers | 1 |
 | `hive_flutter ^1.1.0` | UI-layer cache only | 1 |
 | `animate_do ^4.2.0` | FadeIn/SlideIn animations | 1 |
 | `lottie ^3.1.2` | Loading and empty state animations | 2 |
@@ -803,6 +869,7 @@ LOCAL_SERVICE_ROLE_KEY=your-local-service-role-key
 | `fl_chart ^1.2.0` | Portfolio and analytics charts | 3 |
 | `cached_network_image ^3.3.1` | Network image caching and placeholders | 2 |
 | `image_picker ^1.1.2` | Camera and gallery image selection | 2 |
+| `mime ^2.0.0` | Upload content-type detection | 2 |
 | `intl ^0.20.2` | Formatting and localization utilities | 1 |
 | `equatable ^2.0.5` | Value equality for models and states | 1 |
 | `dartz ^0.10.1` | Functional programming helpers | 1 |

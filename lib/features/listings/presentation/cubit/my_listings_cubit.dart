@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../data/listing_repository.dart';
 import '../../domain/models/my_listing.dart';
 
@@ -23,7 +24,7 @@ class MyListingsCubit extends Cubit<MyListingsState> {
       emit(MyListingsLoaded(listings));
       _subscribeRealtime();
     } catch (e) {
-      emit(MyListingsError(e.toString()));
+      emit(MyListingsError(userFacingErrorMessage(e)));
     }
   }
 
@@ -46,7 +47,7 @@ class MyListingsCubit extends Cubit<MyListingsState> {
     } catch (e) {
       // Bubble error to UI via a transient error state while keeping existing list
       final current = state;
-      emit(MyListingsError(e.toString()));
+      emit(MyListingsError(userFacingErrorMessage(e)));
       if (current is MyListingsLoaded) emit(current);
     }
   }

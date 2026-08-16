@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../data/watchlist_repository.dart';
 
@@ -24,7 +25,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
       emit(WatchlistLoaded(listings: listings));
       _subscribeToRealtime();
     } catch (e) {
-      emit(WatchlistError(e.toString()));
+      emit(WatchlistError(userFacingErrorMessage(e)));
     }
   }
 
@@ -37,7 +38,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
       },
       onError: (e) {
         if (!isClosed) {
-          emit(WatchlistError(e.toString()));
+          emit(WatchlistError(userFacingErrorMessage(e)));
         }
       },
     );
@@ -54,7 +55,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         emit(WatchlistLoaded(listings: updated));
       }
     } catch (e) {
-      emit(WatchlistError(e.toString()));
+      emit(WatchlistError(userFacingErrorMessage(e)));
     }
   }
 
@@ -71,7 +72,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         emit(WatchlistLoaded(listings: [...current.listings, listing]));
       }
     } catch (e) {
-      emit(WatchlistError(e.toString()));
+      emit(WatchlistError(userFacingErrorMessage(e)));
     }
   }
 

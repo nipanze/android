@@ -75,7 +75,9 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             if (snapshot.hasError) {
-              return Center(child: Text(snapshot.error.toString()));
+              return Center(
+                child: Text(userFacingErrorMessage(snapshot.error!)),
+              );
             }
             return const Center(child: CircularProgressIndicator());
           }

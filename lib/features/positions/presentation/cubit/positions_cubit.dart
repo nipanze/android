@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../data/positions_repository.dart';
 import '../../domain/models/lender_offer.dart';
 
@@ -32,7 +33,7 @@ class PositionsCubit extends Cubit<PositionsState> {
 
       _subscribeOffersRealtime();
     } catch (e) {
-      emit(PositionsError(e.toString()));
+      emit(PositionsError(userFacingErrorMessage(e)));
     }
   }
 
@@ -65,7 +66,7 @@ class PositionsCubit extends Cubit<PositionsState> {
       await _repository.withdrawOffer(offerId);
     } catch (e) {
       emit(current); // rollback
-      emit(PositionsError(e.toString()));
+      emit(PositionsError(userFacingErrorMessage(e)));
     }
   }
 

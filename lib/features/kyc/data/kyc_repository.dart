@@ -60,7 +60,7 @@ class KycRepository {
 
       const bucket = StorageBuckets.kycDocuments; // 'verification-documents'
 
-      final supabaseUrl = SupabaseConfig.supabaseUrl;
+      const supabaseUrl = SupabaseConfig.supabaseUrl;
 
       // ignore: avoid_print
       print('[Storage] Uploading to bucket "$bucket" path "$path" via HTTP...');
@@ -89,12 +89,15 @@ class KycRepository {
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         // ignore: avoid_print
-        print('[Storage] Upload failed (${response.statusCode}): ${response.body}');
-        throw StorageException('Upload failed: ${response.statusCode} ${response.body}');
+        print(
+            '[Storage] Upload failed (${response.statusCode}): ${response.body}');
+        throw StorageException(
+            'Upload failed: ${response.statusCode} ${response.body}');
       }
 
       // ignore: avoid_print
-      print('[Storage] Upload succeeded (${response.statusCode}). Building public URL...');
+      print(
+          '[Storage] Upload succeeded (${response.statusCode}). Building public URL...');
 
       // Return the public URL for the uploaded object
       return '$supabaseUrl/storage/v1/object/public/$bucket/$path';
@@ -114,7 +117,8 @@ class KycRepository {
     try {
       final column = '${docType}_url';
       // ignore: avoid_print
-      print('[KYC Repo] saveDocumentUrl for docType: $docType, column: $column, url: $url');
+      print(
+          '[KYC Repo] saveDocumentUrl for docType: $docType, column: $column, url: $url');
 
       // Check if record exists
       final existing = await _client

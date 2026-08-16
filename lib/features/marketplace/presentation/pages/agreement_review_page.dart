@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../data/agreement_repository.dart';
@@ -48,7 +49,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = userFacingErrorMessage(e);
         _loading = false;
       });
     }
@@ -137,7 +138,8 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                     ),
                     _TermRow(
                       label: 'Late payment penalty',
-                      value: '${a.latePenaltyPercentage.toStringAsFixed(1)}% of missed installment',
+                      value:
+                          '${a.latePenaltyPercentage.toStringAsFixed(1)}% of missed installment',
                       valueColor: a.latePenaltyPercentage > 0
                           ? AppColors.warning
                           : AppColors.success,
@@ -291,11 +293,9 @@ class _StatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLocked = agreement.isFullyLocked;
     final statusColor = isLocked ? AppColors.success : AppColors.warning;
-    final icon = isLocked
-        ? Icons.verified_rounded
-        : Icons.pending_actions_rounded;
-    final label =
-        isLocked ? 'Contract locked' : agreement.status.displayName;
+    final icon =
+        isLocked ? Icons.verified_rounded : Icons.pending_actions_rounded;
+    final label = isLocked ? 'Contract locked' : agreement.status.displayName;
 
     return Container(
       width: double.infinity,
@@ -366,7 +366,10 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
