@@ -12,18 +12,25 @@ class ReferralDashboard extends Equatable {
   final List<ReferralHistoryItem> history;
 
   factory ReferralDashboard.fromMap(Map<String, dynamic> map) {
+    final marketerMap = map['marketer'];
+    final summaryMap = map['summary'];
+    final historyList = map['history'];
+
     return ReferralDashboard(
       marketer: ReferralMarketer.fromMap(
-        Map<String, dynamic>.from(map['marketer'] as Map? ?? const {}),
+        marketerMap is Map ? Map<String, dynamic>.from(marketerMap) : const {},
       ),
       summary: ReferralSummary.fromMap(
-        Map<String, dynamic>.from(map['summary'] as Map? ?? const {}),
+        summaryMap is Map ? Map<String, dynamic>.from(summaryMap) : const {},
       ),
-      history: ((map['history'] as List?) ?? const [])
-          .map((e) => ReferralHistoryItem.fromMap(
-                Map<String, dynamic>.from(e as Map),
-              ))
-          .toList(),
+      history: historyList is List
+          ? historyList
+              .whereType<Map>()
+              .map((e) => ReferralHistoryItem.fromMap(
+                    Map<String, dynamic>.from(e),
+                  ))
+              .toList()
+          : const [],
     );
   }
 
@@ -53,15 +60,18 @@ class ReferralMarketer extends Equatable {
   final DateTime? joinedAt;
 
   factory ReferralMarketer.fromMap(Map<String, dynamic> map) {
+    final code = map['referral_code']?.toString() ?? '';
+    final link = map['referral_link']?.toString() ??
+        (code.isNotEmpty ? 'https://nipanze.app/r/$code' : '');
     return ReferralMarketer(
-      id: map['marketer_id'] as String? ?? '',
-      userId: map['user_id'] as String? ?? '',
-      referralCode: map['referral_code'] as String? ?? '',
-      referralLink: map['referral_link'] as String? ?? '',
-      status: map['status'] as String? ?? 'active',
+      id: map['marketer_id']?.toString() ?? '',
+      userId: map['user_id']?.toString() ?? '',
+      referralCode: code,
+      referralLink: link,
+      status: map['status']?.toString() ?? 'active',
       marketingEnabled: map['marketing_enabled'] as bool? ?? false,
-      marketingCountry: map['marketing_country'] as String?,
-      joinedAt: DateTime.tryParse(map['joined_at'] as String? ?? ''),
+      marketingCountry: map['marketing_country']?.toString(),
+      joinedAt: DateTime.tryParse(map['joined_at']?.toString() ?? ''),
     );
   }
 
@@ -95,7 +105,12 @@ class ReferralSummary extends Equatable {
   final String currency;
 
   factory ReferralSummary.fromMap(Map<String, dynamic> map) {
-    int readInt(String key) => (map[key] as num?)?.toInt() ?? 0;
+    int readInt(String key) {
+      final val = map[key];
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val) ?? 0;
+      return 0;
+    }
     return ReferralSummary(
       totalReferrals: readInt('total_referrals'),
       registered: readInt('registered'),
@@ -106,7 +121,7 @@ class ReferralSummary extends Equatable {
       paidRewards: readInt('paid_rewards'),
       totalEarned: readInt('total_earned'),
       totalPaid: readInt('total_paid'),
-      currency: map['currency'] as String? ?? 'UGX',
+      currency: map['currency']?.toString() ?? 'UGX',
     );
   }
 
@@ -151,18 +166,24 @@ class ReferralHistoryItem extends Equatable {
   final String? source;
 
   factory ReferralHistoryItem.fromMap(Map<String, dynamic> map) {
+    int readInt(String key) {
+      final val = map[key];
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val) ?? 0;
+      return 0;
+    }
     return ReferralHistoryItem(
-      id: map['id'] as String? ?? '',
-      displayName: map['display_name'] as String? ?? 'Nipanze user',
-      registeredAt: DateTime.tryParse(map['registered_at'] as String? ?? '') ??
+      id: map['id']?.toString() ?? '',
+      displayName: map['display_name']?.toString() ?? 'Nipanze user',
+      registeredAt: DateTime.tryParse(map['registered_at']?.toString() ?? '') ??
           DateTime.now(),
-      status: map['status'] as String? ?? 'registered',
-      qualificationStatus: map['qualification_status'] as String? ?? 'pending',
-      rewardAmount: (map['reward_amount'] as num?)?.toInt() ?? 0,
-      rewardCurrency: map['reward_currency'] as String? ?? 'UGX',
-      rewardStatus: map['reward_status'] as String? ?? 'none',
-      payoutStatus: map['payout_status'] as String? ?? 'none',
-      source: map['source'] as String?,
+      status: map['status']?.toString() ?? 'registered',
+      qualificationStatus: map['qualification_status']?.toString() ?? 'pending',
+      rewardAmount: readInt('reward_amount'),
+      rewardCurrency: map['reward_currency']?.toString() ?? 'UGX',
+      rewardStatus: map['reward_status']?.toString() ?? 'none',
+      payoutStatus: map['payout_status']?.toString() ?? 'none',
+      source: map['source']?.toString(),
     );
   }
 

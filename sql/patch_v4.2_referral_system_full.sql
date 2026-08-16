@@ -1,6 +1,49 @@
--- Nipanze Referral & Marketer/Referral Agent System
--- Standalone additive patch. Run after schema.sql and patch_marketer_department.sql.
--- Keeps marketer rewards separate from P2P loan and forex funds.
+-- ==============================================================================
+-- NIPANZE REFERRAL & MARKETER AGENT SYSTEM - CONSOLIDATED PATCH (v4.2)
+-- ==============================================================================
+-- Idempotent standalone SQL patch. Run directly in Supabase SQL Editor.
+-- Safe to execute repeatedly without errors or duplicate constraints.
+-- ==============================================================================
+
+-- 1. TABLES & STRUCTURES
+--------------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS public.referral_campaigns (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    country TEXT REFERENCES public.countries(code),
+    start_date DATE,
+    end_date DATE,
+    status TEXT NOT NULL DEFAULT 'draft',
+    qualification_event TEXT NOT NULL DEFAULT 'verified_referral',
+    reward_type TEXT NOT NULL DEFAULT 'fixed',
+    reward_amount BIGINT NOT NULL DEFAULT 0,
+    reward_currency TEXT NOT NULL DEFAULT 'UGX',
+    max_reward_per_referral BIGINT,
+    campaign_budget BIGINT,
+    max_referrals INTEGER,
+    eligible_plans TEXT[] NOT NULL DEFAULT ARRAY['free','lender','pro']::TEXT[],
+    terms TEXT,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS public.referral_marketers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    profile_id UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+    referral_code TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'active',
+    default_campaign_id UUID REFERENCES public.referral_campaigns(id) ON DELETE SET NULL,
+    joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_activity_at TIMESTAMP,
+    risk_status TEXT NOT NULL DEFAULT 'clear',
+    risk_reason TEXT,
+    metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 ALTER TABLE public.referrals
     ADD COLUMN IF NOT EXISTS campaign_id UUID REFERENCES public.referral_campaigns(id) ON DELETE SET NULL,
@@ -30,15 +73,60 @@ ALTER TABLE public.profiles
     ADD COLUMN IF NOT EXISTS marketing_joined_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS referred_at TIMESTAMP;
 
+CREATE TABLE IF NOT EXISTS public.referral_rewards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    marketer_id UUID NOT NULL REFERENCES public.referral_marketers(id) ON DELETE CASCADE,
+    referral_id UUID REFERENCES public.referrals(id) ON DELETE SET NULL,
+    campaign_id UUID REFERENCES public.referral_campaigns(id) ON DELETE SET NULL,
+    referred_user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    reward_type TEXT NOT NULL DEFAULT 'fixed',
+    amount BIGINT NOT NULL DEFAULT 0,
+    currency TEXT NOT NULL DEFAULT 'UGX',
+    status TEXT NOT NULL DEFAULT 'pending',
+    reason TEXT,
+    approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP,
+    rejected_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    rejected_at TIMESTAMP,
+    paid_at TIMESTAMP,
+    campaign_reward_snapshot JSONB NOT NULL DEFAULT '{}'::JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS public.referral_payouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    marketer_id UUID NOT NULL REFERENCES public.referral_marketers(id) ON DELETE CASCADE,
+    amount BIGINT NOT NULL DEFAULT 0,
+    currency TEXT NOT NULL DEFAULT 'UGX',
+    payout_method TEXT,
+    payout_destination_ref TEXT,
+    status TEXT NOT NULL DEFAULT 'requested',
+    failure_reason TEXT,
+    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    approved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. CONSTRAINTS & INDEXES
+--------------------------------------------------------------------------------
+
 ALTER TABLE public.referrals DROP CONSTRAINT IF EXISTS chk_referrals_status;
 ALTER TABLE public.referrals
     ADD CONSTRAINT chk_referrals_status CHECK (status IN ('clicked', 'registered', 'verified', 'qualified', 'reward_pending', 'reward_earned', 'paid', 'rejected', 'fraud_flagged', 'fraud_hold', 'cancelled'));
+
 ALTER TABLE public.referrals DROP CONSTRAINT IF EXISTS chk_referrals_reward_status;
 ALTER TABLE public.referrals
     ADD CONSTRAINT chk_referrals_reward_status CHECK (reward_status IN ('none', 'pending', 'earned', 'approved', 'rejected', 'paid', 'cancelled', 'fraud_hold'));
+
 ALTER TABLE public.referrals DROP CONSTRAINT IF EXISTS chk_referrals_payout_status;
 ALTER TABLE public.referrals
     ADD CONSTRAINT chk_referrals_payout_status CHECK (payout_status IN ('none', 'requested', 'under_review', 'approved', 'processing', 'paid', 'failed', 'cancelled'));
+
 ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS chk_profiles_referral_status;
 ALTER TABLE public.profiles
     ADD CONSTRAINT chk_profiles_referral_status CHECK (referral_status IN ('none', 'registered', 'verified', 'qualified', 'rejected', 'fraud_flagged', 'cancelled'));
@@ -47,11 +135,16 @@ CREATE INDEX IF NOT EXISTS idx_referrals_referred_user ON public.referrals(refer
 CREATE UNIQUE INDEX IF NOT EXISTS uidx_referrals_referred_user_once
     ON public.referrals(referred_user_id)
     WHERE referred_user_id IS NOT NULL;
+
 CREATE UNIQUE INDEX IF NOT EXISTS uidx_referral_rewards_once_per_campaign
     ON public.referral_rewards(referral_id, campaign_id)
     WHERE referral_id IS NOT NULL AND campaign_id IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_profiles_referral_code ON public.profiles(referral_code);
 CREATE INDEX IF NOT EXISTS idx_profiles_referred_by ON public.profiles(referred_by);
+
+-- 3. NOTIFICATION TYPES ENUM
+--------------------------------------------------------------------------------
 
 DO $$
 BEGIN
@@ -66,15 +159,41 @@ EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
 
-DROP POLICY IF EXISTS "referrals: own insert" ON public.referrals;
-DROP POLICY IF EXISTS "referrals: own or admin read" ON public.referrals;
+-- 4. RLS POLICIES
+--------------------------------------------------------------------------------
+
+ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.referral_marketers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.referral_campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.referral_rewards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.referral_payouts ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "referrals: own participant or admin read" ON public.referrals;
 CREATE POLICY "referrals: own participant or admin read" ON public.referrals
     FOR SELECT TO authenticated
     USING (referrer_id = auth.uid() OR referred_user_id = auth.uid() OR private.is_admin());
+
 DROP POLICY IF EXISTS "referrals: admin write" ON public.referrals;
 CREATE POLICY "referrals: admin write" ON public.referrals
     FOR ALL TO authenticated USING (private.is_admin()) WITH CHECK (private.is_admin());
+
+DROP POLICY IF EXISTS "referral_marketers: own or admin read" ON public.referral_marketers;
+CREATE POLICY "referral_marketers: own or admin read" ON public.referral_marketers
+    FOR SELECT TO authenticated
+    USING (profile_id = auth.uid() OR private.is_admin());
+
+DROP POLICY IF EXISTS "referral_campaigns: view active" ON public.referral_campaigns;
+CREATE POLICY "referral_campaigns: view active" ON public.referral_campaigns
+    FOR SELECT TO authenticated
+    USING (status = 'active' OR private.is_admin());
+
+DROP POLICY IF EXISTS "referral_rewards: own or admin read" ON public.referral_rewards;
+CREATE POLICY "referral_rewards: own or admin read" ON public.referral_rewards
+    FOR SELECT TO authenticated
+    USING (referred_user_id = auth.uid() OR marketer_id IN (SELECT id FROM public.referral_marketers WHERE profile_id = auth.uid()) OR private.is_admin());
+
+-- 5. RPC & HELPER FUNCTIONS
+--------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION private.generate_referral_code(p_full_name TEXT)
 RETURNS TEXT
@@ -115,6 +234,7 @@ DECLARE
     v_country TEXT;
     v_code TEXT;
 BEGIN
+    -- Auto-heal missing profile if not created yet
     SELECT * INTO v_profile FROM public.profiles WHERE id = auth.uid();
     IF NOT FOUND THEN
         INSERT INTO public.profiles (id, email, full_name, account_status)
@@ -218,7 +338,7 @@ BEGIN
 
     SELECT * INTO v_user FROM public.profiles WHERE id = auth.uid();
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Profile not found';
+        RETURN jsonb_build_object('attributed', FALSE, 'reason', 'profile_missing');
     END IF;
 
     IF v_user.referred_by IS NOT NULL THEN
@@ -317,16 +437,6 @@ BEGIN
         jsonb_build_object('notification_kind', 'referral_registered', 'referral_id', v_referral_id, 'referred_user_id', v_user.id)
     );
 
-    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
-    VALUES (
-        v_user.id,
-        'register',
-        'referrals',
-        v_referral_id,
-        'referral_attributed',
-        jsonb_build_object('referrer_id', v_referrer_id, 'referral_code', v_code, 'source', v_source)
-    );
-
     RETURN jsonb_build_object('attributed', TRUE, 'referral_id', v_referral_id);
 EXCEPTION
     WHEN unique_violation THEN
@@ -335,113 +445,6 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.attribute_my_referral(TEXT, TEXT) TO authenticated;
-
-CREATE OR REPLACE FUNCTION public.qualify_referral_for_event(
-    p_referred_user_id UUID,
-    p_event TEXT
-)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-    v_referral public.referrals%ROWTYPE;
-    v_campaign public.referral_campaigns%ROWTYPE;
-    v_marketer_id UUID;
-    v_reward_id UUID;
-BEGIN
-    SELECT * INTO v_referral
-    FROM public.referrals
-    WHERE referred_user_id = p_referred_user_id
-      AND status NOT IN ('rejected', 'fraud_flagged', 'fraud_hold', 'cancelled', 'paid')
-    ORDER BY created_at ASC
-    LIMIT 1;
-
-    IF NOT FOUND THEN
-        RETURN jsonb_build_object('qualified', FALSE, 'reason', 'no_referral');
-    END IF;
-
-    SELECT * INTO v_campaign
-    FROM public.referral_campaigns
-    WHERE id = v_referral.campaign_id
-      AND status = 'active'
-      AND qualification_event = p_event
-      AND (country IS NULL OR country = v_referral.country)
-    LIMIT 1;
-
-    IF NOT FOUND THEN
-        RETURN jsonb_build_object('qualified', FALSE, 'reason', 'no_matching_campaign');
-    END IF;
-
-    SELECT id INTO v_marketer_id
-    FROM public.referral_marketers
-    WHERE profile_id = v_referral.referrer_id
-    LIMIT 1;
-
-    IF v_marketer_id IS NULL THEN
-        RETURN jsonb_build_object('qualified', FALSE, 'reason', 'marketer_missing');
-    END IF;
-
-    UPDATE public.referrals
-    SET status = 'qualified',
-        qualifying_event = p_event,
-        qualified_at = COALESCE(qualified_at, CURRENT_TIMESTAMP),
-        reward_amount = v_campaign.reward_amount,
-        reward_currency = v_campaign.reward_currency,
-        reward_status = CASE WHEN v_campaign.reward_amount > 0 THEN 'pending' ELSE 'none' END,
-        payout_status = 'none',
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = v_referral.id
-    RETURNING * INTO v_referral;
-
-    UPDATE public.profiles
-    SET referral_status = 'qualified',
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = p_referred_user_id;
-
-    IF v_campaign.reward_amount > 0 THEN
-        INSERT INTO public.referral_rewards (
-            marketer_id, referral_id, campaign_id, referred_user_id,
-            reward_type, amount, currency, status, reason, campaign_reward_snapshot
-        )
-        VALUES (
-            v_marketer_id,
-            v_referral.id,
-            v_campaign.id,
-            p_referred_user_id,
-            v_campaign.reward_type,
-            v_campaign.reward_amount,
-            v_campaign.reward_currency,
-            'pending',
-            'Qualified by event: ' || p_event,
-            jsonb_build_object(
-                'campaign_id', v_campaign.id,
-                'campaign', v_campaign.name,
-                'reward_type', v_campaign.reward_type,
-                'amount', v_campaign.reward_amount,
-                'currency', v_campaign.reward_currency,
-                'qualification_event', v_campaign.qualification_event
-            )
-        )
-        ON CONFLICT DO NOTHING
-        RETURNING id INTO v_reward_id;
-    END IF;
-
-    INSERT INTO public.notifications (user_id, type, title, body, data)
-    VALUES (
-        v_referral.referrer_id,
-        'system',
-        'Referral qualified',
-        'One of your referrals qualified for a Nipanze marketing reward.',
-        jsonb_build_object('notification_kind', 'referral_qualified', 'referral_id', v_referral.id, 'reward_id', v_reward_id)
-    );
-
-    RETURN jsonb_build_object('qualified', TRUE, 'referral_id', v_referral.id, 'reward_id', v_reward_id);
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.qualify_referral_for_event(UUID, TEXT) TO authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION public.get_my_referral_dashboard()
 RETURNS JSONB
@@ -498,7 +501,7 @@ BEGIN
     WHERE r.referrer_id = v_profile_id;
 
     RETURN jsonb_build_object(
-        'marketer', v_marketer,
+        'marketer', COALESCE(v_marketer, '{}'::JSONB),
         'summary', COALESCE(v_summary, '{}'::JSONB),
         'history', COALESCE(v_history, '[]'::JSONB)
     );
@@ -506,46 +509,3 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_my_referral_dashboard() TO authenticated;
-
-CREATE OR REPLACE FUNCTION public.trg_referral_kyc_event()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-    IF NEW.status = 'approved' AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM NEW.status) THEN
-        PERFORM public.qualify_referral_for_event(NEW.user_id, 'kyc_approved');
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS trg_referral_kyc_event ON public.kyc_verifications;
-CREATE TRIGGER trg_referral_kyc_event
-    AFTER INSERT OR UPDATE OF status ON public.kyc_verifications
-    FOR EACH ROW
-    EXECUTE FUNCTION public.trg_referral_kyc_event();
-
-CREATE OR REPLACE FUNCTION public.trg_referral_subscription_event()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-    IF NEW.status = 'active' AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM NEW.status OR OLD.plan IS DISTINCT FROM NEW.plan) THEN
-        PERFORM public.qualify_referral_for_event(NEW.user_id, 'first_paid_subscription');
-        IF NEW.plan IN ('lender', 'pro') THEN
-            PERFORM public.qualify_referral_for_event(NEW.user_id, 'first_lender_or_pro_subscription');
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS trg_referral_subscription_event ON public.subscriptions;
-CREATE TRIGGER trg_referral_subscription_event
-    AFTER INSERT OR UPDATE OF status, plan ON public.subscriptions
-    FOR EACH ROW
-    EXECUTE FUNCTION public.trg_referral_subscription_event();

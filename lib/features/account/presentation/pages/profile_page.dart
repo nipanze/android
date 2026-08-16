@@ -216,19 +216,22 @@ class _ProfileViewState extends State<_ProfileView> {
       ),
       body: BlocConsumer<ProfileCubit, ProfileCubitState>(
         listener: (context, state) {
-          if (state is ProfileCubitLoaded && state.justSaved) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n?.profileSaved ?? 'Profile saved.'),
-              ),
-            );
-            // Refresh AuthBloc so top bars update immediately
-            try {
-              context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
-            } catch (_) {}
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) context.pop();
-            });
+          if (state is ProfileCubitLoaded) {
+            _populateIfNeeded(state);
+            if (state.justSaved) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n?.profileSaved ?? 'Profile saved.'),
+                ),
+              );
+              // Refresh AuthBloc so top bars update immediately
+              try {
+                context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+              } catch (_) {}
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) context.pop();
+              });
+            }
           }
           if (state is ProfileCubitError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -269,7 +272,6 @@ class _ProfileViewState extends State<_ProfileView> {
             );
           }
 
-          if (state is ProfileCubitLoaded) _populateIfNeeded(state);
           final isSaving = state is ProfileCubitSaving;
 
           final hasNewAvatar = _newAvatarBytes != null;
