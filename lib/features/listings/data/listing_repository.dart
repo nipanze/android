@@ -37,7 +37,7 @@ class ListingRepository {
   }
 
   /// Create a new loan request. All DB-level guards (KYC, subscription,
-  /// max_concurrent_loans, expiry) are enforced by triggers server-side.
+  /// active request limits and expiry are enforced by triggers server-side.
   Future<String> createListing({
     required String title,
     required String purpose,

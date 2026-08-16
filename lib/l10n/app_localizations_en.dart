@@ -627,20 +627,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get proTierDesc =>
-      'Full marketplace access, advanced filters and strong request positioning.';
+      'Priority visibility, improved matching and stronger marketplace performance.';
 
   @override
   String get everythingInLender => 'Everything in Lender';
 
   @override
-  String get proFeature1 => 'Suggest rates, late fees and repayment terms';
+  String get proFeature1 => 'Preferred loan terms and Forex rate';
 
   @override
-  String get proFeature2 => 'Advanced filters (income, employment, verified)';
+  String get proFeature2 => 'Priority visibility and improved matching';
 
   @override
-  String get proFeature3 =>
-      'Verified badge, reliability score and priority visibility';
+  String get proFeature3 => 'Verified badge and advanced trust insights';
 
   @override
   String get choosePro => 'Choose Pro';
@@ -667,7 +666,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeFeature1 => 'Browse the marketplace';
 
   @override
-  String get freeFeature2 => 'Post basic loan requests';
+  String get freeFeature2 => 'Post up to 2 active loan requests';
 
   @override
   String get freeFeature3 => 'Accept offers received';

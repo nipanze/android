@@ -28,8 +28,7 @@ class PricingPage extends StatelessWidget {
     final country = EastAfricaCountries.findByPhone(phone);
 
     return BlocProvider<SubscriptionPriceCubit>(
-      create: (_) =>
-          getIt<SubscriptionPriceCubit>()..load(country.code),
+      create: (_) => getIt<SubscriptionPriceCubit>()..load(country.code),
       child: _PricingPageBody(
         country: country,
         current: current,
@@ -76,12 +75,14 @@ class _PricingPageBody extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n?.chooseAccessTitle ?? 'Choose the access you need',
+                          l10n?.chooseAccessTitle ??
+                              'Choose the access you need',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          l10n?.chooseAccessSubtitle(country.flag, country.name) ??
+                          l10n?.chooseAccessSubtitle(
+                                  country.flag, country.name) ??
                               'Prices match your account region (${country.flag} ${country.name}).',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
@@ -89,8 +90,8 @@ class _PricingPageBody extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.bg2Dark,
                       border: Border.all(
@@ -125,12 +126,12 @@ class _PricingPageBody extends StatelessWidget {
                     'Browse, watch listings, post basic requests, and accept offers.',
                 features: [
                   l10n?.freeFeature1 ?? 'Browse the marketplace',
-                  l10n?.freeFeature2 ?? 'Post basic loan requests',
+                  'Post up to 2 active loan requests',
                   l10n?.freeFeature3 ?? 'Accept offers received',
                 ],
                 current: current,
-                onChoose: () => _choosePlan(context, SubscriptionPlan.free,
-                    country, prices),
+                onChoose: () => _choosePlan(
+                    context, SubscriptionPlan.free, country, prices),
               ),
               const SizedBox(height: 12),
 
@@ -144,14 +145,15 @@ class _PricingPageBody extends StatelessWidget {
                     'For anyone ready to make structured offers and earn returns on Nipanze.',
                 features: [
                   l10n?.everythingInFree ?? 'Everything in Free',
+                  'Post up to 5 active loan requests',
                   l10n?.lenderFeature1 ??
                       'Make offers with full terms (rate, fee, schedule)',
                   l10n?.lenderFeature2 ??
                       'See offer detail where you participate',
                 ],
                 current: current,
-                onChoose: () => _choosePlan(context, SubscriptionPlan.lender,
-                    country, prices),
+                onChoose: () => _choosePlan(
+                    context, SubscriptionPlan.lender, country, prices),
               ),
               const SizedBox(height: 12),
 
@@ -162,15 +164,13 @@ class _PricingPageBody extends StatelessWidget {
                     ? '…'
                     : '${prices.proAmountFormatted}${l10n?.perMonth ?? ' / month'}',
                 subtitle: l10n?.proTierDesc ??
-                    'Full marketplace access, advanced filters and strong request positioning.',
+                    'Priority visibility, improved matching and stronger marketplace performance.',
                 features: [
                   l10n?.everythingInLender ?? 'Everything in Lender',
-                  l10n?.proFeature1 ??
-                      'Suggest rates, late fees and repayment terms',
-                  l10n?.proFeature2 ??
-                      'Advanced filters (income, employment, verified)',
-                  l10n?.proFeature3 ??
-                      'Verified badge, reliability score and priority visibility',
+                  'Post up to 15 active loan requests',
+                  'Preferred loan terms and Forex rate',
+                  'Priority visibility and improved matching',
+                  'Verified badge and advanced trust insights',
                 ],
                 current: current,
                 onChoose: () =>

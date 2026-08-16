@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../auth/domain/models/nipanze_user.dart';
 
 /// Public platform limits read from system_settings at runtime.
 /// These are the only fields exposed to the client (is_public = TRUE).
@@ -16,7 +17,9 @@ class PlatformLimits {
     this.minInterestRate = 5,
     this.maxInterestRate = 30,
     this.minLenderInvestment = 100000,
-    this.maxConcurrentLoans = 3,
+    this.maxActiveRequestsFree = 2,
+    this.maxActiveRequestsLender = 5,
+    this.maxActiveRequestsPro = 15,
     this.listingDurationDays = 7,
     this.marketRateBaselinePct = 10.0,
   });
@@ -26,9 +29,17 @@ class PlatformLimits {
   final double minInterestRate;
   final double maxInterestRate;
   final int minLenderInvestment;
-  final int maxConcurrentLoans;
+  final int maxActiveRequestsFree;
+  final int maxActiveRequestsLender;
+  final int maxActiveRequestsPro;
   final int listingDurationDays;
   final double marketRateBaselinePct;
+
+  int maxActiveRequestsFor(SubscriptionPlan plan) => switch (plan) {
+        SubscriptionPlan.free => maxActiveRequestsFree,
+        SubscriptionPlan.lender => maxActiveRequestsLender,
+        SubscriptionPlan.pro => maxActiveRequestsPro,
+      };
 
   /// Fallback defaults match the schema v5.0 seed values.
   static const PlatformLimits defaults = PlatformLimits();
@@ -66,8 +77,14 @@ class SystemSettingsRepository {
         maxInterestRate: double.tryParse(map['max_interest_rate'] ?? '') ?? 30,
         minLenderInvestment:
             int.tryParse(map['min_lender_investment'] ?? '') ?? 100000,
-        maxConcurrentLoans:
-            int.tryParse(map['max_concurrent_loans'] ?? '') ?? 3,
+        maxActiveRequestsFree:
+            int.tryParse(map['max_active_requests_free'] ?? '') ??
+                int.tryParse(map['max_concurrent_requests'] ?? '') ??
+                2,
+        maxActiveRequestsLender:
+            int.tryParse(map['max_active_requests_lender'] ?? '') ?? 5,
+        maxActiveRequestsPro:
+            int.tryParse(map['max_active_requests_pro'] ?? '') ?? 15,
         listingDurationDays:
             int.tryParse(map['listing_duration_days'] ?? '') ?? 7,
         marketRateBaselinePct:
