@@ -13,6 +13,31 @@ class ReferralRepository {
   Future<ReferralDashboard> getDashboard() async {
     try {
       final data = await _client.rpc('get_my_referral_dashboard');
+      if (data == null) {
+        return const ReferralDashboard(
+          marketer: ReferralMarketer(
+            id: '',
+            userId: '',
+            referralCode: '',
+            referralLink: '',
+            status: 'active',
+            marketingEnabled: false,
+          ),
+          summary: ReferralSummary(
+            totalReferrals: 0,
+            registered: 0,
+            verified: 0,
+            qualified: 0,
+            pendingRewards: 0,
+            availableRewards: 0,
+            paidRewards: 0,
+            totalEarned: 0,
+            totalPaid: 0,
+            currency: 'UGX',
+          ),
+          history: [],
+        );
+      }
       return ReferralDashboard.fromMap(Map<String, dynamic>.from(data as Map));
     } catch (e) {
       throw parseSupabaseError(e);

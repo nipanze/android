@@ -53,20 +53,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     // Optimistic update
     final updated = current.notifications
-        .map((n) => n.id == notificationId
-            ? AppNotification(
-                id: n.id,
-                userId: n.userId,
-                type: n.type,
-                title: n.title,
-                body: n.body,
-                isRead: true,
-                createdAt: n.createdAt,
-                requestId: n.requestId,
-                forexRequestId: n.forexRequestId,
-                offerId: n.offerId,
-                data: n.data)
-            : n)
+        .map((n) => n.id == notificationId ? n.copyWith(isRead: true) : n)
         .toList();
     final unread = updated.where((n) => !n.isRead).length;
     emit(NotificationLoaded(notifications: updated, unreadCount: unread));
@@ -82,20 +69,8 @@ class NotificationCubit extends Cubit<NotificationState> {
     if (state is! NotificationLoaded) return;
     final current = state as NotificationLoaded;
 
-    final updated = current.notifications
-        .map((n) => AppNotification(
-            id: n.id,
-            userId: n.userId,
-            type: n.type,
-            title: n.title,
-            body: n.body,
-            isRead: true,
-            createdAt: n.createdAt,
-            requestId: n.requestId,
-            forexRequestId: n.forexRequestId,
-            offerId: n.offerId,
-            data: n.data))
-        .toList();
+    final updated =
+        current.notifications.map((n) => n.copyWith(isRead: true)).toList();
     emit(NotificationLoaded(notifications: updated, unreadCount: 0));
 
     try {

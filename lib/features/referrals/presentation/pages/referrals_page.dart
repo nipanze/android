@@ -32,6 +32,7 @@ class _ReferralsView extends StatelessWidget {
           if (state is! ReferralLoaded) return;
           final message = switch (state.lastAction) {
             ReferralAction.codeCopied => 'Referral code copied',
+            ReferralAction.codeApplied => 'Referral code applied successfully!',
             ReferralAction.none => null,
           };
           if (message != null) {
@@ -106,24 +107,49 @@ class _ReferralCodePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Your referral code',
-            style: TextStyle(fontWeight: FontWeight.w700),
+          Row(
+            children: [
+              const Text(
+                'Your referral code',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => _showApplyCodeSheet(
+                  context,
+                  context.read<ReferralCubit>(),
+                ),
+                icon: const Icon(Icons.card_giftcard_rounded, size: 16),
+                label: const Text(
+                  'Enter Code',
+                  style: TextStyle(fontSize: 12),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           SelectableText(
-            marketer.referralCode,
+            marketer.referralCode.isNotEmpty
+                ? marketer.referralCode
+                : 'Generating...',
             style: const TextStyle(
               fontFamily: AppFonts.heading,
               fontSize: 22,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 6),
-          SelectableText(
-            marketer.referralLink,
-            style: const TextStyle(color: AppColors.text2Dark, fontSize: 12),
-          ),
+          if (marketer.referralLink.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            SelectableText(
+              marketer.referralLink,
+              style: const TextStyle(color: AppColors.text2Dark, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 14),
           Row(
             children: [
@@ -146,6 +172,60 @@ class _ReferralCodePanel extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void _showApplyCodeSheet(BuildContext context, ReferralCubit cubit) {
+    final controller = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          0,
+          20,
+          MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter referral code',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'If a friend invited you to Nipanze, enter their referral code below.',
+              style: TextStyle(fontSize: 13, color: AppColors.text2Dark),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                hintText: 'e.g. NIPANZE-JOHN1234',
+                labelText: 'Referral code',
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final code = controller.text.trim();
+                  if (code.isEmpty) return;
+                  Navigator.pop(sheetContext);
+                  await cubit.attributeReferral(code);
+                },
+                child: const Text('Apply Code'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

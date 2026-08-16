@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../features/notifications/presentation/cubit/notification_cubit.dart';
 import '../../../l10n/app_localizations.dart';
 import 'offline_banner.dart';
@@ -114,40 +115,29 @@ class MainScaffold extends StatelessWidget {
       size: isRequest ? 28 : 22,
     );
 
-    // Bell icon with unread badge on Account (notifications accessed from there)
-    // Actually we show the bell on the marketplace top bar —
-    // the unread badge here goes on the nav as a dot over Account
-    // Simplified: just show dot over Account tab when unread > 0
+    // Red dot indicator over Account ONLY when the user has incomplete account steps
     if (tab.label == 'Account') {
-      return BlocBuilder<NotificationCubit, NotificationState>(
-        builder: (context, state) {
-          final unread = state is NotificationLoaded ? state.unreadCount : 0;
-          if (unread == 0) return icon;
+      return BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final user = authState is AuthAuthenticated ? authState.user : null;
+          final hasIncomplete = user?.hasIncompleteAccountSteps ?? false;
+          if (!hasIncomplete) return icon;
           return Stack(
             clipBehavior: Clip.none,
             children: [
               icon,
               Positioned(
-                right: -4,
+                right: -2,
                 top: -2,
                 child: Container(
-                  width: 14,
-                  height: 14,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: AppColors.danger,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       width: 1.5,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      unread > 9 ? '9+' : '$unread',
-                      style: const TextStyle(
-                          fontSize: 7,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white),
                     ),
                   ),
                 ),

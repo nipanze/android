@@ -76,6 +76,29 @@ void main() {
       expect(_base.copyWith(freeUnlocksRemaining: 0).canUnlockFree, isFalse);
     });
 
+    test('hasIncompleteAccountSteps returns true if profile info or KYC is missing/unapproved', () {
+      const incomplete = UserProfile(
+        id: 'u-1',
+        email: 'user@test.com',
+        accountStatus: 'active',
+      );
+      expect(incomplete.hasIncompleteAccountSteps, isTrue);
+
+      final completeProfileUnapprovedKyc = _base.copyWith(
+        phone: '+256700000000',
+        district: 'Kampala',
+        kycStatus: 'pending',
+      );
+      expect(completeProfileUnapprovedKyc.hasIncompleteAccountSteps, isTrue);
+
+      final fullyComplete = _base.copyWith(
+        phone: '+256700000000',
+        district: 'Kampala',
+        kycStatus: 'approved',
+      );
+      expect(fullyComplete.hasIncompleteAccountSteps, isFalse);
+    });
+
     test('copyWith only changes provided fields', () {
       final updated = _base.copyWith(fullName: 'New Name');
 

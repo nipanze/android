@@ -95,9 +95,27 @@ void main() {
       expect(loan.deepLinkRoute, '/marketplace/req-1');
     });
 
-    test('deepLinkRoute is null without ids', () {
-      final plain = AppNotification.fromMap({
+    test('deepLinkRoute routes kyc and referral notifications', () {
+      final kyc = AppNotification.fromMap({
         'id': 'n-1',
+        'user_id': 'u-1',
+        'type': 'kyc_approved',
+        'title': '',
+        'body': '',
+        'is_read': false,
+        'created_at': '2026-01-01T00:00:00.000',
+      });
+      final referral = AppNotification.fromMap({
+        'id': 'n-2',
+        'user_id': 'u-1',
+        'type': 'referral_registered',
+        'title': '',
+        'body': '',
+        'is_read': false,
+        'created_at': '2026-01-01T00:00:00.000',
+      });
+      final plain = AppNotification.fromMap({
+        'id': 'n-3',
         'user_id': 'u-1',
         'type': 'system',
         'title': '',
@@ -106,6 +124,8 @@ void main() {
         'created_at': '2026-01-01T00:00:00.000',
       });
 
+      expect(kyc.deepLinkRoute, '/kyc');
+      expect(referral.deepLinkRoute, '/referrals');
       expect(plain.hasDeepLink, isFalse);
       expect(plain.deepLinkRoute, isNull);
     });

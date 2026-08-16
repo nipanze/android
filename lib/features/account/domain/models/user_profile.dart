@@ -136,6 +136,14 @@ class UserProfile extends Equatable {
           subscriptionStatus == 'active' ||
       freeUnlocksRemaining > 0;
 
+  bool get hasIncompleteAccountSteps {
+    final hasName = fullName?.trim().isNotEmpty == true;
+    final hasPhone = phone?.trim().isNotEmpty == true;
+    final hasDistrict = district?.trim().isNotEmpty == true;
+    final isApproved = kycStatus == 'approved';
+    return !hasName || !hasPhone || !hasDistrict || !isApproved;
+  }
+
   UserProfile copyWith({
     String? id,
     String? email,

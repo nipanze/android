@@ -58,7 +58,53 @@ class AppNotification extends Equatable {
   String? get deepLinkRoute {
     if (forexRequestId != null) return '/forex/$forexRequestId';
     if (requestId != null) return '/marketplace/$requestId';
-    return null;
+    if (data != null) {
+      final agreementId = data!['agreement_id'] ?? data!['agreementId'];
+      if (agreementId != null) return '/marketplace/agreement/$agreementId';
+    }
+    switch (type) {
+      case NotificationType.kycApproved:
+      case NotificationType.kycRejected:
+        return '/kyc';
+      case NotificationType.referralRegistered:
+      case NotificationType.referralVerified:
+      case NotificationType.referralQualified:
+      case NotificationType.referralRewardAvailable:
+      case NotificationType.referralRewardApproved:
+      case NotificationType.referralRewardPaid:
+      case NotificationType.referralRewardRejected:
+        return '/referrals';
+      default:
+        return null;
+    }
+  }
+
+  AppNotification copyWith({
+    String? id,
+    String? userId,
+    NotificationType? type,
+    String? title,
+    String? body,
+    bool? isRead,
+    DateTime? createdAt,
+    String? requestId,
+    String? forexRequestId,
+    String? offerId,
+    Map<String, dynamic>? data,
+  }) {
+    return AppNotification(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      requestId: requestId ?? this.requestId,
+      forexRequestId: forexRequestId ?? this.forexRequestId,
+      offerId: offerId ?? this.offerId,
+      data: data ?? this.data,
+    );
   }
 
   factory AppNotification.fromMap(Map<String, dynamic> map) {

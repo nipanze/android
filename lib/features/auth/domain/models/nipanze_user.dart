@@ -81,6 +81,14 @@ class NipanzeUser extends Equatable {
       subscriptionPlan == SubscriptionPlan.pro;
   bool get kycApproved => kycStatus == KycStatus.approved;
 
+  bool get hasIncompleteAccountSteps {
+    final hasName = fullName?.trim().isNotEmpty == true;
+    final hasPhone = phone?.trim().isNotEmpty == true;
+    final hasDistrict = district?.trim().isNotEmpty == true;
+    final isKycApproved = kycStatus == KycStatus.approved;
+    return !hasName || !hasPhone || !hasDistrict || !isKycApproved;
+  }
+
   factory NipanzeUser.fromMap(Map<String, dynamic> map) {
     return NipanzeUser(
       id: map['id'] as String,

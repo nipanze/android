@@ -41,12 +41,30 @@ class ReferralCubit extends Cubit<ReferralState> {
     final current = state;
     if (current is! ReferralLoaded) return;
     final marketer = current.dashboard.marketer;
-    await SharePlus.instance.share(
-      ShareParams(
-        text: 'Join Nipanze and use my referral code: '
-            '${marketer.referralCode}\n${marketer.referralLink}',
-        subject: 'Join Nipanze',
-      ),
+    if (marketer.referralCode.isEmpty) return;
+    await Share.share(
+      'Join Nipanze and use my referral code: ${marketer.referralCode}\n${marketer.referralLink}',
+      subject: 'Join Nipanze',
     );
+  }
+
+  Future<bool> attributeReferral(String code) async {
+    final cleanCode = code.trim();
+    if (cleanCode.isEmpty) return false;
+    try {
+      await _repository.attributeReferral(
+        referralCode: cleanCode,
+        source: 'user_input',
+      );
+      final updatedDashboard = await _repository.getDashboard();
+      emit(ReferralLoaded(
+        dashboard: updatedDashboard,
+        lastAction: ReferralAction.codeApplied,
+      ));
+      return true;
+    } catch (e) {
+      emit(ReferralError(userFacingErrorMessage(e)));
+      return false;
+    }
   }
 }
