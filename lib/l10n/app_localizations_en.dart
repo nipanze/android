@@ -1804,4 +1804,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycDismiss => 'Dismiss';
+
+  @override
+  String get referAndEarn => 'Refer & Earn';
+
+  @override
+  String get yourReferralCode => 'Your referral code';
+
+  @override
+  String get enterCode => 'Enter Code';
+
+  @override
+  String get shareLink => 'Share Link';
+
+  @override
+  String get copyCode => 'Copy Code';
+
+  @override
+  String get enterReferralCode => 'Enter referral code';
+
+  @override
+  String get referralCodeSubtitle =>
+      'If a friend invited you to Nipanze, enter their referral code below.';
+
+  @override
+  String get referralCodeHint => 'e.g. NIPANZE-JOHN1234';
+
+  @override
+  String get referralCodeLabel => 'Referral code';
+
+  @override
+  String get applyCode => 'Apply Code';
+
+  @override
+  String get totalReferrals => 'Total referrals';
+
+  @override
+  String get registered => 'Registered';
+
+  @override
+  String get qualified => 'Qualified';
+
+  @override
+  String get pendingRewards => 'Pending rewards';
+
+  @override
+  String get availableRewards => 'Available';
+
+  @override
+  String get totalEarned => 'Total earned';
+
+  @override
+  String get totalPaid => 'Total paid';
+
+  @override
+  String get referralHistory => 'Referral history';
+
+  @override
+  String get noReferralsYet => 'No referrals yet';
+
+  @override
+  String get noReferralsSubtitle =>
+      'Shared referrals will appear here after signup.';
+
+  @override
+  String get referralCodeCopied => 'Referral code copied';
+
+  @override
+  String get referralCodeApplied => 'Referral code applied successfully!';
 }

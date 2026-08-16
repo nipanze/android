@@ -24,8 +24,11 @@ class MoneyAmount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    final phone = authState is AuthAuthenticated ? authState.user.phone : null;
-    final country = EastAfricaCountries.findByPhone(phone);
+    // Prefer country code (set during registration) over phone-prefix detection,
+    // which falls back to Uganda when the phone is null or unrecognised.
+    final country = authState is AuthAuthenticated
+        ? EastAfricaCountries.findByCode(authState.user.country)
+        : EastAfricaCountries.defaultCountry;
     final formatted = NumberFormat('#,##0', 'en_US').format(amount);
     final display = '${country.currency} $formatted';
     return Text(

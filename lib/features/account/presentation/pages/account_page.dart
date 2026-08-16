@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/language_service.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -280,12 +282,28 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ThemeToggleRow(),
               const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.language_rounded,
-                label: AppLocalizations.of(sheetCtx)!.selectLanguage,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  showLanguageSelectorSheet(context);
+              // Language row – show active language code + currency as badges
+              ValueListenableBuilder<Locale?>(
+                valueListenable: LanguageService.instance.notifier,
+                builder: (ctx, _, __) {
+                  final lang = LanguageService.instance.currentLanguage;
+                  final country = EastAfricaCountries.findByCode(lang.countryCode);
+                  return _ActionRow(
+                    icon: Icons.language_rounded,
+                    label: AppLocalizations.of(sheetCtx)!.selectLanguage,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SettingsBadge('${lang.flag} ${lang.code.toUpperCase()}'),
+                        const SizedBox(width: 6),
+                        _SettingsBadge('${country.flag} ${country.currency}'),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      showLanguageSelectorSheet(context);
+                    },
+                  );
                 },
               ),
               const Divider(height: 1),
@@ -1215,6 +1233,38 @@ class _ThemeToggleRow extends StatelessWidget {
           ]),
         );
       },
+    );
+  }
+}
+
+/// Small pill badge used to show the active language / currency in the
+/// Settings sheet Language row.
+class _SettingsBadge extends StatelessWidget {
+  const _SettingsBadge(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.accent.withValues(alpha: 0.15)
+            : AppColors.accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: isDark ? AppColors.accent : AppColors.accent,
+        ),
+      ),
     );
   }
 }

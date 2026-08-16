@@ -8,12 +8,14 @@ class AppLanguage {
     required this.name,
     required this.nativeName,
     required this.flag,
+    required this.countryCode,
   });
 
   final String code;        // e.g. 'en', 'sw', 'fr', 'rw', 'ar'
   final String name;        // e.g. 'English', 'Swahili'
   final String nativeName;  // e.g. 'Kiswahili', 'Ikinyarwanda'
   final String flag;        // e.g. '🇬🇧', '🇰🇪', '🇫🇷', '🇷🇼', '🇪🇬'
+  final String countryCode; // e.g. 'UG', 'KE', 'RW', 'EG' – drives currency
 
   Locale get locale => Locale(code);
 }
@@ -27,11 +29,11 @@ class LanguageService {
   static const _key = 'user_locale_code';
 
   static const List<AppLanguage> supportedLanguages = [
-    AppLanguage(code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧'),
-    AppLanguage(code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇰🇪'),
-    AppLanguage(code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷'),
-    AppLanguage(code: 'rw', name: 'Kinyarwanda', nativeName: 'Ikinyarwanda', flag: '🇷🇼'),
-    AppLanguage(code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇪🇬'),
+    AppLanguage(code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧', countryCode: 'UG'),
+    AppLanguage(code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇰🇪', countryCode: 'KE'),
+    AppLanguage(code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', countryCode: 'RW'),
+    AppLanguage(code: 'rw', name: 'Kinyarwanda', nativeName: 'Ikinyarwanda', flag: '🇷🇼', countryCode: 'RW'),
+    AppLanguage(code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇪🇬', countryCode: 'EG'),
   ];
 
   late final ValueNotifier<Locale?> notifier;

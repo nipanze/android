@@ -574,7 +574,7 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get verified => 'Imethibitishwa';
+  String get verified => 'Waliothibitishwa';
 
   @override
   String get districtNotSet => 'Wilaya haijawekwa';
@@ -1815,4 +1815,72 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get kycDismiss => 'Ondoa';
+
+  @override
+  String get referAndEarn => 'Alika na Upate';
+
+  @override
+  String get yourReferralCode => 'Kodi yako ya rufaa';
+
+  @override
+  String get enterCode => 'Weka Kodi';
+
+  @override
+  String get shareLink => 'Shiriki Kiungo';
+
+  @override
+  String get copyCode => 'Nakili Kodi';
+
+  @override
+  String get enterReferralCode => 'Weka kodi ya rufaa';
+
+  @override
+  String get referralCodeSubtitle =>
+      'Ikiwa rafiki alikualika kwenye Nipanze, weka kodi yao ya rufaa hapa chini.';
+
+  @override
+  String get referralCodeHint => 'mfano: NIPANZE-JOHN1234';
+
+  @override
+  String get referralCodeLabel => 'Kodi ya rufaa';
+
+  @override
+  String get applyCode => 'Weka Kodi';
+
+  @override
+  String get totalReferrals => 'Jumla ya rufaa';
+
+  @override
+  String get registered => 'Waliosajiliwa';
+
+  @override
+  String get qualified => 'Waliostahili';
+
+  @override
+  String get pendingRewards => 'Zawadi zinazosubiri';
+
+  @override
+  String get availableRewards => 'Zinazopatikana';
+
+  @override
+  String get totalEarned => 'Jumla uliyopata';
+
+  @override
+  String get totalPaid => 'Jumla iliyolipwa';
+
+  @override
+  String get referralHistory => 'Historia ya rufaa';
+
+  @override
+  String get noReferralsYet => 'Hakuna rufaa bado';
+
+  @override
+  String get noReferralsSubtitle =>
+      'Rufaa zilizoshirikishwa zitaonekana hapa baada ya kujisajili.';
+
+  @override
+  String get referralCodeCopied => 'Kodi ya rufaa imenakiliwa';
+
+  @override
+  String get referralCodeApplied => 'Kodi ya rufaa imewekwa kikamilifu!';
 }

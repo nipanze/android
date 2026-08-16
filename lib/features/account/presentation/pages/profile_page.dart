@@ -101,8 +101,11 @@ class _ProfileViewState extends State<_ProfileView> {
     _currentAvatarUrl = p.avatarUrl;
     _userInitials = p.initials;
 
-    // Auto-detect country from phone prefix or default to Uganda
-    final matchedCountry = EastAfricaCountries.findByPhone(p.phone);
+    // Use the stored country code from the profile; fall back to phone
+    // detection only if country is absent (legacy accounts without country field).
+    final matchedCountry = p.country.isNotEmpty
+        ? EastAfricaCountries.findByCode(p.country)
+        : EastAfricaCountries.findByPhone(p.phone);
     _selectedCountry = matchedCountry;
 
     // Strip dial code for local phone field display

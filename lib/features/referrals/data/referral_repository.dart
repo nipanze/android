@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/country_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../domain/models/referral_dashboard.dart';
 
@@ -11,34 +12,51 @@ class ReferralRepository {
   final SupabaseClient _client;
 
   Future<ReferralDashboard> getDashboard() async {
-    final uid = _client.auth.currentUser?.id;
+    final user = _client.auth.currentUser;
+    final uid = user?.id;
     if (uid == null) {
       return _fallbackDashboard('');
     }
+
+    String defaultCurrency = 'UGX';
+    String referralCode = '';
+    try {
+      final profile = await _client
+          .from('profiles')
+          .select('referral_code, country, phone')
+          .eq('id', uid)
+          .maybeSingle();
+
+      final countryCode = profile?['country'] as String? ?? '';
+      final phone = profile?['phone'] as String? ?? user?.phone ?? '';
+      final country = countryCode.isNotEmpty
+          ? EastAfricaCountries.findByCode(countryCode)
+          : EastAfricaCountries.findByPhone(phone);
+      defaultCurrency = country.currency;
+      referralCode = profile?['referral_code'] as String? ?? '';
+    } catch (_) {}
+
     try {
       final data = await _client.rpc('get_my_referral_dashboard');
       if (data != null && data is Map) {
-        return ReferralDashboard.fromMap(Map<String, dynamic>.from(data));
+        final dashboard = ReferralDashboard.fromMap(Map<String, dynamic>.from(data));
+        if (dashboard.summary.currency == 'UGX' && defaultCurrency != 'UGX') {
+          return dashboard.copyWithCurrency(defaultCurrency);
+        }
+        return dashboard;
       }
     } catch (_) {
       // Fallback below
     }
 
-    try {
-      final profile = await _client
-          .from('profiles')
-          .select('referral_code')
-          .eq('id', uid)
-          .maybeSingle();
-
-      final code = profile?['referral_code'] as String? ?? '';
-      return _fallbackDashboard(uid, code: code);
-    } catch (_) {
-      return _fallbackDashboard(uid);
-    }
+    return _fallbackDashboard(uid, code: referralCode, currency: defaultCurrency);
   }
 
-  ReferralDashboard _fallbackDashboard(String uid, {String code = ''}) {
+  ReferralDashboard _fallbackDashboard(
+    String uid, {
+    String code = '',
+    String currency = 'UGX',
+  }) {
     return ReferralDashboard(
       marketer: ReferralMarketer(
         id: uid,
@@ -48,7 +66,7 @@ class ReferralRepository {
         status: 'active',
         marketingEnabled: true,
       ),
-      summary: const ReferralSummary(
+      summary: ReferralSummary(
         totalReferrals: 0,
         registered: 0,
         verified: 0,
@@ -58,7 +76,7 @@ class ReferralRepository {
         paidRewards: 0,
         totalEarned: 0,
         totalPaid: 0,
-        currency: 'UGX',
+        currency: currency,
       ),
       history: const [],
     );

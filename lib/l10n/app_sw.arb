@@ -841,5 +841,30 @@
   "kycChooseSource": "Chagua chanzo",
   "kycSourceCamera": "Kamera",
   "kycSourceLibrary": "Maktaba ya picha",
-  "kycDismiss": "Ondoa"
+  "kycDismiss": "Ondoa",
+
+  "referAndEarn": "Alika na Upate",
+  "yourReferralCode": "Kodi yako ya rufaa",
+  "enterCode": "Weka Kodi",
+  "shareLink": "Shiriki Kiungo",
+  "copyCode": "Nakili Kodi",
+  "enterReferralCode": "Weka kodi ya rufaa",
+  "referralCodeSubtitle": "Ikiwa rafiki alikualika kwenye Nipanze, weka kodi yao ya rufaa hapa chini.",
+  "referralCodeHint": "mfano: NIPANZE-JOHN1234",
+  "referralCodeLabel": "Kodi ya rufaa",
+  "applyCode": "Weka Kodi",
+  "totalReferrals": "Jumla ya rufaa",
+  "registered": "Waliosajiliwa",
+  "verified": "Waliothibitishwa",
+  "qualified": "Waliostahili",
+  "pendingRewards": "Zawadi zinazosubiri",
+  "availableRewards": "Zinazopatikana",
+  "totalEarned": "Jumla uliyopata",
+  "totalPaid": "Jumla iliyolipwa",
+  "referralHistory": "Historia ya rufaa",
+  "noReferralsYet": "Hakuna rufaa bado",
+  "noReferralsSubtitle": "Rufaa zilizoshirikishwa zitaonekana hapa baada ya kujisajili.",
+  "referralCodeCopied": "Kodi ya rufaa imenakiliwa",
+  "referralCodeApplied": "Kodi ya rufaa imewekwa kikamilifu!"
 }
+

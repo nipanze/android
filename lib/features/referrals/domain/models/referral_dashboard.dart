@@ -34,6 +34,41 @@ class ReferralDashboard extends Equatable {
     );
   }
 
+  ReferralDashboard copyWithCurrency(String currency) {
+    return ReferralDashboard(
+      marketer: marketer,
+      summary: ReferralSummary(
+        totalReferrals: summary.totalReferrals,
+        registered: summary.registered,
+        verified: summary.verified,
+        qualified: summary.qualified,
+        pendingRewards: summary.pendingRewards,
+        availableRewards: summary.availableRewards,
+        paidRewards: summary.paidRewards,
+        totalEarned: summary.totalEarned,
+        totalPaid: summary.totalPaid,
+        currency: currency,
+      ),
+      history: history.map((item) {
+        if (item.rewardCurrency == 'UGX' || item.rewardCurrency.isEmpty) {
+          return ReferralHistoryItem(
+            id: item.id,
+            displayName: item.displayName,
+            registeredAt: item.registeredAt,
+            status: item.status,
+            qualificationStatus: item.qualificationStatus,
+            rewardAmount: item.rewardAmount,
+            rewardCurrency: currency,
+            rewardStatus: item.rewardStatus,
+            payoutStatus: item.payoutStatus,
+            source: item.source,
+          );
+        }
+        return item;
+      }).toList(),
+    );
+  }
+
   @override
   List<Object?> get props => [marketer, summary, history];
 }

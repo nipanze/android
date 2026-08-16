@@ -814,5 +814,30 @@
   "kycChooseSource": "Choose source",
   "kycSourceCamera": "Camera",
   "kycSourceLibrary": "Photo library",
-  "kycDismiss": "Dismiss"
+  "kycDismiss": "Dismiss",
+
+  "referAndEarn": "Refer & Earn",
+  "yourReferralCode": "Your referral code",
+  "enterCode": "Enter Code",
+  "shareLink": "Share Link",
+  "copyCode": "Copy Code",
+  "enterReferralCode": "Enter referral code",
+  "referralCodeSubtitle": "If a friend invited you to Nipanze, enter their referral code below.",
+  "referralCodeHint": "e.g. NIPANZE-JOHN1234",
+  "referralCodeLabel": "Referral code",
+  "applyCode": "Apply Code",
+  "totalReferrals": "Total referrals",
+  "registered": "Registered",
+  "verified": "Verified",
+  "qualified": "Qualified",
+  "pendingRewards": "Pending rewards",
+  "availableRewards": "Available",
+  "totalEarned": "Total earned",
+  "totalPaid": "Total paid",
+  "referralHistory": "Referral history",
+  "noReferralsYet": "No referrals yet",
+  "noReferralsSubtitle": "Shared referrals will appear here after signup.",
+  "referralCodeCopied": "Referral code copied",
+  "referralCodeApplied": "Referral code applied successfully!"
 }
+

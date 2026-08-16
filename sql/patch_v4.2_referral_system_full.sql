@@ -457,9 +457,16 @@ DECLARE
     v_profile_id UUID;
     v_summary JSONB;
     v_history JSONB;
+    v_default_currency TEXT;
 BEGIN
     v_marketer := public.ensure_my_referral_marketer(NULL);
     v_profile_id := auth.uid();
+
+    SELECT COALESCE(c.currency_code, 'UGX') INTO v_default_currency
+    FROM public.profiles p
+    LEFT JOIN public.countries c ON c.code = COALESCE(p.country, p.marketing_country, 'UG')
+    WHERE p.id = v_profile_id;
+    v_default_currency := COALESCE(v_default_currency, 'UGX');
 
     SELECT jsonb_build_object(
         'total_referrals', COUNT(*)::INT,
@@ -471,7 +478,7 @@ BEGIN
         'paid_rewards', COALESCE(SUM(rr.amount) FILTER (WHERE rr.status = 'paid'), 0),
         'total_earned', COALESCE(SUM(rr.amount) FILTER (WHERE rr.status IN ('pending', 'approved', 'paid')), 0),
         'total_paid', COALESCE(SUM(rr.amount) FILTER (WHERE rr.status = 'paid'), 0),
-        'currency', COALESCE(MAX(rr.currency), MAX(r.reward_currency), 'UGX')
+        'currency', COALESCE(MAX(rr.currency), MAX(r.reward_currency), v_default_currency)
     )
     INTO v_summary
     FROM public.referrals r

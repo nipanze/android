@@ -3325,6 +3325,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get kycDismiss;
+
+  /// No description provided for @referAndEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Refer & Earn'**
+  String get referAndEarn;
+
+  /// No description provided for @yourReferralCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Your referral code'**
+  String get yourReferralCode;
+
+  /// No description provided for @enterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Code'**
+  String get enterCode;
+
+  /// No description provided for @shareLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get shareLink;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get copyCode;
+
+  /// No description provided for @enterReferralCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter referral code'**
+  String get enterReferralCode;
+
+  /// No description provided for @referralCodeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'If a friend invited you to Nipanze, enter their referral code below.'**
+  String get referralCodeSubtitle;
+
+  /// No description provided for @referralCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. NIPANZE-JOHN1234'**
+  String get referralCodeHint;
+
+  /// No description provided for @referralCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral code'**
+  String get referralCodeLabel;
+
+  /// No description provided for @applyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Code'**
+  String get applyCode;
+
+  /// No description provided for @totalReferrals.
+  ///
+  /// In en, this message translates to:
+  /// **'Total referrals'**
+  String get totalReferrals;
+
+  /// No description provided for @registered.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered'**
+  String get registered;
+
+  /// No description provided for @qualified.
+  ///
+  /// In en, this message translates to:
+  /// **'Qualified'**
+  String get qualified;
+
+  /// No description provided for @pendingRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending rewards'**
+  String get pendingRewards;
+
+  /// No description provided for @availableRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get availableRewards;
+
+  /// No description provided for @totalEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Total earned'**
+  String get totalEarned;
+
+  /// No description provided for @totalPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Total paid'**
+  String get totalPaid;
+
+  /// No description provided for @referralHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral history'**
+  String get referralHistory;
+
+  /// No description provided for @noReferralsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No referrals yet'**
+  String get noReferralsYet;
+
+  /// No description provided for @noReferralsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared referrals will appear here after signup.'**
+  String get noReferralsSubtitle;
+
+  /// No description provided for @referralCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral code copied'**
+  String get referralCodeCopied;
+
+  /// No description provided for @referralCodeApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral code applied successfully!'**
+  String get referralCodeApplied;
 }
 
 class _AppLocalizationsDelegate

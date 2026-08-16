@@ -24,8 +24,8 @@ class PricingPage extends StatelessWidget {
         ? state.user.subscriptionPlan
         : SubscriptionPlan.free;
 
-    final phone = state is AuthAuthenticated ? state.user.phone : null;
-    final country = EastAfricaCountries.findByPhone(phone);
+    final countryCode = state is AuthAuthenticated ? state.user.country : null;
+    final country = EastAfricaCountries.findByCode(countryCode);
 
     return BlocProvider<SubscriptionPriceCubit>(
       create: (_) => getIt<SubscriptionPriceCubit>()..load(country.code),
