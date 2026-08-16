@@ -95,7 +95,19 @@ class ForexRepository {
           .single();
       return ForexListingModel.fromMap(data);
     } catch (e) {
-      throw parseSupabaseError(e);
+      try {
+        final data = await _client
+            .from(TableNames.forexRequests)
+            .select()
+            .eq('id', requestId)
+            .single();
+        return ForexListingModel.fromMap({
+          'request_id': data['id'],
+          ...Map<String, dynamic>.from(data as Map),
+        });
+      } catch (_) {
+        throw parseSupabaseError(e);
+      }
     }
   }
 

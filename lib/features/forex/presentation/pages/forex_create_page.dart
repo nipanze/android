@@ -276,6 +276,12 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     }
 
     final currencies = _currencies;
+    final heldCurrencyOptions = currencies
+        ?.where((currency) => currency.code != _currencyNeeded)
+        .toList();
+    final neededCurrencyOptions = currencies
+        ?.where((currency) => currency.code != _currencyHeld)
+        .toList();
     final isPro = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
@@ -313,9 +319,13 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                             child: _CurrencyField(
                               label: l10n?.forexCurrencyHeld ?? 'You hold',
                               value: _currencyHeld,
-                              currencies: currencies,
-                              onChanged: (value) =>
-                                  setState(() => _currencyHeld = value),
+                              currencies: heldCurrencyOptions ?? currencies,
+                              onChanged: (value) => setState(() {
+                                _currencyHeld = value;
+                                if (_currencyNeeded == value) {
+                                  _currencyNeeded = null;
+                                }
+                              }),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -323,9 +333,13 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                             child: _CurrencyField(
                               label: l10n?.forexCurrencyNeeded ?? 'You need',
                               value: _currencyNeeded,
-                              currencies: currencies,
-                              onChanged: (value) =>
-                                  setState(() => _currencyNeeded = value),
+                              currencies: neededCurrencyOptions ?? currencies,
+                              onChanged: (value) => setState(() {
+                                _currencyNeeded = value;
+                                if (_currencyHeld == value) {
+                                  _currencyHeld = null;
+                                }
+                              }),
                             ),
                           ),
                         ],

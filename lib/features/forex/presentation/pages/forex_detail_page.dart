@@ -64,8 +64,9 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             Icons.arrow_back_ios_new_rounded,
             size: 18,
           ),
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.marketplace),
         ),
         title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
       ),
@@ -94,9 +95,8 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
@@ -107,6 +107,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                         SendRateReceivePanel(
                           listing: listing,
                           showBorder: false,
+                          prominent: true,
                         ),
 
                         const SizedBox(height: 14),
@@ -179,22 +180,22 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
 
                   // ── Make an Offer button (outside card, like loan detail) ──
                   SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (user == null) {
-                            context.go(AppRoutes.login);
-                            return;
-                          }
-                          if (!user.canLend) {
-                            showLenderRequiredSheet(context);
-                            return;
-                          }
-                          setState(() => _showOfferSheet = true);
-                        },
-                        child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
-                      ),
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (user == null) {
+                          context.go(AppRoutes.login);
+                          return;
+                        }
+                        if (!user.canLend) {
+                          showLenderRequiredSheet(context);
+                          return;
+                        }
+                        setState(() => _showOfferSheet = true);
+                      },
+                      child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -294,9 +295,7 @@ class _OffersSection extends StatelessWidget {
               Text(
                 '${l10n?.amountToExchangeOut ?? 'Amount to exchange out'}: ${listing.currencyHeld} ${_fmtAmount(offer.amountAvailable)}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
               const SizedBox(height: 10),
@@ -315,9 +314,7 @@ class _OffersSection extends StatelessWidget {
               Text(
                 offer.status,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             ],
@@ -328,9 +325,8 @@ class _OffersSection extends StatelessWidget {
   }
 
   String _fmtAmount(num amount) {
-    final formatted = amount % 1 == 0
-        ? amount.toInt().toString()
-        : amount.toStringAsFixed(2);
+    final formatted =
+        amount % 1 == 0 ? amount.toInt().toString() : amount.toStringAsFixed(2);
     final parts = formatted.split('.');
     final integer = parts[0];
     final buffer = StringBuffer();
@@ -421,9 +417,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
   }
 
   String _fmtAmount(num amount) {
-    final formatted = amount % 1 == 0
-        ? amount.toInt().toString()
-        : amount.toStringAsFixed(2);
+    final formatted =
+        amount % 1 == 0 ? amount.toInt().toString() : amount.toStringAsFixed(2);
     final parts = formatted.split('.');
     final integer = parts[0];
     final buffer = StringBuffer();
@@ -470,7 +465,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            e is AppException ? e.message : (l10n?.couldNotSendOffer ?? 'Could not send offer.'),
+            e is AppException
+                ? e.message
+                : (l10n?.couldNotSendOffer ?? 'Could not send offer.'),
           ),
           backgroundColor: AppColors.warning,
         ),
@@ -496,90 +493,89 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            Row(
-              children: [
-                Text(
-                  l10n?.makeAnOffer ?? 'Make an offer',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: widget.onClose,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _rateController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                labelText: l10n?.rateOfferedLabel ?? 'Rate offered',
+              Row(
+                children: [
+                  Text(
+                    l10n?.makeAnOffer ?? 'Make an offer',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: widget.onClose,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _amountController,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: l10n?.amountAvailableLabel ?? 'Amount available',
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (_calculatedAmountToServe != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n?.forexAmountToServe ?? 'Amount to be served',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${widget.listing?.currencyNeeded ?? ''} ${_fmtAmount(_calculatedAmountToServe!)}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${l10n?.amountToExchangeOut ?? 'Amount to exchange out'}: ${widget.listing?.currencyHeld ?? ''} ${_fmtAmount(int.tryParse(_amountController.text) ?? 0)}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: _rateController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: l10n?.rateOfferedLabel ?? 'Rate offered',
                 ),
               ),
               const SizedBox(height: 10),
-            ],
-            TextField(
-              controller: _termsController,
-              decoration: InputDecoration(
-                labelText: l10n?.settlementTermsLabel ?? 'Settlement terms',
+              TextField(
+                controller: _amountController,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: l10n?.amountAvailableLabel ?? 'Amount available',
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _submitting || !_isFormReady ? null : _submit,
-              child: _submitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n?.sendOffer ?? 'Send Offer'),
-            ),
+              const SizedBox(height: 10),
+              if (_calculatedAmountToServe != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n?.forexAmountToServe ?? 'Amount to be served',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${widget.listing?.currencyNeeded ?? ''} ${_fmtAmount(_calculatedAmountToServe!)}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${l10n?.amountToExchangeOut ?? 'Amount to exchange out'}: ${widget.listing?.currencyHeld ?? ''} ${_fmtAmount(int.tryParse(_amountController.text) ?? 0)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              TextField(
+                controller: _termsController,
+                decoration: InputDecoration(
+                  labelText: l10n?.settlementTermsLabel ?? 'Settlement terms',
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _submitting || !_isFormReady ? null : _submit,
+                child: _submitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n?.sendOffer ?? 'Send Offer'),
+              ),
             ],
           ),
         ),

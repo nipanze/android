@@ -8,10 +8,12 @@ class SendRateReceivePanel extends StatelessWidget {
     super.key,
     required this.listing,
     this.showBorder = true,
+    this.prominent = false,
   });
 
   final ForexListingModel listing;
   final bool showBorder;
+  final bool prominent;
 
   @override
   Widget build(BuildContext context) {
@@ -38,163 +40,88 @@ class SendRateReceivePanel extends StatelessWidget {
     final primaryTextColor = Theme.of(context).colorScheme.onSurface;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: prominent
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+          : const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(8),
         border: showBorder ? Border.all(color: borderColor, width: 1) : null,
       ),
       child: Row(
-        children: [
-          // ── 1. I HOLD ───────────────────────────────────────────────────────
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                _CircleIcon(
-                  icon: Icons.arrow_downward_rounded,
-                  color: mutedLabelColor,
-                  bgOpacity: 0.10,
-                ),
-                const SizedBox(width: 5),
+        children: prominent
+            ? [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n?.iHold ?? 'I hold',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w500,
-                          color: mutedLabelColor,
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          sendText,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: primaryTextColor,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: _ProminentForexMetric(
+                    icon: Icons.arrow_downward_rounded,
+                    label: l10n?.iHold ?? 'I hold',
+                    value: sendText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
+                  ),
+                ),
+                _MetricDivider(isDark: isDark, prominent: true),
+                Expanded(
+                  child: _ProminentForexMetric(
+                    icon: Icons.swap_horiz_rounded,
+                    label: l10n?.rate ?? 'Rate',
+                    value: rateText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
+                    valueFontSize: 14,
+                  ),
+                ),
+                _MetricDivider(isDark: isDark, prominent: true),
+                Expanded(
+                  child: _ProminentForexMetric(
+                    icon: Icons.arrow_upward_rounded,
+                    label: l10n?.iNeed ?? 'I need',
+                    value: receiveText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
+                  ),
+                ),
+              ]
+            : [
+                Expanded(
+                  flex: 3,
+                  child: _CompactForexMetric(
+                    icon: Icons.arrow_downward_rounded,
+                    label: l10n?.iHold ?? 'I hold',
+                    value: sendText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
+                  ),
+                ),
+                Expanded(
+                  flex: 4,
+                  child: _CompactForexMetric(
+                    icon: Icons.swap_horiz_rounded,
+                    label: l10n?.rate ?? 'Rate',
+                    value: rateText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
+                    valueFontSize: 11,
+                  ),
+                ),
+                _MetricDivider(isDark: isDark),
+                Expanded(
+                  flex: 4,
+                  child: _CompactForexMetric(
+                    icon: Icons.arrow_upward_rounded,
+                    label: l10n?.iNeed ?? 'I need',
+                    value: receiveText,
+                    iconColor: mutedLabelColor,
+                    labelColor: mutedLabelColor,
+                    valueColor: primaryTextColor,
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // ── 2. RATE (with swap icon) ──────────────────────────────────────
-          Expanded(
-            flex: 4,
-            child: Row(
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.07)
-                        : Colors.black.withValues(alpha: 0.05),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.swap_horiz_rounded,
-                    size: 12,
-                    color: mutedLabelColor,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n?.rate ?? 'Rate',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w500,
-                          color: mutedLabelColor,
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          rateText,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: primaryTextColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Divider line ─────────────────────────────────────────────────
-          Container(
-            width: 1,
-            height: 20,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.10)
-                : Colors.black.withValues(alpha: 0.08),
-          ),
-
-          // ── 3. I NEED ──────────────────────────────────────────────────────
-          Expanded(
-            flex: 4,
-            child: Row(
-              children: [
-                _CircleIcon(
-                  icon: Icons.arrow_upward_rounded,
-                  color: mutedLabelColor,
-                  bgOpacity: 0.10,
-                ),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n?.iNeed ?? 'I need',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w500,
-                          color: mutedLabelColor,
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          receiveText,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: primaryTextColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -250,16 +177,166 @@ class SendRateReceivePanel extends StatelessWidget {
   }
 }
 
+class _CompactForexMetric extends StatelessWidget {
+  const _CompactForexMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.iconColor,
+    required this.labelColor,
+    required this.valueColor,
+    this.valueFontSize = 12,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color iconColor;
+  final Color labelColor;
+  final Color valueColor;
+  final double valueFontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _CircleIcon(icon: icon, color: iconColor),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w500,
+                  color: labelColor,
+                ),
+              ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: valueFontSize,
+                    fontWeight: FontWeight.w700,
+                    color: valueColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProminentForexMetric extends StatelessWidget {
+  const _ProminentForexMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.iconColor,
+    required this.labelColor,
+    required this.valueColor,
+    this.valueFontSize = 16,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color iconColor;
+  final Color labelColor;
+  final Color valueColor;
+  final double valueFontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+                border: Border.all(color: iconColor.withValues(alpha: 0.35)),
+              ),
+              child: Icon(icon, size: 16, color: iconColor),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: labelColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: valueFontSize,
+              fontWeight: FontWeight.w800,
+              color: valueColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MetricDivider extends StatelessWidget {
+  const _MetricDivider({required this.isDark, this.prominent = false});
+
+  final bool isDark;
+  final bool prominent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: prominent ? 50 : 20,
+      margin: EdgeInsets.symmetric(horizontal: prominent ? 10 : 3),
+      color: isDark
+          ? Colors.white.withValues(alpha: 0.10)
+          : Colors.black.withValues(alpha: 0.08),
+    );
+  }
+}
+
 class _CircleIcon extends StatelessWidget {
   const _CircleIcon({
     required this.icon,
     required this.color,
-    required this.bgOpacity,
   });
 
   final IconData icon;
   final Color color;
-  final double bgOpacity;
 
   @override
   Widget build(BuildContext context) {
@@ -267,7 +344,7 @@ class _CircleIcon extends StatelessWidget {
       width: 20,
       height: 20,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: bgOpacity),
+        color: color.withValues(alpha: 0.10),
         shape: BoxShape.circle,
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
