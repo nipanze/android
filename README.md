@@ -774,15 +774,17 @@ flutter:
 
 That setting is already present in this repo. If the warning persists after dependency or Flutter upgrades, run `flutter clean`, `flutter pub get`, and rebuild. Treat it as blocking only if icons render as empty boxes in the installed APK.
 
-### Database Patches
+### Database Scripts
 
-For an existing Supabase database, do not paste the full combined patch when only applying active request limits. Use the focused patch:
+The `sql/` folder is intentionally kept to three files:
 
-```sql
--- sql/patch_plan_active_request_limits.sql
-```
+| File | Purpose |
+|---|---|
+| `sql/schema.sql` | Fresh database schema and default platform settings |
+| `sql/seed.sql` | Seed/test data |
+| `sql/patch.sql` | Combined idempotent patch file for existing databases |
 
-It applies the current loan request policy:
+`sql/patch.sql` includes the current loan request policy:
 
 | Plan | Active loan requests |
 |---|---:|

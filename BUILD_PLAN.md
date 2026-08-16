@@ -137,7 +137,7 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-10`: Confirmed `loan_detail_page.dart` fix addresses row overflow and amount/chevron alignment.
 - `2026-08-10`: Confirmed README package list and edge function list are stale; the repo currently has only `supabase/functions/flutterwave-checkout` and `supabase/functions/send-notification`.
 - `2026-08-12`: Implemented shared `KycGateScreen` for upfront KYC checking on both Loan (`/listings/create`) and Forex (`/forex/create`) request creation flows before form rendering. Refactored KYC document upload (`kyc_repository.dart`, `kyc_cubit.dart`, `kyc_page.dart`) to use cross-platform byte streaming (`XFile.readAsBytes()` + `uploadBinary`), resolving Web/Chrome `dart:io` file path runtime crashes. Added complete 5-language localization (EN, FR, AR, RW, SW) across all KYC components with full green checkmark / tick UI feedback, and enforced strict button disabling when required inputs/documents are missing.
-- `2026-08-16`: Added plan-based active loan request limits: Free = 2, Lender = 5, Pro = 15. Fresh installs read this from `sql/schema.sql`; existing databases should apply only `sql/patch_plan_active_request_limits.sql`, not the full combined `sql/patch.sql`.
+- `2026-08-16`: Added plan-based active loan request limits: Free = 2, Lender = 5, Pro = 15. Fresh installs read this from `sql/schema.sql`; existing databases apply it through the combined `sql/patch.sql`.
 - `2026-08-16`: Updated Pro positioning: Pro is sold primarily as priority visibility, improved matching, preferred loan terms/Forex rate, verified badge, and advanced trust insights. Active-listing capacity is documented as a supporting benefit.
 - `2026-08-16`: Hardened user-facing error messages in key submit and loading flows so network/service failures do not expose terms like "backend" or raw exception strings. Added timeout-aware auth/profile lookup handling for slow mobile-data conditions.
 - `2026-08-16`: Documented app update policy: store minimum/latest supported build numbers in `system_settings`, show a dismissible update prompt for optional releases, and block old builds only when security, payment, contract, auth, or schema compatibility requires it.
@@ -305,7 +305,7 @@ Planned items:
 - Keep README package list matched to `pubspec.yaml`
 - Keep README edge-function list matched to repo contents
 - Keep README deployment/env guidance matched to actual run scripts and cloud flow
-- Keep SQL patches separated by purpose so Supabase SQL Editor pastes stay small and non-repetitive
+- Keep the `sql/` directory consolidated to exactly three canonical scripts: `schema.sql`, `seed.sql`, and `patch.sql`
 
 ### Practical short-term plan
 1. Keep `README.md` aligned with current repo state and release policy
