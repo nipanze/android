@@ -32,7 +32,6 @@ class _ReferralsView extends StatelessWidget {
           if (state is! ReferralLoaded) return;
           final message = switch (state.lastAction) {
             ReferralAction.codeCopied => 'Referral code copied',
-            ReferralAction.shareMessageCopied => 'Share message copied',
             ReferralAction.none => null,
           };
           if (message != null) {
@@ -131,7 +130,7 @@ class _ReferralCodePanel extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () =>
-                      context.read<ReferralCubit>().copyShareMessage(),
+                      context.read<ReferralCubit>().shareReferral(),
                   icon: const Icon(Icons.ios_share_rounded, size: 18),
                   label: const Text('Share Link'),
                 ),

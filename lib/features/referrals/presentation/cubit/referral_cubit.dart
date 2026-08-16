@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../data/referral_repository.dart';
@@ -36,16 +37,16 @@ class ReferralCubit extends Cubit<ReferralState> {
     emit(current.copyWith(lastAction: ReferralAction.codeCopied));
   }
 
-  Future<void> copyShareMessage() async {
+  Future<void> shareReferral() async {
     final current = state;
     if (current is! ReferralLoaded) return;
     final marketer = current.dashboard.marketer;
-    await Clipboard.setData(
-      ClipboardData(
+    await SharePlus.instance.share(
+      ShareParams(
         text: 'Join Nipanze and use my referral code: '
             '${marketer.referralCode}\n${marketer.referralLink}',
+        subject: 'Join Nipanze',
       ),
     );
-    emit(current.copyWith(lastAction: ReferralAction.shareMessageCopied));
   }
 }

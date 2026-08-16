@@ -1,6 +1,6 @@
 part of 'referral_cubit.dart';
 
-enum ReferralAction { none, codeCopied, shareMessageCopied }
+enum ReferralAction { none, codeCopied }
 
 abstract class ReferralState extends Equatable {
   const ReferralState();

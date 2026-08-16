@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @proTierDesc.
   ///
   /// In en, this message translates to:
-  /// **'Full marketplace access, advanced filters and strong request positioning.'**
+  /// **'Priority visibility, improved matching and stronger marketplace performance.'**
   String get proTierDesc;
 
   /// No description provided for @everythingInLender.
@@ -1217,19 +1217,19 @@ abstract class AppLocalizations {
   /// No description provided for @proFeature1.
   ///
   /// In en, this message translates to:
-  /// **'Suggest rates, late fees and repayment terms'**
+  /// **'Preferred loan terms and Forex rate'**
   String get proFeature1;
 
   /// No description provided for @proFeature2.
   ///
   /// In en, this message translates to:
-  /// **'Advanced filters (income, employment, verified)'**
+  /// **'Priority visibility and improved matching'**
   String get proFeature2;
 
   /// No description provided for @proFeature3.
   ///
   /// In en, this message translates to:
-  /// **'Verified badge, reliability score and priority visibility'**
+  /// **'Verified badge and advanced trust insights'**
   String get proFeature3;
 
   /// No description provided for @choosePro.
@@ -1277,7 +1277,7 @@ abstract class AppLocalizations {
   /// No description provided for @freeFeature2.
   ///
   /// In en, this message translates to:
-  /// **'Post basic loan requests'**
+  /// **'Post up to 2 active loan requests'**
   String get freeFeature2;
 
   /// No description provided for @freeFeature3.
