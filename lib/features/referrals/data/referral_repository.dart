@@ -39,8 +39,9 @@ class ReferralRepository {
     try {
       final data = await _client.rpc('get_my_referral_dashboard');
       if (data != null && data is Map) {
-        final dashboard = ReferralDashboard.fromMap(Map<String, dynamic>.from(data));
-        if (dashboard.summary.currency == 'UGX' && defaultCurrency != 'UGX') {
+        final dashboard =
+            ReferralDashboard.fromMap(Map<String, dynamic>.from(data));
+        if (dashboard.summary.currency != defaultCurrency) {
           return dashboard.copyWithCurrency(defaultCurrency);
         }
         return dashboard;
@@ -49,7 +50,11 @@ class ReferralRepository {
       // Fallback below
     }
 
-    return _fallbackDashboard(uid, code: referralCode, currency: defaultCurrency);
+    return _fallbackDashboard(
+      uid,
+      code: referralCode,
+      currency: defaultCurrency,
+    );
   }
 
   ReferralDashboard _fallbackDashboard(

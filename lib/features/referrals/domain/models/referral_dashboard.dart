@@ -50,21 +50,18 @@ class ReferralDashboard extends Equatable {
         currency: currency,
       ),
       history: history.map((item) {
-        if (item.rewardCurrency == 'UGX' || item.rewardCurrency.isEmpty) {
-          return ReferralHistoryItem(
-            id: item.id,
-            displayName: item.displayName,
-            registeredAt: item.registeredAt,
-            status: item.status,
-            qualificationStatus: item.qualificationStatus,
-            rewardAmount: item.rewardAmount,
-            rewardCurrency: currency,
-            rewardStatus: item.rewardStatus,
-            payoutStatus: item.payoutStatus,
-            source: item.source,
-          );
-        }
-        return item;
+        return ReferralHistoryItem(
+          id: item.id,
+          displayName: item.displayName,
+          registeredAt: item.registeredAt,
+          status: item.status,
+          qualificationStatus: item.qualificationStatus,
+          rewardAmount: item.rewardAmount,
+          rewardCurrency: currency,
+          rewardStatus: item.rewardStatus,
+          payoutStatus: item.payoutStatus,
+          source: item.source,
+        );
       }).toList(),
     );
   }
@@ -146,6 +143,7 @@ class ReferralSummary extends Equatable {
       if (val is String) return int.tryParse(val) ?? 0;
       return 0;
     }
+
     return ReferralSummary(
       totalReferrals: readInt('total_referrals'),
       registered: readInt('registered'),
@@ -207,6 +205,7 @@ class ReferralHistoryItem extends Equatable {
       if (val is String) return int.tryParse(val) ?? 0;
       return 0;
     }
+
     return ReferralHistoryItem(
       id: map['id']?.toString() ?? '',
       displayName: map['display_name']?.toString() ?? 'Nipanze user',

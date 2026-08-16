@@ -59,6 +59,8 @@ class _ReferralsView extends StatelessWidget {
               children: [
                 _ReferralCodePanel(dashboard: dashboard),
                 const SizedBox(height: 16),
+                const _ReferralProcess(),
+                const SizedBox(height: 16),
                 _OverviewGrid(summary: dashboard.summary),
                 const SizedBox(height: 20),
                 Text(
@@ -107,30 +109,9 @@ class _ReferralCodePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Your referral code',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () => _showApplyCodeSheet(
-                  context,
-                  context.read<ReferralCubit>(),
-                ),
-                icon: const Icon(Icons.card_giftcard_rounded, size: 16),
-                label: const Text(
-                  'Enter Code',
-                  style: TextStyle(fontSize: 12),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ],
+          const Text(
+            'Your referral code',
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           SelectableText(
@@ -147,9 +128,21 @@ class _ReferralCodePanel extends StatelessWidget {
             const SizedBox(height: 6),
             SelectableText(
               marketer.referralLink,
-              style: const TextStyle(color: AppColors.text2Dark, fontSize: 12),
+              style: TextStyle(
+                color: _mutedTextColor(context),
+                fontSize: 12,
+              ),
             ),
           ],
+          const SizedBox(height: 12),
+          Text(
+            'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.',
+            style: TextStyle(
+              color: _mutedTextColor(context),
+              fontSize: 13,
+              height: 1.35,
+            ),
+          ),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -175,58 +168,81 @@ class _ReferralCodePanel extends StatelessWidget {
       ),
     );
   }
+}
 
-  void _showApplyCodeSheet(BuildContext context, ReferralCubit cubit) {
-    final controller = TextEditingController();
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter referral code',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'If a friend invited you to Nipanze, enter their referral code below.',
-              style: TextStyle(fontSize: 13, color: AppColors.text2Dark),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                hintText: 'e.g. NIPANZE-JOHN1234',
-                labelText: 'Referral code',
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final code = controller.text.trim();
-                  if (code.isEmpty) return;
-                  Navigator.pop(sheetContext);
-                  await cubit.attributeReferral(code);
-                },
-                child: const Text('Apply Code'),
-              ),
-            ),
-          ],
+class _ReferralProcess extends StatelessWidget {
+  const _ReferralProcess();
+
+  static const _steps = [
+    ('Share', Icons.ios_share_rounded),
+    ('Sign Up', Icons.person_add_alt_1_outlined),
+    ('Verify', Icons.verified_user_outlined),
+    ('Qualify', Icons.task_alt_rounded),
+    ('Earn', Icons.payments_outlined),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
         ),
       ),
+      child: Row(
+        children: [
+          for (var i = 0; i < _steps.length; i++) ...[
+            Expanded(
+              child: _ProcessStep(
+                label: _steps[i].$1,
+                icon: _steps[i].$2,
+              ),
+            ),
+            if (i != _steps.length - 1)
+              Icon(
+                Icons.chevron_right_rounded,
+                color: _subtleTextColor(context),
+                size: 18,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProcessStep extends StatelessWidget {
+  const _ProcessStep({
+    required this.label,
+    required this.icon,
+  });
+
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: AppColors.accent, size: 18),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _mutedTextColor(context),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -246,22 +262,52 @@ class _OverviewGrid extends StatelessWidget {
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
-        _MetricTile('Total referrals', '${summary.totalReferrals}',
-            Icons.groups_outlined),
-        _MetricTile('Registered', '${summary.registered}',
-            Icons.person_add_alt_1_outlined),
         _MetricTile(
-            'Verified', '${summary.verified}', Icons.verified_user_outlined),
+          label: 'Total referrals',
+          value: '${summary.totalReferrals}',
+          icon: Icons.groups_outlined,
+        ),
         _MetricTile(
-            'Qualified', '${summary.qualified}', Icons.task_alt_rounded),
-        _MetricTile('Pending rewards', _money(summary.pendingRewards),
-            Icons.schedule_rounded),
-        _MetricTile('Available', _money(summary.availableRewards),
-            Icons.account_balance_wallet_outlined),
-        _MetricTile('Total earned', _money(summary.totalEarned),
-            Icons.trending_up_rounded),
+          label: 'Registered referrals',
+          value: '${summary.registered}',
+          icon: Icons.person_add_alt_1_outlined,
+        ),
         _MetricTile(
-            'Total paid', _money(summary.totalPaid), Icons.payments_outlined),
+          label: 'Verified referrals',
+          value: '${summary.verified}',
+          icon: Icons.verified_user_outlined,
+        ),
+        _MetricTile(
+          label: 'Qualified referrals',
+          value: '${summary.qualified}',
+          icon: Icons.task_alt_rounded,
+          tooltip:
+              'A qualified referral is someone you invited who completed the actions required for a referral reward.',
+        ),
+        _MetricTile(
+          label: 'Pending rewards',
+          value: _money(summary.pendingRewards),
+          icon: Icons.schedule_rounded,
+          description: 'Not yet available',
+        ),
+        _MetricTile(
+          label: 'Available rewards',
+          value: _money(summary.availableRewards),
+          icon: Icons.account_balance_wallet_outlined,
+          description: 'Ready to claim',
+        ),
+        _MetricTile(
+          label: 'Total earned',
+          value: _money(summary.totalEarned),
+          icon: Icons.trending_up_rounded,
+          description: 'Lifetime rewards',
+        ),
+        _MetricTile(
+          label: 'Total paid',
+          value: _money(summary.totalPaid),
+          icon: Icons.payments_outlined,
+          description: 'Already paid',
+        ),
       ],
     );
   }
@@ -271,15 +317,24 @@ class _OverviewGrid extends StatelessWidget {
 }
 
 class _MetricTile extends StatelessWidget {
-  const _MetricTile(this.label, this.value, this.icon);
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.description,
+    this.tooltip,
+  });
 
   final String label;
   final String value;
   final IconData icon;
+  final String? description;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tooltip = this.tooltip;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -292,7 +347,23 @@ class _MetricTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.accent, size: 20),
+          Row(
+            children: [
+              Icon(icon, color: AppColors.accent, size: 20),
+              if (tooltip != null) ...[
+                const Spacer(),
+                Tooltip(
+                  message: tooltip,
+                  triggerMode: TooltipTriggerMode.tap,
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    color: _subtleTextColor(context),
+                    size: 17,
+                  ),
+                ),
+              ],
+            ],
+          ),
           const Spacer(),
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -308,8 +379,24 @@ class _MetricTile extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11, color: AppColors.text2Dark),
+            style: TextStyle(
+              fontSize: 11,
+              color: _mutedTextColor(context),
+              fontWeight: FontWeight.w600,
+            ),
           ),
+          if (description != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              description!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                color: _subtleTextColor(context),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -363,6 +450,7 @@ class _ReferralHistoryTile extends StatelessWidget {
   }
 
   String _label(String value) {
+    if (value == 'approved') return 'Available';
     return value
         .split('_')
         .map((part) => part.isEmpty
@@ -370,4 +458,16 @@ class _ReferralHistoryTile extends StatelessWidget {
             : '${part[0].toUpperCase()}${part.substring(1)}')
         .join(' ');
   }
+}
+
+Color _mutedTextColor(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.dark
+      ? AppColors.text2Dark
+      : AppColors.text2Light;
+}
+
+Color _subtleTextColor(BuildContext context) {
+  return Theme.of(context).brightness == Brightness.dark
+      ? AppColors.text3Dark
+      : AppColors.text3Light;
 }
