@@ -137,6 +137,18 @@ class NotificationTile extends StatelessWidget {
         return (Icons.trending_down_rounded, AppColors.accent);
       case NotificationType.contactRevealed:
         return (Icons.visibility_outlined, AppColors.purple);
+      case NotificationType.referralRegistered:
+        return (Icons.person_add_alt_1_outlined, AppColors.accent);
+      case NotificationType.referralVerified:
+      case NotificationType.referralQualified:
+        return (Icons.verified_user_outlined, AppColors.success);
+      case NotificationType.referralRewardAvailable:
+      case NotificationType.referralRewardApproved:
+        return (Icons.account_balance_wallet_outlined, AppColors.success);
+      case NotificationType.referralRewardPaid:
+        return (Icons.payments_outlined, AppColors.success);
+      case NotificationType.referralRewardRejected:
+        return (Icons.money_off_csred_outlined, AppColors.danger);
       case NotificationType.system:
         return (Icons.info_outline_rounded, AppColors.text2Dark);
     }

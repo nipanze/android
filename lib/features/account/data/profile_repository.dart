@@ -86,8 +86,7 @@ class ProfileRepository {
         preferredEmploymentTypes: profile?['preferred_employment_types'] == null
             ? null
             : List<String>.from(profile!['preferred_employment_types'] as List),
-        preferredIncomeBracket:
-            profile?['preferred_income_bracket'] as String?,
+        preferredIncomeBracket: profile?['preferred_income_bracket'] as String?,
         prefersSuggestedTerms:
             profile?['prefers_suggested_terms'] as bool? ?? false,
         prefersVerifiedOnly:
@@ -120,8 +119,15 @@ class ProfileRepository {
         activeListings: (activity?['active_listings'] as int?) ?? 0,
         activeOffers: (activity?['active_offers'] as int?) ?? 0,
         revealedContacts: (activity?['revealed_contacts'] as int?) ?? 0,
-        freeUnlocksRemaining:
-            (profile?['free_unlocks_remaining'] as int?) ?? 1,
+        freeUnlocksRemaining: (profile?['free_unlocks_remaining'] as int?) ?? 1,
+        referralCode: profile?['referral_code'] as String?,
+        referredBy: profile?['referred_by'] as String?,
+        referralStatus: profile?['referral_status'] as String? ?? 'none',
+        marketingEnabled: profile?['marketing_enabled'] as bool? ?? false,
+        marketingCountry: profile?['marketing_country'] as String?,
+        marketingJoinedAt: profile?['marketing_joined_at'] != null
+            ? DateTime.tryParse(profile!['marketing_joined_at'] as String)
+            : null,
       );
     } catch (e) {
       throw parseSupabaseError(e);
@@ -131,8 +137,9 @@ class ProfileRepository {
   /// Upload avatar image bytes to Supabase Storage bucket and return public URL.
   Future<String> uploadAvatarBytes(List<int> bytes, String fileExt) async {
     try {
-      final path = '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-      
+      final path =
+          '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
       try {
         await _client.storage.from('avatars').uploadBinary(
               path,

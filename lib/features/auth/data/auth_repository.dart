@@ -6,13 +6,15 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../../../core/errors/app_exception.dart';
+import '../../referrals/data/referral_repository.dart';
 import '../domain/models/nipanze_user.dart';
 
 @lazySingleton
 class AuthRepository {
-  AuthRepository(this._client);
+  AuthRepository(this._client, this._referralRepository);
 
   final SupabaseClient _client;
+  final ReferralRepository _referralRepository;
 
   Stream<NipanzeUser?> get authStateChanges {
     return _client.auth.onAuthStateChange.asyncMap((event) async {
@@ -60,6 +62,7 @@ class AuthRepository {
     required String fullName,
     String? phone,
     String? countryCode,
+    String? referralCode,
   }) async {
     try {
       final res = await _client.auth.signUp(
@@ -69,6 +72,8 @@ class AuthRepository {
           'full_name': fullName,
           if (phone != null) 'phone': phone,
           if (countryCode != null) 'country_code': countryCode,
+          if (referralCode != null && referralCode.trim().isNotEmpty)
+            'referral_code': referralCode.trim(),
         },
       ).timeout(const Duration(seconds: 15));
       return res.user;
@@ -76,6 +81,16 @@ class AuthRepository {
       debugPrint('signUp error: $e');
       throw parseSupabaseError(e);
     }
+  }
+
+  Future<void> attributeReferral({
+    required String referralCode,
+    String source = 'registration',
+  }) {
+    return _referralRepository.attributeReferral(
+      referralCode: referralCode,
+      source: source,
+    );
   }
 
   Future<void> signOut() async {

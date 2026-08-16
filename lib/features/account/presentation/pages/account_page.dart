@@ -41,7 +41,8 @@ class _AccountView extends StatelessWidget {
               listener: (context, state) {
                 if (state is ProfileCubitLoaded && state.justSaved) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(AppLocalizations.of(context)!.profileUpdated)));
+                      content:
+                          Text(AppLocalizations.of(context)!.profileUpdated)));
                 }
                 if (state is ProfileCubitError) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -60,163 +61,177 @@ class _AccountView extends StatelessWidget {
           ],
           child: BlocBuilder<ProfileCubit, ProfileCubitState>(
             builder: (context, state) {
-            if (state is ProfileCubitLoading || state is ProfileCubitInitial) {
-              return const Center(child: CircularProgressIndicator());
-            }
+              if (state is ProfileCubitLoading ||
+                  state is ProfileCubitInitial) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            final profile = state is ProfileCubitLoaded ? state.profile : null;
-            final authState = context.read<AuthBloc>().state;
+              final profile =
+                  state is ProfileCubitLoaded ? state.profile : null;
+              final authState = context.read<AuthBloc>().state;
 
-            return RefreshIndicator(
-              onRefresh: () => context.read<ProfileCubit>().refresh(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Header ────────────────────────────────────────────
-                    Row(children: [
-                      Text(AppLocalizations.of(context)!.accountTitle,
+              return RefreshIndicator(
+                onRefresh: () => context.read<ProfileCubit>().refresh(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Header ────────────────────────────────────────────
+                      Row(children: [
+                        Text(AppLocalizations.of(context)!.accountTitle,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                    fontFamily: AppFonts.heading,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20)),
+                        const Spacer(),
+                        IconButton(
+                          tooltip: AppLocalizations.of(context)!.settingsTitle,
+                          onPressed: () => _showSettingsSheet(context),
+                          icon: const Icon(Icons.settings_outlined, size: 22),
+                        ),
+                      ]),
+                      const SizedBox(height: 8),
+
+                      // ── Profile card ──────────────────────────────────────
+                      _ProfileHeaderCard(
+                        profile: profile,
+                        onTap: () => _showAccountSheet(context, profile),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Stats row ─────────────────────────────────────────
+                      // Fix: `CrossAxisAlignment.stretch` was here to make the
+                      // three chips equal height, but this Row lives inside a
+                      // Column inside a SingleChildScrollView — an unbounded
+                      // height context. `stretch` demands children fill the
+                      // Row's own height, which becomes "stretch to infinity"
+                      // in an unbounded parent and crashes layout. Removed:
+                      // Row already sizes to its tallest child by default,
+                      // which is sufficient since all three _StatChips share
+                      // identical internal structure.
+                      Row(
+                        children: [
+                          _StatChip(
+                            label: AppLocalizations.of(context)!.statListings,
+                            subtitle: AppLocalizations.of(context)!
+                                .statListingsSubtitle,
+                            value: '${profile?.activeListings ?? 0}',
+                            color: AppColors.accent,
+                            icon: Icons.article_outlined,
+                          ),
+                          const SizedBox(width: 8),
+                          _StatChip(
+                            label: AppLocalizations.of(context)!.statOffers,
+                            subtitle: AppLocalizations.of(context)!
+                                .statOffersSubtitle,
+                            value: '${profile?.activeOffers ?? 0}',
+                            color: AppColors.success,
+                            icon: Icons.handshake_outlined,
+                          ),
+                          const SizedBox(width: 8),
+                          _StatChip(
+                            label: AppLocalizations.of(context)!.statMatches,
+                            subtitle: AppLocalizations.of(context)!
+                                .statMatchesSubtitle,
+                            value: '${profile?.revealedContacts ?? 0}',
+                            color: AppColors.purple,
+                            icon: Icons.track_changes_outlined,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // ── Trust & Reputation ────────────────────────────────
+                      // Fix: SectionHeader renders uppercase/10px, styled
+                      // deliberately that way for Subscription/Account below.
+                      // The mockup wants this specific header larger and in
+                      // mixed case (more like a subheading than a label), so
+                      // it's built as a one-off Row here instead of reusing
+                      // SectionHeader, keeping the other sections untouched.
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16, bottom: 8),
+                        child: Text(
+                          AppLocalizations.of(context)!.trustReputation,
                           style: Theme.of(context)
                               .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                  fontFamily: AppFonts.heading,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 20)),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: AppLocalizations.of(context)!.settingsTitle,
-                        onPressed: () => _showSettingsSheet(context),
-                        icon: const Icon(Icons.settings_outlined, size: 22),
-                      ),
-                    ]),
-                    const SizedBox(height: 8),
-
-                    // ── Profile card ──────────────────────────────────────
-                    _ProfileHeaderCard(
-                      profile: profile,
-                      onTap: () => _showAccountSheet(context, profile),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ── Stats row ─────────────────────────────────────────
-                    // Fix: `CrossAxisAlignment.stretch` was here to make the
-                    // three chips equal height, but this Row lives inside a
-                    // Column inside a SingleChildScrollView — an unbounded
-                    // height context. `stretch` demands children fill the
-                    // Row's own height, which becomes "stretch to infinity"
-                    // in an unbounded parent and crashes layout. Removed:
-                    // Row already sizes to its tallest child by default,
-                    // which is sufficient since all three _StatChips share
-                    // identical internal structure.
-                    Row(
-                      children: [
-                        _StatChip(
-                          label: AppLocalizations.of(context)!.statListings,
-                          subtitle: AppLocalizations.of(context)!
-                              .statListingsSubtitle,
-                          value: '${profile?.activeListings ?? 0}',
-                          color: AppColors.accent,
-                          icon: Icons.article_outlined,
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                        const SizedBox(width: 8),
-                        _StatChip(
-                          label: AppLocalizations.of(context)!.statOffers,
-                          subtitle:
-                              AppLocalizations.of(context)!.statOffersSubtitle,
-                          value: '${profile?.activeOffers ?? 0}',
-                          color: AppColors.success,
-                          icon: Icons.handshake_outlined,
-                        ),
-                        const SizedBox(width: 8),
-                        _StatChip(
-                          label: AppLocalizations.of(context)!.statMatches,
-                          subtitle:
-                              AppLocalizations.of(context)!.statMatchesSubtitle,
-                          value: '${profile?.revealedContacts ?? 0}',
-                          color: AppColors.purple,
-                          icon: Icons.track_changes_outlined,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-
-                    // ── Trust & Reputation ────────────────────────────────
-                    // Fix: SectionHeader renders uppercase/10px, styled
-                    // deliberately that way for Subscription/Account below.
-                    // The mockup wants this specific header larger and in
-                    // mixed case (more like a subheading than a label), so
-                    // it's built as a one-off Row here instead of reusing
-                    // SectionHeader, keeping the other sections untouched.
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Text(
-                        AppLocalizations.of(context)!.trustReputation,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                    if (profile != null) _TrustPanel(profile: profile),
-                    const SizedBox(height: 8),
-                    _PublicTrustInfoCard(
-                        onTap: () => _showTrustExplainer(context)),
-                    const SizedBox(height: 4),
+                      if (profile != null) _TrustPanel(profile: profile),
+                      const SizedBox(height: 8),
+                      _PublicTrustInfoCard(
+                          onTap: () => _showTrustExplainer(context)),
+                      const SizedBox(height: 4),
 
-                    // ── Subscription ──────────────────────────────────────
-                    SectionHeader(AppLocalizations.of(context)?.subscription ??
-                        'Subscription'),
-                    _SubscriptionCard(profile: profile),
-                    const SizedBox(height: 8),
-                    if (authState is AuthAuthenticated &&
-                        authState.user.subscriptionPlan != SubscriptionPlan.pro)
-                      _UpgradeButton(
-                        onTap: () => context.push(AppRoutes.pricing),
-                        label: authState.user.subscriptionPlan ==
-                                SubscriptionPlan.lender
-                            ? (AppLocalizations.of(context)?.upgradeToPro ??
-                                'Upgrade to Pro')
-                            : (AppLocalizations.of(context)?.viewPlansUpgrade ??
-                                'View plans'),
-                      ),
+                      // ── Subscription ──────────────────────────────────────
+                      SectionHeader(
+                          AppLocalizations.of(context)?.subscription ??
+                              'Subscription'),
+                      _SubscriptionCard(profile: profile),
+                      const SizedBox(height: 8),
+                      if (authState is AuthAuthenticated &&
+                          authState.user.subscriptionPlan !=
+                              SubscriptionPlan.pro)
+                        _UpgradeButton(
+                          onTap: () => context.push(AppRoutes.pricing),
+                          label: authState.user.subscriptionPlan ==
+                                  SubscriptionPlan.lender
+                              ? (AppLocalizations.of(context)?.upgradeToPro ??
+                                  'Upgrade to Pro')
+                              : (AppLocalizations.of(context)
+                                      ?.viewPlansUpgrade ??
+                                  'View plans'),
+                        ),
 
-                    if (context.read<AuthBloc>().state is AuthAuthenticated &&
-                        (context.read<AuthBloc>().state as AuthAuthenticated)
-                            .user
-                            .isAdmin) ...[
-                      const SectionHeader('Admin'),
+                      const SectionHeader('Refer & Earn'),
                       Card(
-                          child: _ActionRow(
-                        icon: Icons.admin_panel_settings_outlined,
-                        label: AppLocalizations.of(context)?.adminDashboard ??
-                            'Admin Dashboard',
-                        onTap: () => context.push(AppRoutes.admin),
-                      )),
-                    ],
-                    const SizedBox(height: 20),
+                        child: _ActionRow(
+                          icon: Icons.campaign_outlined,
+                          label: 'Invite people and track rewards',
+                          onTap: () => context.push(AppRoutes.referrals),
+                        ),
+                      ),
 
-                    Text(
-                      AppLocalizations.of(context)?.nipanzeDisclaimer ??
-                          'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.text3Dark,
-                          height: 1.5),
-                    ),
-                  ],
+                      if (context.read<AuthBloc>().state is AuthAuthenticated &&
+                          (context.read<AuthBloc>().state as AuthAuthenticated)
+                              .user
+                              .isAdmin) ...[
+                        const SectionHeader('Admin'),
+                        Card(
+                            child: _ActionRow(
+                          icon: Icons.admin_panel_settings_outlined,
+                          label: AppLocalizations.of(context)?.adminDashboard ??
+                              'Admin Dashboard',
+                          onTap: () => context.push(AppRoutes.admin),
+                        )),
+                      ],
+                      const SizedBox(height: 20),
+
+                      Text(
+                        AppLocalizations.of(context)?.nipanzeDisclaimer ??
+                            'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.text3Dark,
+                            height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _showTrustExplainer(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

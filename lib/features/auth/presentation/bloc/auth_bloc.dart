@@ -175,7 +175,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AppException catch (e) {
       emit(AuthError(e.message));
     } catch (e) {
-      emit(const AuthError('Sign-in failed. Check your credentials and try again.'));
+      emit(const AuthError(
+          'Sign-in failed. Check your credentials and try again.'));
     }
   }
 
@@ -214,6 +215,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         fullName: event.fullName,
         phone: clean,
         countryCode: event.countryCode,
+        referralCode: event.referralCode,
       );
 
       NipanzeUser? user;
@@ -244,6 +246,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           phone: clean,
           country: event.countryCode,
         );
+      }
+
+      if (event.referralCode?.trim().isNotEmpty == true && user != null) {
+        try {
+          await _authRepository.attributeReferral(
+            referralCode: event.referralCode!.trim(),
+            source: 'registration',
+          );
+        } catch (e) {
+          debugPrint('Referral attribution failed: $e');
+        }
       }
 
       if (user != null) {

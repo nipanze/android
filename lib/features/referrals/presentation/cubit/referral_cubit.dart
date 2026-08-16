@@ -1,0 +1,51 @@
+import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+
+import '../../../../core/errors/app_exception.dart';
+import '../../data/referral_repository.dart';
+import '../../domain/models/referral_dashboard.dart';
+
+part 'referral_state.dart';
+
+@injectable
+class ReferralCubit extends Cubit<ReferralState> {
+  ReferralCubit(this._repository) : super(const ReferralInitial());
+
+  final ReferralRepository _repository;
+
+  Future<void> load() async {
+    emit(const ReferralLoading());
+    try {
+      final dashboard = await _repository.getDashboard();
+      emit(ReferralLoaded(dashboard: dashboard));
+    } catch (e) {
+      emit(ReferralError(userFacingErrorMessage(e)));
+    }
+  }
+
+  Future<void> refresh() => load();
+
+  Future<void> copyCode() async {
+    final current = state;
+    if (current is! ReferralLoaded) return;
+    await Clipboard.setData(
+      ClipboardData(text: current.dashboard.marketer.referralCode),
+    );
+    emit(current.copyWith(lastAction: ReferralAction.codeCopied));
+  }
+
+  Future<void> copyShareMessage() async {
+    final current = state;
+    if (current is! ReferralLoaded) return;
+    final marketer = current.dashboard.marketer;
+    await Clipboard.setData(
+      ClipboardData(
+        text: 'Join Nipanze and use my referral code: '
+            '${marketer.referralCode}\n${marketer.referralLink}',
+      ),
+    );
+    emit(current.copyWith(lastAction: ReferralAction.shareMessageCopied));
+  }
+}

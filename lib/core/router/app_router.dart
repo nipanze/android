@@ -24,6 +24,7 @@ import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
+import '../../features/referrals/presentation/pages/referrals_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -56,6 +57,7 @@ class AppRoutes {
   static const String account = '/account';
   static const String admin = '/admin';
   static const String pricing = '/pricing';
+  static const String referrals = '/referrals';
 }
 
 class AppRouter {
@@ -88,6 +90,14 @@ class AppRouter {
         path: AppRoutes.register,
         name: 'register',
         pageBuilder: (_, state) => _fade(state, const RegisterPage()),
+      ),
+      GoRoute(
+        path: '/r/:referralCode',
+        name: 'referralRegister',
+        pageBuilder: (_, state) => _fade(
+          state,
+          RegisterPage(referralCode: state.pathParameters['referralCode']),
+        ),
       ),
       GoRoute(
         path: AppRoutes.verifyEmail,
@@ -234,21 +244,27 @@ class AppRouter {
         name: 'pricing',
         pageBuilder: (_, state) => _slide(state, const PricingPage()),
       ),
+      GoRoute(
+        path: AppRoutes.referrals,
+        name: 'referrals',
+        pageBuilder: (_, state) => _slide(state, const ReferralsPage()),
+      ),
     ],
   );
 
   String? _redirect(BuildContext context, GoRouterState state) {
     final authState = authBloc.state;
     final onAuth = state.matchedLocation.startsWith('/auth');
+    final onReferralSignup = state.matchedLocation.startsWith('/r/');
 
     if (authState is AuthLoading) return null;
 
     if (authState is AuthUnauthenticated) {
-      return onAuth ? null : AppRoutes.welcome;
+      return onAuth || onReferralSignup ? null : AppRoutes.welcome;
     }
 
     if (authState is AuthAuthenticated) {
-      if (onAuth) return AppRoutes.marketplace;
+      if (onAuth || onReferralSignup) return AppRoutes.marketplace;
       if (authState.needsEmailVerification) return AppRoutes.verifyEmail;
       if (state.matchedLocation == AppRoutes.admin && !authState.user.isAdmin) {
         return AppRoutes.marketplace;

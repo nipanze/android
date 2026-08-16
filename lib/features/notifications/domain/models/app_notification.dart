@@ -15,6 +15,13 @@ enum NotificationType {
   watchlistNewBid,
   watchlistRateChange,
   contactRevealed,
+  referralRegistered,
+  referralVerified,
+  referralQualified,
+  referralRewardAvailable,
+  referralRewardApproved,
+  referralRewardPaid,
+  referralRewardRejected,
   system,
 }
 
@@ -101,6 +108,20 @@ class AppNotification extends Equatable {
         return NotificationType.watchlistRateChange;
       case 'contact_revealed':
         return NotificationType.contactRevealed;
+      case 'referral_registered':
+        return NotificationType.referralRegistered;
+      case 'referral_verified':
+        return NotificationType.referralVerified;
+      case 'referral_qualified':
+        return NotificationType.referralQualified;
+      case 'referral_reward_available':
+        return NotificationType.referralRewardAvailable;
+      case 'referral_reward_approved':
+        return NotificationType.referralRewardApproved;
+      case 'referral_reward_paid':
+        return NotificationType.referralRewardPaid;
+      case 'referral_reward_rejected':
+        return NotificationType.referralRewardRejected;
       default:
         return NotificationType.system;
     }

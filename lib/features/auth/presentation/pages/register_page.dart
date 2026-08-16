@@ -26,6 +26,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
@@ -54,10 +55,12 @@ enum _WizardStep {
 // LoginPage
 // ─────────────────────────────────────────────────────────────────────────────
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key, this.startAtSignUp = false});
+  const RegisterPage(
+      {super.key, this.startAtSignUp = false, this.referralCode});
 
   /// When true the wizard starts at phoneEntry (used by RegisterPage redirect).
   final bool startAtSignUp;
+  final String? referralCode;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -86,6 +89,7 @@ class _RegisterPageState extends State<RegisterPage>
   final _optEmailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _referralCodeController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   Uint8List? _avatarBytes;
@@ -114,6 +118,7 @@ class _RegisterPageState extends State<RegisterPage>
       value: 1.0,
     );
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    unawaited(_loadReferralCode());
   }
 
   @override
@@ -129,11 +134,23 @@ class _RegisterPageState extends State<RegisterPage>
     _optEmailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
+    _referralCodeController.dispose();
     _emailLoginController.dispose();
     _emailPasswordController.dispose();
     _resendTimer?.cancel();
     _fadeCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadReferralCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final incoming = widget.referralCode?.trim();
+    final cached = prefs.getString('pending_referral_code')?.trim();
+    final code = incoming?.isNotEmpty == true ? incoming : cached;
+    if (code == null || code.isEmpty) return;
+    await prefs.setString('pending_referral_code', code);
+    if (!mounted) return;
+    _referralCodeController.text = code.toUpperCase();
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -272,6 +289,9 @@ class _RegisterPageState extends State<RegisterPage>
           fullName: _nameController.text.trim(),
           countryCode: _selectedCountry.code,
           email: optEmail.isEmpty ? null : optEmail,
+          referralCode: _referralCodeController.text.trim().isEmpty
+              ? null
+              : _referralCodeController.text.trim(),
         ));
   }
 
@@ -470,6 +490,7 @@ class _RegisterPageState extends State<RegisterPage>
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
+            unawaited(_clearPendingReferralCode());
             // GoRouterRefreshStream handles redirect; we just jump to success
             // only if we're mid-wizard (not yet on success screen).
             if (_step != _WizardStep.success) {
@@ -496,6 +517,11 @@ class _RegisterPageState extends State<RegisterPage>
         },
       ),
     );
+  }
+
+  Future<void> _clearPendingReferralCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('pending_referral_code');
   }
 
   Widget _buildStep(bool isLoading, String? errorMsg) {
@@ -541,6 +567,7 @@ class _RegisterPageState extends State<RegisterPage>
           emailController: _optEmailController,
           passwordController: _passwordController,
           confirmController: _confirmController,
+          referralCodeController: _referralCodeController,
           obscurePassword: _obscurePassword,
           obscureConfirm: _obscureConfirm,
           formKey: _profileFormKey,
@@ -1418,6 +1445,7 @@ class _ProfileSetupScreen extends StatelessWidget {
     required this.emailController,
     required this.passwordController,
     required this.confirmController,
+    required this.referralCodeController,
     required this.obscurePassword,
     required this.obscureConfirm,
     required this.formKey,
@@ -1436,6 +1464,7 @@ class _ProfileSetupScreen extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController confirmController;
+  final TextEditingController referralCodeController;
   final bool obscurePassword;
   final bool obscureConfirm;
   final GlobalKey<FormState> formKey;
@@ -1628,6 +1657,27 @@ class _ProfileSetupScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
+                      _ProfileField(
+                        label: 'Referral code (optional)',
+                        controller: referralCodeController,
+                        icon: Icons.campaign_outlined,
+                        hintText: 'NIPANZE-GAVA123',
+                        isDark: isDark,
+                        cardBgColor: cardBgColor,
+                        cardBorderColor: cardBorderColor,
+                        titleColor: titleColor,
+                        subtitleColor: subtitleColor,
+                        textCapitalization: TextCapitalization.characters,
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[A-Za-z0-9-]'),
+                          ),
+                          LengthLimitingTextInputFormatter(32),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
                       // Password creation
                       _ProfileField(
                         label: 'Create password',
@@ -1803,6 +1853,8 @@ class _ProfileField extends StatelessWidget {
     this.suffixIcon,
     this.onFieldSubmitted,
     this.validator,
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
   });
 
   final String label;
@@ -1820,6 +1872,8 @@ class _ProfileField extends StatelessWidget {
   final Widget? suffixIcon;
   final ValueChanged<String>? onFieldSubmitted;
   final FormFieldValidator<String>? validator;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -1840,6 +1894,8 @@ class _ProfileField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          textCapitalization: textCapitalization,
+          inputFormatters: inputFormatters,
           obscureText: obscureText,
           onFieldSubmitted: onFieldSubmitted,
           validator: validator,

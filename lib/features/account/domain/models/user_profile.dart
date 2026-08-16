@@ -47,6 +47,12 @@ class UserProfile extends Equatable {
     this.activeOffers = 0,
     this.revealedContacts = 0,
     this.freeUnlocksRemaining = 1,
+    this.referralCode,
+    this.referredBy,
+    this.referralStatus = 'none',
+    this.marketingEnabled = false,
+    this.marketingCountry,
+    this.marketingJoinedAt,
   });
 
   final String id;
@@ -93,6 +99,12 @@ class UserProfile extends Equatable {
   final int activeOffers;
   final int revealedContacts;
   final int freeUnlocksRemaining;
+  final String? referralCode;
+  final String? referredBy;
+  final String referralStatus;
+  final bool marketingEnabled;
+  final String? marketingCountry;
+  final DateTime? marketingJoinedAt;
 
   String get displayName => fullName?.isNotEmpty == true ? fullName! : email;
   String get initials {
@@ -164,6 +176,12 @@ class UserProfile extends Equatable {
     int? activeOffers,
     int? revealedContacts,
     int? freeUnlocksRemaining,
+    String? referralCode,
+    String? referredBy,
+    String? referralStatus,
+    bool? marketingEnabled,
+    String? marketingCountry,
+    DateTime? marketingJoinedAt,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -213,6 +231,12 @@ class UserProfile extends Equatable {
       activeOffers: activeOffers ?? this.activeOffers,
       revealedContacts: revealedContacts ?? this.revealedContacts,
       freeUnlocksRemaining: freeUnlocksRemaining ?? this.freeUnlocksRemaining,
+      referralCode: referralCode ?? this.referralCode,
+      referredBy: referredBy ?? this.referredBy,
+      referralStatus: referralStatus ?? this.referralStatus,
+      marketingEnabled: marketingEnabled ?? this.marketingEnabled,
+      marketingCountry: marketingCountry ?? this.marketingCountry,
+      marketingJoinedAt: marketingJoinedAt ?? this.marketingJoinedAt,
     );
   }
 
@@ -235,5 +259,11 @@ class UserProfile extends Equatable {
         trustIsVerified,
         trustSuccessRate,
         trustReliabilityScore,
+        referralCode,
+        referredBy,
+        referralStatus,
+        marketingEnabled,
+        marketingCountry,
+        marketingJoinedAt,
       ];
 }
