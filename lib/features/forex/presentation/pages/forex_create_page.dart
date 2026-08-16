@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -108,6 +109,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   void initState() {
     super.initState();
     _amountController.addListener(_refreshButtonState);
+    _preferredRateController.addListener(_refreshButtonState);
     _loadCurrencies();
   }
 
@@ -137,8 +139,37 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   void dispose() {
     _amountController.removeListener(_refreshButtonState);
     _amountController.dispose();
+    _preferredRateController.removeListener(_refreshButtonState);
     _preferredRateController.dispose();
     super.dispose();
+  }
+
+  double? _parseDecimal(String value) {
+    final normalized = value.replaceAll(',', '').trim();
+    if (normalized.isEmpty) return null;
+    return double.tryParse(normalized);
+  }
+
+  int? _parseAmount(String value) {
+    final parsed = _parseDecimal(value);
+    if (parsed == null) return null;
+    return parsed.round();
+  }
+
+  String? get _receivePreview {
+    final amount = _parseDecimal(_amountController.text);
+    final rate = _parseDecimal(_preferredRateController.text);
+    if (amount == null ||
+        amount <= 0 ||
+        rate == null ||
+        rate <= 0 ||
+        _currencyHeld == null ||
+        _currencyNeeded == null ||
+        _currencyHeld == _currencyNeeded) {
+      return null;
+    }
+    final value = amount * rate;
+    return '${NumberFormat.decimalPattern().format(value)} $_currencyNeeded';
   }
 
   void _refreshButtonState() {
@@ -146,7 +177,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   }
 
   bool get _isReadyToPublish {
-    final amount = int.tryParse(_amountController.text);
+    final amount = _parseAmount(_amountController.text);
     return amount != null &&
         amount > 0 &&
         _currencyHeld != null &&
@@ -174,10 +205,10 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
       final id = await getIt<ForexRepository>().createRequest(
         currencyHeld: _currencyHeld!,
         currencyNeeded: _currencyNeeded!,
-        amount: int.parse(_amountController.text),
+        amount: _parseAmount(_amountController.text)!,
         settlementPreference: _settlementPreference,
         preferredRate: canSetPreferredRate
-            ? double.tryParse(_preferredRateController.text)
+            ? _parseDecimal(_preferredRateController.text)
             : null,
         country: authState.user.country,
       );
@@ -314,7 +345,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                               'The amount in the currency you hold. Offers use it to show how much of the currency you need you can receive.',
                         ),
                         validator: (v) {
-                          final amount = int.tryParse(v ?? '');
+                          final amount = _parseAmount(v ?? '');
                           if (amount == null || amount <= 0) {
                             return l10n?.validationAmountRequired ??
                                 'Enter an amount';
@@ -344,19 +375,97 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: _preferredRateController,
-                        enabled: isPro,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[0-9.,]'),
+                          ),
+                        ],
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return null;
+                          final rate = _parseDecimal(v);
+                          if (rate == null || rate <= 0) {
+                            return 'Enter a valid rate';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           labelText:
                               l10n?.forexPreferredRate ?? 'Preferred rate',
                           hintText: l10n?.forexRateHint ?? 'e.g. 3700',
                           helperText: isPro
-                              ? 'Optional'
-                              : 'Pro unlocks preferred rate suggestions',
+                              ? 'Optional. Shows a live receive estimate and saves your preferred rate.'
+                              : 'Use this for a quick receive estimate. Pro saves preferred rates to requests.',
                         ),
                       ),
+                      if (_receivePreview != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.success.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.success.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.payments_rounded,
+                                  color: AppColors.success,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'You receive',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(
+                                            color: AppColors.success,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      _receivePreview!,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            color: AppColors.success,
+                                            fontFamily: AppFonts.heading,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
