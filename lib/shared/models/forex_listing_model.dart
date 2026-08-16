@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class ForexListingModel extends Equatable {
   const ForexListingModel({
     required this.requestId,
+    this.requesterId,
     required this.currencyHeld,
     required this.currencyNeeded,
     required this.amount,
@@ -26,6 +27,7 @@ class ForexListingModel extends Equatable {
   });
 
   final String requestId;
+  final String? requesterId;
   final String currencyHeld;
   final String currencyNeeded;
   final int amount;
@@ -60,6 +62,7 @@ class ForexListingModel extends Equatable {
   factory ForexListingModel.fromMap(Map<String, dynamic> map) {
     return ForexListingModel(
       requestId: map['request_id'] as String,
+      requesterId: map['requester_id'] as String?,
       currencyHeld: map['currency_held'] as String? ?? 'UGX',
       currencyNeeded: map['currency_needed'] as String? ?? 'USD',
       amount: (map['amount'] as num?)?.toInt() ?? 0,
@@ -90,5 +93,5 @@ class ForexListingModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [requestId, status, numberOfOffers];
+  List<Object?> get props => [requestId, requesterId, status, numberOfOffers];
 }

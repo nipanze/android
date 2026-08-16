@@ -82,6 +82,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
           final data = snapshot.data!;
           final listing = data.listing;
           _cachedListing = listing;
+          final isOwner = user != null && listing.requesterId == user.id;
 
           return RefreshIndicator(
             onRefresh: () async => _refresh(),
@@ -179,23 +180,24 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                   const SizedBox(height: 16),
 
                   // ── Make an Offer button (outside card, like loan detail) ──
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (user == null) {
-                          context.go(AppRoutes.login);
-                          return;
-                        }
-                        if (!user.canLend) {
-                          showLenderRequiredSheet(context);
-                          return;
-                        }
-                        setState(() => _showOfferSheet = true);
-                      },
-                      child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                  if (!isOwner)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (user == null) {
+                            context.go(AppRoutes.login);
+                            return;
+                          }
+                          if (!user.canLend) {
+                            showLenderRequiredSheet(context);
+                            return;
+                          }
+                          setState(() => _showOfferSheet = true);
+                        },
+                        child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
