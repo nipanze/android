@@ -42,9 +42,12 @@ class ReferralCubit extends Cubit<ReferralState> {
     if (current is! ReferralLoaded) return;
     final marketer = current.dashboard.marketer;
     if (marketer.referralCode.isEmpty) return;
-    await Share.share(
-      'Join Nipanze and use my referral code: ${marketer.referralCode}\n${marketer.referralLink}',
-      subject: 'Join Nipanze',
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Join Nipanze and use my referral code: ${marketer.referralCode}\n${marketer.referralLink}',
+        subject: 'Join Nipanze',
+      ),
     );
   }
 
