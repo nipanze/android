@@ -254,13 +254,31 @@ class _OverviewGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    // Responsive columns and aspect ratio to make tiles smaller on wide screens
+    int crossAxisCount;
+    double childAspectRatio;
+    if (screenWidth >= 1000) {
+      crossAxisCount = 4;
+      childAspectRatio = 3.2;
+    } else if (screenWidth >= 700) {
+      crossAxisCount = 3;
+      childAspectRatio = 2.8;
+    } else if (screenWidth >= 430) {
+      crossAxisCount = 2;
+      childAspectRatio = 2.6;
+    } else {
+      crossAxisCount = 2;
+      childAspectRatio = 2.4;
+    }
+
     return GridView.count(
-      crossAxisCount: 2,
+    crossAxisCount: crossAxisCount,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.45,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
+      childAspectRatio: childAspectRatio,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
       children: [
         _MetricTile(
           label: 'Total referrals',
@@ -336,7 +354,7 @@ class _MetricTile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tooltip = this.tooltip;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
         borderRadius: BorderRadius.circular(12),
@@ -348,10 +366,11 @@ class _MetricTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(icon, color: AppColors.accent, size: 20),
               if (tooltip != null) ...[
-                const Spacer(),
+                const SizedBox(width: 6),
                 Tooltip(
                   message: tooltip,
                   triggerMode: TooltipTriggerMode.tap,
@@ -362,19 +381,19 @@ class _MetricTile extends StatelessWidget {
                   ),
                 ),
               ],
+              const Spacer(),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+              ),
             ],
           ),
-          const Spacer(),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              maxLines: 1,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-          ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 6),
           Text(
             label,
             maxLines: 1,
@@ -392,7 +411,7 @@ class _MetricTile extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 color: _subtleTextColor(context),
               ),
             ),
