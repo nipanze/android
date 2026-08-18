@@ -268,6 +268,13 @@ class _AccountView extends StatelessWidget {
   }
 
   void _showSettingsSheet(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final userPhone = authState is AuthAuthenticated ? authState.user.phone : null;
+    final userCountryCode = authState is AuthAuthenticated ? authState.user.country : null;
+    final userCountry = userPhone != null && userPhone.isNotEmpty
+        ? EastAfricaCountries.findByPhone(userPhone)
+        : EastAfricaCountries.findByCode(userCountryCode);
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -293,28 +300,42 @@ class _AccountView extends StatelessWidget {
               const Divider(height: 1),
               _ThemeToggleRow(),
               const Divider(height: 1),
-              // Language row – show active language code + currency as badges
+              // Language row – switch app language dynamically
               ValueListenableBuilder<Locale?>(
                 valueListenable: LanguageService.instance.notifier,
                 builder: (ctx, _, __) {
                   final lang = LanguageService.instance.currentLanguage;
-                  final country = EastAfricaCountries.findByCode(lang.countryCode);
                   return _ActionRow(
                     icon: Icons.language_rounded,
                     label: AppLocalizations.of(sheetCtx)!.selectLanguage,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _SettingsBadge('${lang.flag} ${lang.code.toUpperCase()}'),
-                        const SizedBox(width: 6),
-                        _SettingsBadge('${country.flag} ${country.currency}'),
-                      ],
-                    ),
+                    trailing: _SettingsBadge('${lang.flag} ${lang.nativeName}'),
                     onTap: () {
                       Navigator.of(sheetCtx).pop();
                       showLanguageSelectorSheet(context);
                     },
                   );
+                },
+              ),
+              const Divider(height: 1),
+              // Subscription Currency row – locked to registered phone country code
+              _ActionRow(
+                icon: Icons.monetization_on_outlined,
+                label: 'Subscription Currency',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _SettingsBadge('${userCountry.flag} ${userCountry.currency}'),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 14,
+                      color: AppColors.text3Dark,
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _showCurrencyLockedInfoDialog(context, userCountry);
                 },
               ),
               const Divider(height: 1),
@@ -364,6 +385,42 @@ class _AccountView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showCurrencyLockedInfoDialog(BuildContext context, CountryInfo country) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.lock_outline_rounded, color: AppColors.accent, size: 20),
+            SizedBox(width: 8),
+            Text('Subscription Currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your subscription currency is set to ${country.currency} (${country.name}) based on your registered phone number region (${country.dialCode}).',
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.',
+              style: TextStyle(fontSize: 12, color: AppColors.text2Dark, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Understood'),
+          ),
+        ],
+      ),
     );
   }
 

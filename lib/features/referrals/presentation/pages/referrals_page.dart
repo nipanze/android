@@ -108,16 +108,18 @@ class _ReferralCodePanel extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Text(
             'Your referral code',
+            textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           if (hasCode)
             SelectableText(
               marketer.referralCode.toUpperCase(),
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: AppFonts.heading,
                 fontSize: 28,
@@ -129,6 +131,7 @@ class _ReferralCodePanel extends StatelessWidget {
             [
               Text(
                 'Your code is being generated…',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   color: _mutedTextColor(context),
@@ -145,6 +148,7 @@ class _ReferralCodePanel extends StatelessWidget {
             const SizedBox(height: 6),
             SelectableText(
               marketer.referralLink,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: _mutedTextColor(context),
                 fontSize: 12,
@@ -154,6 +158,7 @@ class _ReferralCodePanel extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.',
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: _mutedTextColor(context),
               fontSize: 13,
