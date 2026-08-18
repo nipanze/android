@@ -1898,4 +1898,51 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get referralCodeApplied => 'Referral code applied successfully!';
+
+  @override
+  String get privacyAndVisibility => 'Confidentialité et visibilité';
+
+  @override
+  String get blockedUsers => 'Utilisateurs bloqués';
+
+  @override
+  String get blockUser => 'Bloquer l\'utilisateur';
+
+  @override
+  String get blockUserConfirmTitle => 'Bloquer cet utilisateur ?';
+
+  @override
+  String get blockUserConfirmBody =>
+      'Ils ne pourront plus voir ni interagir avec vos futures demandes de prêt ou de devises.';
+
+  @override
+  String get block => 'Bloquer';
+
+  @override
+  String get unblock => 'Débloquer';
+
+  @override
+  String get unblockUserConfirmTitle => 'Débloquer cet utilisateur ?';
+
+  @override
+  String get unblockUserConfirmBody =>
+      'Les règles normales de visibilité du marché s\'appliqueront à nouveau.';
+
+  @override
+  String get userBlocked => 'Utilisateur bloqué.';
+
+  @override
+  String get userUnblocked => 'Utilisateur débloqué.';
+
+  @override
+  String get noBlockedUsers => 'Aucun utilisateur bloqué';
+
+  @override
+  String get noBlockedUsersSubtitle =>
+      'Les personnes que vous bloquez apparaîtront ici.';
+
+  @override
+  String blockedOnDate(String date) {
+    return 'Bloqué le $date';
+  }
 }

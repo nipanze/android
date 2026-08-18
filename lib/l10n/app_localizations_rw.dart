@@ -404,7 +404,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get signOutConfirm => 'Urizera gusohoka muri konti yawe?';
 
   @override
-  String get cancel => 'Hagarika';
+  String get cancel => 'Kurekera';
 
   @override
   String get profileUpdated => 'Umwirondoro wasuzumwe.';
@@ -1881,4 +1881,50 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get referralCodeApplied => 'Referral code applied successfully!';
+
+  @override
+  String get privacyAndVisibility => 'Ubusuguzi n\'Ukugaragara';
+
+  @override
+  String get blockedUsers => 'Abakoresha bafunzwe';
+
+  @override
+  String get blockUser => 'Funga umukoresha';
+
+  @override
+  String get blockUserConfirmTitle => 'Funga uyu mukoresha?';
+
+  @override
+  String get blockUserConfirmBody =>
+      'Ntazashobora kubona cyangwa gukorana n\'ibisabwa byawe by\'inguzanyo cyangwa amavunja y\'ahazaza.';
+
+  @override
+  String get block => 'Funga';
+
+  @override
+  String get unblock => 'Fungura';
+
+  @override
+  String get unblockUserConfirmTitle => 'Fungura uyu mukoresha?';
+
+  @override
+  String get unblockUserConfirmBody =>
+      'Amabwiriza asanzwe yo kugaragara ku isoko azongera gukora.';
+
+  @override
+  String get userBlocked => 'Umukoresha yafunzwe.';
+
+  @override
+  String get userUnblocked => 'Umukoresha yafunguwe.';
+
+  @override
+  String get noBlockedUsers => 'Nta bakoresha bafunzwe';
+
+  @override
+  String get noBlockedUsersSubtitle => 'Abantu ufunze bazagaragara hano.';
+
+  @override
+  String blockedOnDate(String date) {
+    return 'Yafunzwe $date';
+  }
 }

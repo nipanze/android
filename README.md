@@ -934,7 +934,9 @@ genhtml coverage/lcov.info -o coverage/html
 
 ## Security
 
+- **Blocked Users & Request Visibility** — database-level directional blocking (`user_blocks`) prevents blocked users from seeing future loan/forex listings, deep-linking, submitting offers, or receiving notifications, while strictly preserving historical contracts, reviews, and audit logs
 - **No fund custody** — Nipanze never holds, pools, converts, or moves user money or currency, in any market
+
 - **RLS on all tables** — Postgres enforces access control, not just the application layer
 - **Plan, country, and currency-eligibility checked server-side** — never trusted from the client
 - **Payment status is webhook-verified only**

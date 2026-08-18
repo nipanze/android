@@ -200,6 +200,17 @@ class _AccountView extends StatelessWidget {
                         ),
                       ),
 
+                      SectionHeader(AppLocalizations.of(context)?.privacyAndVisibility ??
+                          'Privacy & Visibility'),
+                      Card(
+                        child: _ActionRow(
+                          icon: Icons.visibility_off_outlined,
+                          label: AppLocalizations.of(context)?.blockedUsers ??
+                              'Blocked Users',
+                          onTap: () => context.push(AppRoutes.blockedUsers),
+                        ),
+                      ),
+
                       if (context.read<AuthBloc>().state is AuthAuthenticated &&
                           (context.read<AuthBloc>().state as AuthAuthenticated)
                               .user

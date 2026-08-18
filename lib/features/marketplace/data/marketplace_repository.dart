@@ -238,6 +238,19 @@ class MarketplaceRepository {
     }
   }
 
+  Future<String?> getListingOwnerId(String requestId) async {
+    try {
+      final res = await _client
+          .from(TableNames.loanRequests)
+          .select('borrower_id')
+          .eq('id', requestId)
+          .maybeSingle();
+      return res?['borrower_id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Fetch a lender's recent interest rate history for sparkline display.
   /// Returns rate values ordered chronologically (oldest first).
   /// Falls back to empty list on any error — callers use 2-point fallback.

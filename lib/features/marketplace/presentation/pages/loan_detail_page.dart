@@ -13,6 +13,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../account/data/privacy_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
@@ -41,6 +42,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   bool _newOfferFlash = false;
   bool _isOwnerValue = false;
   bool _isParticipant = false;
+  String? _ownerId;
 
   final _repo = getIt<MarketplaceRepository>();
   final _settingsRepo = getIt<SystemSettingsRepository>();
@@ -84,6 +86,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       bool isOwner = false;
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
+        _ownerId = await _repo.getListingOwnerId(widget.requestId);
         isOwner = await _repo.isListingOwner(
           requestId: widget.requestId,
           userId: authState.user.id,
@@ -168,6 +171,49 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     }
   }
 
+  Future<void> _blockOwner() async {
+    final ownerId = _ownerId;
+    if (ownerId == null) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.blockUserConfirmTitle),
+        content: Text(l10n.blockUserConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.block),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await getIt<PrivacyRepository>().blockUser(ownerId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.userBlocked)),
+      );
+      context.go(AppRoutes.marketplace);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userFacingErrorMessage(e)),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -212,6 +258,23 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         ),
         title: Text(AppLocalizations.of(context)?.listingDetailTitle ??
             'Listing detail'),
+        actions: [
+          if (user != null && !isOwner && _ownerId != null)
+            PopupMenuButton<String>(
+              tooltip: 'More',
+              onSelected: (value) {
+                if (value == 'block') _blockOwner();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text(
+                    AppLocalizations.of(context)?.blockUser ?? 'Block User',
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadOnce,

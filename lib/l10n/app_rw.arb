@@ -841,5 +841,26 @@
   "kycChooseSource": "Hitamo isoko",
   "kycSourceCamera": "Kamera",
   "kycSourceLibrary": "Ububiko bw'amafoto",
-  "kycDismiss": "Reka"
+  "kycDismiss": "Reka",
+  "privacyAndVisibility": "Ubusuguzi n'Ukugaragara",
+  "blockedUsers": "Abakoresha bafunzwe",
+  "blockUser": "Funga umukoresha",
+  "blockUserConfirmTitle": "Funga uyu mukoresha?",
+  "blockUserConfirmBody": "Ntazashobora kubona cyangwa gukorana n'ibisabwa byawe by'inguzanyo cyangwa amavunja y'ahazaza.",
+  "cancel": "Kurekera",
+  "block": "Funga",
+  "unblock": "Fungura",
+  "unblockUserConfirmTitle": "Fungura uyu mukoresha?",
+  "unblockUserConfirmBody": "Amabwiriza asanzwe yo kugaragara ku isoko azongera gukora.",
+  "userBlocked": "Umukoresha yafunzwe.",
+  "userUnblocked": "Umukoresha yafunguwe.",
+  "noBlockedUsers": "Nta bakoresha bafunzwe",
+  "noBlockedUsersSubtitle": "Abantu ufunze bazagaragara hano.",
+  "blockedOnDate": "Yafunzwe {date}",
+  "@blockedOnDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }
+

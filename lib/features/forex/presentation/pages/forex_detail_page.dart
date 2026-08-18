@@ -13,6 +13,7 @@ import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
 
 import '../../../../shared/widgets/trust_badges.dart';
+import '../../../account/data/privacy_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../marketplace/presentation/widgets/lender_required_sheet.dart';
@@ -31,6 +32,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
   late Future<_ForexDetailData> _future;
   bool _showOfferSheet = false;
   ForexListingModel? _cachedListing;
+  String? _ownerId;
 
   @override
   void initState() {
@@ -41,6 +43,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
   Future<_ForexDetailData> _load() async {
     final repo = getIt<ForexRepository>();
     final listing = await repo.getRequestDetail(widget.requestId);
+    _ownerId = await repo.getRequestOwnerId(widget.requestId);
     final offers = await repo.getOffers(widget.requestId);
     return _ForexDetailData(listing: listing, offers: offers);
   }
@@ -54,8 +57,6 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
     final l10n = AppLocalizations.of(context);
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
-    // ForexListingModel does not carry ownerId — offer button is always shown
-    // to non-anonymous users; access is gated by canLend check below.
 
     return Scaffold(
       appBar: AppBar(
@@ -69,6 +70,23 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
               : context.go(AppRoutes.marketplace),
         ),
         title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
+        actions: [
+          if (user != null && _ownerId != null && _ownerId != user.id)
+            PopupMenuButton<String>(
+              tooltip: 'More',
+              onSelected: (value) {
+                if (value == 'block') _blockOwner();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text(
+                    AppLocalizations.of(context)?.blockUser ?? 'Block User',
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
       body: FutureBuilder<_ForexDetailData>(
         future: _future,
@@ -84,7 +102,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
           final data = snapshot.data!;
           final listing = data.listing;
           _cachedListing = listing;
-          final isOwner = user != null && listing.requesterId == user.id;
+          final isOwner = user != null && _ownerId == user.id;
 
           return RefreshIndicator(
             onRefresh: () async => _refresh(),
@@ -218,6 +236,49 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             )
           : null,
     );
+  }
+
+  Future<void> _blockOwner() async {
+    final ownerId = _ownerId;
+    if (ownerId == null) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.blockUserConfirmTitle),
+        content: Text(l10n.blockUserConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.block),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await getIt<PrivacyRepository>().blockUser(ownerId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.userBlocked)),
+      );
+      context.go(AppRoutes.marketplace);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userFacingErrorMessage(e)),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
   }
 }
 

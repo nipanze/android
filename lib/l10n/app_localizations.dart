@@ -3457,6 +3457,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Referral code applied successfully!'**
   String get referralCodeApplied;
+
+  /// No description provided for @privacyAndVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Visibility'**
+  String get privacyAndVisibility;
+
+  /// No description provided for @blockedUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked Users'**
+  String get blockedUsers;
+
+  /// No description provided for @blockUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Block User'**
+  String get blockUser;
+
+  /// No description provided for @blockUserConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this user?'**
+  String get blockUserConfirmTitle;
+
+  /// No description provided for @blockUserConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will no longer be able to see or interact with your future Loan or Forex requests.'**
+  String get blockUserConfirmBody;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblock;
+
+  /// No description provided for @unblockUserConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock this user?'**
+  String get unblockUserConfirmTitle;
+
+  /// No description provided for @unblockUserConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal marketplace visibility rules will apply again.'**
+  String get unblockUserConfirmBody;
+
+  /// No description provided for @userBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'User blocked.'**
+  String get userBlocked;
+
+  /// No description provided for @userUnblocked.
+  ///
+  /// In en, this message translates to:
+  /// **'User unblocked.'**
+  String get userUnblocked;
+
+  /// No description provided for @noBlockedUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocked users'**
+  String get noBlockedUsers;
+
+  /// No description provided for @noBlockedUsersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People you block will appear here.'**
+  String get noBlockedUsersSubtitle;
+
+  /// No description provided for @blockedOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked {date}'**
+  String blockedOnDate(String date);
 }
 
 class _AppLocalizationsDelegate

@@ -1858,4 +1858,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get referralCodeApplied => 'Referral code applied successfully!';
+
+  @override
+  String get privacyAndVisibility => 'الخصوصية والرؤية';
+
+  @override
+  String get blockedUsers => 'المستخدمون المحظورون';
+
+  @override
+  String get blockUser => 'حظر المستخدم';
+
+  @override
+  String get blockUserConfirmTitle => 'حظر هذا المستخدم؟';
+
+  @override
+  String get blockUserConfirmBody =>
+      'لن يتمكنوا بعد الآن من رؤية طلبات القروض أو العملات المستقبلية الخاصة بك أو التفاعل معها.';
+
+  @override
+  String get block => 'حظر';
+
+  @override
+  String get unblock => 'إلغاء الحظر';
+
+  @override
+  String get unblockUserConfirmTitle => 'إلغاء حظر هذا المستخدم؟';
+
+  @override
+  String get unblockUserConfirmBody =>
+      'ستنطبق قواعد رؤية السوق العادية مرة أخرى.';
+
+  @override
+  String get userBlocked => 'تم حظر المستخدم.';
+
+  @override
+  String get userUnblocked => 'تم إلغاء حظر المستخدم.';
+
+  @override
+  String get noBlockedUsers => 'لا يوجد مستخدمون محظورون';
+
+  @override
+  String get noBlockedUsersSubtitle => 'الأشخاص الذين تحظرهم سيظهرون هنا.';
+
+  @override
+  String blockedOnDate(String date) {
+    return 'تم الحظر في $date';
+  }
 }

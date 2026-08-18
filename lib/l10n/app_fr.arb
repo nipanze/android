@@ -843,5 +843,26 @@
   "kycChooseSource": "Choisir la source",
   "kycSourceCamera": "Appareil photo",
   "kycSourceLibrary": "Bibliothèque de photos",
-  "kycDismiss": "Fermer"
+  "kycDismiss": "Fermer",
+  "privacyAndVisibility": "Confidentialité et visibilité",
+  "blockedUsers": "Utilisateurs bloqués",
+  "blockUser": "Bloquer l'utilisateur",
+  "blockUserConfirmTitle": "Bloquer cet utilisateur ?",
+  "blockUserConfirmBody": "Ils ne pourront plus voir ni interagir avec vos futures demandes de prêt ou de devises.",
+  "cancel": "Annuler",
+  "block": "Bloquer",
+  "unblock": "Débloquer",
+  "unblockUserConfirmTitle": "Débloquer cet utilisateur ?",
+  "unblockUserConfirmBody": "Les règles normales de visibilité du marché s'appliqueront à nouveau.",
+  "userBlocked": "Utilisateur bloqué.",
+  "userUnblocked": "Utilisateur débloqué.",
+  "noBlockedUsers": "Aucun utilisateur bloqué",
+  "noBlockedUsersSubtitle": "Les personnes que vous bloquez apparaîtront ici.",
+  "blockedOnDate": "Bloqué le {date}",
+  "@blockedOnDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }
+

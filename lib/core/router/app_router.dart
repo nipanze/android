@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/presentation/pages/account_page.dart';
+import '../../features/account/presentation/pages/blocked_users_page.dart';
 import '../../features/account/presentation/pages/profile_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
@@ -54,6 +55,7 @@ class AppRoutes {
   static const String kyc = '/kyc';
   static const String profile = '/profile';
   static const String account = '/account';
+  static const String blockedUsers = '/account/blocked-users';
   static const String admin = '/admin';
   static const String pricing = '/pricing';
   static const String referrals = '/referrals';
@@ -221,6 +223,11 @@ class AppRouter {
         name: 'profile',
         pageBuilder: (_, state) =>
             _slide(state, ProfilePage()), // ignore: prefer_const_constructors
+      ),
+      GoRoute(
+        path: AppRoutes.blockedUsers,
+        name: 'blockedUsers',
+        pageBuilder: (_, state) => _slide(state, const BlockedUsersPage()),
       ),
       GoRoute(
         path: AppRoutes.admin,

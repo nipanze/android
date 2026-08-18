@@ -16,6 +16,7 @@ class TableNames {
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';
   static const String notifications = 'notifications';
+  static const String userBlocks = 'user_blocks';
   static const String auditLogs = 'audit_logs';
   static const String systemSettings = 'system_settings';
   static const String refreshTokens = 'refresh_tokens';

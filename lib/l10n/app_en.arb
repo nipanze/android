@@ -838,6 +838,27 @@
   "noReferralsYet": "No referrals yet",
   "noReferralsSubtitle": "Shared referrals will appear here after signup.",
   "referralCodeCopied": "Referral code copied",
-  "referralCodeApplied": "Referral code applied successfully!"
+  "referralCodeApplied": "Referral code applied successfully!",
+  "privacyAndVisibility": "Privacy & Visibility",
+  "blockedUsers": "Blocked Users",
+  "blockUser": "Block User",
+  "blockUserConfirmTitle": "Block this user?",
+  "blockUserConfirmBody": "They will no longer be able to see or interact with your future Loan or Forex requests.",
+  "cancel": "Cancel",
+  "block": "Block",
+  "unblock": "Unblock",
+  "unblockUserConfirmTitle": "Unblock this user?",
+  "unblockUserConfirmBody": "Normal marketplace visibility rules will apply again.",
+  "userBlocked": "User blocked.",
+  "userUnblocked": "User unblocked.",
+  "noBlockedUsers": "No blocked users",
+  "noBlockedUsersSubtitle": "People you block will appear here.",
+  "blockedOnDate": "Blocked {date}",
+  "@blockedOnDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }
+
 

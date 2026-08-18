@@ -341,6 +341,31 @@ CREATE INDEX idx_profiles_country ON profiles (country);
 
 
 -- ============================================
+-- TABLE: user_blocks
+-- Directional privacy control shared by Loans and Forex.
+-- Blocking affects future marketplace discovery/interactions only; historical
+-- contracts, reviews, audit logs, and completed activity remain untouched.
+-- ============================================
+
+CREATE TABLE user_blocks (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    blocker_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    blocked_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_user_blocks_pair UNIQUE (blocker_id, blocked_id),
+    CONSTRAINT chk_user_blocks_not_self CHECK (blocker_id <> blocked_id)
+);
+
+COMMENT ON TABLE user_blocks IS
+'Directional account-level blocks. If A blocks B, B cannot discover, deep-link, or offer on
+ A''s future loan or forex requests. Existing contracts, reviews, and audit history are kept.';
+
+CREATE INDEX idx_user_blocks_blocker_id ON user_blocks (blocker_id);
+CREATE INDEX idx_user_blocks_blocked_id ON user_blocks (blocked_id);
+
+
+-- ============================================
 -- TABLE: system_settings  (key-value, admin-managed)
 -- v5.0: gains a nullable `country` column. NULL rows are global defaults;
 -- non-null rows override a specific market. Composite-unique on
@@ -1087,6 +1112,7 @@ WHERE lr.status = 'active'
   AND (
     auth.uid() IS NULL OR lr.borrower_id <> auth.uid()
   )
+  AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
   AND (
     auth.uid() IS NULL OR NOT EXISTS (
       SELECT 1 FROM public.loan_offers lo
@@ -1183,7 +1209,8 @@ JOIN  profiles p ON p.id = lr.borrower_id
 JOIN  countries c ON c.code = lr.country
 LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
 LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
-WHERE lr.status = 'active';
+WHERE lr.status = 'active'
+  AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at);
 
 COMMENT ON VIEW v_loan_listing_details IS
 'Single-listing detail view for active loan requests. Unlike v_loan_listings, it remains
@@ -1981,6 +2008,11 @@ BEGIN
             USING ERRCODE = 'P0012';
     END IF;
 
+    IF private.is_blocked_from_future_request(v_listing.borrower_id, NEW.lender_id, v_listing.listed_at) THEN
+        RAISE EXCEPTION 'NIPANZE_BLOCKED: You cannot make a bid on this listing.'
+            USING ERRCODE = 'P0017';
+    END IF;
+
     -- Minimum offer amount (global default; per-country override takes precedence if present)
     SELECT setting_value::BIGINT INTO v_min_offer
     FROM system_settings
@@ -2608,6 +2640,7 @@ ALTER TABLE system_settings      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE kyc_verifications    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_blocks          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loan_requests        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE loan_offers          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE watchlist            ENABLE ROW LEVEL SECURITY;
@@ -2664,6 +2697,28 @@ $$;
 GRANT USAGE  ON SCHEMA private TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
+CREATE OR REPLACE FUNCTION private.is_blocked_from_future_request(
+    p_owner_id UUID,
+    p_viewer_id UUID,
+    p_listed_at TIMESTAMP
+)
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
+SET search_path = public AS $$
+    SELECT p_owner_id IS NOT NULL
+       AND p_viewer_id IS NOT NULL
+       AND p_owner_id <> p_viewer_id
+       AND EXISTS (
+           SELECT 1
+           FROM user_blocks ub
+           WHERE ub.blocker_id = p_owner_id
+             AND ub.blocked_id = p_viewer_id
+             AND ub.created_at <= COALESCE(p_listed_at, CURRENT_TIMESTAMP)
+       );
+$$;
+
+GRANT EXECUTE ON FUNCTION private.is_blocked_from_future_request(UUID, UUID, TIMESTAMP)
+    TO authenticated, service_role;
+
 
 -- countries — public reference data, readable by everyone; admin-only writes
 CREATE POLICY "countries: public read"
@@ -2710,6 +2765,12 @@ CREATE POLICY "kyc: own or admin update"
     ON kyc_verifications FOR UPDATE TO authenticated
     USING (user_id = auth.uid() OR private.is_admin());
 
+-- user_blocks
+CREATE POLICY "user_blocks: blocker manages rows"
+    ON user_blocks FOR ALL TO authenticated
+    USING (blocker_id = auth.uid() OR private.is_admin())
+    WITH CHECK (blocker_id = auth.uid() OR private.is_admin());
+
 -- loan_requests
 -- NOTE: "global browse" policy (BUILD_PLAN.md) — this does NOT restrict
 -- reads to the caller's own country. The Flutter client applies the
@@ -2718,7 +2779,14 @@ CREATE POLICY "kyc: own or admin update"
 --   AND (country = (SELECT country FROM profiles WHERE id = auth.uid()) OR borrower_id = auth.uid() OR private.is_admin())
 CREATE POLICY "loan_requests: marketplace read"
     ON loan_requests FOR SELECT TO authenticated
-    USING (status = 'active' OR borrower_id = auth.uid() OR private.is_admin());
+    USING (
+        borrower_id = auth.uid()
+        OR private.is_admin()
+        OR (
+            status = 'active'
+            AND NOT private.is_blocked_from_future_request(borrower_id, auth.uid(), listed_at)
+        )
+    );
 CREATE POLICY "loan_requests: own insert"
     ON loan_requests FOR INSERT TO authenticated
     WITH CHECK (borrower_id = auth.uid());
@@ -2743,7 +2811,14 @@ CREATE POLICY "loan_offers: relevant parties read"
     );
 CREATE POLICY "loan_offers: lender insert"
     ON loan_offers FOR INSERT TO authenticated
-    WITH CHECK (lender_id = auth.uid());
+    WITH CHECK (
+        lender_id = auth.uid()
+        AND EXISTS (
+            SELECT 1 FROM loan_requests lr
+             WHERE lr.id = loan_offers.request_id
+               AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
+        )
+    );
 CREATE POLICY "loan_offers: lender withdraw or admin"
     ON loan_offers FOR UPDATE TO authenticated
     USING (
@@ -2809,7 +2884,17 @@ CREATE POLICY "contact_reveals: admin write"
 
 -- notifications
 CREATE POLICY "notifications: own rows"
-    ON notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
+    ON notifications FOR SELECT TO authenticated USING (
+        user_id = auth.uid()
+        AND (
+            request_id IS NULL
+            OR NOT EXISTS (
+                SELECT 1 FROM loan_requests lr
+                 WHERE lr.id = notifications.request_id
+                   AND private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
+            )
+        )
+    );
 CREATE POLICY "notifications: own mark read"
     ON notifications FOR UPDATE TO authenticated
     USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());

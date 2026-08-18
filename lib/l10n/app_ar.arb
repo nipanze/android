@@ -838,5 +838,26 @@
   "kycChooseSource": "اختر المصدر",
   "kycSourceCamera": "الكاميرا",
   "kycSourceLibrary": "مكتبة الصور",
-  "kycDismiss": "تجاهل"
+  "kycDismiss": "تجاهل",
+  "privacyAndVisibility": "الخصوصية والرؤية",
+  "blockedUsers": "المستخدمون المحظورون",
+  "blockUser": "حظر المستخدم",
+  "blockUserConfirmTitle": "حظر هذا المستخدم؟",
+  "blockUserConfirmBody": "لن يتمكنوا بعد الآن من رؤية طلبات القروض أو العملات المستقبلية الخاصة بك أو التفاعل معها.",
+  "cancel": "إلغاء",
+  "block": "حظر",
+  "unblock": "إلغاء الحظر",
+  "unblockUserConfirmTitle": "إلغاء حظر هذا المستخدم؟",
+  "unblockUserConfirmBody": "ستنطبق قواعد رؤية السوق العادية مرة أخرى.",
+  "userBlocked": "تم حظر المستخدم.",
+  "userUnblocked": "تم إلغاء حظر المستخدم.",
+  "noBlockedUsers": "لا يوجد مستخدمون محظورون",
+  "noBlockedUsersSubtitle": "الأشخاص الذين تحظرهم سيظهرون هنا.",
+  "blockedOnDate": "تم الحظر في {date}",
+  "@blockedOnDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }
+

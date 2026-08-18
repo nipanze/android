@@ -865,6 +865,27 @@
   "noReferralsYet": "Hakuna rufaa bado",
   "noReferralsSubtitle": "Rufaa zilizoshirikishwa zitaonekana hapa baada ya kujisajili.",
   "referralCodeCopied": "Kodi ya rufaa imenakiliwa",
-  "referralCodeApplied": "Kodi ya rufaa imewekwa kikamilifu!"
+  "referralCodeApplied": "Kodi ya rufaa imewekwa kikamilifu!",
+  "privacyAndVisibility": "Faragha na Uonekano",
+  "blockedUsers": "Watumiaji Waliowekewa Vikwazo",
+  "blockUser": "Mwekee Vikwazo Mtumiaji",
+  "blockUserConfirmTitle": "Unataka kumwekea vikwazo mtumiaji huyu?",
+  "blockUserConfirmBody": "Hawatakuwa na uwezo wa kuona au kushirikiana na maombi yako ya baadaye ya Mkopo au Sarafu.",
+  "cancel": "Ghairi",
+  "block": "Weka Vikwazo",
+  "unblock": "Ondoa Vikwazo",
+  "unblockUserConfirmTitle": "Ondoa vikwazo kwa mtumiaji huyu?",
+  "unblockUserConfirmBody": "Sheria za kawaida za kuonekana sokoni zitaanza kutumika tena.",
+  "userBlocked": "Mtumiaji amewekewa vikwazo.",
+  "userUnblocked": "Vikwazo vya mtumiaji vimeondolewa.",
+  "noBlockedUsers": "Hakuna watumiaji waliowekewa vikwazo",
+  "noBlockedUsersSubtitle": "Watu unaowasitisha wataonekana hapa.",
+  "blockedOnDate": "Aliwekewa vikwazo {date}",
+  "@blockedOnDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  }
 }
+
 

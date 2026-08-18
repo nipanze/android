@@ -111,6 +111,19 @@ class ForexRepository {
     }
   }
 
+  Future<String?> getRequestOwnerId(String requestId) async {
+    try {
+      final data = await _client
+          .from(TableNames.forexRequests)
+          .select('requester_id')
+          .eq('id', requestId)
+          .maybeSingle();
+      return data?['requester_id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<ForexOfferModel>> getOffers(String requestId) async {
     try {
       final data = await _client.rpc(RpcNames.getPublicForexOffers, params: {

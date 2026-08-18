@@ -1872,4 +1872,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get referralCodeApplied => 'Referral code applied successfully!';
+
+  @override
+  String get privacyAndVisibility => 'Privacy & Visibility';
+
+  @override
+  String get blockedUsers => 'Blocked Users';
+
+  @override
+  String get blockUser => 'Block User';
+
+  @override
+  String get blockUserConfirmTitle => 'Block this user?';
+
+  @override
+  String get blockUserConfirmBody =>
+      'They will no longer be able to see or interact with your future Loan or Forex requests.';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get unblock => 'Unblock';
+
+  @override
+  String get unblockUserConfirmTitle => 'Unblock this user?';
+
+  @override
+  String get unblockUserConfirmBody =>
+      'Normal marketplace visibility rules will apply again.';
+
+  @override
+  String get userBlocked => 'User blocked.';
+
+  @override
+  String get userUnblocked => 'User unblocked.';
+
+  @override
+  String get noBlockedUsers => 'No blocked users';
+
+  @override
+  String get noBlockedUsersSubtitle => 'People you block will appear here.';
+
+  @override
+  String blockedOnDate(String date) {
+    return 'Blocked $date';
+  }
 }

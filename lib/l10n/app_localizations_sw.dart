@@ -1883,4 +1883,50 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get referralCodeApplied => 'Kodi ya rufaa imewekwa kikamilifu!';
+
+  @override
+  String get privacyAndVisibility => 'Faragha na Uonekano';
+
+  @override
+  String get blockedUsers => 'Watumiaji Waliowekewa Vikwazo';
+
+  @override
+  String get blockUser => 'Mwekee Vikwazo Mtumiaji';
+
+  @override
+  String get blockUserConfirmTitle => 'Unataka kumwekea vikwazo mtumiaji huyu?';
+
+  @override
+  String get blockUserConfirmBody =>
+      'Hawatakuwa na uwezo wa kuona au kushirikiana na maombi yako ya baadaye ya Mkopo au Sarafu.';
+
+  @override
+  String get block => 'Weka Vikwazo';
+
+  @override
+  String get unblock => 'Ondoa Vikwazo';
+
+  @override
+  String get unblockUserConfirmTitle => 'Ondoa vikwazo kwa mtumiaji huyu?';
+
+  @override
+  String get unblockUserConfirmBody =>
+      'Sheria za kawaida za kuonekana sokoni zitaanza kutumika tena.';
+
+  @override
+  String get userBlocked => 'Mtumiaji amewekewa vikwazo.';
+
+  @override
+  String get userUnblocked => 'Vikwazo vya mtumiaji vimeondolewa.';
+
+  @override
+  String get noBlockedUsers => 'Hakuna watumiaji waliowekewa vikwazo';
+
+  @override
+  String get noBlockedUsersSubtitle => 'Watu unaowasitisha wataonekana hapa.';
+
+  @override
+  String blockedOnDate(String date) {
+    return 'Aliwekewa vikwazo $date';
+  }
 }
