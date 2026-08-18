@@ -233,7 +233,7 @@ BEGIN
     END LOOP;
 
     RETURN v_code;
-END;
+END; 
 $$;
 
 -- Ensures the current user has a referral marketer record (creates one if missing)

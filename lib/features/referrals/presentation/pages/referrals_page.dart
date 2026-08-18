@@ -117,7 +117,7 @@ class _ReferralCodePanel extends StatelessWidget {
           const SizedBox(height: 10),
           if (hasCode)
             SelectableText(
-              marketer.referralCode,
+              marketer.referralCode.toUpperCase(),
               style: const TextStyle(
                 fontFamily: AppFonts.heading,
                 fontSize: 28,
