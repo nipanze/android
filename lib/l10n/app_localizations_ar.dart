@@ -1814,7 +1814,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'If a friend invited you to Nipanze, enter their referral code below.';
 
   @override
-  String get referralCodeHint => 'e.g. NIPANZE-JOHN1234';
+  String get referralCodeHint => 'e.g. JOHN1234';
 
   @override
   String get referralCodeLabel => 'Referral code';

@@ -1839,7 +1839,7 @@ class AppLocalizationsSw extends AppLocalizations {
       'Ikiwa rafiki alikualika kwenye Nipanze, weka kodi yao ya rufaa hapa chini.';
 
   @override
-  String get referralCodeHint => 'mfano: NIPANZE-JOHN1234';
+  String get referralCodeHint => 'mfano: JOHN1234';
 
   @override
   String get referralCodeLabel => 'Kodi ya rufaa';

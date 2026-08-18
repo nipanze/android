@@ -3371,7 +3371,7 @@ abstract class AppLocalizations {
   /// No description provided for @referralCodeHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g. NIPANZE-JOHN1234'**
+  /// **'e.g. JOHN1234'**
   String get referralCodeHint;
 
   /// No description provided for @referralCodeLabel.
