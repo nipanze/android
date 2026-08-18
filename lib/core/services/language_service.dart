@@ -36,14 +36,16 @@ class LanguageService {
     AppLanguage(code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇪🇬', countryCode: 'EG'),
   ];
 
-  late final ValueNotifier<Locale?> notifier;
+  final ValueNotifier<Locale?> notifier = ValueNotifier<Locale?>(null);
 
   /// Must be called once during app initialisation (before runApp).
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedCode = prefs.getString(_key);
-    final initial = (savedCode != null && savedCode.isNotEmpty) ? Locale(savedCode) : null;
-    notifier = ValueNotifier(initial);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCode = prefs.getString(_key);
+      final initial = (savedCode != null && savedCode.isNotEmpty) ? Locale(savedCode) : null;
+      notifier.value = initial;
+    } catch (_) {}
   }
 
   Locale? get locale => notifier.value;

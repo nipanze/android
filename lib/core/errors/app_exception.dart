@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' as sb show AuthException;
 
 /// Typed exception hierarchy for Nipanze.
 /// All exceptions carry a user-friendly [message] — internal codes are never shown to users.
@@ -86,7 +87,7 @@ AppException parseSupabaseError(Object error) {
   } catch (_) {
     // ignore and fall through to other handlers
   }
-  if (error is AuthException) {
+  if (error is sb.AuthException) {
     return _parseAuthError(error.message);
   }
   if (error is PostgrestException) {
