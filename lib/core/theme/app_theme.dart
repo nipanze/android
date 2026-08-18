@@ -78,6 +78,11 @@ class AppTheme {
       // Inter as the default for all body/UI text
       fontFamily: AppFonts.body,
 
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (context) =>
+            const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+      ),
+
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? AppColors.bgDark : AppColors.bg2Light,
         foregroundColor: isDark ? AppColors.textDark : AppColors.textLight,
