@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipanze/features/referrals/domain/models/referral_dashboard.dart';
+import 'package:nipanze/features/referrals/presentation/cubit/referral_cubit.dart';
 
 void main() {
   group('ReferralDashboard', () {
@@ -83,6 +84,23 @@ void main() {
       expect(item.rewardStatus, 'none');
       expect(item.payoutStatus, 'none');
       expect(item.rewardCurrency, 'UGX');
+    });
+
+    test('share message falls back to app link when referral code is empty', () {
+      const marketer = ReferralMarketer(
+        id: 'm-1',
+        userId: 'u-1',
+        referralCode: '',
+        referralLink: '',
+        status: 'active',
+        marketingEnabled: true,
+      );
+
+      final shareText = ReferralCubit.buildShareMessage(marketer);
+
+      expect(shareText, contains('Join Nipanze'));
+      expect(shareText, contains('https://nipanze.app'));
+      expect(shareText, isNot(contains('use my referral code:')));
     });
   });
 }

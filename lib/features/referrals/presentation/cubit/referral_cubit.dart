@@ -16,6 +16,19 @@ class ReferralCubit extends Cubit<ReferralState> {
 
   final ReferralRepository _repository;
 
+  static String buildShareMessage(ReferralMarketer marketer) {
+    final code = marketer.referralCode.trim();
+    final link = marketer.referralLink.trim();
+    final fallbackLink =
+        link.isNotEmpty ? link : (code.isNotEmpty ? 'https://nipanze.app/r/$code' : 'https://nipanze.app');
+
+    if (code.isEmpty) {
+      return 'Join Nipanze and start earning rewards.\n$fallbackLink';
+    }
+
+    return 'Join Nipanze and use my referral code: $code\n$fallbackLink';
+  }
+
   Future<void> load() async {
     emit(const ReferralLoading());
     try {
@@ -41,11 +54,12 @@ class ReferralCubit extends Cubit<ReferralState> {
     final current = state;
     if (current is! ReferralLoaded) return;
     final marketer = current.dashboard.marketer;
-    if (marketer.referralCode.isEmpty) return;
+    final shareText = buildShareMessage(marketer);
+    if (shareText.isEmpty) return;
+
     await SharePlus.instance.share(
       ShareParams(
-        text:
-            'Join Nipanze and use my referral code: ${marketer.referralCode}\n${marketer.referralLink}',
+        text: shareText,
         subject: 'Join Nipanze',
       ),
     );
