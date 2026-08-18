@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.referral_campaigns (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     description TEXT,
     country TEXT REFERENCES public.countries(code),
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.referral_campaigns (
 );
 
 CREATE TABLE IF NOT EXISTS public.referral_marketers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     profile_id UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
     referral_code TEXT NOT NULL UNIQUE,
     status TEXT NOT NULL DEFAULT 'active',
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.referral_marketers (
 );
 
 CREATE TABLE IF NOT EXISTS public.referral_rewards (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     marketer_id UUID NOT NULL REFERENCES public.referral_marketers(id) ON DELETE CASCADE,
     referral_id UUID REFERENCES public.referrals(id) ON DELETE SET NULL,
     campaign_id UUID REFERENCES public.referral_campaigns(id) ON DELETE SET NULL,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS public.referral_rewards (
 );
 
 CREATE TABLE IF NOT EXISTS public.referral_payouts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     marketer_id UUID NOT NULL REFERENCES public.referral_marketers(id) ON DELETE CASCADE,
     amount BIGINT NOT NULL DEFAULT 0,
     currency TEXT NOT NULL DEFAULT 'UGX',
@@ -224,11 +224,11 @@ BEGIN
     v_seed := LEFT(COALESCE(NULLIF(v_seed, ''), 'USER'), 5);
 
     LOOP
-        v_code := 'NIPANZE-' || v_seed || SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', '') FROM 1 FOR 4);
+        v_code := v_seed || SUBSTRING(REPLACE(gen_random_uuid()::TEXT, '-', '') FROM 1 FOR 4);
         EXIT WHEN NOT EXISTS (
-            SELECT 1 FROM public.referral_marketers WHERE referral_code = v_code
+            SELECT 1 FROM public.referral_marketers WHERE UPPER(referral_code) = UPPER(v_code)
         ) AND NOT EXISTS (
-            SELECT 1 FROM public.profiles WHERE referral_code = v_code
+            SELECT 1 FROM public.profiles WHERE UPPER(referral_code) = UPPER(v_code)
         );
     END LOOP;
 
@@ -424,7 +424,7 @@ BEGIN
         v_referrer_id,
         COALESCE(v_referred_email, v_user.phone, v_user.id::TEXT),
         v_user.id,
-        'ATTR-' || SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', '') FROM 1 FOR 12),
+        'ATTR-' || SUBSTRING(REPLACE(gen_random_uuid()::TEXT, '-', '') FROM 1 FOR 12),
         v_code,
         v_campaign_id,
         v_source,

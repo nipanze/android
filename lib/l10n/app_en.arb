@@ -823,7 +823,7 @@
   "copyCode": "Copy Code",
   "enterReferralCode": "Enter referral code",
   "referralCodeSubtitle": "If a friend invited you to Nipanze, enter their referral code below.",
-  "referralCodeHint": "e.g. NIPANZE-JOHN1234",
+  "referralCodeHint": "e.g. JOHN1234",
   "referralCodeLabel": "Referral code",
   "applyCode": "Apply Code",
   "totalReferrals": "Total referrals",

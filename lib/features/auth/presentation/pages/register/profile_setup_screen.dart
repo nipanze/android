@@ -231,7 +231,7 @@ class ProfileSetupScreen extends StatelessWidget {
                         label: 'Referral code (optional)',
                         controller: referralCodeController,
                         icon: Icons.campaign_outlined,
-                        hintText: 'NIPANZE-GAVA123',
+                        hintText: 'GAVA1234',
                         isDark: isDark,
                         cardBgColor: cardBgColor,
                         cardBorderColor: cardBorderColor,

@@ -4249,11 +4249,11 @@ BEGIN
     v_seed := LEFT(COALESCE(NULLIF(v_seed, ''), 'USER'), 5);
 
     LOOP
-        v_code := 'NIPANZE-' || v_seed || SUBSTRING(REPLACE(uuid_generate_v4()::TEXT, '-', '') FROM 1 FOR 4);
+        v_code := v_seed || SUBSTRING(REPLACE(gen_random_uuid()::TEXT, '-', '') FROM 1 FOR 4);
         EXIT WHEN NOT EXISTS (
-            SELECT 1 FROM public.referral_marketers WHERE referral_code = v_code
+            SELECT 1 FROM public.referral_marketers WHERE UPPER(referral_code) = UPPER(v_code)
         ) AND NOT EXISTS (
-            SELECT 1 FROM public.profiles WHERE referral_code = v_code
+            SELECT 1 FROM public.profiles WHERE UPPER(referral_code) = UPPER(v_code)
         );
     END LOOP;
 

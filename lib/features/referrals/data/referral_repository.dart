@@ -34,7 +34,10 @@ class ReferralRepository {
           : EastAfricaCountries.findByPhone(phone);
       defaultCurrency = country.currency;
       referralCode = profile?['referral_code'] as String? ?? '';
-    } catch (_) {}
+    } catch (e) {
+      // ignore: avoid_print
+      print('[Referral] profile fetch error: $e');
+    }
 
     try {
       final data = await _client.rpc('get_my_referral_dashboard');
@@ -50,8 +53,9 @@ class ReferralRepository {
           return dashboard;
         }
       }
-    } catch (_) {
-      // Fallback below
+    } catch (e) {
+      // ignore: avoid_print
+      print('[Referral] get_my_referral_dashboard error: $e');
     }
 
     if (referralCode.isEmpty) {
@@ -59,7 +63,10 @@ class ReferralRepository {
         final ensured = await _client.rpc('ensure_my_referral_marketer');
         final ensuredMap = ensured is Map ? Map<String, dynamic>.from(ensured) : null;
         referralCode = ensuredMap?['referral_code']?.toString() ?? referralCode;
-      } catch (_) {}
+      } catch (e) {
+        // ignore: avoid_print
+        print('[Referral] ensure_my_referral_marketer error: $e');
+      }
     }
 
     if (referralCode.isNotEmpty) {
@@ -75,7 +82,10 @@ class ReferralRepository {
             return dashboard;
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        // ignore: avoid_print
+        print('[Referral] second dashboard fetch error: $e');
+      }
     }
 
     return _fallbackDashboard(
