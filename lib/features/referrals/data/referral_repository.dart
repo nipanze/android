@@ -41,13 +41,41 @@ class ReferralRepository {
       if (data != null && data is Map) {
         final dashboard =
             ReferralDashboard.fromMap(Map<String, dynamic>.from(data));
-        if (dashboard.summary.currency != defaultCurrency) {
-          return dashboard.copyWithCurrency(defaultCurrency);
+        final code = dashboard.marketer.referralCode.trim();
+
+        if (code.isNotEmpty) {
+          if (dashboard.summary.currency != defaultCurrency) {
+            return dashboard.copyWithCurrency(defaultCurrency);
+          }
+          return dashboard;
         }
-        return dashboard;
       }
     } catch (_) {
       // Fallback below
+    }
+
+    if (referralCode.isEmpty) {
+      try {
+        final ensured = await _client.rpc('ensure_my_referral_marketer');
+        final ensuredMap = ensured is Map ? Map<String, dynamic>.from(ensured) : null;
+        referralCode = ensuredMap?['referral_code']?.toString() ?? referralCode;
+      } catch (_) {}
+    }
+
+    if (referralCode.isNotEmpty) {
+      try {
+        final refreshed = await _client.rpc('get_my_referral_dashboard');
+        if (refreshed != null && refreshed is Map) {
+          final dashboard =
+              ReferralDashboard.fromMap(Map<String, dynamic>.from(refreshed));
+          if (dashboard.marketer.referralCode.trim().isNotEmpty) {
+            if (dashboard.summary.currency != defaultCurrency) {
+              return dashboard.copyWithCurrency(defaultCurrency);
+            }
+            return dashboard;
+          }
+        }
+      } catch (_) {}
     }
 
     return _fallbackDashboard(

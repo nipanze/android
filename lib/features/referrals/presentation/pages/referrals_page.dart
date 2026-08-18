@@ -96,6 +96,7 @@ class _ReferralCodePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final marketer = dashboard.marketer;
+    final hasCode = marketer.referralCode.isNotEmpty;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -114,17 +115,33 @@ class _ReferralCodePanel extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
-          SelectableText(
-            marketer.referralCode.isNotEmpty
-                ? marketer.referralCode
-                : 'Generating...',
-            style: const TextStyle(
-              fontFamily: AppFonts.heading,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          if (marketer.referralLink.isNotEmpty) ...[
+          if (hasCode)
+            SelectableText(
+              marketer.referralCode,
+              style: const TextStyle(
+                fontFamily: AppFonts.heading,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 4,
+              ),
+            )
+          else ...
+            [
+              Text(
+                'Your code is being generated…',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: _mutedTextColor(context),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () => context.read<ReferralCubit>().load(),
+                icon: const Icon(Icons.refresh_rounded, size: 16),
+                label: const Text('Try again'),
+              ),
+            ],
+          if (hasCode && marketer.referralLink.isNotEmpty) ...[
             const SizedBox(height: 6),
             SelectableText(
               marketer.referralLink,
@@ -148,8 +165,9 @@ class _ReferralCodePanel extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () =>
-                      context.read<ReferralCubit>().shareReferral(),
+                  onPressed: hasCode
+                      ? () => context.read<ReferralCubit>().shareReferral()
+                      : null,
                   icon: const Icon(Icons.ios_share_rounded, size: 18),
                   label: const Text('Share Link'),
                 ),
@@ -157,7 +175,9 @@ class _ReferralCodePanel extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => context.read<ReferralCubit>().copyCode(),
+                  onPressed: hasCode
+                      ? () => context.read<ReferralCubit>().copyCode()
+                      : null,
                   icon: const Icon(Icons.copy_rounded, size: 18),
                   label: const Text('Copy Code'),
                 ),
