@@ -15,11 +15,30 @@ class PrivacyRepository {
 
   Future<List<BlockedUser>> getBlockedUsers() async {
     try {
-      final data = await _client
-          .from(TableNames.userBlocks)
-          .select('id, blocked_id, created_at, profiles!user_blocks_blocked_id_fkey(full_name, avatar_url)')
-          .eq('blocker_id', _uid)
-          .order('created_at', ascending: false);
+      dynamic data;
+      try {
+        data = await _client
+            .from(TableNames.userBlocks)
+            .select(
+                'id, blocked_id, created_at, profiles!blocked_id(full_name, avatar_url)')
+            .eq('blocker_id', _uid)
+            .order('created_at', ascending: false);
+      } catch (_) {
+        try {
+          data = await _client
+              .from(TableNames.userBlocks)
+              .select(
+                  'id, blocked_id, created_at, profiles!user_blocks_blocked_id_fkey(full_name, avatar_url)')
+              .eq('blocker_id', _uid)
+              .order('created_at', ascending: false);
+        } catch (_) {
+          data = await _client
+              .from(TableNames.userBlocks)
+              .select('id, blocked_id, created_at')
+              .eq('blocker_id', _uid)
+              .order('created_at', ascending: false);
+        }
+      }
 
       return (data as List)
           .map((row) => BlockedUser.fromMap(Map<String, dynamic>.from(row)))

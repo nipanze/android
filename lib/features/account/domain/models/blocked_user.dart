@@ -35,9 +35,16 @@ class BlockedUser extends Equatable {
   }
 
   factory BlockedUser.fromMap(Map<String, dynamic> map) {
-    final profile = map['profiles'] is Map
-        ? Map<String, dynamic>.from(map['profiles'] as Map)
-        : const <String, dynamic>{};
+    final rawProfile = map['profiles'];
+    final Map<String, dynamic> profile;
+    if (rawProfile is List && rawProfile.isNotEmpty && rawProfile.first is Map) {
+      profile = Map<String, dynamic>.from(rawProfile.first as Map);
+    } else if (rawProfile is Map) {
+      profile = Map<String, dynamic>.from(rawProfile);
+    } else {
+      profile = const <String, dynamic>{};
+    }
+
     return BlockedUser(
       id: map['id'] as String,
       blockedId: map['blocked_id'] as String,
