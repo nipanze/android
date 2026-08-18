@@ -229,7 +229,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get undo => 'تراجع';
 
   @override
-  String get tryAgain => 'حاول مجدداً';
+  String get tryAgain => 'إعادة المحاولة';
 
   @override
   String get myActivityTitle => 'نشاطي';
@@ -1904,4 +1904,70 @@ class AppLocalizationsAr extends AppLocalizations {
   String blockedOnDate(String date) {
     return 'تم الحظر في $date';
   }
+
+  @override
+  String get invitePeopleAndTrackRewards => 'دعوة الأشخاص ومتابعة المكافآت';
+
+  @override
+  String get codeGenerating => 'جاري إنشاء الرمز الخاص بك…';
+
+  @override
+  String get inviteEarnDescription =>
+      'ادعُ الأشخاص إلى Nipanze واكسب المكافآت عند إكمالهم الإجراءات المطلوبة.';
+
+  @override
+  String get stepShare => 'مشاركة';
+
+  @override
+  String get stepSignUp => 'تسجيل';
+
+  @override
+  String get stepVerify => 'تحقق';
+
+  @override
+  String get stepQualify => 'تأهيل';
+
+  @override
+  String get stepEarn => 'كسب';
+
+  @override
+  String get registeredReferrals => 'الإحالات المسجلة';
+
+  @override
+  String get verifiedReferrals => 'الإحالات المؤكدة';
+
+  @override
+  String get qualifiedReferrals => 'الإحالات المؤهلة';
+
+  @override
+  String get notYetAvailable => 'غير متاح بعد';
+
+  @override
+  String get readyToClaim => 'جاهز للمطالبة';
+
+  @override
+  String get lifetimeRewards => 'مكافآت مدى الحياة';
+
+  @override
+  String get alreadyPaid => 'مدفوع بالفعل';
+
+  @override
+  String get qualifiedTooltip =>
+      'الإحالة المؤهلة هي شخص قمت بدعوته وأكمل الإجراءات المطلوبة للحصول على المكافأة.';
+
+  @override
+  String get subscriptionCurrency => 'عملة الاشتراك';
+
+  @override
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode) {
+    return 'تم تعيين عملة الاشتراك الخاصة بك إلى $currency ($country) بناءً على رمز منطقتك ($dialCode).';
+  }
+
+  @override
+  String get subscriptionCurrencyLocked =>
+      'عملة الاشتراك مقفلة حسب منطقة رقم هاتفك لضمان توافق عمليات الدفع ولا يمكن تغييرها يدويًا.';
+
+  @override
+  String get understood => 'مفهوم';
 }

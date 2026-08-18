@@ -885,7 +885,35 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "invitePeopleAndTrackRewards": "Alika watu na ufuatilie zawadi",
+  "codeGenerating": "Kodi yako inatengenezwa…",
+  "tryAgain": "Jaribu tena",
+  "inviteEarnDescription": "Alika watu kwenye Nipanze na upate zawadi wanapokamilisha vitendo vinavyohitajika.",
+  "stepShare": "Shiriki",
+  "stepSignUp": "Jiunge",
+  "stepVerify": "Thibitisha",
+  "stepQualify": "Fuzu",
+  "stepEarn": "Pata",
+  "registeredReferrals": "Rufaa zilizosajiliwa",
+  "verifiedReferrals": "Rufaa zilizothibitishwa",
+  "qualifiedReferrals": "Rufaa zilizofuzu",
+  "notYetAvailable": "Bado haijapatikana",
+  "readyToClaim": "Tayari kuchukua",
+  "lifetimeRewards": "Zawadi za maisha",
+  "alreadyPaid": "Tayari imelipwa",
+  "qualifiedTooltip": "Rufaa iliyofuzu ni mtu uliyemwalika aliyekamilisha vitendo vinavyohitajika kupata zawadi.",
+  "subscriptionCurrency": "Sarafu ya Usajili",
+  "subscriptionCurrencyDesc": "Sarafu yako ya usajili imewekwa kuwa {currency} ({country}) kulingana na eneo la nambari yako ya simu ({dialCode}).",
+  "@subscriptionCurrencyDesc": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "country": { "type": "String" },
+      "dialCode": { "type": "String" }
+    }
+  },
+  "subscriptionCurrencyLocked": "Sarafu ya usajili imefungwa kwenye eneo la nambari yako ya simu kwa utangamano wa malipo na haiwezi kubadilishwa.",
+  "understood": "Elewa"
 }
 
 

@@ -3541,6 +3541,127 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Blocked {date}'**
   String blockedOnDate(String date);
+
+  /// No description provided for @invitePeopleAndTrackRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite people and track rewards'**
+  String get invitePeopleAndTrackRewards;
+
+  /// No description provided for @codeGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Your code is being generated…'**
+  String get codeGenerating;
+
+  /// No description provided for @inviteEarnDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.'**
+  String get inviteEarnDescription;
+
+  /// No description provided for @stepShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get stepShare;
+
+  /// No description provided for @stepSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get stepSignUp;
+
+  /// No description provided for @stepVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get stepVerify;
+
+  /// No description provided for @stepQualify.
+  ///
+  /// In en, this message translates to:
+  /// **'Qualify'**
+  String get stepQualify;
+
+  /// No description provided for @stepEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn'**
+  String get stepEarn;
+
+  /// No description provided for @registeredReferrals.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered referrals'**
+  String get registeredReferrals;
+
+  /// No description provided for @verifiedReferrals.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified referrals'**
+  String get verifiedReferrals;
+
+  /// No description provided for @qualifiedReferrals.
+  ///
+  /// In en, this message translates to:
+  /// **'Qualified referrals'**
+  String get qualifiedReferrals;
+
+  /// No description provided for @notYetAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet available'**
+  String get notYetAvailable;
+
+  /// No description provided for @readyToClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to claim'**
+  String get readyToClaim;
+
+  /// No description provided for @lifetimeRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime rewards'**
+  String get lifetimeRewards;
+
+  /// No description provided for @alreadyPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Already paid'**
+  String get alreadyPaid;
+
+  /// No description provided for @qualifiedTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'A qualified referral is someone you invited who completed the actions required for a referral reward.'**
+  String get qualifiedTooltip;
+
+  /// No description provided for @subscriptionCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription Currency'**
+  String get subscriptionCurrency;
+
+  /// No description provided for @subscriptionCurrencyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription currency is set to {currency} ({country}) based on your registered phone number region ({dialCode}).'**
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode);
+
+  /// No description provided for @subscriptionCurrencyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.'**
+  String get subscriptionCurrencyLocked;
+
+  /// No description provided for @understood.
+  ///
+  /// In en, this message translates to:
+  /// **'Understood'**
+  String get understood;
 }
 
 class _AppLocalizationsDelegate

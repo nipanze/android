@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../domain/models/referral_dashboard.dart';
 import '../cubit/referral_cubit.dart';
@@ -25,14 +26,17 @@ class _ReferralsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Refer & Earn')),
+      appBar: AppBar(title: Text(l10n?.referAndEarn ?? 'Refer & Earn')),
       body: BlocConsumer<ReferralCubit, ReferralState>(
         listener: (context, state) {
           if (state is! ReferralLoaded) return;
           final message = switch (state.lastAction) {
-            ReferralAction.codeCopied => 'Referral code copied',
-            ReferralAction.codeApplied => 'Referral code applied successfully!',
+            ReferralAction.codeCopied =>
+              l10n?.referralCodeCopied ?? 'Referral code copied',
+            ReferralAction.codeApplied =>
+              l10n?.referralCodeApplied ?? 'Referral code applied successfully!',
             ReferralAction.none => null,
           };
           if (message != null) {
@@ -64,7 +68,7 @@ class _ReferralsView extends StatelessWidget {
                 _OverviewGrid(summary: dashboard.summary),
                 const SizedBox(height: 20),
                 Text(
-                  'Referral history',
+                  l10n?.referralHistory ?? 'Referral history',
                   style: Theme.of(context)
                       .textTheme
                       .titleMedium
@@ -72,10 +76,11 @@ class _ReferralsView extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 if (dashboard.history.isEmpty)
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.group_add_outlined,
-                    title: 'No referrals yet',
-                    subtitle: 'Shared referrals will appear here after signup.',
+                    title: l10n?.noReferralsYet ?? 'No referrals yet',
+                    subtitle: l10n?.noReferralsSubtitle ??
+                        'Shared referrals will appear here after signup.',
                   )
                 else
                   ...dashboard.history.map(_ReferralHistoryTile.new),
@@ -95,6 +100,7 @@ class _ReferralCodePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final marketer = dashboard.marketer;
     final hasCode = marketer.referralCode.isNotEmpty;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -110,10 +116,10 @@ class _ReferralCodePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            'Your referral code',
+          Text(
+            l10n?.yourReferralCode ?? 'Your referral code',
             textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           if (hasCode)
@@ -130,7 +136,7 @@ class _ReferralCodePanel extends StatelessWidget {
           else ...
             [
               Text(
-                'Your code is being generated…',
+                l10n?.codeGenerating ?? 'Your code is being generated…',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -141,7 +147,7 @@ class _ReferralCodePanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => context.read<ReferralCubit>().load(),
                 icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: const Text('Try again'),
+                label: Text(l10n?.tryAgain ?? 'Try again'),
               ),
             ],
           if (hasCode && marketer.referralLink.isNotEmpty) ...[
@@ -157,7 +163,8 @@ class _ReferralCodePanel extends StatelessWidget {
           ],
           const SizedBox(height: 12),
           Text(
-            'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.',
+            l10n?.inviteEarnDescription ??
+                'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: _mutedTextColor(context),
@@ -174,7 +181,7 @@ class _ReferralCodePanel extends StatelessWidget {
                       ? () => context.read<ReferralCubit>().shareReferral()
                       : null,
                   icon: const Icon(Icons.ios_share_rounded, size: 18),
-                  label: const Text('Share Link'),
+                  label: Text(l10n?.shareLink ?? 'Share Link'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -184,7 +191,7 @@ class _ReferralCodePanel extends StatelessWidget {
                       ? () => context.read<ReferralCubit>().copyCode()
                       : null,
                   icon: const Icon(Icons.copy_rounded, size: 18),
-                  label: const Text('Copy Code'),
+                  label: Text(l10n?.copyCode ?? 'Copy Code'),
                 ),
               ),
             ],
@@ -198,16 +205,16 @@ class _ReferralCodePanel extends StatelessWidget {
 class _ReferralProcess extends StatelessWidget {
   const _ReferralProcess();
 
-  static const _steps = [
-    ('Share', Icons.ios_share_rounded),
-    ('Sign Up', Icons.person_add_alt_1_outlined),
-    ('Verify', Icons.verified_user_outlined),
-    ('Qualify', Icons.task_alt_rounded),
-    ('Earn', Icons.payments_outlined),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final steps = [
+      (l10n?.stepShare ?? 'Share', Icons.ios_share_rounded),
+      (l10n?.stepSignUp ?? 'Sign Up', Icons.person_add_alt_1_outlined),
+      (l10n?.stepVerify ?? 'Verify', Icons.verified_user_outlined),
+      (l10n?.stepQualify ?? 'Qualify', Icons.task_alt_rounded),
+      (l10n?.stepEarn ?? 'Earn', Icons.payments_outlined),
+    ];
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -220,14 +227,14 @@ class _ReferralProcess extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (var i = 0; i < _steps.length; i++) ...[
+          for (var i = 0; i < steps.length; i++) ...[
             Expanded(
               child: _ProcessStep(
-                label: _steps[i].$1,
-                icon: _steps[i].$2,
+                label: steps[i].$1,
+                icon: steps[i].$2,
               ),
             ),
-            if (i != _steps.length - 1)
+            if (i != steps.length - 1)
               Icon(
                 Icons.chevron_right_rounded,
                 color: _subtleTextColor(context),
@@ -279,6 +286,7 @@ class _OverviewGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
     // Responsive columns and aspect ratio to make tiles smaller on wide screens
     int crossAxisCount;
@@ -298,7 +306,7 @@ class _OverviewGrid extends StatelessWidget {
     }
 
     return GridView.count(
-    crossAxisCount: crossAxisCount,
+      crossAxisCount: crossAxisCount,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: childAspectRatio,
@@ -306,57 +314,57 @@ class _OverviewGrid extends StatelessWidget {
       mainAxisSpacing: 8,
       children: [
         _MetricTile(
-          label: 'Total referrals',
+          label: l10n?.totalReferrals ?? 'Total referrals',
           value: '${summary.totalReferrals}',
           icon: Icons.groups_outlined,
         ),
         _MetricTile(
-          label: 'Registered referrals',
+          label: l10n?.registeredReferrals ?? 'Registered referrals',
           value: '${summary.registered}',
           icon: Icons.person_add_alt_1_outlined,
         ),
         _MetricTile(
-          label: 'Verified referrals',
+          label: l10n?.verifiedReferrals ?? 'Verified referrals',
           value: '${summary.verified}',
           icon: Icons.verified_user_outlined,
         ),
         _MetricTile(
-          label: 'Qualified referrals',
+          label: l10n?.qualifiedReferrals ?? 'Qualified referrals',
           value: '${summary.qualified}',
           icon: Icons.task_alt_rounded,
-          tooltip:
+          tooltip: l10n?.qualifiedTooltip ??
               'A qualified referral is someone you invited who completed the actions required for a referral reward.',
         ),
         _MetricTile(
-          label: 'Pending rewards',
-          value: _money(summary.pendingRewards),
+          label: l10n?.pendingRewards ?? 'Pending rewards',
+          value: _money(summary.pendingRewards, currency: summary.currency),
           icon: Icons.schedule_rounded,
-          description: 'Not yet available',
+          description: l10n?.notYetAvailable ?? 'Not yet available',
         ),
         _MetricTile(
-          label: 'Available rewards',
-          value: _money(summary.availableRewards),
+          label: l10n?.availableRewards ?? 'Available rewards',
+          value: _money(summary.availableRewards, currency: summary.currency),
           icon: Icons.account_balance_wallet_outlined,
-          description: 'Ready to claim',
+          description: l10n?.readyToClaim ?? 'Ready to claim',
         ),
         _MetricTile(
-          label: 'Total earned',
-          value: _money(summary.totalEarned),
+          label: l10n?.totalEarned ?? 'Total earned',
+          value: _money(summary.totalEarned, currency: summary.currency),
           icon: Icons.trending_up_rounded,
-          description: 'Lifetime rewards',
+          description: l10n?.lifetimeRewards ?? 'Lifetime rewards',
         ),
         _MetricTile(
-          label: 'Total paid',
-          value: _money(summary.totalPaid),
+          label: l10n?.totalPaid ?? 'Total paid',
+          value: _money(summary.totalPaid, currency: summary.currency),
           icon: Icons.payments_outlined,
-          description: 'Already paid',
+          description: l10n?.alreadyPaid ?? 'Already paid',
         ),
       ],
     );
   }
 
-  String _money(int amount) =>
-      '${NumberFormat.decimalPattern().format(amount)} ${summary.currency}';
+  String _money(int amount, {String? currency}) =>
+      '${NumberFormat.decimalPattern().format(amount)} ${currency ?? summary.currency}';
 }
 
 class _MetricTile extends StatelessWidget {

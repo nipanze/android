@@ -1929,4 +1929,70 @@ class AppLocalizationsSw extends AppLocalizations {
   String blockedOnDate(String date) {
     return 'Aliwekewa vikwazo $date';
   }
+
+  @override
+  String get invitePeopleAndTrackRewards => 'Alika watu na ufuatilie zawadi';
+
+  @override
+  String get codeGenerating => 'Kodi yako inatengenezwa…';
+
+  @override
+  String get inviteEarnDescription =>
+      'Alika watu kwenye Nipanze na upate zawadi wanapokamilisha vitendo vinavyohitajika.';
+
+  @override
+  String get stepShare => 'Shiriki';
+
+  @override
+  String get stepSignUp => 'Jiunge';
+
+  @override
+  String get stepVerify => 'Thibitisha';
+
+  @override
+  String get stepQualify => 'Fuzu';
+
+  @override
+  String get stepEarn => 'Pata';
+
+  @override
+  String get registeredReferrals => 'Rufaa zilizosajiliwa';
+
+  @override
+  String get verifiedReferrals => 'Rufaa zilizothibitishwa';
+
+  @override
+  String get qualifiedReferrals => 'Rufaa zilizofuzu';
+
+  @override
+  String get notYetAvailable => 'Bado haijapatikana';
+
+  @override
+  String get readyToClaim => 'Tayari kuchukua';
+
+  @override
+  String get lifetimeRewards => 'Zawadi za maisha';
+
+  @override
+  String get alreadyPaid => 'Tayari imelipwa';
+
+  @override
+  String get qualifiedTooltip =>
+      'Rufaa iliyofuzu ni mtu uliyemwalika aliyekamilisha vitendo vinavyohitajika kupata zawadi.';
+
+  @override
+  String get subscriptionCurrency => 'Sarafu ya Usajili';
+
+  @override
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode) {
+    return 'Sarafu yako ya usajili imewekwa kuwa $currency ($country) kulingana na eneo la nambari yako ya simu ($dialCode).';
+  }
+
+  @override
+  String get subscriptionCurrencyLocked =>
+      'Sarafu ya usajili imefungwa kwenye eneo la nambari yako ya simu kwa utangamano wa malipo na haiwezi kubadilishwa.';
+
+  @override
+  String get understood => 'Elewa';
 }

@@ -191,11 +191,12 @@ class _AccountView extends StatelessWidget {
                                   'View plans'),
                         ),
 
-                      const SectionHeader('Refer & Earn'),
+                      SectionHeader(AppLocalizations.of(context)?.referAndEarn ?? 'Refer & Earn'),
                       Card(
                         child: _ActionRow(
                           icon: Icons.campaign_outlined,
-                          label: 'Invite people and track rewards',
+                          label: AppLocalizations.of(context)?.invitePeopleAndTrackRewards ??
+                              'Invite people and track rewards',
                           onTap: () => context.push(AppRoutes.referrals),
                         ),
                       ),
@@ -320,7 +321,8 @@ class _AccountView extends StatelessWidget {
               // Subscription Currency row – locked to registered phone country code
               _ActionRow(
                 icon: Icons.monetization_on_outlined,
-                label: 'Subscription Currency',
+                label: AppLocalizations.of(sheetCtx)?.subscriptionCurrency ??
+                    'Subscription Currency',
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -389,14 +391,18 @@ class _AccountView extends StatelessWidget {
   }
 
   void _showCurrencyLockedInfoDialog(BuildContext context, CountryInfo country) {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.lock_outline_rounded, color: AppColors.accent, size: 20),
-            SizedBox(width: 8),
-            Text('Subscription Currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Icon(Icons.lock_outline_rounded, color: AppColors.accent, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              l10n?.subscriptionCurrency ?? 'Subscription Currency',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Column(
@@ -404,20 +410,22 @@ class _AccountView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your subscription currency is set to ${country.currency} (${country.name}) based on your registered phone number region (${country.dialCode}).',
+              l10n?.subscriptionCurrencyDesc(country.currency, country.name, country.dialCode) ??
+                  'Your subscription currency is set to ${country.currency} (${country.name}) based on your registered phone number region (${country.dialCode}).',
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.',
-              style: TextStyle(fontSize: 12, color: AppColors.text2Dark, height: 1.4),
+            Text(
+              l10n?.subscriptionCurrencyLocked ??
+                  'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.',
+              style: const TextStyle(fontSize: 12, color: AppColors.text2Dark, height: 1.4),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Understood'),
+            child: Text(l10n?.understood ?? 'Understood'),
           ),
         ],
       ),

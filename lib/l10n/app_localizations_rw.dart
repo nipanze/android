@@ -232,7 +232,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get undo => 'Subiraho';
 
   @override
-  String get tryAgain => 'Gerageza nanone';
+  String get tryAgain => 'Ongera ugerageze';
 
   @override
   String get myActivityTitle => 'Ibikorwa Byanjye';
@@ -1927,4 +1927,71 @@ class AppLocalizationsRw extends AppLocalizations {
   String blockedOnDate(String date) {
     return 'Yafunzwe $date';
   }
+
+  @override
+  String get invitePeopleAndTrackRewards =>
+      'Tumira abantu kandi urekere ibihembo';
+
+  @override
+  String get codeGenerating => 'Kode yawe irimo gukorwa…';
+
+  @override
+  String get inviteEarnDescription =>
+      'Tumira abantu kuri Nipanze ubone ibihembo mu gihe bafashe ibikorwa byasabwaga.';
+
+  @override
+  String get stepShare => 'Sangiza';
+
+  @override
+  String get stepSignUp => 'Iyandikishe';
+
+  @override
+  String get stepVerify => 'Emeza';
+
+  @override
+  String get stepQualify => 'Kora ibisabwa';
+
+  @override
+  String get stepEarn => 'Bona';
+
+  @override
+  String get registeredReferrals => 'Abatumiriwe bariyandikishije';
+
+  @override
+  String get verifiedReferrals => 'Abatumiriwe bemejwe';
+
+  @override
+  String get qualifiedReferrals => 'Abatumiriwe bakuze ibisabwa';
+
+  @override
+  String get notYetAvailable => 'Ntiraboneka';
+
+  @override
+  String get readyToClaim => 'Byiteguye gufatwa';
+
+  @override
+  String get lifetimeRewards => 'Ibihembo byose';
+
+  @override
+  String get alreadyPaid => 'Bishywe';
+
+  @override
+  String get qualifiedTooltip =>
+      'Uwatumiwe yakuje ibisabwa ni umuntu watumiye wakoresheje ibikorwa byasabwaga ku cyihembo.';
+
+  @override
+  String get subscriptionCurrency => 'Ifaranga ryo kwiyandikisha';
+
+  @override
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode) {
+    return 'Ifaranga ryawe ryo kwiyandikisha riri kuri $currency ($country) dukurikije igihugu cy\'inimero yawe ($dialCode).';
+  }
+
+  @override
+  String get subscriptionCurrencyLocked =>
+      'Ifaranga ryo kwiyandikisha rifunze ku karere k\'inimero yawe kubera ibyemezo byo kwishyura.';
+
+  @override
+  String get understood => 'Nsumbya';
 }

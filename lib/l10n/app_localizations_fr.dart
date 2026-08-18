@@ -1945,4 +1945,71 @@ class AppLocalizationsFr extends AppLocalizations {
   String blockedOnDate(String date) {
     return 'Bloqué le $date';
   }
+
+  @override
+  String get invitePeopleAndTrackRewards =>
+      'Inviter des personnes et suivre les récompenses';
+
+  @override
+  String get codeGenerating => 'Votre code est en cours de génération…';
+
+  @override
+  String get inviteEarnDescription =>
+      'Invitez des personnes sur Nipanze et gagnez des récompenses lorsqu\'elles accomplissent les actions requises.';
+
+  @override
+  String get stepShare => 'Partager';
+
+  @override
+  String get stepSignUp => 'S\'inscrire';
+
+  @override
+  String get stepVerify => 'Vérifier';
+
+  @override
+  String get stepQualify => 'Qualifier';
+
+  @override
+  String get stepEarn => 'Gagner';
+
+  @override
+  String get registeredReferrals => 'Parrainages inscrits';
+
+  @override
+  String get verifiedReferrals => 'Parrainages vérifiés';
+
+  @override
+  String get qualifiedReferrals => 'Parrainages qualifiés';
+
+  @override
+  String get notYetAvailable => 'Pas encore disponible';
+
+  @override
+  String get readyToClaim => 'Prêt à réclamer';
+
+  @override
+  String get lifetimeRewards => 'Récompenses à vie';
+
+  @override
+  String get alreadyPaid => 'Déjà payé';
+
+  @override
+  String get qualifiedTooltip =>
+      'Un parrainage qualifié est une personne que vous avez invitée et qui a effectué les actions requises pour une récompense.';
+
+  @override
+  String get subscriptionCurrency => 'Devise d\'abonnement';
+
+  @override
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode) {
+    return 'Votre devise d\'abonnement est définie sur $currency ($country) en fonction du code de votre numéro de téléphone ($dialCode).';
+  }
+
+  @override
+  String get subscriptionCurrencyLocked =>
+      'La devise d\'abonnement est verrouillée selon la région de votre numéro de téléphone pour la compatibilité des paiements.';
+
+  @override
+  String get understood => 'Compris';
 }

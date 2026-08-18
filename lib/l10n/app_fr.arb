@@ -863,6 +863,34 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "invitePeopleAndTrackRewards": "Inviter des personnes et suivre les récompenses",
+  "codeGenerating": "Votre code est en cours de génération…",
+  "tryAgain": "Réessayer",
+  "inviteEarnDescription": "Invitez des personnes sur Nipanze et gagnez des récompenses lorsqu'elles accomplissent les actions requises.",
+  "stepShare": "Partager",
+  "stepSignUp": "S'inscrire",
+  "stepVerify": "Vérifier",
+  "stepQualify": "Qualifier",
+  "stepEarn": "Gagner",
+  "registeredReferrals": "Parrainages inscrits",
+  "verifiedReferrals": "Parrainages vérifiés",
+  "qualifiedReferrals": "Parrainages qualifiés",
+  "notYetAvailable": "Pas encore disponible",
+  "readyToClaim": "Prêt à réclamer",
+  "lifetimeRewards": "Récompenses à vie",
+  "alreadyPaid": "Déjà payé",
+  "qualifiedTooltip": "Un parrainage qualifié est une personne que vous avez invitée et qui a effectué les actions requises pour une récompense.",
+  "subscriptionCurrency": "Devise d'abonnement",
+  "subscriptionCurrencyDesc": "Votre devise d'abonnement est définie sur {currency} ({country}) en fonction du code de votre numéro de téléphone ({dialCode}).",
+  "@subscriptionCurrencyDesc": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "country": { "type": "String" },
+      "dialCode": { "type": "String" }
+    }
+  },
+  "subscriptionCurrencyLocked": "La devise d'abonnement est verrouillée selon la région de votre numéro de téléphone pour la compatibilité des paiements.",
+  "understood": "Compris"
 }
 

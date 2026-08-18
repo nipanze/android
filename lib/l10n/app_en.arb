@@ -858,7 +858,35 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "invitePeopleAndTrackRewards": "Invite people and track rewards",
+  "codeGenerating": "Your code is being generated…",
+  "tryAgain": "Try again",
+  "inviteEarnDescription": "Invite people to Nipanze and earn rewards when they complete the required qualifying actions.",
+  "stepShare": "Share",
+  "stepSignUp": "Sign Up",
+  "stepVerify": "Verify",
+  "stepQualify": "Qualify",
+  "stepEarn": "Earn",
+  "registeredReferrals": "Registered referrals",
+  "verifiedReferrals": "Verified referrals",
+  "qualifiedReferrals": "Qualified referrals",
+  "notYetAvailable": "Not yet available",
+  "readyToClaim": "Ready to claim",
+  "lifetimeRewards": "Lifetime rewards",
+  "alreadyPaid": "Already paid",
+  "qualifiedTooltip": "A qualified referral is someone you invited who completed the actions required for a referral reward.",
+  "subscriptionCurrency": "Subscription Currency",
+  "subscriptionCurrencyDesc": "Your subscription currency is set to {currency} ({country}) based on your registered phone number region ({dialCode}).",
+  "@subscriptionCurrencyDesc": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "country": { "type": "String" },
+      "dialCode": { "type": "String" }
+    }
+  },
+  "subscriptionCurrencyLocked": "Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.",
+  "understood": "Understood"
 }
 
 

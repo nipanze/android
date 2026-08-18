@@ -861,6 +861,34 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "invitePeopleAndTrackRewards": "Tumira abantu kandi urekere ibihembo",
+  "codeGenerating": "Kode yawe irimo gukorwa…",
+  "tryAgain": "Ongera ugerageze",
+  "inviteEarnDescription": "Tumira abantu kuri Nipanze ubone ibihembo mu gihe bafashe ibikorwa byasabwaga.",
+  "stepShare": "Sangiza",
+  "stepSignUp": "Iyandikishe",
+  "stepVerify": "Emeza",
+  "stepQualify": "Kora ibisabwa",
+  "stepEarn": "Bona",
+  "registeredReferrals": "Abatumiriwe bariyandikishije",
+  "verifiedReferrals": "Abatumiriwe bemejwe",
+  "qualifiedReferrals": "Abatumiriwe bakuze ibisabwa",
+  "notYetAvailable": "Ntiraboneka",
+  "readyToClaim": "Byiteguye gufatwa",
+  "lifetimeRewards": "Ibihembo byose",
+  "alreadyPaid": "Bishywe",
+  "qualifiedTooltip": "Uwatumiwe yakuje ibisabwa ni umuntu watumiye wakoresheje ibikorwa byasabwaga ku cyihembo.",
+  "subscriptionCurrency": "Ifaranga ryo kwiyandikisha",
+  "subscriptionCurrencyDesc": "Ifaranga ryawe ryo kwiyandikisha riri kuri {currency} ({country}) dukurikije igihugu cy'inimero yawe ({dialCode}).",
+  "@subscriptionCurrencyDesc": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "country": { "type": "String" },
+      "dialCode": { "type": "String" }
+    }
+  },
+  "subscriptionCurrencyLocked": "Ifaranga ryo kwiyandikisha rifunze ku karere k'inimero yawe kubera ibyemezo byo kwishyura.",
+  "understood": "Nsumbya"
 }
 

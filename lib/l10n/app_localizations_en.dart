@@ -1918,4 +1918,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String blockedOnDate(String date) {
     return 'Blocked $date';
   }
+
+  @override
+  String get invitePeopleAndTrackRewards => 'Invite people and track rewards';
+
+  @override
+  String get codeGenerating => 'Your code is being generated…';
+
+  @override
+  String get inviteEarnDescription =>
+      'Invite people to Nipanze and earn rewards when they complete the required qualifying actions.';
+
+  @override
+  String get stepShare => 'Share';
+
+  @override
+  String get stepSignUp => 'Sign Up';
+
+  @override
+  String get stepVerify => 'Verify';
+
+  @override
+  String get stepQualify => 'Qualify';
+
+  @override
+  String get stepEarn => 'Earn';
+
+  @override
+  String get registeredReferrals => 'Registered referrals';
+
+  @override
+  String get verifiedReferrals => 'Verified referrals';
+
+  @override
+  String get qualifiedReferrals => 'Qualified referrals';
+
+  @override
+  String get notYetAvailable => 'Not yet available';
+
+  @override
+  String get readyToClaim => 'Ready to claim';
+
+  @override
+  String get lifetimeRewards => 'Lifetime rewards';
+
+  @override
+  String get alreadyPaid => 'Already paid';
+
+  @override
+  String get qualifiedTooltip =>
+      'A qualified referral is someone you invited who completed the actions required for a referral reward.';
+
+  @override
+  String get subscriptionCurrency => 'Subscription Currency';
+
+  @override
+  String subscriptionCurrencyDesc(
+      String currency, String country, String dialCode) {
+    return 'Your subscription currency is set to $currency ($country) based on your registered phone number region ($dialCode).';
+  }
+
+  @override
+  String get subscriptionCurrencyLocked =>
+      'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.';
+
+  @override
+  String get understood => 'Understood';
 }

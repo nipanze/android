@@ -858,6 +858,34 @@
     "placeholders": {
       "date": { "type": "String" }
     }
-  }
+  },
+  "invitePeopleAndTrackRewards": "دعوة الأشخاص ومتابعة المكافآت",
+  "codeGenerating": "جاري إنشاء الرمز الخاص بك…",
+  "tryAgain": "إعادة المحاولة",
+  "inviteEarnDescription": "ادعُ الأشخاص إلى Nipanze واكسب المكافآت عند إكمالهم الإجراءات المطلوبة.",
+  "stepShare": "مشاركة",
+  "stepSignUp": "تسجيل",
+  "stepVerify": "تحقق",
+  "stepQualify": "تأهيل",
+  "stepEarn": "كسب",
+  "registeredReferrals": "الإحالات المسجلة",
+  "verifiedReferrals": "الإحالات المؤكدة",
+  "qualifiedReferrals": "الإحالات المؤهلة",
+  "notYetAvailable": "غير متاح بعد",
+  "readyToClaim": "جاهز للمطالبة",
+  "lifetimeRewards": "مكافآت مدى الحياة",
+  "alreadyPaid": "مدفوع بالفعل",
+  "qualifiedTooltip": "الإحالة المؤهلة هي شخص قمت بدعوته وأكمل الإجراءات المطلوبة للحصول على المكافأة.",
+  "subscriptionCurrency": "عملة الاشتراك",
+  "subscriptionCurrencyDesc": "تم تعيين عملة الاشتراك الخاصة بك إلى {currency} ({country}) بناءً على رمز منطقتك ({dialCode}).",
+  "@subscriptionCurrencyDesc": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "country": { "type": "String" },
+      "dialCode": { "type": "String" }
+    }
+  },
+  "subscriptionCurrencyLocked": "عملة الاشتراك مقفلة حسب منطقة رقم هاتفك لضمان توافق عمليات الدفع ولا يمكن تغييرها يدويًا.",
+  "understood": "مفهوم"
 }
 
