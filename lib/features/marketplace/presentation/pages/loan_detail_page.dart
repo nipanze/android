@@ -554,11 +554,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
             if (listing.suggestedInterestRatePct != null ||
                 listing.suggestedLateFeePct != null) ...[
-              _DescriptionSection(
-                  title: l10n?.proposedRepaymentPlanLabel ??
-                      'Proposed repayment plan',
-                  body:
-                      '${listing.preferredRepaymentPlan}  ·  ${listing.repaymentTimeline}'),
+              _ProposedRepaymentPlan(listing: listing),
               const SizedBox(height: 12),
             ],
 
@@ -613,6 +609,144 @@ class _DescriptionSection extends StatelessWidget {
           Text(body, style: Theme.of(context).textTheme.bodyMedium),
         ],
       );
+}
+
+class _ProposedRepaymentPlan extends StatefulWidget {
+  const _ProposedRepaymentPlan({required this.listing});
+  final LoanListing listing;
+
+  @override
+  State<_ProposedRepaymentPlan> createState() =>
+      _ProposedRepaymentPlanState();
+}
+
+class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
+  bool _expanded = false;
+
+  String fmtAmount(int? n) {
+    if (n == null) return '—';
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
+  Widget _row(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      )),
+            ),
+            const SizedBox(width: 8),
+            Text(value, style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final listing = widget.listing;
+    final currency = listing.currency;
+    final installment = listing.suggestedInstallmentAmount;
+    final freq = listing.suggestedRepaymentFrequency ?? listing.preferredRepaymentPlan;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          (l10n?.proposedRepaymentPlanLabel ?? 'Proposed repayment plan')
+              .toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.accent, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outlineVariant
+                      .withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${listing.preferredRepaymentPlan} · ${listing.repaymentTimeline}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              )),
+                      const SizedBox(height: 6),
+                      if (installment != null)
+                        Text(
+                            '$currency ${fmtAmount(installment)} / $freq',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outlineVariant
+                      .withValues(alpha: 0.12)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _row(l10n?.preferredRepaymentPlanLabel ?? 'Preferred repayment plan', listing.preferredRepaymentPlan),
+                _row(l10n?.repaymentTimelineLabel ?? 'Repayment timeline & schedule', listing.repaymentTimeline),
+                if (installment != null)
+                  _row(l10n?.suggestedInstallmentAmountLabel(currency) ?? 'Suggested installment amount ($currency)', '$currency ${fmtAmount(installment)}'),
+                if (listing.suggestedInterestRatePct != null)
+                  _row('Interest rate', '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
+                if (listing.suggestedLateFeePct != null)
+                  _row('Late fee', '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
+              ],
+            ),
+          ),
+        ]
+      ],
+    );
+  }
 }
 
 class _CollateralDetailsSection extends StatelessWidget {
