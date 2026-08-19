@@ -9,6 +9,40 @@ import '../../../../../l10n/app_localizations.dart';
 import '../../../data/marketplace_repository.dart';
 import '../../../domain/models/loan_listing.dart';
 
+const _monthlyDueDayOptions = [
+  '1st of every month',
+  '5th of every month',
+  '10th of every month',
+  '15th of every month',
+  '20th of every month',
+  '25th of every month',
+  'Last day of every month',
+  'Custom day',
+];
+
+const _weeklyDueDayOptions = [
+  'Every Monday',
+  'Every Wednesday',
+  'Every Friday',
+  'Every Sunday',
+  'Custom day',
+];
+
+const _oneTimeDueDayOptions = [
+  'Maturity date / End of term',
+  '1st of target month',
+  '15th of target month',
+  'Custom day',
+];
+
+const _dueTimeOptions = [
+  '5:00 PM (End of business day)',
+  '12:00 PM (Noon)',
+  '8:00 PM (Evening)',
+  '11:59 PM (End of day)',
+  'Custom time',
+];
+
 class MakeOfferSheet extends StatefulWidget {
   const MakeOfferSheet(
       {super.key,
@@ -31,6 +65,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
   final _formKey = GlobalKey<FormState>();
   String _repaymentFrequency = 'monthly';
   bool _loading = false;
+  String? _selectedDueDay;
+  String? _selectedDueTime;
 
   @override
   void initState() {
@@ -64,6 +100,63 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
           widget.listing.suggestedInstallmentAmount.toString();
     } else {
       _installmentController.text = _suggestedInstallmentAmount.toString();
+    }
+
+    // Initialize due day and time from repaymentTimeline
+    final timeline = widget.listing.repaymentTimeline.toLowerCase();
+
+    if (_repaymentFrequency == 'weekly') {
+      if (timeline.contains('monday')) {
+        _selectedDueDay = 'Every Monday';
+      } else if (timeline.contains('wednesday')) {
+        _selectedDueDay = 'Every Wednesday';
+      } else if (timeline.contains('friday')) {
+        _selectedDueDay = 'Every Friday';
+      } else if (timeline.contains('sunday')) {
+        _selectedDueDay = 'Every Sunday';
+      } else {
+        _selectedDueDay = 'Every Monday';
+      }
+    } else if (_repaymentFrequency == 'one_time') {
+      if (timeline.contains('maturity') || timeline.contains('end of term')) {
+        _selectedDueDay = 'Maturity date / End of term';
+      } else if (timeline.contains('1st')) {
+        _selectedDueDay = '1st of target month';
+      } else if (timeline.contains('15th')) {
+        _selectedDueDay = '15th of target month';
+      } else {
+        _selectedDueDay = 'Maturity date / End of term';
+      }
+    } else {
+      if (timeline.contains('1st')) {
+        _selectedDueDay = '1st of every month';
+      } else if (timeline.contains('5th')) {
+        _selectedDueDay = '5th of every month';
+      } else if (timeline.contains('10th')) {
+        _selectedDueDay = '10th of every month';
+      } else if (timeline.contains('15th')) {
+        _selectedDueDay = '15th of every month';
+      } else if (timeline.contains('20th')) {
+        _selectedDueDay = '20th of every month';
+      } else if (timeline.contains('25th')) {
+        _selectedDueDay = '25th of every month';
+      } else if (timeline.contains('last day')) {
+        _selectedDueDay = 'Last day of every month';
+      } else {
+        _selectedDueDay = '5th of every month';
+      }
+    }
+
+    if (timeline.contains('5:00 pm')) {
+      _selectedDueTime = '5:00 PM (End of business day)';
+    } else if (timeline.contains('12:00 pm')) {
+      _selectedDueTime = '12:00 PM (Noon)';
+    } else if (timeline.contains('8:00 pm')) {
+      _selectedDueTime = '8:00 PM (Evening)';
+    } else if (timeline.contains('11:59 pm')) {
+      _selectedDueTime = '11:59 PM (End of day)';
+    } else {
+      _selectedDueTime = '5:00 PM (End of business day)';
     }
 
     for (final controller in [
@@ -231,6 +324,12 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
 
     setState(() => _loading = true);
     try {
+      final scheduleText = _proposedRepaymentTimeline;
+      final notes = _expController.text.trim();
+      final finalExpectations = notes.isNotEmpty
+          ? '$notes\n\nProposed schedule: $scheduleText'
+          : 'Proposed schedule: $scheduleText';
+
       await getIt<MarketplaceRepository>().makeOffer(
         requestId: widget.listing.requestId,
         amount: int.parse(_amountController.text.replaceAll(',', '')),
@@ -239,7 +338,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
         repaymentFrequency: _repaymentFrequency,
         installmentAmount:
             int.parse(_installmentController.text.replaceAll(',', '')),
-        expectations: _expController.text,
+        expectations: finalExpectations,
       );
       widget.onOfferPlaced();
       if (mounted) {
@@ -762,38 +861,59 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
 
   /// Returns the day-of-month [1..31] that the borrower picked, or null.
   int? get _borrowerDueDayOfMonth {
-    final timeline = widget.listing.repaymentTimeline.toLowerCase();
-    // "1st", "5th", "10th", "15th", "20th", "25th"
-    final ordinals = [
-      (r'\b1st\b', 1),
-      (r'\b5th\b', 5),
-      (r'\b10th\b', 10),
-      (r'\b15th\b', 15),
-      (r'\b20th\b', 20),
-      (r'\b25th\b', 25),
-    ];
-    for (final (pattern, day) in ordinals) {
-      if (RegExp(pattern).hasMatch(timeline)) return day;
-    }
-    if (timeline.contains('last day')) return -1; // signals last-day-of-month
+    if (_selectedDueDay == null) return null;
+    final dayStr = _selectedDueDay!.toLowerCase();
+    if (dayStr.contains('1st')) return 1;
+    if (dayStr.contains('5th')) return 5;
+    if (dayStr.contains('10th')) return 10;
+    if (dayStr.contains('15th')) return 15;
+    if (dayStr.contains('20th')) return 20;
+    if (dayStr.contains('25th')) return 25;
+    if (dayStr.contains('last day')) return -1;
     return null;
   }
 
   /// Returns the weekday [1=Mon..7=Sun] the borrower picked, or null.
   int? get _borrowerDueWeekday {
-    final t = widget.listing.repaymentTimeline.toLowerCase();
-    if (t.contains('monday')) return DateTime.monday;
-    if (t.contains('wednesday')) return DateTime.wednesday;
-    if (t.contains('friday')) return DateTime.friday;
-    if (t.contains('sunday')) return DateTime.sunday;
+    if (_selectedDueDay == null) return null;
+    final dayStr = _selectedDueDay!.toLowerCase();
+    if (dayStr.contains('monday')) return DateTime.monday;
+    if (dayStr.contains('wednesday')) return DateTime.wednesday;
+    if (dayStr.contains('friday')) return DateTime.friday;
+    if (dayStr.contains('sunday')) return DateTime.sunday;
     return null;
   }
 
   /// Returns a short display string like "5:00 PM" from the timeline, or null.
   String? get _borrowerDueTime {
-    final t = widget.listing.repaymentTimeline;
-    final match = RegExp(r'(\d{1,2}:\d{2}\s*[APap][Mm])').firstMatch(t);
-    return match?.group(1);
+    if (_selectedDueTime == null) return null;
+    return _selectedDueTime!.split(' (').first;
+  }
+
+  String get _proposedRepaymentTimeline {
+    final parts = <String>[];
+
+    if (_selectedDueDay != null && _selectedDueDay != 'Custom day') {
+      if (_repaymentFrequency == 'weekly') {
+        parts.add('Paid $_selectedDueDay');
+      } else if (_repaymentFrequency == 'one_time') {
+        parts.add('Paid on $_selectedDueDay');
+      } else {
+        parts.add('Paid by the $_selectedDueDay');
+      }
+    }
+
+    if (_selectedDueTime != null && _selectedDueTime != 'Custom time') {
+      final cleanTime = _selectedDueTime!.split(' (').first;
+      parts.add('by $cleanTime');
+    }
+
+    final durationMonths = widget.listing.durationMonths;
+    if (durationMonths > 0) {
+      parts.add('for $durationMonths months');
+    }
+
+    return parts.join(' ');
   }
 
   DateTime _getInstalmentDate(int index) {
@@ -809,7 +929,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
         DateTime base = anchor.add(Duration(days: 7 * (index + 1)));
         if (targetWeekday != null) {
           // Walk forward from base to find the next occurrence of that weekday.
-          int diff = (targetWeekday - base.weekday) % 7;
+          final diff = (targetWeekday - base.weekday) % 7;
           base = base.add(Duration(days: diff));
         }
         return DateTime(base.year, base.month, base.day);
@@ -1582,11 +1702,62 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                       if (v != null) {
                         setState(() {
                           _repaymentFrequency = v;
+                          // Reset due day selection to first valid option for new frequency
+                          if (v == 'weekly') {
+                            _selectedDueDay = 'Every Monday';
+                          } else if (v == 'one_time') {
+                            _selectedDueDay = 'Maturity date / End of term';
+                          } else {
+                            _selectedDueDay = '5th of every month';
+                          }
                           _installmentController.text =
                               _suggestedInstallmentAmount.toString();
                         });
                       }
                     },
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedDueDay,
+                    decoration: InputDecoration(
+                      labelText: l10n?.dueDayLabel ?? 'Due day / frequency',
+                      prefixIcon: const Icon(Icons.today_outlined, size: 20),
+                    ),
+                    hint: Text(l10n?.dueDayHint ?? 'Select due day (e.g. 5th of every month)'),
+                    items: (_repaymentFrequency == 'weekly'
+                            ? _weeklyDueDayOptions
+                            : _repaymentFrequency == 'one_time'
+                                ? _oneTimeDueDayOptions
+                                : _monthlyDueDayOptions)
+                        .map((day) => DropdownMenuItem(
+                              value: day,
+                              child: Text(day),
+                            ))
+                        .toList(),
+                    onChanged: (v) => setState(() {
+                      _selectedDueDay = v;
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedDueTime,
+                    decoration: InputDecoration(
+                      labelText: l10n?.dueCutoffTimeLabel ??
+                          'Due cutoff time (for late fee timing)',
+                      prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
+                    ),
+                    hint: Text(l10n?.dueCutoffTimeHint ?? 'Select due time (e.g. 5:00 PM)'),
+                    items: _dueTimeOptions
+                        .map((time) => DropdownMenuItem(
+                              value: time,
+                              child: Text(time),
+                            ))
+                        .toList(),
+                    onChanged: (v) => setState(() {
+                      _selectedDueTime = v;
+                    }),
                   ),
                   const SizedBox(height: 16),
 
