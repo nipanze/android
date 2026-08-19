@@ -1990,4 +1990,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get understood => 'Understood';
+
+  @override
+  String get principalLossWarningTitle => 'Principal Loss Warning';
+
+  @override
+  String get belowTargetReturnTitle => 'Below Target Return Warning';
+
+  @override
+  String get sendAnyway => 'Send Offer Anyway';
 }

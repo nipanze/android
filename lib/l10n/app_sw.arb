@@ -915,7 +915,10 @@
     }
   },
   "subscriptionCurrencyLocked": "Sarafu ya usajili imefungwa kwenye eneo la nambari yako ya simu kwa utangamano wa malipo na haiwezi kubadilishwa.",
-  "understood": "Elewa"
+  "understood": "Elewa",
+  "principalLossWarningTitle": "Onyo la Hasara ya Mtaji",
+  "belowTargetReturnTitle": "Onyo: Faida iko chini ya lengo",
+  "sendAnyway": "Tuma Ofa Hata Hivyo"
 }
 
 

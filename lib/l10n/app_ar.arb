@@ -888,6 +888,9 @@
     }
   },
   "subscriptionCurrencyLocked": "عملة الاشتراك مقفلة حسب منطقة رقم هاتفك لضمان توافق عمليات الدفع ولا يمكن تغييرها يدويًا.",
-  "understood": "مفهوم"
+  "understood": "مفهوم",
+  "principalLossWarningTitle": "تحذير من خسارة رأس المال",
+  "belowTargetReturnTitle": "تحذير: العائد أقل من المستهدف",
+  "sendAnyway": "إرسال العرض على أي حال"
 }
 

@@ -2000,4 +2000,14 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get understood => 'Nsumbya';
+
+  @override
+  String get principalLossWarningTitle => 'Iburira ryo igihombo cy\'imari';
+
+  @override
+  String get belowTargetReturnTitle =>
+      'Iburira ry\'inyungu iri munsi y\'intego';
+
+  @override
+  String get sendAnyway => 'Ohereza icyifuzo uko biri';
 }

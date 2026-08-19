@@ -2018,4 +2018,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get understood => 'Compris';
+
+  @override
+  String get principalLossWarningTitle => 'Avertissement de perte de capital';
+
+  @override
+  String get belowTargetReturnTitle =>
+      'Avertissement de rendement inférieur à l\'objectif';
+
+  @override
+  String get sendAnyway => 'Envoyer l\'offre quand même';
 }

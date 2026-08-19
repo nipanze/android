@@ -3674,6 +3674,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Understood'**
   String get understood;
+
+  /// No description provided for @principalLossWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal Loss Warning'**
+  String get principalLossWarningTitle;
+
+  /// No description provided for @belowTargetReturnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Below Target Return Warning'**
+  String get belowTargetReturnTitle;
+
+  /// No description provided for @sendAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Offer Anyway'**
+  String get sendAnyway;
 }
 
 class _AppLocalizationsDelegate

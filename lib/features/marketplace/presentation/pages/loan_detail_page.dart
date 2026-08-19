@@ -449,116 +449,130 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     ),
                   ],
 
-                  const SizedBox(height: 20),
-
-                  // ── Offers header ────────────────────────────────────────
-                  Row(
-                    children: [
-                      Text(
-                        l10n?.offersLabel ?? 'OFFERS',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              letterSpacing: 1.2,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.45),
-                            ),
-                      ),
-                      const SizedBox(width: 6),
-                      const LiveDot(),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // If the current user is a participant (made an offer) but
-                  // isn't the listing owner, show a short note explaining
-                  // that only their own offer is visible.
-                  if (_isParticipant && !_isOwnerValue)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info_outline,
-                              size: 16, color: AppColors.accent),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              l10n?.onlyYourOfferVisible ??
-                                  'Only your offer is visible here. The full bid book is visible to the borrower.',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.7),
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  // ── Offer tiles ──────────────────────────────────────────
-                  if (_offers.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
-                        child: Text(
-                          l10n?.noOffersYet ?? 'No offers yet',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    )
-                  else
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: _newOfferFlash
-                            ? [
-                                BoxShadow(
-                                    color: AppColors.success
-                                        .withValues(alpha: 0.2),
-                                    blurRadius: 8)
-                              ]
-                            : [],
-                      ),
-                      child: OfferList(
-                        offers: _offers,
-                        requestedAmount: listing.requestedAmount,
-                        isOwner: isOwner,
-                        isParticipant: _isParticipant,
-                        onAccept: _acceptOffer,
-                        durationMonths: listing.durationMonths,
-                        isProBorrower: isProBorrower,
-                        marketBaselinePct: _marketBaselinePct,
-                        suggestedInterestRatePct:
-                            listing.suggestedInterestRatePct,
-                        suggestedLateFeePct: listing.suggestedLateFeePct,
-                        suggestedRepaymentFrequency:
-                            listing.suggestedRepaymentFrequency,
-                        suggestedInstallmentAmount:
-                            listing.suggestedInstallmentAmount,
-                        onUpgrade: () => showProRequiredSheet(context),
-                      ),
-                    ),
+                  if (listing.suggestedInterestRatePct != null ||
+                      listing.suggestedLateFeePct != null) ...[
+                    const SizedBox(height: 16),
+                    _ProposedRepaymentPlan(listing: listing),
+                  ],
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            if (isOwner || hasMadeOffer || _offers.isNotEmpty) ...[
+              const SizedBox(height: 16),
 
-            if (listing.suggestedInterestRatePct != null ||
-                listing.suggestedLateFeePct != null) ...[
-              _ProposedRepaymentPlan(listing: listing),
-              const SizedBox(height: 12),
+              // ── Standalone Offers card ───────────────────────────────────────
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Offers header ────────────────────────────────────────
+                    Row(
+                      children: [
+                        Text(
+                          l10n?.offersLabel ?? 'OFFERS',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                letterSpacing: 1.2,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.45),
+                              ),
+                        ),
+                        const SizedBox(width: 6),
+                        const LiveDot(),
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // If the current user is a participant (made an offer) but
+                    // isn't the listing owner, show a short note explaining
+                    // that only their own offer is visible.
+                    if (_isParticipant && !_isOwnerValue)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.info_outline,
+                                size: 16, color: AppColors.accent),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n?.onlyYourOfferVisible ??
+                                    'Only your offer is visible here. The full bid book is visible to the borrower.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.7),
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // ── Offer tiles ──────────────────────────────────────────
+                    if (_offers.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: Text(
+                            l10n?.noOffersYet ?? 'No offers yet',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                      )
+                    else
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: _newOfferFlash
+                              ? [
+                                  BoxShadow(
+                                      color: AppColors.success
+                                          .withValues(alpha: 0.2),
+                                      blurRadius: 8)
+                                ]
+                              : [],
+                        ),
+                        child: OfferList(
+                          offers: _offers,
+                          requestedAmount: listing.requestedAmount,
+                          isOwner: isOwner,
+                          isParticipant: _isParticipant,
+                          onAccept: _acceptOffer,
+                          durationMonths: listing.durationMonths,
+                          isProBorrower: isProBorrower,
+                          marketBaselinePct: _marketBaselinePct,
+                          suggestedInterestRatePct:
+                              listing.suggestedInterestRatePct,
+                          suggestedLateFeePct: listing.suggestedLateFeePct,
+                          suggestedRepaymentFrequency:
+                              listing.suggestedRepaymentFrequency,
+                          suggestedInstallmentAmount:
+                              listing.suggestedInstallmentAmount,
+                          onUpgrade: () => showProRequiredSheet(context),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             if (canMakeOffer)
               ElevatedButton(

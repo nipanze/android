@@ -893,6 +893,9 @@
     }
   },
   "subscriptionCurrencyLocked": "La devise d'abonnement est verrouillée selon la région de votre numéro de téléphone pour la compatibilité des paiements.",
-  "understood": "Compris"
+  "understood": "Compris",
+  "principalLossWarningTitle": "Avertissement de perte de capital",
+  "belowTargetReturnTitle": "Avertissement de rendement inférieur à l'objectif",
+  "sendAnyway": "Envoyer l'offre quand même"
 }
 

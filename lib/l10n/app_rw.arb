@@ -891,6 +891,9 @@
     }
   },
   "subscriptionCurrencyLocked": "Ifaranga ryo kwiyandikisha rifunze ku karere k'inimero yawe kubera ibyemezo byo kwishyura.",
-  "understood": "Nsumbya"
+  "understood": "Nsumbya",
+  "principalLossWarningTitle": "Iburira ryo igihombo cy'imari",
+  "belowTargetReturnTitle": "Iburira ry'inyungu iri munsi y'intego",
+  "sendAnyway": "Ohereza icyifuzo uko biri"
 }
 

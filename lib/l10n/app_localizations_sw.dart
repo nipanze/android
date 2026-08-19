@@ -2001,4 +2001,13 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get understood => 'Elewa';
+
+  @override
+  String get principalLossWarningTitle => 'Onyo la Hasara ya Mtaji';
+
+  @override
+  String get belowTargetReturnTitle => 'Onyo: Faida iko chini ya lengo';
+
+  @override
+  String get sendAnyway => 'Tuma Ofa Hata Hivyo';
 }

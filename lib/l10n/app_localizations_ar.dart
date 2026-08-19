@@ -1976,4 +1976,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get understood => 'مفهوم';
+
+  @override
+  String get principalLossWarningTitle => 'تحذير من خسارة رأس المال';
+
+  @override
+  String get belowTargetReturnTitle => 'تحذير: العائد أقل من المستهدف';
+
+  @override
+  String get sendAnyway => 'إرسال العرض على أي حال';
 }

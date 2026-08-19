@@ -888,7 +888,10 @@
     }
   },
   "subscriptionCurrencyLocked": "Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.",
-  "understood": "Understood"
+  "understood": "Understood",
+  "principalLossWarningTitle": "Principal Loss Warning",
+  "belowTargetReturnTitle": "Below Target Return Warning",
+  "sendAnyway": "Send Offer Anyway"
 }
 
 

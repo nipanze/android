@@ -90,7 +90,8 @@ The app expects a single Supabase project and shared schema with:
   - `EastAfricaCountries.findByLocale(WidgetsBinding.instance.platformDispatcher.locale)`
   - manual picker remains available
 - `lib/core/constants/country_constants.dart` includes `findByLocale` and `findByPhone`
-- `lib/features/marketplace/presentation/pages/loan_detail_page.dart` has been adjusted for row layout and overflow prevention
+- `lib/features/marketplace/presentation/widgets/loan_detail/make_offer_sheet.dart` updated with live math return calculations, auto-suggested installment amount calculation based on interest & schedule frequency, live return breakdown card with profit/loss badges, and confirmation warning dialog before submitting offers at a loss
+- `lib/features/marketplace/presentation/pages/loan_detail_page.dart` layout updated to embed the proposed repayment plan into the upper listing details card and separate the offers list into its own dedicated card container
 - `lib/core/router/app_router.dart` shows the actual current route surface, including forex create/detail pages
 - `pubspec.yaml` lists actual packages used by the app
 - `supabase/functions/` contains only two functions: `flutterwave-checkout` and `send-notification`
