@@ -1609,6 +1609,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveCalcBorrowingCost => 'تكلفة الاقتراض';
 
   @override
+  String get totalAmountPayableLabel => 'المبلغ الإجمالي المستحق';
+
+  @override
+  String get totalInterestLabel => 'إجمالي الفائدة';
+
+  @override
   String get liveCalcNoData => 'أكمل الحقول أعلاه لعرض تفاصيل السداد.';
 
   @override

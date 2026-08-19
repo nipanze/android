@@ -1627,6 +1627,12 @@ class AppLocalizationsRw extends AppLocalizations {
   String get liveCalcBorrowingCost => 'Igiciro cy\'inguzanyo';
 
   @override
+  String get totalAmountPayableLabel => 'Total amount payable';
+
+  @override
+  String get totalInterestLabel => 'Total interest';
+
+  @override
   String get liveCalcNoData =>
       'Uzuza ibice hejuru kugira ngo ubone imyanzuro y\'ibisubizo byawe.';
 

@@ -634,6 +634,26 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
     return buf.toString();
   }
 
+  int? _installmentCount(LoanListing listing, String? freq) {
+    // Try to determine number of instalments from suggested frequency and listing
+    // Fall back to parsing the repaymentTimeline for a number, then durationMonths.
+    try {
+      if (freq != null) {
+        final f = freq.toLowerCase();
+        if (f.contains('month')) return listing.durationMonths > 0 ? listing.durationMonths : null;
+        if (f.contains('week')) return listing.durationMonths > 0 ? (listing.durationMonths * 4) : null;
+        if (f.contains('year')) return listing.durationMonths > 0 ? (listing.durationMonths ~/ 12) : null;
+      }
+
+      // Try to extract a leading number from the repaymentTimeline (e.g. "4 monthly instalments")
+      final m = RegExp(r'(\d+)').firstMatch(listing.repaymentTimeline);
+      if (m != null) return int.tryParse(m.group(1)!);
+
+      if (listing.durationMonths > 0) return listing.durationMonths;
+    } catch (_) {}
+    return null;
+  }
+
   Widget _row(String label, String value) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6.0),
         child: Row(
@@ -729,7 +749,7 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
                       .outlineVariant
                       .withValues(alpha: 0.12)),
             ),
-            child: Column(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _row(l10n?.preferredRepaymentPlanLabel ?? 'Preferred repayment plan', listing.preferredRepaymentPlan),
@@ -740,6 +760,23 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
                   _row('Interest rate', '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
                 if (listing.suggestedLateFeePct != null)
                   _row('Late fee', '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
+                    // Totals: show total repayable and total interest when we can compute them
+                    if (installment != null) ...[
+                      const SizedBox(height: 6),
+                      Builder(builder: (context) {
+                        final count = _installmentCount(listing, listing.suggestedRepaymentFrequency ?? freq);
+                        if (count == null) return const SizedBox.shrink();
+                        final total = installment * count;
+                        final principal = listing.requestedAmount;
+                        final interest = total - principal;
+                        return Column(
+                          children: [
+                            _row('Total amount payable', '$currency ${fmtAmount(total)}'),
+                            _row('Total interest', '${interest < 0 ? '-' : ''}$currency ${fmtAmount(interest.abs())}'),
+                          ],
+                        );
+                      }),
+                    ],
               ],
             ),
           ),

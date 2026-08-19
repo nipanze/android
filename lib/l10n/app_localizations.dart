@@ -3002,6 +3002,18 @@ abstract class AppLocalizations {
   /// **'Borrowing cost'**
   String get liveCalcBorrowingCost;
 
+  /// No description provided for @totalAmountPayableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total amount payable'**
+  String get totalAmountPayableLabel;
+
+  /// No description provided for @totalInterestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total interest'**
+  String get totalInterestLabel;
+
   /// No description provided for @liveCalcNoData.
   ///
   /// In en, this message translates to:

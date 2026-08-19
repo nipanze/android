@@ -783,6 +783,8 @@
   "liveCalcTotalPayments": "Jumla ya malipo",
   "liveCalcTotalPayback": "Jumla ya kulipa",
   "liveCalcBorrowingCost": "Gharama ya kukopa",
+  "totalAmountPayableLabel": "Total amount payable",
+  "totalInterestLabel": "Total interest",
   "liveCalcNoData": "Jaza sehemu zilizo juu ili uone muhtasari wa malipo yako.",
   "freeTermsBanner": "Acha wazi — wakopeshaji watapendekezwa masharti yao. Boresha hadi Pro ili upendekeze viwango.",
   "offerReadOnlyNotice": "Angalia masharti yanayopendekezwa na mkopeshaji hapa chini. Kubali au subiri ofa bora.",

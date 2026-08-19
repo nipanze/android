@@ -1643,6 +1643,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get liveCalcBorrowingCost => 'Coût total des intérêts';
 
   @override
+  String get totalAmountPayableLabel => 'Montant total à payer';
+
+  @override
+  String get totalInterestLabel => 'Total des intérêts';
+
+  @override
   String get liveCalcNoData =>
       'Remplissez les champs ci-dessus pour voir votre plan de remboursement.';
 

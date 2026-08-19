@@ -783,6 +783,8 @@
   "liveCalcTotalPayments": "Umubare wose w'ibisubizo",
   "liveCalcTotalPayback": "Igiteranyo cy'ibisubizo",
   "liveCalcBorrowingCost": "Igiciro cy'inguzanyo",
+  "totalAmountPayableLabel": "Total amount payable",
+  "totalInterestLabel": "Total interest",
   "liveCalcNoData": "Uzuza ibice hejuru kugira ngo ubone imyanzuro y'ibisubizo byawe.",
   "freeTermsBanner": "Siga ubusa — abatangira inguzanyo bazatanga amategeko yabo. Muze ku Pro gutanga ibyifuzo.",
   "offerReadOnlyNotice": "Reba amategeko asabwa n'umuguzi hepfo. Emera cyangwa tegereza ikirushijeho.",

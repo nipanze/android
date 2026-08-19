@@ -780,6 +780,8 @@
   "liveCalcTotalPayments": "إجمالي المدفوعات",
   "liveCalcTotalPayback": "إجمالي السداد",
   "liveCalcBorrowingCost": "تكلفة الاقتراض",
+  "totalAmountPayableLabel": "المبلغ الإجمالي المستحق",
+  "totalInterestLabel": "إجمالي الفائدة",
   "liveCalcNoData": "أكمل الحقول أعلاه لعرض تفاصيل السداد.",
   "freeTermsBanner": "اتركه فارغًا — سيقترح المُقرضون شروطهم. ترقّ إلى Pro لاقتراح النسب.",
   "offerReadOnlyNotice": "راجع الشروط المقترحة من المُقرض أدناه. اقبل أو انتظر عرضًا أفضل.",

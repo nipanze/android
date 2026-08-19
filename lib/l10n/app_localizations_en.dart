@@ -1620,6 +1620,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveCalcBorrowingCost => 'Borrowing cost';
 
   @override
+  String get totalAmountPayableLabel => 'Total amount payable';
+
+  @override
+  String get totalInterestLabel => 'Total interest';
+
+  @override
   String get liveCalcNoData =>
       'Fill in the fields above to see your repayment breakdown.';
 

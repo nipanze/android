@@ -785,6 +785,8 @@
   "liveCalcTotalPayments": "Nombre total de paiements",
   "liveCalcTotalPayback": "Total à rembourser",
   "liveCalcBorrowingCost": "Coût total des intérêts",
+  "totalAmountPayableLabel": "Montant total à payer",
+  "totalInterestLabel": "Total des intérêts",
   "liveCalcNoData": "Remplissez les champs ci-dessus pour voir votre plan de remboursement.",
   "freeTermsBanner": "Laissez vide — les prêteurs proposeront leurs propres conditions. Passez à Pro pour suggérer des taux.",
   "offerReadOnlyNotice": "Consultez les conditions proposées par le prêteur ci-dessous. Acceptez ou attendez une meilleure offre.",

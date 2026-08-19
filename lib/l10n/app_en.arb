@@ -756,6 +756,8 @@
   "liveCalcTotalPayments": "Total payments",
   "liveCalcTotalPayback": "Total payback",
   "liveCalcBorrowingCost": "Borrowing cost",
+  "totalAmountPayableLabel": "Total amount payable",
+  "totalInterestLabel": "Total interest",
   "liveCalcNoData": "Fill in the fields above to see your repayment breakdown.",
   "freeTermsBanner": "Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.",
   "offerReadOnlyNotice": "Review the lender's proposed terms below. Accept or wait for a better offer.",

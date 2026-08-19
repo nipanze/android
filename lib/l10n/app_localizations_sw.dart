@@ -1630,6 +1630,12 @@ class AppLocalizationsSw extends AppLocalizations {
   String get liveCalcBorrowingCost => 'Gharama ya kukopa';
 
   @override
+  String get totalAmountPayableLabel => 'Total amount payable';
+
+  @override
+  String get totalInterestLabel => 'Total interest';
+
+  @override
   String get liveCalcNoData =>
       'Jaza sehemu zilizo juu ili uone muhtasari wa malipo yako.';
 
