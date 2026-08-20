@@ -1408,19 +1408,25 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: OutlinedButton.icon(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Edit Offer'),
+                    icon: const Icon(Icons.edit_rounded, size: 16),
+                    label: const Text('Edit Offer'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  flex: 2,
+                  child: FilledButton.icon(
                     onPressed: () {
                       Navigator.of(ctx).pop();
                       _submit();
                     },
-                    child: const Text('Confirm & Send'),
+                    icon: const Icon(Icons.send_rounded, size: 16),
+                    label: const Text('Confirm & Send'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                    ),
                   ),
                 ),
               ],
@@ -1996,11 +2002,28 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                         alignLabelWithHint: true),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                      onPressed: _loading || !_isOfferReady ? null : _previewOffer,
-                      child: _loading
-                          ? const CircularProgressIndicator()
-                          : const Text('Preview Offer')),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed:
+                          _loading || !_isOfferReady ? null : _previewOffer,
+                      icon: _loading
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.visibility_rounded, size: 18),
+                      label: Text(
+                        _loading ? 'Sending…' : 'Preview Offer',
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
                 ])),
       ),
     );

@@ -15,10 +15,16 @@ class MyListingsLoading extends MyListingsState {
 }
 
 class MyListingsLoaded extends MyListingsState {
-  const MyListingsLoaded(this.listings);
+  const MyListingsLoaded(
+    this.listings, {
+    this.forexRequests = const [],
+  });
+
   final List<MyListing> listings;
+  final List<ForexListingModel> forexRequests;
+
   @override
-  List<Object?> get props => [listings];
+  List<Object?> get props => [listings, forexRequests];
 }
 
 class MyListingsError extends MyListingsState {

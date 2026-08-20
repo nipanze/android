@@ -4,12 +4,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/my_listing.dart';
@@ -60,12 +62,19 @@ class _MyListingsView extends StatelessWidget {
                 .toList();
             final contracted =
                 state.listings.where((l) => l.isContracted).toList();
+            final forexRequests = state.forexRequests;
 
-            // Show empty state if nothing visible
-            if (active.isEmpty && closed.isEmpty && contracted.isEmpty) {
+            // Show empty state only when there are truly no requests at all
+            if (active.isEmpty &&
+                closed.isEmpty &&
+                contracted.isEmpty &&
+                forexRequests.isEmpty) {
               return _EmptyRequestState();
             }
-            return _ListingsBody(listings: state.listings);
+            return _ListingsBody(
+              listings: state.listings,
+              forexRequests: forexRequests,
+            );
           }
           return const SizedBox.shrink();
         },
@@ -77,14 +86,27 @@ class _MyListingsView extends StatelessWidget {
 // ─── Listings body ────────────────────────────────────────────────────────────
 
 class _ListingsBody extends StatelessWidget {
-  const _ListingsBody({required this.listings});
+  const _ListingsBody({
+    required this.listings,
+    required this.forexRequests,
+  });
+
   final List<MyListing> listings;
+  final List<ForexListingModel> forexRequests;
 
   List<MyListing> get _active => listings.where((l) => l.isActive).toList();
   List<MyListing> get _closed =>
       listings.where((l) => l.isExpired || l.isCancelled).toList();
   List<MyListing> get _contracted =>
       listings.where((l) => l.isContracted).toList();
+
+  List<ForexListingModel> get _activeForex =>
+      forexRequests.where((f) => f.status == 'active').toList();
+  List<ForexListingModel> get _closedForex => forexRequests
+      .where((f) => f.status != 'active' && f.status != 'contracted')
+      .toList();
+  List<ForexListingModel> get _contractedForex =>
+      forexRequests.where((f) => f.status == 'contracted').toList();
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +115,7 @@ class _ListingsBody extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
         children: [
+          // ── Active Loan Requests ────────────────────────────────────
           if (_active.isNotEmpty) ...[
             SectionHeader(
                 AppLocalizations.of(context)!.sectionActive(_active.length)),
@@ -105,6 +128,48 @@ class _ListingsBody extends StatelessWidget {
                   ),
                 )),
           ],
+          // ── Active Forex Requests ────────────────────────────────────
+          if (_activeForex.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.currency_exchange_rounded,
+                            size: 13, color: AppColors.accent),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Active Forex · ${_activeForex.length}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ..._activeForex.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ForexRequestCard(
+                    request: f,
+                    onTap: () => context.push('/forex/${f.requestId}'),
+                  ),
+                )),
+          ],
+          // ── Contracted Loans ─────────────────────────────────────────
           if (_contracted.isNotEmpty) ...[
             SectionHeader(AppLocalizations.of(context)!
                 .sectionContracted(_contracted.length)),
@@ -118,6 +183,48 @@ class _ListingsBody extends StatelessWidget {
                   ),
                 )),
           ],
+          // ── Contracted Forex ─────────────────────────────────────────
+          if (_contractedForex.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.handshake_rounded,
+                            size: 13, color: Colors.green),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Forex Contracted · ${_contractedForex.length}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ..._contractedForex.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ForexRequestCard(
+                    request: f,
+                    onTap: () => context.push('/forex/${f.requestId}'),
+                  ),
+                )),
+          ],
+          // ── Closed Loans ─────────────────────────────────────────────
           if (_closed.isNotEmpty) ...[
             SectionHeader(
                 AppLocalizations.of(context)!.sectionClosed(_closed.length)),
@@ -125,6 +232,51 @@ class _ListingsBody extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child:
                       MyListingCard(listing: l, onTap: () {}, onCancel: () {}),
+                )),
+          ],
+          // ── Closed / Expired Forex ───────────────────────────────────
+          if (_closedForex.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.currency_exchange_rounded,
+                            size: 13,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Forex Closed · ${_closedForex.length}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ..._closedForex.map((f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ForexRequestCard(
+                    request: f,
+                    onTap: () => context.push('/forex/${f.requestId}'),
+                  ),
                 )),
           ],
         ],
@@ -200,6 +352,222 @@ class _EmptyRequestState extends StatelessWidget {
       action: ElevatedButton(
         onPressed: () => context.go(AppRoutes.listingCreate),
         child: Text(AppLocalizations.of(context)!.createLoanRequest),
+      ),
+    );
+  }
+}
+
+// ─── Forex request card ───────────────────────────────────────────────────────
+
+class _ForexRequestCard extends StatelessWidget {
+  const _ForexRequestCard({
+    required this.request,
+    required this.onTap,
+  });
+
+  final ForexListingModel request;
+  final VoidCallback onTap;
+
+  Color _statusColor(BuildContext context) {
+    switch (request.status) {
+      case 'active':
+        return AppColors.accent;
+      case 'contracted':
+        return Colors.green;
+      case 'cancelled':
+      case 'expired':
+        return Colors.grey;
+      default:
+        return Theme.of(context).colorScheme.secondary;
+    }
+  }
+
+  IconData _statusIcon() {
+    switch (request.status) {
+      case 'active':
+        return Icons.radio_button_checked_rounded;
+      case 'contracted':
+        return Icons.handshake_rounded;
+      case 'cancelled':
+        return Icons.cancel_outlined;
+      case 'expired':
+        return Icons.timer_off_outlined;
+      default:
+        return Icons.circle_outlined;
+    }
+  }
+
+  String _fmtAmount(int amount) =>
+      NumberFormat('#,###').format(amount);
+
+  String _fmtRate(double rate) {
+    if (rate >= 1) return rate.toStringAsFixed(2);
+    return rate.toStringAsFixed(4);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final statusColor = _statusColor(context);
+    final timeLeft = request.timeRemaining;
+    final timeLabel = request.status == 'active' && !request.isExpired
+        ? (timeLeft.inDays > 0
+            ? '${timeLeft.inDays}d ${timeLeft.inHours % 24}h left'
+            : timeLeft.inHours > 0
+                ? '${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m left'
+                : '${timeLeft.inMinutes}m left')
+        : null;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: request.status == 'active'
+                ? AppColors.accent.withOpacity(0.3)
+                : theme.dividerColor,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Top row: pair + status chip ──────────────────────────
+            Row(
+              children: [
+                // Currency exchange icon
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.currency_exchange_rounded,
+                    size: 18,
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Pair label
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${request.currencyHeld} → ${request.currencyNeeded}',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (timeLabel != null)
+                        Text(
+                          timeLabel,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: request.isClosingSoon24h
+                                ? AppColors.danger
+                                : theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Status chip
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_statusIcon(), size: 11, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        request.status[0].toUpperCase() +
+                            request.status.substring(1),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // ── Amount ───────────────────────────────────────────────
+            Text(
+              '${request.currencyHeld} ${_fmtAmount(request.amount)}',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.accent,
+              ),
+            ),
+            const SizedBox(height: 6),
+            // ── Rate + offers row ────────────────────────────────────
+            Row(
+              children: [
+                if (request.preferredRate != null) ...[
+                  Icon(
+                    Icons.swap_horiz_rounded,
+                    size: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '@ ${_fmtRate(request.preferredRate!)} target rate',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Icon(
+                  Icons.local_offer_outlined,
+                  size: 13,
+                  color: request.numberOfOffers > 0
+                      ? AppColors.accent
+                      : theme.colorScheme.onSurface.withOpacity(0.4),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  request.numberOfOffers == 0
+                      ? 'No offers yet'
+                      : '${request.numberOfOffers} offer${request.numberOfOffers == 1 ? '' : 's'}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: request.numberOfOffers > 0
+                        ? AppColors.accent
+                        : theme.colorScheme.onSurface.withOpacity(0.5),
+                    fontWeight: request.numberOfOffers > 0
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+                const Spacer(),
+                // Settlement snippet
+                Flexible(
+                  child: Text(
+                    request.settlementPreference,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
