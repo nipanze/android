@@ -239,6 +239,14 @@
       "error": { "type": "String" }
     }
   },
+  "choosePhoto": "Hitamo ifoto",
+  "selectPhotoSource": "Hitamo aho ukura ifoto yawe y'umwirondoro",
+  "takePhoto": "Fata ifoto",
+  "useCamera": "Koresha ikamera yawe",
+  "chooseFromGallery": "Hitamo mu bubiko bw'amafoto",
+  "pickExistingPhoto": "Hitamo ifoto isanzwe ihari",
+  "removePhoto": "Kura mu gihagararo ifoto",
+  "removePhotoSubtitle": "Siba ifoto y'umwirondoro uriho sasa",
   "identityVerification": "Kwemeza Indangamuntu",
   "security": "Umutekano",
   "notifications": "Amatangazo",

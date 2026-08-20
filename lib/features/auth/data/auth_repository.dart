@@ -242,11 +242,49 @@ class AuthRepository {
     });
   }
 
+  /// Upload avatar image bytes for a user to Supabase Storage bucket and return public URL.
+  Future<String> uploadAvatarBytes(
+      String userId, List<int> bytes, String fileExt) async {
+    try {
+      final cleanExt = fileExt.replaceAll('.', '').toLowerCase();
+      final ext = cleanExt.isEmpty ? 'jpg' : cleanExt;
+      final mimeType = switch (ext) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
+      final path =
+          '$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+      try {
+        await _client.storage.from('avatars').uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: FileOptions(upsert: true, contentType: mimeType),
+            );
+        return _client.storage.from('avatars').getPublicUrl(path);
+      } catch (_) {
+        await _client.storage.from('kyc-documents').uploadBinary(
+              path,
+              Uint8List.fromList(bytes),
+              fileOptions: FileOptions(upsert: true, contentType: mimeType),
+            );
+        return await _client.storage
+            .from('kyc-documents')
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
+      }
+    } catch (e) {
+      debugPrint('Error uploading avatar bytes: $e');
+      rethrow;
+    }
+  }
+
   /// Update profile fields for a user. Accepts an optional explicit [targetUserId].
   Future<void> updateProfile({
     String? targetUserId,
     String? fullName,
     String? avatarUrl,
+    bool clearAvatar = false,
     String? phone,
     String? country,
     String? district,
@@ -270,7 +308,11 @@ class AuthRepository {
       'updated_at': DateTime.now().toIso8601String(),
     };
     if (fullName != null) updates['full_name'] = fullName;
-    if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+    if (clearAvatar) {
+      updates['avatar_url'] = null;
+    } else if (avatarUrl != null) {
+      updates['avatar_url'] = avatarUrl.isEmpty ? null : avatarUrl;
+    }
     if (phone != null) updates['phone'] = phone;
     if (country != null) updates['country'] = country;
     if (district != null) updates['district'] = district;

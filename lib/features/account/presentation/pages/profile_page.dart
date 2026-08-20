@@ -1,5 +1,4 @@
 // lib/features/account/presentation/pages/profile_page.dart
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,7 @@ import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -48,8 +48,6 @@ class _ProfileViewState extends State<_ProfileView> {
   bool _showProfessionalTag = true;
   bool _populated = false;
 
-  Uint8List? _newAvatarBytes;
-  String? _currentAvatarUrl;
   String _userInitials = 'U';
 
   static const _employmentTypes = [
@@ -98,7 +96,6 @@ class _ProfileViewState extends State<_ProfileView> {
     _institutionType = p.institutionType;
     _isBankAgent = p.isBankAgent;
     _showProfessionalTag = p.showProfessionalTag;
-    _currentAvatarUrl = p.avatarUrl;
     _userInitials = p.initials;
 
     // Use the stored country code from the profile; fall back to phone
@@ -143,20 +140,244 @@ class _ProfileViewState extends State<_ProfileView> {
   }
 
   Future<void> _pickAvatar() async {
+    final cubit = context.read<ProfileCubit>();
+    final cubitState = cubit.state;
+    final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF0F101C) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor =
+        isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
+    final cardBg = isDark ? const Color(0xFF181928) : const Color(0xFFF1F5F9);
+    final cardBorder =
+        isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
+    const purple = AppColors.accent;
+
+    final loadedState =
+        cubitState is ProfileCubitLoaded ? cubitState : null;
+    final hasImage = (loadedState?.pendingAvatarBytes != null) ||
+        (loadedState?.profile.avatarUrl?.isNotEmpty == true &&
+            loadedState?.pendingAvatarRemoved == false);
+
+    final option = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: sheetBg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: cardBorder),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 34),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF2D2D42) : const Color(0xFFCBD5E1),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l10n?.choosePhoto ?? 'Choose photo',
+              style: TextStyle(
+                fontFamily: 'Sora',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n?.selectPhotoSource ??
+                  'Select where to pick your profile photo',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                color: subtitleColor,
+              ),
+            ),
+            const SizedBox(height: 20),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, 'camera'),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: purple.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: purple.withValues(alpha: 0.4), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: purple,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.camera_alt_rounded,
+                          color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n?.takePhoto ?? 'Take a photo',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: titleColor)),
+                          Text(l10n?.useCamera ?? 'Use your camera',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: subtitleColor)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        color: AppColors.accent, size: 22),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, 'gallery'),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: cardBorder),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: purple.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.photo_library_rounded,
+                          color: AppColors.accent, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n?.chooseFromGallery ?? 'Choose from gallery',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: titleColor)),
+                          Text(l10n?.pickExistingPhoto ?? 'Pick an existing photo',
+                              style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: subtitleColor)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded,
+                        color: subtitleColor, size: 22),
+                  ],
+                ),
+              ),
+            ),
+            if (hasImage) ...[
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () => Navigator.pop(ctx, 'remove'),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppColors.danger.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n?.removePhoto ?? 'Remove photo',
+                                style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.danger)),
+                            Text(
+                                l10n?.removePhotoSubtitle ??
+                                    'Delete current profile picture',
+                                style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 12,
+                                    color: subtitleColor)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    if (option == null || !mounted) return;
+
+    if (option == 'remove') {
+      cubit.clearPendingAvatar(removeExisting: true);
+      return;
+    }
+
+    final source = option == 'camera' ? ImageSource.camera : ImageSource.gallery;
+
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 800,
         maxHeight: 800,
         imageQuality: 85,
       );
       if (picked == null) return;
+      if (!mounted) return;
       final bytes = await picked.readAsBytes();
-      setState(() => _newAvatarBytes = bytes);
+      if (!mounted) return;
+      cubit.setPendingAvatar(bytes);
     } catch (e) {
       if (mounted) {
-        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -277,8 +498,10 @@ class _ProfileViewState extends State<_ProfileView> {
 
           final isSaving = state is ProfileCubitSaving;
 
-          final hasNewAvatar = _newAvatarBytes != null;
-          final hasCurrentAvatar = _currentAvatarUrl?.isNotEmpty == true;
+          final loadedState = state is ProfileCubitLoaded ? state : null;
+          final pendingBytes = loadedState?.pendingAvatarBytes;
+          final isAvatarRemoved = loadedState?.pendingAvatarRemoved ?? false;
+          final avatarUrl = isAvatarRemoved ? null : loadedState?.profile.avatarUrl;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -289,69 +512,13 @@ class _ProfileViewState extends State<_ProfileView> {
                 children: [
                   // ── Avatar Picker Section ─────────────────────────────────
                   Center(
-                    child: GestureDetector(
+                    child: UserAvatar(
+                      avatarUrl: avatarUrl,
+                      newAvatarBytes: pendingBytes,
+                      initials: _userInitials,
+                      radius: 45,
+                      showCameraBadge: true,
                       onTap: _pickAvatar,
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              image: hasNewAvatar
-                                  ? DecorationImage(
-                                      image: MemoryImage(_newAvatarBytes!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : hasCurrentAvatar
-                                      ? DecorationImage(
-                                          image:
-                                              NetworkImage(_currentAvatarUrl!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
-                            ),
-                            child: (!hasNewAvatar && !hasCurrentAvatar)
-                                ? Center(
-                                    child: Text(
-                                      _userInitials,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color:
-                                      Theme.of(context).scaffoldBackgroundColor,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt_rounded,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -563,14 +730,24 @@ class _ProfileViewState extends State<_ProfileView> {
 
                             final messenger = ScaffoldMessenger.of(context);
                             final cubit = context.read<ProfileCubit>();
-                            String? finalAvatarUrl = _currentAvatarUrl;
+                            final currentCubitState = cubit.state;
+                            final loaded = currentCubitState is ProfileCubitLoaded
+                                ? currentCubitState
+                                : null;
+
+                            final pendingBytes = loaded?.pendingAvatarBytes;
+                            final clearAvatar =
+                                loaded?.pendingAvatarRemoved ?? false;
+                            String? finalAvatarUrl = clearAvatar
+                                ? null
+                                : loaded?.profile.avatarUrl;
 
                             // 1. Upload new avatar if selected
-                            if (_newAvatarBytes != null) {
+                            if (pendingBytes != null) {
                               try {
                                 final repo = getIt<ProfileRepository>();
                                 finalAvatarUrl = await repo.uploadAvatarBytes(
-                                  _newAvatarBytes!,
+                                  pendingBytes,
                                   'jpg',
                                 );
                               } catch (uploadErr) {
@@ -601,6 +778,7 @@ class _ProfileViewState extends State<_ProfileView> {
                               await cubit.updateProfile(
                                 fullName: _nameController.text.trim(),
                                 avatarUrl: finalAvatarUrl,
+                                clearAvatar: clearAvatar,
                                 phone: fullPhone.isEmpty ? null : fullPhone,
                                 district: _district,
                                 employmentType: _employmentType,

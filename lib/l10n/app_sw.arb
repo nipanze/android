@@ -239,6 +239,14 @@
       "error": { "type": "String" }
     }
   },
+  "choosePhoto": "Chagua picha",
+  "selectPhotoSource": "Chagua mahali pa kupata picha yako ya wasifu",
+  "takePhoto": "Piga picha",
+  "useCamera": "Tumia kamera yako",
+  "chooseFromGallery": "Chagua kutoka kwenye nyumba ya picha",
+  "pickExistingPhoto": "Chagua picha iliyopo",
+  "removePhoto": "Ondoa picha",
+  "removePhotoSubtitle": "Futa picha ya sasa ya wasifu",
   "identityVerification": "Uthibitisho wa Utambulisho",
   "security": "Usalama",
   "notifications": "Arifa",

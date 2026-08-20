@@ -500,6 +500,30 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get choosePhoto => 'Choose photo';
+
+  @override
+  String get selectPhotoSource => 'Select where to pick your profile photo';
+
+  @override
+  String get takePhoto => 'Take a photo';
+
+  @override
+  String get useCamera => 'Use your camera';
+
+  @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get pickExistingPhoto => 'Pick an existing photo';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get removePhotoSubtitle => 'Delete current profile picture';
+
+  @override
   String get identityVerification => 'Identity Verification';
 
   @override

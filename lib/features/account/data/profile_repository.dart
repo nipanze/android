@@ -137,14 +137,21 @@ class ProfileRepository {
   /// Upload avatar image bytes to Supabase Storage bucket and return public URL.
   Future<String> uploadAvatarBytes(List<int> bytes, String fileExt) async {
     try {
+      final cleanExt = fileExt.replaceAll('.', '').toLowerCase();
+      final ext = cleanExt.isEmpty ? 'jpg' : cleanExt;
+      final mimeType = switch (ext) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
       final path =
-          '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+          '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       try {
         await _client.storage.from('avatars').uploadBinary(
               path,
               Uint8List.fromList(bytes),
-              fileOptions: const FileOptions(upsert: true),
+              fileOptions: FileOptions(upsert: true, contentType: mimeType),
             );
         return _client.storage.from('avatars').getPublicUrl(path);
       } catch (_) {
@@ -152,7 +159,7 @@ class ProfileRepository {
         await _client.storage.from(StorageBuckets.kycDocuments).uploadBinary(
               path,
               Uint8List.fromList(bytes),
-              fileOptions: const FileOptions(upsert: true),
+              fileOptions: FileOptions(upsert: true, contentType: mimeType),
             );
         return await _client.storage
             .from(StorageBuckets.kycDocuments)
@@ -167,6 +174,7 @@ class ProfileRepository {
   Future<void> updateProfile({
     String? fullName,
     String? avatarUrl,
+    bool clearAvatar = false,
     String? phone,
     String? district,
     String? employmentType,
@@ -185,7 +193,11 @@ class ProfileRepository {
     try {
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;
-      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+      if (clearAvatar) {
+        updates['avatar_url'] = null;
+      } else if (avatarUrl != null) {
+        updates['avatar_url'] = avatarUrl.isEmpty ? null : avatarUrl;
+      }
       if (phone != null) updates['phone'] = phone;
       if (district != null) updates['district'] = district;
       if (employmentType != null) updates['employment_type'] = employmentType;

@@ -968,6 +968,54 @@ abstract class AppLocalizations {
   /// **'Could not select image: {error}'**
   String couldNotSelectImage(String error);
 
+  /// No description provided for @choosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose photo'**
+  String get choosePhoto;
+
+  /// No description provided for @selectPhotoSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select where to pick your profile photo'**
+  String get selectPhotoSource;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takePhoto;
+
+  /// No description provided for @useCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your camera'**
+  String get useCamera;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @pickExistingPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an existing photo'**
+  String get pickExistingPhoto;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get removePhoto;
+
+  /// No description provided for @removePhotoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete current profile picture'**
+  String get removePhotoSubtitle;
+
   /// No description provided for @identityVerification.
   ///
   /// In en, this message translates to:

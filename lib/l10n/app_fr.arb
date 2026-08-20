@@ -239,6 +239,14 @@
       "error": { "type": "String" }
     }
   },
+  "choosePhoto": "Choisir une photo",
+  "selectPhotoSource": "Sélectionnez l'emplacement de votre photo de profil",
+  "takePhoto": "Prendre une photo",
+  "useCamera": "Utiliser votre appareil photo",
+  "chooseFromGallery": "Choisir dans la galerie",
+  "pickExistingPhoto": "Choisir une photo existante",
+  "removePhoto": "Supprimer la photo",
+  "removePhotoSubtitle": "Supprimer la photo de profil actuelle",
   "identityVerification": "Vérification d'identité",
   "security": "Sécurité",
   "notifications": "Notifications",

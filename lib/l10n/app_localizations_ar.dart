@@ -498,6 +498,30 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get choosePhoto => 'اختر صورة';
+
+  @override
+  String get selectPhotoSource => 'حدد مكان اختيار صورة ملفك الشخصي';
+
+  @override
+  String get takePhoto => 'التقاط صورة';
+
+  @override
+  String get useCamera => 'استخدم الكاميرا الخاصة بك';
+
+  @override
+  String get chooseFromGallery => 'اختر من معرض الصور';
+
+  @override
+  String get pickExistingPhoto => 'اختر صورة حالية';
+
+  @override
+  String get removePhoto => 'إزالة الصورة';
+
+  @override
+  String get removePhotoSubtitle => 'حذف صورة الملف الشخصي الحالية';
+
+  @override
   String get identityVerification => 'التحقق من الهوية';
 
   @override

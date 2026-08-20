@@ -244,6 +244,14 @@
       "error": { "type": "String" }
     }
   },
+  "choosePhoto": "Choose photo",
+  "selectPhotoSource": "Select where to pick your profile photo",
+  "takePhoto": "Take a photo",
+  "useCamera": "Use your camera",
+  "chooseFromGallery": "Choose from gallery",
+  "pickExistingPhoto": "Pick an existing photo",
+  "removePhoto": "Remove photo",
+  "removePhotoSubtitle": "Delete current profile picture",
   "identityVerification": "Identity Verification",
   "security": "Security",
   "notifications": "Notifications",

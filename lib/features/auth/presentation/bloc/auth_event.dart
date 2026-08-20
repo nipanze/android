@@ -79,6 +79,7 @@ class AuthPhoneSignUpRequested extends AuthEvent {
     required this.countryCode,
     this.email,
     this.referralCode,
+    this.avatarBytes,
   });
   final String phone;
   final String password;
@@ -86,8 +87,9 @@ class AuthPhoneSignUpRequested extends AuthEvent {
   final String countryCode;
   final String? email; // optional real email from Step 3
   final String? referralCode;
+  final Uint8List? avatarBytes;
   @override
-  List<Object?> get props => [phone, fullName, referralCode];
+  List<Object?> get props => [phone, fullName, referralCode, avatarBytes];
 }
 
 /// Development mode helper: bypasses email verification requirement.

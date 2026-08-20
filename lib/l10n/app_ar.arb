@@ -239,6 +239,14 @@
       "error": { "type": "String" }
     }
   },
+  "choosePhoto": "اختر صورة",
+  "selectPhotoSource": "حدد مكان اختيار صورة ملفك الشخصي",
+  "takePhoto": "التقاط صورة",
+  "useCamera": "استخدم الكاميرا الخاصة بك",
+  "chooseFromGallery": "اختر من معرض الصور",
+  "pickExistingPhoto": "اختر صورة حالية",
+  "removePhoto": "إزالة الصورة",
+  "removePhotoSubtitle": "حذف صورة الملف الشخصي الحالية",
   "identityVerification": "التحقق من الهوية",
   "security": "الأمان",
   "notifications": "الإشعارات",

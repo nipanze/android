@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 import '../../domain/models/blocked_user.dart';
 import '../cubit/blocked_users_cubit.dart';
 
@@ -159,10 +160,10 @@ class _BlockedUserTile extends StatelessWidget {
     final dateStr = DateFormat.yMMMd().format(user.createdAt);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      leading: CircleAvatar(
-        backgroundImage:
-            user.avatarUrl == null ? null : NetworkImage(user.avatarUrl!),
-        child: user.avatarUrl == null ? Text(user.initials) : null,
+      leading: UserAvatar(
+        avatarUrl: user.avatarUrl,
+        initials: user.initials,
+        radius: 20,
       ),
       title: Text(user.displayName),
       subtitle: Text(l10n.blockedOnDate(dateStr)),

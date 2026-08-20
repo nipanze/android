@@ -23,12 +23,39 @@ final class ProfileCubitSaving extends ProfileCubitState {
 /// Profile is always non-null here — the cubit emits ProfileCubitError
 /// instead if the repository returns null.
 final class ProfileCubitLoaded extends ProfileCubitState {
-  const ProfileCubitLoaded(this.profile, {this.justSaved = false});
+  const ProfileCubitLoaded(
+    this.profile, {
+    this.justSaved = false,
+    this.pendingAvatarBytes,
+    this.pendingAvatarRemoved = false,
+  });
+
   final UserProfile profile; // non-null: guaranteed by cubit
   final bool justSaved;
+  /// Bytes of the newly selected avatar image (not yet uploaded/saved).
+  final Uint8List? pendingAvatarBytes;
+  /// True when the user explicitly chose to remove their current photo.
+  final bool pendingAvatarRemoved;
+
+  ProfileCubitLoaded copyWith({
+    UserProfile? profile,
+    bool? justSaved,
+    Object? pendingAvatarBytes = _sentinel,
+    bool? pendingAvatarRemoved,
+  }) {
+    return ProfileCubitLoaded(
+      profile ?? this.profile,
+      justSaved: justSaved ?? this.justSaved,
+      pendingAvatarBytes: pendingAvatarBytes == _sentinel
+          ? this.pendingAvatarBytes
+          : pendingAvatarBytes as Uint8List?,
+      pendingAvatarRemoved: pendingAvatarRemoved ?? this.pendingAvatarRemoved,
+    );
+  }
 
   @override
-  List<Object?> get props => [profile, justSaved];
+  List<Object?> get props =>
+      [profile, justSaved, pendingAvatarBytes, pendingAvatarRemoved];
 }
 
 final class ProfileCubitError extends ProfileCubitState {
@@ -38,3 +65,6 @@ final class ProfileCubitError extends ProfileCubitState {
   @override
   List<Object?> get props => [message];
 }
+
+// Sentinel to distinguish "not provided" from "explicitly null"
+const _sentinel = Object();

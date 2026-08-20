@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+export 'user_avatar.dart';
 
 
 // ─── Risk Badge ────────────────────────────────────────────────────────────────

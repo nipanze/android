@@ -104,10 +104,10 @@ void main() {
           onCreateAccount: () {},
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final btn = tester.widget<ElevatedButton>(
-        find.widgetWithText(ElevatedButton, '').first,
+        find.byType(ElevatedButton).first,
       );
       expect(btn.onPressed, isNull);
     });
@@ -354,7 +354,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('00:25'), findsOneWidget);
+      expect(find.textContaining('00:25', findRichText: true), findsOneWidget);
     });
 
     testWidgets('shows Resend Code when countdown is 0', (tester) async {
@@ -424,10 +424,10 @@ void main() {
           onResend: () {},
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final btn = tester.widget<ElevatedButton>(
-        find.widgetWithText(ElevatedButton, '').first,
+        find.byType(ElevatedButton).first,
       );
       expect(btn.onPressed, isNull);
     });
@@ -454,7 +454,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TextFormField), findsOneWidget);
-      expect(find.text('Send Code'), findsOneWidget);
+      expect(find.text('Send Verification Code'), findsOneWidget);
     });
 
     testWidgets('shows default country dial code', (tester) async {
@@ -498,7 +498,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Send Code'));
+      await tester.tap(find.text('Send Verification Code'));
       await tester.pump();
       expect(nextTapped, isTrue);
     });
@@ -518,10 +518,10 @@ void main() {
           onNext: () {},
         ),
       ));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final btn = tester.widget<ElevatedButton>(
-        find.widgetWithText(ElevatedButton, '').first,
+        find.byType(ElevatedButton).first,
       );
       expect(btn.onPressed, isNull);
     });
@@ -600,10 +600,10 @@ void main() {
 
     testWidgets('disables submit button when loading', (tester) async {
       await tester.pumpWidget(buildProfile(tester, isLoading: true));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       final btn = tester.widget<ElevatedButton>(
-        find.widgetWithText(ElevatedButton, '').first,
+        find.byType(ElevatedButton).first,
       );
       expect(btn.onPressed, isNull);
     });

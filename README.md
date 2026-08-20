@@ -275,8 +275,7 @@ A single `countries.currency_tradeable` flag was considered and rejected, becaus
 - **Non-custodial architecture** — Nipanze never holds, pools, converts, or moves user funds or currency, anywhere
 - **Controlled contact sharing** — contact details are revealed only after a contract is generated, loan or forex
 - **Selective transparency** — listing detail shows broad listing signals to non-participants, keeps offer count/coverage visible to the request owner, and unlocks exact offer terms only for the request owner and for offer-makers who have themselves bid on that listing
-- **Public trust signals** — rating, review count, completed-deal count, repeat-participant badge, and phone-verification status are visible on every profile, free, regardless of plan, country, or which module the deal history comes from — see [Trust & Reputation Signals](#trust--reputation-signals)
-- **Pro Advanced Filters** — Pro-tier users can use advanced filters (categorical employment type, bucketed income range, suggested-terms, owner KYC verification status) next to the notification bell, with database-level self-gating
+- **Profile Picture & Avatar System** — unified `UserAvatar` component with network image loading, automatic initials fallback on load error/offline, camera/gallery selection modal, profile picture removal support, registration avatar persistence, status badges (camera edit badge, KYC verified checkmark), and 5-language localization
 - **Compliance built-in** — append-only audit trail from day one, across both modules
 
 ---

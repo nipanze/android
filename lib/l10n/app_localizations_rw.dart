@@ -502,6 +502,30 @@ class AppLocalizationsRw extends AppLocalizations {
   }
 
   @override
+  String get choosePhoto => 'Hitamo ifoto';
+
+  @override
+  String get selectPhotoSource => 'Hitamo aho ukura ifoto yawe y\'umwirondoro';
+
+  @override
+  String get takePhoto => 'Fata ifoto';
+
+  @override
+  String get useCamera => 'Koresha ikamera yawe';
+
+  @override
+  String get chooseFromGallery => 'Hitamo mu bubiko bw\'amafoto';
+
+  @override
+  String get pickExistingPhoto => 'Hitamo ifoto isanzwe ihari';
+
+  @override
+  String get removePhoto => 'Kura mu gihagararo ifoto';
+
+  @override
+  String get removePhotoSubtitle => 'Siba ifoto y\'umwirondoro uriho sasa';
+
+  @override
   String get identityVerification => 'Kwemeza Indangamuntu';
 
   @override

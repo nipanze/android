@@ -702,64 +702,11 @@ class _ProfileHeaderCard extends StatelessWidget {
               // Avatar
               // Fix: wrapped in a Stack with a small checkmark badge
               // overlaid on the bottom-right corner, matching the "Verified"
-              // pill next to the name — a redundant-but-familiar pattern
-              // (avatar badge + text pill) seen across account/profile UIs.
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      image: profile?.avatarUrl?.isNotEmpty == true
-                          ? DecorationImage(
-                              image: NetworkImage(profile!.avatarUrl!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: profile?.avatarUrl?.isNotEmpty == true
-                        ? null
-                        : Center(
-                            child: Text(
-                              profile?.initials ?? 'U',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                  ),
-                  if (isVerified)
-                    Positioned(
-                      bottom: -2,
-                      right: -2,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                isDark ? AppColors.bg2Dark : AppColors.bg2Light,
-                            width: 2,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          size: 13,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ],
+              UserAvatar(
+                avatarUrl: profile?.avatarUrl,
+                initials: profile?.initials ?? 'U',
+                radius: 29,
+                isVerified: isVerified,
               ),
               const SizedBox(width: 14),
               // Info

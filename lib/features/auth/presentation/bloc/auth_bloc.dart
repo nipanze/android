@@ -240,9 +240,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // Persist the collected profile data using explicit user ID if available.
       final targetId = user?.id ?? createdUser?.id;
       if (targetId != null) {
+        String? avatarUrl;
+        if (event.avatarBytes != null && event.avatarBytes!.isNotEmpty) {
+          try {
+            avatarUrl = await _authRepository.uploadAvatarBytes(
+              targetId,
+              event.avatarBytes!,
+              'jpg',
+            );
+          } catch (uploadErr) {
+            debugPrint('Avatar upload during signup failed: $uploadErr');
+          }
+        }
+
         await _authRepository.updateProfile(
           targetUserId: targetId,
           fullName: event.fullName,
+          avatarUrl: avatarUrl,
           phone: clean,
           country: event.countryCode,
         );

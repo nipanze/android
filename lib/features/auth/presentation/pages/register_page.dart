@@ -31,6 +31,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import 'register/country_sheet.dart';
 import 'register/email_login_screen.dart';
@@ -293,6 +294,7 @@ class _RegisterPageState extends State<RegisterPage>
           referralCode: _referralCodeController.text.trim().isEmpty
               ? null
               : _referralCodeController.text.trim(),
+          avatarBytes: _avatarBytes,
         ));
   }
 
@@ -300,6 +302,7 @@ class _RegisterPageState extends State<RegisterPage>
   // Avatar picker
   // ─────────────────────────────────────────────────────────────────────────
   Future<void> _pickAvatar() async {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBg = isDark ? const Color(0xFF0F101C) : Colors.white;
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
@@ -310,7 +313,7 @@ class _RegisterPageState extends State<RegisterPage>
         isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
     const purple = AppColors.accent;
 
-    final source = await showModalBottomSheet<ImageSource>(
+    final option = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
@@ -334,7 +337,7 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Choose photo',
+              l10n?.choosePhoto ?? 'Choose photo',
               style: TextStyle(
                 fontFamily: 'Sora',
                 fontSize: 18,
@@ -344,7 +347,8 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             const SizedBox(height: 6),
             Text(
-              'Select where to pick your profile photo',
+              l10n?.selectPhotoSource ??
+                  'Select where to pick your profile photo',
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
@@ -353,7 +357,7 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             const SizedBox(height: 20),
             InkWell(
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              onTap: () => Navigator.pop(ctx, 'camera'),
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -380,13 +384,13 @@ class _RegisterPageState extends State<RegisterPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Take a photo',
+                          Text(l10n?.takePhoto ?? 'Take a photo',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: titleColor)),
-                          Text('Use your camera',
+                          Text(l10n?.useCamera ?? 'Use your camera',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,
@@ -402,7 +406,7 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             const SizedBox(height: 10),
             InkWell(
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              onTap: () => Navigator.pop(ctx, 'gallery'),
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -428,13 +432,13 @@ class _RegisterPageState extends State<RegisterPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Choose from gallery',
+                          Text(l10n?.chooseFromGallery ?? 'Choose from gallery',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: titleColor)),
-                          Text('Pick an existing photo',
+                          Text(l10n?.pickExistingPhoto ?? 'Pick an existing photo',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,
@@ -448,24 +452,95 @@ class _RegisterPageState extends State<RegisterPage>
                 ),
               ),
             ),
+            if (_avatarBytes != null) ...[
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () => Navigator.pop(ctx, 'remove'),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppColors.danger.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n?.removePhoto ?? 'Remove photo',
+                                style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.danger)),
+                            Text(
+                                l10n?.removePhotoSubtitle ??
+                                    'Delete current profile picture',
+                                style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 12,
+                                    color: subtitleColor)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
 
-    if (source == null || !mounted) return;
+    if (option == null || !mounted) return;
 
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: source,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
+    if (option == 'remove') {
+      setState(() => _avatarBytes = null);
+      return;
+    }
 
-    if (picked != null && mounted) {
-      final bytes = await picked.readAsBytes();
-      setState(() => _avatarBytes = bytes);
+    final source = option == 'camera' ? ImageSource.camera : ImageSource.gallery;
+
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (picked != null && mounted) {
+        final bytes = await picked.readAsBytes();
+        setState(() => _avatarBytes = bytes);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n?.couldNotSelectImage(e.toString()) ??
+                  'Could not select image: $e',
+            ),
+          ),
+        );
+      }
     }
   }
 

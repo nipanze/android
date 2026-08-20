@@ -502,6 +502,31 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
+  String get choosePhoto => 'Chagua picha';
+
+  @override
+  String get selectPhotoSource =>
+      'Chagua mahali pa kupata picha yako ya wasifu';
+
+  @override
+  String get takePhoto => 'Piga picha';
+
+  @override
+  String get useCamera => 'Tumia kamera yako';
+
+  @override
+  String get chooseFromGallery => 'Chagua kutoka kwenye nyumba ya picha';
+
+  @override
+  String get pickExistingPhoto => 'Chagua picha iliyopo';
+
+  @override
+  String get removePhoto => 'Ondoa picha';
+
+  @override
+  String get removePhotoSubtitle => 'Futa picha ya sasa ya wasifu';
+
+  @override
   String get identityVerification => 'Uthibitisho wa Utambulisho';
 
   @override

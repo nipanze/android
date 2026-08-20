@@ -503,6 +503,31 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get choosePhoto => 'Choisir une photo';
+
+  @override
+  String get selectPhotoSource =>
+      'Sélectionnez l\'emplacement de votre photo de profil';
+
+  @override
+  String get takePhoto => 'Prendre une photo';
+
+  @override
+  String get useCamera => 'Utiliser votre appareil photo';
+
+  @override
+  String get chooseFromGallery => 'Choisir dans la galerie';
+
+  @override
+  String get pickExistingPhoto => 'Choisir une photo existante';
+
+  @override
+  String get removePhoto => 'Supprimer la photo';
+
+  @override
+  String get removePhotoSubtitle => 'Supprimer la photo de profil actuelle';
+
+  @override
   String get identityVerification => 'Vérification d\'identité';
 
   @override

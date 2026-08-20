@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipanze/features/account/data/profile_repository.dart';
@@ -22,6 +24,7 @@ class MockProfileRepository implements ProfileRepository {
   Future<void> updateProfile({
     String? fullName,
     String? avatarUrl,
+    bool clearAvatar = false,
     String? phone,
     String? district,
     String? employmentType,
@@ -227,6 +230,33 @@ void main() {
       expect: () => [
         isA<ProfileCubitLoading>(),
         isA<ProfileCubitLoaded>(),
+      ],
+    );
+  });
+
+  group('ProfileCubit pending avatar methods', () {
+    blocTest<ProfileCubit, ProfileCubitState>(
+      'setPendingAvatar emits ProfileCubitLoaded with pendingAvatarBytes',
+      build: () => ProfileCubit(repository),
+      seed: () => const ProfileCubitLoaded(_testProfile),
+      act: (cubit) => cubit.setPendingAvatar(Uint8List.fromList([1, 2, 3])),
+      expect: () => [
+        isA<ProfileCubitLoaded>()
+            .having((s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNotNull)
+            .having((s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isFalse),
+      ],
+    );
+
+    blocTest<ProfileCubit, ProfileCubitState>(
+      'clearPendingAvatar emits ProfileCubitLoaded with pendingAvatarBytes null and pendingAvatarRemoved set',
+      build: () => ProfileCubit(repository),
+      seed: () => ProfileCubitLoaded(_testProfile,
+          pendingAvatarBytes: Uint8List.fromList([1, 2, 3])),
+      act: (cubit) => cubit.clearPendingAvatar(removeExisting: true),
+      expect: () => [
+        isA<ProfileCubitLoaded>()
+            .having((s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNull)
+            .having((s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isTrue),
       ],
     );
   });

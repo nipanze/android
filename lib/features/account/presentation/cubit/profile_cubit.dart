@@ -1,4 +1,6 @@
 // lib/features/account/presentation/cubit/profile_cubit.dart
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -34,6 +36,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
   Future<void> updateProfile({
     String? fullName,
     String? avatarUrl,
+    bool clearAvatar = false,
     String? phone,
     String? district,
     String? employmentType,
@@ -56,6 +59,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       await _repository.updateProfile(
         fullName: fullName,
         avatarUrl: avatarUrl,
+        clearAvatar: clearAvatar,
         phone: phone,
         district: district,
         employmentType: employmentType,
@@ -86,4 +90,22 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
   }
 
   Future<void> refresh() => load();
+
+  /// Store avatar bytes in state so they survive widget rebuilds.
+  void setPendingAvatar(Uint8List bytes) {
+    if (state is! ProfileCubitLoaded) return;
+    emit((state as ProfileCubitLoaded).copyWith(
+      pendingAvatarBytes: bytes,
+      pendingAvatarRemoved: false,
+    ));
+  }
+
+  /// Mark avatar as removed in state (user tapped "Remove photo").
+  void clearPendingAvatar({bool removeExisting = false}) {
+    if (state is! ProfileCubitLoaded) return;
+    emit((state as ProfileCubitLoaded).copyWith(
+      pendingAvatarBytes: null,
+      pendingAvatarRemoved: removeExisting,
+    ));
+  }
 }

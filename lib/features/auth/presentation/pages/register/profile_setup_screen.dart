@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../../../shared/widgets/user_avatar.dart';
 import 'shared.dart';
 
 class ProfileSetupScreen extends StatelessWidget {
@@ -125,59 +126,12 @@ class ProfileSetupScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // ── Avatar Picker ───────────────────────────────────
-                      GestureDetector(
+                      UserAvatar(
+                        newAvatarBytes: avatarBytes,
+                        radius: 40,
+                        showCameraBadge: true,
+                        borderColor: AppColors.accent,
                         onTap: onPickAvatar,
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.accent,
-                                  width: 2.5,
-                                ),
-                                color: cardBgColor,
-                                image: avatarBytes != null
-                                    ? DecorationImage(
-                                        image: MemoryImage(avatarBytes!),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
-                              ),
-                              child: avatarBytes == null
-                                  ? const Icon(
-                                      Icons.camera_alt_rounded,
-                                      size: 30,
-                                      color: AppColors.accent,
-                                    )
-                                  : null,
-                            ),
-                            // Edit badge
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: cardBgColor,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.edit_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ],
 
