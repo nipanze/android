@@ -142,11 +142,16 @@ class AppRouter {
             name: 'watchlist',
             pageBuilder: (_, state) => _fade(state, const WatchlistPage()),
           ),
-          // ── Request tab — goes directly to the create form ──────────
+          // ── Request creation routes (bottom nav visible) ──────────
           GoRoute(
             path: AppRoutes.listingCreate,
             name: 'listingCreate',
             pageBuilder: (_, state) => _fade(state, const ListingCreatePage()),
+          ),
+          GoRoute(
+            path: AppRoutes.forexCreate,
+            name: 'forexCreate',
+            pageBuilder: (_, state) => _fade(state, const ForexCreatePage()),
           ),
           // ── My listings — accessible via profile/account, not the tab ──
           GoRoute(
@@ -172,13 +177,6 @@ class AppRouter {
         path: AppRoutes.myForexRequests,
         name: 'myForexRequests',
         pageBuilder: (_, state) => _slide(state, const MyForexRequestsPage()),
-      ),
-      // forexCreate MUST come before forexDetail — otherwise the :requestId
-      // wildcard swallows the literal segment "create".
-      GoRoute(
-        path: AppRoutes.forexCreate,
-        name: 'forexCreate',
-        pageBuilder: (_, state) => _slide(state, const ForexCreatePage()),
       ),
       GoRoute(
         path: AppRoutes.forexDetail,
