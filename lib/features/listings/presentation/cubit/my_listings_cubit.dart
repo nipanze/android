@@ -79,6 +79,24 @@ class MyListingsCubit extends Cubit<MyListingsState> {
     }
   }
 
+  Future<void> cancelForexRequest(String requestId) async {
+    try {
+      await _forexRepository.cancelRequest(requestId);
+      final refreshedForex = await _forexRepository.getMyForexRequests();
+      final currentListings = state is MyListingsLoaded
+          ? (state as MyListingsLoaded).listings
+          : <MyListing>[];
+      if (!isClosed) {
+        emit(MyListingsLoaded(currentListings, forexRequests: refreshedForex));
+      }
+      _subscribeRealtime();
+    } catch (e) {
+      final current = state;
+      emit(MyListingsError(userFacingErrorMessage(e)));
+      if (current is MyListingsLoaded) emit(current);
+    }
+  }
+
   Future<void> refresh() => load();
 
   @override

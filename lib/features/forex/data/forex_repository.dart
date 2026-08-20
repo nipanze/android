@@ -172,6 +172,23 @@ class ForexRepository {
     }
   }
 
+  /// Cancel (take down) a Forex request the current user owns.
+  Future<void> cancelRequest(String requestId) async {
+    try {
+      await _client
+          .from(TableNames.forexRequests)
+          .update({
+            'status': 'cancelled',
+            'cancelled_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', requestId)
+          .eq('requester_id', _uid)
+          .eq('status', 'active');
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   Future<String> acceptOffer({
     required String requestId,
     required String offerId,

@@ -702,6 +702,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       final confirm = await _showLossWarningDialog();
       if (confirm != true) return;
     }
+    if (!mounted) return;
 
     setState(() => _step = 1);
     final listing = widget.listing;

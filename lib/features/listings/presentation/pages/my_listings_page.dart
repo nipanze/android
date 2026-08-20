@@ -166,6 +166,7 @@ class _ListingsBody extends StatelessWidget {
                   child: _ForexRequestCard(
                     request: f,
                     onTap: () => context.push('/forex/${f.requestId}'),
+                    onCancel: () => _confirmCancelForex(context, f),
                   ),
                 )),
           ],
@@ -284,6 +285,40 @@ class _ListingsBody extends StatelessWidget {
     );
   }
 
+  void _confirmCancelForex(
+      BuildContext context, ForexListingModel request) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Take Down Forex Request'),
+        content: Text(
+          'Cancel your ${request.currencyHeld} → ${request.currencyNeeded} '
+          'request? Any pending offers will be dismissed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              final navigator = Navigator.of(context, rootNavigator: true);
+              if (navigator.canPop()) navigator.pop();
+            },
+            child: const Text('Keep It'),
+          ),
+          TextButton(
+            onPressed: () {
+              final navigator = Navigator.of(context, rootNavigator: true);
+              if (navigator.canPop()) navigator.pop();
+              context
+                  .read<MyListingsCubit>()
+                  .cancelForexRequest(request.requestId);
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: const Text('Take Down'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _openAgreement(BuildContext context, MyListing listing) async {
     try {
       final repo = getIt<AgreementRepository>();
@@ -363,10 +398,12 @@ class _ForexRequestCard extends StatelessWidget {
   const _ForexRequestCard({
     required this.request,
     required this.onTap,
+    this.onCancel,
   });
 
   final ForexListingModel request;
   final VoidCallback onTap;
+  final VoidCallback? onCancel;
 
   Color _statusColor(BuildContext context) {
     switch (request.status) {
@@ -566,6 +603,27 @@ class _ForexRequestCard extends StatelessWidget {
                 ),
               ],
             ),
+            // ── Cancel button (active only) ──────────────────────────
+            if (request.status == 'active' && onCancel != null) ...[
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: onCancel,
+                  icon: const Icon(Icons.unpublished_outlined, size: 15),
+                  label: const Text('Take Down Request'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.danger,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    textStyle: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
