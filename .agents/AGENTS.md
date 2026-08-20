@@ -6,7 +6,8 @@ These rules apply to **every feature, screen, process, and database change** mad
 
 * Every screen and process **must reflect the user's current language and currency settings**.
 * Do not assume that adding a translation file is enough.
-* After implementing or modifying a screen, the agent must **verify the actual screen/UI** using the user's selected language.
+* After implementing or modifying a screen, the agent must **verify the actual screen/UI** using the user's selected language. 
+* But for now langages are: English, Swahili, French, Kinyarwanda, and Arabic 
 * Verify that all user-facing content is localized, including:
 
   * Page titles
@@ -25,6 +26,7 @@ These rules apply to **every feature, screen, process, and database change** mad
 * For languages requiring RTL, verify that the screen layout correctly supports RTL.
 * **Do not mark a screen or feature as complete until this verification has been performed.**
 * Do not introduce new hardcoded user-facing strings when the project has a localization system.
+
 
 ## 2. Input Validation & Button States
 

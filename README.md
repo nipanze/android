@@ -692,6 +692,7 @@ psql "postgresql://postgres:<password>@<project-ref>.supabase.co:5432/postgres" 
    ```
 3. Confirm `countries` has all 7 markets seeded, with `UG` as the only `is_active = TRUE` row, and confirm `currencies` has all 8 rows (`UGX`/`KES`/`TZS`/`RWF`/`NGN`/`ZAR`/`EGP`/`USD`) with `forex_trading_enabled = FALSE` before onboarding any users
 4. Create the `verification-documents` storage bucket (private) if it doesn't already exist
+5. In the Supabase SQL Editor, run [`sql/patch_avatar_storage.sql`](sql/patch_avatar_storage.sql) to add `profiles.avatar_url`, create the private `avatars` bucket, and install its user-folder storage policies. Profile photos are loaded with signed URLs, so this patch is required for upload and reload after changing screens or tabs.
 
 ### 2. Auth Bridge Trigger
 

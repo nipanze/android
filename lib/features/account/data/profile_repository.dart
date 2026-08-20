@@ -153,7 +153,9 @@ class ProfileRepository {
               Uint8List.fromList(bytes),
               fileOptions: FileOptions(upsert: true, contentType: mimeType),
             );
-        return _client.storage.from('avatars').getPublicUrl(path);
+        return await _client.storage
+            .from('avatars')
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
       } catch (_) {
         // Fallback to kyc-documents bucket if avatars bucket does not exist
         await _client.storage.from(StorageBuckets.kycDocuments).uploadBinary(
