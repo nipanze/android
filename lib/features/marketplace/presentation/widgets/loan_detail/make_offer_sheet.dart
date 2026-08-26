@@ -1726,6 +1726,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
 
                   DropdownButtonFormField<String>(
                     initialValue: _selectedDueDay,
+                    isExpanded: true,
                     decoration: InputDecoration(
                       labelText: l10n?.dueDayLabel ?? 'Due day / frequency',
                       prefixIcon: const Icon(Icons.today_outlined, size: 20),
@@ -1738,7 +1739,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                                 : _monthlyDueDayOptions)
                         .map((day) => DropdownMenuItem(
                               value: day,
-                              child: Text(day),
+                              child: Text(
+                                day,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ))
                         .toList(),
                     onChanged: (v) => setState(() {

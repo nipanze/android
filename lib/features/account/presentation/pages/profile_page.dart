@@ -47,6 +47,7 @@ class _ProfileViewState extends State<_ProfileView> {
   bool _isBankAgent = false;
   bool _showProfessionalTag = true;
   bool _populated = false;
+  bool _hasChanges = false;
 
   String _userInitials = 'U';
 
@@ -71,7 +72,9 @@ class _ProfileViewState extends State<_ProfileView> {
   @override
   void initState() {
     super.initState();
-    _nameController.addListener(() => setState(() {}));
+    _nameController.addListener(() {
+      if (_populated) setState(() => _hasChanges = true);
+    });
   }
 
   @override
@@ -128,6 +131,11 @@ class _ProfileViewState extends State<_ProfileView> {
         _employmentTypes.contains(p.employmentType) ? p.employmentType : null;
 
     _populated = true;
+    _hasChanges = false;
+  }
+
+  void _markChanged() {
+    if (_populated && !_hasChanges) setState(() => _hasChanges = true);
   }
 
   String _formatFullPhoneNumber() {
@@ -358,6 +366,7 @@ class _ProfileViewState extends State<_ProfileView> {
 
     if (option == 'remove') {
       cubit.clearPendingAvatar(removeExisting: true);
+      _markChanged();
       return;
     }
 
@@ -376,6 +385,7 @@ class _ProfileViewState extends State<_ProfileView> {
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
       cubit.setPendingAvatar(bytes);
+      _markChanged();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -390,7 +400,8 @@ class _ProfileViewState extends State<_ProfileView> {
     }
   }
 
-  bool get _isReadyToSave => _nameController.text.trim().isNotEmpty;
+  bool get _isReadyToSave =>
+      _hasChanges && _nameController.text.trim().isNotEmpty;
 
   String _employmentLabel(AppLocalizations? l10n, String value) {
     switch (value) {
@@ -425,6 +436,63 @@ class _ProfileViewState extends State<_ProfileView> {
         return l10n?.individualPersonalAccountLabel ??
             'Individual / Personal account';
     }
+  }
+
+  Future<void> _saveProfile(
+      BuildContext context, AppLocalizations? l10n) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final cubit = context.read<ProfileCubit>();
+    final currentCubitState = cubit.state;
+    final loaded = currentCubitState is ProfileCubitLoaded
+        ? currentCubitState
+        : null;
+    final pendingBytes = loaded?.pendingAvatarBytes;
+    final clearAvatar = loaded?.pendingAvatarRemoved ?? false;
+    String? finalAvatarUrl = clearAvatar ? null : loaded?.profile.avatarUrl;
+
+    if (pendingBytes != null) {
+      try {
+        final repo = getIt<ProfileRepository>();
+        finalAvatarUrl = await repo.uploadAvatarBytes(pendingBytes, 'jpg');
+      } catch (uploadErr) {
+        if (mounted) {
+          messenger.showSnackBar(SnackBar(
+            content: Text(l10n?.avatarUploadFailed(uploadErr.toString()) ??
+                'Avatar upload failed: $uploadErr'),
+            backgroundColor: AppColors.danger,
+          ));
+        }
+        return;
+      }
+    }
+
+    final incomeText = _incomeController.text.trim();
+    final monthlyIncome = incomeText.isEmpty
+        ? null
+        : int.tryParse(incomeText.replaceAll(',', ''));
+    final fullPhone = _formatFullPhoneNumber();
+
+    if (!mounted) return;
+    await cubit.updateProfile(
+      fullName: _nameController.text.trim(),
+      avatarUrl: finalAvatarUrl,
+      clearAvatar: clearAvatar,
+      phone: fullPhone.isEmpty ? null : fullPhone,
+      district: _district,
+      employmentType: _employmentType,
+      employerName: _employerController.text.trim().isEmpty
+          ? null
+          : _employerController.text.trim(),
+      monthlyIncome: monthlyIncome,
+      preferredBank: _preferredBankController.text.trim().isEmpty
+          ? null
+          : _preferredBankController.text.trim(),
+      institutionType: _institutionType ?? '',
+      isBankAgent: _isBankAgent,
+      showProfessionalTag: _showProfessionalTag,
+    );
   }
 
   @override
@@ -572,6 +640,7 @@ class _ProfileViewState extends State<_ProfileView> {
                         ),
                       ),
                     ),
+                    onChanged: (_) => _markChanged(),
                   ),
                   const SizedBox(height: 14),
 
@@ -593,7 +662,10 @@ class _ProfileViewState extends State<_ProfileView> {
                     items: _selectedCountry.regions
                         .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                         .toList(),
-                    onChanged: (v) => setState(() => _district = v),
+                    onChanged: (v) {
+                      setState(() => _district = v);
+                      _markChanged();
+                    },
                   ),
                   const SizedBox(height: 14),
 
@@ -612,7 +684,10 @@ class _ProfileViewState extends State<_ProfileView> {
                               child: Text(_employmentLabel(l10n, e)),
                             ))
                         .toList(),
-                    onChanged: (v) => setState(() => _employmentType = v),
+                    onChanged: (v) {
+                      setState(() => _employmentType = v);
+                      _markChanged();
+                    },
                   ),
                   const SizedBox(height: 14),
 
@@ -624,6 +699,7 @@ class _ProfileViewState extends State<_ProfileView> {
                           'Employer / Business name (optional)',
                       prefixIcon: const Icon(Icons.business_outlined, size: 20),
                     ),
+                    onChanged: (_) => _markChanged(),
                   ),
                   const SizedBox(height: 14),
 
@@ -640,6 +716,7 @@ class _ProfileViewState extends State<_ProfileView> {
                       prefixIcon: const Icon(Icons.currency_exchange_outlined,
                           size: 20),
                     ),
+                    onChanged: (_) => _markChanged(),
                   ),
                   const SizedBox(height: 24),
 
@@ -666,6 +743,7 @@ class _ProfileViewState extends State<_ProfileView> {
                         size: 20,
                       ),
                     ),
+                    onChanged: (_) => _markChanged(),
                   ),
                   const SizedBox(height: 14),
 
@@ -686,8 +764,11 @@ class _ProfileViewState extends State<_ProfileView> {
                               child: Text(_institutionLabel(l10n, e)),
                             ))
                         .toList(),
-                    onChanged: (v) => setState(() =>
-                        _institutionType = (v == null || v.isEmpty) ? null : v),
+                    onChanged: (v) {
+                      setState(() => _institutionType =
+                          (v == null || v.isEmpty) ? null : v);
+                      _markChanged();
+                    },
                   ),
                   const SizedBox(height: 8),
 
@@ -702,7 +783,10 @@ class _ProfileViewState extends State<_ProfileView> {
                           'Shows a bank-agent tag to Pro users seeking bank loans.',
                     ),
                     value: _isBankAgent,
-                    onChanged: (v) => setState(() => _isBankAgent = v),
+                    onChanged: (v) {
+                      setState(() => _isBankAgent = v);
+                      _markChanged();
+                    },
                   ),
 
                   // Show Professional Tag Switch
@@ -717,96 +801,35 @@ class _ProfileViewState extends State<_ProfileView> {
                           'Turn off to hide bank, forex company, SACCO, or agent labels on offers.',
                     ),
                     value: _showProfessionalTag,
-                    onChanged: (v) => setState(() => _showProfessionalTag = v),
+                    onChanged: (v) {
+                      setState(() => _showProfessionalTag = v);
+                      _markChanged();
+                    },
                   ),
-                  const SizedBox(height: 28),
-
-                  // ── Save Button ────────────────────────────────────────────
-                  ElevatedButton(
-                    onPressed: isSaving || !_isReadyToSave
-                        ? null
-                        : () async {
-                            if (!_formKey.currentState!.validate()) return;
-
-                            final messenger = ScaffoldMessenger.of(context);
-                            final cubit = context.read<ProfileCubit>();
-                            final currentCubitState = cubit.state;
-                            final loaded = currentCubitState is ProfileCubitLoaded
-                                ? currentCubitState
-                                : null;
-
-                            final pendingBytes = loaded?.pendingAvatarBytes;
-                            final clearAvatar =
-                                loaded?.pendingAvatarRemoved ?? false;
-                            String? finalAvatarUrl = clearAvatar
-                                ? null
-                                : loaded?.profile.avatarUrl;
-
-                            // 1. Upload new avatar if selected
-                            if (pendingBytes != null) {
-                              try {
-                                final repo = getIt<ProfileRepository>();
-                                finalAvatarUrl = await repo.uploadAvatarBytes(
-                                  pendingBytes,
-                                  'jpg',
-                                );
-                              } catch (uploadErr) {
-                                if (mounted) {
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        l10n?.avatarUploadFailed(
-                                              uploadErr.toString(),
-                                            ) ??
-                                            'Avatar upload failed: $uploadErr',
-                                      ),
-                                      backgroundColor: AppColors.danger,
-                                    ),
-                                  );
-                                }
-                                return;
-                              }
-                            }
-
-                            final incomeText = _incomeController.text.trim();
-                            final monthlyIncome = incomeText.isEmpty
-                                ? null
-                                : int.tryParse(incomeText.replaceAll(',', ''));
-                            final fullPhone = _formatFullPhoneNumber();
-
-                            if (mounted) {
-                              await cubit.updateProfile(
-                                fullName: _nameController.text.trim(),
-                                avatarUrl: finalAvatarUrl,
-                                clearAvatar: clearAvatar,
-                                phone: fullPhone.isEmpty ? null : fullPhone,
-                                district: _district,
-                                employmentType: _employmentType,
-                                employerName:
-                                    _employerController.text.trim().isEmpty
-                                        ? null
-                                        : _employerController.text.trim(),
-                                monthlyIncome: monthlyIncome,
-                                preferredBank:
-                                    _preferredBankController.text.trim().isEmpty
-                                        ? null
-                                        : _preferredBankController.text.trim(),
-                                institutionType: _institutionType ?? '',
-                                isBankAgent: _isBankAgent,
-                                showProfessionalTag: _showProfessionalTag,
-                              );
-                            }
-                          },
-                    child: isSaving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : Text(l10n?.saveChanges ?? 'Save changes'),
-                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: BlocBuilder<ProfileCubit, ProfileCubitState>(
+        builder: (context, state) {
+          final isSaving = state is ProfileCubitSaving;
+          return SafeArea(
+            minimum: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+            child: ElevatedButton(
+              onPressed: isSaving || !_isReadyToSave
+                  ? null
+                  : () => _saveProfile(context, l10n),
+              child: isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(l10n?.saveChanges ?? 'Save changes'),
             ),
           );
         },

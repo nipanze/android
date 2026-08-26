@@ -18,6 +18,12 @@ fi
 TARGET="${1:-chrome}"
 
 echo "🚀 Starting on $TARGET → $URL"
-flutter run -d "$TARGET" \
+WEB_RESOURCE_ARGS=()
+if [[ "$TARGET" == "chrome" || "$TARGET" == "web" ]]; then
+  # Avoid requiring www.gstatic.com for CanvasKit during local development.
+  WEB_RESOURCE_ARGS+=(--no-web-resources-cdn)
+fi
+
+flutter run -d "$TARGET" "${WEB_RESOURCE_ARGS[@]}" \
   --dart-define=SUPABASE_URL="$URL" \
   --dart-define=SUPABASE_ANON_KEY="$KEY"
