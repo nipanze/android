@@ -564,8 +564,6 @@ class _ProfileViewState extends State<_ProfileView> {
             );
           }
 
-          final isSaving = state is ProfileCubitSaving;
-
           final loadedState = state is ProfileCubitLoaded ? state : null;
           final pendingBytes = loadedState?.pendingAvatarBytes;
           final isAvatarRemoved = loadedState?.pendingAvatarRemoved ?? false;
