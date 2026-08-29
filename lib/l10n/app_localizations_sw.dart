@@ -2035,4 +2035,39 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get sendAnyway => 'Tuma Ofa Hata Hivyo';
+
+  @override
+  String get safetyToolkit => 'Safety Toolkit';
+
+  @override
+  String get safetyTips => 'Safety tips';
+
+  @override
+  String get reportListingOrUser => 'Report listing or user';
+
+  @override
+  String get supportAndHelp => 'Support & help';
+
+  @override
+  String get appLock => 'App Lock';
+
+  @override
+  String get appLockDescription =>
+      'Require biometrics or device PIN after cold start or 30 seconds in the background.';
+
+  @override
+  String get unlockNipanze => 'Unlock Nipanze';
+
+  @override
+  String get referralChecking => 'Checking referral code...';
+
+  @override
+  String get referralAccepted => 'Referral code accepted.';
+
+  @override
+  String get profilePicture => 'Profile Picture';
+
+  @override
+  String get profilePictureKycNote =>
+      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
 }

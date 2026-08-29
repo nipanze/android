@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 
-Future<void> showSafetyToolkitSheet(
-  BuildContext context, {
-  required Future<void> Function() onBlockUser,
-}) {
+Future<void> showSafetyToolkitSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -13,14 +10,12 @@ Future<void> showSafetyToolkitSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (sheetCtx) => _SafetyToolkitSheet(onBlockUser: onBlockUser),
+    builder: (sheetCtx) => const _SafetyToolkitSheet(),
   );
 }
 
 class _SafetyToolkitSheet extends StatelessWidget {
-  const _SafetyToolkitSheet({required this.onBlockUser});
-
-  final Future<void> Function() onBlockUser;
+  const _SafetyToolkitSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -76,36 +71,6 @@ class _SafetyToolkitSheet extends StatelessWidget {
                 'Email support@nipanze.com with the request ID and screenshots if you need urgent help.',
               ),
             ),
-            _SafetyRow(
-              icon: Icons.visibility_off_outlined,
-              title: 'Block user',
-              subtitle: 'Hide this user from your marketplace experience.',
-              destructive: true,
-              onTap: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (dialogCtx) => AlertDialog(
-                    title: const Text('Block user?'),
-                    content: const Text(
-                      'You will stop seeing this user in listings and marketplace activity.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(dialogCtx).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.of(dialogCtx).pop(true),
-                        child: const Text('Block'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed != true || !context.mounted) return;
-                Navigator.of(context).pop();
-                await onBlockUser();
-              },
-            ),
           ],
         ),
       ),
@@ -135,27 +100,21 @@ class _SafetyRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.destructive = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
-    final color = destructive ? AppColors.danger : AppColors.accent;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: color),
+      leading: Icon(icon, color: AppColors.accent),
       title: Text(
         title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: destructive ? AppColors.danger : null,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(subtitle),
       onTap: onTap,

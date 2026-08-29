@@ -13,7 +13,6 @@ import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/safety_toolkit_sheet.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
 import '../../../../shared/widgets/trust_badges.dart';
-import '../../../account/data/privacy_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../marketplace/presentation/widgets/lender_required_sheet.dart';
@@ -75,10 +74,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             IconButton(
               tooltip: 'Safety Toolkit',
               icon: const Icon(Icons.shield_outlined),
-              onPressed: () => showSafetyToolkitSheet(
-                context,
-                onBlockUser: () => _blockOwner(askConfirmation: false),
-              ),
+              onPressed: () => showSafetyToolkitSheet(context),
             ),
         ],
       ),
@@ -230,51 +226,6 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             )
           : null,
     );
-  }
-
-  Future<void> _blockOwner({bool askConfirmation = true}) async {
-    final ownerId = _ownerId;
-    if (ownerId == null) return;
-    final l10n = AppLocalizations.of(context)!;
-
-    if (askConfirmation) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.blockUserConfirmTitle),
-          content: Text(l10n.blockUserConfirmBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(l10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(l10n.block),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed != true || !mounted) return;
-    }
-
-    try {
-      await getIt<PrivacyRepository>().blockUser(ownerId);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.userBlocked)),
-      );
-      context.go(AppRoutes.marketplace);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(userFacingErrorMessage(e)),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-    }
   }
 }
 

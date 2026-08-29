@@ -3740,6 +3740,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send Offer Anyway'**
   String get sendAnyway;
+
+  /// No description provided for @safetyToolkit.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety Toolkit'**
+  String get safetyToolkit;
+
+  /// No description provided for @safetyTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety tips'**
+  String get safetyTips;
+
+  /// No description provided for @reportListingOrUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Report listing or user'**
+  String get reportListingOrUser;
+
+  /// No description provided for @supportAndHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Support & help'**
+  String get supportAndHelp;
+
+  /// No description provided for @appLock.
+  ///
+  /// In en, this message translates to:
+  /// **'App Lock'**
+  String get appLock;
+
+  /// No description provided for @appLockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Require biometrics or device PIN after cold start or 30 seconds in the background.'**
+  String get appLockDescription;
+
+  /// No description provided for @unlockNipanze.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Nipanze'**
+  String get unlockNipanze;
+
+  /// No description provided for @referralChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking referral code...'**
+  String get referralChecking;
+
+  /// No description provided for @referralAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral code accepted.'**
+  String get referralAccepted;
+
+  /// No description provided for @profilePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Picture'**
+  String get profilePicture;
+
+  /// No description provided for @profilePictureKycNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.'**
+  String get profilePictureKycNote;
 }
 
 class _AppLocalizationsDelegate
