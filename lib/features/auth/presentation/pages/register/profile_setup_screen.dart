@@ -66,7 +66,7 @@ class ProfileSetupScreen extends StatelessWidget {
 
     final email = emailController.text.trim();
     if (email.isNotEmpty) {
-      if (!email.contains('@') || !email.contains('.')) return false;
+      if (_validateEmail(email) != null) return false;
     }
 
     if (referralCodeController.text.trim().isNotEmpty &&
@@ -109,6 +109,18 @@ class ProfileSetupScreen extends StatelessWidget {
         AppColors.danger,
       _ => null,
     };
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return null;
+    final validShape = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
+    if (!validShape) return 'Enter a valid email';
+    final lower = email.toLowerCase();
+    if (lower.endsWith('.test') || lower.endsWith('@nipanze.test')) {
+      return 'Enter a real email address that can receive confirmation mail';
+    }
+    return null;
   }
 
   @override
@@ -215,11 +227,7 @@ class ProfileSetupScreen extends StatelessWidget {
                         subtitleColor: subtitleColor,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) return null;
-                          if (!v.contains('@')) return 'Enter a valid email';
-                          return null;
-                        },
+                        validator: _validateEmail,
                       ),
                       const SizedBox(height: 14),
 

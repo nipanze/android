@@ -409,6 +409,18 @@ class _ProfileViewState extends State<_ProfileView> {
   bool get _isReadyToSave =>
       _hasChanges && _nameController.text.trim().isNotEmpty;
 
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return null;
+    final validShape = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
+    if (!validShape) return 'Enter a valid email';
+    final lower = email.toLowerCase();
+    if (lower.endsWith('.test') || lower.endsWith('@nipanze.test')) {
+      return 'Enter a real email address that can receive confirmation mail';
+    }
+    return null;
+  }
+
   String _employmentLabel(AppLocalizations? l10n, String value) {
     switch (value) {
       case 'government_employee':
@@ -518,6 +530,10 @@ class _ProfileViewState extends State<_ProfileView> {
             _populateIfNeeded(state);
             if (state.justSaved) {
               final emailUpdateError = state.emailUpdateError;
+              if (emailUpdateError != null) {
+                _emailController.text = state.profile.email;
+                _hasChanges = false;
+              }
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -639,14 +655,7 @@ class _ProfileViewState extends State<_ProfileView> {
                       helperText:
                           'Used for password reset and optional email login.',
                     ),
-                    validator: (v) {
-                      final value = v?.trim() ?? '';
-                      if (value.isEmpty) return null;
-                      if (!value.contains('@') || !value.contains('.')) {
-                        return 'Enter a valid email';
-                      }
-                      return null;
-                    },
+                    validator: _validateEmail,
                   ),
                   const SizedBox(height: 14),
 
