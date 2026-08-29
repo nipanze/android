@@ -57,7 +57,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
     final current = state as ProfileCubitLoaded;
     emit(const ProfileCubitSaving());
     try {
-      final emailConfirmationPending = await _repository.updateProfile(
+      final updateResult = await _repository.updateProfile(
         fullName: fullName,
         email: email,
         avatarUrl: avatarUrl,
@@ -87,7 +87,8 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       emit(ProfileCubitLoaded(
         updated,
         justSaved: true,
-        emailConfirmationPending: emailConfirmationPending,
+        emailConfirmationPending: updateResult.emailConfirmationPending,
+        emailUpdateError: updateResult.emailUpdateError,
       ));
     } catch (e) {
       emit(current);

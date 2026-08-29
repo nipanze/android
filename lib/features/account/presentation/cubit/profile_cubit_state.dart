@@ -27,6 +27,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
     this.profile, {
     this.justSaved = false,
     this.emailConfirmationPending = false,
+    this.emailUpdateError,
     this.pendingAvatarBytes,
     this.pendingAvatarRemoved = false,
   });
@@ -34,6 +35,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
   final UserProfile profile; // non-null: guaranteed by cubit
   final bool justSaved;
   final bool emailConfirmationPending;
+  final String? emailUpdateError;
 
   /// Bytes of the newly selected avatar image (not yet uploaded/saved).
   final Uint8List? pendingAvatarBytes;
@@ -45,6 +47,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
     UserProfile? profile,
     bool? justSaved,
     bool? emailConfirmationPending,
+    Object? emailUpdateError = _sentinel,
     Object? pendingAvatarBytes = _sentinel,
     bool? pendingAvatarRemoved,
   }) {
@@ -53,6 +56,9 @@ final class ProfileCubitLoaded extends ProfileCubitState {
       justSaved: justSaved ?? this.justSaved,
       emailConfirmationPending:
           emailConfirmationPending ?? this.emailConfirmationPending,
+      emailUpdateError: emailUpdateError == _sentinel
+          ? this.emailUpdateError
+          : emailUpdateError as String?,
       pendingAvatarBytes: pendingAvatarBytes == _sentinel
           ? this.pendingAvatarBytes
           : pendingAvatarBytes as Uint8List?,
@@ -65,6 +71,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
         profile,
         justSaved,
         emailConfirmationPending,
+        emailUpdateError,
         pendingAvatarBytes,
         pendingAvatarRemoved,
       ];

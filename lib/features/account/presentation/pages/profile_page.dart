@@ -517,12 +517,15 @@ class _ProfileViewState extends State<_ProfileView> {
           if (state is ProfileCubitLoaded) {
             _populateIfNeeded(state);
             if (state.justSaved) {
+              final emailUpdateError = state.emailUpdateError;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    state.emailConfirmationPending
-                        ? 'Profile saved. Check your email to confirm the new address.'
-                        : (l10n?.profileSaved ?? 'Profile saved.'),
+                    emailUpdateError != null
+                        ? 'Profile saved, but email was not changed. $emailUpdateError'
+                        : state.emailConfirmationPending
+                            ? 'Profile saved. Check your email to confirm the new address.'
+                            : (l10n?.profileSaved ?? 'Profile saved.'),
                   ),
                 ),
               );
@@ -532,9 +535,11 @@ class _ProfileViewState extends State<_ProfileView> {
                     .read<AuthBloc>()
                     .add(const AuthProfileRefreshRequested());
               } catch (_) {}
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) context.pop();
-              });
+              if (emailUpdateError == null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) context.pop();
+                });
+              }
             }
           }
           if (state is ProfileCubitError) {

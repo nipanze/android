@@ -21,7 +21,7 @@ class MockProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<bool> updateProfile({
+  Future<ProfileUpdateResult> updateProfile({
     String? fullName,
     String? email,
     String? avatarUrl,
@@ -43,7 +43,7 @@ class MockProfileRepository implements ProfileRepository {
   }) async {
     updateCallCount++;
     if (_error != null) throw _error!;
-    return false;
+    return const ProfileUpdateResult();
   }
 
   @override

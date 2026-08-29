@@ -1,6 +1,7 @@
 // lib/features/account/data/profile_repository.dart
 import 'dart:typed_data';
 
+import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:nipanze/features/account/domain/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -172,7 +173,7 @@ class ProfileRepository {
   }
 
   /// Update editable profile fields.
-  Future<bool> updateProfile({
+  Future<ProfileUpdateResult> updateProfile({
     String? fullName,
     String? email,
     String? avatarUrl,
@@ -194,16 +195,22 @@ class ProfileRepository {
   }) async {
     try {
       var emailConfirmationPending = false;
+      String? emailUpdateError;
       final cleanEmail = email?.trim();
       final currentEmail = _client.auth.currentUser?.email ?? '';
       if (cleanEmail != null &&
           cleanEmail.isNotEmpty &&
           cleanEmail.toLowerCase() != currentEmail.toLowerCase()) {
-        final response = await _client.auth.updateUser(
-          UserAttributes(email: cleanEmail),
-        );
-        emailConfirmationPending =
-            response.user?.email?.toLowerCase() != cleanEmail.toLowerCase();
+        try {
+          final response = await _client.auth.updateUser(
+            UserAttributes(email: cleanEmail),
+          );
+          emailConfirmationPending =
+              response.user?.email?.toLowerCase() != cleanEmail.toLowerCase();
+        } catch (e) {
+          emailUpdateError =
+              'We could not update your login email. Please sign in again and try.';
+        }
       }
 
       final updates = <String, dynamic>{};
@@ -250,10 +257,18 @@ class ProfileRepository {
         updates['prefers_verified_only'] = prefersVerifiedOnly;
       }
 
-      if (updates.isEmpty) return emailConfirmationPending;
+      if (updates.isEmpty) {
+        return ProfileUpdateResult(
+          emailConfirmationPending: emailConfirmationPending,
+          emailUpdateError: emailUpdateError,
+        );
+      }
 
       await _client.from(TableNames.profiles).update(updates).eq('id', _uid);
-      return emailConfirmationPending;
+      return ProfileUpdateResult(
+        emailConfirmationPending: emailConfirmationPending,
+        emailUpdateError: emailUpdateError,
+      );
     } catch (e) {
       throw parseSupabaseError(e);
     }
@@ -270,4 +285,17 @@ class ProfileRepository {
       throw parseSupabaseError(e);
     }
   }
+}
+
+class ProfileUpdateResult extends Equatable {
+  const ProfileUpdateResult({
+    this.emailConfirmationPending = false,
+    this.emailUpdateError,
+  });
+
+  final bool emailConfirmationPending;
+  final String? emailUpdateError;
+
+  @override
+  List<Object?> get props => [emailConfirmationPending, emailUpdateError];
 }
