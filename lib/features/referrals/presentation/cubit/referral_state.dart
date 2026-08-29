@@ -2,6 +2,8 @@ part of 'referral_cubit.dart';
 
 enum ReferralAction { none, codeCopied, codeApplied }
 
+enum ReferralValidationStatus { initial, validating, valid, invalid, error }
+
 abstract class ReferralState extends Equatable {
   const ReferralState();
 
@@ -47,4 +49,27 @@ class ReferralError extends ReferralState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class ReferralCodeValidationState extends Equatable {
+  const ReferralCodeValidationState({
+    this.status = ReferralValidationStatus.initial,
+    this.message,
+    this.reason,
+    this.referrerName,
+  });
+
+  final ReferralValidationStatus status;
+  final String? message;
+  final String? reason;
+  final String? referrerName;
+
+  bool get isValid => status == ReferralValidationStatus.valid;
+  bool get isBlocking =>
+      status == ReferralValidationStatus.validating ||
+      status == ReferralValidationStatus.invalid ||
+      status == ReferralValidationStatus.error;
+
+  @override
+  List<Object?> get props => [status, message, reason, referrerName];
 }

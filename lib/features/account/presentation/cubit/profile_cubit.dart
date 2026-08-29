@@ -35,6 +35,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
 
   Future<void> updateProfile({
     String? fullName,
+    String? email,
     String? avatarUrl,
     bool clearAvatar = false,
     String? phone,
@@ -56,8 +57,9 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
     final current = state as ProfileCubitLoaded;
     emit(const ProfileCubitSaving());
     try {
-      await _repository.updateProfile(
+      final emailConfirmationPending = await _repository.updateProfile(
         fullName: fullName,
+        email: email,
         avatarUrl: avatarUrl,
         clearAvatar: clearAvatar,
         phone: phone,
@@ -82,7 +84,11 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
         emit(const ProfileCubitError('Could not reload profile after save.'));
         return;
       }
-      emit(ProfileCubitLoaded(updated, justSaved: true));
+      emit(ProfileCubitLoaded(
+        updated,
+        justSaved: true,
+        emailConfirmationPending: emailConfirmationPending,
+      ));
     } catch (e) {
       emit(current);
       emit(ProfileCubitError(userFacingErrorMessage(e)));

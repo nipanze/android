@@ -21,8 +21,9 @@ class MockProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> updateProfile({
+  Future<bool> updateProfile({
     String? fullName,
+    String? email,
     String? avatarUrl,
     bool clearAvatar = false,
     String? phone,
@@ -42,6 +43,7 @@ class MockProfileRepository implements ProfileRepository {
   }) async {
     updateCallCount++;
     if (_error != null) throw _error!;
+    return false;
   }
 
   @override
@@ -242,8 +244,10 @@ void main() {
       act: (cubit) => cubit.setPendingAvatar(Uint8List.fromList([1, 2, 3])),
       expect: () => [
         isA<ProfileCubitLoaded>()
-            .having((s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNotNull)
-            .having((s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isFalse),
+            .having(
+                (s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNotNull)
+            .having(
+                (s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isFalse),
       ],
     );
 
@@ -256,7 +260,8 @@ void main() {
       expect: () => [
         isA<ProfileCubitLoaded>()
             .having((s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNull)
-            .having((s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isTrue),
+            .having(
+                (s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isTrue),
       ],
     );
   });

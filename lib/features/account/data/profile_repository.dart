@@ -144,8 +144,7 @@ class ProfileRepository {
         'webp' => 'image/webp',
         _ => 'image/jpeg',
       };
-      final path =
-          '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final path = '$_uid/avatar_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       try {
         await _client.storage.from('avatars').uploadBinary(
@@ -173,8 +172,9 @@ class ProfileRepository {
   }
 
   /// Update editable profile fields.
-  Future<void> updateProfile({
+  Future<bool> updateProfile({
     String? fullName,
+    String? email,
     String? avatarUrl,
     bool clearAvatar = false,
     String? phone,
@@ -193,6 +193,19 @@ class ProfileRepository {
     bool? showProfessionalTag,
   }) async {
     try {
+      var emailConfirmationPending = false;
+      final cleanEmail = email?.trim();
+      final currentEmail = _client.auth.currentUser?.email ?? '';
+      if (cleanEmail != null &&
+          cleanEmail.isNotEmpty &&
+          cleanEmail.toLowerCase() != currentEmail.toLowerCase()) {
+        final response = await _client.auth.updateUser(
+          UserAttributes(email: cleanEmail),
+        );
+        emailConfirmationPending =
+            response.user?.email?.toLowerCase() != cleanEmail.toLowerCase();
+      }
+
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;
       if (clearAvatar) {
@@ -237,9 +250,10 @@ class ProfileRepository {
         updates['prefers_verified_only'] = prefersVerifiedOnly;
       }
 
-      if (updates.isEmpty) return;
+      if (updates.isEmpty) return emailConfirmationPending;
 
       await _client.from(TableNames.profiles).update(updates).eq('id', _uid);
+      return emailConfirmationPending;
     } catch (e) {
       throw parseSupabaseError(e);
     }

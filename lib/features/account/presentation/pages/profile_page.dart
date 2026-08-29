@@ -34,6 +34,7 @@ class _ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<_ProfileView> {
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _employerController = TextEditingController();
   final _incomeController = TextEditingController();
@@ -75,11 +76,13 @@ class _ProfileViewState extends State<_ProfileView> {
     _nameController.addListener(() {
       if (_populated) setState(() => _hasChanges = true);
     });
+    _emailController.addListener(_markChanged);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _employerController.dispose();
     _incomeController.dispose();
@@ -91,6 +94,7 @@ class _ProfileViewState extends State<_ProfileView> {
     if (_populated) return;
     final p = state.profile;
     _nameController.text = p.fullName ?? '';
+    _emailController.text = p.email;
     _employerController.text = p.employerName ?? '';
     _incomeController.text = p.monthlyIncomeUgx == null
         ? ''
@@ -161,8 +165,7 @@ class _ProfileViewState extends State<_ProfileView> {
         isDark ? const Color(0xFF28293D) : const Color(0xFFE2E8F0);
     const purple = AppColors.accent;
 
-    final loadedState =
-        cubitState is ProfileCubitLoaded ? cubitState : null;
+    final loadedState = cubitState is ProfileCubitLoaded ? cubitState : null;
     final hasImage = (loadedState?.pendingAvatarBytes != null) ||
         (loadedState?.profile.avatarUrl?.isNotEmpty == true &&
             loadedState?.pendingAvatarRemoved == false);
@@ -292,7 +295,9 @@ class _ProfileViewState extends State<_ProfileView> {
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: titleColor)),
-                          Text(l10n?.pickExistingPhoto ?? 'Pick an existing photo',
+                          Text(
+                              l10n?.pickExistingPhoto ??
+                                  'Pick an existing photo',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,
@@ -370,7 +375,8 @@ class _ProfileViewState extends State<_ProfileView> {
       return;
     }
 
-    final source = option == 'camera' ? ImageSource.camera : ImageSource.gallery;
+    final source =
+        option == 'camera' ? ImageSource.camera : ImageSource.gallery;
 
     try {
       final picker = ImagePicker();
@@ -445,9 +451,8 @@ class _ProfileViewState extends State<_ProfileView> {
     final messenger = ScaffoldMessenger.of(context);
     final cubit = context.read<ProfileCubit>();
     final currentCubitState = cubit.state;
-    final loaded = currentCubitState is ProfileCubitLoaded
-        ? currentCubitState
-        : null;
+    final loaded =
+        currentCubitState is ProfileCubitLoaded ? currentCubitState : null;
     final pendingBytes = loaded?.pendingAvatarBytes;
     final clearAvatar = loaded?.pendingAvatarRemoved ?? false;
     String? finalAvatarUrl = clearAvatar ? null : loaded?.profile.avatarUrl;
@@ -477,6 +482,7 @@ class _ProfileViewState extends State<_ProfileView> {
     if (!mounted) return;
     await cubit.updateProfile(
       fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
       avatarUrl: finalAvatarUrl,
       clearAvatar: clearAvatar,
       phone: fullPhone.isEmpty ? null : fullPhone,
@@ -513,12 +519,18 @@ class _ProfileViewState extends State<_ProfileView> {
             if (state.justSaved) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(l10n?.profileSaved ?? 'Profile saved.'),
+                  content: Text(
+                    state.emailConfirmationPending
+                        ? 'Profile saved. Check your email to confirm the new address.'
+                        : (l10n?.profileSaved ?? 'Profile saved.'),
+                  ),
                 ),
               );
               // Refresh AuthBloc so top bars update immediately
               try {
-                context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+                context
+                    .read<AuthBloc>()
+                    .add(const AuthProfileRefreshRequested());
               } catch (_) {}
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) context.pop();
@@ -567,7 +579,8 @@ class _ProfileViewState extends State<_ProfileView> {
           final loadedState = state is ProfileCubitLoaded ? state : null;
           final pendingBytes = loadedState?.pendingAvatarBytes;
           final isAvatarRemoved = loadedState?.pendingAvatarRemoved ?? false;
-          final avatarUrl = isAvatarRemoved ? null : loadedState?.profile.avatarUrl;
+          final avatarUrl =
+              isAvatarRemoved ? null : loadedState?.profile.avatarUrl;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -609,6 +622,26 @@ class _ProfileViewState extends State<_ProfileView> {
                     validator: (v) => v == null || v.trim().isEmpty
                         ? (l10n?.enterFullName ?? 'Enter your full name')
                         : null,
+                  ),
+                  const SizedBox(height: 14),
+
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: l10n?.email ?? 'Email',
+                      prefixIcon: const Icon(Icons.mail_outline, size: 20),
+                      helperText:
+                          'Used for password reset and optional email login.',
+                    ),
+                    validator: (v) {
+                      final value = v?.trim() ?? '';
+                      if (value.isEmpty) return null;
+                      if (!value.contains('@') || !value.contains('.')) {
+                        return 'Enter a valid email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 14),
 

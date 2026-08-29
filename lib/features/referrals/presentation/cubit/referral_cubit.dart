@@ -19,8 +19,11 @@ class ReferralCubit extends Cubit<ReferralState> {
   static String buildShareMessage(ReferralMarketer marketer) {
     final code = marketer.referralCode.trim();
     final link = marketer.referralLink.trim();
-    final fallbackLink =
-        link.isNotEmpty ? link : (code.isNotEmpty ? 'https://nipanze.app/r/$code' : 'https://nipanze.app');
+    final fallbackLink = link.isNotEmpty
+        ? link
+        : (code.isNotEmpty
+            ? 'https://nipanze.app/r/$code'
+            : 'https://nipanze.app');
 
     if (code.isEmpty) {
       return 'Join Nipanze and start earning rewards.\n$fallbackLink';
@@ -82,6 +85,30 @@ class ReferralCubit extends Cubit<ReferralState> {
     } catch (e) {
       emit(ReferralError(userFacingErrorMessage(e)));
       return false;
+    }
+  }
+
+  Future<ReferralCodeValidationState> validateReferralCode(String code) async {
+    final cleanCode = code.trim();
+    if (cleanCode.isEmpty) {
+      return const ReferralCodeValidationState();
+    }
+
+    try {
+      final result = await _repository.validateReferralCode(cleanCode);
+      return ReferralCodeValidationState(
+        status: result.valid
+            ? ReferralValidationStatus.valid
+            : ReferralValidationStatus.invalid,
+        message: result.message,
+        reason: result.reason,
+        referrerName: result.referrerName,
+      );
+    } catch (e) {
+      return ReferralCodeValidationState(
+        status: ReferralValidationStatus.error,
+        message: userFacingErrorMessage(e),
+      );
     }
   }
 }

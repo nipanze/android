@@ -899,7 +899,17 @@
   "understood": "Understood",
   "principalLossWarningTitle": "Principal Loss Warning",
   "belowTargetReturnTitle": "Below Target Return Warning",
-  "sendAnyway": "Send Offer Anyway"
+  "sendAnyway": "Send Offer Anyway",
+  "safetyToolkit": "Safety Toolkit",
+  "safetyTips": "Safety tips",
+  "reportListingOrUser": "Report listing or user",
+  "supportAndHelp": "Support & help",
+  "appLock": "App Lock",
+  "appLockDescription": "Require biometrics or device PIN after cold start or 30 seconds in the background.",
+  "unlockNipanze": "Unlock Nipanze",
+  "referralChecking": "Checking referral code...",
+  "referralAccepted": "Referral code accepted.",
+  "profilePicture": "Profile Picture",
+  "profilePictureKycNote": "Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents."
 }
-
 

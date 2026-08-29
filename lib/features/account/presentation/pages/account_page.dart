@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/app_lock_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -598,15 +599,9 @@ class _AccountView extends StatelessWidget {
               _ActionRow(
                 icon: Icons.lock_outline_rounded,
                 label: AppLocalizations.of(sheetCtx)!.security,
-                onTap: () => Navigator.of(sheetCtx).pop(),
-              ),
-              const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.notifications_none_rounded,
-                label: AppLocalizations.of(sheetCtx)!.notifications,
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
-                  router.push(AppRoutes.notifications);
+                  _showSecuritySheet(context);
                 },
               ),
               const Divider(height: 1),
@@ -619,6 +614,64 @@ class _AccountView extends StatelessWidget {
                 },
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSecuritySheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: ValueListenableBuilder<bool>(
+            valueListenable: AppLockService.instance.enabled,
+            builder: (context, enabled, _) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Text(
+                      'Security',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.fingerprint_rounded),
+                    title: const Text('App Lock'),
+                    subtitle: const Text(
+                      'Require biometrics or device PIN after cold start or 30 seconds in the background.',
+                    ),
+                    value: enabled,
+                    onChanged: (value) async {
+                      final ok = await AppLockService.instance.setEnabled(value);
+                      if (!context.mounted) return;
+                      if (!ok) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'App Lock is not available on this device.',
+                            ),
+                            backgroundColor: AppColors.danger,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            },
           ),
         );
       },

@@ -96,7 +96,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
     final authState = context.read<AuthBloc>().state;
     final userPhone =
         authState is AuthAuthenticated ? authState.user.phone : null;
-    final cleanPhone = userPhone?.trim();
+    final cleanPhone = _formatPrefillPhone(userPhone);
 
     if (cleanPhone != null && cleanPhone.isNotEmpty) {
       _phoneController = TextEditingController(text: cleanPhone);
@@ -119,6 +119,14 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
     );
     _successScale =
         CurvedAnimation(parent: _successAnim, curve: Curves.elasticOut);
+  }
+
+  String? _formatPrefillPhone(String? phone) {
+    final clean = phone?.trim().replaceAll(RegExp(r'[\s\-()]+'), '');
+    if (clean == null || clean.isEmpty) return null;
+    if (clean.startsWith('+')) return clean;
+    final local = clean.startsWith('0') ? clean.substring(1) : clean;
+    return '${widget.country.dialCode}$local';
   }
 
   @override

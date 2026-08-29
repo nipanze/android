@@ -41,6 +41,9 @@ void main() {
     when(() => mockRepo.isEmailVerified).thenReturn(false);
     when(() => mockRepo.checkPhoneRegistered(any()))
         .thenAnswer((_) async => null);
+    when(() => mockRepo.checkLoginRegistered(any()))
+        .thenAnswer((_) async => null);
+    when(() => mockRepo.updateAuthEmail(any())).thenAnswer((_) async {});
   });
 
   group('AuthBloc', () {
@@ -211,7 +214,7 @@ void main() {
       'AuthSignUpRequested emits AuthError when email already exists',
       build: () => AuthBloc(mockRepo),
       setUp: () {
-        when(() => mockRepo.checkPhoneRegistered('existing@nipanze.ug'))
+        when(() => mockRepo.checkLoginRegistered('existing@nipanze.ug'))
             .thenAnswer((_) async => 'existing@nipanze.ug');
       },
       act: (bloc) => bloc.add(const AuthSignUpRequested(
@@ -230,10 +233,12 @@ void main() {
       build: () => AuthBloc(mockRepo),
       setUp: () {
         when(() => mockRepo.signUp(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-              fullName: any(named: 'fullName'),
-            )).thenThrow(const AuthException('An account with this email already exists.'));
+                  email: any(named: 'email'),
+                  password: any(named: 'password'),
+                  fullName: any(named: 'fullName'),
+                ))
+            .thenThrow(const AuthException(
+                'An account with this email already exists.'));
       },
       act: (bloc) => bloc.add(const AuthSignUpRequested(
         email: 'dup@nipanze.ug',
@@ -257,13 +262,12 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => 'resolved@nipanze.ug');
         when(() => mockRepo.signIn(
-                email: 'resolved@nipanze.ug', password: 'Test1234!'))
-            .thenAnswer((_) async => testUser);
+            email: 'resolved@nipanze.ug',
+            password: 'Test1234!')).thenAnswer((_) async => testUser);
         when(() => mockRepo.isEmailVerified).thenReturn(true);
         when(() => mockRepo.updateProfile(
-                targetUserId: any(named: 'targetUserId'),
-                phone: any(named: 'phone')))
-            .thenAnswer((_) async {});
+            targetUserId: any(named: 'targetUserId'),
+            phone: any(named: 'phone'))).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthPhoneSignInRequested(
         phone: '+256712345678',
@@ -290,13 +294,12 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256799999999'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signIn(
-                email: '256799999999@nipanze.test', password: 'Test1234!'))
-            .thenAnswer((_) async => testUser);
+            email: '256799999999@nipanze.test',
+            password: 'Test1234!')).thenAnswer((_) async => testUser);
         when(() => mockRepo.isEmailVerified).thenReturn(true);
         when(() => mockRepo.updateProfile(
-                targetUserId: any(named: 'targetUserId'),
-                phone: any(named: 'phone')))
-            .thenAnswer((_) async {});
+            targetUserId: any(named: 'targetUserId'),
+            phone: any(named: 'phone'))).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthPhoneSignInRequested(
         phone: '+256799999999',
@@ -373,23 +376,22 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signUp(
-          email: '256712345678@nipanze.test',
-          password: 'Test1234!',
-          fullName: 'New User',
-          phone: '+256712345678',
-          countryCode: 'UG',
-          referralCode: null,
-        )).thenAnswer((_) async => null);
+              email: '256712345678@nipanze.test',
+              password: 'Test1234!',
+              fullName: 'New User',
+              phone: '+256712345678',
+              countryCode: 'UG',
+              referralCode: null,
+            )).thenAnswer((_) async => null);
         when(() => mockRepo.signIn(
-                email: '256712345678@nipanze.test', password: 'Test1234!'))
-            .thenAnswer((_) async => testUser);
+            email: '256712345678@nipanze.test',
+            password: 'Test1234!')).thenAnswer((_) async => testUser);
         when(() => mockRepo.isEmailVerified).thenReturn(true);
         when(() => mockRepo.updateProfile(
-                targetUserId: any(named: 'targetUserId'),
-                fullName: any(named: 'fullName'),
-                phone: any(named: 'phone'),
-                country: any(named: 'country')))
-            .thenAnswer((_) async {});
+            targetUserId: any(named: 'targetUserId'),
+            fullName: any(named: 'fullName'),
+            phone: any(named: 'phone'),
+            country: any(named: 'country'))).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
         phone: '+256712345678',
@@ -411,7 +413,7 @@ void main() {
             .thenReturn('+256712345678');
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
-        when(() => mockRepo.checkPhoneRegistered('taken@test.com'))
+        when(() => mockRepo.checkLoginRegistered('taken@test.com'))
             .thenAnswer((_) async => 'existing@user.com');
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
@@ -440,26 +442,25 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signUp(
-          email: '256712345678@nipanze.test',
-          password: 'Test1234!',
-          fullName: 'New User',
-          phone: '+256712345678',
-          countryCode: 'UG',
-          referralCode: 'GAVA123',
-        )).thenAnswer((_) async => null);
+              email: '256712345678@nipanze.test',
+              password: 'Test1234!',
+              fullName: 'New User',
+              phone: '+256712345678',
+              countryCode: 'UG',
+              referralCode: 'GAVA123',
+            )).thenAnswer((_) async => null);
         when(() => mockRepo.signIn(
-                email: '256712345678@nipanze.test', password: 'Test1234!'))
-            .thenAnswer((_) async => testUser);
+            email: '256712345678@nipanze.test',
+            password: 'Test1234!')).thenAnswer((_) async => testUser);
         when(() => mockRepo.isEmailVerified).thenReturn(true);
         when(() => mockRepo.updateProfile(
-                targetUserId: any(named: 'targetUserId'),
-                fullName: any(named: 'fullName'),
-                phone: any(named: 'phone'),
-                country: any(named: 'country')))
-            .thenAnswer((_) async {});
+            targetUserId: any(named: 'targetUserId'),
+            fullName: any(named: 'fullName'),
+            phone: any(named: 'phone'),
+            country: any(named: 'country'))).thenAnswer((_) async {});
         when(() => mockRepo.attributeReferral(
-                referralCode: 'GAVA123', source: 'registration'))
-            .thenAnswer((_) async {});
+            referralCode: 'GAVA123',
+            source: 'registration')).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
         phone: '+256712345678',
@@ -489,12 +490,12 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signUp(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
-          fullName: any(named: 'fullName'),
-          phone: any(named: 'phone'),
-          countryCode: any(named: 'countryCode'),
-        )).thenThrow(const AuthException('Registration failed.'));
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+              fullName: any(named: 'fullName'),
+              phone: any(named: 'phone'),
+              countryCode: any(named: 'countryCode'),
+            )).thenThrow(const AuthException('Registration failed.'));
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
         phone: '+256712345678',
@@ -517,12 +518,12 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signUp(
-          email: any(named: 'email'),
-          password: any(named: 'password'),
-          fullName: any(named: 'fullName'),
-          phone: any(named: 'phone'),
-          countryCode: any(named: 'countryCode'),
-        )).thenThrow(Exception('server error'));
+              email: any(named: 'email'),
+              password: any(named: 'password'),
+              fullName: any(named: 'fullName'),
+              phone: any(named: 'phone'),
+              countryCode: any(named: 'countryCode'),
+            )).thenThrow(Exception('server error'));
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
         phone: '+256712345678',
@@ -549,22 +550,21 @@ void main() {
         when(() => mockRepo.checkPhoneRegistered('+256712345678'))
             .thenAnswer((_) async => null);
         when(() => mockRepo.signUp(
-          email: '256712345678@nipanze.test',
-          password: 'Test1234!',
-          fullName: 'New User',
-          phone: '+256712345678',
-          countryCode: 'UG',
-          referralCode: null,
-        )).thenAnswer((_) async => null);
+              email: '256712345678@nipanze.test',
+              password: 'Test1234!',
+              fullName: 'New User',
+              phone: '+256712345678',
+              countryCode: 'UG',
+              referralCode: null,
+            )).thenAnswer((_) async => null);
         when(() => mockRepo.signIn(
-                email: '256712345678@nipanze.test', password: 'Test1234!'))
-            .thenThrow(Exception('session init failed'));
+            email: '256712345678@nipanze.test',
+            password: 'Test1234!')).thenThrow(Exception('session init failed'));
         when(() => mockRepo.updateProfile(
-                targetUserId: any(named: 'targetUserId'),
-                fullName: any(named: 'fullName'),
-                phone: any(named: 'phone'),
-                country: any(named: 'country')))
-            .thenAnswer((_) async {});
+            targetUserId: any(named: 'targetUserId'),
+            fullName: any(named: 'fullName'),
+            phone: any(named: 'phone'),
+            country: any(named: 'country'))).thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(const AuthPhoneSignUpRequested(
         phone: '+256712345678',
@@ -707,8 +707,7 @@ void main() {
         user: testUser,
         needsEmailVerification: true,
       ),
-      act: (bloc) =>
-          bloc.add(const AuthBypassEmailVerificationRequested()),
+      act: (bloc) => bloc.add(const AuthBypassEmailVerificationRequested()),
       expect: () => [
         isA<AuthAuthenticated>().having(
           (s) => s.needsEmailVerification,
@@ -726,8 +725,7 @@ void main() {
         return AuthBloc(mockRepo);
       },
       seed: () => const AuthUnauthenticated(),
-      act: (bloc) =>
-          bloc.add(const AuthBypassEmailVerificationRequested()),
+      act: (bloc) => bloc.add(const AuthBypassEmailVerificationRequested()),
       expect: () => [
         isA<AuthAuthenticated>().having(
           (s) => s.needsEmailVerification,
@@ -744,8 +742,7 @@ void main() {
         return AuthBloc(mockRepo);
       },
       seed: () => const AuthUnauthenticated(),
-      act: (bloc) =>
-          bloc.add(const AuthBypassEmailVerificationRequested()),
+      act: (bloc) => bloc.add(const AuthBypassEmailVerificationRequested()),
       expect: () => [],
     );
   });

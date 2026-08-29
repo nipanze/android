@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,6 +11,34 @@ class ReferralRepository {
   ReferralRepository(this._client);
 
   final SupabaseClient _client;
+
+  Future<ReferralCodeValidation> validateReferralCode(String code) async {
+    final cleanCode = code.trim();
+    if (cleanCode.isEmpty) {
+      return const ReferralCodeValidation(
+        valid: false,
+        reason: 'missing_code',
+        message: 'Enter a referral code.',
+      );
+    }
+
+    try {
+      final data = await _client.rpc(
+        'validate_referral_code',
+        params: {'p_code': cleanCode},
+      );
+      if (data is Map) {
+        return ReferralCodeValidation.fromMap(Map<String, dynamic>.from(data));
+      }
+      return const ReferralCodeValidation(
+        valid: false,
+        reason: 'invalid_response',
+        message: 'Could not validate referral code.',
+      );
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
 
   Future<ReferralDashboard> getDashboard() async {
     final user = _client.auth.currentUser;
@@ -61,7 +90,8 @@ class ReferralRepository {
     if (referralCode.isEmpty) {
       try {
         final ensured = await _client.rpc('ensure_my_referral_marketer');
-        final ensuredMap = ensured is Map ? Map<String, dynamic>.from(ensured) : null;
+        final ensuredMap =
+            ensured is Map ? Map<String, dynamic>.from(ensured) : null;
         referralCode = ensuredMap?['referral_code']?.toString() ?? referralCode;
       } catch (e) {
         // ignore: avoid_print
@@ -141,4 +171,30 @@ class ReferralRepository {
       throw parseSupabaseError(e);
     }
   }
+}
+
+class ReferralCodeValidation extends Equatable {
+  const ReferralCodeValidation({
+    required this.valid,
+    required this.reason,
+    required this.message,
+    this.referrerName,
+  });
+
+  final bool valid;
+  final String reason;
+  final String message;
+  final String? referrerName;
+
+  factory ReferralCodeValidation.fromMap(Map<String, dynamic> map) {
+    return ReferralCodeValidation(
+      valid: map['valid'] as bool? ?? false,
+      reason: map['reason'] as String? ?? 'unknown',
+      message: map['message'] as String? ?? 'Could not validate referral code.',
+      referrerName: map['referrer_name'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [valid, reason, message, referrerName];
 }

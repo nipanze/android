@@ -29,9 +29,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/country_constants.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../referrals/presentation/cubit/referral_cubit.dart';
+import '../../data/auth_repository.dart';
 import '../bloc/auth_bloc.dart';
 import 'register/country_sheet.dart';
 import 'register/email_login_screen.dart';
@@ -92,6 +95,10 @@ class _RegisterPageState extends State<RegisterPage>
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   final _referralCodeController = TextEditingController();
+  late final ReferralCubit _referralCubit;
+  ReferralCodeValidationState _referralValidation =
+      const ReferralCodeValidationState();
+  Timer? _referralValidationTimer;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   Uint8List? _avatarBytes;
@@ -120,6 +127,8 @@ class _RegisterPageState extends State<RegisterPage>
       value: 1.0,
     );
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    _referralCubit = getIt<ReferralCubit>();
+    _referralCodeController.addListener(_scheduleReferralValidation);
     unawaited(_loadReferralCode());
   }
 
@@ -137,6 +146,8 @@ class _RegisterPageState extends State<RegisterPage>
     _passwordController.dispose();
     _confirmController.dispose();
     _referralCodeController.dispose();
+    _referralValidationTimer?.cancel();
+    _referralCubit.close();
     _emailLoginController.dispose();
     _emailPasswordController.dispose();
     _resendTimer?.cancel();
@@ -153,6 +164,38 @@ class _RegisterPageState extends State<RegisterPage>
     await prefs.setString('pending_referral_code', code);
     if (!mounted) return;
     _referralCodeController.text = code.toUpperCase();
+  }
+
+  void _scheduleReferralValidation() {
+    final code = _referralCodeController.text.trim();
+    _referralValidationTimer?.cancel();
+    if (code.isEmpty) {
+      if (_referralValidation.status != ReferralValidationStatus.initial) {
+        setState(
+            () => _referralValidation = const ReferralCodeValidationState());
+      }
+      return;
+    }
+
+    setState(() {
+      _referralValidation = const ReferralCodeValidationState(
+        status: ReferralValidationStatus.validating,
+        message: 'Checking referral code...',
+      );
+    });
+
+    _referralValidationTimer = Timer(const Duration(milliseconds: 450), () {
+      unawaited(_validateReferralCode(code));
+    });
+  }
+
+  Future<ReferralCodeValidationState> _validateReferralCode(String code) async {
+    final validation = await _referralCubit.validateReferralCode(code);
+    if (!mounted) return validation;
+    if (_referralCodeController.text.trim() == code) {
+      setState(() => _referralValidation = validation);
+    }
+    return validation;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -209,11 +252,10 @@ class _RegisterPageState extends State<RegisterPage>
     if (!_phoneFormKey.currentState!.validate()) return;
 
     setState(() => _isCheckingPhone = true);
-    final bloc = context.read<AuthBloc>();
+    final authRepository = getIt<AuthRepository>();
     final phone = _fullPhone;
 
-    final resolvedEmail =
-        await bloc.state.repository?.checkPhoneRegistered(phone);
+    final resolvedEmail = await authRepository.checkPhoneRegistered(phone);
     if (mounted) {
       setState(() => _isCheckingPhone = false);
     }
@@ -260,9 +302,8 @@ class _RegisterPageState extends State<RegisterPage>
 
     final optEmail = _optEmailController.text.trim();
     if (optEmail.isNotEmpty) {
-      final bloc = context.read<AuthBloc>();
       final existingEmail =
-          await bloc.state.repository?.checkPhoneRegistered(optEmail);
+          await getIt<AuthRepository>().checkLoginRegistered(optEmail);
       if (!mounted) return;
       if (existingEmail != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -284,6 +325,24 @@ class _RegisterPageState extends State<RegisterPage>
       }
     }
 
+    final referralCode = _referralCodeController.text.trim();
+    if (referralCode.isNotEmpty) {
+      final validation = _referralValidation.isValid
+          ? _referralValidation
+          : await _validateReferralCode(referralCode);
+      if (!mounted) return;
+      if (!validation.isValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(validation.message ?? 'Referral code is invalid.'),
+            backgroundColor: const Color(0xFFDC2626),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
     // New user: register
     context.read<AuthBloc>().add(AuthPhoneSignUpRequested(
           phone: _fullPhone,
@@ -291,9 +350,7 @@ class _RegisterPageState extends State<RegisterPage>
           fullName: _nameController.text.trim(),
           countryCode: _selectedCountry.code,
           email: optEmail.isEmpty ? null : optEmail,
-          referralCode: _referralCodeController.text.trim().isEmpty
-              ? null
-              : _referralCodeController.text.trim(),
+          referralCode: referralCode.isEmpty ? null : referralCode,
           avatarBytes: _avatarBytes,
         ));
   }
@@ -438,7 +495,9 @@ class _RegisterPageState extends State<RegisterPage>
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                   color: titleColor)),
-                          Text(l10n?.pickExistingPhoto ?? 'Pick an existing photo',
+                          Text(
+                              l10n?.pickExistingPhoto ??
+                                  'Pick an existing photo',
                               style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,
@@ -515,7 +574,8 @@ class _RegisterPageState extends State<RegisterPage>
       return;
     }
 
-    final source = option == 'camera' ? ImageSource.camera : ImageSource.gallery;
+    final source =
+        option == 'camera' ? ImageSource.camera : ImageSource.gallery;
 
     try {
       final picker = ImagePicker();
@@ -655,6 +715,7 @@ class _RegisterPageState extends State<RegisterPage>
               setState(() => _obscureConfirm = !_obscureConfirm),
           avatarBytes: _avatarBytes,
           onPickAvatar: _pickAvatar,
+          referralValidation: _referralValidation,
           onBack: () => _goTo(_WizardStep.otp),
           onSubmit: _onProfileSubmit,
         ),
@@ -694,11 +755,6 @@ class _RegisterPageState extends State<RegisterPage>
       });
     }
   }
-}
-
-// Extension so we can pass a nullable repo from state (not really used)
-extension on AuthState {
-  dynamic get repository => null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

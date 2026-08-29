@@ -26,26 +26,33 @@ final class ProfileCubitLoaded extends ProfileCubitState {
   const ProfileCubitLoaded(
     this.profile, {
     this.justSaved = false,
+    this.emailConfirmationPending = false,
     this.pendingAvatarBytes,
     this.pendingAvatarRemoved = false,
   });
 
   final UserProfile profile; // non-null: guaranteed by cubit
   final bool justSaved;
+  final bool emailConfirmationPending;
+
   /// Bytes of the newly selected avatar image (not yet uploaded/saved).
   final Uint8List? pendingAvatarBytes;
+
   /// True when the user explicitly chose to remove their current photo.
   final bool pendingAvatarRemoved;
 
   ProfileCubitLoaded copyWith({
     UserProfile? profile,
     bool? justSaved,
+    bool? emailConfirmationPending,
     Object? pendingAvatarBytes = _sentinel,
     bool? pendingAvatarRemoved,
   }) {
     return ProfileCubitLoaded(
       profile ?? this.profile,
       justSaved: justSaved ?? this.justSaved,
+      emailConfirmationPending:
+          emailConfirmationPending ?? this.emailConfirmationPending,
       pendingAvatarBytes: pendingAvatarBytes == _sentinel
           ? this.pendingAvatarBytes
           : pendingAvatarBytes as Uint8List?,
@@ -54,8 +61,13 @@ final class ProfileCubitLoaded extends ProfileCubitState {
   }
 
   @override
-  List<Object?> get props =>
-      [profile, justSaved, pendingAvatarBytes, pendingAvatarRemoved];
+  List<Object?> get props => [
+        profile,
+        justSaved,
+        emailConfirmationPending,
+        pendingAvatarBytes,
+        pendingAvatarRemoved,
+      ];
 }
 
 final class ProfileCubitError extends ProfileCubitState {

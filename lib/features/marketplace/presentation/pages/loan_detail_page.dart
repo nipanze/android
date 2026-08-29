@@ -12,6 +12,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/safety_toolkit_sheet.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/privacy_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
@@ -171,30 +172,32 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     }
   }
 
-  Future<void> _blockOwner() async {
+  Future<void> _blockOwner({bool askConfirmation = true}) async {
     final ownerId = _ownerId;
     if (ownerId == null) return;
     final l10n = AppLocalizations.of(context)!;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.blockUserConfirmTitle),
-        content: Text(l10n.blockUserConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.block),
-          ),
-        ],
-      ),
-    );
+    if (askConfirmation) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.blockUserConfirmTitle),
+          content: Text(l10n.blockUserConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.block),
+            ),
+          ],
+        ),
+      );
 
-    if (confirmed != true || !mounted) return;
+      if (confirmed != true || !mounted) return;
+    }
 
     try {
       await getIt<PrivacyRepository>().blockUser(ownerId);
@@ -260,19 +263,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             'Listing detail'),
         actions: [
           if (user != null && !isOwner && _ownerId != null)
-            PopupMenuButton<String>(
-              tooltip: 'More',
-              onSelected: (value) {
-                if (value == 'block') _blockOwner();
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'block',
-                  child: Text(
-                    AppLocalizations.of(context)?.blockUser ?? 'Block User',
-                  ),
-                ),
-              ],
+            IconButton(
+              tooltip: 'Safety Toolkit',
+              icon: const Icon(Icons.shield_outlined),
+              onPressed: () => showSafetyToolkitSheet(
+                context,
+                onBlockUser: () => _blockOwner(askConfirmation: false),
+              ),
             ),
         ],
       ),
@@ -477,14 +474,15 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       children: [
                         Text(
                           l10n?.offersLabel ?? 'OFFERS',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                letterSpacing: 1.2,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.45),
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    letterSpacing: 1.2,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.45),
+                                  ),
                         ),
                         const SizedBox(width: 6),
                         const LiveDot(),
@@ -630,8 +628,7 @@ class _ProposedRepaymentPlan extends StatefulWidget {
   final LoanListing listing;
 
   @override
-  State<_ProposedRepaymentPlan> createState() =>
-      _ProposedRepaymentPlanState();
+  State<_ProposedRepaymentPlan> createState() => _ProposedRepaymentPlanState();
 }
 
 class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
@@ -654,9 +651,19 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
     try {
       if (freq != null) {
         final f = freq.toLowerCase();
-        if (f.contains('month')) return listing.durationMonths > 0 ? listing.durationMonths : null;
-        if (f.contains('week')) return listing.durationMonths > 0 ? (listing.durationMonths * 4) : null;
-        if (f.contains('year')) return listing.durationMonths > 0 ? (listing.durationMonths ~/ 12) : null;
+        if (f.contains('month')) {
+          return listing.durationMonths > 0 ? listing.durationMonths : null;
+        }
+        if (f.contains('week')) {
+          return listing.durationMonths > 0
+              ? (listing.durationMonths * 4)
+              : null;
+        }
+        if (f.contains('year')) {
+          return listing.durationMonths > 0
+              ? (listing.durationMonths ~/ 12)
+              : null;
+        }
       }
 
       // Try to extract a leading number from the repaymentTimeline (e.g. "4 monthly instalments")
@@ -695,7 +702,8 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
     final listing = widget.listing;
     final currency = listing.currency;
     final installment = listing.suggestedInstallmentAmount;
-    final freq = listing.suggestedRepaymentFrequency ?? listing.preferredRepaymentPlan;
+    final freq =
+        listing.suggestedRepaymentFrequency ?? listing.preferredRepaymentPlan;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,8 +711,10 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
         Text(
           (l10n?.proposedRepaymentPlanLabel ?? 'Proposed repayment plan')
               .toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.accent, fontWeight: FontWeight.bold),
+          style: Theme.of(context)
+              .textTheme
+              .labelSmall
+              ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -727,24 +737,32 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${listing.preferredRepaymentPlan} · ${listing.repaymentTimeline}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              )),
+                      Text(
+                          '${listing.preferredRepaymentPlan} · ${listing.repaymentTimeline}',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  )),
                       const SizedBox(height: 6),
                       if (installment != null)
-                        Text(
-                            '$currency ${fmtAmount(installment)} / $freq',
+                        Text('$currency ${fmtAmount(installment)} / $freq',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                                ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6))),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
                 Icon(_expanded ? Icons.expand_less : Icons.expand_more,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6)),
               ],
             ),
           ),
@@ -763,34 +781,48 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
                       .outlineVariant
                       .withValues(alpha: 0.12)),
             ),
-                child: Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _row(l10n?.preferredRepaymentPlanLabel ?? 'Preferred repayment plan', listing.preferredRepaymentPlan),
-                _row(l10n?.repaymentTimelineLabel ?? 'Repayment timeline & schedule', listing.repaymentTimeline),
+                _row(
+                    l10n?.preferredRepaymentPlanLabel ??
+                        'Preferred repayment plan',
+                    listing.preferredRepaymentPlan),
+                _row(
+                    l10n?.repaymentTimelineLabel ??
+                        'Repayment timeline & schedule',
+                    listing.repaymentTimeline),
                 if (installment != null)
-                  _row(l10n?.suggestedInstallmentAmountLabel(currency) ?? 'Suggested installment amount ($currency)', '$currency ${fmtAmount(installment)}'),
+                  _row(
+                      l10n?.suggestedInstallmentAmountLabel(currency) ??
+                          'Suggested installment amount ($currency)',
+                      '$currency ${fmtAmount(installment)}'),
                 if (listing.suggestedInterestRatePct != null)
-                  _row('Interest rate', '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
+                  _row('Interest rate',
+                      '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
                 if (listing.suggestedLateFeePct != null)
-                  _row('Late fee', '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
-                    // Totals: show total repayable and total interest when we can compute them
-                    if (installment != null) ...[
-                      const SizedBox(height: 6),
-                      Builder(builder: (context) {
-                        final count = _installmentCount(listing, listing.suggestedRepaymentFrequency ?? freq);
-                        if (count == null) return const SizedBox.shrink();
-                        final total = installment * count;
-                        final principal = listing.requestedAmount;
-                        final interest = total - principal;
-                        return Column(
-                          children: [
-                            _row('Total amount payable', '$currency ${fmtAmount(total)}'),
-                            _row('Total interest', '${interest < 0 ? '-' : ''}$currency ${fmtAmount(interest.abs())}'),
-                          ],
-                        );
-                      }),
-                    ],
+                  _row('Late fee',
+                      '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
+                // Totals: show total repayable and total interest when we can compute them
+                if (installment != null) ...[
+                  const SizedBox(height: 6),
+                  Builder(builder: (context) {
+                    final count = _installmentCount(
+                        listing, listing.suggestedRepaymentFrequency ?? freq);
+                    if (count == null) return const SizedBox.shrink();
+                    final total = installment * count;
+                    final principal = listing.requestedAmount;
+                    final interest = total - principal;
+                    return Column(
+                      children: [
+                        _row('Total amount payable',
+                            '$currency ${fmtAmount(total)}'),
+                        _row('Total interest',
+                            '${interest < 0 ? '-' : ''}$currency ${fmtAmount(interest.abs())}'),
+                      ],
+                    );
+                  }),
+                ],
               ],
             ),
           ),
@@ -1025,7 +1057,6 @@ class _OfferPlacedNotice extends StatelessWidget {
 }
 
 // ─── Funded Progress Bar ─────────────────────────────────────────────────────
-
 
 class _FundedProgressBar extends StatelessWidget {
   const _FundedProgressBar({

@@ -119,6 +119,16 @@ class AuthRepository {
     }
   }
 
+  Future<void> updateAuthEmail(String email) async {
+    final cleanEmail = email.trim();
+    if (cleanEmail.isEmpty) return;
+    try {
+      await _client.auth.updateUser(UserAttributes(email: cleanEmail));
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   Future<NipanzeUser> fetchCurrentProfile() async {
     final user = _client.auth.currentUser;
     if (user == null) {
@@ -145,6 +155,19 @@ class AuthRepository {
       return response as String?;
     } catch (e) {
       debugPrint('Error in checkPhoneRegistered RPC: $e');
+      return null;
+    }
+  }
+
+  Future<String?> checkLoginRegistered(String login) async {
+    try {
+      final clean = login.trim();
+      final lookup = clean.contains('@') ? clean : cleanPhone(clean);
+      final response = await _client.rpc('check_phone_registered',
+          params: {'p_phone': lookup}).timeout(const Duration(seconds: 10));
+      return response as String?;
+    } catch (e) {
+      debugPrint('Error in checkLoginRegistered RPC: $e');
       return null;
     }
   }

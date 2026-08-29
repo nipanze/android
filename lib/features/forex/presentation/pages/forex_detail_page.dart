@@ -10,8 +10,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/models/forex_offer_model.dart';
+import '../../../../shared/widgets/safety_toolkit_sheet.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
-
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../account/data/privacy_repository.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
@@ -72,19 +72,13 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
         title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
         actions: [
           if (user != null && _ownerId != null && _ownerId != user.id)
-            PopupMenuButton<String>(
-              tooltip: 'More',
-              onSelected: (value) {
-                if (value == 'block') _blockOwner();
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'block',
-                  child: Text(
-                    AppLocalizations.of(context)?.blockUser ?? 'Block User',
-                  ),
-                ),
-              ],
+            IconButton(
+              tooltip: 'Safety Toolkit',
+              icon: const Icon(Icons.shield_outlined),
+              onPressed: () => showSafetyToolkitSheet(
+                context,
+                onBlockUser: () => _blockOwner(askConfirmation: false),
+              ),
             ),
         ],
       ),
@@ -238,30 +232,32 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
     );
   }
 
-  Future<void> _blockOwner() async {
+  Future<void> _blockOwner({bool askConfirmation = true}) async {
     final ownerId = _ownerId;
     if (ownerId == null) return;
     final l10n = AppLocalizations.of(context)!;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.blockUserConfirmTitle),
-        content: Text(l10n.blockUserConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.block),
-          ),
-        ],
-      ),
-    );
+    if (askConfirmation) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.blockUserConfirmTitle),
+          content: Text(l10n.blockUserConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.block),
+            ),
+          ],
+        ),
+      );
 
-    if (confirmed != true || !mounted) return;
+      if (confirmed != true || !mounted) return;
+    }
 
     try {
       await getIt<PrivacyRepository>().blockUser(ownerId);
@@ -532,9 +528,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
 
   // ── Formatting ─────────────────────────────────────────────────────────────
   String _fmtAmount(num amount) {
-    final formatted = amount % 1 == 0
-        ? amount.toInt().toString()
-        : amount.toStringAsFixed(2);
+    final formatted =
+        amount % 1 == 0 ? amount.toInt().toString() : amount.toStringAsFixed(2);
     final parts = formatted.split('.');
     final integer = parts[0];
     final buffer = StringBuffer();
@@ -574,7 +569,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
               decoration: BoxDecoration(
                 color: AppColors.danger.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -719,8 +715,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: ListView(
             controller: scrollController,
@@ -828,8 +823,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
               const SizedBox(height: 16),
               if (listing?.preferredRate != null) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: _isLossRisk
                         ? AppColors.danger.withValues(alpha: 0.1)
@@ -870,9 +865,13 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                                   : _isAbovePreferred
                                       ? 'Your rate (${_fmtRate(_parsedRate)}) is above target — competitive offer rate!'
                                       : 'Your rate matches the requester\'s target rate.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 color: _isLossRisk ? AppColors.danger : null,
-                                fontWeight: _isLossRisk ? FontWeight.w600 : null,
+                                fontWeight:
+                                    _isLossRisk ? FontWeight.w600 : null,
                               ),
                         ),
                       ),
@@ -894,9 +893,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -964,8 +962,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
         ),
         const SizedBox(width: 10),
         Expanded(
-            child:
-                Text(label, style: Theme.of(context).textTheme.bodySmall)),
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1048,8 +1045,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
         value: rate,
         min: min,
         max: max,
-        onChanged: (v) =>
-            setState(() => _rateController.text = _fmtRate(v)),
+        onChanged: (v) => setState(() => _rateController.text = _fmtRate(v)),
       ),
     );
   }
@@ -1069,8 +1065,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(Icons.remove_rounded, size: 14),
@@ -1109,11 +1104,9 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       children: presets.map((p) {
         final selected = _parsedAmount == p.$2;
         return GestureDetector(
-          onTap: () =>
-              setState(() => _amountController.text = p.$2.toString()),
+          onTap: () => setState(() => _amountController.text = p.$2.toString()),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
               color: selected
                   ? AppColors.accent.withValues(alpha: 0.18)
@@ -1158,7 +1151,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
     if (_isLossRisk) {
       panelColor = AppColors.danger;
       panelIcon = Icons.warning_amber_rounded;
-      panelLabel = '🔴 OVERPAYMENT LOSS RISK (+${_overpaymentPct.toStringAsFixed(1)}%)';
+      panelLabel =
+          '🔴 OVERPAYMENT LOSS RISK (+${_overpaymentPct.toStringAsFixed(1)}%)';
     } else if (_isBelowPreferred) {
       panelColor = Colors.green;
       panelIcon = Icons.trending_up_rounded;
@@ -1209,9 +1203,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                     Text(
                       'You Give',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -1235,9 +1228,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                     Text(
                       'They Receive',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -1312,9 +1304,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
             ),
             child: Center(
               child: Text(
-                listing.currencyHeld.isNotEmpty
-                    ? listing.currencyHeld[0]
-                    : '?',
+                listing.currencyHeld.isNotEmpty ? listing.currencyHeld[0] : '?',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -1575,10 +1565,8 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                 controller: _termsController,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText:
-                      l10n?.settlementTermsLabel ?? 'Settlement terms',
-                  hintText:
-                      'e.g. Cash in person, Kampala CBD, Monday 9am–5pm',
+                  labelText: l10n?.settlementTermsLabel ?? 'Settlement terms',
+                  hintText: 'e.g. Cash in person, Kampala CBD, Monday 9am–5pm',
                   alignLabelWithHint: true,
                 ),
               ),

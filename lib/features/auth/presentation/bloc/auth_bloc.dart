@@ -80,7 +80,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final existingEmail =
-          await _authRepository.checkPhoneRegistered(event.email);
+          await _authRepository.checkLoginRegistered(event.email);
       if (existingEmail != null) {
         emit(const AuthError(
             'This email is already registered. Please log in instead.'));
@@ -197,7 +197,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (event.email != null && event.email!.trim().isNotEmpty) {
         final existingEmail =
-            await _authRepository.checkPhoneRegistered(event.email!.trim());
+            await _authRepository.checkLoginRegistered(event.email!.trim());
         if (existingEmail != null) {
           emit(const AuthError(
               'This email is already registered. Please use another email or log in.'));
@@ -260,6 +260,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           phone: clean,
           country: event.countryCode,
         );
+
+        if (event.email != null && event.email!.trim().isNotEmpty) {
+          try {
+            await _authRepository.updateAuthEmail(event.email!.trim());
+          } catch (emailErr) {
+            debugPrint('Auth email update during signup failed: $emailErr');
+          }
+        }
       }
 
       if (event.referralCode?.trim().isNotEmpty == true && user != null) {

@@ -3,14 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../../../shared/widgets/user_avatar.dart';
+import '../../../../referrals/presentation/cubit/referral_cubit.dart';
 import 'shared.dart';
 
 class ProfileSetupScreen extends StatelessWidget {
-  const ProfileSetupScreen({super.key, 
+  const ProfileSetupScreen({
+    super.key,
     required this.isReturningUser,
     required this.nameController,
     required this.emailController,
@@ -28,6 +29,7 @@ class ProfileSetupScreen extends StatelessWidget {
     required this.onSubmit,
     this.avatarBytes,
     this.onPickAvatar,
+    this.referralValidation = const ReferralCodeValidationState(),
   });
 
   final bool isReturningUser;
@@ -47,6 +49,7 @@ class ProfileSetupScreen extends StatelessWidget {
   final VoidCallback onSubmit;
   final Uint8List? avatarBytes;
   final VoidCallback? onPickAvatar;
+  final ReferralCodeValidationState referralValidation;
 
   bool _isFormValid() {
     if (isReturningUser) {
@@ -66,7 +69,46 @@ class ProfileSetupScreen extends StatelessWidget {
       if (!email.contains('@') || !email.contains('.')) return false;
     }
 
+    if (referralCodeController.text.trim().isNotEmpty &&
+        referralValidation.isBlocking) {
+      return false;
+    }
+
     return true;
+  }
+
+  Widget? _referralSuffix(Color subtitleColor) {
+    return switch (referralValidation.status) {
+      ReferralValidationStatus.validating => const Padding(
+          padding: EdgeInsets.all(14),
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ReferralValidationStatus.valid => const Icon(
+          Icons.check_circle_outline_rounded,
+          color: AppColors.success,
+        ),
+      ReferralValidationStatus.invalid ||
+      ReferralValidationStatus.error =>
+        const Icon(Icons.error_outline_rounded, color: AppColors.danger),
+      ReferralValidationStatus.initial => Icon(
+          Icons.campaign_outlined,
+          color: subtitleColor.withValues(alpha: 0.4),
+        ),
+    };
+  }
+
+  Color? _referralHelperColor() {
+    return switch (referralValidation.status) {
+      ReferralValidationStatus.valid => AppColors.success,
+      ReferralValidationStatus.invalid ||
+      ReferralValidationStatus.error =>
+        AppColors.danger,
+      _ => null,
+    };
   }
 
   @override
@@ -199,6 +241,9 @@ class ProfileSetupScreen extends StatelessWidget {
                           ),
                           LengthLimitingTextInputFormatter(32),
                         ],
+                        suffixIcon: _referralSuffix(subtitleColor),
+                        helperText: referralValidation.message,
+                        helperColor: _referralHelperColor(),
                       ),
                       const SizedBox(height: 14),
 
@@ -312,6 +357,7 @@ class ProfileSetupScreen extends StatelessWidget {
                         emailController,
                         passwordController,
                         confirmController,
+                        referralCodeController,
                       ]),
                       builder: (context, _) {
                         final isValid = _isFormValid();
@@ -361,7 +407,8 @@ class ProfileSetupScreen extends StatelessWidget {
 
 /// Reusable styled input field used by the Profile Setup screen.
 class ProfileField extends StatelessWidget {
-  const ProfileField({super.key, 
+  const ProfileField({
+    super.key,
     required this.label,
     required this.controller,
     required this.icon,
@@ -379,6 +426,8 @@ class ProfileField extends StatelessWidget {
     this.validator,
     this.textCapitalization = TextCapitalization.none,
     this.inputFormatters,
+    this.helperText,
+    this.helperColor,
   });
 
   final String label;
@@ -398,6 +447,8 @@ class ProfileField extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final TextCapitalization textCapitalization;
   final List<TextInputFormatter>? inputFormatters;
+  final String? helperText;
+  final Color? helperColor;
 
   @override
   Widget build(BuildContext context) {
@@ -440,6 +491,12 @@ class ProfileField extends StatelessWidget {
             ),
             prefixIcon: Icon(icon, size: 18, color: subtitleColor),
             suffixIcon: suffixIcon,
+            helperText: helperText,
+            helperStyle: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              color: helperColor,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: cardBorderColor),

@@ -39,13 +39,16 @@ class _ProRequiredSheet extends StatelessWidget {
 
     final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;
     final cardBg = isDark ? const Color(0xFF14171E) : AppColors.bg3Light;
-    final cardBorder = isDark ? const Color(0xFF5B21B6) : const Color(0xFFDDD6FE);
+    final cardBorder =
+        isDark ? const Color(0xFF5B21B6) : const Color(0xFFDDD6FE);
     final badgeBg = isDark ? const Color(0xFF2E1065) : const Color(0xFFEDE9FE);
-    final badgeText = isDark ? const Color(0xFFA78BFA) : const Color(0xFF6D28D9);
+    final badgeText =
+        isDark ? const Color(0xFFA78BFA) : const Color(0xFF6D28D9);
     final textPrimary = isDark ? AppColors.textDark : AppColors.textLight;
     final textSecondary = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final textMuted = isDark ? AppColors.text3Dark : AppColors.text3Light;
-    final checkColor = isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+    final checkColor =
+        isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
     final handleColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     const buttonBg = Color(0xFF6B5AED);
 
@@ -95,7 +98,8 @@ class _ProRequiredSheet extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, color: textSecondary, size: 20),
+                    icon: Icon(Icons.close_rounded,
+                        color: textSecondary, size: 20),
                     onPressed: () => Navigator.of(context).pop(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -131,7 +135,8 @@ class _ProRequiredSheet extends StatelessWidget {
                   children: [
                     // Badge: Pro tier
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: badgeBg,
                         borderRadius: BorderRadius.circular(20),
@@ -157,15 +162,15 @@ class _ProRequiredSheet extends StatelessWidget {
                           color: badgeText,
                         ),
                         const SizedBox(width: 8),
-                         Text(
-                           'Pro',
-                           style: TextStyle(
-                             fontFamily: AppFonts.heading,
-                             fontSize: 17,
-                             fontWeight: FontWeight.w700,
-                             color: textPrimary,
-                           ),
-                         ),
+                        Text(
+                          'Pro',
+                          style: TextStyle(
+                            fontFamily: AppFonts.heading,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
+                          ),
+                        ),
                       ],
                     ),
 
@@ -177,14 +182,14 @@ class _ProRequiredSheet extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                           country.proPriceFormatted,
-                           style: TextStyle(
-                             fontFamily: AppFonts.heading,
-                             fontSize: 22,
-                             fontWeight: FontWeight.w800,
-                             color: textPrimary,
-                             letterSpacing: -0.5,
-                           ),
+                          country.proPriceFormatted,
+                          style: TextStyle(
+                            fontFamily: AppFonts.heading,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: textPrimary,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                         Text(
                           l10n?.perMonth ?? ' / month',
@@ -203,25 +208,42 @@ class _ProRequiredSheet extends StatelessWidget {
                     Text(
                       l10n?.proTierDesc ??
                           'Full marketplace access, advanced filters and strong request positioning.',
-                     style: TextStyle(
-                       fontSize: 12.5,
-                       height: 1.4,
-                       color: textSecondary,
-                     ),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.4,
+                        color: textSecondary,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
-                    Divider(color: isDark ? const Color(0xFF2D323E) : AppColors.borderLight, height: 1),
+                    Divider(
+                        color: isDark
+                            ? const Color(0xFF2D323E)
+                            : AppColors.borderLight,
+                        height: 1),
                     const SizedBox(height: 16),
 
                     // Feature Checkmark List
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.everythingInLender ?? 'Everything in Lender'),
+                    _buildFeatureItem(checkColor, textPrimary,
+                        l10n?.everythingInLender ?? 'Everything in Lender'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature1 ?? 'Suggest rates, late fees and repayment terms'),
+                    _buildFeatureItem(
+                        checkColor,
+                        textPrimary,
+                        l10n?.proFeature1 ??
+                            'Suggest rates, late fees and repayment terms'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature2 ?? 'Advanced filters (income, employment, verified)'),
+                    _buildFeatureItem(
+                        checkColor,
+                        textPrimary,
+                        l10n?.proFeature2 ??
+                            'Advanced filters (income, employment, verified)'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.proFeature3 ?? 'Verified badge, reliability score and priority visibility'),
+                    _buildFeatureItem(
+                        checkColor,
+                        textPrimary,
+                        l10n?.proFeature3 ??
+                            'Verified badge, reliability score and priority visibility'),
 
                     const SizedBox(height: 22),
 
@@ -254,27 +276,7 @@ class _ProRequiredSheet extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // ── Not now Text Button ────────────────────────────────────
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: TextButton.styleFrom(
-                    foregroundColor: textSecondary,
-                  ),
-                  child: Text(
-                    l10n?.notNow ?? 'Not now',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
 
               // ── Legal / Security Caption ────────────────────────────────
               Text(
@@ -298,11 +300,11 @@ class _ProRequiredSheet extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Icon(
-           Icons.check_circle_outline,
-           size: 16,
-           color: checkColor,
-         ),
+        Icon(
+          Icons.check_circle_outline,
+          size: 16,
+          color: checkColor,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(

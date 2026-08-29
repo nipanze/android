@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/user_avatar.dart';
+import '../../../account/data/profile_repository.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
@@ -76,6 +78,12 @@ class _KycView extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Status banner
+              _ProfilePictureSection(
+                onPick: () => _pickProfilePicture(context),
+                onRemove: () => _removeProfilePicture(context),
+              ),
+              const SizedBox(height: 20),
+
               _StatusBanner(kyc: kyc),
               const SizedBox(height: 24),
 
@@ -162,8 +170,9 @@ class _KycView extends StatelessWidget {
                     const Icon(Icons.hourglass_top_rounded,
                         color: AppColors.warning, size: 20),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(l10n.kycPendingNotice,
-                        style: const TextStyle(fontSize: 12))),
+                    Expanded(
+                        child: Text(l10n.kycPendingNotice,
+                            style: const TextStyle(fontSize: 12))),
                   ]),
                 ),
                 const SizedBox(height: 16),
@@ -307,8 +316,141 @@ class _KycView extends StatelessWidget {
     await context.read<KycCubit>().uploadDocument(picked, docType);
   }
 
+  Future<void> _pickProfilePicture(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (_) => _SourcePicker(l10n: l10n),
+    );
+    if (source == null) return;
+
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 85,
+      maxWidth: 800,
+      maxHeight: 800,
+    );
+    if (picked == null || !context.mounted) return;
+
+    try {
+      final bytes = await picked.readAsBytes();
+      final url = await getIt<ProfileRepository>().uploadAvatarBytes(
+        bytes,
+        picked.name.split('.').last,
+      );
+      await getIt<ProfileRepository>().updateProfile(avatarUrl: url);
+      if (!context.mounted) return;
+      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated.')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not update profile picture: $e'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeProfilePicture(BuildContext context) async {
+    try {
+      await getIt<ProfileRepository>().updateProfile(clearAvatar: true);
+      if (!context.mounted) return;
+      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture removed.')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not remove profile picture: $e'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
   String _fmtDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+class _ProfilePictureSection extends StatelessWidget {
+  const _ProfilePictureSection({
+    required this.onPick,
+    required this.onRemove,
+  });
+
+  final VoidCallback onPick;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+    final hasPhoto = user?.avatarUrl?.isNotEmpty == true;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          UserAvatar(
+            avatarUrl: user?.avatarUrl,
+            initials: user?.initials ?? 'U',
+            radius: 34,
+            showCameraBadge: true,
+            onTap: onPick,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Profile Picture',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Profile picture options',
+            onSelected: (value) {
+              if (value == 'pick') onPick();
+              if (value == 'remove') onRemove();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'pick',
+                child: Text('Upload photo'),
+              ),
+              if (hasPhoto)
+                const PopupMenuItem(
+                  value: 'remove',
+                  child: Text('Remove photo'),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─── Status Banner ────────────────────────────────────────────────────────────

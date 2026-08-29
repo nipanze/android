@@ -33,7 +33,7 @@ void main() {
     expect(find.text('Lender required'), findsOneWidget);
     expect(find.text('UGX 19,900'), findsOneWidget);
     expect(find.text('Choose Lender'), findsOneWidget);
-    expect(find.text('Not now'), findsOneWidget);
+    expect(find.text('Not now'), findsNothing);
     expect(
       find.text('Everything in Free'),
       findsOneWidget,

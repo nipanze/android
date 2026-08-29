@@ -39,13 +39,16 @@ class _LenderRequiredSheet extends StatelessWidget {
 
     final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;
     final cardBg = isDark ? const Color(0xFF14171E) : AppColors.bg3Light;
-    final cardBorder = isDark ? const Color(0xFF1F4885) : const Color(0xFFBFDBFE);
+    final cardBorder =
+        isDark ? const Color(0xFF1F4885) : const Color(0xFFBFDBFE);
     final badgeBg = isDark ? const Color(0xFF0F2C54) : const Color(0xFFDBEAFE);
-    final badgeText = isDark ? const Color(0xFF388DF8) : const Color(0xFF1D4ED8);
+    final badgeText =
+        isDark ? const Color(0xFF388DF8) : const Color(0xFF1D4ED8);
     final textPrimary = isDark ? AppColors.textDark : AppColors.textLight;
     final textSecondary = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final textMuted = isDark ? AppColors.text3Dark : AppColors.text3Light;
-    final checkColor = isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+    final checkColor =
+        isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
     final handleColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     const buttonBg = AppColors.accent;
 
@@ -95,7 +98,8 @@ class _LenderRequiredSheet extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, color: textSecondary, size: 20),
+                    icon: Icon(Icons.close_rounded,
+                        color: textSecondary, size: 20),
                     onPressed: () => Navigator.of(context).pop(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -131,7 +135,8 @@ class _LenderRequiredSheet extends StatelessWidget {
                   children: [
                     // Badge: Lender tier
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: badgeBg,
                         borderRadius: BorderRadius.circular(20),
@@ -157,15 +162,15 @@ class _LenderRequiredSheet extends StatelessWidget {
                           color: badgeText,
                         ),
                         const SizedBox(width: 8),
-                         Text(
-                           l10n?.lender ?? 'Lender',
-                           style: TextStyle(
-                             fontFamily: AppFonts.heading,
-                             fontSize: 17,
-                             fontWeight: FontWeight.w700,
-                             color: textPrimary,
-                           ),
-                         ),
+                        Text(
+                          l10n?.lender ?? 'Lender',
+                          style: TextStyle(
+                            fontFamily: AppFonts.heading,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
+                          ),
+                        ),
                       ],
                     ),
 
@@ -177,14 +182,14 @@ class _LenderRequiredSheet extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                           country.lenderPriceFormatted,
-                           style: TextStyle(
-                             fontFamily: AppFonts.heading,
-                             fontSize: 22,
-                             fontWeight: FontWeight.w800,
-                             color: textPrimary,
-                             letterSpacing: -0.5,
-                           ),
+                          country.lenderPriceFormatted,
+                          style: TextStyle(
+                            fontFamily: AppFonts.heading,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: textPrimary,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                         Text(
                           l10n?.perMonth ?? ' / month',
@@ -203,23 +208,36 @@ class _LenderRequiredSheet extends StatelessWidget {
                     Text(
                       l10n?.lenderTierDesc ??
                           'For anyone ready to make structured offers and earn returns on Nipanze.',
-                     style: TextStyle(
-                       fontSize: 12.5,
-                       height: 1.4,
-                       color: textSecondary,
-                     ),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.4,
+                        color: textSecondary,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
-                    Divider(color: isDark ? const Color(0xFF2D323E) : AppColors.borderLight, height: 1),
+                    Divider(
+                        color: isDark
+                            ? const Color(0xFF2D323E)
+                            : AppColors.borderLight,
+                        height: 1),
                     const SizedBox(height: 16),
 
                     // Feature Checkmark List
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.everythingInFree ?? 'Everything in Free'),
+                    _buildFeatureItem(checkColor, textPrimary,
+                        l10n?.everythingInFree ?? 'Everything in Free'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.lenderFeature1 ?? 'Make offers with full terms (rate, fee, schedule)'),
+                    _buildFeatureItem(
+                        checkColor,
+                        textPrimary,
+                        l10n?.lenderFeature1 ??
+                            'Make offers with full terms (rate, fee, schedule)'),
                     const SizedBox(height: 10),
-                    _buildFeatureItem(checkColor, textPrimary, l10n?.lenderFeature2 ?? 'See offer detail where you participate'),
+                    _buildFeatureItem(
+                        checkColor,
+                        textPrimary,
+                        l10n?.lenderFeature2 ??
+                            'See offer detail where you participate'),
 
                     const SizedBox(height: 22),
 
@@ -252,27 +270,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // ── Not now Text Button ────────────────────────────────────
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: TextButton.styleFrom(
-                    foregroundColor: textSecondary,
-                  ),
-                  child: Text(
-                    l10n?.notNow ?? 'Not now',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
 
               // ── Legal / Security Caption ────────────────────────────────
               Text(
@@ -296,11 +294,11 @@ class _LenderRequiredSheet extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Icon(
-           Icons.check_circle_outline,
-           size: 16,
-           color: checkColor,
-         ),
+        Icon(
+          Icons.check_circle_outline,
+          size: 16,
+          color: checkColor,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
