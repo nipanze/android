@@ -638,7 +638,79 @@ class _ProfileViewState extends State<_ProfileView> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+
+                  // ── Identity Verification Card ─────────────────────────────
+                  Card(
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () => context.push(AppRoutes.kyc),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_outlined,
+                                color: AppColors.accent,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n?.identityVerification ??
+                                        'Identity Verification',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isKycApproved
+                                        ? 'Your account identity is verified'
+                                        : 'Upload ID document for full access',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.text2Dark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildKycBadge(kycStatus),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: AppColors.text3Dark,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
                   // ── Full Name ─────────────────────────────────────────────
                   TextFormField(
@@ -878,80 +950,6 @@ class _ProfileViewState extends State<_ProfileView> {
                       setState(() => _showProfessionalTag = v);
                       _markChanged();
                     },
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
-
-                  // ── Identity Verification Card ─────────────────────────────
-                  Card(
-                    elevation: 0,
-                    margin: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                      ),
-                    ),
-                    child: InkWell(
-                      onTap: () => context.push(AppRoutes.kyc),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.accent.withValues(alpha: 0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.verified_user_outlined,
-                                color: AppColors.accent,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n?.identityVerification ??
-                                        'Identity Verification',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    isKycApproved
-                                        ? 'Your account identity is verified'
-                                        : 'Upload ID document for full access',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.text2Dark,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _buildKycBadge(kycStatus),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              size: 18,
-                              color: AppColors.text3Dark,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
