@@ -904,6 +904,22 @@
   "understood": "Compris",
   "principalLossWarningTitle": "Avertissement de perte de capital",
   "belowTargetReturnTitle": "Avertissement de rendement inférieur à l'objectif",
-  "sendAnyway": "Envoyer l'offre quand même"
+  "sendAnyway": "Envoyer l'offre quand même",
+  "affordabilityWarningTitle": "Le remboursement est peut-être trop bas",
+  "affordabilityWarningBody": "Votre remboursement total de {currency} {total} est inférieur de {currency} {shortfall} au montant demandé. Les prêteurs ont besoin d'un rendement — pensez à augmenter le montant de vos versements.",
+  "affordabilityDialogTitle": "Publier quand même ?",
+  "affordabilityDialogBody": "Vos conditions de remboursement semblent inférieures à ce que la plupart des prêteurs accepteront. Vous pouvez publier, mais vous risquez de ne pas recevoir d'offres. Pensez à augmenter votre versement.",
+  "paymentScheduleTitle": "CALENDRIER DE PAIEMENT ({count} {count, plural, one {versement} other {versements}})",
+  "plusMoreCount": "+{count} de plus",
+  "quickTermGuideLabel": "GUIDE RAPIDE DES CONDITIONS",
+  "termGuideLow": "💡 Intérêt Bas",
+  "termGuideFair": "🤝 Conditions Équitables",
+  "termGuideNegotiable": "📊 Négociable",
+  "offerMeansForYou": "Ce que cette offre signifie pour vous",
+  "totalRepayableLabel": "Total à rembourser",
+  "effectiveInterestLabel": "Intérêt effectif",
+  "loanAmountLabel": "Montant du prêt",
+  "highEffectiveRateWarning": "Cette offre a un taux effectif relativement élevé. Pensez à négocier ou à attendre une offre plus basse."
 }
+
 

@@ -2044,4 +2044,64 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get profilePictureKycNote =>
       'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+
+  @override
+  String get affordabilityWarningTitle => 'قد يكون السداد منخفضًا جدًا';
+
+  @override
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall) {
+    return 'إجمالي السداد الخاص بك البالغ $currency $total أقل بمقدار $currency $shortfall عن المبلغ المطلوب. يحتاج المقرضون إلى عائد — فكر في زيادة مبلغ القسط.';
+  }
+
+  @override
+  String get affordabilityDialogTitle => 'النشر على أي حال؟';
+
+  @override
+  String get affordabilityDialogBody =>
+      'تبدو شروط السداد الخاصة بك أقل مما يقبله معظم المقرضين. يمكنك النشر، ولكن قد لا تتلقى عروضًا. فكر في زيادة قسطك.';
+
+  @override
+  String paymentScheduleTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'أقساط',
+      one: 'قسط',
+    );
+    return 'جدول المدفوعات ($count $_temp0)';
+  }
+
+  @override
+  String plusMoreCount(int count) {
+    return '+$count أخرى';
+  }
+
+  @override
+  String get quickTermGuideLabel => 'دليل الشروط السريع';
+
+  @override
+  String get termGuideLow => '💡 فائدة منخفضة';
+
+  @override
+  String get termGuideFair => '🤝 شروط عادلة';
+
+  @override
+  String get termGuideNegotiable => '📊 قابل للتفاوض';
+
+  @override
+  String get offerMeansForYou => 'ماذا يعني هذا العرض بالنسبة لك';
+
+  @override
+  String get totalRepayableLabel => 'إجمالي المبلغ المستحق للسداد';
+
+  @override
+  String get effectiveInterestLabel => 'الفائدة الفعلية';
+
+  @override
+  String get loanAmountLabel => 'مبلغ القرض';
+
+  @override
+  String get highEffectiveRateWarning =>
+      'يحتوي هذا العرض على معدل فائدة فعلي مرتفع نسبيًا. فكر في التفاوض أو الانتظار للحصول على عرض أقل.';
 }

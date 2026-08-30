@@ -910,6 +910,39 @@
   "referralChecking": "Checking referral code...",
   "referralAccepted": "Referral code accepted.",
   "profilePicture": "Profile Picture",
-  "profilePictureKycNote": "Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents."
+  "profilePictureKycNote": "Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.",
+  "affordabilityWarningTitle": "Repayment may be too low",
+  "affordabilityWarningBody": "Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Lenders require a return — consider increasing your installment.",
+  "@affordabilityWarningBody": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "total": { "type": "String" },
+      "shortfall": { "type": "String" }
+    }
+  },
+  "affordabilityDialogTitle": "Publish anyway?",
+  "affordabilityDialogBody": "Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.",
+  "paymentScheduleTitle": "PAYMENT SCHEDULE ({count} {count, plural, one {instalment} other {instalments}})",
+  "@paymentScheduleTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "plusMoreCount": "+{count} more",
+  "@plusMoreCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "quickTermGuideLabel": "QUICK TERM GUIDE",
+  "termGuideLow": "💡 Low Interest",
+  "termGuideFair": "🤝 Fair Terms",
+  "termGuideNegotiable": "📊 Negotiable",
+  "offerMeansForYou": "What this offer means for you",
+  "totalRepayableLabel": "Total repayable",
+  "effectiveInterestLabel": "Effective interest",
+  "loanAmountLabel": "Loan amount",
+  "highEffectiveRateWarning": "This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer."
 }
+
 

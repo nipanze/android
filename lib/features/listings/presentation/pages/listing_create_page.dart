@@ -312,6 +312,52 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
+  // ── Affordability gate: mirrors MakeOfferSheet's _showLossWarningDialog ──
+  Future<bool> _showAffordabilityDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final currency = _currencyCode;
+    final principal = int.tryParse(_amountController.text) ?? 0;
+    final installment = int.tryParse(_repaymentAmountController.text) ?? 0;
+    final periods = switch (_preferredRepaymentPlan) {
+      'weekly' => (int.tryParse(_durationController.text) ?? 0) * 4,
+      'one_time' => 1,
+      _ => int.tryParse(_durationController.text) ?? 0,
+    };
+    final totalRepayment = installment * periods;
+
+    if (principal <= 0 || totalRepayment >= principal) return true;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: AppColors.warning,
+          size: 34,
+        ),
+        title: Text(l10n?.affordabilityDialogTitle ?? 'Publish anyway?'),
+        content: Text(
+          l10n?.affordabilityDialogBody ??
+              'Your repayment terms appear lower than what most lenders will accept. '
+              'Total repayment of $currency ${fmtAmount(totalRepayment)} is below your requested $currency ${fmtAmount(principal)}. '
+              'You can still publish, but you may not receive offers. Consider adjusting your installment amount.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n?.btnBack ?? 'Go back & adjust'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.warning),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n?.btnPublishToMarketplace ?? 'Publish anyway'),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
+  }
+
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     if (!_loanDetailsValid || !_repaymentValid) {
@@ -336,6 +382,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       }
       return;
     }
+
+    // ── Affordability gate ────────────────────────────────────────────────────
+    if (!await _showAffordabilityDialog()) return;
+    if (!mounted) return;
 
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
@@ -1064,6 +1114,29 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               ),
             ],
           ),
+          // ── Affordability warning (borrower mirror of lender loss-alert) ──
+          Builder(builder: (context) {
+            final principal = int.tryParse(_amountController.text) ?? 0;
+            final installment = int.tryParse(_repaymentAmountController.text) ?? 0;
+            final periods = switch (_preferredRepaymentPlan) {
+              'weekly' => (int.tryParse(_durationController.text) ?? 0) * 4,
+              'one_time' => 1,
+              _ => int.tryParse(_durationController.text) ?? 0,
+            };
+            final totalRepayment = installment * periods;
+            if (installment <= 0 || principal <= 0) return const SizedBox.shrink();
+            return Column(
+              children: [
+                const SizedBox(height: 10),
+                AffordabilityWarningBanner(
+                  currency: currency,
+                  principal: principal,
+                  totalRepayment: totalRepayment,
+                  installmentAmount: installment,
+                ),
+              ],
+            );
+          }),
           const SizedBox(height: 10),
           LiveRepaymentMathPanel(
             currency: currency,
@@ -1072,6 +1145,21 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             repaymentPlan: _preferredRepaymentPlan,
             installmentAmount: int.tryParse(_repaymentAmountController.text) ?? 0,
           ),
+          // ── Payment schedule timeline ─────────────────────────────────────
+          if (_preferredRepaymentPlan != null &&
+              _selectedDueDay != null &&
+              (int.tryParse(_repaymentAmountController.text) ?? 0) > 0 &&
+              (int.tryParse(_durationController.text) ?? 0) > 0) ...[
+            const SizedBox(height: 10),
+            RepaymentScheduleTimeline(
+              durationMonths: int.tryParse(_durationController.text) ?? 0,
+              repaymentPlan: _preferredRepaymentPlan!,
+              installmentAmount: int.tryParse(_repaymentAmountController.text) ?? 0,
+              currency: currency,
+              selectedDueDay: _selectedDueDay,
+              selectedDueTime: _selectedDueTime,
+            ),
+          ],
           const SizedBox(height: 10),
           ListingFormPanel(
             title: l10n?.panelPreferredTerms ?? 'Preferred terms',
@@ -1081,6 +1169,32 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 : null,
             children: canSuggestTerms
                 ? [
+                    // ── Quick Term Guide chips (Pro borrowers only) ──
+                    TermGuideChips(
+                      onPresetSelected: (interest, lateFee) {
+                        setState(() {
+                          _suggestedInterestController.text =
+                              interest.toStringAsFixed(0);
+                          _suggestedLateFeeController.text =
+                              lateFee.toStringAsFixed(0);
+                          // Recalculate installment suggestion based on interest
+                          final principal =
+                              int.tryParse(_amountController.text) ?? 0;
+                          final periods = switch (_preferredRepaymentPlan) {
+                            'weekly' =>
+                              (int.tryParse(_durationController.text) ?? 0) * 4,
+                            'one_time' => 1,
+                            _ => int.tryParse(_durationController.text) ?? 0,
+                          };
+                          if (principal > 0 && periods > 0) {
+                            final target = principal +
+                                (principal * (interest / 100)).ceil();
+                            _suggestedInstallmentController.text =
+                                ((target / periods).ceil()).toString();
+                          }
+                        });
+                      },
+                    ),
                     TextFormField(
                       controller: _suggestedInterestController,
                       keyboardType:
@@ -1333,6 +1447,33 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             ],
           ]),
         ),
+
+        const SizedBox(height: 16),
+
+        // ── Repayment math recap (mirrors lender's "Live Return Estimate") ──
+        LiveRepaymentMathPanel(
+          currency: currency,
+          principal: amount,
+          durationMonths: int.tryParse(_durationController.text) ?? 0,
+          repaymentPlan: _preferredRepaymentPlan,
+          installmentAmount: repaymentAmount,
+        ),
+
+        // ── Payment schedule preview ──────────────────────────────────────────
+        if (_preferredRepaymentPlan != null &&
+            _selectedDueDay != null &&
+            repaymentAmount > 0 &&
+            (int.tryParse(_durationController.text) ?? 0) > 0) ...[
+          const SizedBox(height: 10),
+          RepaymentScheduleTimeline(
+            durationMonths: int.tryParse(_durationController.text) ?? 0,
+            repaymentPlan: _preferredRepaymentPlan!,
+            installmentAmount: repaymentAmount,
+            currency: currency,
+            selectedDueDay: _selectedDueDay,
+            selectedDueTime: _selectedDueTime,
+          ),
+        ],
 
         const SizedBox(height: 16),
 

@@ -7,6 +7,7 @@ import 'package:nipanze/features/account/domain/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 
 @lazySingleton
@@ -69,17 +70,28 @@ class ProfileRepository {
 
       final email = _client.auth.currentUser?.email ?? '';
 
+      final storedPhone = profile?['phone'] as String?;
+      final storedCountry = profile?['country'] as String?;
+      final resolvedCountryCode = (storedCountry != null && storedCountry.isNotEmpty)
+          ? storedCountry
+          : (storedPhone != null && storedPhone.isNotEmpty
+              ? EastAfricaCountries.findByPhone(storedPhone).code
+              : 'UG');
+      final resolvedCurrency = profile?['income_currency'] as String? ??
+          EastAfricaCountries.findByCode(resolvedCountryCode).currency;
+
       return UserProfile(
         id: _uid,
         email: email,
         fullName: profile?['full_name'] as String?,
         avatarUrl: profile?['avatar_url'] as String?,
-        phone: profile?['phone'] as String?,
+        phone: storedPhone,
         district: profile?['district'] as String?,
         employmentType: profile?['employment_type'] as String?,
         employerName: profile?['employer_name'] as String?,
         monthlyIncome: (profile?['monthly_income'] as num?)?.toInt(),
-        incomeCurrency: profile?['income_currency'] as String? ?? 'UGX',
+        incomeCurrency: resolvedCurrency,
+        country: resolvedCountryCode,
         preferredBank: profile?['preferred_bank'] as String?,
         institutionType: profile?['institution_type'] as String?,
         isBankAgent: profile?['is_bank_agent'] as bool? ?? false,
@@ -179,6 +191,7 @@ class ProfileRepository {
     String? avatarUrl,
     bool clearAvatar = false,
     String? phone,
+    String? country,
     String? district,
     String? employmentType,
     String? employerName,
@@ -221,6 +234,7 @@ class ProfileRepository {
         updates['avatar_url'] = avatarUrl.isEmpty ? null : avatarUrl;
       }
       if (phone != null) updates['phone'] = phone;
+      if (country != null) updates['country'] = country;
       if (district != null) updates['district'] = district;
       if (employmentType != null) updates['employment_type'] = employmentType;
       if (employerName != null) updates['employer_name'] = employerName;

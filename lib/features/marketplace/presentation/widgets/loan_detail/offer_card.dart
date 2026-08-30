@@ -498,6 +498,14 @@ class OfferCardState extends State<OfferCard>
                       ),
                     ],
 
+                    // ── "What this offer means for you" (borrower helper) ──
+                    if (widget.isOwner)
+                      _BorrowerImpactPanel(
+                        offer: offer,
+                        requestedAmount: widget.requestedAmount,
+                        durationMonths: widget.durationMonths,
+                      ),
+
                     // Accept button (owner only)
                     if (widget.isOwner) ...[
                       Padding(
@@ -800,6 +808,164 @@ class TotalPayableRow extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Borrower Impact Panel ────────────────────────────────────────────────────
+// Shown only to the listing owner (borrower) inside an expanded offer card.
+// Mirrors the lender's "Live Return Estimate" but framed from the borrower's
+// perspective: how much will they actually pay back in total?
+
+class _BorrowerImpactPanel extends StatelessWidget {
+  const _BorrowerImpactPanel({
+    required this.offer,
+    required this.requestedAmount,
+    required this.durationMonths,
+  });
+
+  final LoanOffer offer;
+  final int requestedAmount;
+  final int durationMonths;
+
+  String _fmt(int n) => fmtAmount(n);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final currency = offer.currency;
+
+    final periods = offer.repaymentFrequency == 'weekly'
+        ? durationMonths * 4
+        : offer.repaymentFrequency == 'one_time'
+            ? 1
+            : durationMonths;
+
+    final totalRepayable = offer.installmentAmount * periods;
+    final borrowingCost = totalRepayable - offer.offerAmount;
+    final effectivePct = offer.offerAmount > 0
+        ? (borrowingCost / offer.offerAmount * 100)
+        : 0.0;
+
+    final isExpensive = effectivePct > 20;
+    final accentColor = isExpensive ? AppColors.warning : AppColors.accent;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: accentColor.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: accentColor.withValues(alpha: 0.22)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.account_balance_wallet_outlined,
+                    size: 14, color: accentColor),
+                const SizedBox(width: 6),
+                Text(
+                  (l10n?.offerMeansForYou ?? 'WHAT THIS OFFER MEANS FOR YOU')
+                      .toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.6,
+                    color: accentColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Rows
+            _Row(
+              label: l10n?.loanAmountLabel ?? 'Loan amount',
+              value: '$currency ${_fmt(offer.offerAmount)}',
+            ),
+            _Row(
+              label: l10n?.liveCalcTotalPayments ?? 'Total payments',
+              value: '$periods payments',
+            ),
+            const Divider(height: 12),
+            _Row(
+              label: l10n?.totalRepayableLabel ?? 'Total repayable',
+              value: '$currency ${_fmt(totalRepayable)}',
+              bold: true,
+              color: accentColor,
+            ),
+            _Row(
+              label: l10n?.borrowingCostLabel('') ?? 'Borrowing cost',
+              value: '$currency ${_fmt(borrowingCost.abs())}',
+            ),
+            _Row(
+              label: l10n?.effectiveInterestLabel ?? 'Effective interest',
+              value: '${effectivePct.toStringAsFixed(1)}%',
+              color: isExpensive ? AppColors.warning : null,
+            ),
+            if (isExpensive) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded,
+                      size: 12, color: AppColors.warning),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      'This offer has a relatively high effective rate. '
+                      'Consider negotiating or waiting for a lower offer.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 10.5,
+                            color: AppColors.warning,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  const _Row({
+    required this.label,
+    required this.value,
+    this.bold = false,
+    this.color,
+  });
+
+  final String label;
+  final String value;
+  final bool bold;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight:
+                        bold ? FontWeight.bold : FontWeight.normal,
+                  )),
+          Text(value,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: bold ? FontWeight.bold : FontWeight.w600,
+                    color: color,
+                  )),
+        ],
       ),
     );
   }

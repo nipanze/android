@@ -397,3 +397,410 @@ class MathRow extends StatelessWidget {
   }
 }
 
+// ─── Affordability Warning Banner ─────────────────────────────────────────────
+// Shown inline when the borrower's total repayment (installment × periods) is
+// less than the loan principal they are requesting, meaning no lender would
+// accept the deal at a loss.
+
+class AffordabilityWarningBanner extends StatelessWidget {
+  const AffordabilityWarningBanner({
+    super.key,
+    required this.currency,
+    required this.principal,
+    required this.totalRepayment,
+    required this.installmentAmount,
+  });
+
+  final String currency;
+  final int principal;
+  final int totalRepayment;
+  final int installmentAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    if (principal <= 0 || installmentAmount <= 0) return const SizedBox.shrink();
+    if (totalRepayment >= principal) return const SizedBox.shrink();
+
+    final shortfall = principal - totalRepayment;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.40)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              size: 18, color: AppColors.warning),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Repayment may be too low',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.warning,
+                      ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Your total repayment of $currency ${fmtAmount(totalRepayment)} is $currency ${fmtAmount(shortfall)} below the amount you are requesting. '
+                  'Lenders need to earn a return — consider increasing your installment amount.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        color: AppColors.warning,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Repayment Schedule Timeline ──────────────────────────────────────────────
+// Horizontal scroll of instalment date cards, built from the borrower's own
+// due day / time / frequency settings — no listing object needed.
+
+class RepaymentScheduleTimeline extends StatelessWidget {
+  const RepaymentScheduleTimeline({
+    super.key,
+    required this.durationMonths,
+    required this.repaymentPlan,
+    required this.installmentAmount,
+    required this.currency,
+    required this.selectedDueDay,
+    required this.selectedDueTime,
+    this.anchorDate,
+  });
+
+  final int durationMonths;
+  final String repaymentPlan;
+  final int installmentAmount;
+  final String currency;
+  final String? selectedDueDay;
+  final String? selectedDueTime;
+  final DateTime? anchorDate;
+
+  int get _numberOfInstallments {
+    switch (repaymentPlan.toLowerCase()) {
+      case 'weekly':
+        return durationMonths * 4;
+      case 'one_time':
+      case 'lump_sum':
+        return 1;
+      case 'monthly':
+      default:
+        return durationMonths;
+    }
+  }
+
+  int? get _dueDayOfMonth {
+    final d = selectedDueDay?.toLowerCase();
+    if (d == null) return null;
+    if (d.contains('1st')) return 1;
+    if (d.contains('5th')) return 5;
+    if (d.contains('10th')) return 10;
+    if (d.contains('15th')) return 15;
+    if (d.contains('20th')) return 20;
+    if (d.contains('25th')) return 25;
+    if (d.contains('last day')) return -1;
+    return null;
+  }
+
+  int? get _dueWeekday {
+    final d = selectedDueDay?.toLowerCase();
+    if (d == null) return null;
+    if (d.contains('monday')) return DateTime.monday;
+    if (d.contains('wednesday')) return DateTime.wednesday;
+    if (d.contains('friday')) return DateTime.friday;
+    if (d.contains('sunday')) return DateTime.sunday;
+    return null;
+  }
+
+  String? get _dueTimeLabel {
+    if (selectedDueTime == null) return null;
+    return selectedDueTime!.split(' (').first;
+  }
+
+  DateTime _instalmentDate(int index) {
+    final anchor = anchorDate ?? DateTime.now();
+    switch (repaymentPlan.toLowerCase()) {
+      case 'weekly':
+        final targetWd = _dueWeekday;
+        DateTime base = anchor.add(Duration(days: 7 * (index + 1)));
+        if (targetWd != null) {
+          final diff = (targetWd - base.weekday) % 7;
+          base = base.add(Duration(days: diff));
+        }
+        return DateTime(base.year, base.month, base.day);
+
+      case 'one_time':
+      case 'lump_sum':
+        final months = durationMonths > 0 ? durationMonths : 1;
+        final targetDay = _dueDayOfMonth;
+        final mo = anchor.month + months;
+        int day;
+        if (targetDay == null) {
+          day = anchor.day;
+        } else if (targetDay == -1) {
+          day = DateTime(anchor.year, mo + 1, 0).day;
+        } else {
+          final daysInM = DateTime(anchor.year, mo + 1, 0).day;
+          day = targetDay.clamp(1, daysInM);
+        }
+        return DateTime(anchor.year, mo, day);
+
+      case 'monthly':
+      default:
+        final targetDay = _dueDayOfMonth;
+        final mo = anchor.month + (index + 1);
+        int day;
+        if (targetDay == null) {
+          day = anchor.day;
+        } else if (targetDay == -1) {
+          day = DateTime(anchor.year, mo + 1, 0).day;
+        } else {
+          final daysInM = DateTime(anchor.year, mo + 1, 0).day;
+          day = targetDay.clamp(1, daysInM);
+        }
+        return DateTime(anchor.year, mo, day);
+    }
+  }
+
+  String _formatDate(DateTime dt) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const weekdays = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final prefix =
+        repaymentPlan.toLowerCase() == 'weekly' ? '${weekdays[dt.weekday]} ' : '';
+    return '$prefix${months[dt.month - 1]} ${dt.day}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (durationMonths <= 0 || installmentAmount <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    final count = _numberOfInstallments;
+    final displayCount = count.clamp(1, 6);
+    final extraCount = count > 6 ? count - 6 : 0;
+    final primary = Theme.of(context).colorScheme.primary;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: primary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_month_outlined, size: 14, color: primary),
+              const SizedBox(width: 6),
+              Text(
+                'PAYMENT SCHEDULE ($count ${count == 1 ? "instalment" : "instalments"})',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                  color: primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ...List.generate(displayCount, (index) {
+                  final date = _instalmentDate(index);
+                  final isLast = index == displayCount - 1 && extraCount == 0;
+                  return Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: primary.withValues(alpha: 0.28)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                  fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _formatDate(date),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_dueTimeLabel != null) ...[
+                              const SizedBox(height: 1),
+                              Text(
+                                _dueTimeLabel!,
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 2),
+                            Text(
+                              '$currency ${fmtAmount(installmentAmount)}',
+                              style: const TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!isLast)
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 13,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.35),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
+                if (extraCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outlineVariant
+                                .withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        '+$extraCount more',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Term Guide Chips (Pro borrowers only) ────────────────────────────────────
+// Quick-fill preset chips so Pro borrowers can set competitive suggested terms
+// without having to know what numbers to enter.
+
+class TermGuideChips extends StatelessWidget {
+  const TermGuideChips({super.key, required this.onPresetSelected});
+
+  /// Called with (interestPct, lateFeePct) when a chip is tapped.
+  final void Function(double interestPct, double lateFeePct) onPresetSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'QUICK TERM GUIDE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.6,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.55),
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _chip(context, '💡 Low Interest', 8.0, 0.0,
+                    'Attract lenders fast with a competitive low rate.'),
+                _chip(context, '🤝 Fair Terms', 10.0, 2.0,
+                    'A balanced offer that lenders commonly accept.'),
+                _chip(context, '📊 Negotiable', 12.0, 3.0,
+                    'Slightly higher yield — gives lenders room to negotiate down.'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(BuildContext context, String label, double interest,
+      double lateFee, String tooltip) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Tooltip(
+        message: tooltip,
+        child: ActionChip(
+          label: Text(label,
+              style: const TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w600)),
+          onPressed: () => onPresetSelected(interest, lateFee),
+          visualDensity: VisualDensity.compact,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
+    );
+  }
+}
+

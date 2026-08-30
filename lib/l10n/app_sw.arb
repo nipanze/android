@@ -926,7 +926,23 @@
   "understood": "Elewa",
   "principalLossWarningTitle": "Onyo la Hasara ya Mtaji",
   "belowTargetReturnTitle": "Onyo: Faida iko chini ya lengo",
-  "sendAnyway": "Tuma Ofa Hata Hivyo"
+  "sendAnyway": "Tuma Ofa Hata Hivyo",
+  "affordabilityWarningTitle": "Marejesho yanaweza kuwa ya chini sana",
+  "affordabilityWarningBody": "Jumla ya marejesho yako ya {currency} {total} iko chini kwa {currency} {shortfall} ya kiasi unachoomba. Wakopeshi wanahitaji kupata faida — fikiria kuongeza kiasi cha awamu yako.",
+  "affordabilityDialogTitle": "Chapisha hata hivyo?",
+  "affordabilityDialogBody": "Vigezo vyako vya marejesho vinaonekana kuwa chini kuliko vile wakopeshi wengi watakubali. Unaweza kuchapisha, lakini huenda usipokee matoleo. Fikiria kuongeza kiasi cha awamu.",
+  "paymentScheduleTitle": "RATIBA YA MALIPO ({count} {count, plural, one {awamu} other {awamu}})",
+  "plusMoreCount": "+{count} zaidi",
+  "quickTermGuideLabel": "MWONGOZO WA HARAKA WA VIGEZO",
+  "termGuideLow": "💡 Riba ya Chini",
+  "termGuideFair": "🤝 Vigezo vya Haki",
+  "termGuideNegotiable": "📊 Inajadiliwa",
+  "offerMeansForYou": "Toleo hili lina maana gani kwako",
+  "totalRepayableLabel": "Jumla inayolipwa",
+  "effectiveInterestLabel": "Riba halisi",
+  "loanAmountLabel": "Kiasi cha mkopo",
+  "highEffectiveRateWarning": "Toleo hili lina kiwango cha juu cha riba halisi. Fikiria kujadili au kusubiri toleo la chini."
 }
+
 
 

@@ -899,6 +899,22 @@
   "understood": "مفهوم",
   "principalLossWarningTitle": "تحذير من خسارة رأس المال",
   "belowTargetReturnTitle": "تحذير: العائد أقل من المستهدف",
-  "sendAnyway": "إرسال العرض على أي حال"
+  "sendAnyway": "إرسال العرض على أي حال",
+  "affordabilityWarningTitle": "قد يكون السداد منخفضًا جدًا",
+  "affordabilityWarningBody": "إجمالي السداد الخاص بك البالغ {currency} {total} أقل بمقدار {currency} {shortfall} عن المبلغ المطلوب. يحتاج المقرضون إلى عائد — فكر في زيادة مبلغ القسط.",
+  "affordabilityDialogTitle": "النشر على أي حال؟",
+  "affordabilityDialogBody": "تبدو شروط السداد الخاصة بك أقل مما يقبله معظم المقرضين. يمكنك النشر، ولكن قد لا تتلقى عروضًا. فكر في زيادة قسطك.",
+  "paymentScheduleTitle": "جدول المدفوعات ({count} {count, plural, one {قسط} other {أقساط}})",
+  "plusMoreCount": "+{count} أخرى",
+  "quickTermGuideLabel": "دليل الشروط السريع",
+  "termGuideLow": "💡 فائدة منخفضة",
+  "termGuideFair": "🤝 شروط عادلة",
+  "termGuideNegotiable": "📊 قابل للتفاوض",
+  "offerMeansForYou": "ماذا يعني هذا العرض بالنسبة لك",
+  "totalRepayableLabel": "إجمالي المبلغ المستحق للسداد",
+  "effectiveInterestLabel": "الفائدة الفعلية",
+  "loanAmountLabel": "مبلغ القرض",
+  "highEffectiveRateWarning": "يحتوي هذا العرض على معدل فائدة فعلي مرتفع نسبيًا. فكر في التفاوض أو الانتظار للحصول على عرض أقل."
 }
+
 

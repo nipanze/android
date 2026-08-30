@@ -1363,6 +1363,34 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
 
               // Step bar
               _buildStepBar(context),
+              const SizedBox(height: 12),
+
+              // Beginner tip card
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lightbulb_outline_rounded,
+                        color: AppColors.accent, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Forex Helper: Customize your exchange rate, amount, and settlement method. The requester will review your terms before accepting.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
 
               // Trust badge
@@ -1479,13 +1507,40 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
                 ),
               const SizedBox(height: 14),
 
-              // Amount label
-              Text(
-                l10n?.amountAvailableLabel ?? 'Amount you can give',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+              // Amount label + ⓘ
+              Row(
+                children: [
+                  Text(
+                    l10n?.amountAvailableLabel ?? 'Amount you can give',
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        icon: const Icon(Icons.monetization_on_rounded,
+                            color: AppColors.accent),
+                        title: const Text('Amount Offered'),
+                        content: const Text(
+                          'The amount of the held currency you are willing to exchange.\n\n'
+                          'You can choose the full requested amount or offer a partial amount using the 25%, 50%, 75%, or 100% preset chips below.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: const Text('Got it'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: const Icon(Icons.info_outline_rounded,
+                        size: 14, color: AppColors.accent),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
 
@@ -1511,12 +1566,51 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
               _buildLiveCalcPanel(context),
               const SizedBox(height: 14),
 
-              // Settlement terms
+              // Settlement terms label + ⓘ
+              Row(
+                children: [
+                  Text(
+                    l10n?.settlementTermsLabel ?? 'Settlement terms',
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        icon: const Icon(Icons.handshake_rounded,
+                            color: AppColors.accent),
+                        title: const Text('Settlement Terms'),
+                        content: const Text(
+                          'Describe how and where you will complete the transaction.\n\n'
+                          'Examples:\n'
+                          '• "Physical meetup at Forex bureau in CBD"\n'
+                          '• "Direct Mobile Money transfer upon offer match"\n'
+                          '• "Bank account deposit within 2 hours"',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: const Text('Got it'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: const Icon(Icons.info_outline_rounded,
+                        size: 14, color: AppColors.accent),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              // Settlement terms input
               TextField(
                 controller: _termsController,
                 maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: l10n?.settlementTermsLabel ?? 'Settlement terms',
+                decoration: const InputDecoration(
                   hintText: 'e.g. Cash in person, Kampala CBD, Monday 9am–5pm',
                   alignLabelWithHint: true,
                 ),

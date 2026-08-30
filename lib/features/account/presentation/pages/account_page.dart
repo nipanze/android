@@ -103,7 +103,7 @@ class _AccountView extends StatelessWidget {
                       // ── Profile card ──────────────────────────────────────
                       _ProfileHeaderCard(
                         profile: profile,
-                        onTap: () => _showAccountSheet(context, profile),
+                        onTap: () => context.push(AppRoutes.profile),
                       ),
                       const SizedBox(height: 12),
 
@@ -273,9 +273,11 @@ class _AccountView extends StatelessWidget {
     final authState = context.read<AuthBloc>().state;
     final userPhone = authState is AuthAuthenticated ? authState.user.phone : null;
     final userCountryCode = authState is AuthAuthenticated ? authState.user.country : null;
-    final userCountry = userPhone != null && userPhone.isNotEmpty
-        ? EastAfricaCountries.findByPhone(userPhone)
-        : EastAfricaCountries.findByCode(userCountryCode);
+    final userCountry = (userCountryCode != null && userCountryCode.isNotEmpty)
+        ? EastAfricaCountries.findByCode(userCountryCode)
+        : (userPhone != null && userPhone.isNotEmpty
+            ? EastAfricaCountries.findByPhone(userPhone)
+            : EastAfricaCountries.uganda);
 
     showModalBottomSheet<void>(
       context: context,
@@ -339,6 +341,15 @@ class _AccountView extends StatelessWidget {
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _showCurrencyLockedInfoDialog(context, userCountry);
+                },
+              ),
+              const Divider(height: 1),
+              _ActionRow(
+                icon: Icons.lock_outline_rounded,
+                label: AppLocalizations.of(sheetCtx)?.security ?? 'Security',
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _showSecuritySheet(context);
                 },
               ),
               const Divider(height: 1),
@@ -547,78 +558,7 @@ class _AccountView extends StatelessWidget {
     );
   }
 
-  void _showAccountSheet(BuildContext context, UserProfile? profile) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetCtx) {
-        // Capture router before the sheet opens so we can navigate after pop.
-        final router = GoRouter.of(context);
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Text(
-                  AppLocalizations.of(sheetCtx)!.accountTitle,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700),
-                ),
-              ),
-              const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.person_outline_rounded,
-                label: AppLocalizations.of(sheetCtx)!.editProfile,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  final currentLocation =
-                      GoRouterState.of(context).matchedLocation;
-                  if (currentLocation != AppRoutes.profile) {
-                    router.push(AppRoutes.profile);
-                  }
-                },
-              ),
-              const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.verified_user_outlined,
-                label: AppLocalizations.of(sheetCtx)!.identityVerification,
-                trailing: _kycBadge(profile?.kycStatus),
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  router.push(AppRoutes.kyc);
-                },
-              ),
-              const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.lock_outline_rounded,
-                label: AppLocalizations.of(sheetCtx)!.security,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showSecuritySheet(context);
-                },
-              ),
-              const Divider(height: 1),
-              _ActionRow(
-                icon: Icons.settings_outlined,
-                label: AppLocalizations.of(sheetCtx)!.settingsTitle,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showSettingsSheet(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   void _showSecuritySheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -703,23 +643,7 @@ class _AccountView extends StatelessWidget {
     );
   }
 
-  Widget? _kycBadge(String? status) {
-    if (status == null) return null;
-    final (label, color) = switch (status) {
-      'approved' => ('Verified', AppColors.success),
-      'pending' => ('Pending', AppColors.warning),
-      _ => ('Incomplete', AppColors.text2Dark),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20)),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-    );
-  }
+
 }
 
 // ── Profile Header Card ────────────────────────────────────────────────────────

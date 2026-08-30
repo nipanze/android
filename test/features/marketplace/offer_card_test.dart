@@ -31,7 +31,7 @@ LoanOffer _offer({
 Widget _wrap(Widget child) => MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: child),
+      home: Scaffold(body: SingleChildScrollView(child: child)),
     );
 
 void main() {

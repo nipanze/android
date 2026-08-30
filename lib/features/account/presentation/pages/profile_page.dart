@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -409,6 +410,8 @@ class _ProfileViewState extends State<_ProfileView> {
   bool get _isReadyToSave =>
       _hasChanges && _nameController.text.trim().isNotEmpty;
 
+
+
   String? _validateEmail(String? value) {
     final email = value?.trim() ?? '';
     if (email.isEmpty) return null;
@@ -498,6 +501,8 @@ class _ProfileViewState extends State<_ProfileView> {
       avatarUrl: finalAvatarUrl,
       clearAvatar: clearAvatar,
       phone: fullPhone.isEmpty ? null : fullPhone,
+      country: _selectedCountry.code,
+      incomeCurrency: _selectedCountry.currency,
       district: _district,
       employmentType: _employmentType,
       employerName: _employerController.text.trim().isEmpty
@@ -602,6 +607,8 @@ class _ProfileViewState extends State<_ProfileView> {
           final isAvatarRemoved = loadedState?.pendingAvatarRemoved ?? false;
           final avatarUrl =
               isAvatarRemoved ? null : loadedState?.profile.avatarUrl;
+          final kycStatus = loadedState?.profile.kycStatus;
+          final isKycApproved = loadedState?.profile.isKycApproved ?? false;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -659,6 +666,8 @@ class _ProfileViewState extends State<_ProfileView> {
                   ),
                   const SizedBox(height: 14),
 
+
+
                   // ── WhatsApp-Style Merged Country & Phone Field ───────────
                   TextFormField(
                     controller: _phoneController,
@@ -666,22 +675,41 @@ class _ProfileViewState extends State<_ProfileView> {
                     decoration: InputDecoration(
                       labelText: l10n?.phoneNumberLabel ?? 'Phone number',
                       hintText: '7XX XXX XXX',
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 4, right: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_selectedCountry.flag,
-                                style: const TextStyle(fontSize: 20)),
-                            const SizedBox(width: 5),
-                            Text(
-                              _selectedCountry.dialCode,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                      prefixIcon: InkWell(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Registered country dial code (${_selectedCountry.dialCode}) is locked.',
                               ),
+                              duration: const Duration(seconds: 2),
                             ),
-                          ],
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8, right: 6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_selectedCountry.flag,
+                                  style: const TextStyle(fontSize: 20)),
+                              const SizedBox(width: 4),
+                              Text(
+                                _selectedCountry.dialCode,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(
+                                Icons.lock_outline_rounded,
+                                size: 14,
+                                color: AppColors.text3Dark,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -851,6 +879,80 @@ class _ProfileViewState extends State<_ProfileView> {
                       _markChanged();
                     },
                   ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+                  const SizedBox(height: 16),
+
+                  // ── Identity Verification Card ─────────────────────────────
+                  Card(
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () => context.push(AppRoutes.kyc),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent.withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.verified_user_outlined,
+                                color: AppColors.accent,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n?.identityVerification ??
+                                        'Identity Verification',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isKycApproved
+                                        ? 'Your account identity is verified'
+                                        : 'Upload ID document for full access',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.text2Dark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildKycBadge(kycStatus),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: AppColors.text3Dark,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -878,6 +980,31 @@ class _ProfileViewState extends State<_ProfileView> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildKycBadge(String? status) {
+    if (status == null) return const SizedBox.shrink();
+    final (label, color) = switch (status) {
+      'approved' => ('Verified', AppColors.success),
+      'pending' => ('Pending', AppColors.warning),
+      'rejected' => ('Rejected', AppColors.danger),
+      _ => ('Unverified', AppColors.text2Dark),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
     );
   }

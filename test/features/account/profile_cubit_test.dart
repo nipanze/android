@@ -28,6 +28,7 @@ class MockProfileRepository implements ProfileRepository {
     bool clearAvatar = false,
     String? phone,
     String? district,
+    String? country,
     String? employmentType,
     String? employerName,
     int? monthlyIncome,

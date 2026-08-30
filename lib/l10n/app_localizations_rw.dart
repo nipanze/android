@@ -2069,4 +2069,65 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get profilePictureKycNote =>
       'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+
+  @override
+  String get affordabilityWarningTitle =>
+      'Kwishyura bishobora kuba biri hasi cyane';
+
+  @override
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall) {
+    return 'Kwishyura kwawe kwose kwa $currency $total kuri hasi ho $currency $shortfall ku bwinshi usaba. Abaguriza bakeneye inyungu — tekereza ku kuzamura umubare w\'icyiciro cyawe.';
+  }
+
+  @override
+  String get affordabilityDialogTitle => 'Tangaza n\'ubundi?';
+
+  @override
+  String get affordabilityDialogBody =>
+      'Ibyifuzo byawe byo kwishyura biraboneka ko biri hasi kuruta ibyo abaguriza benshi bakwemera. Ushobora gutangaza, ariko nushobora kubona ibyifuzo. Tekereza kuzamura umubare w\'icyiciro.';
+
+  @override
+  String paymentScheduleTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ibyiciro',
+      one: 'icyiciro',
+    );
+    return 'GUKURIKIZA KWISHYURA ($count $_temp0)';
+  }
+
+  @override
+  String plusMoreCount(int count) {
+    return '+$count bindi';
+  }
+
+  @override
+  String get quickTermGuideLabel => 'ISANGANO RYA VUBA RYA IBYIFUZO';
+
+  @override
+  String get termGuideLow => '💡 Inyungu Hasi';
+
+  @override
+  String get termGuideFair => '🤝 Ibyifuzo Bikwiye';
+
+  @override
+  String get termGuideNegotiable => '📊 Biraganirwaho';
+
+  @override
+  String get offerMeansForYou => 'Iki cyifuzo gisobanura iki kuri wowe';
+
+  @override
+  String get totalRepayableLabel => 'Ayose yo kwishyura';
+
+  @override
+  String get effectiveInterestLabel => 'Inyungu nyakuri';
+
+  @override
+  String get loanAmountLabel => 'Umubare w\'inguframe';
+
+  @override
+  String get highEffectiveRateWarning =>
+      'Iki cyifuzo gifite inyungu nyakuri iri hejuru. Tekereza kuganira cyangwa gutegereza icyifuzo cyo hasi.';
 }

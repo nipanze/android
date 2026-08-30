@@ -902,6 +902,22 @@
   "understood": "Nsumbya",
   "principalLossWarningTitle": "Iburira ryo igihombo cy'imari",
   "belowTargetReturnTitle": "Iburira ry'inyungu iri munsi y'intego",
-  "sendAnyway": "Ohereza icyifuzo uko biri"
+  "sendAnyway": "Ohereza icyifuzo uko biri",
+  "affordabilityWarningTitle": "Kwishyura bishobora kuba biri hasi cyane",
+  "affordabilityWarningBody": "Kwishyura kwawe kwose kwa {currency} {total} kuri hasi ho {currency} {shortfall} ku bwinshi usaba. Abaguriza bakeneye inyungu — tekereza ku kuzamura umubare w'icyiciro cyawe.",
+  "affordabilityDialogTitle": "Tangaza n'ubundi?",
+  "affordabilityDialogBody": "Ibyifuzo byawe byo kwishyura biraboneka ko biri hasi kuruta ibyo abaguriza benshi bakwemera. Ushobora gutangaza, ariko nushobora kubona ibyifuzo. Tekereza kuzamura umubare w'icyiciro.",
+  "paymentScheduleTitle": "GUKURIKIZA KWISHYURA ({count} {count, plural, one {icyiciro} other {ibyiciro}})",
+  "plusMoreCount": "+{count} bindi",
+  "quickTermGuideLabel": "ISANGANO RYA VUBA RYA IBYIFUZO",
+  "termGuideLow": "💡 Inyungu Hasi",
+  "termGuideFair": "🤝 Ibyifuzo Bikwiye",
+  "termGuideNegotiable": "📊 Biraganirwaho",
+  "offerMeansForYou": "Iki cyifuzo gisobanura iki kuri wowe",
+  "totalRepayableLabel": "Ayose yo kwishyura",
+  "effectiveInterestLabel": "Inyungu nyakuri",
+  "loanAmountLabel": "Umubare w'inguframe",
+  "highEffectiveRateWarning": "Iki cyifuzo gifite inyungu nyakuri iri hejuru. Tekereza kuganira cyangwa gutegereza icyifuzo cyo hasi."
 }
+
 

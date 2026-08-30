@@ -2070,4 +2070,65 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get profilePictureKycNote =>
       'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+
+  @override
+  String get affordabilityWarningTitle =>
+      'Marejesho yanaweza kuwa ya chini sana';
+
+  @override
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall) {
+    return 'Jumla ya marejesho yako ya $currency $total iko chini kwa $currency $shortfall ya kiasi unachoomba. Wakopeshi wanahitaji kupata faida — fikiria kuongeza kiasi cha awamu yako.';
+  }
+
+  @override
+  String get affordabilityDialogTitle => 'Chapisha hata hivyo?';
+
+  @override
+  String get affordabilityDialogBody =>
+      'Vigezo vyako vya marejesho vinaonekana kuwa chini kuliko vile wakopeshi wengi watakubali. Unaweza kuchapisha, lakini huenda usipokee matoleo. Fikiria kuongeza kiasi cha awamu.';
+
+  @override
+  String paymentScheduleTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'awamu',
+      one: 'awamu',
+    );
+    return 'RATIBA YA MALIPO ($count $_temp0)';
+  }
+
+  @override
+  String plusMoreCount(int count) {
+    return '+$count zaidi';
+  }
+
+  @override
+  String get quickTermGuideLabel => 'MWONGOZO WA HARAKA WA VIGEZO';
+
+  @override
+  String get termGuideLow => '💡 Riba ya Chini';
+
+  @override
+  String get termGuideFair => '🤝 Vigezo vya Haki';
+
+  @override
+  String get termGuideNegotiable => '📊 Inajadiliwa';
+
+  @override
+  String get offerMeansForYou => 'Toleo hili lina maana gani kwako';
+
+  @override
+  String get totalRepayableLabel => 'Jumla inayolipwa';
+
+  @override
+  String get effectiveInterestLabel => 'Riba halisi';
+
+  @override
+  String get loanAmountLabel => 'Kiasi cha mkopo';
+
+  @override
+  String get highEffectiveRateWarning =>
+      'Toleo hili lina kiwango cha juu cha riba halisi. Fikiria kujadili au kusubiri toleo la chini.';
 }

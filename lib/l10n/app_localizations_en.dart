@@ -2058,4 +2058,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profilePictureKycNote =>
       'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+
+  @override
+  String get affordabilityWarningTitle => 'Repayment may be too low';
+
+  @override
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall) {
+    return 'Your total repayment of $currency $total is $currency $shortfall below the requested amount. Lenders require a return — consider increasing your installment.';
+  }
+
+  @override
+  String get affordabilityDialogTitle => 'Publish anyway?';
+
+  @override
+  String get affordabilityDialogBody =>
+      'Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.';
+
+  @override
+  String paymentScheduleTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'instalments',
+      one: 'instalment',
+    );
+    return 'PAYMENT SCHEDULE ($count $_temp0)';
+  }
+
+  @override
+  String plusMoreCount(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String get quickTermGuideLabel => 'QUICK TERM GUIDE';
+
+  @override
+  String get termGuideLow => '💡 Low Interest';
+
+  @override
+  String get termGuideFair => '🤝 Fair Terms';
+
+  @override
+  String get termGuideNegotiable => '📊 Negotiable';
+
+  @override
+  String get offerMeansForYou => 'What this offer means for you';
+
+  @override
+  String get totalRepayableLabel => 'Total repayable';
+
+  @override
+  String get effectiveInterestLabel => 'Effective interest';
+
+  @override
+  String get loanAmountLabel => 'Loan amount';
+
+  @override
+  String get highEffectiveRateWarning =>
+      'This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer.';
 }

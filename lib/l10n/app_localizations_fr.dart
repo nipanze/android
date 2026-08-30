@@ -2088,4 +2088,65 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get profilePictureKycNote =>
       'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+
+  @override
+  String get affordabilityWarningTitle =>
+      'Le remboursement est peut-être trop bas';
+
+  @override
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall) {
+    return 'Votre remboursement total de $currency $total est inférieur de $currency $shortfall au montant demandé. Les prêteurs ont besoin d\'un rendement — pensez à augmenter le montant de vos versements.';
+  }
+
+  @override
+  String get affordabilityDialogTitle => 'Publier quand même ?';
+
+  @override
+  String get affordabilityDialogBody =>
+      'Vos conditions de remboursement semblent inférieures à ce que la plupart des prêteurs accepteront. Vous pouvez publier, mais vous risquez de ne pas recevoir d\'offres. Pensez à augmenter votre versement.';
+
+  @override
+  String paymentScheduleTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'versements',
+      one: 'versement',
+    );
+    return 'CALENDRIER DE PAIEMENT ($count $_temp0)';
+  }
+
+  @override
+  String plusMoreCount(int count) {
+    return '+$count de plus';
+  }
+
+  @override
+  String get quickTermGuideLabel => 'GUIDE RAPIDE DES CONDITIONS';
+
+  @override
+  String get termGuideLow => '💡 Intérêt Bas';
+
+  @override
+  String get termGuideFair => '🤝 Conditions Équitables';
+
+  @override
+  String get termGuideNegotiable => '📊 Négociable';
+
+  @override
+  String get offerMeansForYou => 'Ce que cette offre signifie pour vous';
+
+  @override
+  String get totalRepayableLabel => 'Total à rembourser';
+
+  @override
+  String get effectiveInterestLabel => 'Intérêt effectif';
+
+  @override
+  String get loanAmountLabel => 'Montant du prêt';
+
+  @override
+  String get highEffectiveRateWarning =>
+      'Cette offre a un taux effectif relativement élevé. Pensez à négocier ou à attendre une offre plus basse.';
 }

@@ -3806,6 +3806,97 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.'**
   String get profilePictureKycNote;
+
+  /// No description provided for @affordabilityWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Repayment may be too low'**
+  String get affordabilityWarningTitle;
+
+  /// No description provided for @affordabilityWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Lenders require a return — consider increasing your installment.'**
+  String affordabilityWarningBody(
+      String currency, String total, String shortfall);
+
+  /// No description provided for @affordabilityDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish anyway?'**
+  String get affordabilityDialogTitle;
+
+  /// No description provided for @affordabilityDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.'**
+  String get affordabilityDialogBody;
+
+  /// No description provided for @paymentScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PAYMENT SCHEDULE ({count} {count, plural, one {instalment} other {instalments}})'**
+  String paymentScheduleTitle(int count);
+
+  /// No description provided for @plusMoreCount.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String plusMoreCount(int count);
+
+  /// No description provided for @quickTermGuideLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK TERM GUIDE'**
+  String get quickTermGuideLabel;
+
+  /// No description provided for @termGuideLow.
+  ///
+  /// In en, this message translates to:
+  /// **'💡 Low Interest'**
+  String get termGuideLow;
+
+  /// No description provided for @termGuideFair.
+  ///
+  /// In en, this message translates to:
+  /// **'🤝 Fair Terms'**
+  String get termGuideFair;
+
+  /// No description provided for @termGuideNegotiable.
+  ///
+  /// In en, this message translates to:
+  /// **'📊 Negotiable'**
+  String get termGuideNegotiable;
+
+  /// No description provided for @offerMeansForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'What this offer means for you'**
+  String get offerMeansForYou;
+
+  /// No description provided for @totalRepayableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total repayable'**
+  String get totalRepayableLabel;
+
+  /// No description provided for @effectiveInterestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Effective interest'**
+  String get effectiveInterestLabel;
+
+  /// No description provided for @loanAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan amount'**
+  String get loanAmountLabel;
+
+  /// No description provided for @highEffectiveRateWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer.'**
+  String get highEffectiveRateWarning;
 }
 
 class _AppLocalizationsDelegate
