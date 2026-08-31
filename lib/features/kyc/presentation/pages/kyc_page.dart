@@ -69,9 +69,17 @@ class _KycView extends StatelessWidget {
             _ => null,
           };
 
+          final authState = context.watch<AuthBloc>().state;
+          final user = authState is AuthAuthenticated ? authState.user : null;
+          final hasProfilePhoto = user?.avatarUrl?.isNotEmpty == true;
+
           final isUploading = state is KycUploading;
           final isSubmitting = state is KycSubmitting;
           final uploadingDoc = isUploading ? state.docType : null;
+          final canSubmit = !isSubmitting &&
+              !isUploading &&
+              kyc?.allDocsUploaded == true &&
+              hasProfilePhoto;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -256,14 +264,12 @@ class _KycView extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Submit button — disabled until all 3 docs uploaded
+                // Submit button — disabled until profile picture and all 3 docs uploaded
                 if (kyc?.isPending != true)
                   ElevatedButton(
-                    onPressed: (isSubmitting ||
-                            isUploading ||
-                            kyc?.allDocsUploaded != true)
-                        ? null
-                        : () => context.read<KycCubit>().submit(),
+                    onPressed: canSubmit
+                        ? () => context.read<KycCubit>().submit()
+                        : null,
                     child: isSubmitting
                         ? const SizedBox(
                             height: 20,
@@ -273,8 +279,8 @@ class _KycView extends StatelessWidget {
                         : Text(l10n.kycSubmitForReview),
                   ),
 
-                // Hint shown when docs are incomplete
-                if (kyc?.allDocsUploaded != true && !isUploading)
+                // Hint shown when docs or profile photo are incomplete
+                if (!canSubmit && !isUploading)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
@@ -390,6 +396,7 @@ class _ProfilePictureSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     final hasPhoto = user?.avatarUrl?.isNotEmpty == true;
@@ -398,8 +405,14 @@ class _ProfilePictureSection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasPhoto
+              ? AppColors.success.withValues(alpha: 0.5)
+              : Theme.of(context).dividerColor,
+          width: hasPhoto ? 1.5 : 1,
+        ),
       ),
       child: Row(
         children: [
@@ -415,15 +428,39 @@ class _ProfilePictureSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Profile Picture',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                Row(
+                  children: [
+                    Text(
+                      l10n.profilePicture,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: hasPhoto
+                            ? AppColors.success.withValues(alpha: 0.12)
+                            : AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      child: Text(
+                        hasPhoto ? 'Uploaded' : 'Required',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              hasPhoto ? AppColors.success : AppColors.accent,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.',
+                  l10n.profilePictureKycNote,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],

@@ -1821,7 +1821,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycUploadAllDocs =>
-      'Upload all three documents to enable submission.';
+      'Upload profile picture and all required documents to enable submission.';
 
   @override
   String get kycChooseSource => 'Choose source';
@@ -2057,7 +2057,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profilePictureKycNote =>
-      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+      'Required for identity verification. Upload a clear photo of yourself.';
 
   @override
   String get affordabilityWarningTitle => 'Repayment may be too low';

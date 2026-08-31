@@ -1833,7 +1833,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get kycSubmitForReview => 'Wasilisha kwa ukaguzi';
 
   @override
-  String get kycUploadAllDocs => 'Pakia hati tatu zote kuwezesha uwasilishaji.';
+  String get kycUploadAllDocs =>
+      'Pakia picha ya Wasifu na hati zote zinazohitajika kuwezesha uwasilishaji.';
 
   @override
   String get kycChooseSource => 'Chagua chanzo';
@@ -2069,7 +2070,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get profilePictureKycNote =>
-      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+      'Inahitajika kwa uhakiki wa kitambulisho. Pakia picha iliyo wazi yako mwenyewe.';
 
   @override
   String get affordabilityWarningTitle =>

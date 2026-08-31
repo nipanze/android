@@ -820,7 +820,7 @@
   "kycDocUploadedUnderReview": "Uploaded — under review",
   "kycPrivacyNote": "Your identity is never shown to other marketplace participants. Documents are reviewed by Nipanze admin only.",
   "kycSubmitForReview": "Submit for review",
-  "kycUploadAllDocs": "Upload all three documents to enable submission.",
+  "kycUploadAllDocs": "Upload profile picture and all required documents to enable submission.",
   "kycChooseSource": "Choose source",
   "kycSourceCamera": "Camera",
   "kycSourceLibrary": "Photo library",
@@ -910,7 +910,7 @@
   "referralChecking": "Checking referral code...",
   "referralAccepted": "Referral code accepted.",
   "profilePicture": "Profile Picture",
-  "profilePictureKycNote": "Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.",
+  "profilePictureKycNote": "Required for identity verification. Upload a clear photo of yourself.",
   "affordabilityWarningTitle": "Repayment may be too low",
   "affordabilityWarningBody": "Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Lenders require a return — consider increasing your installment.",
   "@affordabilityWarningBody": {

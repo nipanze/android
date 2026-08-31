@@ -1807,7 +1807,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kycSubmitForReview => 'إرسال للمراجعة';
 
   @override
-  String get kycUploadAllDocs => 'ارفع الوثائق الثلاث لتفعيل التقديم.';
+  String get kycUploadAllDocs =>
+      'ارفع صورة الملف الشخصي وجميع الوثائق المطلوبة لتفعيل التقديم.';
 
   @override
   String get kycChooseSource => 'اختر المصدر';
@@ -2043,7 +2044,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profilePictureKycNote =>
-      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+      'مطلوبة للتحقق من الهوية. ارفع صورة واضحة لنفسك.';
 
   @override
   String get affordabilityWarningTitle => 'قد يكون السداد منخفضًا جدًا';

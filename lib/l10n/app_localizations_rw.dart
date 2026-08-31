@@ -1830,7 +1830,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get kycUploadAllDocs =>
-      'Kohereza inyandiko eshatu kugira ngo ushoboze gutanga.';
+      'Kohereza ifoto y\'umwirondoro n\'inyandiko zose zigenewe kugira ngo ushoboze gutanga.';
 
   @override
   String get kycChooseSource => 'Hitamo isoko';
@@ -2068,7 +2068,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get profilePictureKycNote =>
-      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+      'Irasabwa ku rwego rwo kwemeza umwirondoro. Shyiraho ifoto igaragara yawe.';
 
   @override
   String get affordabilityWarningTitle =>

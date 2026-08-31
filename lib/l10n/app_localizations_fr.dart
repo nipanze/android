@@ -1848,7 +1848,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get kycUploadAllDocs =>
-      'Téléversez les trois documents pour activer la soumission.';
+      'Téléversez la photo de profil et tous les documents requis pour activer la soumission.';
 
   @override
   String get kycChooseSource => 'Choisir la source';
@@ -2087,7 +2087,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profilePictureKycNote =>
-      'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.';
+      'Requis pour la vérification d\'identité. Téléversez une photo claire de vous-même.';
 
   @override
   String get affordabilityWarningTitle =>
