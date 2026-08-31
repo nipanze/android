@@ -42,6 +42,7 @@ A cross-platform fintech app built with Flutter and Supabase, targeting Android,
 - [Security](#security)
 - [Regulatory Compliance](#regulatory-compliance)
 - [Roadmap](#roadmap)
+- [Recent Updates (August 31, 2026)](#recent-updates-august-31-2026)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -985,6 +986,32 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 ### Stage 5 — Admin & Compliance ⬜ Planned
 ### Stage 6 — Launch & Growth ⬜ Planned
 - Per-market rollout in the order: Uganda (live) → Kenya → Tanzania → Rwanda → Nigeria → South Africa → Egypt, each with its own lending *and* separately-timed forex go/no-go
+
+---
+
+## Recent Updates (August 31, 2026)
+
+### 1. Smart Institution Matching & Pro Filters Enhancements
+- **Dedicated Smart Matching Section**: Reorganized `ProFiltersSheet` to group institution matching under a dedicated, PRO-badged **Smart Matching** section with clear descriptions ("Only opted-in loan requests matching your institution").
+- **Preferred Bank Eligibility**: Expanded eligibility rules in `pro_filters_sheet.dart` to verify agent qualification via `preferred_bank` (e.g. Equity Bank) alongside registered bank/credit institution status.
+- **Synchronous UI State Sync**: Initialized `initState` in `ProFiltersSheet` with an instant state read from `ProfileCubit`, eliminating loading delays when checking agent eligibility on sheet open.
+- **Auto-Module Restricting & Reset**: Automatically restricts feed view to **Loans** when Institution Matching is active, and provides a **Clear all** option to instantly reset filter criteria.
+- **RPC & Schema Integration**: Applied SQL patch (`sql/patch_20260831_bank_institution_matching.sql`) updating `get_marketplace_pro_filtered` to consume user `allow_institution_matching` flags.
+
+### 2. State Machine & Feed Reliability Fixes
+- **Infinite Reload Loop Resolution**: Resolved an issue in `MarketplaceCubit` where realtime stream listener events triggered recursive RPC executions.
+- **In-Memory ID Caching**: Implemented `_cachedProFilteredIds` to filter incoming realtime listing updates locally without executing duplicate network calls.
+- **Graceful Error Handling**: Wrapped Pro filter RPC calls in `try / catch` blocks to guarantee `proFilterActive` resets to `false` on any database error or network timeout, preventing the UI from freezing on "Applying filters...".
+- **Module Filter Tab Switching**: Updated `setModuleFilter()` so clicking module pills (`All`, `Loans`, `Forex`) immediately cancels conflicting `institutionMatchOnly` constraints and loads the chosen tab cleanly.
+
+### 3. Database Column & Auth Safeguards
+- **Column Reference Fix**: Corrected database query column from `monthly_income_ugx` to `monthly_income` in profile seeding queries to prevent Supabase 400 errors.
+- **Auth Testing Safeguard**: Temporarily disabled Auth email update triggers and synthetic test email validations to prevent unwanted Supabase Auth confirmation emails and SMTP rate limit alerts during local testing.
+
+### 4. Responsive UI & Overflow Protection
+- **RenderFlex Overflow Fix**: Resolved a `RenderFlex` subpixel right overflow in `MakeOfferSheet` (`_buildBorrowerTrustBadge`).
+- **Layout Constraints**: Wrapped the right-hand loan purpose/duration column in `ConstrainedBox(maxWidth: 110)` with `maxLines: 1` and `TextOverflow.ellipsis`, preventing long purpose text from shrinking the middle section.
+- **Horizontal Scroll Protection**: Wrapped trust rating badges in a horizontal `SingleChildScrollView` to prevent badge wrapping or clipping on small devices.
 
 ---
 
