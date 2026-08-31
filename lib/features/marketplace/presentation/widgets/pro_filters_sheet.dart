@@ -16,6 +16,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../cubit/marketplace_cubit.dart';
 
 // ── Value domain ─────────────────────────────────────────────────────────────
@@ -145,6 +146,19 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     _verifiedOnly = criteria.verifiedOnly;
     _institutionMatchOnly = criteria.institutionMatchOnly;
 
+    try {
+      final pState = context.read<ProfileCubit>().state;
+      if (pState is ProfileCubitLoaded) {
+        final p = pState.profile;
+        final isBankAgent = p.isBankAgent;
+        final institutionType = p.institutionType;
+        final preferredBank = p.preferredBank;
+        _isAgentEligible = isBankAgent ||
+            (institutionType != null && institutionType.trim().isNotEmpty) ||
+            (preferredBank != null && preferredBank.trim().isNotEmpty);
+      }
+    } catch (_) {}
+
     _seedFromProfile();
   }
 
@@ -157,9 +171,9 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       final data = await client
           .from(TableNames.profiles)
           .select(
-              'country, employment_type, monthly_income_ugx, preferred_employment_types, '
+              'country, employment_type, monthly_income, preferred_employment_types, '
               'preferred_income_bracket, prefers_suggested_terms, prefers_verified_only, '
-              'is_bank_agent, institution_type')
+              'is_bank_agent, institution_type, preferred_bank')
           .eq('id', uid)
           .maybeSingle();
 
@@ -178,12 +192,14 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       final currencyCode =
           EastAfricaCountries.findByCode(data?['country'] as String?).currency;
 
-      // Agent is eligible for Institution Matches when they are a registered
-      // bank/credit agent AND have set an institution type on their profile.
+      // Agent is eligible for Institution Matches when they have specified
+      // their bank/institution (preferred_bank or institution_type) or are a bank agent.
       final isBankAgent = data?['is_bank_agent'] as bool? ?? false;
       final institutionType = data?['institution_type'] as String?;
-      final eligible =
-          isBankAgent && institutionType != null && institutionType.isNotEmpty;
+      final preferredBank = data?['preferred_bank'] as String?;
+      final eligible = isBankAgent ||
+          (institutionType != null && institutionType.trim().isNotEmpty) ||
+          (preferredBank != null && preferredBank.trim().isNotEmpty);
 
       final employmentTypes = preferredEmploymentTypes ??
           (data?['employment_type'] == null
@@ -191,7 +207,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
               : [data!['employment_type'] as String]);
       final incomeBracket = preferredIncomeBracket ??
           _fnIncomeBracket(
-            (data?['monthly_income_ugx'] as num?)?.toInt(),
+            (data?['monthly_income'] as num?)?.toInt(),
           );
 
       setState(() {

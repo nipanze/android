@@ -210,8 +210,11 @@ class ProfileRepository {
     bool? allowInstitutionMatching,
   }) async {
     try {
-      var emailConfirmationPending = false;
+      const emailConfirmationPending = false;
       String? emailUpdateError;
+      // Email authentication updates are temporarily disabled during testing to avoid
+      // sending confirmation emails or triggering Supabase SMTP spam alerts.
+      /*
       final cleanEmail = email?.trim();
       final currentEmail = _client.auth.currentUser?.email ?? '';
       if (cleanEmail != null &&
@@ -228,6 +231,7 @@ class ProfileRepository {
               'We could not update your login email. Please sign in again and try.';
         }
       }
+      */
 
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;

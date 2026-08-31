@@ -421,10 +421,6 @@ class _ProfileViewState extends State<_ProfileView> {
     if (email.isEmpty) return null;
     final validShape = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
     if (!validShape) return 'Enter a valid email';
-    final lower = email.toLowerCase();
-    if (lower.endsWith('.test') || lower.endsWith('@nipanze.test')) {
-      return 'Enter a real email address that can receive confirmation mail';
-    }
     return null;
   }
 
@@ -736,12 +732,13 @@ class _ProfileViewState extends State<_ProfileView> {
 
                   TextFormField(
                     controller: _emailController,
+                    enabled: false,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: l10n?.email ?? 'Email',
                       prefixIcon: const Icon(Icons.mail_outline, size: 20),
                       helperText:
-                          'Used for password reset and optional email login.',
+                          'Email updates are disabled during testing.',
                     ),
                     validator: _validateEmail,
                   ),
