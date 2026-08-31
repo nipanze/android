@@ -704,79 +704,87 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Row(
-                  children: [
-                    if (hasRating) ...[
-                      Icon(Icons.star_rounded,
-                          size: 12,
-                          color: Colors.amber.shade600),
-                      const SizedBox(width: 2),
-                      Text(
-                        listing.trustRatingAvg!.toStringAsFixed(1),
-                        style: const TextStyle(
-                            fontSize: 10.5, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
-                    if (listing.trustCompletedDealsCount > 0) ...[
-                      const Icon(Icons.handshake_outlined,
-                          size: 12, color: AppColors.success),
-                      const SizedBox(width: 2),
-                      Text(
-                        '${listing.trustCompletedDealsCount} deal${listing.trustCompletedDealsCount == 1 ? '' : 's'}',
-                        style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.success),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
-                    if (listing.trustIsRepeatParticipant)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      if (hasRating) ...[
+                        Icon(Icons.star_rounded,
+                            size: 12,
+                            color: Colors.amber.shade600),
+                        const SizedBox(width: 2),
+                        Text(
+                          listing.trustRatingAvg!.toStringAsFixed(1),
+                          style: const TextStyle(
+                              fontSize: 10.5, fontWeight: FontWeight.w600),
                         ),
-                        child: const Text(
-                          'Repeat',
-                          style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.accent),
+                        const SizedBox(width: 6),
+                      ],
+                      if (listing.trustCompletedDealsCount > 0) ...[
+                        const Icon(Icons.handshake_outlined,
+                            size: 12, color: AppColors.success),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${listing.trustCompletedDealsCount} deal${listing.trustCompletedDealsCount == 1 ? '' : 's'}',
+                          style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.success),
                         ),
-                      ),
-                  ],
+                        const SizedBox(width: 6),
+                      ],
+                      if (listing.trustIsRepeatParticipant)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Repeat',
+                            style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accent),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 8),
           // Loan purpose & duration
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${listing.durationMonths}mo',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: primary),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                listing.purpose.isNotEmpty
-                    ? listing.purpose
-                    : listing.preferredRepaymentPlan,
-                style: TextStyle(
-                    fontSize: 9.5,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.55)),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 110),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${listing.durationMonths}mo',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: primary),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  listing.purpose.isNotEmpty
+                      ? listing.purpose
+                      : listing.preferredRepaymentPlan,
+                  style: TextStyle(
+                      fontSize: 9.5,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.55)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),

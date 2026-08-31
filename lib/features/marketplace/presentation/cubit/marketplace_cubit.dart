@@ -34,7 +34,11 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Set<String> _myOfferRequestIds = {};
 
   /// Current Pro filter criteria.
+  /// Current Pro filter criteria.
   ProFilterCriteria _proFilter = const ProFilterCriteria();
+
+  /// Cached allowed request IDs from the last successful Pro filter RPC execution.
+  Set<String>? _cachedProFilteredIds;
 
   // ── Public interface ──────────────────────────────────────────────────────
 
@@ -62,8 +66,18 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Future<void> refresh() =>
       load(district: _districtFilter, module: _moduleFilter);
 
-  Future<void> setModuleFilter(MarketplaceModule? module) {
-    return load(district: _districtFilter, module: module);
+  Future<void> setModuleFilter(MarketplaceModule? module) async {
+    if (isClosed) return;
+    // If institutionMatchOnly is active and user selects a non-loan module,
+    // automatically disable institutionMatchOnly so it stops forcing loan mode.
+    if (_proFilter.institutionMatchOnly && module != MarketplaceModule.loan) {
+      _proFilter = _proFilter.copyWith(institutionMatchOnly: false);
+      _cachedProFilteredIds = null;
+    }
+    await load(district: _districtFilter, module: module);
+    if (_proFilter.isActive) {
+      await applyProFilters(_proFilter);
+    }
   }
 
   /// Apply (or replace) Pro Advanced Filters.
@@ -81,21 +95,25 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
     _proFilter = criteria;
 
-    // Institution matching is Loan-only: automatically switch the module
-    // filter while this criterion is active.
-    if (criteria.institutionMatchOnly &&
-        _moduleFilter != MarketplaceModule.loan) {
-      await load(district: _districtFilter, module: MarketplaceModule.loan);
-    }
-
     if (!criteria.isActive) {
       // Filters cleared — restore full listing set immediately.
+      _cachedProFilteredIds = null;
       _emitLoaded();
       return;
     }
 
-    // Mark the current loaded state as "filtering in progress" while the RPC
-    // round-trip completes so the UI can show a subtle loading cue.
+    // Institution matching is Loan-only: automatically switch module filter
+    // to loan if needed without causing a recursive load loop.
+    if (criteria.institutionMatchOnly &&
+        _moduleFilter != MarketplaceModule.loan) {
+      _moduleFilter = MarketplaceModule.loan;
+      try {
+        _allListings = await _repository.getListings(
+            district: _districtFilter, module: MarketplaceModule.loan);
+      } catch (_) {}
+    }
+
+    // Mark current state as filtering in progress for UI loading feedback.
     if (state is MarketplaceLoaded) {
       emit(
         (state as MarketplaceLoaded)
@@ -103,27 +121,36 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       );
     }
 
-    final allowedIds = await _repository.getProFilteredRequestIds(
-      employmentTypes:
-          criteria.employmentTypes.isEmpty ? null : criteria.employmentTypes,
-      incomeBrackets:
-          criteria.incomeBrackets.isEmpty ? null : criteria.incomeBrackets,
-      suggestedTermsOnly: criteria.suggestedTermsOnly,
-      verifiedOnly: criteria.verifiedOnly,
-      institutionMatchOnly: criteria.institutionMatchOnly,
-    );
+    try {
+      final allowedIds = await _repository.getProFilteredRequestIds(
+        employmentTypes:
+            criteria.employmentTypes.isEmpty ? null : criteria.employmentTypes,
+        incomeBrackets:
+            criteria.incomeBrackets.isEmpty ? null : criteria.incomeBrackets,
+        suggestedTermsOnly: criteria.suggestedTermsOnly,
+        verifiedOnly: criteria.verifiedOnly,
+        institutionMatchOnly: criteria.institutionMatchOnly,
+      );
 
-    if (isClosed) return;
+      if (isClosed) return;
 
-    final filtered =
-        _allListings.where((l) => allowedIds.contains(l.requestId)).toList();
+      _cachedProFilteredIds = allowedIds;
 
-    _emitLoaded(overrideListings: filtered);
+      final filtered =
+          _allListings.where((l) => allowedIds.contains(l.requestId)).toList();
+
+      _emitLoaded(overrideListings: filtered);
+    } catch (_) {
+      if (isClosed) return;
+      // On RPC error, reset proFilterActive so the UI never hangs indefinitely.
+      _emitLoaded();
+    }
   }
 
   /// Clear all Pro filters and restore the full listing set.
   void clearProFilters() {
     _proFilter = const ProFilterCriteria();
+    _cachedProFilteredIds = null;
     _emitLoaded();
   }
 
@@ -150,12 +177,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _realtimeSub?.cancel();
     _forexRealtimeSub?.cancel();
     _realtimeSub = _repository.watchListings(module: _moduleFilter).listen(
-      (listings) async {
+      (listings) {
         if (isClosed) return;
         _allListings = listings;
-        // Re-apply any active Pro filter on the fresh list.
-        if (_proFilter.isActive) {
-          await applyProFilters(_proFilter);
+        if (_proFilter.isActive && _cachedProFilteredIds != null) {
+          final filtered = _allListings
+              .where((l) => _cachedProFilteredIds!.contains(l.requestId))
+              .toList();
+          _emitLoaded(overrideListings: filtered);
         } else {
           _emitLoaded();
         }
@@ -164,11 +193,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     );
     _forexRealtimeSub =
         _repository.watchForexListings(module: _moduleFilter).listen(
-      (listings) async {
+      (listings) {
         if (isClosed) return;
         _allListings = listings;
-        if (_proFilter.isActive) {
-          await applyProFilters(_proFilter);
+        if (_proFilter.isActive && _cachedProFilteredIds != null) {
+          final filtered = _allListings
+              .where((l) => _cachedProFilteredIds!.contains(l.requestId))
+              .toList();
+          _emitLoaded(overrideListings: filtered);
         } else {
           _emitLoaded();
         }
