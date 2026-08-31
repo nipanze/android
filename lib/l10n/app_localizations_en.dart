@@ -2131,7 +2131,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterInstitutionMatchesSubtitle =>
-      'Only loan requests from borrowers who selected your bank/institution and opted into matching';
+      'Only opted-in loan requests matching your institution.';
+
+  @override
+  String get filterInstitutionMatchesIneligible =>
+      'Set your institution in Profile → Bank & Professional to enable this filter.';
+
+  @override
+  String get filterSmartMatchingSection => 'Smart matching';
 
   @override
   String get institutionTypeBank => 'Bank';

@@ -2118,7 +2118,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filterInstitutionMatchesSubtitle =>
-      'طلبات القروض فقط من المقترضين الذين اختاروا بنكك/مؤسستك ووافقوا على المطابقة';
+      'طلبات القروض فقط للمقترضين الذين وافقوا على المطابقة مع مؤسستك.';
+
+  @override
+  String get filterInstitutionMatchesIneligible =>
+      'حدد مؤسستك في الملف الشخصي ← البنك والمهنة لتفعيل هذا المرشح.';
+
+  @override
+  String get filterSmartMatchingSection => 'المطابقة الذكية';
 
   @override
   String get institutionTypeBank => 'بنك';

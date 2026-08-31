@@ -131,6 +131,10 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   late bool _institutionMatchOnly;
   String _currencyCode = EastAfricaCountries.defaultCountry.currency;
 
+  /// True when the current user is a Pro bank/credit agent with a registered institution.
+  /// Only such agents may use the Institution Matches toggle.
+  bool _isAgentEligible = false;
+
   @override
   void initState() {
     super.initState();
@@ -141,9 +145,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     _verifiedOnly = criteria.verifiedOnly;
     _institutionMatchOnly = criteria.institutionMatchOnly;
 
-    if (criteria == const ProFilterCriteria()) {
-      _seedFromProfile();
-    }
+    _seedFromProfile();
   }
 
   Future<void> _seedFromProfile() async {
@@ -155,7 +157,9 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       final data = await client
           .from(TableNames.profiles)
           .select(
-              'country, employment_type, monthly_income_ugx, preferred_employment_types, preferred_income_bracket, prefers_suggested_terms, prefers_verified_only')
+              'country, employment_type, monthly_income_ugx, preferred_employment_types, '
+              'preferred_income_bracket, prefers_suggested_terms, prefers_verified_only, '
+              'is_bank_agent, institution_type')
           .eq('id', uid)
           .maybeSingle();
 
@@ -174,6 +178,13 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       final currencyCode =
           EastAfricaCountries.findByCode(data?['country'] as String?).currency;
 
+      // Agent is eligible for Institution Matches when they are a registered
+      // bank/credit agent AND have set an institution type on their profile.
+      final isBankAgent = data?['is_bank_agent'] as bool? ?? false;
+      final institutionType = data?['institution_type'] as String?;
+      final eligible =
+          isBankAgent && institutionType != null && institutionType.isNotEmpty;
+
       final employmentTypes = preferredEmploymentTypes ??
           (data?['employment_type'] == null
               ? null
@@ -185,6 +196,10 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
 
       setState(() {
         _currencyCode = currencyCode;
+        _isAgentEligible = eligible;
+        // If the filter was already active but the agent is now ineligible,
+        // reset it to avoid a phantom filter.
+        if (!eligible) _institutionMatchOnly = false;
         if (employmentTypes != null ||
             incomeBracket != null ||
             prefersSuggestedTerms ||
@@ -407,7 +422,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       }).toList(),
                     ),
                     const SizedBox(height: 24),
-                    // Boolean toggles
+                    // Boolean toggles — Listing quality signals
                     _SectionHeader(
                       icon: Icons.shield_outlined,
                       label: l10n?.filterQualitySignals ??
@@ -438,17 +453,31 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       onChanged: (v) => setState(() => _verifiedOnly = v),
                       border: border,
                     ),
+                    const SizedBox(height: 24),
+                    // Smart matching section (bank/credit agents only)
+                    _SectionHeader(
+                      icon: Icons.account_balance_rounded,
+                      label: l10n?.filterSmartMatchingSection ??
+                          'Smart matching',
+                      textColor: text2,
+                    ),
                     const SizedBox(height: 10),
                     _ToggleTile(
                       icon: Icons.account_balance_outlined,
-                      iconColor: AppColors.warning,
+                      iconColor: _isAgentEligible
+                          ? AppColors.warning
+                          : text2.withValues(alpha: 0.45),
                       title: l10n?.filterInstitutionMatches ??
                           'Institution matches',
-                      subtitle: l10n?.filterInstitutionMatchesSubtitle ??
-                          'Only loan requests from borrowers who selected your bank/institution and opted into matching',
+                      subtitle: _isAgentEligible
+                          ? (l10n?.filterInstitutionMatchesSubtitle ??
+                              'Only opted-in loan requests matching your institution.')
+                          : (l10n?.filterInstitutionMatchesIneligible ??
+                              'Set your institution in Profile → Bank & Professional to enable this filter.'),
                       value: _institutionMatchOnly,
-                      onChanged: (v) =>
-                          setState(() => _institutionMatchOnly = v),
+                      onChanged: _isAgentEligible
+                          ? (v) => setState(() => _institutionMatchOnly = v)
+                          : null,
                       border: border,
                     ),
                     const SizedBox(height: 8),
@@ -659,47 +688,60 @@ class _ToggleTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged; // nullable → disabled state
   final Color border;
+
+  bool get _enabled => onChanged != null;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: border),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: iconColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 11.5),
-                ),
-              ],
+    final theme = Theme.of(context);
+    final disabledText = theme.colorScheme.onSurface.withValues(alpha: 0.35);
+    return Opacity(
+      opacity: _enabled ? 1.0 : 0.55,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: border),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _enabled ? null : disabledText,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: _enabled ? null : disabledText,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.purple,
-            activeTrackColor: AppColors.purple.withValues(alpha: 0.35),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ],
+            const SizedBox(width: 10),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: AppColors.purple,
+              activeTrackColor: AppColors.purple.withValues(alpha: 0.35),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
+        ),
       ),
     );
   }

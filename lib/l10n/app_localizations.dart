@@ -3919,8 +3919,20 @@ abstract class AppLocalizations {
   /// No description provided for @filterInstitutionMatchesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Only loan requests from borrowers who selected your bank/institution and opted into matching'**
+  /// **'Only opted-in loan requests matching your institution.'**
   String get filterInstitutionMatchesSubtitle;
+
+  /// No description provided for @filterInstitutionMatchesIneligible.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your institution in Profile → Bank & Professional to enable this filter.'**
+  String get filterInstitutionMatchesIneligible;
+
+  /// No description provided for @filterSmartMatchingSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart matching'**
+  String get filterSmartMatchingSection;
 
   /// No description provided for @institutionTypeBank.
   ///

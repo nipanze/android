@@ -2163,7 +2163,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterInstitutionMatchesSubtitle =>
-      'Uniquement les demandes de prêt d\'emprunteurs ayant sélectionné votre banque/institution et accepté le rapprochement';
+      'Uniquement les demandes de prêt de personnes ayant accepté le rapprochement avec votre institution.';
+
+  @override
+  String get filterInstitutionMatchesIneligible =>
+      'Définissez votre institution dans Profil → Banque & Professionnel pour activer ce filtre.';
+
+  @override
+  String get filterSmartMatchingSection => 'Rapprochement intelligent';
 
   @override
   String get institutionTypeBank => 'Banque';

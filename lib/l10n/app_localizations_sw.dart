@@ -2145,7 +2145,14 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get filterInstitutionMatchesSubtitle =>
-      'Maombi ya mkopo tu kutoka kwa wakopaji waliochagua benki/taasisi yako na kukubali ulinganishaji';
+      'Maombi ya mkopo tu kutoka kwa wakopaji waliojiunga na ulinganishaji wa taasisi yako.';
+
+  @override
+  String get filterInstitutionMatchesIneligible =>
+      'Weka taasisi yako kwenye Profile → Benki & Taaluma ili kuwezesha kichujio hiki.';
+
+  @override
+  String get filterSmartMatchingSection => 'Ulinganishaji mahiri';
 
   @override
   String get institutionTypeBank => 'Benki';

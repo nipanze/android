@@ -72,10 +72,21 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   /// intersects it with [_allListings] locally.  Non-Pro callers receive an empty
   /// set from the DB and therefore see an empty marketplace — the DB gate handles
   /// all authorisation; the cubit just does the set math.
+  ///
+  /// When [criteria.institutionMatchOnly] is true the feed is automatically
+  /// restricted to Loan listings only (institution matching is a loan-only
+  /// feature); the module filter is restored when filters are cleared.
   Future<void> applyProFilters(ProFilterCriteria criteria) async {
     if (isClosed) return;
 
     _proFilter = criteria;
+
+    // Institution matching is Loan-only: automatically switch the module
+    // filter while this criterion is active.
+    if (criteria.institutionMatchOnly &&
+        _moduleFilter != MarketplaceModule.loan) {
+      await load(district: _districtFilter, module: MarketplaceModule.loan);
+    }
 
     if (!criteria.isActive) {
       // Filters cleared — restore full listing set immediately.

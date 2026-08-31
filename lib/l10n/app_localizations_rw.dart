@@ -2143,7 +2143,14 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get filterInstitutionMatchesSubtitle =>
-      'Ibyifuzo by\'inguframe gusa bivuye kubaguzwa batoranyije banki/ikigo cyawe bakemera guhuzwa';
+      'Ibyifuzo by\'inguframe gusa bivuye kubaguzwa bakemeye guhuzwa n\'ikigo cyawe.';
+
+  @override
+  String get filterInstitutionMatchesIneligible =>
+      'Shyiraho ikigo cyawe muri Profil → Banki & Umwuga kugira ngo ureke iki kiciro.';
+
+  @override
+  String get filterSmartMatchingSection => 'Guhuza kwegekwa';
 
   @override
   String get institutionTypeBank => 'Banki';
