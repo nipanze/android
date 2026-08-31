@@ -920,7 +920,17 @@
   "totalRepayableLabel": "Total à rembourser",
   "effectiveInterestLabel": "Intérêt effectif",
   "loanAmountLabel": "Montant du prêt",
-  "highEffectiveRateWarning": "Cette offre a un taux effectif relativement élevé. Pensez à négocier ou à attendre une offre plus basse."
+  "highEffectiveRateWarning": "Cette offre a un taux effectif relativement élevé. Pensez à négocier ou à attendre une offre plus basse.",
+  "allowInstitutionMatchingLabel": "Autoriser le rapprochement institutionnel",
+  "allowInstitutionMatchingSubtitle": "Permettez aux agents vérifiés de votre banque ou institution de découvrir vos demandes de prêt pour des offres personnalisées.",
+  "filterInstitutionMatches": "Correspondances d'institutions",
+  "filterInstitutionMatchesSubtitle": "Uniquement les demandes de prêt d'emprunteurs ayant sélectionné votre banque/institution et accepté le rapprochement",
+  "institutionTypeBank": "Banque",
+  "institutionTypeSacco": "SACCO",
+  "institutionTypeMfi": "Microfinance (IMF)",
+  "institutionTypeCreditCompany": "Société de crédit",
+  "institutionTypeForex": "Bureau de change (Forex)",
+  "institutionTypeCompany": "Entreprise"
 }
 
 

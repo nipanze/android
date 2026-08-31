@@ -915,7 +915,17 @@
   "totalRepayableLabel": "إجمالي المبلغ المستحق للسداد",
   "effectiveInterestLabel": "الفائدة الفعلية",
   "loanAmountLabel": "مبلغ القرض",
-  "highEffectiveRateWarning": "يحتوي هذا العرض على معدل فائدة فعلي مرتفع نسبيًا. فكر في التفاوض أو الانتظار للحصول على عرض أقل."
+  "highEffectiveRateWarning": "يحتوي هذا العرض على معدل فائدة فعلي مرتفع نسبيًا. فكر في التفاوض أو الانتظار للحصول على عرض أقل.",
+  "allowInstitutionMatchingLabel": "السماح بالمطابقة المؤسسية",
+  "allowInstitutionMatchingSubtitle": "اسمح للوكلاء المعتمدين من بنكك أو مؤسستك باكتشاف طلبات القروض الخاصة بك للحصول على عروض مخصصة.",
+  "filterInstitutionMatches": "مطابقات المؤسسات",
+  "filterInstitutionMatchesSubtitle": "طلبات القروض فقط من المقترضين الذين اختاروا بنكك/مؤسستك ووافقوا على المطابقة",
+  "institutionTypeBank": "بنك",
+  "institutionTypeSacco": "جمعية ادخار وائتمان (SACCO)",
+  "institutionTypeMfi": "مؤسسة تمويل أصغر (MFI)",
+  "institutionTypeCreditCompany": "شركة ائتمان",
+  "institutionTypeForex": "شركة صرافة (Forex)",
+  "institutionTypeCompany": "شركة"
 }
 
 

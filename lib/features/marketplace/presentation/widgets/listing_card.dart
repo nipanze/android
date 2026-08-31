@@ -90,6 +90,10 @@ class ListingCard extends StatelessWidget {
                         label: isForex ? 'Forex' : 'Loan',
                         color: moduleColor,
                       ),
+                      if (loan != null && loan.institutionPreferredTag != null)
+                        _InstitutionPreferredBadge(
+                          tag: loan.institutionPreferredTag!,
+                        ),
                       if (loan != null)
                         Text(
                           '${loan.district} · ${loan.durationMonths} ${AppLocalizations.of(context)!.months}',
@@ -337,6 +341,39 @@ class _ModuleBadge extends StatelessWidget {
               fontWeight: FontWeight.w800,
               height: 1,
               color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InstitutionPreferredBadge extends StatelessWidget {
+  const _InstitutionPreferredBadge({required this.tag});
+
+  final String tag;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('🏦', style: TextStyle(fontSize: 10)),
+          const SizedBox(width: 3),
+          Text(
+            tag,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppColors.accent,
             ),
           ),
         ],

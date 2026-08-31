@@ -2132,4 +2132,36 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get highEffectiveRateWarning =>
       'Toleo hili lina kiwango cha juu cha riba halisi. Fikiria kujadili au kusubiri toleo la chini.';
+
+  @override
+  String get allowInstitutionMatchingLabel => 'Ruhusu ulinganishaji wa taasisi';
+
+  @override
+  String get allowInstitutionMatchingSubtitle =>
+      'Ruhusu mawakala waliothibitishwa wa benki au taasisi yako kugundua maombi yako ya mkopo kwa matoleo maalum.';
+
+  @override
+  String get filterInstitutionMatches => 'Ulinganishaji wa taasisi';
+
+  @override
+  String get filterInstitutionMatchesSubtitle =>
+      'Maombi ya mkopo tu kutoka kwa wakopaji waliochagua benki/taasisi yako na kukubali ulinganishaji';
+
+  @override
+  String get institutionTypeBank => 'Benki';
+
+  @override
+  String get institutionTypeSacco => 'SACCO';
+
+  @override
+  String get institutionTypeMfi => 'Taasisi ya Microfinance (MFI)';
+
+  @override
+  String get institutionTypeCreditCompany => 'Kampuni ya Mkopo';
+
+  @override
+  String get institutionTypeForex => 'Duka la kubadilisha fedha (Forex)';
+
+  @override
+  String get institutionTypeCompany => 'Kampuni';
 }

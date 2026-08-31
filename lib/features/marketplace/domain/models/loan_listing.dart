@@ -45,6 +45,7 @@ class LoanListing extends Equatable {
     this.institutionType,
     this.isBankAgent = false,
     this.showProfessionalTag = false,
+    this.allowInstitutionMatching = false,
     this.isSponsored = false,
   });
 
@@ -86,7 +87,13 @@ class LoanListing extends Equatable {
   final String? institutionType;
   final bool isBankAgent;
   final bool showProfessionalTag;
+  final bool allowInstitutionMatching;
   final bool isSponsored;
+
+  String? get institutionPreferredTag =>
+      (allowInstitutionMatching && preferredBank?.isNotEmpty == true)
+          ? '$preferredBank preferred'
+          : null;
 
   String? get professionalTag {
     if (!showProfessionalTag) return null;
@@ -181,6 +188,8 @@ class LoanListing extends Equatable {
       institutionType: map['institution_type'] as String?,
       isBankAgent: map['is_bank_agent'] as bool? ?? false,
       showProfessionalTag: map['show_professional_tag'] as bool? ?? false,
+      allowInstitutionMatching:
+          map['allow_institution_matching'] as bool? ?? false,
       isSponsored: map['is_sponsored'] as bool? ?? false,
     );
   }

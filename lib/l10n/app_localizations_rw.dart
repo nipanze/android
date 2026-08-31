@@ -2130,4 +2130,36 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get highEffectiveRateWarning =>
       'Iki cyifuzo gifite inyungu nyakuri iri hejuru. Tekereza kuganira cyangwa gutegereza icyifuzo cyo hasi.';
+
+  @override
+  String get allowInstitutionMatchingLabel => 'Emera guhuza n\'ibigo by\'imari';
+
+  @override
+  String get allowInstitutionMatchingSubtitle =>
+      'Emerera abakozi bemejwe ba banki cyangwa ikigo cyawe kubona icyifuzo cyawe cy\'inguframe ku byifuzo bihuye.';
+
+  @override
+  String get filterInstitutionMatches => 'Guhuza n\'ibigo';
+
+  @override
+  String get filterInstitutionMatchesSubtitle =>
+      'Ibyifuzo by\'inguframe gusa bivuye kubaguzwa batoranyije banki/ikigo cyawe bakemera guhuzwa';
+
+  @override
+  String get institutionTypeBank => 'Banki';
+
+  @override
+  String get institutionTypeSacco => 'SACCO';
+
+  @override
+  String get institutionTypeMfi => 'Ikigo cy\'imari iciriritse (MFI)';
+
+  @override
+  String get institutionTypeCreditCompany => 'Kampani y\'inguzanyo';
+
+  @override
+  String get institutionTypeForex => 'Ikigo cy\'ivunjisha (Forex)';
+
+  @override
+  String get institutionTypeCompany => 'Kampani';
 }

@@ -2149,4 +2149,37 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get highEffectiveRateWarning =>
       'Cette offre a un taux effectif relativement élevé. Pensez à négocier ou à attendre une offre plus basse.';
+
+  @override
+  String get allowInstitutionMatchingLabel =>
+      'Autoriser le rapprochement institutionnel';
+
+  @override
+  String get allowInstitutionMatchingSubtitle =>
+      'Permettez aux agents vérifiés de votre banque ou institution de découvrir vos demandes de prêt pour des offres personnalisées.';
+
+  @override
+  String get filterInstitutionMatches => 'Correspondances d\'institutions';
+
+  @override
+  String get filterInstitutionMatchesSubtitle =>
+      'Uniquement les demandes de prêt d\'emprunteurs ayant sélectionné votre banque/institution et accepté le rapprochement';
+
+  @override
+  String get institutionTypeBank => 'Banque';
+
+  @override
+  String get institutionTypeSacco => 'SACCO';
+
+  @override
+  String get institutionTypeMfi => 'Microfinance (IMF)';
+
+  @override
+  String get institutionTypeCreditCompany => 'Société de crédit';
+
+  @override
+  String get institutionTypeForex => 'Bureau de change (Forex)';
+
+  @override
+  String get institutionTypeCompany => 'Entreprise';
 }

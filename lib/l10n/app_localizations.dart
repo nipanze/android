@@ -3359,7 +3359,7 @@ abstract class AppLocalizations {
   /// No description provided for @kycUploadAllDocs.
   ///
   /// In en, this message translates to:
-  /// **'Upload all three documents to enable submission.'**
+  /// **'Upload profile picture and all required documents to enable submission.'**
   String get kycUploadAllDocs;
 
   /// No description provided for @kycChooseSource.
@@ -3804,7 +3804,7 @@ abstract class AppLocalizations {
   /// No description provided for @profilePictureKycNote.
   ///
   /// In en, this message translates to:
-  /// **'Optional. This helps other users recognize you, but KYC approval still requires ID and selfie documents.'**
+  /// **'Required for identity verification. Upload a clear photo of yourself.'**
   String get profilePictureKycNote;
 
   /// No description provided for @affordabilityWarningTitle.
@@ -3897,6 +3897,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer.'**
   String get highEffectiveRateWarning;
+
+  /// No description provided for @allowInstitutionMatchingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow institution matching'**
+  String get allowInstitutionMatchingLabel;
+
+  /// No description provided for @allowInstitutionMatchingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let verified agents from your bank or institution discover your loan requests for tailored offers.'**
+  String get allowInstitutionMatchingSubtitle;
+
+  /// No description provided for @filterInstitutionMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Institution matches'**
+  String get filterInstitutionMatches;
+
+  /// No description provided for @filterInstitutionMatchesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only loan requests from borrowers who selected your bank/institution and opted into matching'**
+  String get filterInstitutionMatchesSubtitle;
+
+  /// No description provided for @institutionTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get institutionTypeBank;
+
+  /// No description provided for @institutionTypeSacco.
+  ///
+  /// In en, this message translates to:
+  /// **'SACCO'**
+  String get institutionTypeSacco;
+
+  /// No description provided for @institutionTypeMfi.
+  ///
+  /// In en, this message translates to:
+  /// **'Microfinance (MFI)'**
+  String get institutionTypeMfi;
+
+  /// No description provided for @institutionTypeCreditCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Company'**
+  String get institutionTypeCreditCompany;
+
+  /// No description provided for @institutionTypeForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex exchange'**
+  String get institutionTypeForex;
+
+  /// No description provided for @institutionTypeCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get institutionTypeCompany;
 }
 
 class _AppLocalizationsDelegate

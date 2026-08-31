@@ -2105,4 +2105,36 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get highEffectiveRateWarning =>
       'يحتوي هذا العرض على معدل فائدة فعلي مرتفع نسبيًا. فكر في التفاوض أو الانتظار للحصول على عرض أقل.';
+
+  @override
+  String get allowInstitutionMatchingLabel => 'السماح بالمطابقة المؤسسية';
+
+  @override
+  String get allowInstitutionMatchingSubtitle =>
+      'اسمح للوكلاء المعتمدين من بنكك أو مؤسستك باكتشاف طلبات القروض الخاصة بك للحصول على عروض مخصصة.';
+
+  @override
+  String get filterInstitutionMatches => 'مطابقات المؤسسات';
+
+  @override
+  String get filterInstitutionMatchesSubtitle =>
+      'طلبات القروض فقط من المقترضين الذين اختاروا بنكك/مؤسستك ووافقوا على المطابقة';
+
+  @override
+  String get institutionTypeBank => 'بنك';
+
+  @override
+  String get institutionTypeSacco => 'جمعية ادخار وائتمان (SACCO)';
+
+  @override
+  String get institutionTypeMfi => 'مؤسسة تمويل أصغر (MFI)';
+
+  @override
+  String get institutionTypeCreditCompany => 'شركة ائتمان';
+
+  @override
+  String get institutionTypeForex => 'شركة صرافة (Forex)';
+
+  @override
+  String get institutionTypeCompany => 'شركة';
 }

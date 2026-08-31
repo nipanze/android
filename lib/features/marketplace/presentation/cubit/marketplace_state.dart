@@ -10,31 +10,36 @@ class ProFilterCriteria extends Equatable {
     this.incomeBrackets = const [],
     this.suggestedTermsOnly = false,
     this.verifiedOnly = false,
+    this.institutionMatchOnly = false,
   });
 
   final List<String> employmentTypes;
   final List<String> incomeBrackets;
   final bool suggestedTermsOnly;
   final bool verifiedOnly;
+  final bool institutionMatchOnly;
 
   /// True when at least one filter is actually active.
   bool get isActive =>
       employmentTypes.isNotEmpty ||
       incomeBrackets.isNotEmpty ||
       suggestedTermsOnly ||
-      verifiedOnly;
+      verifiedOnly ||
+      institutionMatchOnly;
 
   ProFilterCriteria copyWith({
     List<String>? employmentTypes,
     List<String>? incomeBrackets,
     bool? suggestedTermsOnly,
     bool? verifiedOnly,
+    bool? institutionMatchOnly,
   }) {
     return ProFilterCriteria(
       employmentTypes: employmentTypes ?? this.employmentTypes,
       incomeBrackets: incomeBrackets ?? this.incomeBrackets,
       suggestedTermsOnly: suggestedTermsOnly ?? this.suggestedTermsOnly,
       verifiedOnly: verifiedOnly ?? this.verifiedOnly,
+      institutionMatchOnly: institutionMatchOnly ?? this.institutionMatchOnly,
     );
   }
 
@@ -42,8 +47,13 @@ class ProFilterCriteria extends Equatable {
   ProFilterCriteria cleared() => const ProFilterCriteria();
 
   @override
-  List<Object?> get props =>
-      [employmentTypes, incomeBrackets, suggestedTermsOnly, verifiedOnly];
+  List<Object?> get props => [
+        employmentTypes,
+        incomeBrackets,
+        suggestedTermsOnly,
+        verifiedOnly,
+        institutionMatchOnly,
+      ];
 }
 
 abstract class MarketplaceState extends Equatable {

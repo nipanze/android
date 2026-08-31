@@ -942,7 +942,17 @@
   "totalRepayableLabel": "Total repayable",
   "effectiveInterestLabel": "Effective interest",
   "loanAmountLabel": "Loan amount",
-  "highEffectiveRateWarning": "This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer."
+  "highEffectiveRateWarning": "This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer.",
+  "allowInstitutionMatchingLabel": "Allow institution matching",
+  "allowInstitutionMatchingSubtitle": "Let verified agents from your bank or institution discover your loan requests for tailored offers.",
+  "filterInstitutionMatches": "Institution matches",
+  "filterInstitutionMatchesSubtitle": "Only loan requests from borrowers who selected your bank/institution and opted into matching",
+  "institutionTypeBank": "Bank",
+  "institutionTypeSacco": "SACCO",
+  "institutionTypeMfi": "Microfinance (MFI)",
+  "institutionTypeCreditCompany": "Credit Company",
+  "institutionTypeForex": "Forex exchange",
+  "institutionTypeCompany": "Company"
 }
 
 

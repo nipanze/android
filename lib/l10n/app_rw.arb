@@ -918,7 +918,17 @@
   "totalRepayableLabel": "Ayose yo kwishyura",
   "effectiveInterestLabel": "Inyungu nyakuri",
   "loanAmountLabel": "Umubare w'inguframe",
-  "highEffectiveRateWarning": "Iki cyifuzo gifite inyungu nyakuri iri hejuru. Tekereza kuganira cyangwa gutegereza icyifuzo cyo hasi."
+  "highEffectiveRateWarning": "Iki cyifuzo gifite inyungu nyakuri iri hejuru. Tekereza kuganira cyangwa gutegereza icyifuzo cyo hasi.",
+  "allowInstitutionMatchingLabel": "Emera guhuza n'ibigo by'imari",
+  "allowInstitutionMatchingSubtitle": "Emerera abakozi bemejwe ba banki cyangwa ikigo cyawe kubona icyifuzo cyawe cy'inguframe ku byifuzo bihuye.",
+  "filterInstitutionMatches": "Guhuza n'ibigo",
+  "filterInstitutionMatchesSubtitle": "Ibyifuzo by'inguframe gusa bivuye kubaguzwa batoranyije banki/ikigo cyawe bakemera guhuzwa",
+  "institutionTypeBank": "Banki",
+  "institutionTypeSacco": "SACCO",
+  "institutionTypeMfi": "Ikigo cy'imari iciriritse (MFI)",
+  "institutionTypeCreditCompany": "Kampani y'inguzanyo",
+  "institutionTypeForex": "Ikigo cy'ivunjisha (Forex)",
+  "institutionTypeCompany": "Kampani"
 }
 
 

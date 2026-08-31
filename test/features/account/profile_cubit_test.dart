@@ -41,6 +41,7 @@ class MockProfileRepository implements ProfileRepository {
     String? institutionType,
     bool? isBankAgent,
     bool? showProfessionalTag,
+    bool? allowInstitutionMatching,
   }) async {
     updateCallCount++;
     if (_error != null) throw _error!;

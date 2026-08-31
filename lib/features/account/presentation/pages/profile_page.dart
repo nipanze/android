@@ -48,6 +48,7 @@ class _ProfileViewState extends State<_ProfileView> {
   String? _institutionType;
   bool _isBankAgent = false;
   bool _showProfessionalTag = true;
+  bool _allowInstitutionMatching = false;
   bool _populated = false;
   bool _hasChanges = false;
 
@@ -66,8 +67,10 @@ class _ProfileViewState extends State<_ProfileView> {
   static const _institutionOptions = [
     '',
     'bank',
-    'forex_exchange',
     'sacco',
+    'mfi',
+    'credit_company',
+    'forex_exchange',
     'company',
   ];
 
@@ -104,6 +107,7 @@ class _ProfileViewState extends State<_ProfileView> {
     _institutionType = p.institutionType;
     _isBankAgent = p.isBankAgent;
     _showProfessionalTag = p.showProfessionalTag;
+    _allowInstitutionMatching = p.allowInstitutionMatching;
     _userInitials = p.initials;
 
     // Use the stored country code from the profile; fall back to phone
@@ -446,13 +450,17 @@ class _ProfileViewState extends State<_ProfileView> {
   String _institutionLabel(AppLocalizations? l10n, String value) {
     switch (value) {
       case 'bank':
-        return l10n?.bankLabel ?? 'Bank';
-      case 'forex_exchange':
-        return l10n?.forexExchangeCompanyLabel ?? 'Forex exchange company';
+        return l10n?.institutionTypeBank ?? 'Bank';
       case 'sacco':
-        return l10n?.saccoLabel ?? 'SACCO';
+        return l10n?.institutionTypeSacco ?? 'SACCO';
+      case 'mfi':
+        return l10n?.institutionTypeMfi ?? 'Microfinance (MFI)';
+      case 'credit_company':
+        return l10n?.institutionTypeCreditCompany ?? 'Credit Company';
+      case 'forex_exchange':
+        return l10n?.institutionTypeForex ?? 'Forex exchange';
       case 'company':
-        return l10n?.companyLabel ?? 'Company';
+        return l10n?.institutionTypeCompany ?? 'Company';
       default:
         return l10n?.individualPersonalAccountLabel ??
             'Individual / Personal account';
@@ -515,6 +523,7 @@ class _ProfileViewState extends State<_ProfileView> {
       institutionType: _institutionType ?? '',
       isBankAgent: _isBankAgent,
       showProfessionalTag: _showProfessionalTag,
+      allowInstitutionMatching: _allowInstitutionMatching,
     );
   }
 
@@ -930,6 +939,24 @@ class _ProfileViewState extends State<_ProfileView> {
                     value: _isBankAgent,
                     onChanged: (v) {
                       setState(() => _isBankAgent = v);
+                      _markChanged();
+                    },
+                  ),
+
+                  // Allow Institution Matching Switch (Free for all requesters)
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      l10n?.allowInstitutionMatchingLabel ??
+                          'Allow institution matching',
+                    ),
+                    subtitle: Text(
+                      l10n?.allowInstitutionMatchingSubtitle ??
+                          'Let verified agents from your bank or institution discover your loan requests for tailored offers.',
+                    ),
+                    value: _allowInstitutionMatching,
+                    onChanged: (v) {
+                      setState(() => _allowInstitutionMatching = v);
                       _markChanged();
                     },
                   ),

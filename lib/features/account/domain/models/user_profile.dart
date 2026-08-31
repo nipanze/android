@@ -18,6 +18,7 @@ class UserProfile extends Equatable {
     this.institutionType,
     this.isBankAgent = false,
     this.showProfessionalTag = true,
+    this.allowInstitutionMatching = false,
     this.preferredEmploymentTypes,
     this.preferredIncomeBracket,
     this.prefersSuggestedTerms = false,
@@ -70,6 +71,7 @@ class UserProfile extends Equatable {
   final String? institutionType;
   final bool isBankAgent;
   final bool showProfessionalTag;
+  final bool allowInstitutionMatching;
   int? get monthlyIncomeUgx => monthlyIncome;
   final List<String>? preferredEmploymentTypes;
   final String? preferredIncomeBracket;
@@ -160,6 +162,7 @@ class UserProfile extends Equatable {
     String? institutionType,
     bool? isBankAgent,
     bool? showProfessionalTag,
+    bool? allowInstitutionMatching,
     List<String>? preferredEmploymentTypes,
     String? preferredIncomeBracket,
     bool? prefersSuggestedTerms,
@@ -207,6 +210,8 @@ class UserProfile extends Equatable {
       institutionType: institutionType ?? this.institutionType,
       isBankAgent: isBankAgent ?? this.isBankAgent,
       showProfessionalTag: showProfessionalTag ?? this.showProfessionalTag,
+      allowInstitutionMatching:
+          allowInstitutionMatching ?? this.allowInstitutionMatching,
       preferredEmploymentTypes:
           preferredEmploymentTypes ?? this.preferredEmploymentTypes,
       preferredIncomeBracket:
@@ -267,6 +272,8 @@ class UserProfile extends Equatable {
         trustIsVerified,
         trustSuccessRate,
         trustReliabilityScore,
+        showProfessionalTag,
+        allowInstitutionMatching,
         referralCode,
         referredBy,
         referralStatus,

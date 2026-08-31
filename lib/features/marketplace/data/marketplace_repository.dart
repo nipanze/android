@@ -286,6 +286,7 @@ class MarketplaceRepository {
     List<String>? incomeBrackets,
     bool suggestedTermsOnly = false,
     bool verifiedOnly = false,
+    bool institutionMatchOnly = false,
   }) async {
     try {
       final data = await _client.rpc(
@@ -295,6 +296,7 @@ class MarketplaceRepository {
           if (incomeBrackets != null) 'p_income_brackets': incomeBrackets,
           'p_suggested_terms_only': suggestedTermsOnly,
           'p_verified_only': verifiedOnly,
+          'p_institution_match_only': institutionMatchOnly,
         },
       );
       return {

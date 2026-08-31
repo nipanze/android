@@ -942,7 +942,17 @@
   "totalRepayableLabel": "Jumla inayolipwa",
   "effectiveInterestLabel": "Riba halisi",
   "loanAmountLabel": "Kiasi cha mkopo",
-  "highEffectiveRateWarning": "Toleo hili lina kiwango cha juu cha riba halisi. Fikiria kujadili au kusubiri toleo la chini."
+  "highEffectiveRateWarning": "Toleo hili lina kiwango cha juu cha riba halisi. Fikiria kujadili au kusubiri toleo la chini.",
+  "allowInstitutionMatchingLabel": "Ruhusu ulinganishaji wa taasisi",
+  "allowInstitutionMatchingSubtitle": "Ruhusu mawakala waliothibitishwa wa benki au taasisi yako kugundua maombi yako ya mkopo kwa matoleo maalum.",
+  "filterInstitutionMatches": "Ulinganishaji wa taasisi",
+  "filterInstitutionMatchesSubtitle": "Maombi ya mkopo tu kutoka kwa wakopaji waliochagua benki/taasisi yako na kukubali ulinganishaji",
+  "institutionTypeBank": "Benki",
+  "institutionTypeSacco": "SACCO",
+  "institutionTypeMfi": "Taasisi ya Microfinance (MFI)",
+  "institutionTypeCreditCompany": "Kampuni ya Mkopo",
+  "institutionTypeForex": "Duka la kubadilisha fedha (Forex)",
+  "institutionTypeCompany": "Kampuni"
 }
 
 

@@ -96,6 +96,8 @@ class ProfileRepository {
         institutionType: profile?['institution_type'] as String?,
         isBankAgent: profile?['is_bank_agent'] as bool? ?? false,
         showProfessionalTag: profile?['show_professional_tag'] as bool? ?? true,
+        allowInstitutionMatching:
+            profile?['allow_institution_matching'] as bool? ?? false,
         preferredEmploymentTypes: profile?['preferred_employment_types'] == null
             ? null
             : List<String>.from(profile!['preferred_employment_types'] as List),
@@ -205,6 +207,7 @@ class ProfileRepository {
     String? institutionType,
     bool? isBankAgent,
     bool? showProfessionalTag,
+    bool? allowInstitutionMatching,
   }) async {
     try {
       var emailConfirmationPending = false;
@@ -257,6 +260,9 @@ class ProfileRepository {
       if (isBankAgent != null) updates['is_bank_agent'] = isBankAgent;
       if (showProfessionalTag != null) {
         updates['show_professional_tag'] = showProfessionalTag;
+      }
+      if (allowInstitutionMatching != null) {
+        updates['allow_institution_matching'] = allowInstitutionMatching;
       }
       if (preferredEmploymentTypes != null) {
         updates['preferred_employment_types'] = preferredEmploymentTypes;

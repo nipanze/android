@@ -2118,4 +2118,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get highEffectiveRateWarning =>
       'This offer has a relatively high effective rate. Consider negotiating or waiting for a lower offer.';
+
+  @override
+  String get allowInstitutionMatchingLabel => 'Allow institution matching';
+
+  @override
+  String get allowInstitutionMatchingSubtitle =>
+      'Let verified agents from your bank or institution discover your loan requests for tailored offers.';
+
+  @override
+  String get filterInstitutionMatches => 'Institution matches';
+
+  @override
+  String get filterInstitutionMatchesSubtitle =>
+      'Only loan requests from borrowers who selected your bank/institution and opted into matching';
+
+  @override
+  String get institutionTypeBank => 'Bank';
+
+  @override
+  String get institutionTypeSacco => 'SACCO';
+
+  @override
+  String get institutionTypeMfi => 'Microfinance (MFI)';
+
+  @override
+  String get institutionTypeCreditCompany => 'Credit Company';
+
+  @override
+  String get institutionTypeForex => 'Forex exchange';
+
+  @override
+  String get institutionTypeCompany => 'Company';
 }

@@ -99,6 +99,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
           criteria.incomeBrackets.isEmpty ? null : criteria.incomeBrackets,
       suggestedTermsOnly: criteria.suggestedTermsOnly,
       verifiedOnly: criteria.verifiedOnly,
+      institutionMatchOnly: criteria.institutionMatchOnly,
     );
 
     if (isClosed) return;

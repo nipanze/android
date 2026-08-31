@@ -128,6 +128,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   late Set<String> _selectedIncome;
   late bool _suggestedTermsOnly;
   late bool _verifiedOnly;
+  late bool _institutionMatchOnly;
   String _currencyCode = EastAfricaCountries.defaultCountry.currency;
 
   @override
@@ -138,6 +139,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     _selectedIncome = Set.from(criteria.incomeBrackets);
     _suggestedTermsOnly = criteria.suggestedTermsOnly;
     _verifiedOnly = criteria.verifiedOnly;
+    _institutionMatchOnly = criteria.institutionMatchOnly;
 
     if (criteria == const ProFilterCriteria()) {
       _seedFromProfile();
@@ -216,6 +218,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
             incomeBrackets: _selectedIncome.toList(),
             suggestedTermsOnly: _suggestedTermsOnly,
             verifiedOnly: _verifiedOnly,
+            institutionMatchOnly: _institutionMatchOnly,
           ),
         );
     Navigator.of(context).pop();
@@ -230,7 +233,8 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       _selectedEmployment.isNotEmpty ||
       _selectedIncome.isNotEmpty ||
       _suggestedTermsOnly ||
-      _verifiedOnly;
+      _verifiedOnly ||
+      _institutionMatchOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -315,6 +319,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                           _selectedIncome.clear();
                           _suggestedTermsOnly = false;
                           _verifiedOnly = false;
+                          _institutionMatchOnly = false;
                         }),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
@@ -431,6 +436,19 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                           'Only requests from KYC-approved account holders',
                       value: _verifiedOnly,
                       onChanged: (v) => setState(() => _verifiedOnly = v),
+                      border: border,
+                    ),
+                    const SizedBox(height: 10),
+                    _ToggleTile(
+                      icon: Icons.account_balance_outlined,
+                      iconColor: AppColors.warning,
+                      title: l10n?.filterInstitutionMatches ??
+                          'Institution matches',
+                      subtitle: l10n?.filterInstitutionMatchesSubtitle ??
+                          'Only loan requests from borrowers who selected your bank/institution and opted into matching',
+                      value: _institutionMatchOnly,
+                      onChanged: (v) =>
+                          setState(() => _institutionMatchOnly = v),
                       border: border,
                     ),
                     const SizedBox(height: 8),

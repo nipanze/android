@@ -53,6 +53,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
     String? institutionType,
     bool? isBankAgent,
     bool? showProfessionalTag,
+    bool? allowInstitutionMatching,
   }) async {
     if (state is! ProfileCubitLoaded) return;
     final current = state as ProfileCubitLoaded;
@@ -78,6 +79,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
         institutionType: institutionType,
         isBankAgent: isBankAgent,
         showProfessionalTag: showProfessionalTag,
+        allowInstitutionMatching: allowInstitutionMatching,
       );
       // Reload fresh from DB
       final updated = await _repository.getProfile();
