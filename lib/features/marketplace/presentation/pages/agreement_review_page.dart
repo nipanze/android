@@ -111,7 +111,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                   children: [
                     _TermRow(
                       label: 'Principal',
-                      value: 'UGX ${_fmt(a.loanAmount)}',
+                      value: '${a.currency} ${_fmt(a.loanAmount)}',
                       valueColor: Theme.of(context).colorScheme.onSurface,
                     ),
                     _TermRow(
@@ -120,7 +120,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                     ),
                     _TermRow(
                       label: 'Repayment amount',
-                      value: 'UGX ${_fmt(a.repaymentAmount)}',
+                      value: '${a.currency} ${_fmt(a.repaymentAmount)}',
                       valueColor: Theme.of(context).colorScheme.onSurface,
                       bold: true,
                     ),
@@ -130,7 +130,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                     ),
                     _TermRow(
                       label: 'Total repayment',
-                      value: 'UGX ${_fmt(a.totalRepaymentAmount)}',
+                      value: '${a.currency} ${_fmt(a.totalRepaymentAmount)}',
                     ),
                     _TermRow(
                       label: 'Frequency',

@@ -117,6 +117,13 @@ class Agreement extends Equatable {
   bool get isFullyLocked => status == AgreementStatus.locked;
   bool get canBeEdited => status == AgreementStatus.pending;
 
+  /// Currency code for this agreement — taken from the deal snapshot if
+  /// available, otherwise falls back to 'UGX'.
+  String get currency =>
+      (agreementSnapshot?['currency'] as String?)?.trim().isNotEmpty == true
+          ? agreementSnapshot!['currency'] as String
+          : 'UGX';
+
   factory Agreement.fromMap(Map<String, dynamic> map) {
     final snapshot = map['agreement_snapshot'] as Map<String, dynamic>?;
     return Agreement(

@@ -106,5 +106,14 @@ void main() {
       expect(updated.email, 'user@test.com');
       expect(updated.id, 'u-1');
     });
+
+    test('Equatable props detects preferredBank and tag changes', () {
+      final p1 = _base.copyWith(preferredBank: 'Equity Bank', showProfessionalTag: true);
+      final p2 = _base.copyWith(preferredBank: null, showProfessionalTag: false);
+
+      expect(p1 == p2, isFalse);
+      expect(p1.props.contains('Equity Bank'), isTrue);
+      expect(p2.props.contains('Equity Bank'), isFalse);
+    });
   });
 }

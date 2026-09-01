@@ -74,7 +74,16 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             IconButton(
               tooltip: 'Safety Toolkit',
               icon: const Icon(Icons.shield_outlined),
-              onPressed: () => showSafetyToolkitSheet(context),
+              onPressed: () => showSafetyToolkitSheet(
+                context,
+                kycStatus: _cachedListing?.kycStatus,
+                phoneVerified: _cachedListing?.trustPhoneVerified ?? false,
+                ratingAvg: _cachedListing?.trustRatingAvg,
+                reviewCount: _cachedListing?.trustReviewCount ?? 0,
+                completedDealsCount:
+                    _cachedListing?.trustCompletedDealsCount ?? 0,
+                dealStatus: _cachedListing?.status,
+              ),
             ),
         ],
       ),

@@ -576,16 +576,14 @@ class _ForexRequestCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  request.numberOfOffers == 0
-                      ? 'No offers yet'
-                      : '${request.numberOfOffers} offer${request.numberOfOffers == 1 ? '' : 's'}',
+                  '${request.numberOfOffers} ${request.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: request.numberOfOffers > 0
                         ? AppColors.accent
                         : theme.colorScheme.onSurface.withOpacity(0.5),
                     fontWeight: request.numberOfOffers > 0
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                   ),
                 ),
                 const Spacer(),

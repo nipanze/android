@@ -242,9 +242,17 @@ class ProfileRepository {
       }
       if (phone != null) updates['phone'] = phone;
       if (country != null) updates['country'] = country;
-      if (district != null) updates['district'] = district;
-      if (employmentType != null) updates['employment_type'] = employmentType;
-      if (employerName != null) updates['employer_name'] = employerName;
+      if (district != null) {
+        updates['district'] = district.trim().isEmpty ? null : district.trim();
+      }
+      if (employmentType != null) {
+        updates['employment_type'] =
+            employmentType.trim().isEmpty ? null : employmentType.trim();
+      }
+      if (employerName != null) {
+        updates['employer_name'] =
+            employerName.trim().isEmpty ? null : employerName.trim();
+      }
       if (monthlyIncome != null) {
         updates['monthly_income'] = monthlyIncome;
       }
@@ -257,9 +265,9 @@ class ProfileRepository {
       }
       if (institutionType != null) {
         updates['institution_type'] =
-            (institutionType.isEmpty || institutionType == 'none')
+            (institutionType.trim().isEmpty || institutionType == 'none')
                 ? null
-                : institutionType;
+                : institutionType.trim();
       }
       if (isBankAgent != null) updates['is_bank_agent'] = isBankAgent;
       if (showProfessionalTag != null) {

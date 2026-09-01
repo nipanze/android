@@ -42,7 +42,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   bool _newOfferFlash = false;
   bool _isOwnerValue = false;
   bool _isParticipant = false;
-  String? _ownerId;
 
   final _repo = getIt<MarketplaceRepository>();
   final _settingsRepo = getIt<SystemSettingsRepository>();
@@ -86,7 +85,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       bool isOwner = false;
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        _ownerId = await _repo.getListingOwnerId(widget.requestId);
         isOwner = await _repo.isListingOwner(
           requestId: widget.requestId,
           userId: authState.user.id,
@@ -216,12 +214,20 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         title: Text(AppLocalizations.of(context)?.listingDetailTitle ??
             'Listing detail'),
         actions: [
-          if (user != null && !isOwner && _ownerId != null)
-            IconButton(
-              tooltip: 'Safety Toolkit',
-              icon: const Icon(Icons.shield_outlined),
-              onPressed: () => showSafetyToolkitSheet(context),
+          IconButton(
+            tooltip: 'Safety Toolkit',
+            icon: const Icon(Icons.shield_outlined),
+            onPressed: () => showSafetyToolkitSheet(
+              context,
+              kycStatus: listing.kycStatus,
+              phoneVerified: listing.trustPhoneVerified,
+              ratingAvg: listing.trustRatingAvg,
+              reviewCount: listing.trustReviewCount,
+              completedDealsCount: listing.trustCompletedDealsCount,
+              hasCollateral: listing.hasCollateral,
+              dealStatus: listing.status,
             ),
+          ),
         ],
       ),
       body: RefreshIndicator(

@@ -507,15 +507,11 @@ class _ProfileViewState extends State<_ProfileView> {
       phone: fullPhone.isEmpty ? null : fullPhone,
       country: _selectedCountry.code,
       incomeCurrency: _selectedCountry.currency,
-      district: _district,
-      employmentType: _employmentType,
-      employerName: _employerController.text.trim().isEmpty
-          ? null
-          : _employerController.text.trim(),
+      district: _district ?? '',
+      employmentType: _employmentType ?? '',
+      employerName: _employerController.text.trim(),
       monthlyIncome: monthlyIncome,
-      preferredBank: _preferredBankController.text.trim().isEmpty
-          ? null
-          : _preferredBankController.text.trim(),
+      preferredBank: _preferredBankController.text.trim(),
       institutionType: _institutionType ?? '',
       isBankAgent: _isBankAgent,
       showProfessionalTag: _showProfessionalTag,

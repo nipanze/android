@@ -103,21 +103,49 @@ class MyListingCard extends StatelessWidget {
             // Offer count row
             Row(
               children: [
-                if (listing.numberOfOffers > 0) ...[
-                  const Icon(Icons.how_to_vote_outlined,
-                      size: 12, color: AppColors.success),
-                  const SizedBox(width: 3),
-                  Text(
-                    l10n?.listingOfferCount(listing.numberOfOffers) ??
-                        '${listing.numberOfOffers} offer${listing.numberOfOffers != 1 ? 's' : ''}',
-                    style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.success),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: listing.numberOfOffers > 0
+                        ? AppColors.success.withValues(alpha: 0.12)
+                        : (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white10
+                            : Colors.black.withValues(alpha: 0.05)),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: listing.numberOfOffers > 0
+                          ? AppColors.success.withValues(alpha: 0.4)
+                          : (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white24
+                              : Colors.black12),
+                    ),
                   ),
-                ] else
-                  Text(l10n?.noOffersYet ?? 'No offers yet',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        listing.numberOfOffers > 0
+                            ? Icons.local_offer_rounded
+                            : Icons.local_offer_outlined,
+                        size: 11,
+                        color: listing.numberOfOffers > 0
+                            ? AppColors.success
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${listing.numberOfOffers} ${listing.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: listing.numberOfOffers > 0
+                              ? AppColors.success
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const Spacer(),
                 Text(
                   '${listing.durationMonths} months',
