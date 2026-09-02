@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @phoneNumberLabel.
   ///
   /// In en, this message translates to:
-  /// **'Phone number'**
+  /// **'Phone Number'**
   String get phoneNumberLabel;
 
   /// No description provided for @selectRegionLabel.
@@ -3969,6 +3969,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Company'**
   String get institutionTypeCompany;
+
+  /// No description provided for @contactDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Details'**
+  String get contactDetailsTitle;
+
+  /// No description provided for @dealAgreementCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Deal Agreement Created'**
+  String get dealAgreementCreated;
+
+  /// No description provided for @dealAgreementCreatedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now contact the other party to move forward with your deal.'**
+  String get dealAgreementCreatedSubtitle;
+
+  /// No description provided for @contactTheOtherParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact the Other Party'**
+  String get contactTheOtherParty;
+
+  /// No description provided for @detailsOnlyVisibleToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'These details are only visible to you.'**
+  String get detailsOnlyVisibleToYou;
+
+  /// No description provided for @contactInfoLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Info Locked'**
+  String get contactInfoLocked;
+
+  /// No description provided for @contactInfoLockedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock contact details for the opposite party to directly call, email, or WhatsApp.'**
+  String get contactInfoLockedSubtitle;
+
+  /// No description provided for @oneTimeUnlockFee.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time unlock fee'**
+  String get oneTimeUnlockFee;
+
+  /// No description provided for @revealsContactInfoNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveals contact info for this deal only.'**
+  String get revealsContactInfoNotice;
+
+  /// No description provided for @oppositePartyContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Opposite Party Contact'**
+  String get oppositePartyContact;
+
+  /// No description provided for @successfulDealsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Successful deals'**
+  String successfulDealsCount(int count);
+
+  /// No description provided for @reviewsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews'**
+  String reviewsCount(int count);
+
+  /// No description provided for @emailAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddressLabel;
+
+  /// No description provided for @whatsappLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsappLabel;
+
+  /// No description provided for @callAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get callAction;
+
+  /// No description provided for @emailAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailAction;
+
+  /// No description provided for @chatAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chatAction;
+
+  /// No description provided for @safetyFirstTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety First'**
+  String get safetyFirstTitle;
+
+  /// No description provided for @safetyFirstDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Communicate responsibly. Nipanze is non-custodial and does not mediate or guarantee any transaction.'**
+  String get safetyFirstDesc;
+
+  /// No description provided for @goToMyDeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to My Deals'**
+  String get goToMyDeals;
+
+  /// No description provided for @backToActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Activity'**
+  String get backToActivity;
+
+  /// No description provided for @phoneCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number copied to clipboard'**
+  String get phoneCopiedToClipboard;
+
+  /// No description provided for @emailCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address copied to clipboard'**
+  String get emailCopiedToClipboard;
+
+  /// No description provided for @whatsappCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp number copied to clipboard'**
+  String get whatsappCopiedToClipboard;
+
+  /// No description provided for @notProvided.
+  ///
+  /// In en, this message translates to:
+  /// **'Not provided'**
+  String get notProvided;
+
+  /// No description provided for @viewOppositePartyContact.
+  ///
+  /// In en, this message translates to:
+  /// **'View Opposite Party Contact'**
+  String get viewOppositePartyContact;
+
+  /// No description provided for @tapToViewContactDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.'**
+  String get tapToViewContactDetails;
 }
 
 class _AppLocalizationsDelegate

@@ -61,13 +61,23 @@ class MarketplaceRepository {
   /// Get a single listing detail.
   Future<LoanListing> getListingDetail(String requestId) async {
     try {
-      final data = await _client
-          .from(ViewNames.loanListingDetails)
-          .select()
-          .eq('request_id', requestId)
-          .single();
+      try {
+        final data = await _client
+            .from(ViewNames.loanListingDetails)
+            .select()
+            .eq('request_id', requestId)
+            .single();
 
-      return LoanListing.fromMap(data);
+        return LoanListing.fromMap(data);
+      } catch (_) {
+        final data = await _client
+            .from(TableNames.loanRequests)
+            .select()
+            .eq('id', requestId)
+            .single();
+
+        return LoanListing.fromMap(data);
+      }
     } catch (e) {
       throw parseSupabaseError(e);
     }

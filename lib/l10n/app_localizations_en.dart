@@ -418,7 +418,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeProfilePicture => 'Change profile picture';
 
   @override
-  String get phoneNumberLabel => 'Phone number';
+  String get phoneNumberLabel => 'Phone Number';
 
   @override
   String selectRegionLabel(String label) {
@@ -2157,4 +2157,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get institutionTypeCompany => 'Company';
+
+  @override
+  String get contactDetailsTitle => 'Contact Details';
+
+  @override
+  String get dealAgreementCreated => 'Deal Agreement Created';
+
+  @override
+  String get dealAgreementCreatedSubtitle =>
+      'You can now contact the other party to move forward with your deal.';
+
+  @override
+  String get contactTheOtherParty => 'Contact the Other Party';
+
+  @override
+  String get detailsOnlyVisibleToYou =>
+      'These details are only visible to you.';
+
+  @override
+  String get contactInfoLocked => 'Contact Info Locked';
+
+  @override
+  String get contactInfoLockedSubtitle =>
+      'Unlock contact details for the opposite party to directly call, email, or WhatsApp.';
+
+  @override
+  String get oneTimeUnlockFee => 'One-time unlock fee';
+
+  @override
+  String get revealsContactInfoNotice =>
+      'Reveals contact info for this deal only.';
+
+  @override
+  String get oppositePartyContact => 'Opposite Party Contact';
+
+  @override
+  String successfulDealsCount(int count) {
+    return '$count Successful deals';
+  }
+
+  @override
+  String reviewsCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get emailAddressLabel => 'Email Address';
+
+  @override
+  String get whatsappLabel => 'WhatsApp';
+
+  @override
+  String get callAction => 'Call';
+
+  @override
+  String get emailAction => 'Email';
+
+  @override
+  String get chatAction => 'Chat';
+
+  @override
+  String get safetyFirstTitle => 'Safety First';
+
+  @override
+  String get safetyFirstDesc =>
+      'Communicate responsibly. Nipanze is non-custodial and does not mediate or guarantee any transaction.';
+
+  @override
+  String get goToMyDeals => 'Go to My Deals';
+
+  @override
+  String get backToActivity => 'Back to Activity';
+
+  @override
+  String get phoneCopiedToClipboard => 'Phone number copied to clipboard';
+
+  @override
+  String get emailCopiedToClipboard => 'Email address copied to clipboard';
+
+  @override
+  String get whatsappCopiedToClipboard => 'WhatsApp number copied to clipboard';
+
+  @override
+  String get notProvided => 'Not provided';
+
+  @override
+  String get viewOppositePartyContact => 'View Opposite Party Contact';
+
+  @override
+  String get tapToViewContactDetails =>
+      'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.';
 }

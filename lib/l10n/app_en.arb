@@ -954,7 +954,45 @@
   "institutionTypeMfi": "Microfinance (MFI)",
   "institutionTypeCreditCompany": "Credit Company",
   "institutionTypeForex": "Forex exchange",
-  "institutionTypeCompany": "Company"
+  "institutionTypeCompany": "Company",
+  "contactDetailsTitle": "Contact Details",
+  "dealAgreementCreated": "Deal Agreement Created",
+  "dealAgreementCreatedSubtitle": "You can now contact the other party to move forward with your deal.",
+  "contactTheOtherParty": "Contact the Other Party",
+  "detailsOnlyVisibleToYou": "These details are only visible to you.",
+  "contactInfoLocked": "Contact Info Locked",
+  "contactInfoLockedSubtitle": "Unlock contact details for the opposite party to directly call, email, or WhatsApp.",
+  "oneTimeUnlockFee": "One-time unlock fee",
+  "revealsContactInfoNotice": "Reveals contact info for this deal only.",
+  "oppositePartyContact": "Opposite Party Contact",
+  "successfulDealsCount": "{count} Successful deals",
+  "@successfulDealsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "phoneNumberLabel": "Phone Number",
+  "emailAddressLabel": "Email Address",
+  "whatsappLabel": "WhatsApp",
+  "callAction": "Call",
+  "emailAction": "Email",
+  "chatAction": "Chat",
+  "safetyFirstTitle": "Safety First",
+  "safetyFirstDesc": "Communicate responsibly. Nipanze is non-custodial and does not mediate or guarantee any transaction.",
+  "goToMyDeals": "Go to My Deals",
+  "backToActivity": "Back to Activity",
+  "phoneCopiedToClipboard": "Phone number copied to clipboard",
+  "emailCopiedToClipboard": "Email address copied to clipboard",
+  "whatsappCopiedToClipboard": "WhatsApp number copied to clipboard",
+  "notProvided": "Not provided",
+  "viewOppositePartyContact": "View Opposite Party Contact",
+  "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender."
 }
 
 

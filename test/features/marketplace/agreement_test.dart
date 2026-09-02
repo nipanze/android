@@ -140,7 +140,7 @@ void main() {
       final data = ContactRevealData.fromJson({});
 
       expect(data.agreementId, '');
-      expect(data.borrowerName, '');
+      expect(data.borrowerName, 'Borrower');
       expect(data.lenderEmail, '');
     });
   });

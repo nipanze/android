@@ -420,7 +420,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get changeProfilePicture => 'Badilisha picha ya wasifu';
 
   @override
-  String get phoneNumberLabel => 'Nambari ya simu';
+  String get phoneNumberLabel => 'Nambari ya Simu';
 
   @override
   String selectRegionLabel(String label) {
@@ -2171,4 +2171,95 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get institutionTypeCompany => 'Kampuni';
+
+  @override
+  String get contactDetailsTitle => 'Maelezo ya Mawasiliano';
+
+  @override
+  String get dealAgreementCreated => 'Mkataba wa Dili Umeundwa';
+
+  @override
+  String get dealAgreementCreatedSubtitle =>
+      'Sasa unaweza kuwasiliana na upande mwingine ili kuendelea na dili yako.';
+
+  @override
+  String get contactTheOtherParty => 'Wasiliana na Upande Mwingine';
+
+  @override
+  String get detailsOnlyVisibleToYou => 'Maelezo haya yanaonekana kwako pekee.';
+
+  @override
+  String get contactInfoLocked => 'Maelezo ya Mawasiliano Yamefungwa';
+
+  @override
+  String get contactInfoLockedSubtitle =>
+      'Fungua maelezo ya mawasiliano ya upande mwingine kupiga simu, kutuma barua pepe, au WhatsApp.';
+
+  @override
+  String get oneTimeUnlockFee => 'Ada ya kufungua mara moja';
+
+  @override
+  String get revealsContactInfoNotice =>
+      'Inaonyesha maelezo ya mawasiliano kwa dili hii pekee.';
+
+  @override
+  String get oppositePartyContact => 'Mawasiliano ya Upande Mwingine';
+
+  @override
+  String successfulDealsCount(int count) {
+    return 'Dili $count zilizofanikiwa';
+  }
+
+  @override
+  String reviewsCount(int count) {
+    return 'Tathmini $count';
+  }
+
+  @override
+  String get emailAddressLabel => 'Anwani ya Barua Pepe';
+
+  @override
+  String get whatsappLabel => 'WhatsApp';
+
+  @override
+  String get callAction => 'Piga Simu';
+
+  @override
+  String get emailAction => 'Barua Pepe';
+
+  @override
+  String get chatAction => 'Zungumza';
+
+  @override
+  String get safetyFirstTitle => 'Usalama Kwanza';
+
+  @override
+  String get safetyFirstDesc =>
+      'Wasiliana kwa uwajibikaji. Nipanze haishikilii fedha wala haidhamini au kupatanisha muamala wowote.';
+
+  @override
+  String get goToMyDeals => 'Nenda Kwenye Dili Zangu';
+
+  @override
+  String get backToActivity => 'Rudi Kwenye Shughuli';
+
+  @override
+  String get phoneCopiedToClipboard => 'Nambari ya simu imenakiliwa';
+
+  @override
+  String get emailCopiedToClipboard => 'Anwani ya barua pepe imenakiliwa';
+
+  @override
+  String get whatsappCopiedToClipboard => 'Nambari ya WhatsApp imenakiliwa';
+
+  @override
+  String get notProvided => 'Haijatolewa';
+
+  @override
+  String get viewOppositePartyContact =>
+      'Tazama Mawasiliano ya Upande Mwingine';
+
+  @override
+  String get tapToViewContactDetails =>
+      'Gusa ili kutazama maelezo ya mawasiliano ya upande mwingine.\nMasharti ya mwisho ni kati ya mkopaji na mkopeshi pekee.';
 }

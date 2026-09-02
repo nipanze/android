@@ -419,7 +419,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get changeProfilePicture => 'Hindura ifoto y\'umwirondoro';
 
   @override
-  String get phoneNumberLabel => 'Nomero ya telefone';
+  String get phoneNumberLabel => 'Numero ya Telefone';
 
   @override
   String selectRegionLabel(String label) {
@@ -2169,4 +2169,94 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get institutionTypeCompany => 'Kampani';
+
+  @override
+  String get contactDetailsTitle => 'Amakuru yo Guhamagara';
+
+  @override
+  String get dealAgreementCreated => 'Amasezerano y\'Ubwikorezi Yakozwe';
+
+  @override
+  String get dealAgreementCreatedSubtitle =>
+      'Ushobora guhita uvugana n\'undi munyabyarwa kugira ngo mukomeze ubwikorezi bwayo.';
+
+  @override
+  String get contactTheOtherParty => 'Vugana n\'Undi Munyabyarwa';
+
+  @override
+  String get detailsOnlyVisibleToYou => 'Aya makuru aboneshwa nawe wenyine.';
+
+  @override
+  String get contactInfoLocked => 'Amakuru yo Guhamagara Arafunzwe';
+
+  @override
+  String get contactInfoLockedSubtitle =>
+      'Fungura amakuru yo guhamagara y\'undi munyabyarwa kugira ngo umuhamagare, umwandikire imeli, cyangwa kuri WhatsApp.';
+
+  @override
+  String get oneTimeUnlockFee => 'Ikiguzi cyo gufungura inshuro imwe';
+
+  @override
+  String get revealsContactInfoNotice =>
+      'Yerekana amakuru yo guhamagara kuri ubu bwikorezi bwonyine.';
+
+  @override
+  String get oppositePartyContact => 'Amakuru y\'Undi Munyabyarwa';
+
+  @override
+  String successfulDealsCount(int count) {
+    return 'Ubwikorezi $count bwatsinze';
+  }
+
+  @override
+  String reviewsCount(int count) {
+    return 'Ibitekerezo $count';
+  }
+
+  @override
+  String get emailAddressLabel => 'Aderesi ya Imeli';
+
+  @override
+  String get whatsappLabel => 'WhatsApp';
+
+  @override
+  String get callAction => 'Hamagara';
+
+  @override
+  String get emailAction => 'Imeli';
+
+  @override
+  String get chatAction => 'Ganira';
+
+  @override
+  String get safetyFirstTitle => 'Umutekano Mbere';
+
+  @override
+  String get safetyFirstDesc =>
+      'Vugana mu buryo bw\'inshingano. Nipanze ntabwo ibika amafaranga kandi ntabwo yivanga cyangwa ngo irengere igikorwa cyose.';
+
+  @override
+  String get goToMyDeals => 'Jya mu Bwikorezi Bwange';
+
+  @override
+  String get backToActivity => 'Subira mu Bikorwa';
+
+  @override
+  String get phoneCopiedToClipboard => 'Numero ya telefone yakopiwe';
+
+  @override
+  String get emailCopiedToClipboard => 'Aderesi ya imeli yakopiwe';
+
+  @override
+  String get whatsappCopiedToClipboard => 'Numero ya WhatsApp yakopiwe';
+
+  @override
+  String get notProvided => 'Ntabwo byatanzwe';
+
+  @override
+  String get viewOppositePartyContact => 'Reba Amakuru y\'Undi Munyabyarwa';
+
+  @override
+  String get tapToViewContactDetails =>
+      'Kanda urebere amakuru yo guhamagara y\'undi munyabyarwa.\nAmasezerano ya nyuma ari hagati y\'umuguzi n\'umuguzanya pe.';
 }

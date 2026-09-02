@@ -130,7 +130,19 @@ class _NotificationsView extends StatelessWidget {
   void _onTap(BuildContext context, AppNotification n) {
     context.read<NotificationCubit>().markAsRead(n.id);
     if (n.deepLinkRoute != null) {
-      context.go(n.deepLinkRoute!);
+      try {
+        context.go(n.deepLinkRoute!);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Could not open notification target (${n.title})',
+              ),
+            ),
+          );
+        }
+      }
     }
   }
 

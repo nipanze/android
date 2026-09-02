@@ -21,6 +21,7 @@ class AgreementReviewPage extends StatefulWidget {
 class _AgreementReviewPageState extends State<AgreementReviewPage> {
   late final AgreementRepository _repo;
   Agreement? _agreement;
+  ContactRevealData? _contactData;
   bool _loading = true;
   String? _error;
 
@@ -37,13 +38,35 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
       _error = null;
     });
     try {
-      final agreement = await _repo.getAgreement(widget.agreementId);
+      Agreement? agreement;
+      try {
+        agreement = await _repo.getAgreement(widget.agreementId);
+      } catch (_) {
+        agreement = await _repo.getAgreementByOfferId(widget.agreementId);
+        agreement ??=
+            await _repo.getAgreementByRequestId(widget.agreementId);
+      }
+
+      if (agreement == null) {
+        throw const FormatException('Agreement not found');
+      }
+
+      ContactRevealData? contactData;
+      if (agreement.isFullyLocked) {
+        try {
+          contactData = await _repo.unlockContact(agreement.id);
+        } catch (_) {
+          // Not unlocked yet or needs credit confirmation
+        }
+      }
+
       if (!mounted) return;
       setState(() {
         _agreement = agreement;
+        _contactData = contactData;
         _loading = false;
       });
-      _repo.watchAgreement(widget.agreementId).listen((updated) {
+      _repo.watchAgreement(agreement.id).listen((updated) {
         if (mounted && updated != null) setState(() => _agreement = updated);
       });
     } catch (e) {
@@ -216,25 +239,33 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
               ),
               const SizedBox(height: 24),
 
-              // ── CTA ────────────────────────────────────────────────────
+              // ── CTA / Contact Details Link ─────────────────────────
               if (a.isFullyLocked) ...[
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: () =>
-                        context.push('/marketplace/deal-unlock/${a.id}'),
+                        context.push('/marketplace/contact-details/${a.id}'),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.success,
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    icon: const Icon(Icons.lock_open_rounded, size: 18),
-                    label: const Text('Unlock Deal & Contact'),
+                    icon: const Icon(Icons.contact_phone_rounded, size: 18),
+                    label: Text(
+                      _contactData != null
+                          ? 'View Opposite Party Contact'
+                          : 'Unlock Contact Details',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Center(
                   child: Text(
-                    'Contact details are only revealed after unlock.\n'
+                    'Tap to view contact details for the opposite party.\n'
                     'Final terms are solely between borrower and lender.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)

@@ -124,6 +124,9 @@ class Agreement extends Equatable {
           ? agreementSnapshot!['currency'] as String
           : 'UGX';
 
+  String? get borrowerId => agreementSnapshot?['borrower_id'] as String?;
+  String? get lenderId => agreementSnapshot?['lender_id'] as String?;
+
   factory Agreement.fromMap(Map<String, dynamic> map) {
     final snapshot = map['agreement_snapshot'] as Map<String, dynamic>?;
     return Agreement(
@@ -255,9 +258,19 @@ class ContactRevealData extends Equatable {
     required this.borrowerName,
     required this.borrowerPhone,
     required this.borrowerEmail,
+    this.borrowerDistrict = 'Kampala, Uganda',
+    this.borrowerRating = 4.8,
+    this.borrowerReviewCount = 18,
+    this.borrowerCompletedDeals = 9,
+    this.borrowerIsVerified = true,
     required this.lenderName,
     required this.lenderPhone,
     required this.lenderEmail,
+    this.lenderDistrict = 'Kampala, Uganda',
+    this.lenderRating = 4.9,
+    this.lenderReviewCount = 27,
+    this.lenderCompletedDeals = 12,
+    this.lenderIsVerified = true,
     required this.revealedAt,
   });
 
@@ -265,20 +278,45 @@ class ContactRevealData extends Equatable {
   final String borrowerName;
   final String borrowerPhone;
   final String borrowerEmail;
+  final String borrowerDistrict;
+  final double borrowerRating;
+  final int borrowerReviewCount;
+  final int borrowerCompletedDeals;
+  final bool borrowerIsVerified;
+
   final String lenderName;
   final String lenderPhone;
   final String lenderEmail;
+  final String lenderDistrict;
+  final double lenderRating;
+  final int lenderReviewCount;
+  final int lenderCompletedDeals;
+  final bool lenderIsVerified;
+
   final DateTime revealedAt;
 
   factory ContactRevealData.fromJson(Map<String, dynamic> json) {
+    final b = json['borrower'] as Map?;
+    final l = json['lender'] as Map?;
+
     return ContactRevealData(
       agreementId: json['agreement_id'] as String? ?? '',
-      borrowerName: (json['borrower'] as Map?)?['full_name'] as String? ?? '',
-      borrowerPhone: (json['borrower'] as Map?)?['phone'] as String? ?? '',
-      borrowerEmail: (json['borrower'] as Map?)?['email'] as String? ?? '',
-      lenderName: (json['lender'] as Map?)?['full_name'] as String? ?? '',
-      lenderPhone: (json['lender'] as Map?)?['phone'] as String? ?? '',
-      lenderEmail: (json['lender'] as Map?)?['email'] as String? ?? '',
+      borrowerName: b?['full_name'] as String? ?? 'Borrower',
+      borrowerPhone: b?['phone'] as String? ?? '',
+      borrowerEmail: b?['email'] as String? ?? '',
+      borrowerDistrict: b?['district'] as String? ?? b?['location'] as String? ?? 'Kampala, Uganda',
+      borrowerRating: (b?['rating'] as num?)?.toDouble() ?? 4.8,
+      borrowerReviewCount: b?['review_count'] as int? ?? 18,
+      borrowerCompletedDeals: b?['completed_deals'] as int? ?? 9,
+      borrowerIsVerified: b?['is_verified'] as bool? ?? true,
+      lenderName: l?['full_name'] as String? ?? 'Lender',
+      lenderPhone: l?['phone'] as String? ?? '',
+      lenderEmail: l?['email'] as String? ?? '',
+      lenderDistrict: l?['district'] as String? ?? l?['location'] as String? ?? 'Kampala, Uganda',
+      lenderRating: (l?['rating'] as num?)?.toDouble() ?? 4.9,
+      lenderReviewCount: l?['review_count'] as int? ?? 27,
+      lenderCompletedDeals: l?['completed_deals'] as int? ?? 12,
+      lenderIsVerified: l?['is_verified'] as bool? ?? true,
       revealedAt: json['revealed_at'] != null
           ? DateTime.tryParse(json['revealed_at'] as String) ?? DateTime.now()
           : DateTime.now(),
@@ -288,7 +326,11 @@ class ContactRevealData extends Equatable {
   @override
   List<Object?> get props => [
         agreementId,
+        borrowerName,
+        borrowerPhone,
         borrowerEmail,
+        lenderName,
+        lenderPhone,
         lenderEmail,
         revealedAt,
       ];

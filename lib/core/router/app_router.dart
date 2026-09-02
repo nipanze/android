@@ -19,7 +19,7 @@ import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
 import '../../features/listings/presentation/pages/my_listings_page.dart';
 import '../../features/marketplace/presentation/pages/agreement_review_page.dart';
-import '../../features/marketplace/presentation/pages/deal_unlock_page.dart';
+import '../../features/marketplace/presentation/pages/contact_details_page.dart';
 import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -42,6 +42,7 @@ class AppRoutes {
   static const String marketplace = '/marketplace';
   static const String marketplaceDetail = '/marketplace/:requestId';
   static const String agreement = '/marketplace/agreement/:agreementId';
+  static const String contactDetails = '/marketplace/contact-details/:agreementId';
   static const String dealUnlock = '/marketplace/deal-unlock/:agreementId';
   static const String watchlist = '/watchlist';
   static const String positions = '/positions';
@@ -197,14 +198,20 @@ class AppRouter {
         ),
       ),
       GoRoute(
-        path: AppRoutes.dealUnlock,
-        name: 'dealUnlock',
+        path: AppRoutes.contactDetails,
+        name: 'contactDetails',
         pageBuilder: (_, state) => _slide(
           state,
-          DealUnlockPage(
+          ContactDetailsPage(
             agreementId: state.pathParameters['agreementId']!,
           ),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.dealUnlock,
+        name: 'dealUnlock',
+        redirect: (context, state) =>
+            '/marketplace/contact-details/${state.pathParameters['agreementId']}',
       ),
       GoRoute(
         path: AppRoutes.notifications,

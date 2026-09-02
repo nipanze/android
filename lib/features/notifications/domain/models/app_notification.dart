@@ -56,12 +56,33 @@ class AppNotification extends Equatable {
 
   /// Deep link route — used to navigate on tap.
   String? get deepLinkRoute {
-    if (forexRequestId != null) return '/forex/$forexRequestId';
-    if (requestId != null) return '/marketplace/$requestId';
-    if (data != null) {
-      final agreementId = data!['agreement_id'] ?? data!['agreementId'];
-      if (agreementId != null) return '/marketplace/agreement/$agreementId';
+    final agreementId =
+        (data?['agreement_id'] ?? data?['agreementId'])?.toString();
+
+    // 1. Specific notification types with explicit destination screens:
+    if (type == NotificationType.contactRevealed) {
+      if (agreementId != null) {
+        return '/marketplace/contact-details/$agreementId';
+      }
+      if (offerId != null) {
+        return '/marketplace/contact-details/$offerId';
+      }
+      if (requestId != null) {
+        return '/marketplace/contact-details/$requestId';
+      }
     }
+
+    if (type == NotificationType.bidAccepted ||
+        type == NotificationType.contractDraftAvailable) {
+      if (agreementId != null) return '/marketplace/agreement/$agreementId';
+      if (offerId != null) return '/marketplace/agreement/$offerId';
+      if (requestId != null) return '/marketplace/agreement/$requestId';
+    }
+
+    // 2. Explicit agreement ID in notification data payload:
+    if (agreementId != null) return '/marketplace/agreement/$agreementId';
+
+    // 3. System feature routes:
     switch (type) {
       case NotificationType.kycApproved:
       case NotificationType.kycRejected:
@@ -75,8 +96,14 @@ class AppNotification extends Equatable {
       case NotificationType.referralRewardRejected:
         return '/referrals';
       default:
-        return null;
+        break;
     }
+
+    // 4. Default resource detail fallback links:
+    if (forexRequestId != null) return '/forex/$forexRequestId';
+    if (requestId != null) return '/marketplace/$requestId';
+
+    return null;
   }
 
   AppNotification copyWith({

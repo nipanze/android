@@ -2144,4 +2144,94 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get institutionTypeCompany => 'شركة';
+
+  @override
+  String get contactDetailsTitle => 'تفاصيل الاتصال';
+
+  @override
+  String get dealAgreementCreated => 'تم إنشاء اتفاقية الصفقة';
+
+  @override
+  String get dealAgreementCreatedSubtitle =>
+      'يمكنك الآن الاتصال بالطرف الآخر للمضي قدمًا في صفقتك.';
+
+  @override
+  String get contactTheOtherParty => 'الاتصال بالطرف الآخر';
+
+  @override
+  String get detailsOnlyVisibleToYou => 'هذه التفاصيل مرئية لك فقط.';
+
+  @override
+  String get contactInfoLocked => 'معلومات الاتصال مغلقة';
+
+  @override
+  String get contactInfoLockedSubtitle =>
+      'قم بإلغاء قفل تفاصيل الاتصال بالطرف الآخر للاتصال به مباشرةً أو إرسال بريد إلكتروني أو عبر واتساب.';
+
+  @override
+  String get oneTimeUnlockFee => 'رسوم إلغاء القفل لمرة واحدة';
+
+  @override
+  String get revealsContactInfoNotice =>
+      'يكشف معلومات الاتصال لهذه الصفقة فقط.';
+
+  @override
+  String get oppositePartyContact => 'جهات اتصال الطرف المقابل';
+
+  @override
+  String successfulDealsCount(int count) {
+    return '$count صفقات ناجحة';
+  }
+
+  @override
+  String reviewsCount(int count) {
+    return '$count تقييمات';
+  }
+
+  @override
+  String get emailAddressLabel => 'عنوان البريد الإلكتروني';
+
+  @override
+  String get whatsappLabel => 'واتساب';
+
+  @override
+  String get callAction => 'اتصال';
+
+  @override
+  String get emailAction => 'بريد إلكتروني';
+
+  @override
+  String get chatAction => 'محادثة';
+
+  @override
+  String get safetyFirstTitle => 'السلامة أولاً';
+
+  @override
+  String get safetyFirstDesc =>
+      'تواصل بمسؤولية. Nipanze منصة غير احتجازية ولا تتوسط أو تضمن أي معاملة.';
+
+  @override
+  String get goToMyDeals => 'الانتقال إلى صفقاتي';
+
+  @override
+  String get backToActivity => 'العودة إلى النشاط';
+
+  @override
+  String get phoneCopiedToClipboard => 'تم نسخ رقم الهاتف إلى الحافظة';
+
+  @override
+  String get emailCopiedToClipboard => 'تم نسخ البريد الإلكتروني إلى الحافظة';
+
+  @override
+  String get whatsappCopiedToClipboard => 'تم نسخ رقم الواتساب إلى الحافظة';
+
+  @override
+  String get notProvided => 'غير متوفر';
+
+  @override
+  String get viewOppositePartyContact => 'عرض جهات اتصال الطرف المقابل';
+
+  @override
+  String get tapToViewContactDetails =>
+      'انقر لعرض تفاصيل الاتصال بالطرف المقابل.\nالشروط النهائية هي حصريًا بين المقترض والمقرض.';
 }

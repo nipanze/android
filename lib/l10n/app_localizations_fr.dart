@@ -2189,4 +2189,99 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get institutionTypeCompany => 'Entreprise';
+
+  @override
+  String get contactDetailsTitle => 'Coordonnées';
+
+  @override
+  String get dealAgreementCreated => 'Accord de transaction créé';
+
+  @override
+  String get dealAgreementCreatedSubtitle =>
+      'Vous pouvez maintenant contacter l\'autre partie pour avancer dans votre transaction.';
+
+  @override
+  String get contactTheOtherParty => 'Contacter l\'autre partie';
+
+  @override
+  String get detailsOnlyVisibleToYou =>
+      'Ces détails ne sont visibles que par vous.';
+
+  @override
+  String get contactInfoLocked => 'Coordonnées verrouillées';
+
+  @override
+  String get contactInfoLockedSubtitle =>
+      'Déverrouillez les coordonnées de la contrepartie pour l\'appeler, lui envoyer un email ou lui écrire sur WhatsApp.';
+
+  @override
+  String get oneTimeUnlockFee => 'Frais de déverrouillage unique';
+
+  @override
+  String get revealsContactInfoNotice =>
+      'Révèle les coordonnées pour cette transaction uniquement.';
+
+  @override
+  String get oppositePartyContact => 'Contact de la contrepartie';
+
+  @override
+  String successfulDealsCount(int count) {
+    return '$count transactions réussies';
+  }
+
+  @override
+  String reviewsCount(int count) {
+    return '$count avis';
+  }
+
+  @override
+  String get emailAddressLabel => 'Adresse email';
+
+  @override
+  String get whatsappLabel => 'WhatsApp';
+
+  @override
+  String get callAction => 'Appeler';
+
+  @override
+  String get emailAction => 'Email';
+
+  @override
+  String get chatAction => 'Discuter';
+
+  @override
+  String get safetyFirstTitle => 'La sécurité avant tout';
+
+  @override
+  String get safetyFirstDesc =>
+      'Communiquez de manière responsable. Nipanze est non-dépositaire et ne médie ni ne garantit aucune transaction.';
+
+  @override
+  String get goToMyDeals => 'Aller à mes transactions';
+
+  @override
+  String get backToActivity => 'Retour à l\'activité';
+
+  @override
+  String get phoneCopiedToClipboard =>
+      'Numéro de téléphone copié dans le presse-papiers';
+
+  @override
+  String get emailCopiedToClipboard =>
+      'Adresse email copiée dans le presse-papiers';
+
+  @override
+  String get whatsappCopiedToClipboard =>
+      'Numéro WhatsApp copié dans le presse-papiers';
+
+  @override
+  String get notProvided => 'Non fourni';
+
+  @override
+  String get viewOppositePartyContact =>
+      'Voir les coordonnées de la contrepartie';
+
+  @override
+  String get tapToViewContactDetails =>
+      'Appuyez pour voir les coordonnées de l\'autre partie.\nLes conditions finales relèvent uniquement de l\'emprunteur et du prêteur.';
 }

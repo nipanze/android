@@ -136,7 +136,7 @@ class LoanListing extends Equatable {
 
   factory LoanListing.fromMap(Map<String, dynamic> map) {
     return LoanListing(
-      requestId: map['request_id'] as String,
+      requestId: (map['request_id'] ?? map['id']) as String,
       title: map['title'] as String? ?? 'Untitled',
       purpose: map['purpose'] as String? ?? '',
       district: map['district'] as String? ?? '',
