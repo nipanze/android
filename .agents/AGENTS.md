@@ -1,90 +1,75 @@
 # Project-Wide Agent Build & Verification Rules
 
-These rules apply to **every feature, screen, process, and database change** made by the agent.
+These rules apply to **every feature, screen, process, and database change** made by the agent within the codebase.
 
-## 1. Language & Currency Verification
+---
 
-* Every screen and process **must reflect the user's current language and currency settings**.
-* Do not assume that adding a translation file is enough.
-* After implementing or modifying a screen, the agent must **verify the actual screen/UI** using the user's selected language. 
-* But for now langages are: English, Swahili, French, Kinyarwanda, and Arabic 
-* Verify that all user-facing content is localized, including:
+## 1. Language, Theme & Currency Verification
 
-  * Page titles
-  * Labels
-  * Buttons
-  * Placeholders
-  * Validation messages
-  * Error messages
-  * Success messages
-  * Empty states
-  * Dialogs/modals
-  * Notifications
-  * Currency symbols and amounts
-  * Date/number formatting where applicable
-* If the user changes their language or currency settings, the affected screen must correctly update to reflect the new settings.
-* For languages requiring RTL, verify that the screen layout correctly supports RTL.
-* **Do not mark a screen or feature as complete until this verification has been performed.**
-* Do not introduce new hardcoded user-facing strings when the project has a localization system.
+* **Localization & RTL**:
+  * Supported languages: **English (`en`)**, **Swahili (`sw`)**, **French (`fr`)**, **Kinyarwanda (`rw`)**, and **Arabic (`ar`)** (with full Right-to-Left / RTL layout support).
+  * Every user-facing screen and notification **must strictly use the localization system** (`AppLocalizations`).
+  * Never introduce hardcoded user-facing strings.
+  * Verify all UI elements across localized text: page titles, labels, action buttons, placeholders, validation messages, empty states, error/success notifications, and dialogs.
 
+* **Theme Adaptivity (Light & Dark Mode)**:
+  * Every screen and custom component must adapt seamlessly to **both Light and Dark themes**.
+  * Use `Theme.of(context)` dynamic tokens (`colorScheme.surface`, `colorScheme.onSurface`, `colorScheme.primary`, etc.) instead of hardcoded hex values or fixed colors.
+  * Ensure card backgrounds, borders, shadows, icons, and text maintain high contrast and visual polish in both theme modes.
 
-## 2. Input Validation & Button States
+* **Currency & Formatting**:
+  * Amounts, symbols, numbers, and dates must honor the user's currency and regional locale settings.
 
-* All required inputs must be validated before an action can be performed.
-* **Disable all relevant action buttons when required inputs are missing or invalid.**
-* Do not rely only on showing an error after the user presses the button.
-* Buttons must clearly reflect the current form state:
+---
 
-  * Required input missing → **Disabled**
-  * Input invalid → **Disabled**
-  * Required input valid → **Enabled**
-  * Submission/loading in progress → **Disabled**
-* Verify these states during testing for every form or input-based process.
+## 2. Navigation, Deep Linking & Workflow Resilience
 
-## 3. README & Build Plan
+* **Route Parameter Fallbacks**:
+  * Deep-link handlers and page parameters must handle ambiguous or alternative identifiers (`agreementId`, `offerId`, `requestId`) gracefully.
+  * Repositories and domain models must attempt fallback resolution (e.g. resolving `agreementId` via `offerId` or `requestId` lookup) before failing.
 
-* Every implemented or modified feature must be documented in the project's **README and/or build plan** where appropriate.
-* Documentation must describe the **actual implemented changes**, not just the planned functionality.
-* Update the documentation before marking the related task complete.
-* Include important implementation details, verification requirements, database changes, and relevant user-facing behavior.
+* **Non-Active Entity Data Handling**:
+  * When listings or requests change status (e.g., `contracted`, `completed`, `cancelled`), view queries (like `v_loan_listings`) may filter them out.
+  * Repositories must fall back to table queries (`loan_requests`, `loan_offers`) when listing detail views return 0 rows.
 
-## 4. Database Patch Rules
+* **Graceful Error Handling**:
+  * Wrap all deep-link navigations and async action flows in `try-catch` blocks.
+  * Display clean, human-readable error messages using `userFacingErrorMessage(e)` via SnackBars or dialogs instead of breaking UI execution.
 
-* **Never modify the existing monolithic `patch.sql` file** for new database changes.
-* Every new database change must use a **new standalone SQL patch file**.
-* This applies to:
+---
 
-  * Schema changes
-  * Tables
-  * Columns
-  * Indexes
-  * Functions
-  * Triggers
-  * RLS policies
-  * Constraints
-  * Database configuration changes
-* Use clear, descriptive, or timestamped filenames, for example:
+## 3. Input Validation & Form Safety
 
-`sql/patch_referral_system_v2.sql`
+* **Button State Management**:
+  * Action buttons must accurately reflect input validation states:
+    * Required input missing or invalid → **Disabled**
+    * Required input valid → **Enabled**
+    * Async submission / loading in progress → **Disabled with loading indicator**
+  * Do not rely solely on post-click error messages.
 
-or
+---
 
-`sql/20260818_add_user_blocking.sql`
+## 4. Database Architecture & SQL Patch Rules
 
-* Each patch must be independently identifiable and contain only the changes relevant to that update.
-* Do not rewrite, merge into, or overwrite previous patches unless explicitly instructed.
+* **Standalone SQL Patch Policy**:
+  * **Never modify existing historical migration files** for new database changes.
+  * Every new database schema change, RLS policy, RPC function, trigger, or table modification must be placed in a **new standalone SQL patch file** with a clear timestamped or descriptive name (e.g., `sql/patch_contact_reveal_permissions.sql` or `sql/20260902_add_user_blocking.sql`).
 
-## 5. Completion Verification
+* **Multi-Party Permission Security**:
+  * Database RPCs and functions for multi-party workflows (such as agreements, contact reveals, and bid acceptances) must validate **all legitimate deal participants** (e.g., both borrower and lender) rather than artificially restricting access to a single party.
 
-Before marking any task as **complete**, the agent must verify:
+---
 
-* [ ] The implemented screen/process reflects the user's language setting.
-* [ ] The implemented screen/process reflects the user's currency setting where applicable.
-* [ ] Required inputs correctly control button enabled/disabled states.
-* [ ] Loading/submission states prevent duplicate actions.
-* [ ] User-facing text uses the localization system.
-* [ ] README/build plan reflects the implemented changes.
-* [ ] Database changes use a new standalone SQL patch.
-* [ ] The implementation has been tested on the actual affected screen/process.
+## 5. Definition of Done & Completion Checklist
 
-**The agent must fix any failed verification before considering the task complete.**
+Before marking any task or feature as **complete**, the agent must verify:
+
+- [ ] **Localization**: Screen/process accurately renders in all target languages (`en`, `sw`, `fr`, `rw`, `ar`) without hardcoded text.
+- [ ] **Theme Adaptivity**: Verified UI appearance in both **Light and Dark modes** using dynamic `Theme.of(context)` tokens.
+- [ ] **Currency & Formatting**: Correctly reflects locale-specific currency symbols and number formats.
+- [ ] **Navigation & Deep Links**: Route handlers and fallback lookups resolve parameters (`agreementId`, `offerId`, `requestId`) without failing.
+- [ ] **Form Validation**: Buttons dynamically update between enabled, disabled, and loading states based on form validity.
+- [ ] **Error Handling**: Async flows catch exceptions and present localized, formatted user error messages.
+- [ ] **Database Integrity**: Database modifications are contained in a new standalone SQL patch and validate multi-party permissions.
+- [ ] **Documentation**: Updated `README.md` and/or build plan documents to reflect implemented changes.
+- [ ] **Code Verification**: `flutter analyze` passes with zero issues and `flutter test` completes successfully.

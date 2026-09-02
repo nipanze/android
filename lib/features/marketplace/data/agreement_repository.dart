@@ -58,15 +58,34 @@ class AgreementRepository {
     }
   }
 
-  /// Borrower unlocks contact details after agreement is locked.
+  /// Borrower or Lender unlocks contact details after agreement is locked.
   /// Returns contact reveal data (both parties' contact info).
   Future<ContactRevealData> unlockContact(String agreementId) async {
     try {
-      final result = await _client.rpc(
-        RpcNames.unlockContact,
-        params: {'p_agreement_id': agreementId},
-      );
-      return ContactRevealData.fromJson(result as Map<String, dynamic>);
+      try {
+        final result = await _client.rpc(
+          RpcNames.unlockContact,
+          params: {'p_agreement_id': agreementId},
+        );
+        return ContactRevealData.fromJson(result as Map<String, dynamic>);
+      } catch (e) {
+        // Fallback: if agreementId was an offerId or requestId, try resolving the real agreement ID
+        Agreement? agreement;
+        try {
+          agreement = await getAgreement(agreementId);
+        } catch (_) {
+          agreement = await getAgreementByOfferId(agreementId);
+          agreement ??= await getAgreementByRequestId(agreementId);
+        }
+        if (agreement != null && agreement.id != agreementId) {
+          final result = await _client.rpc(
+            RpcNames.unlockContact,
+            params: {'p_agreement_id': agreement.id},
+          );
+          return ContactRevealData.fromJson(result as Map<String, dynamic>);
+        }
+        rethrow;
+      }
     } catch (e) {
       throw parseSupabaseError(e);
     }

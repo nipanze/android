@@ -2546,9 +2546,9 @@ BEGIN
     SELECT borrower_id INTO v_borrower_id FROM public.loan_requests WHERE id = v_agreement.request_id;
     v_lender_id := v_offer.lender_id;
 
-    -- Caller validation (must be the borrower)
-    IF p_caller_id != v_borrower_id THEN
-        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the borrower can unlock contact details.'
+    -- Caller validation (must be either borrower or lender)
+    IF p_caller_id != v_borrower_id AND p_caller_id != v_lender_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only deal participants can unlock contact details.'
             USING ERRCODE = 'P0046';
     END IF;
 
@@ -2564,7 +2564,7 @@ BEGIN
     SELECT * INTO v_reveal FROM public.contact_reveals WHERE offer_id = v_agreement.offer_id;
     IF v_reveal IS NULL THEN
         INSERT INTO public.contact_reveals (offer_id, request_id, revealed_by, status, revealed_at)
-        VALUES (v_agreement.offer_id, v_agreement.request_id, v_borrower_id, 'revealed', NOW())
+        VALUES (v_agreement.offer_id, v_agreement.request_id, p_caller_id, 'revealed', NOW())
         RETURNING * INTO v_reveal;
     ELSE
         UPDATE public.contact_reveals

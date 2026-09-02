@@ -158,7 +158,9 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         }
       }
 
-      final contactData = await _agreementRepo.unlockContact(widget.agreementId);
+      final targetAgreementId = _agreement?.id ?? widget.agreementId;
+      final contactData =
+          await _agreementRepo.unlockContact(targetAgreementId);
       if (!mounted) return;
 
       setState(() {
@@ -175,7 +177,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error unlocking contact: $e'),
+          content: Text('Error unlocking contact: ${userFacingErrorMessage(e)}'),
           backgroundColor: AppColors.danger,
         ),
       );
