@@ -312,11 +312,13 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF040A12) : const Color(0xFF0B1726);
-    const textColor = Colors.white;
-    const subtitleColor = Color(0xFF94A3B8);
-    const cardBgColor = Color(0xFF081421);
+    final bgColor = isDark ? const Color(0xFF040A12) : const Color(0xFFF2F6FA);
+    final textColor = isDark ? Colors.white : const Color(0xFF0D1B2A);
+    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF5A6A7A);
+    final cardBgColor = isDark ? const Color(0xFF081421) : Colors.white;
     const accentGreen = Color(0xFF00E676);
+    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.10);
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08);
 
     if (_loading) {
       return Scaffold(
@@ -324,8 +326,10 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         appBar: AppBar(
           backgroundColor: bgColor,
           elevation: 0,
+          title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -345,8 +349,10 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         appBar: AppBar(
           backgroundColor: bgColor,
           elevation: 0,
+          title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -416,8 +422,10 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
+        title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -432,68 +440,64 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── 1. Top Badge: Lender or Borrower ──────────────────────────
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF031E13),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: accentGreen,
-                  width: 1.0,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.person,
-                    color: accentGreen,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    oppositeRoleTitle,
-                    style: const TextStyle(
+            const SizedBox(height: 12),
+
+            // ── Avatar with verified badge overlay ────────────────────────
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF021B10) : const Color(0xFFE6F9EF),
+                    shape: BoxShape.circle,
+                    border: Border.all(
                       color: accentGreen,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      width: 2.0,
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ── 2. Large Avatar Circle ──────────────────────────────────────
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: const Color(0xFF021B10),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: accentGreen,
-                  width: 2.0,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: accentGreen,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
+                  child: Center(
+                    child: Text(
+                      initials,
+                      style: TextStyle(
+                        color: accentGreen,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 32,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                // Verified checkmark badge
+                Positioned(
+                  bottom: 2,
+                  right: 2,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: accentGreen,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: bgColor,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.black,
+                      size: 14,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
 
             // ── 3. Name & Subtitle & Location ──────────────────────────────
             Text(
               name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: textColor,
@@ -514,7 +518,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.location_on,
                   color: subtitleColor,
                   size: 14,
@@ -522,7 +526,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 const SizedBox(width: 4),
                 Text(
                   location,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: subtitleColor,
                   ),
@@ -531,19 +535,19 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             ),
             const SizedBox(height: 20),
 
-            // ── 4. Stats Row Bar (Verified | 4.9 | 12 Matches) ────────────
+            // ── 4. Stats Row Bar (Status | Rating | Matches) ─────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
               decoration: BoxDecoration(
                 color: cardBgColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                border: Border.all(color: borderColor),
               ),
               child: Row(
                 children: [
-                  // Col 1: Verified
-                  const Expanded(
+                  // Col 1: Role status label (Borrower: / Lender:)
+                  Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -552,9 +556,11 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                           color: accentGreen,
                           size: 18,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          'Verified',
+                          // If the current user owns the post (is borrower), the contact is the Lender.
+                          // If the current user is the lender, the contact is the Borrower.
+                          isBorrower ? 'Lender:' : 'Borrower:',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -564,13 +570,13 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       ],
                     ),
                   ),
-                  Container(width: 1, height: 22, color: Colors.white.withValues(alpha: 0.12)),
+                  Container(width: 1, height: 22, color: dividerColor),
                   // Col 2: Rating
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.star_outline_rounded,
                           color: accentGreen,
                           size: 18,
@@ -578,7 +584,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                         const SizedBox(width: 6),
                         Text(
                           '$rating',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: textColor,
@@ -587,13 +593,13 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       ],
                     ),
                   ),
-                  Container(width: 1, height: 22, color: Colors.white.withValues(alpha: 0.12)),
-                  // Col 3: Matches (e.g. 12 Matches)
+                  Container(width: 1, height: 22, color: dividerColor),
+                  // Col 3: Matches
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.work_outline_rounded,
                           color: accentGreen,
                           size: 18,
@@ -601,7 +607,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                         const SizedBox(width: 6),
                         Text(
                           '$completedDeals Matches',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             color: textColor,
@@ -622,7 +628,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 isOppositePartyLender
                     ? 'Reach out to the lender directly'
                     : 'Reach out to the borrower directly',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   color: subtitleColor,
@@ -647,7 +653,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     const SizedBox(height: 12),
                     Text(
                       l10n.contactInfoLocked,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: textColor,
@@ -657,7 +663,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     Text(
                       l10n.contactInfoLockedSubtitle,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 12.5, color: subtitleColor),
+                      style: TextStyle(fontSize: 12.5, color: subtitleColor),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -712,7 +718,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               ),
               const SizedBox(height: 10),
 
-              // ── Action 3: Whatsapp Card ──────────────────────────────
+              // ── Action 3: WhatsApp Card ──────────────────────────────
               _ContactActionCard(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Whatsapp',
@@ -728,7 +734,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF041822),
+                color: isDark ? const Color(0xFF041822) : const Color(0xFFF0FBF5),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: accentGreen.withValues(alpha: 0.35),
@@ -751,9 +757,9 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.',
+                      'Nipanze doesn\'t hold funds or mediate the deal.\nConfirm details before you send anything.',
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.35,
@@ -856,18 +862,20 @@ class _ContactActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     const accentGreen = Color(0xFF00E676);
-    const textColor = Colors.white;
-    const subtitleColor = Color(0xFF94A3B8);
+    final textColor = isDark ? Colors.white : const Color(0xFF0D1B2A);
+    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF5A6A7A);
+    final cardBg = isDark ? const Color(0xFF081421) : Colors.white;
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08);
+    final iconBg = isDark ? const Color(0xFF042015) : const Color(0xFFE6F9EF);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF081421),
+        color: cardBg,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -876,7 +884,7 @@ class _ContactActionCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFF042015),
+              color: iconBg,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -893,7 +901,7 @@ class _ContactActionCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11.5,
                     color: subtitleColor,
                   ),
@@ -901,7 +909,7 @@ class _ContactActionCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: textColor,
@@ -921,7 +929,7 @@ class _ContactActionCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF042015),
+                color: iconBg,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: accentGreen,
