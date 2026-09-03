@@ -2207,7 +2207,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String successfulDealsCount(int count) {
-    return 'Dili $count zilizofanikiwa';
+    return '$count Mechi';
   }
 
   @override
@@ -2242,6 +2242,19 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get backToActivity => 'Rudi Kwenye Shughuli';
+
+  @override
+  String get previewDeal => 'Hakiki Dili';
+
+  @override
+  String get reachOutToLenderDirectly => 'Wasiliana na mkopeshi moja kwa moja';
+
+  @override
+  String get reachOutToBorrowerDirectly => 'Wasiliana na mkopaji moja kwa moja';
+
+  @override
+  String get nipanzeDisclaimerCardText =>
+      'Nipanze haishikilii fedha wala kupatanisha dili.\nThibitisha maelezo kabla ya kutuma chochote.';
 
   @override
   String get phoneCopiedToClipboard => 'Nambari ya simu imenakiliwa';

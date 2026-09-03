@@ -965,7 +965,7 @@
   "oneTimeUnlockFee": "Ada ya kufungua mara moja",
   "revealsContactInfoNotice": "Inaonyesha maelezo ya mawasiliano kwa dili hii pekee.",
   "oppositePartyContact": "Mawasiliano ya Upande Mwingine",
-  "successfulDealsCount": "Dili {count} zilizofanikiwa",
+  "successfulDealsCount": "{count} Mechi",
   "reviewsCount": "Tathmini {count}",
   "phoneNumberLabel": "Nambari ya Simu",
   "emailAddressLabel": "Anwani ya Barua Pepe",
@@ -982,7 +982,11 @@
   "whatsappCopiedToClipboard": "Nambari ya WhatsApp imenakiliwa",
   "notProvided": "Haijatolewa",
   "viewOppositePartyContact": "Tazama Mawasiliano ya Upande Mwingine",
-  "tapToViewContactDetails": "Gusa ili kutazama maelezo ya mawasiliano ya upande mwingine.\nMasharti ya mwisho ni kati ya mkopaji na mkopeshi pekee."
+  "tapToViewContactDetails": "Gusa ili kutazama maelezo ya mawasiliano ya upande mwingine.\nMasharti ya mwisho ni kati ya mkopaji na mkopeshi pekee.",
+  "previewDeal": "Hakiki Dili",
+  "reachOutToLenderDirectly": "Wasiliana na mkopeshi moja kwa moja",
+  "reachOutToBorrowerDirectly": "Wasiliana na mkopaji moja kwa moja",
+  "nipanzeDisclaimerCardText": "Nipanze haishikilii fedha wala kupatanisha dili.\nThibitisha maelezo kabla ya kutuma chochote."
 }
 
 

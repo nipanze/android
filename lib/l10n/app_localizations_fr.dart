@@ -2226,7 +2226,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String successfulDealsCount(int count) {
-    return '$count transactions réussies';
+    return '$count correspondances';
   }
 
   @override
@@ -2261,6 +2261,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get backToActivity => 'Retour à l\'activité';
+
+  @override
+  String get previewDeal => 'Aperçu de la transaction';
+
+  @override
+  String get reachOutToLenderDirectly => 'Contactez le prêteur directement';
+
+  @override
+  String get reachOutToBorrowerDirectly =>
+      'Contactez l\'emprunteur directement';
+
+  @override
+  String get nipanzeDisclaimerCardText =>
+      'Nipanze ne détient pas de fonds et n\'intervient pas dans la transaction.\nConfirmez les détails avant d\'envoyer quoi que ce soit.';
 
   @override
   String get phoneCopiedToClipboard =>

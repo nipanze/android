@@ -4033,7 +4033,7 @@ abstract class AppLocalizations {
   /// No description provided for @successfulDealsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} Successful deals'**
+  /// **'{count} Matches'**
   String successfulDealsCount(int count);
 
   /// No description provided for @reviewsCount.
@@ -4093,8 +4093,32 @@ abstract class AppLocalizations {
   /// No description provided for @backToActivity.
   ///
   /// In en, this message translates to:
-  /// **'Back to Activity'**
+  /// **'Back to activity'**
   String get backToActivity;
+
+  /// No description provided for @previewDeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Deal'**
+  String get previewDeal;
+
+  /// No description provided for @reachOutToLenderDirectly.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach out to the lender directly'**
+  String get reachOutToLenderDirectly;
+
+  /// No description provided for @reachOutToBorrowerDirectly.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach out to the borrower directly'**
+  String get reachOutToBorrowerDirectly;
+
+  /// No description provided for @nipanzeDisclaimerCardText.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.'**
+  String get nipanzeDisclaimerCardText;
 
   /// No description provided for @phoneCopiedToClipboard.
   ///

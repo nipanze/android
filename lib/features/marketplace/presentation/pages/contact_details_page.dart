@@ -312,10 +312,11 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF040A12) : const Color(0xFFF8FAFC);
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark ? Colors.white70 : const Color(0xFF475569);
-    final mutedColor = isDark ? Colors.white54 : const Color(0xFF64748B);
+    final bgColor = isDark ? const Color(0xFF040A12) : const Color(0xFF0B1726);
+    const textColor = Colors.white;
+    const subtitleColor = Color(0xFF94A3B8);
+    const cardBgColor = Color(0xFF081421);
+    const accentGreen = Color(0xFF00E676);
 
     if (_loading) {
       return Scaffold(
@@ -323,9 +324,18 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         appBar: AppBar(
           backgroundColor: bgColor,
           elevation: 0,
-          title: Text(l10n.contactDetailsTitle, style: TextStyle(fontFamily: 'Sora', color: textColor)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/positions');
+              }
+            },
+          ),
         ),
-        body: const Center(child: CircularProgressIndicator(color: Color(0xFF00E676))),
+        body: const Center(child: CircularProgressIndicator(color: accentGreen)),
       );
     }
 
@@ -335,7 +345,16 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         appBar: AppBar(
           backgroundColor: bgColor,
           elevation: 0,
-          title: Text(l10n.contactDetailsTitle, style: TextStyle(fontFamily: 'Sora', color: textColor)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/positions');
+              }
+            },
+          ),
         ),
         body: ErrorState(
           message: _error ?? 'Agreement details not found',
@@ -355,39 +374,42 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
 
     // Filter to ONLY show opposite party's info
     final contactData = _contactData;
+
+    // If current logged in user is borrower, opposite party is Lender.
+    // If current logged in user is lender, opposite party is Borrower.
+    final isOppositePartyLender = isBorrower;
+    final oppositeRoleTitle = isOppositePartyLender ? 'Lender' : 'Borrower';
+
     final name = contactData == null
-        ? (isBorrower ? l10n.lender : l10n.borrower)
-        : (isBorrower ? contactData.lenderName : contactData.borrowerName);
+        ? oppositeRoleTitle
+        : (isOppositePartyLender ? contactData.lenderName : contactData.borrowerName);
 
     final phone = contactData == null
         ? ''
-        : (isBorrower ? contactData.lenderPhone : contactData.borrowerPhone);
+        : (isOppositePartyLender ? contactData.lenderPhone : contactData.borrowerPhone);
 
     final email = contactData == null
         ? ''
-        : (isBorrower ? contactData.lenderEmail : contactData.borrowerEmail);
+        : (isOppositePartyLender ? contactData.lenderEmail : contactData.borrowerEmail);
 
     final location = contactData == null
-        ? 'Uganda'
-        : (isBorrower ? contactData.lenderDistrict : contactData.borrowerDistrict);
+        ? 'Kampala, Uganda'
+        : (isOppositePartyLender ? contactData.lenderDistrict : contactData.borrowerDistrict);
 
     final rating = contactData == null
         ? 4.9
-        : (isBorrower ? contactData.lenderRating : contactData.borrowerRating);
-
-    final reviewCount = contactData == null
-        ? 27
-        : (isBorrower ? contactData.lenderReviewCount : contactData.borrowerReviewCount);
+        : (isOppositePartyLender ? contactData.lenderRating : contactData.borrowerRating);
 
     final completedDeals = contactData == null
         ? 12
-        : (isBorrower ? contactData.lenderCompletedDeals : contactData.borrowerCompletedDeals);
-
-    final isVerified = contactData == null
-        ? true
-        : (isBorrower ? contactData.lenderIsVerified : contactData.borrowerIsVerified);
+        : (isOppositePartyLender ? contactData.lenderCompletedDeals : contactData.borrowerCompletedDeals);
 
     final initials = _getInitials(name);
+
+    // Tag under name e.g. (Bank Agent) or (Lender) / (Borrower)
+    final roleTag = (oppositeRoleTitle == 'Lender' && name.contains('Kasujja'))
+        ? '(Bank Agent)'
+        : '($oppositeRoleTitle)';
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -395,7 +417,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -404,96 +426,185 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             }
           },
         ),
-        title: Text(
-          l10n.contactDetailsTitle,
-          style: TextStyle(
-            fontFamily: 'Sora',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
-        ),
-        centerTitle: true,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(
-              Icons.verified_user_rounded,
-              color: Color(0xFF00E676),
-              size: 22,
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── Banner 1: Deal Agreement Created ───────────────────────
+            // ── 1. Top Badge: Lender or Borrower ──────────────────────────
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF062015) : const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF031E13),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF00E676).withValues(alpha: 0.35)
-                      : const Color(0xFF81C784),
-                  width: 1.2,
+                  color: accentGreen,
+                  width: 1.0,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00E676).withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    spreadRadius: 2,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.person,
+                    color: accentGreen,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    oppositeRoleTitle,
+                    style: const TextStyle(
+                      color: accentGreen,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 16),
+
+            // ── 2. Large Avatar Circle ──────────────────────────────────────
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: const Color(0xFF021B10),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: accentGreen,
+                  width: 2.0,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    color: accentGreen,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // ── 3. Name & Subtitle & Location ──────────────────────────────
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 3),
+            Text(
+              roleTag,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: accentGreen,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  color: subtitleColor,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  location,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: subtitleColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ── 4. Stats Row Bar (Verified | 4.9 | 12 Matches) ────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+              decoration: BoxDecoration(
+                color: cardBgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              ),
               child: Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF00E676).withValues(alpha: 0.15)
-                          : const Color(0xFFC8E6C9),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  // Col 1: Verified
+                  const Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: accentGreen,
+                          size: 18,
+                        ),
+                        SizedBox(width: 6),
                         Text(
-                          l10n.dealAgreementCreated,
+                          'Verified',
                           style: TextStyle(
-                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                            fontSize: 16,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
+                            color: textColor,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                      ],
+                    ),
+                  ),
+                  Container(width: 1, height: 22, color: Colors.white.withValues(alpha: 0.12)),
+                  // Col 2: Rating
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.star_outline_rounded,
+                          color: accentGreen,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
                         Text(
-                          l10n.dealAgreementCreatedSubtitle,
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.8)
-                                : const Color(0xFF1B5E20),
-                            fontSize: 12.5,
-                            height: 1.3,
+                          '$rating',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(width: 1, height: 22, color: Colors.white.withValues(alpha: 0.12)),
+                  // Col 3: Matches (e.g. 12 Matches)
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.work_outline_rounded,
+                          color: accentGreen,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$completedDeals Matches',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
                           ),
                         ),
                       ],
@@ -504,50 +615,39 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             ),
             const SizedBox(height: 24),
 
-            // ── Section Title ──────────────────────────────────────────
-            Row(
-              children: [
-                Icon(Icons.person_rounded, color: subtitleColor, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.contactTheOtherParty,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+            // ── 5. Reach out subtitle & Contact Cards ─────────────────────
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                isOppositePartyLender
+                    ? 'Reach out to the lender directly'
+                    : 'Reach out to the borrower directly',
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: subtitleColor,
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 3),
-            Text(
-              l10n.detailsOnlyVisibleToYou,
-              style: TextStyle(fontSize: 12, color: mutedColor),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // ── Card 2: Opposite Party Contact Details Card ─────────────
             if (contactData == null) ...[
-              // Unlock prompt container if not yet revealed
+              // Locked Prompt Box
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0A131F) : Colors.white,
+                  color: cardBgColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF00E676).withValues(alpha: 0.3)
-                        : const Color(0xFFE2E8F0),
-                  ),
+                  border: Border.all(color: accentGreen.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.lock_rounded, size: 40, color: Color(0xFF00E676)),
+                    const Icon(Icons.lock_rounded, size: 40, color: accentGreen),
                     const SizedBox(height: 12),
                     Text(
                       l10n.contactInfoLocked,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: textColor,
@@ -557,7 +657,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     Text(
                       l10n.contactInfoLockedSubtitle,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12.5, color: subtitleColor),
+                      style: const TextStyle(fontSize: 12.5, color: subtitleColor),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -565,7 +665,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       child: ElevatedButton.icon(
                         onPressed: _unlocking ? null : _unlockContactFlow,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00E676),
+                          backgroundColor: accentGreen,
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -592,290 +692,92 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 ),
               ),
             ] else ...[
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 18),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0A131F) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF00E676).withValues(alpha: 0.4)
-                            : const Color(0xFF81C784),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isDark ? Colors.black54 : Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // User Profile Info
-                        Row(
-                          children: [
-                            Container(
-                              width: 54,
-                              height: 54,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF063021) : const Color(0xFFE8F5E9),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF00E676).withValues(alpha: 0.6)
-                                      : const Color(0xFF4CAF50),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  initials,
-                                  style: TextStyle(
-                                    color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          name,
-                                          style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold,
-                                            color: textColor,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      if (isVerified) ...[
-                                        const SizedBox(width: 6),
-                                        const Icon(
-                                          Icons.verified_rounded,
-                                          color: Color(0xFF2196F3),
-                                          size: 18,
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: mutedColor,
-                                        size: 13,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        location,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: subtitleColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.star_rounded,
-                                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                                            size: 14),
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          '$rating (${l10n.reviewsCount(reviewCount)})',
-                                          style: TextStyle(
-                                              fontSize: 11.5, color: subtitleColor),
-                                        ),
-                                        Text(
-                                          '  |  ',
-                                          style: TextStyle(
-                                              color: mutedColor, fontSize: 12),
-                                        ),
-                                        Icon(
-                                          Icons.verified_user_outlined,
-                                          color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                                          size: 13,
-                                        ),
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          l10n.successfulDealsCount(completedDeals),
-                                          style: TextStyle(
-                                              fontSize: 11.5, color: subtitleColor),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Divider(color: isDark ? Colors.white12 : Colors.black12, height: 1),
-                        const SizedBox(height: 14),
+              // ── Action 1: Phone Card ─────────────────────────────────
+              _ContactActionCard(
+                icon: Icons.phone_outlined,
+                label: 'Phone',
+                value: phone.isEmpty ? l10n.notProvided : phone,
+                actionIcon: Icons.phone,
+                onTap: () => _launchCall(phone, l10n),
+              ),
+              const SizedBox(height: 10),
 
-                        // Action 1: Phone
-                        _ContactActionRow(
-                          icon: Icons.phone_rounded,
-                          label: l10n.phoneNumberLabel,
-                          value: phone.isEmpty ? l10n.notProvided : phone,
-                          actionLabel: l10n.callAction,
-                          actionIcon: Icons.phone_forwarded_rounded,
-                          onTap: () => _launchCall(phone, l10n),
-                        ),
-                        const SizedBox(height: 12),
+              // ── Action 2: Email Card ─────────────────────────────────
+              _ContactActionCard(
+                icon: Icons.mail_outline_rounded,
+                label: 'Email',
+                value: email.isEmpty ? l10n.notProvided : email,
+                actionIcon: Icons.mail_rounded,
+                onTap: () => _launchEmail(email, l10n),
+              ),
+              const SizedBox(height: 10),
 
-                        // Action 2: Email
-                        _ContactActionRow(
-                          icon: Icons.email_rounded,
-                          label: l10n.emailAddressLabel,
-                          value: email.isEmpty ? l10n.notProvided : email,
-                          actionLabel: l10n.emailAction,
-                          actionIcon: Icons.mail_outline_rounded,
-                          onTap: () => _launchEmail(email, l10n),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Action 3: WhatsApp
-                        _ContactActionRow(
-                          icon: Icons.chat_rounded,
-                          label: l10n.whatsappLabel,
-                          value: phone.isEmpty ? l10n.notProvided : phone,
-                          actionLabel: l10n.chatAction,
-                          actionIcon: Icons.chat_bubble_outline_rounded,
-                          onTap: () => _launchWhatsApp(phone, l10n),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Floating Top Pill Badge
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF081C13) : const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF4CAF50),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.shield_outlined,
-                              color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                              size: 13,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.oppositePartyContact,
-                              style: TextStyle(
-                                color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              // ── Action 3: Whatsapp Card ──────────────────────────────
+              _ContactActionCard(
+                icon: Icons.chat_bubble_outline_rounded,
+                label: 'Whatsapp',
+                value: phone.isEmpty ? l10n.notProvided : phone,
+                actionIcon: Icons.chat_rounded,
+                onTap: () => _launchWhatsApp(phone, l10n),
               ),
             ],
+            const SizedBox(height: 14),
 
-            const SizedBox(height: 24),
-
-            // ── Card 3: Safety First ───────────────────────────────────
+            // ── 6. Disclaimer Card ─────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0C1D36) : const Color(0xFFF0F9FF),
-                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFF041822),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF1E3A5F) : const Color(0xFFBAE6FD),
+                  color: accentGreen.withValues(alpha: 0.35),
+                  width: 1.0,
                 ),
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.shield_rounded,
-                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                    size: 22,
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: accentGreen.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.shield_outlined,
+                      color: accentGreen,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.safetyFirstTitle,
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.safetyFirstDesc,
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF0369A1),
-                            fontSize: 12,
-                            height: 1.38,
-                          ),
-                        ),
-                      ],
+                  const Expanded(
+                    child: Text(
+                      'Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: subtitleColor,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
-            // ── Bottom Buttons ─────────────────────────────────────────
+            // ── 7. Bottom Buttons ──────────────────────────────────────────
             Container(
               width: double.infinity,
-              height: 52,
+              height: 50,
               decoration: BoxDecoration(
+                color: accentGreen,
                 borderRadius: BorderRadius.circular(14),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0066FF), Color(0xFF0052D4)],
-                ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF0066FF).withValues(alpha: 0.35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
+                    color: accentGreen.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -887,42 +789,46 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () => context.go('/positions'),
-                child: Row(
+                onPressed: () {
+                  if (_agreement != null) {
+                    context.push('/marketplace/agreement/${_agreement!.id}');
+                  } else {
+                    context.go('/positions');
+                  }
+                },
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      l10n.goToMyDeals,
-                      style: const TextStyle(
+                      'Preview Deal',
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        size: 16, color: Colors.white),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.black),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Center(
-              child: TextButton(
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/positions');
-                  }
-                },
-                child: Text(
-                  l10n.backToActivity,
-                  style: TextStyle(
-                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+
+            TextButton(
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/positions');
+                }
+              },
+              child: const Text(
+                'Back to activity',
+                style: TextStyle(
+                  color: accentGreen,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -933,12 +839,11 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
   }
 }
 
-class _ContactActionRow extends StatelessWidget {
-  const _ContactActionRow({
+class _ContactActionCard extends StatelessWidget {
+  const _ContactActionCard({
     required this.icon,
     required this.label,
     required this.value,
-    required this.actionLabel,
     required this.actionIcon,
     required this.onTap,
   });
@@ -946,60 +851,58 @@ class _ContactActionRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final String actionLabel;
   final IconData actionIcon;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final mutedColor = isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
+    const accentGreen = Color(0xFF00E676);
+    const textColor = Colors.white;
+    const subtitleColor = Color(0xFF94A3B8);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF06141F) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF081421),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
         children: [
+          // Left Icon Box
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF00E676).withValues(alpha: 0.12)
-                  : const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF042015),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
-              color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-              size: 18,
+              color: accentGreen,
+              size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
+          // Middle Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: mutedColor,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: subtitleColor,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: const TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: textColor,
                   ),
@@ -1009,40 +912,28 @@ class _ContactActionRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
+          // Right Circular Action Button
           InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(20),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF00E676).withValues(alpha: 0.15)
-                    : const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFF042015),
+                shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF00E676).withValues(alpha: 0.4)
-                      : const Color(0xFF81C784),
+                  color: accentGreen,
+                  width: 1.2,
                 ),
               ),
-              child: Row(
-                children: [
-                  Text(
-                    actionLabel,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    actionIcon,
-                    color: isDark ? const Color(0xFF00E676) : const Color(0xFF2E7D32),
-                    size: 14,
-                  ),
-                ],
+              child: Center(
+                child: Icon(
+                  actionIcon,
+                  color: accentGreen,
+                  size: 18,
+                ),
               ),
             ),
           ),

@@ -943,7 +943,7 @@
   "oneTimeUnlockFee": "Frais de déverrouillage unique",
   "revealsContactInfoNotice": "Révèle les coordonnées pour cette transaction uniquement.",
   "oppositePartyContact": "Contact de la contrepartie",
-  "successfulDealsCount": "{count} transactions réussies",
+  "successfulDealsCount": "{count} correspondances",
   "reviewsCount": "{count} avis",
   "phoneNumberLabel": "Numéro de téléphone",
   "emailAddressLabel": "Adresse email",
@@ -960,7 +960,11 @@
   "whatsappCopiedToClipboard": "Numéro WhatsApp copié dans le presse-papiers",
   "notProvided": "Non fourni",
   "viewOppositePartyContact": "Voir les coordonnées de la contrepartie",
-  "tapToViewContactDetails": "Appuyez pour voir les coordonnées de l'autre partie.\nLes conditions finales relèvent uniquement de l'emprunteur et du prêteur."
+  "tapToViewContactDetails": "Appuyez pour voir les coordonnées de l'autre partie.\nLes conditions finales relèvent uniquement de l'emprunteur et du prêteur.",
+  "previewDeal": "Aperçu de la transaction",
+  "reachOutToLenderDirectly": "Contactez le prêteur directement",
+  "reachOutToBorrowerDirectly": "Contactez l'emprunteur directement",
+  "nipanzeDisclaimerCardText": "Nipanze ne détient pas de fonds et n'intervient pas dans la transaction.\nConfirmez les détails avant d'envoyer quoi que ce soit."
 }
 
 

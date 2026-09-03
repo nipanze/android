@@ -965,7 +965,7 @@
   "oneTimeUnlockFee": "One-time unlock fee",
   "revealsContactInfoNotice": "Reveals contact info for this deal only.",
   "oppositePartyContact": "Opposite Party Contact",
-  "successfulDealsCount": "{count} Successful deals",
+  "successfulDealsCount": "{count} Matches",
   "@successfulDealsCount": {
     "placeholders": {
       "count": { "type": "int" }
@@ -986,7 +986,11 @@
   "safetyFirstTitle": "Safety First",
   "safetyFirstDesc": "Communicate responsibly. Nipanze is non-custodial and does not mediate or guarantee any transaction.",
   "goToMyDeals": "Go to My Deals",
-  "backToActivity": "Back to Activity",
+  "backToActivity": "Back to activity",
+  "previewDeal": "Preview Deal",
+  "reachOutToLenderDirectly": "Reach out to the lender directly",
+  "reachOutToBorrowerDirectly": "Reach out to the borrower directly",
+  "nipanzeDisclaimerCardText": "Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.",
   "phoneCopiedToClipboard": "Phone number copied to clipboard",
   "emailCopiedToClipboard": "Email address copied to clipboard",
   "whatsappCopiedToClipboard": "WhatsApp number copied to clipboard",

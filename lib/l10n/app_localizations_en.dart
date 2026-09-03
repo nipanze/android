@@ -2194,7 +2194,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String successfulDealsCount(int count) {
-    return '$count Successful deals';
+    return '$count Matches';
   }
 
   @override
@@ -2228,7 +2228,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToMyDeals => 'Go to My Deals';
 
   @override
-  String get backToActivity => 'Back to Activity';
+  String get backToActivity => 'Back to activity';
+
+  @override
+  String get previewDeal => 'Preview Deal';
+
+  @override
+  String get reachOutToLenderDirectly => 'Reach out to the lender directly';
+
+  @override
+  String get reachOutToBorrowerDirectly => 'Reach out to the borrower directly';
+
+  @override
+  String get nipanzeDisclaimerCardText =>
+      'Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.';
 
   @override
   String get phoneCopiedToClipboard => 'Phone number copied to clipboard';

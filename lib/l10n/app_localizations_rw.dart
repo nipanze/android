@@ -2205,7 +2205,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String successfulDealsCount(int count) {
-    return 'Ubwikorezi $count bwatsinze';
+    return '$count Guhuza';
   }
 
   @override
@@ -2240,6 +2240,19 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get backToActivity => 'Subira mu Bikorwa';
+
+  @override
+  String get previewDeal => 'Reba Ubwikorezi';
+
+  @override
+  String get reachOutToLenderDirectly => 'Vugana n\'umuguriza imbona nkubone';
+
+  @override
+  String get reachOutToBorrowerDirectly => 'Vugana n\'umusabi imbona nkubone';
+
+  @override
+  String get nipanzeDisclaimerCardText =>
+      'Nipanze ntiyabika amafaranga cyangwa ngo ikemure amasezerano.\nBanza wemeze amakuru mbere yo kohereza icyo ari cyo cyose.';
 
   @override
   String get phoneCopiedToClipboard => 'Numero ya telefone yakopiwe';

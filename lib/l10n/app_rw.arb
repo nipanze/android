@@ -941,7 +941,7 @@
   "oneTimeUnlockFee": "Ikiguzi cyo gufungura inshuro imwe",
   "revealsContactInfoNotice": "Yerekana amakuru yo guhamagara kuri ubu bwikorezi bwonyine.",
   "oppositePartyContact": "Amakuru y'Undi Munyabyarwa",
-  "successfulDealsCount": "Ubwikorezi {count} bwatsinze",
+  "successfulDealsCount": "{count} Guhuza",
   "reviewsCount": "Ibitekerezo {count}",
   "phoneNumberLabel": "Numero ya Telefone",
   "emailAddressLabel": "Aderesi ya Imeli",
@@ -958,7 +958,11 @@
   "whatsappCopiedToClipboard": "Numero ya WhatsApp yakopiwe",
   "notProvided": "Ntabwo byatanzwe",
   "viewOppositePartyContact": "Reba Amakuru y'Undi Munyabyarwa",
-  "tapToViewContactDetails": "Kanda urebere amakuru yo guhamagara y'undi munyabyarwa.\nAmasezerano ya nyuma ari hagati y'umuguzi n'umuguzanya pe."
+  "tapToViewContactDetails": "Kanda urebere amakuru yo guhamagara y'undi munyabyarwa.\nAmasezerano ya nyuma ari hagati y'umuguzi n'umuguzanya pe.",
+  "previewDeal": "Reba Ubwikorezi",
+  "reachOutToLenderDirectly": "Vugana n'umuguriza imbona nkubone",
+  "reachOutToBorrowerDirectly": "Vugana n'umusabi imbona nkubone",
+  "nipanzeDisclaimerCardText": "Nipanze ntiyabika amafaranga cyangwa ngo ikemure amasezerano.\nBanza wemeze amakuru mbere yo kohereza icyo ari cyo cyose."
 }
 
 
