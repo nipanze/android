@@ -58,35 +58,6 @@ class _PositionsViewState extends State<_PositionsView>
     return Scaffold(
       body: SafeArea(
         child: Column(children: [
-          // ── Header ──────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(AppLocalizations.of(context)!.myActivityTitle,
-                    style: Theme.of(context).textTheme.headlineMedium),
-                BlocBuilder<PositionsCubit, PositionsState>(
-                  builder: (context, state) {
-                    if (state is! PositionsLoaded) {
-                      return Text(AppLocalizations.of(context)!.myActivitySubtitle,
-                          style: Theme.of(context).textTheme.bodySmall);
-                    }
-                    final activity = state.activity;
-                    final activeOffers = state.offers
-                        .where((o) => o.status == OfferStatus.pending)
-                        .length;
-                    return Text(
-                      AppLocalizations.of(context)!.myActivityStats(
-                        activity?['active_listings'] ?? 0,
-                        activeOffers,
-                      ),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    );
-                  },
-                ),
-              ]),
-            ]),
-          ),
 
           // ── Tab bar ─────────────────────────────────────────────────
           TabBar(

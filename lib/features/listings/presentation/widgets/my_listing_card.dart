@@ -222,12 +222,6 @@ class MyListingCard extends StatelessWidget {
   }
 
   Color _borderColor(BuildContext context) {
-    if (listing.isActive && listing.numberOfOffers > 0) {
-      return AppColors.accent.withValues(alpha: 0.5);
-    }
-    if (listing.isContracted) {
-      return AppColors.success.withValues(alpha: 0.5);
-    }
     return Theme.of(context).dividerColor;
   }
 }

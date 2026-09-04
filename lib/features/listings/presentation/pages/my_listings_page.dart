@@ -98,12 +98,29 @@ class _ListingsBody extends StatelessWidget {
   final List<MyListing> listings;
   final List<ForexListingModel> forexRequests;
 
-  List<MyListing> get _active => listings.where((l) => l.isActive).toList();
+  List<MyListing> get _active {
+    final list = listings.where((l) => l.isActive).toList();
+    list.sort((a, b) {
+      final offersComp = b.numberOfOffers.compareTo(a.numberOfOffers);
+      if (offersComp != 0) return offersComp;
+      return b.listedAt.compareTo(a.listedAt);
+    });
+    return list;
+  }
+
   List<MyListing> get _closed =>
       listings.where((l) => l.isExpired && !l.isCancelled).toList();
 
-  List<ForexListingModel> get _activeForex =>
-      forexRequests.where((f) => f.status == 'active').toList();
+  List<ForexListingModel> get _activeForex {
+    final list = forexRequests.where((f) => f.status == 'active').toList();
+    list.sort((a, b) {
+      final offersComp = b.numberOfOffers.compareTo(a.numberOfOffers);
+      if (offersComp != 0) return offersComp;
+      return b.listedAt.compareTo(a.listedAt);
+    });
+    return list;
+  }
+
   List<ForexListingModel> get _closedForex => forexRequests
       .where((f) =>
           f.status != 'active' &&
@@ -116,60 +133,27 @@ class _ListingsBody extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => context.read<MyListingsCubit>().refresh(),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 20),
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
         children: [
-          // ── Active Loan Requests ────────────────────────────────────
-          if (_active.isNotEmpty) ...[
-            SectionHeader(
-                AppLocalizations.of(context)!.sectionActive(_active.length)),
-            ..._active.map((l) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: MyListingCard(
-                    listing: l,
-                    onTap: () => context.push('/marketplace/${l.id}'),
-                    onCancel: () => _confirmCancel(context, l),
-                  ),
-                )),
-          ],
           // ── Active Forex Requests ────────────────────────────────────
           if (_activeForex.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4),
-              child: Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.currency_exchange_rounded,
-                            size: 13, color: AppColors.accent),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Active Forex · ${_activeForex.length}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
             ..._activeForex.map((f) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _ForexRequestCard(
                     request: f,
                     onTap: () => context.push('/forex/${f.requestId}'),
                     onCancel: () => _confirmCancelForex(context, f),
+                  ),
+                )),
+          ],
+          // ── Active Loan Requests ────────────────────────────────────
+          if (_active.isNotEmpty) ...[
+            ..._active.map((l) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: MyListingCard(
+                    listing: l,
+                    onTap: () => context.push('/marketplace/${l.id}'),
+                    onCancel: () => _confirmCancel(context, l),
                   ),
                 )),
           ],
@@ -366,16 +350,20 @@ class _ForexRequestCard extends StatelessWidget {
   String _fmtAmount(int amount) => NumberFormat('#,###').format(amount);
 
   String _timeLabel() {
-    if (request.status != 'active' || request.isExpired) return request.status;
+    if (request.status != 'active' || request.isExpired) return '';
 
     final timeLeft = request.timeRemaining;
+    if (timeLeft.isNegative) return '';
     if (timeLeft.inDays > 0) {
       return '${timeLeft.inDays}d ${timeLeft.inHours % 24}h left';
     }
     if (timeLeft.inHours > 0) {
       return '${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m left';
     }
-    return '${timeLeft.inMinutes}m left';
+    if (timeLeft.inMinutes > 0) {
+      return '${timeLeft.inMinutes}m left';
+    }
+    return '';
   }
 
   @override
@@ -394,13 +382,7 @@ class _ForexRequestCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
-        side: BorderSide(
-          color: request.status == 'active'
-              ? AppColors.purple.withOpacity(
-                  request.numberOfOffers > 0 ? 0.5 : 0.3,
-                )
-              : theme.dividerColor,
-        ),
+        side: BorderSide(color: theme.dividerColor),
       ),
       child: InkWell(
         onTap: onTap,
@@ -436,8 +418,9 @@ class _ForexRequestCard extends StatelessWidget {
                           children: [
                             Text(
                               '${request.currencyHeld} → ${request.currencyNeeded}',
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             if (metadata.isNotEmpty)
@@ -445,10 +428,7 @@ class _ForexRequestCard extends StatelessWidget {
                                 metadata,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.55),
-                                ),
+                                style: theme.textTheme.bodySmall,
                               ),
                           ],
                         ),
@@ -497,12 +477,10 @@ class _ForexRequestCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  Text(
-                    '${request.currencyHeld} ${_fmtAmount(request.amount)}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.purple,
-                    ),
+                  CurrencyAmount(
+                    request.amount,
+                    currency: request.currencyHeld,
+                    fontSize: 19,
                   ),
 
                   const SizedBox(height: 10),
@@ -528,21 +506,22 @@ class _ForexRequestCard extends StatelessWidget {
                       ),
                       Expanded(
                         child: _ForexRequestMetric(
-                          icon: Icons.swap_horiz_rounded,
-                          value: request.settlementPreference.isEmpty
-                              ? 'Forex request'
-                              : request.settlementPreference,
+                          icon: Icons.payments_outlined,
+                          value: request.receiveEstimate > 0
+                              ? 'Est. ${request.currencyNeeded} ${_fmtAmount(request.receiveEstimate)}'
+                              : 'Open rate',
                         ),
                       ),
-                      Expanded(
-                        child: _ForexRequestMetric(
-                          icon: Icons.schedule_outlined,
-                          value: _timeLabel(),
-                          color: request.isClosingSoon24h
-                              ? AppColors.danger
-                              : null,
+                      if (_timeLabel().isNotEmpty)
+                        Expanded(
+                          child: _ForexRequestMetric(
+                            icon: Icons.schedule_outlined,
+                            value: _timeLabel(),
+                            color: request.isClosingSoon24h
+                                ? AppColors.danger
+                                : null,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ],
