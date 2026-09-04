@@ -118,7 +118,7 @@ class _ProposedDealPageState extends State<ProposedDealPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/positions');
+              context.go('/activity');
             }
           },
         ),

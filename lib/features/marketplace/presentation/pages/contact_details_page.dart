@@ -330,7 +330,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go('/positions');
+                context.go('/activity');
               }
             },
           ),
@@ -349,7 +349,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go('/positions');
+                context.go('/activity');
               }
             },
           ),
@@ -418,7 +418,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/positions');
+              context.go('/activity');
             }
           },
         ),
@@ -787,7 +787,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                   if (_agreement != null) {
                     context.push('/marketplace/agreement/${_agreement!.id}');
                   } else {
-                    context.go('/positions');
+                    context.go('/activity');
                   }
                 },
                 child: const Row(
@@ -814,7 +814,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/positions');
+                  context.go('/activity');
                 }
               },
               child: const Text(

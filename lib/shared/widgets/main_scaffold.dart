@@ -34,7 +34,7 @@ class MainScaffold extends StatelessWidget {
     _TabItem(
         label: 'Activity',
         icon: Icons.receipt_long_outlined,
-        route: AppRoutes.positions),
+        route: AppRoutes.activity),
     _TabItem(
         label: 'Account',
         icon: Icons.person_outline_rounded,

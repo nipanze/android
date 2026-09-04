@@ -154,7 +154,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
           lenderEmail: contactData.lenderEmail,
           onClose: () {
             Navigator.pop(ctx);
-            context.go('/positions');
+            context.go('/activity');
           },
         ),
       );
@@ -399,7 +399,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/positions');
+              context.go('/activity');
             }
           },
         ),

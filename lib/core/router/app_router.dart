@@ -47,7 +47,8 @@ class AppRoutes {
   static const String contactDetails = '/marketplace/contact-details/:agreementId';
   static const String dealUnlock = '/marketplace/deal-unlock/:agreementId';
   static const String watchlist = '/watchlist';
-  static const String positions = '/positions';
+  static const String activity = '/activity';
+  static const String positions = '/activity';
   static const String myListings = '/listings/my-listings';
   static const String listingCreate =
       '/listings/create'; // ← top-level, not nested
@@ -163,9 +164,13 @@ class AppRouter {
             pageBuilder: (_, state) => _fade(state, const MyListingsPage()),
           ),
           GoRoute(
-            path: AppRoutes.positions,
-            name: 'positions',
+            path: AppRoutes.activity,
+            name: 'activity',
             pageBuilder: (_, state) => _fade(state, const PositionsPage()),
+          ),
+          GoRoute(
+            path: '/positions',
+            redirect: (_, __) => AppRoutes.activity,
           ),
           GoRoute(
             path: AppRoutes.account,
