@@ -1,38 +1,37 @@
-// lib/features/positions/presentation/cubit/positions_state.dart
-part of 'positions_cubit.dart';
+// lib/features/activity/presentation/cubit/activity_state.dart
+part of 'activity_cubit.dart';
 
-abstract class PositionsState extends Equatable {
-  const PositionsState();
+abstract class ActivityState extends Equatable {
+  const ActivityState();
   @override
   List<Object?> get props => [];
 }
 
-class PositionsInitial extends PositionsState {
-  const PositionsInitial();
+class ActivityInitial extends ActivityState {
+  const ActivityInitial();
 }
 
-class PositionsLoading extends PositionsState {
-  const PositionsLoading();
+class ActivityLoading extends ActivityState {
+  const ActivityLoading();
 }
 
-class PositionsLoaded extends PositionsState {
-  const PositionsLoaded({
+class ActivityLoaded extends ActivityState {
+  const ActivityLoaded({
     required this.offers,
     this.activity,
     this.deals = const [],
   });
 
-  // Offers match the unified marketplace terminology in v4.0.
   final List<LenderOffer> offers;
   final Map<String, dynamic>? activity;
   final List<dynamic> deals;
 
-  PositionsLoaded copyWith({
+  ActivityLoaded copyWith({
     List<LenderOffer>? offers,
     Map<String, dynamic>? activity,
     List<dynamic>? deals,
   }) =>
-      PositionsLoaded(
+      ActivityLoaded(
         offers: offers ?? this.offers,
         activity: activity ?? this.activity,
         deals: deals ?? this.deals,
@@ -42,8 +41,8 @@ class PositionsLoaded extends PositionsState {
   List<Object?> get props => [offers, activity, deals];
 }
 
-class PositionsError extends PositionsState {
-  const PositionsError(this.message);
+class ActivityError extends ActivityState {
+  const ActivityError(this.message);
   final String message;
   @override
   List<Object?> get props => [message];

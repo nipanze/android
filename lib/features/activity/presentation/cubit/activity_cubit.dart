@@ -1,4 +1,4 @@
-// lib/features/positions/presentation/cubit/positions_cubit.dart
+// lib/features/activity/presentation/cubit/activity_cubit.dart
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
@@ -6,20 +6,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../data/positions_repository.dart';
+import '../../data/activity_repository.dart';
 import '../../domain/models/lender_offer.dart';
 
-part 'positions_state.dart';
+part 'activity_state.dart';
 
 @injectable
-class PositionsCubit extends Cubit<PositionsState> {
-  PositionsCubit(this._repository) : super(const PositionsInitial());
+class ActivityCubit extends Cubit<ActivityState> {
+  ActivityCubit(this._repository) : super(const ActivityInitial());
 
-  final PositionsRepository _repository;
+  final ActivityRepository _repository;
   StreamSubscription<List<LenderOffer>>? _offersSub;
 
   Future<void> load() async {
-    emit(const PositionsLoading());
+    emit(const ActivityLoading());
     try {
       final results = await Future.wait([
         _repository.getMyOffers(),
@@ -27,7 +27,7 @@ class PositionsCubit extends Cubit<PositionsState> {
         _repository.getMyDeals(),
       ]);
 
-      emit(PositionsLoaded(
+      emit(ActivityLoaded(
         offers: results[0] as List<LenderOffer>,
         activity: results[1] as Map<String, dynamic>?,
         deals: results[2] as List<dynamic>,
@@ -35,7 +35,7 @@ class PositionsCubit extends Cubit<PositionsState> {
 
       _subscribeOffersRealtime();
     } catch (e) {
-      emit(PositionsError(userFacingErrorMessage(e)));
+      emit(ActivityError(userFacingErrorMessage(e)));
     }
   }
 
@@ -43,8 +43,8 @@ class PositionsCubit extends Cubit<PositionsState> {
     _offersSub?.cancel();
     _offersSub = _repository.watchMyOffers().listen(
       (offers) {
-        if (!isClosed && state is PositionsLoaded) {
-          final current = state as PositionsLoaded;
+        if (!isClosed && state is ActivityLoaded) {
+          final current = state as ActivityLoaded;
           emit(current.copyWith(offers: offers));
         }
       },
@@ -53,8 +53,8 @@ class PositionsCubit extends Cubit<PositionsState> {
   }
 
   Future<void> withdrawOffer(String offerId) async {
-    if (state is! PositionsLoaded) return;
-    final current = state as PositionsLoaded;
+    if (state is! ActivityLoaded) return;
+    final current = state as ActivityLoaded;
 
     // Optimistic local update
     final updated = current.offers
@@ -68,7 +68,7 @@ class PositionsCubit extends Cubit<PositionsState> {
       await _repository.withdrawOffer(offerId);
     } catch (e) {
       emit(current); // rollback
-      emit(PositionsError(userFacingErrorMessage(e)));
+      emit(ActivityError(userFacingErrorMessage(e)));
     }
   }
 

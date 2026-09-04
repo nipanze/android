@@ -1,4 +1,4 @@
-// lib/features/positions/data/positions_repository.dart
+// lib/features/activity/data/activity_repository.dart
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,8 +7,8 @@ import '../../../../core/errors/app_exception.dart';
 import '../domain/models/lender_offer.dart';
 
 @lazySingleton
-class PositionsRepository {
-  PositionsRepository(this._client);
+class ActivityRepository {
+  ActivityRepository(this._client);
 
   final SupabaseClient _client;
 

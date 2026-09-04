@@ -24,7 +24,7 @@ import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/marketplace/presentation/pages/proposed_deal_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
-import '../../features/positions/presentation/pages/positions_page.dart';
+import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
 import '../../features/referrals/presentation/pages/referrals_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
@@ -166,7 +166,7 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.activity,
             name: 'activity',
-            pageBuilder: (_, state) => _fade(state, const PositionsPage()),
+            pageBuilder: (_, state) => _fade(state, const ActivityPage()),
           ),
           GoRoute(
             path: '/positions',
