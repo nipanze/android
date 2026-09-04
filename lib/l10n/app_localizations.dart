@@ -689,7 +689,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewContract.
   ///
   /// In en, this message translates to:
-  /// **'View contract'**
+  /// **'View Deal'**
   String get viewContract;
 
   /// No description provided for @viewListing.

@@ -331,7 +331,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewOffers => 'View offers';
 
   @override
-  String get viewContract => 'View contract';
+  String get viewContract => 'View Deal';
 
   @override
   String get viewListing => 'View listing';

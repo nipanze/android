@@ -312,24 +312,20 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF040A12) : const Color(0xFFF2F6FA);
-    final textColor = isDark ? Colors.white : const Color(0xFF0D1B2A);
-    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF5A6A7A);
-    final cardBgColor = isDark ? const Color(0xFF081421) : Colors.white;
-    const accentGreen = Color(0xFF00E676);
-    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.10);
-    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08);
+    final bgColor = theme.scaffoldBackgroundColor;
+    final textColor = isDark ? AppColors.textDark : AppColors.textLight;
+    final subtitleColor = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final cardBgColor = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+    const accentGreen = AppColors.success;
+    final dividerColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
+    final borderColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
 
     if (_loading) {
       return Scaffold(
-        backgroundColor: bgColor,
         appBar: AppBar(
-          backgroundColor: bgColor,
-          elevation: 0,
-          title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
-          centerTitle: true,
+          title: const Text('Contact Details'),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -339,20 +335,16 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             },
           ),
         ),
-        body: const Center(child: CircularProgressIndicator(color: accentGreen)),
+        body: Center(child: CircularProgressIndicator(color: accentGreen)),
       );
     }
 
     if (_error != null || _agreement == null) {
       return Scaffold(
-        backgroundColor: bgColor,
         appBar: AppBar(
-          backgroundColor: bgColor,
-          elevation: 0,
-          title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
-          centerTitle: true,
+          title: const Text('Contact Details'),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -418,14 +410,10 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         : '($oppositeRoleTitle)';
 
     return Scaffold(
-      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: bgColor,
-        elevation: 0,
-        title: Text('Contact Details', style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 17)),
-        centerTitle: true,
+        title: const Text('Contact Details'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: textColor),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -507,7 +495,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             const SizedBox(height: 3),
             Text(
               roleTag,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: accentGreen,
@@ -552,7 +540,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.verified_user_outlined,
+                          Icons.person_outline_rounded,
                           color: accentGreen,
                           size: 18,
                         ),
@@ -560,7 +548,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                         Text(
                           // If the current user owns the post (is borrower), the contact is the Lender.
                           // If the current user is the lender, the contact is the Borrower.
-                          isBorrower ? 'Lender:' : 'Borrower:',
+                          isBorrower ? 'Lender' : 'Borrower',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -649,7 +637,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.lock_rounded, size: 40, color: accentGreen),
+                    Icon(Icons.lock_rounded, size: 40, color: accentGreen),
                     const SizedBox(height: 12),
                     Text(
                       l10n.contactInfoLocked,
@@ -750,7 +738,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       color: accentGreen.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.shield_outlined,
                       color: accentGreen,
                       size: 20,
@@ -829,7 +817,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                   context.go('/positions');
                 }
               },
-              child: const Text(
+              child: Text(
                 'Back to activity',
                 style: TextStyle(
                   color: accentGreen,
@@ -863,12 +851,12 @@ class _ContactActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const accentGreen = Color(0xFF00E676);
-    final textColor = isDark ? Colors.white : const Color(0xFF0D1B2A);
-    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF5A6A7A);
-    final cardBg = isDark ? const Color(0xFF081421) : Colors.white;
-    final borderColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08);
-    final iconBg = isDark ? const Color(0xFF042015) : const Color(0xFFE6F9EF);
+    const accentGreen = AppColors.success;
+    final textColor = isDark ? AppColors.textDark : AppColors.textLight;
+    final subtitleColor = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final cardBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+    final borderColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
+    final iconBg = isDark ? AppColors.success.withValues(alpha: 0.15) : AppColors.success.withValues(alpha: 0.1);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

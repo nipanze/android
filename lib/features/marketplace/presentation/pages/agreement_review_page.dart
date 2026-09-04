@@ -224,20 +224,31 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
               ),
               const SizedBox(height: 12),
 
-              // ── Agreement text ─────────────────────────────────────────
-              _SectionCard(
-                icon: Icons.description_outlined,
-                iconColor: AppColors.text2Light,
-                title: 'Full Agreement Text',
-                child: Text(
-                  a.agreementText,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(height: 1.55),
+              // ── Preview Deal CTA Card ────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      context.push('/marketplace/proposed-deal/${a.id}'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
+                    ),
+                  ),
+                  icon: const Icon(Icons.description_outlined, size: 18),
+                  label: const Text(
+                    'Preview Deal',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // ── CTA / Contact Details Link ─────────────────────────
               if (a.isFullyLocked) ...[

@@ -223,7 +223,7 @@ class MyListingCard extends StatelessWidget {
                     side: const BorderSide(color: AppColors.success),
                     textStyle: const TextStyle(fontSize: 11),
                   ),
-                  child: Text(l10n?.viewContract ?? 'View contract'),
+                  child: Text(l10n?.viewContract ?? 'View Deal'),
                 ),
               ),
             ],
