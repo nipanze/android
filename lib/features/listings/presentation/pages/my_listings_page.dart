@@ -63,9 +63,9 @@ class _MyListingsView extends StatelessWidget {
                 forexRequests.where((f) => f.status == 'active').toList();
             final closedForex = forexRequests
                 .where((f) =>
-                f.status != 'active' &&
-                f.status != 'contracted' &&
-                f.status != 'cancelled')
+                    f.status != 'active' &&
+                    f.status != 'contracted' &&
+                    f.status != 'cancelled')
                 .toList();
 
             // Show empty state when there are no active or closed requests on this tab
@@ -106,9 +106,9 @@ class _ListingsBody extends StatelessWidget {
       forexRequests.where((f) => f.status == 'active').toList();
   List<ForexListingModel> get _closedForex => forexRequests
       .where((f) =>
-        f.status != 'active' &&
-        f.status != 'contracted' &&
-        f.status != 'cancelled')
+          f.status != 'active' &&
+          f.status != 'contracted' &&
+          f.status != 'cancelled')
       .toList();
 
   @override
@@ -138,8 +138,8 @@ class _ListingsBody extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.accent.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
@@ -180,8 +180,11 @@ class _ListingsBody extends StatelessWidget {
                 AppLocalizations.of(context)!.sectionClosed(_closed.length)),
             ..._closed.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child:
-                      MyListingCard(listing: l, onTap: () {}, onCancel: () {}),
+                  child: MyListingCard(
+                    listing: l,
+                    onTap: () => context.push('/marketplace/${l.id}'),
+                    onCancel: () {},
+                  ),
                 )),
           ],
           // ── Closed / Expired Forex ───────────────────────────────────
@@ -191,8 +194,8 @@ class _ListingsBody extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
@@ -202,7 +205,10 @@ class _ListingsBody extends StatelessWidget {
                       children: [
                         Icon(Icons.currency_exchange_rounded,
                             size: 13,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.5)),
                         const SizedBox(width: 5),
                         Text(
                           'Forex Closed · ${_closedForex.length}',
@@ -234,8 +240,7 @@ class _ListingsBody extends StatelessWidget {
     );
   }
 
-  void _confirmCancelForex(
-      BuildContext context, ForexListingModel request) {
+  void _confirmCancelForex(BuildContext context, ForexListingModel request) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -267,8 +272,6 @@ class _ListingsBody extends StatelessWidget {
       ),
     );
   }
-
-
 
   void _confirmCancel(BuildContext context, MyListing listing) {
     showDialog(
@@ -334,7 +337,7 @@ class _ForexRequestCard extends StatelessWidget {
   Color _statusColor(BuildContext context) {
     switch (request.status) {
       case 'active':
-        return AppColors.accent;
+        return AppColors.purple;
       case 'contracted':
         return Colors.green;
       case 'cancelled':
@@ -360,197 +363,248 @@ class _ForexRequestCard extends StatelessWidget {
     }
   }
 
-  String _fmtAmount(int amount) =>
-      NumberFormat('#,###').format(amount);
+  String _fmtAmount(int amount) => NumberFormat('#,###').format(amount);
 
-  String _fmtRate(double rate) {
-    if (rate >= 1) return rate.toStringAsFixed(2);
-    return rate.toStringAsFixed(4);
+  String _timeLabel() {
+    if (request.status != 'active' || request.isExpired) return request.status;
+
+    final timeLeft = request.timeRemaining;
+    if (timeLeft.inDays > 0) {
+      return '${timeLeft.inDays}d ${timeLeft.inHours % 24}h left';
+    }
+    if (timeLeft.inHours > 0) {
+      return '${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m left';
+    }
+    return '${timeLeft.inMinutes}m left';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final statusColor = _statusColor(context);
-    final timeLeft = request.timeRemaining;
-    final timeLabel = request.status == 'active' && !request.isExpired
-        ? (timeLeft.inDays > 0
-            ? '${timeLeft.inDays}d ${timeLeft.inHours % 24}h left'
-            : timeLeft.inHours > 0
-                ? '${timeLeft.inHours}h ${timeLeft.inMinutes % 60}m left'
-                : '${timeLeft.inMinutes}m left')
-        : null;
+    final metadata = [
+      if (request.settlementPreference.trim().isNotEmpty)
+        request.settlementPreference.trim(),
+      if (request.country.trim().isNotEmpty) request.country.trim(),
+    ].join(' · ');
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: request.status == 'active'
-                ? AppColors.accent.withOpacity(0.3)
-                : theme.dividerColor,
-          ),
+    final borderRadius = BorderRadius.circular(8);
+    return Material(
+      color: theme.colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(
+          color: request.status == 'active'
+              ? AppColors.purple.withOpacity(
+                  request.numberOfOffers > 0 ? 0.5 : 0.3,
+                )
+              : theme.dividerColor,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        child: Stack(
           children: [
-            // ── Top row: pair + status chip ──────────────────────────
-            Row(
-              children: [
-                // Currency exchange icon
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.currency_exchange_rounded,
-                    size: 18,
-                    color: AppColors.accent,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Pair label
-                Expanded(
-                  child: Column(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 30, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header row
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${request.currencyHeld} → ${request.currencyNeeded}',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.purple.withOpacity(0.16),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.currency_exchange_rounded,
+                          size: 18,
+                          color: AppColors.purple,
                         ),
                       ),
-                      if (timeLabel != null)
-                        Text(
-                          timeLabel,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: request.isClosingSoon24h
-                                ? AppColors.danger
-                                : theme.colorScheme.onSurface.withOpacity(0.5),
-                          ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${request.currencyHeld} → ${request.currencyNeeded}',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (metadata.isNotEmpty)
+                              Text(
+                                metadata,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.55),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(_statusIcon(), size: 11, color: statusColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              request.status[0].toUpperCase() +
+                                  request.status.substring(1),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: statusColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (request.status == 'active' && onCancel != null)
+                        PopupMenuButton<_ForexRequestAction>(
+                          tooltip: 'More actions',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                              width: 28, height: 28),
+                          icon: const Icon(Icons.more_vert, size: 19),
+                          onSelected: (_) => onCancel!(),
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: _ForexRequestAction.cancel,
+                              child: Text('Cancel request'),
+                            ),
+                          ],
                         ),
                     ],
                   ),
-                ),
-                // Status chip
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_statusIcon(), size: 11, color: statusColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        request.status[0].toUpperCase() +
-                            request.status.substring(1),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            // ── Amount ───────────────────────────────────────────────
-            Text(
-              '${request.currencyHeld} ${_fmtAmount(request.amount)}',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: AppColors.accent,
-              ),
-            ),
-            const SizedBox(height: 6),
-            // ── Rate + offers row ────────────────────────────────────
-            Row(
-              children: [
-                if (request.preferredRate != null) ...[
-                  Icon(
-                    Icons.swap_horiz_rounded,
-                    size: 14,
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
-                  ),
-                  const SizedBox(width: 4),
+                  const SizedBox(height: 10),
+
                   Text(
-                    '@ ${_fmtRate(request.preferredRate!)} target rate',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    '${request.currencyHeld} ${_fmtAmount(request.amount)}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.purple,
                     ),
                   ),
-                  const SizedBox(width: 10),
+
+                  const SizedBox(height: 10),
+                  Divider(
+                    height: 1,
+                    color: theme.dividerColor.withOpacity(0.35),
+                  ),
+                  const SizedBox(height: 9),
+
+                  // Request metrics
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _ForexRequestMetric(
+                          icon: Icons.people_outline_rounded,
+                          value:
+                              '${request.numberOfOffers} ${request.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
+                          color: request.numberOfOffers > 0
+                              ? AppColors.purple
+                              : null,
+                        ),
+                      ),
+                      Expanded(
+                        child: _ForexRequestMetric(
+                          icon: Icons.swap_horiz_rounded,
+                          value: request.settlementPreference.isEmpty
+                              ? 'Forex request'
+                              : request.settlementPreference,
+                        ),
+                      ),
+                      Expanded(
+                        child: _ForexRequestMetric(
+                          icon: Icons.schedule_outlined,
+                          value: _timeLabel(),
+                          color: request.isClosingSoon24h
+                              ? AppColors.danger
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-                Icon(
-                  Icons.local_offer_outlined,
-                  size: 13,
-                  color: request.numberOfOffers > 0
-                      ? AppColors.accent
-                      : theme.colorScheme.onSurface.withOpacity(0.4),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${request.numberOfOffers} ${request.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: request.numberOfOffers > 0
-                        ? AppColors.accent
-                        : theme.colorScheme.onSurface.withOpacity(0.5),
-                    fontWeight: request.numberOfOffers > 0
-                        ? FontWeight.w700
-                        : FontWeight.w500,
-                  ),
-                ),
-                const Spacer(),
-                // Settlement snippet
-                Flexible(
-                  child: Text(
-                    request.settlementPreference,
-                    textAlign: TextAlign.right,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.4),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-            // ── Cancel button (active only) ──────────────────────────
-            if (request.status == 'active' && onCancel != null) ...[
-              const SizedBox(height: 8),
-              const Divider(height: 1),
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: onCancel,
-                  icon: const Icon(Icons.unpublished_outlined, size: 15),
-                  label: const Text('Take Down Request'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.danger,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
-                    textStyle: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.chevron_right_rounded,
+                      size: 24,
+                      color:
+                          theme.colorScheme.onSurfaceVariant.withOpacity(0.72),
+                    ),
                   ),
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+enum _ForexRequestAction { cancel }
+
+class _ForexRequestMetric extends StatelessWidget {
+  const _ForexRequestMetric({
+    required this.icon,
+    required this.value,
+    this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final foreground = color ?? muted;
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: foreground),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: foreground,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
