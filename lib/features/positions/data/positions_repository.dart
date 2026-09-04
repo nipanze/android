@@ -57,6 +57,26 @@ class PositionsRepository {
     }
   }
 
+  /// Fetch all active & contracted deals (agreements) for the current user.
+  Future<List<dynamic>> getMyDeals() async {
+    try {
+      final data = await _client
+          .from(TableNames.agreements)
+          .select()
+          .order('created_at', ascending: false);
+
+      final agreements = (data as List);
+      return agreements.where((e) {
+        final snapshot = e['agreement_snapshot'] as Map<String, dynamic>?;
+        final bId = snapshot?['borrower_id'];
+        final lId = snapshot?['lender_id'];
+        return bId == _uid || lId == _uid;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
   /// Realtime stream on loan_offers for the current lender.
   Stream<List<LenderOffer>> watchMyOffers() {
     return _client

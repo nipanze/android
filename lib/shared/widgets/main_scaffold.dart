@@ -32,7 +32,7 @@ class MainScaffold extends StatelessWidget {
         icon: Icons.add_circle_rounded,
         route: AppRoutes.listingCreate),
     _TabItem(
-        label: 'Positions',
+        label: 'Activity',
         icon: Icons.receipt_long_outlined,
         route: AppRoutes.positions),
     _TabItem(
@@ -60,7 +60,7 @@ class MainScaffold extends StatelessWidget {
         return l10n.navWatchlist;
       case 'Request':
         return l10n.navRequest;
-      case 'Positions':
+      case 'Activity':
         return l10n.navPositions;
       case 'Account':
         return l10n.navAccount;

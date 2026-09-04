@@ -128,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navRequest => 'Request';
 
   @override
-  String get navPositions => 'Positions';
+  String get navPositions => 'Activity';
 
   @override
   String get navAccount => 'Account';
@@ -248,6 +248,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabMyOffers => 'My Offers';
+
+  @override
+  String get tabDeals => 'Deals';
+
+  @override
+  String get noDealsYet => 'No deals yet';
+
+  @override
+  String get noDealsSubtitle =>
+      'When an offer is accepted by you or a partner, your active deals and contracts will appear here.';
 
   @override
   String get noOffersYet => 'No offers yet';

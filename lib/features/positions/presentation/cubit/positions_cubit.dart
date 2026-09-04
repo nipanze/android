@@ -24,11 +24,13 @@ class PositionsCubit extends Cubit<PositionsState> {
       final results = await Future.wait([
         _repository.getMyOffers(),
         _repository.getMarketplaceActivity(),
+        _repository.getMyDeals(),
       ]);
 
       emit(PositionsLoaded(
         offers: results[0] as List<LenderOffer>,
         activity: results[1] as Map<String, dynamic>?,
+        deals: results[2] as List<dynamic>,
       ));
 
       _subscribeOffersRealtime();

@@ -132,7 +132,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navRequest => 'Demander';
 
   @override
-  String get navPositions => 'Positions';
+  String get navPositions => 'Activité';
 
   @override
   String get navAccount => 'Compte';
@@ -252,6 +252,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tabMyOffers => 'Mes Offres';
+
+  @override
+  String get tabDeals => 'Transactions';
+
+  @override
+  String get noDealsYet => 'Aucune transaction pour l\'instant';
+
+  @override
+  String get noDealsSubtitle =>
+      'Lorsqu\'une offre est acceptée par vous ou votre partenaire, vos transactions et contrats actifs apparaîtront ici.';
 
   @override
   String get noOffersYet => 'Aucune offre pour l\'instant';

@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @navPositions.
   ///
   /// In en, this message translates to:
-  /// **'Positions'**
+  /// **'Activity'**
   String get navPositions;
 
   /// No description provided for @navAccount.
@@ -547,6 +547,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My Offers'**
   String get tabMyOffers;
+
+  /// No description provided for @tabDeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Deals'**
+  String get tabDeals;
+
+  /// No description provided for @noDealsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No deals yet'**
+  String get noDealsYet;
+
+  /// No description provided for @noDealsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When an offer is accepted by you or a partner, your active deals and contracts will appear here.'**
+  String get noDealsSubtitle;
 
   /// No description provided for @noOffersYet.
   ///

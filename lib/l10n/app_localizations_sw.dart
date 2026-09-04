@@ -252,6 +252,16 @@ class AppLocalizationsSw extends AppLocalizations {
   String get tabMyOffers => 'Mapendekezo Yangu';
 
   @override
+  String get tabDeals => 'Mikataba';
+
+  @override
+  String get noDealsYet => 'Hakuna mikataba bado';
+
+  @override
+  String get noDealsSubtitle =>
+      'Ombi au dau likikubaliwa na wewe au mshirika wako, mikataba yenu amilifu itaonekana hapa.';
+
+  @override
   String get noOffersYet => 'Hakuna mapendekezo bado';
 
   @override

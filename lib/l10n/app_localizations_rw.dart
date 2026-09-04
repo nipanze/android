@@ -252,6 +252,16 @@ class AppLocalizationsRw extends AppLocalizations {
   String get tabMyOffers => 'Ibirego Byanjye';
 
   @override
+  String get tabDeals => 'Amasezerano';
+
+  @override
+  String get noDealsYet => 'Nta masezerano arahari';
+
+  @override
+  String get noDealsSubtitle =>
+      'Igihe ikirego cyakiriwe nawe cyangwa uwo mukorana, amasezerano yanyu azagaragara hano.';
+
+  @override
   String get noOffersYet => 'Nta birego birahari';
 
   @override

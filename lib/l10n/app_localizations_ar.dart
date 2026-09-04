@@ -249,6 +249,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tabMyOffers => 'عروضي';
 
   @override
+  String get tabDeals => 'الصفقات';
+
+  @override
+  String get noDealsYet => 'لا توجد صفقات بعد';
+
+  @override
+  String get noDealsSubtitle =>
+      'عند قبول عرض من قبلك أو من شريكك، ستظهر صفقاتك وعقودك النشطة هنا.';
+
+  @override
   String get noOffersYet => 'لا توجد عروض بعد';
 
   @override

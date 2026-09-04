@@ -19,24 +19,27 @@ class PositionsLoaded extends PositionsState {
   const PositionsLoaded({
     required this.offers,
     this.activity,
+    this.deals = const [],
   });
 
   // Offers match the unified marketplace terminology in v4.0.
-  // Contracts removed - non-custodial matching only.
   final List<LenderOffer> offers;
   final Map<String, dynamic>? activity;
+  final List<dynamic> deals;
 
   PositionsLoaded copyWith({
     List<LenderOffer>? offers,
     Map<String, dynamic>? activity,
+    List<dynamic>? deals,
   }) =>
       PositionsLoaded(
         offers: offers ?? this.offers,
         activity: activity ?? this.activity,
+        deals: deals ?? this.deals,
       );
 
   @override
-  List<Object?> get props => [offers, activity];
+  List<Object?> get props => [offers, activity, deals];
 }
 
 class PositionsError extends PositionsState {

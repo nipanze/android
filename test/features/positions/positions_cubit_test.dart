@@ -33,6 +33,8 @@ void main() {
     mockRepo = MockPositionsRepository();
     when(() => mockRepo.watchMyOffers())
         .thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.getMyDeals())
+        .thenAnswer((_) async => []);
   });
 
   group('PositionsCubit', () {

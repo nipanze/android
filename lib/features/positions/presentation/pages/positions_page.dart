@@ -11,6 +11,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../listings/presentation/pages/my_listings_page.dart';
+import '../../../marketplace/domain/models/agreement.dart';
 import '../../domain/models/lender_offer.dart';
 import '../cubit/positions_cubit.dart';
 import '../widgets/lender_offer_card.dart';
@@ -41,7 +42,7 @@ class _PositionsViewState extends State<_PositionsView>
   @override
   void initState() {
     super.initState();
-    _tc = TabController(length: 2, vsync: this);
+    _tc = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -95,6 +96,7 @@ class _PositionsViewState extends State<_PositionsView>
             tabs: [
               Tab(text: AppLocalizations.of(context)!.tabMyRequests),
               Tab(text: AppLocalizations.of(context)!.tabMyOffers),
+              Tab(text: AppLocalizations.of(context)!.tabDeals),
             ],
           ),
 
@@ -114,6 +116,7 @@ class _PositionsViewState extends State<_PositionsView>
                   children: [
                     const MyListingsPage(),
                     _LenderTab(state: state),
+                    _DealsTab(state: state),
                   ],
                 );
               },
@@ -155,11 +158,8 @@ class _LenderTab extends StatelessWidget {
 
     final pending =
         offers.where((o) => o.status == OfferStatus.pending).toList();
-    final accepted =
-        offers.where((o) => o.status == OfferStatus.accepted).toList();
     final history = offers
-        .where((o) =>
-            o.status != OfferStatus.pending && o.status != OfferStatus.accepted)
+        .where((o) => o.status != OfferStatus.pending)
         .toList();
 
     return RefreshIndicator(
@@ -173,13 +173,6 @@ class _LenderTab extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(
                       offer: o, onWithdraw: () => _confirmWithdraw(context, o)),
-                )),
-          ],
-          if (accepted.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.matchedAccepted),
-            ...accepted.map((o) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: LenderOfferCard(offer: o, onWithdraw: () {}),
                 )),
           ],
           if (history.isNotEmpty) ...[
@@ -218,3 +211,186 @@ class _LenderTab extends StatelessWidget {
     );
   }
 }
+
+class _DealsTab extends StatelessWidget {
+  const _DealsTab({required this.state});
+  final PositionsState state;
+
+  @override
+  Widget build(BuildContext context) {
+    if (state is PositionsLoading || state is PositionsInitial) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is PositionsError) {
+      return ErrorState(
+          message: (state as PositionsError).message,
+          onRetry: () => context.read<PositionsCubit>().refresh());
+    }
+    if (state is! PositionsLoaded) return const SizedBox.shrink();
+
+    final loadedState = state as PositionsLoaded;
+    final acceptedOffers = loadedState.offers
+        .where((o) => o.status == OfferStatus.accepted)
+        .toList();
+    final deals = loadedState.deals;
+
+    if (acceptedOffers.isEmpty && deals.isEmpty) {
+      return EmptyState(
+        icon: Icons.handshake_outlined,
+        title: AppLocalizations.of(context)!.noDealsYet,
+        subtitle: AppLocalizations.of(context)!.noDealsSubtitle,
+        action: ElevatedButton(
+            onPressed: () => context.go('/marketplace'),
+            child: Text(AppLocalizations.of(context)!.browseMarketplaceBtn)),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => context.read<PositionsCubit>().refresh(),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (deals.isNotEmpty) ...[
+            SectionHeader(AppLocalizations.of(context)!.tabDeals),
+            ...deals.map((deal) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _DealCard(deal: deal),
+                )),
+          ],
+          if (acceptedOffers.isNotEmpty) ...[
+            if (deals.isEmpty) SectionHeader(AppLocalizations.of(context)!.matchedAccepted),
+            ...acceptedOffers.map((o) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: LenderOfferCard(offer: o, onWithdraw: () {}),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DealCard extends StatelessWidget {
+  const _DealCard({required this.deal});
+  final dynamic deal;
+
+  @override
+  Widget build(BuildContext context) {
+    final map = deal is Map<String, dynamic>
+        ? deal as Map<String, dynamic>
+        : (deal as Agreement).toMap();
+    final agreement = deal is Agreement ? deal : Agreement.fromMap(map);
+
+    final isLocked = agreement.isFullyLocked;
+    final statusText = isLocked
+        ? AppLocalizations.of(context)!.verified
+        : agreement.status.displayName;
+    final statusColor = isLocked ? AppColors.success : AppColors.warning;
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isLocked
+              ? AppColors.success.withValues(alpha: 0.4)
+              : theme.dividerColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CurrencyAmount(
+                agreement.loanAmount > 0
+                    ? agreement.loanAmount
+                    : agreement.totalRepaymentAmount,
+                currency: agreement.currency,
+                fontSize: 16,
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  statusText.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.calendar_today_outlined,
+                  size: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              const SizedBox(width: 4),
+              Text(
+                '${agreement.repaymentPeriod} ${agreement.repaymentFrequency.displayName} payments',
+                style: theme.textTheme.bodySmall,
+              ),
+              const Spacer(),
+              if (agreement.interestRate > 0)
+                Text(
+                  '${agreement.interestRate}% interest',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    context.push('/marketplace/agreement/${agreement.id}');
+                  },
+                  icon: const Icon(Icons.description_outlined, size: 14),
+                  label: Text(
+                    AppLocalizations.of(context)!.viewContract,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.push('/marketplace/contact-details/${agreement.id}');
+                  },
+                  icon: const Icon(Icons.phone_outlined, size: 14),
+                  label: Text(
+                    AppLocalizations.of(context)!.unlockDealAndContact,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

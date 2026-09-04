@@ -335,7 +335,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             },
           ),
         ),
-        body: Center(child: CircularProgressIndicator(color: accentGreen)),
+        body: const Center(child: CircularProgressIndicator(color: AppColors.success)),
       );
     }
 
@@ -448,7 +448,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                   child: Center(
                     child: Text(
                       initials,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: accentGreen,
                         fontWeight: FontWeight.bold,
                         fontSize: 32,
@@ -495,7 +495,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             const SizedBox(height: 3),
             Text(
               roleTag,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: accentGreen,
@@ -539,7 +539,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.person_outline_rounded,
                           color: accentGreen,
                           size: 18,
@@ -564,7 +564,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star_outline_rounded,
                           color: accentGreen,
                           size: 18,
@@ -587,7 +587,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.work_outline_rounded,
                           color: accentGreen,
                           size: 18,
@@ -637,7 +637,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.lock_rounded, size: 40, color: accentGreen),
+                    const Icon(Icons.lock_rounded, size: 40, color: accentGreen),
                     const SizedBox(height: 12),
                     Text(
                       l10n.contactInfoLocked,
@@ -738,7 +738,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       color: accentGreen.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.shield_outlined,
                       color: accentGreen,
                       size: 20,
@@ -817,7 +817,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                   context.go('/positions');
                 }
               },
-              child: Text(
+              child: const Text(
                 'Back to activity',
                 style: TextStyle(
                   color: accentGreen,
