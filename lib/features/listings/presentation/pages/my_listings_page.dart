@@ -7,13 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
-import '../../../marketplace/data/agreement_repository.dart';
 import '../../domain/models/my_listing.dart';
 import '../cubit/my_listings_cubit.dart';
 import '../widgets/my_listing_card.dart';
@@ -60,15 +58,18 @@ class _MyListingsView extends StatelessWidget {
             final closed = state.listings
                 .where((l) => l.isExpired || l.isCancelled)
                 .toList();
-            final contracted =
-                state.listings.where((l) => l.isContracted).toList();
             final forexRequests = state.forexRequests;
+            final activeForex =
+                forexRequests.where((f) => f.status == 'active').toList();
+            final closedForex = forexRequests
+                .where((f) => f.status != 'active' && f.status != 'contracted')
+                .toList();
 
-            // Show empty state only when there are truly no requests at all
+            // Show empty state when there are no active or closed requests on this tab
             if (active.isEmpty &&
                 closed.isEmpty &&
-                contracted.isEmpty &&
-                forexRequests.isEmpty) {
+                activeForex.isEmpty &&
+                closedForex.isEmpty) {
               return _EmptyRequestState();
             }
             return _ListingsBody(
@@ -97,16 +98,12 @@ class _ListingsBody extends StatelessWidget {
   List<MyListing> get _active => listings.where((l) => l.isActive).toList();
   List<MyListing> get _closed =>
       listings.where((l) => l.isExpired || l.isCancelled).toList();
-  List<MyListing> get _contracted =>
-      listings.where((l) => l.isContracted).toList();
 
   List<ForexListingModel> get _activeForex =>
       forexRequests.where((f) => f.status == 'active').toList();
   List<ForexListingModel> get _closedForex => forexRequests
       .where((f) => f.status != 'active' && f.status != 'contracted')
       .toList();
-  List<ForexListingModel> get _contractedForex =>
-      forexRequests.where((f) => f.status == 'contracted').toList();
 
   @override
   Widget build(BuildContext context) {
@@ -170,61 +167,7 @@ class _ListingsBody extends StatelessWidget {
                   ),
                 )),
           ],
-          // ── Contracted Loans ─────────────────────────────────────────
-          if (_contracted.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!
-                .sectionContracted(_contracted.length)),
-            ..._contracted.map((l) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: MyListingCard(
-                    listing: l,
-                    onTap: () {},
-                    onCancel: () {},
-                    onViewAgreement: () => _openAgreement(context, l),
-                  ),
-                )),
-          ],
-          // ── Contracted Forex ─────────────────────────────────────────
-          if (_contractedForex.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.handshake_rounded,
-                            size: 13, color: Colors.green),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Forex Contracted · ${_contractedForex.length}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ..._contractedForex.map((f) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _ForexRequestCard(
-                    request: f,
-                    onTap: () => context.push('/forex/${f.requestId}'),
-                  ),
-                )),
-          ],
+
           // ── Closed Loans ─────────────────────────────────────────────
           if (_closed.isNotEmpty) ...[
             SectionHeader(
@@ -319,30 +262,7 @@ class _ListingsBody extends StatelessWidget {
     );
   }
 
-  Future<void> _openAgreement(BuildContext context, MyListing listing) async {
-    try {
-      final repo = getIt<AgreementRepository>();
-      final agreement = await repo.getAgreementByRequestId(listing.id);
-      if (!context.mounted) return;
-      if (agreement != null) {
-        await context.push('/marketplace/agreement/${agreement.id}');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text(AppLocalizations.of(context)!.contractNotGenerated)),
-        );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(userFacingErrorMessage(e)),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-    }
-  }
+
 
   void _confirmCancel(BuildContext context, MyListing listing) {
     showDialog(

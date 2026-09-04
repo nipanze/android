@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -288,6 +289,51 @@ class _DealCard extends StatelessWidget {
     final statusColor = isLocked ? AppColors.success : AppColors.warning;
     final theme = Theme.of(context);
 
+    // Derive position (Borrowing / Lending / Forex Offering)
+    final currentUid = Supabase.instance.client.auth.currentUser?.id;
+    final snapshot = map['agreement_snapshot'] as Map<String, dynamic>? ?? agreement.agreementSnapshot;
+
+    final borrowerId = snapshot?['borrower_id'] as String? ?? map['borrower_id'] as String? ?? agreement.borrowerId;
+    final lenderId = snapshot?['lender_id'] as String? ?? map['lender_id'] as String? ?? agreement.lenderId;
+    final dealType = (snapshot?['deal_type'] as String? ?? map['deal_type'] as String? ?? '').toLowerCase();
+    final isForex = dealType == 'forex' || (snapshot?['is_forex'] == true) || (map['is_forex'] == true);
+
+    final isBorrower = currentUid != null && borrowerId == currentUid;
+    final isLender = currentUid != null && lenderId == currentUid;
+
+    final String positionLabel;
+    final IconData positionIcon;
+    final Color positionColor;
+    final Color positionBgColor;
+
+    if (isForex) {
+      positionLabel = 'FOREX EXCHANGE';
+      positionIcon = Icons.currency_exchange_rounded;
+      positionColor = const Color(0xFFC084FC); // Purple Accent
+      positionBgColor = Colors.purple.withValues(alpha: 0.15);
+    } else if (isBorrower) {
+      positionLabel = 'BORROWING';
+      positionIcon = Icons.south_west_rounded;
+      positionColor = const Color(0xFF60A5FA); // Blue Accent
+      positionBgColor = const Color(0xFF1E3A8A).withValues(alpha: 0.35);
+    } else if (isLender) {
+      positionLabel = 'LENDING';
+      positionIcon = Icons.north_east_rounded;
+      positionColor = AppColors.success; // Emerald Green
+      positionBgColor = AppColors.success.withValues(alpha: 0.15);
+    } else {
+      positionLabel = 'LOAN DEAL';
+      positionIcon = Icons.handshake_outlined;
+      positionColor = theme.colorScheme.onSurface.withValues(alpha: 0.8);
+      positionBgColor = theme.colorScheme.surfaceContainerHighest;
+    }
+
+    final dealTitle = snapshot?['title'] as String? ??
+        snapshot?['request_title'] as String? ??
+        snapshot?['purpose'] as String? ??
+        map['title'] as String? ??
+        map['request_title'] as String?;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -302,15 +348,32 @@ class _DealCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header Row: Position Pill & Status Pill ─────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CurrencyAmount(
-                agreement.loanAmount > 0
-                    ? agreement.loanAmount
-                    : agreement.totalRepaymentAmount,
-                currency: agreement.currency,
-                fontSize: 16,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: positionBgColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(positionIcon, size: 12, color: positionColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      positionLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: positionColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -329,7 +392,30 @@ class _DealCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+
+          // ── Title (if available) ───────────────────────────────────────
+          if (dealTitle != null && dealTitle.isNotEmpty) ...[
+            Text(
+              dealTitle,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+
+          // ── Loan Amount ───────────────────────────────────────────────
+          CurrencyAmount(
+            agreement.loanAmount > 0
+                ? agreement.loanAmount
+                : agreement.totalRepaymentAmount,
+            currency: agreement.currency,
+            fontSize: 16,
+          ),
           const SizedBox(height: 8),
+
+          // ── Term Row ──────────────────────────────────────────────────
           Row(
             children: [
               Icon(Icons.calendar_today_outlined,
@@ -352,6 +438,8 @@ class _DealCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(height: 1),
           const SizedBox(height: 10),
+
+          // ── Action Buttons ─────────────────────────────────────────────
           Row(
             children: [
               Expanded(
