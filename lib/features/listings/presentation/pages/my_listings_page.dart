@@ -376,13 +376,19 @@ class _ForexRequestCard extends StatelessWidget {
       if (request.country.trim().isNotEmpty) request.country.trim(),
     ].join(' · ');
 
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.borderLight;
+
     final borderRadius = BorderRadius.circular(8);
     return Material(
-      color: theme.colorScheme.surface,
+      color: surfaceColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
-        side: BorderSide(color: theme.dividerColor),
+        side: BorderSide(color: borderColor, width: 1.2),
       ),
       child: InkWell(
         onTap: onTap,

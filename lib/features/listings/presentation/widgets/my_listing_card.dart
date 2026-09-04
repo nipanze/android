@@ -27,12 +27,18 @@ class MyListingCard extends StatelessWidget {
     final effectiveOnTap = listing.isContracted ? onViewAgreement : onTap;
     final hasMoreActions =
         listing.isActive || (listing.isContracted && onViewAgreement != null);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppColors.bg2Dark : Theme.of(context).colorScheme.surface;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.borderLight;
+
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: surfaceColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
-        side: BorderSide(color: _borderColor(context)),
+        side: BorderSide(color: borderColor, width: 1.2),
       ),
       child: InkWell(
         onTap: effectiveOnTap,
@@ -221,9 +227,7 @@ class MyListingCard extends StatelessWidget {
     );
   }
 
-  Color _borderColor(BuildContext context) {
-    return Theme.of(context).dividerColor;
-  }
+
 }
 
 enum _ListingAction { cancel, viewAgreement }
