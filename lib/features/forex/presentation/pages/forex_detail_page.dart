@@ -169,11 +169,13 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                                         .withValues(alpha: 0.45),
                                   ),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${listing.numberOfOffers}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
+                            if (isOwner) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '${listing.numberOfOffers}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                             if (listing.rateCoverageTier != null) ...[
                               const SizedBox(width: 4),
                               Text(

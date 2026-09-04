@@ -441,6 +441,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                                         .withValues(alpha: 0.45),
                                   ),
                         ),
+                        if (isOwner) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '${_offers.length}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                         const SizedBox(width: 6),
                         const LiveDot(),
                       ],

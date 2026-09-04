@@ -26,10 +26,10 @@ class MyListingCard extends StatelessWidget {
     return GestureDetector(
       onTap: listing.isContracted ? onViewAgreement : onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: _borderColor(context)),
         ),
         child: Column(
@@ -39,6 +39,20 @@ class MyListingCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.business_center_outlined,
+                    size: 19,
+                    color: AppColors.success,
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +68,8 @@ class MyListingCard extends StatelessWidget {
                                 color: AppColors.purple.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                    color: AppColors.purple.withValues(alpha: 0.4)),
+                                    color: AppColors.purple
+                                        .withValues(alpha: 0.4)),
                               ),
                               child: Text(
                                 l10n?.sponsoredLabel ?? 'Sponsored',
@@ -86,147 +101,84 @@ class MyListingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _CollateralBadge(hasCollateral: listing.hasCollateral),
-                const SizedBox(width: 8),
                 _StatusBadge(listing.status),
+                PopupMenuButton<_ListingAction>(
+                  tooltip: 'More actions',
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints.tightFor(width: 28, height: 28),
+                  icon: const Icon(Icons.more_vert, size: 19),
+                  onSelected: (action) {
+                    switch (action) {
+                      case _ListingAction.cancel:
+                        onCancel();
+                      case _ListingAction.viewAgreement:
+                        onViewAgreement?.call();
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    if (listing.isActive)
+                      const PopupMenuItem(
+                        value: _ListingAction.cancel,
+                        child: Text('Cancel request'),
+                      ),
+                    if (listing.isContracted && onViewAgreement != null)
+                      const PopupMenuItem(
+                        value: _ListingAction.viewAgreement,
+                        child: Text('View deal'),
+                      ),
+                  ],
+                ),
               ],
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
 
             // Amount
             CurrencyAmount(listing.requestedAmount,
                 currency: listing.currency, fontSize: 19),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
+            Divider(
+              height: 1,
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.35),
+            ),
+            const SizedBox(height: 9),
 
-            // Offer count row
+            // Request metrics
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: listing.numberOfOffers > 0
-                        ? AppColors.success.withValues(alpha: 0.12)
-                        : (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white10
-                            : Colors.black.withValues(alpha: 0.05)),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: listing.numberOfOffers > 0
-                          ? AppColors.success.withValues(alpha: 0.4)
-                          : (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white24
-                              : Colors.black12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        listing.numberOfOffers > 0
-                            ? Icons.local_offer_rounded
-                            : Icons.local_offer_outlined,
-                        size: 11,
-                        color: listing.numberOfOffers > 0
-                            ? AppColors.success
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${listing.numberOfOffers} ${listing.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: listing.numberOfOffers > 0
-                              ? AppColors.success
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                Expanded(
+                  child: _RequestMetric(
+                    icon: Icons.people_outline_rounded,
+                    value: '${listing.numberOfOffers}',
+                    label: listing.numberOfOffers == 1
+                        ? 'Offer received'
+                        : 'Offers received',
+                    color:
+                        listing.numberOfOffers > 0 ? AppColors.success : null,
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  '${listing.durationMonths} months',
-                  style:
-                      const TextStyle(fontFamily: AppFonts.body, fontSize: 10),
+                Expanded(
+                  child: _RequestMetric(
+                    icon: listing.hasCollateral
+                        ? Icons.verified_user_outlined
+                        : Icons.shield_outlined,
+                    value: listing.hasCollateral ? 'Secured' : 'No collateral',
+                  ),
+                ),
+                Expanded(
+                  child: _RequestMetric(
+                    icon: Icons.schedule_outlined,
+                    value: listing.isActive
+                        ? listing.timeRemainingLabel
+                        : listing.status.name,
+                    color: listing.isClosingSoon ? AppColors.danger : null,
+                  ),
                 ),
               ],
             ),
-
-            // Time remaining (active only)
-            if (listing.isActive && listing.timeRemainingLabel.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(children: [
-                Icon(
-                  Icons.schedule_rounded,
-                  size: 11,
-                  color: listing.isClosingSoon
-                      ? AppColors.danger
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  listing.timeRemainingLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: listing.isClosingSoon
-                        ? AppColors.danger
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ]),
-            ],
-
-            // Actions
-            if (listing.isActive) ...[
-              const SizedBox(height: 10),
-              Row(children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onTap,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      textStyle: const TextStyle(fontSize: 11),
-                    ),
-                    child: Text(l10n?.viewOffers ?? 'View offers'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onCancel,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      foregroundColor: AppColors.danger,
-                      side: const BorderSide(color: AppColors.danger),
-                      textStyle: const TextStyle(fontSize: 11),
-                    ),
-                    child: Text(l10n?.cancel ?? 'Cancel'),
-                  ),
-                ),
-              ]),
-            ],
-
-            // Contracted — show View Contract button
-            if (listing.isContracted && onViewAgreement != null) ...[
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: onViewAgreement,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    foregroundColor: AppColors.success,
-                    side: const BorderSide(color: AppColors.success),
-                    textStyle: const TextStyle(fontSize: 11),
-                  ),
-                  child: Text(l10n?.viewContract ?? 'View Deal'),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -241,6 +193,58 @@ class MyListingCard extends StatelessWidget {
       return AppColors.success.withValues(alpha: 0.5);
     }
     return Theme.of(context).dividerColor;
+  }
+}
+
+enum _ListingAction { cancel, viewAgreement }
+
+class _RequestMetric extends StatelessWidget {
+  const _RequestMetric({
+    required this.icon,
+    required this.value,
+    this.label,
+    this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final String? label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final foreground = color ?? muted;
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: foreground),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: foreground,
+                ),
+              ),
+              if (label != null)
+                Text(
+                  label!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10, color: muted),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -268,32 +272,6 @@ class _StatusBadge extends StatelessWidget {
         label,
         style:
             TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color),
-      ),
-    );
-  }
-}
-
-class _CollateralBadge extends StatelessWidget {
-  const _CollateralBadge({required this.hasCollateral});
-
-  final bool hasCollateral;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = hasCollateral ? AppColors.accent : AppColors.text2Dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        hasCollateral ? 'Secured' : 'No Collateral',
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
       ),
     );
   }
