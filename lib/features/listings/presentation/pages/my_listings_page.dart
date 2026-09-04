@@ -56,13 +56,16 @@ class _MyListingsView extends StatelessWidget {
           if (state is MyListingsLoaded) {
             final active = state.listings.where((l) => l.isActive).toList();
             final closed = state.listings
-                .where((l) => l.isExpired || l.isCancelled)
+                .where((l) => l.isExpired && !l.isCancelled)
                 .toList();
             final forexRequests = state.forexRequests;
             final activeForex =
                 forexRequests.where((f) => f.status == 'active').toList();
             final closedForex = forexRequests
-                .where((f) => f.status != 'active' && f.status != 'contracted')
+                .where((f) =>
+                f.status != 'active' &&
+                f.status != 'contracted' &&
+                f.status != 'cancelled')
                 .toList();
 
             // Show empty state when there are no active or closed requests on this tab
@@ -97,12 +100,15 @@ class _ListingsBody extends StatelessWidget {
 
   List<MyListing> get _active => listings.where((l) => l.isActive).toList();
   List<MyListing> get _closed =>
-      listings.where((l) => l.isExpired || l.isCancelled).toList();
+      listings.where((l) => l.isExpired && !l.isCancelled).toList();
 
   List<ForexListingModel> get _activeForex =>
       forexRequests.where((f) => f.status == 'active').toList();
   List<ForexListingModel> get _closedForex => forexRequests
-      .where((f) => f.status != 'active' && f.status != 'contracted')
+      .where((f) =>
+        f.status != 'active' &&
+        f.status != 'contracted' &&
+        f.status != 'cancelled')
       .toList();
 
   @override

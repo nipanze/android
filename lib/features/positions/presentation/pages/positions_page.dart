@@ -29,6 +29,7 @@ class PositionsPage extends StatelessWidget {
   }
 }
 
+
 class _PositionsView extends StatefulWidget {
   const _PositionsView();
 
@@ -160,7 +161,9 @@ class _LenderTab extends StatelessWidget {
     final pending =
         offers.where((o) => o.status == OfferStatus.pending).toList();
     final history = offers
-        .where((o) => o.status != OfferStatus.pending)
+        .where((o) =>
+            o.status != OfferStatus.pending &&
+            o.status != OfferStatus.withdrawn)
         .toList();
 
     return RefreshIndicator(
@@ -481,4 +484,3 @@ class _DealCard extends StatelessWidget {
     );
   }
 }
-
