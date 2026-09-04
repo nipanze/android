@@ -24,6 +24,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   String? _districtFilter;
   MarketplaceModule? _moduleFilter;
   String? _viewerFeedKey;
+  String? _countryFilter;
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
@@ -42,15 +43,17 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   // ── Public interface ──────────────────────────────────────────────────────
 
-  Future<void> load({String? district, MarketplaceModule? module}) async {
+  Future<void> load(
+      {String? district, MarketplaceModule? module, String? country}) async {
     if (isClosed) return;
     _districtFilter = district;
     _moduleFilter = module;
+    _countryFilter = country;
     _viewerFeedKey = _resolveViewerFeedKey();
     emit(const MarketplaceLoading());
     try {
-      final listings =
-          await _repository.getListings(district: district, module: module);
+      final listings = await _repository.getListings(
+          district: district, module: module, country: country);
       if (isClosed) return;
       _allListings = listings;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
@@ -64,7 +67,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   Future<void> refresh() =>
-      load(district: _districtFilter, module: _moduleFilter);
+      load(district: _districtFilter, module: _moduleFilter, country: _countryFilter);
 
   Future<void> setModuleFilter(MarketplaceModule? module) async {
     if (isClosed) return;
@@ -74,7 +77,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _proFilter = _proFilter.copyWith(institutionMatchOnly: false);
       _cachedProFilteredIds = null;
     }
-    await load(district: _districtFilter, module: module);
+    await load(district: _districtFilter, module: module, country: _countryFilter);
     if (_proFilter.isActive) {
       await applyProFilters(_proFilter);
     }
@@ -109,7 +112,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _moduleFilter = MarketplaceModule.loan;
       try {
         _allListings = await _repository.getListings(
-            district: _districtFilter, module: MarketplaceModule.loan);
+            district: _districtFilter,
+            module: MarketplaceModule.loan,
+            country: _countryFilter);
       } catch (_) {}
     }
 
@@ -176,7 +181,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   void _subscribeRealtime() {
     _realtimeSub?.cancel();
     _forexRealtimeSub?.cancel();
-    _realtimeSub = _repository.watchListings(module: _moduleFilter).listen(
+    _realtimeSub = _repository
+        .watchListings(module: _moduleFilter, country: _countryFilter)
+        .listen(
       (listings) {
         if (isClosed) return;
         _allListings = listings;
@@ -191,8 +198,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       },
       onError: (_) {},
     );
-    _forexRealtimeSub =
-        _repository.watchForexListings(module: _moduleFilter).listen(
+    _forexRealtimeSub = _repository
+        .watchForexListings(module: _moduleFilter, country: _countryFilter)
+        .listen(
       (listings) {
         if (isClosed) return;
         _allListings = listings;

@@ -989,6 +989,41 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the full, authoritative stage-by-stage ro
 
 ---
 
+## Recent Updates (September 4, 2026)
+
+### 1. Activity Hub — Renamed from "Positions"
+- **Route migration**: All references to `/positions` have been migrated to `/activity`. A redirect from `/positions → /activity` is preserved in `AppRouter` so that legacy deep links and push-notification routes continue to work without modification.
+- **Bottom navigation**: The `MainScaffold` tab now points to `/activity` with the label **Activity**.
+- **Affected pages**: `contact_details_page.dart`, `deal_unlock_page.dart`, `proposed_deal_page.dart`, and `agreement_review_page.dart` all navigate to `/activity` post-action.
+
+### 2. Deals Tab — Position Badges per Deal Card
+Each deal card in the **Deals** tab (`_DealCard` in `positions_page.dart`) now shows a coloured **position pill** so users immediately know their role in each agreement:
+
+| Badge | Colour | Condition |
+|---|---|---|
+| `↙ BORROWING` | Blue | `agreement_snapshot.borrower_id` matches the signed-in user |
+| `↗ LENDING` | Green | `agreement_snapshot.lender_id` matches the signed-in user |
+| `💱 FOREX EXCHANGE` | Purple | `deal_type == 'forex'` or `is_forex == true` in snapshot |
+| `🤝 LOAN DEAL` | Neutral | Fallback when role cannot be resolved |
+
+The deal title/purpose (from `agreement_snapshot`) is also rendered above the amount when available.
+
+### 3. My Requests Tab — Contracted Listings Removed
+- **Removed** the "Contracted" section from the **My Requests** tab in `my_listings_page.dart` — contracted deals are now centralised in the **Deals** tab, eliminating duplicate display.
+- Cleaned up unused `_openAgreement` method and `AgreementRepository` import.
+- Fixed empty-state logic to correctly account for both active and closed forex requests.
+
+### 4. Country-Scoped Marketplace Feed
+The marketplace feed now scopes both **viewing** and **posting** to the user's registered country (`NipanzeUser.country`):
+
+- **`MarketplaceRepository.getListings()`** — accepts an optional `country` param; when provided, adds `.eq('country', country)` to both the `v_loan_listings` and `v_forex_listings` queries.
+- **`MarketplaceCubit`** — stores `_countryFilter` internally; threads it through `load()`, `refresh()`, `setModuleFilter()`, `applyProFilters()`, and all realtime subscriptions so the filter is never lost on a tab switch or realtime event.
+- **`MarketplacePage`** — reads `AuthBloc → NipanzeUser.country` at widget build time and passes it to `cubit.load(country: ...)`.
+- Posting was already country-scoped: `listing_create_page.dart` passes `country: authState.user.country` when calling `createListing()`.
+- A Kenyan user (`country = 'KE'`) therefore sees only KES listings; a Nigerian user sees only NGN listings; and so on for all seven supported markets.
+
+---
+
 ## Recent Updates (August 31, 2026)
 
 ### 1. Smart Institution Matching & Pro Filters Enhancements

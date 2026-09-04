@@ -5,30 +5,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/domain/models/nipanze_user.dart';
-import '../../../notifications/presentation/cubit/notification_cubit.dart';
-import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
-import '../cubit/marketplace_cubit.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../notifications/presentation/cubit/notification_cubit.dart';
+import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../domain/models/marketplace_item.dart';
+import '../cubit/marketplace_cubit.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_card_skeleton.dart';
 import '../widgets/pro_filters_sheet.dart';
 import '../widgets/pro_required_sheet.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class MarketplacePage extends StatelessWidget {
   const MarketplacePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Resolve user's country code for filtering — defaults to 'UG'.
+    final authState = context.read<AuthBloc>().state;
+    final userCountry = authState is AuthAuthenticated
+        ? authState.user.country
+        : EastAfricaCountries.defaultCountry.code;
+
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<MarketplaceCubit>()..load()),
+        BlocProvider(
+          create: (_) =>
+              getIt<MarketplaceCubit>()..load(country: userCountry),
+        ),
         BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
       ],
       child: const _MarketplaceView(),

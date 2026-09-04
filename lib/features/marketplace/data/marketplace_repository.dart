@@ -18,10 +18,12 @@ class MarketplaceRepository {
 
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
+  /// Pass [country] (e.g. 'UG', 'KE') to restrict the feed to a single market.
   Future<List<MarketplaceItem>> getListings({
     String? district,
     bool closingSoon = false,
     MarketplaceModule? module,
+    String? country,
   }) async {
     try {
       final items = <MarketplaceItem>[];
@@ -30,6 +32,9 @@ class MarketplaceRepository {
         var query = _client.from(ViewNames.loanListings).select();
         if (district != null) {
           query = query.eq('district', district) as dynamic;
+        }
+        if (country != null) {
+          query = query.eq('country', country) as dynamic;
         }
         if (closingSoon) {
           query = query.eq('closing_soon_24h', true) as dynamic;
@@ -42,6 +47,9 @@ class MarketplaceRepository {
 
       if (module == null || module == MarketplaceModule.forex) {
         var query = _client.from(ViewNames.forexListings).select();
+        if (country != null) {
+          query = query.eq('country', country) as dynamic;
+        }
         if (closingSoon) {
           query = query.eq('closing_soon_24h', true) as dynamic;
         }
@@ -207,15 +215,18 @@ class MarketplaceRepository {
   }
 
   /// Real-time stream of the marketplace feed.
-  Stream<List<MarketplaceItem>> watchListings({MarketplaceModule? module}) {
+  Stream<List<MarketplaceItem>> watchListings(
+      {MarketplaceModule? module, String? country}) {
     return _client.from(TableNames.loanRequests).stream(
-        primaryKey: ['id']).asyncMap((_) => getListings(module: module));
+        primaryKey: ['id'])
+        .asyncMap((_) => getListings(module: module, country: country));
   }
 
   Stream<List<MarketplaceItem>> watchForexListings(
-      {MarketplaceModule? module}) {
+      {MarketplaceModule? module, String? country}) {
     return _client.from(TableNames.forexRequests).stream(
-        primaryKey: ['id']).asyncMap((_) => getListings(module: module));
+        primaryKey: ['id'])
+        .asyncMap((_) => getListings(module: module, country: country));
   }
 
   /// Real-time stream for a single listing's offers.
