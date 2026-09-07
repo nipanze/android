@@ -88,7 +88,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    l10n?.lenderRequired ?? 'Lender required',
+                    l10n?.lenderRequired ?? 'Provider access required',
                     style: TextStyle(
                       fontFamily: AppFonts.heading,
                       fontSize: 20,
@@ -112,7 +112,7 @@ class _LenderRequiredSheet extends StatelessWidget {
               // ── Subtitle ────────────────────────────────────────────────
               Text(
                 l10n?.lenderRequiredSubtitle ??
-                    'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.',
+                    'Making offers is part of the Provider plan (also included in Pro). Upgrade to unlock offer placement across Loans, Forex and Needs.',
                 style: TextStyle(
                   fontSize: 13.5,
                   height: 1.4,
@@ -142,7 +142,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        l10n?.lenderTier ?? 'Lender tier',
+                        l10n?.lenderTier ?? 'Provider plan',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          l10n?.lender ?? 'Lender',
+                          l10n?.lender ?? 'Provider',
                           style: TextStyle(
                             fontFamily: AppFonts.heading,
                             fontSize: 17,
@@ -207,7 +207,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                     // Short Card Description
                     Text(
                       l10n?.lenderTierDesc ??
-                          'For anyone ready to make structured offers and earn returns on Nipanze.',
+                          'For anyone ready to make structured offers across Loans, Forex and Needs.',
                       style: TextStyle(
                         fontSize: 12.5,
                         height: 1.4,
@@ -259,7 +259,7 @@ class _LenderRequiredSheet extends StatelessWidget {
                           context.push(AppRoutes.pricing);
                         },
                         child: Text(
-                          l10n?.chooseLender ?? 'Choose Lender',
+                          l10n?.chooseLender ?? 'Choose Provider',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,

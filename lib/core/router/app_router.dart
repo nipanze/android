@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/account/presentation/pages/blocked_users_page.dart';
 import '../../features/account/presentation/pages/profile_page.dart';
+import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
@@ -22,9 +23,9 @@ import '../../features/marketplace/presentation/pages/agreement_review_page.dart
 import '../../features/marketplace/presentation/pages/contact_details_page.dart';
 import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
+import '../../features/marketplace/presentation/pages/needs_detail_page.dart';
 import '../../features/marketplace/presentation/pages/proposed_deal_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
-import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
 import '../../features/referrals/presentation/pages/referrals_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
@@ -44,7 +45,8 @@ class AppRoutes {
   static const String marketplaceDetail = '/marketplace/:requestId';
   static const String agreement = '/marketplace/agreement/:agreementId';
   static const String proposedDeal = '/marketplace/proposed-deal/:agreementId';
-  static const String contactDetails = '/marketplace/contact-details/:agreementId';
+  static const String contactDetails =
+      '/marketplace/contact-details/:agreementId';
   static const String dealUnlock = '/marketplace/deal-unlock/:agreementId';
   static const String watchlist = '/watchlist';
   static const String activity = '/activity';
@@ -135,6 +137,16 @@ class AppRouter {
                 pageBuilder: (_, state) => _slide(
                   state,
                   LoanDetailPage(
+                    requestId: state.pathParameters['requestId']!,
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: 'needs/:requestId',
+                name: 'needsDetail',
+                pageBuilder: (_, state) => _slide(
+                  state,
+                  NeedsDetailPage(
                     requestId: state.pathParameters['requestId']!,
                   ),
                 ),

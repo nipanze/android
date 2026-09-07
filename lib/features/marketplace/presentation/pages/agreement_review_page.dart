@@ -43,8 +43,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
         agreement = await _repo.getAgreement(widget.agreementId);
       } catch (_) {
         agreement = await _repo.getAgreementByOfferId(widget.agreementId);
-        agreement ??=
-            await _repo.getAgreementByRequestId(widget.agreementId);
+        agreement ??= await _repo.getAgreementByRequestId(widget.agreementId);
       }
 
       if (agreement == null) {
@@ -197,13 +196,13 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                       ),
                     if (a.lenderAgreedAt != null)
                       _TimelineRow(
-                        label: 'Lender confirmed',
+                        label: 'Provider confirmed',
                         date: a.lenderAgreedAt,
                         done: true,
                       )
                     else
                       const _TimelineRow(
-                        label: 'Lender confirmation',
+                        label: 'Provider confirmation',
                         pending: true,
                       ),
                     if (a.lockedAt != null)
@@ -231,7 +230,8 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                   onPressed: () =>
                       context.push('/marketplace/proposed-deal/${a.id}'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -277,7 +277,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
                 Center(
                   child: Text(
                     'Tap to view contact details for the opposite party.\n'
-                    'Final terms are solely between borrower and lender.',
+                    'Final terms are solely between Requester and Provider.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context)
                               .colorScheme

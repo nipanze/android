@@ -143,7 +143,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
 
   String get _planName => switch (widget.plan) {
         SubscriptionPlan.free => 'Free',
-        SubscriptionPlan.lender => 'Lender',
+        SubscriptionPlan.lender => 'Provider',
         SubscriptionPlan.pro => 'Pro',
       };
 

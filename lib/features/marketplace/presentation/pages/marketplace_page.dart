@@ -277,7 +277,9 @@ class _MarketplaceView extends StatelessWidget {
                                   listing: listing,
                                   onTap: () => context.push(
                                     listing.forex == null
-                                        ? '/marketplace/${listing.requestId}'
+                                        ? listing.needs == null
+                                            ? '/marketplace/${listing.requestId}'
+                                            : '/marketplace/needs/${listing.requestId}'
                                         : '/forex/${listing.requestId}',
                                   ),
                                   isSaved: isSaved,

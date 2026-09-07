@@ -192,18 +192,22 @@ class _AccountView extends StatelessWidget {
                                   'View plans'),
                         ),
 
-                      SectionHeader(AppLocalizations.of(context)?.referAndEarn ?? 'Refer & Earn'),
+                      SectionHeader(
+                          AppLocalizations.of(context)?.referAndEarn ??
+                              'Refer & Earn'),
                       Card(
                         child: _ActionRow(
                           icon: Icons.campaign_outlined,
-                          label: AppLocalizations.of(context)?.invitePeopleAndTrackRewards ??
+                          label: AppLocalizations.of(context)
+                                  ?.invitePeopleAndTrackRewards ??
                               'Invite people and track rewards',
                           onTap: () => context.push(AppRoutes.referrals),
                         ),
                       ),
 
-                      SectionHeader(AppLocalizations.of(context)?.privacyAndVisibility ??
-                          'Privacy & Visibility'),
+                      SectionHeader(
+                          AppLocalizations.of(context)?.privacyAndVisibility ??
+                              'Privacy & Visibility'),
                       Card(
                         child: _ActionRow(
                           icon: Icons.visibility_off_outlined,
@@ -230,7 +234,7 @@ class _AccountView extends StatelessWidget {
 
                       Text(
                         AppLocalizations.of(context)?.nipanzeDisclaimer ??
-                            'Nipanze connects borrowers and lenders. Loans are private agreements between users.',
+                            'Nipanze connects Requesters with Providers. Agreements are private between users.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             fontSize: 10,
@@ -271,8 +275,10 @@ class _AccountView extends StatelessWidget {
 
   void _showSettingsSheet(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    final userPhone = authState is AuthAuthenticated ? authState.user.phone : null;
-    final userCountryCode = authState is AuthAuthenticated ? authState.user.country : null;
+    final userPhone =
+        authState is AuthAuthenticated ? authState.user.phone : null;
+    final userCountryCode =
+        authState is AuthAuthenticated ? authState.user.country : null;
     final userCountry = (userCountryCode != null && userCountryCode.isNotEmpty)
         ? EastAfricaCountries.findByCode(userCountryCode)
         : (userPhone != null && userPhone.isNotEmpty
@@ -329,7 +335,8 @@ class _AccountView extends StatelessWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _SettingsBadge('${userCountry.flag} ${userCountry.currency}'),
+                    _SettingsBadge(
+                        '${userCountry.flag} ${userCountry.currency}'),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.lock_outline_rounded,
@@ -402,14 +409,16 @@ class _AccountView extends StatelessWidget {
     );
   }
 
-  void _showCurrencyLockedInfoDialog(BuildContext context, CountryInfo country) {
+  void _showCurrencyLockedInfoDialog(
+      BuildContext context, CountryInfo country) {
     final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.lock_outline_rounded, color: AppColors.accent, size: 20),
+            const Icon(Icons.lock_outline_rounded,
+                color: AppColors.accent, size: 20),
             const SizedBox(width: 8),
             Text(
               l10n?.subscriptionCurrency ?? 'Subscription Currency',
@@ -422,7 +431,8 @@ class _AccountView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n?.subscriptionCurrencyDesc(country.currency, country.name, country.dialCode) ??
+              l10n?.subscriptionCurrencyDesc(
+                      country.currency, country.name, country.dialCode) ??
                   'Your subscription currency is set to ${country.currency} (${country.name}) based on your registered phone number region (${country.dialCode}).',
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
@@ -430,7 +440,8 @@ class _AccountView extends StatelessWidget {
             Text(
               l10n?.subscriptionCurrencyLocked ??
                   'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.',
-              style: const TextStyle(fontSize: 12, color: AppColors.text2Dark, height: 1.4),
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.text2Dark, height: 1.4),
             ),
           ],
         ),
@@ -558,8 +569,6 @@ class _AccountView extends StatelessWidget {
     );
   }
 
-
-
   void _showSecuritySheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -595,7 +604,8 @@ class _AccountView extends StatelessWidget {
                     ),
                     value: enabled,
                     onChanged: (value) async {
-                      final ok = await AppLockService.instance.setEnabled(value);
+                      final ok =
+                          await AppLockService.instance.setEnabled(value);
                       if (!context.mounted) return;
                       if (!ok) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -642,8 +652,6 @@ class _AccountView extends StatelessWidget {
       ),
     );
   }
-
-
 }
 
 // ── Profile Header Card ────────────────────────────────────────────────────────
@@ -1115,7 +1123,7 @@ class _SubscriptionCard extends StatelessWidget {
       };
 
   String _planLabel(String plan) => switch (plan) {
-        'lender' => 'Lender',
+        'lender' => 'Provider',
         'pro' => 'Pro',
         _ => 'Free',
       };

@@ -6,18 +6,19 @@ import '../../../../l10n/app_localizations.dart';
 
 /// Formats an integer amount with comma thousands separators.
 String fmtAmount(int n) {
-    final s = n.toString();
-    final buf = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-      buf.write(s[i]);
-    }
+  final s = n.toString();
+  final buf = StringBuffer();
+  for (int i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+    buf.write(s[i]);
+  }
   return buf.toString();
 }
 
 // ─── Header with step progress ───────────────────────────────────────────────
 class ListingStepHeader extends StatelessWidget {
-  const ListingStepHeader({super.key, 
+  const ListingStepHeader({
+    super.key,
     required this.title,
     required this.subtitle,
     required this.progress,
@@ -86,7 +87,6 @@ class ListingStepHeader extends StatelessWidget {
 // only look correct in dark mode and never adapt. Now derived from
 // AppColors.accent so it reads correctly in both light and dark themes.
 
-
 class ListingInfoBanner extends StatelessWidget {
   const ListingInfoBanner({super.key, required this.text});
 
@@ -118,9 +118,9 @@ class ListingInfoBanner extends StatelessWidget {
 // Groups related fields under one labeled panel instead of one long flat list,
 // so the form reads as a handful of short sections rather than a wall of inputs.
 
-
 class ListingFormPanel extends StatelessWidget {
-  const ListingFormPanel({super.key, 
+  const ListingFormPanel({
+    super.key,
     required this.title,
     required this.children,
     this.subtitle,
@@ -175,9 +175,9 @@ class ListingFormPanel extends StatelessWidget {
 // Hero numeric values now correctly use AppFonts.heading (Sora), matching the
 // "hero numbers" rule in app_theme.dart's doc comment.
 
-
 class ListingReviewRow extends StatelessWidget {
-  const ListingReviewRow({super.key, 
+  const ListingReviewRow({
+    super.key,
     required this.icon,
     required this.label,
     required this.value,
@@ -220,9 +220,9 @@ class ListingReviewRow extends StatelessWidget {
 
 // ─── Live Repayment Math Panel ────────────────────────────────────────────────
 
-
 class LiveRepaymentMathPanel extends StatelessWidget {
-  const LiveRepaymentMathPanel({super.key, 
+  const LiveRepaymentMathPanel({
+    super.key,
     required this.currency,
     required this.principal,
     required this.durationMonths,
@@ -265,13 +265,11 @@ class LiveRepaymentMathPanel extends StatelessWidget {
       _ => durationMonths,
     };
 
-    final int totalPayback = installmentAmount > 0
-        ? installmentAmount * periods
-        : 0;
+    final int totalPayback =
+        installmentAmount > 0 ? installmentAmount * periods : 0;
 
-    final int borrowingCost = totalPayback > principal
-        ? totalPayback - principal
-        : 0;
+    final int borrowingCost =
+        totalPayback > principal ? totalPayback - principal : 0;
 
     final planNote = switch (repaymentPlan) {
       'weekly' => l10n?.liveCalcWeeklyNote(durationMonths, periods) ??
@@ -358,8 +356,8 @@ class LiveRepaymentMathPanel extends StatelessWidget {
 }
 
 class MathRow extends StatelessWidget {
-
-  const MathRow({super.key, 
+  const MathRow({
+    super.key,
     required this.label,
     required this.value,
     this.isBold = false,
@@ -418,7 +416,8 @@ class AffordabilityWarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (principal <= 0 || installmentAmount <= 0) return const SizedBox.shrink();
+    if (principal <= 0 || installmentAmount <= 0)
+      return const SizedBox.shrink();
     if (totalRepayment >= principal) return const SizedBox.shrink();
 
     final shortfall = principal - totalRepayment;
@@ -451,7 +450,7 @@ class AffordabilityWarningBanner extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   'Your total repayment of $currency ${fmtAmount(totalRepayment)} is $currency ${fmtAmount(shortfall)} below the amount you are requesting. '
-                  'Lenders need to earn a return — consider increasing your installment amount.',
+                  'Providers need to earn a return — consider increasing your installment amount.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontSize: 11,
                         color: AppColors.warning,
@@ -578,12 +577,23 @@ class RepaymentScheduleTimeline extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     const weekdays = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final prefix =
-        repaymentPlan.toLowerCase() == 'weekly' ? '${weekdays[dt.weekday]} ' : '';
+    final prefix = repaymentPlan.toLowerCase() == 'weekly'
+        ? '${weekdays[dt.weekday]} '
+        : '';
     return '$prefix${months[dt.month - 1]} ${dt.day}';
   }
 
@@ -684,8 +694,7 @@ class RepaymentScheduleTimeline extends StatelessWidget {
                       ),
                       if (!isLast)
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Icon(
                             Icons.arrow_forward_rounded,
                             size: 13,
@@ -705,9 +714,8 @@ class RepaymentScheduleTimeline extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHigh,
+                        color:
+                            Theme.of(context).colorScheme.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                             color: Theme.of(context)
@@ -772,11 +780,11 @@ class TermGuideChips extends StatelessWidget {
             child: Row(
               children: [
                 _chip(context, '💡 Low Interest', 8.0, 0.0,
-                    'Attract lenders fast with a competitive low rate.'),
+                    'Attract Providers fast with a competitive low rate.'),
                 _chip(context, '🤝 Fair Terms', 10.0, 2.0,
-                    'A balanced offer that lenders commonly accept.'),
+                    'A balanced offer that Providers commonly accept.'),
                 _chip(context, '📊 Negotiable', 12.0, 3.0,
-                    'Slightly higher yield — gives lenders room to negotiate down.'),
+                    'Slightly higher yield — gives Providers room to negotiate down.'),
               ],
             ),
           ),
@@ -793,8 +801,8 @@ class TermGuideChips extends StatelessWidget {
         message: tooltip,
         child: ActionChip(
           label: Text(label,
-              style: const TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w600)),
+              style:
+                  const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
           onPressed: () => onPresetSelected(interest, lateFee),
           visualDensity: VisualDensity.compact,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -803,4 +811,3 @@ class TermGuideChips extends StatelessWidget {
     );
   }
 }
-

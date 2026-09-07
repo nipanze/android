@@ -78,7 +78,7 @@ class SuccessScreen extends StatelessWidget {
               iconBgColor: AppColors.accent.withValues(alpha: 0.15),
               iconColor: AppColors.accentLight,
               title: 'Explore loan requests',
-              subtitle: 'Find borrowers and lenders\nin your country.',
+              subtitle: 'Find Requesters and Providers\nin your country.',
               cardBgColor: cardBgColor,
               cardBorderColor: cardBorderColor,
               titleColor: titleColor,

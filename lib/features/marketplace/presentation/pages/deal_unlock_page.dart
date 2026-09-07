@@ -87,7 +87,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
     if (isPaid) {
       title = l10n.unlockContactDetails;
       body =
-          'As a ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} subscriber, this unlock is included in your plan at no extra cost.\n\nContact details will be shared with both parties immediately.';
+          'As a ${plan == SubscriptionPlan.pro ? 'Pro' : 'Provider'} subscriber, this unlock is included in your plan at no extra cost.\n\nContact details will be shared with both parties immediately.';
       confirmLabel = l10n.unlockWithFreeCredit;
     } else if (hasWelcomeCredit) {
       title = l10n.welcomeGiftUnlocks(freeLeft);
@@ -274,7 +274,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Upgrade to Lender (UGX 19,900/mo) or Pro (UGX 49,900/mo) to unlock all contacts at no per-deal fee.',
+                      'Upgrade to Provider (UGX 19,900/mo) or Pro (UGX 49,900/mo) to unlock all contacts at no per-deal fee.',
                       style: TextStyle(
                           fontSize: 11,
                           color: AppColors.purple.withValues(alpha: 0.9)),
@@ -367,7 +367,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Both borrower and lender must confirm the agreement before you can unlock contact details.',
+                  'Both Requester and Provider must confirm the agreement before you can unlock contact details.',
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.center,
                 ),
@@ -453,7 +453,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
                 icon: Icons.workspace_premium_rounded,
                 color: AppColors.purple,
                 title: l10n.includedInPlan(
-                    plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'),
+                    plan == SubscriptionPlan.pro ? 'Pro' : 'Provider'),
                 subtitle: l10n.unlimitedUnlocksSubtitle,
               )
             else if (hasFreeCredit)

@@ -29,24 +29,40 @@ class ListingCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final loan = listing.loan;
     final forex = listing.forex;
+    final needs = listing.needs;
     final isForex = forex != null;
-    final accent = isForex ? AppColors.purple : AppColors.success;
+    final isNeeds = needs != null;
+    final accent = isNeeds
+        ? const Color(0xFFF59E0B)
+        : isForex
+            ? const Color(0xFF06B6D4)
+            : const Color(0xFF22C55E);
     final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
     final borderColor = isDark
         ? accent.withValues(alpha: 0.95)
         : AppColors.accent.withValues(alpha: 0.22);
     final mutedColor =
         isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
-    final title =
-        loan?.title ?? '${forex!.currencyHeld} to ${forex.currencyNeeded}';
-    final amount = loan != null
-        ? '${loan.currency} ${_fmtAmount(context, loan.requestedAmount)}'
-        : '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}';
-    final description = loan?.purpose ?? _forexDescription(forex, context);
-    final location =
-        loan?.district ?? _settlementCity(forex!.settlementPreference);
-    final isVerified = loan?.trustIsVerified ?? forex?.trustIsVerified ?? false;
-    final offerCount = loan?.numberOfOffers ?? forex?.numberOfOffers ?? 0;
+    final title = needs?.title ??
+        loan?.title ??
+        '${forex!.currencyHeld} to ${forex.currencyNeeded}';
+    final amount = needs != null
+        ? (needs.budget > 0
+            ? '${needs.currency} ${_fmtAmount(context, needs.budget)}'
+            : l10n.marketplaceNeeded)
+        : loan != null
+            ? '${loan.currency} ${_fmtAmount(context, loan.requestedAmount)}'
+            : '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}';
+    final description = needs?.specification ??
+        loan?.purpose ??
+        _forexDescription(forex, context);
+    final location = needs?.location ??
+        loan?.district ??
+        _settlementCity(forex!.settlementPreference);
+    final isVerified = needs?.trustIsVerified ??
+        loan?.trustIsVerified ??
+        forex?.trustIsVerified ??
+        false;
     final authState = context.watch<AuthBloc>().state;
     final canSeeCollateral = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
@@ -67,14 +83,18 @@ class ListingCard extends StatelessWidget {
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final showRightRail = constraints.maxWidth >= 360;
               final main = _MainListingArea(
                 accent: accent,
-                moduleLabel:
-                    isForex ? l10n.marketplaceForex : l10n.marketplaceLoan,
-                moduleIcon: isForex
-                    ? Icons.currency_exchange_rounded
-                    : Icons.widgets_rounded,
+                moduleLabel: isNeeds
+                    ? l10n.marketplaceNeeds
+                    : isForex
+                        ? l10n.marketplaceForex
+                        : l10n.marketplaceLoan,
+                moduleIcon: isNeeds
+                    ? Icons.inventory_2_rounded
+                    : isForex
+                        ? Icons.currency_exchange_rounded
+                        : Icons.widgets_rounded,
                 posted: _postedAgo(context, listing.listedAt),
                 title: title,
                 amount: amount,
@@ -83,6 +103,8 @@ class ListingCard extends StatelessWidget {
                 mutedColor: mutedColor,
                 description: description,
                 attributes: [
+                  if (needs != null) needs.category,
+                  if (needs != null) needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
                   if (forex != null && forex.preferredRate != null)
                     forex.preferredRate!.toStringAsFixed(2),
@@ -90,30 +112,6 @@ class ListingCard extends StatelessWidget {
                     loan.collateralPreview!,
                 ],
               );
-
-              final actions = _ActionArea(
-                accent: accent,
-                offerCount: offerCount,
-                buttonLabel: l10n.viewDetails,
-                onTap: onTap,
-              );
-
-              if (!showRightRail) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _CardTopRow(
-                      accent: accent,
-                      isSaved: isSaved,
-                      onWatchlistToggle: onWatchlistToggle,
-                    ),
-                    const SizedBox(height: 8),
-                    main,
-                    const SizedBox(height: 10),
-                    actions,
-                  ],
-                );
-              }
 
               return Column(
                 children: [
@@ -123,14 +121,7 @@ class ListingCard extends StatelessWidget {
                     onWatchlistToggle: onWatchlistToggle,
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: main),
-                      const SizedBox(width: 12),
-                      SizedBox(width: 112, child: actions),
-                    ],
-                  ),
+                  Align(alignment: Alignment.centerLeft, child: main),
                 ],
               );
             },
@@ -304,81 +295,6 @@ class _MainListingArea extends StatelessWidget {
             color: mutedColor,
             fontSize: 13,
             height: 1.25,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionArea extends StatelessWidget {
-  const _ActionArea({
-    required this.accent,
-    required this.offerCount,
-    required this.buttonLabel,
-    required this.onTap,
-  });
-
-  final Color accent;
-  final int offerCount;
-  final String buttonLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(7),
-            border: Border.all(color: accent.withValues(alpha: 0.28)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$offerCount',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: accent,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-              ),
-              Text(
-                l10n.statOffers,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 34,
-          child: FilledButton(
-            onPressed: onTap,
-            style: FilledButton.styleFrom(
-              backgroundColor: accent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(7),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            child: FittedBox(child: Text(buttonLabel)),
           ),
         ),
       ],

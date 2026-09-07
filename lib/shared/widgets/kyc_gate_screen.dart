@@ -114,7 +114,7 @@ class _KycGateScreenState extends State<KycGateScreen> {
           AppColors.accent,
           l10n?.kycGateTitle ?? 'Verify your identity first',
           l10n?.kycGateBody ??
-              'To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.',
+              'To post Loan, Forex or Needs requests and connect with Providers, you need to complete identity verification. It only takes a few minutes.',
         ),
     };
 
@@ -131,7 +131,8 @@ class _KycGateScreenState extends State<KycGateScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                    icon:
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     onPressed: () => context.canPop()
                         ? context.pop()
                         : context.go(AppRoutes.marketplace),
@@ -183,8 +184,8 @@ class _KycGateScreenState extends State<KycGateScreen> {
                     Text(
                       widget.reason ?? body,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.65),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.65),
                         height: 1.55,
                       ),
                       textAlign: TextAlign.center,
@@ -208,8 +209,7 @@ class _KycGateScreenState extends State<KycGateScreen> {
                       const SizedBox(height: 12),
                       _GateStep(
                         number: '3',
-                        label: l10n?.kycStep3 ??
-                            'Post requests once approved',
+                        label: l10n?.kycStep3 ?? 'Post requests once approved',
                       ),
                       const SizedBox(height: 36),
                     ],
@@ -247,7 +247,8 @@ class _KycGateScreenState extends State<KycGateScreen> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.visibility_outlined, size: 18),
-                          label: Text(l10n?.kycStatusPending ?? 'View verification details'),
+                          label: Text(l10n?.kycStatusPending ??
+                              'View verification details'),
                           onPressed: () => _openKyc(context),
                         ),
                       ),
@@ -256,7 +257,8 @@ class _KycGateScreenState extends State<KycGateScreen> {
                         width: double.infinity,
                         child: OutlinedButton(
                           onPressed: () => context.go(AppRoutes.marketplace),
-                          child: Text(l10n?.browseMarketplace ?? 'Browse marketplace'),
+                          child: Text(
+                              l10n?.browseMarketplace ?? 'Browse marketplace'),
                         ),
                       ),
                     ],
@@ -266,7 +268,8 @@ class _KycGateScreenState extends State<KycGateScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          icon: const Icon(Icons.verified_user_outlined, size: 18),
+                          icon: const Icon(Icons.verified_user_outlined,
+                              size: 18),
                           label: Text(
                             isNotSubmitted
                                 ? (l10n?.kycGateCta ?? 'Start verification')

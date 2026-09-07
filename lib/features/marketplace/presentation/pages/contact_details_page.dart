@@ -100,7 +100,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     final plan = authState is AuthAuthenticated
         ? authState.user.subscriptionPlan
         : SubscriptionPlan.free;
-    final isPaid = plan == SubscriptionPlan.lender || plan == SubscriptionPlan.pro;
+    final isPaid =
+        plan == SubscriptionPlan.lender || plan == SubscriptionPlan.pro;
     final freeLeft = _profile?.freeUnlocksRemaining ?? 0;
     final hasWelcomeCredit = freeLeft > 0;
 
@@ -111,7 +112,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     if (isPaid) {
       title = 'Unlock Contact Details';
       body =
-          'As a ${plan == SubscriptionPlan.pro ? 'Pro' : 'Lender'} subscriber, this unlock is included in your plan at no extra cost.\n\nOpposite party contact details will be revealed immediately.';
+          'As a ${plan == SubscriptionPlan.pro ? 'Pro' : 'Provider'} subscriber, this unlock is included in your plan at no extra cost.\n\nOpposite party contact details will be revealed immediately.';
       confirmLabel = 'Unlock Now';
     } else if (hasWelcomeCredit) {
       title = '$freeLeft Free Unlock${freeLeft == 1 ? '' : 's'} Remaining';
@@ -159,8 +160,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       }
 
       final targetAgreementId = _agreement?.id ?? widget.agreementId;
-      final contactData =
-          await _agreementRepo.unlockContact(targetAgreementId);
+      final contactData = await _agreementRepo.unlockContact(targetAgreementId);
       if (!mounted) return;
 
       setState(() {
@@ -177,7 +177,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error unlocking contact: ${userFacingErrorMessage(e)}'),
+          content:
+              Text('Error unlocking contact: ${userFacingErrorMessage(e)}'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -210,7 +211,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.08),
-                border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Row(
@@ -225,7 +227,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('One-time unlock fee',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 13)),
                         SizedBox(height: 2),
                         Text('UGX 5,000',
                             style: TextStyle(
@@ -317,8 +320,12 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     final subtitleColor = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final cardBgColor = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     const accentGreen = AppColors.success;
-    final dividerColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
-    final borderColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
+    final dividerColor = isDark
+        ? AppColors.borderDark.withValues(alpha: 0.6)
+        : AppColors.borderLight;
+    final borderColor = isDark
+        ? AppColors.borderDark.withValues(alpha: 0.6)
+        : AppColors.borderLight;
 
     if (_loading) {
       return Scaffold(
@@ -335,7 +342,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             },
           ),
         ),
-        body: const Center(child: CircularProgressIndicator(color: AppColors.success)),
+        body: const Center(
+            child: CircularProgressIndicator(color: AppColors.success)),
       );
     }
 
@@ -367,8 +375,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
         authState is AuthAuthenticated ? authState.user.id : '';
 
     // Determine whether current user is borrower or lender
-    final isBorrower = currentUserId.isNotEmpty &&
-        currentUserId == agreement.borrowerId;
+    final isBorrower =
+        currentUserId.isNotEmpty && currentUserId == agreement.borrowerId;
 
     // Filter to ONLY show opposite party's info
     final contactData = _contactData;
@@ -376,38 +384,51 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     // If current logged in user is borrower, opposite party is Lender.
     // If current logged in user is lender, opposite party is Borrower.
     final isOppositePartyLender = isBorrower;
-    final oppositeRoleTitle = isOppositePartyLender ? 'Lender' : 'Borrower';
+    final oppositeRoleTitle = isOppositePartyLender ? 'Provider' : 'Requester';
 
     final name = contactData == null
         ? oppositeRoleTitle
-        : (isOppositePartyLender ? contactData.lenderName : contactData.borrowerName);
+        : (isOppositePartyLender
+            ? contactData.lenderName
+            : contactData.borrowerName);
 
     final phone = contactData == null
         ? ''
-        : (isOppositePartyLender ? contactData.lenderPhone : contactData.borrowerPhone);
+        : (isOppositePartyLender
+            ? contactData.lenderPhone
+            : contactData.borrowerPhone);
 
     final email = contactData == null
         ? ''
-        : (isOppositePartyLender ? contactData.lenderEmail : contactData.borrowerEmail);
+        : (isOppositePartyLender
+            ? contactData.lenderEmail
+            : contactData.borrowerEmail);
 
     final location = contactData == null
         ? 'Kampala, Uganda'
-        : (isOppositePartyLender ? contactData.lenderDistrict : contactData.borrowerDistrict);
+        : (isOppositePartyLender
+            ? contactData.lenderDistrict
+            : contactData.borrowerDistrict);
 
     final rating = contactData == null
         ? 4.9
-        : (isOppositePartyLender ? contactData.lenderRating : contactData.borrowerRating);
+        : (isOppositePartyLender
+            ? contactData.lenderRating
+            : contactData.borrowerRating);
 
     final completedDeals = contactData == null
         ? 12
-        : (isOppositePartyLender ? contactData.lenderCompletedDeals : contactData.borrowerCompletedDeals);
+        : (isOppositePartyLender
+            ? contactData.lenderCompletedDeals
+            : contactData.borrowerCompletedDeals);
 
     final initials = _getInitials(name);
 
     // Tag under name e.g. (Bank Agent) or (Lender) / (Borrower)
-    final roleTag = (oppositeRoleTitle == 'Lender' && name.contains('Kasujja'))
-        ? '(Bank Agent)'
-        : '($oppositeRoleTitle)';
+    final roleTag =
+        (oppositeRoleTitle == 'Provider' && name.contains('Kasujja'))
+            ? '(Bank Agent)'
+            : '($oppositeRoleTitle)';
 
     return Scaffold(
       appBar: AppBar(
@@ -438,7 +459,9 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                   width: 96,
                   height: 96,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF021B10) : const Color(0xFFE6F9EF),
+                    color: isDark
+                        ? const Color(0xFF021B10)
+                        : const Color(0xFFE6F9EF),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: accentGreen,
@@ -548,7 +571,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                         Text(
                           // If the current user owns the post (is borrower), the contact is the Lender.
                           // If the current user is the lender, the contact is the Borrower.
-                          isBorrower ? 'Lender' : 'Borrower',
+                          isBorrower ? 'Provider' : 'Requester',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -614,7 +637,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               alignment: Alignment.centerLeft,
               child: Text(
                 isOppositePartyLender
-                    ? 'Reach out to the lender directly'
+                    ? 'Reach out to the Provider directly'
                     : 'Reach out to the borrower directly',
                 style: TextStyle(
                   fontSize: 13.5,
@@ -637,7 +660,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.lock_rounded, size: 40, color: accentGreen),
+                    const Icon(Icons.lock_rounded,
+                        size: 40, color: accentGreen),
                     const SizedBox(height: 12),
                     Text(
                       l10n.contactInfoLocked,
@@ -677,7 +701,9 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                               )
                             : const Icon(Icons.lock_open_rounded, size: 18),
                         label: Text(
-                          _unlocking ? 'Unlocking...' : l10n.unlockContactDetails,
+                          _unlocking
+                              ? 'Unlocking...'
+                              : l10n.unlockContactDetails,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -722,7 +748,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF041822) : const Color(0xFFF0FBF5),
+                color:
+                    isDark ? const Color(0xFF041822) : const Color(0xFFF0FBF5),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: accentGreen.withValues(alpha: 0.35),
@@ -802,7 +829,8 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
                       ),
                     ),
                     SizedBox(width: 8),
-                    Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.black),
+                    Icon(Icons.arrow_forward_rounded,
+                        size: 18, color: Colors.black),
                   ],
                 ),
               ),
@@ -855,8 +883,12 @@ class _ContactActionCard extends StatelessWidget {
     final textColor = isDark ? AppColors.textDark : AppColors.textLight;
     final subtitleColor = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final cardBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
-    final borderColor = isDark ? AppColors.borderDark.withValues(alpha: 0.6) : AppColors.borderLight;
-    final iconBg = isDark ? AppColors.success.withValues(alpha: 0.15) : AppColors.success.withValues(alpha: 0.1);
+    final borderColor = isDark
+        ? AppColors.borderDark.withValues(alpha: 0.6)
+        : AppColors.borderLight;
+    final iconBg = isDark
+        ? AppColors.success.withValues(alpha: 0.15)
+        : AppColors.success.withValues(alpha: 0.1);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

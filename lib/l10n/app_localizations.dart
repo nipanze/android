@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'A trusted marketplace connecting borrowers with lenders.'**
+  /// **'A trusted marketplace connecting Requesters with Providers.'**
   String get welcomeSubtitle;
 
   /// No description provided for @selectLanguage.
@@ -731,7 +731,7 @@ abstract class AppLocalizations {
   /// No description provided for @noLoanRequestsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Post a request and lenders will compete to offer you the best rate.'**
+  /// **'Post a request and Providers will compete to offer you the best rate.'**
   String get noLoanRequestsSubtitle;
 
   /// No description provided for @createLoanRequest.
@@ -1265,25 +1265,25 @@ abstract class AppLocalizations {
   /// No description provided for @lenderRequired.
   ///
   /// In en, this message translates to:
-  /// **'Lender required'**
+  /// **'Provider access required'**
   String get lenderRequired;
 
   /// No description provided for @lenderRequiredSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.'**
+  /// **'Making offers is part of the Provider plan (also included in Pro). Upgrade to unlock offer placement across Loans, Forex and Needs.'**
   String get lenderRequiredSubtitle;
 
   /// No description provided for @lenderTier.
   ///
   /// In en, this message translates to:
-  /// **'Lender tier'**
+  /// **'Provider plan'**
   String get lenderTier;
 
   /// No description provided for @lenderTierDesc.
   ///
   /// In en, this message translates to:
-  /// **'For anyone ready to make structured offers and earn returns on Nipanze.'**
+  /// **'For anyone ready to make structured offers and participate on the supply side of Nipanze.'**
   String get lenderTierDesc;
 
   /// No description provided for @everythingInFree.
@@ -1307,7 +1307,7 @@ abstract class AppLocalizations {
   /// No description provided for @chooseLender.
   ///
   /// In en, this message translates to:
-  /// **'Choose Lender'**
+  /// **'Choose Provider'**
   String get chooseLender;
 
   /// No description provided for @notNow.
@@ -1349,7 +1349,7 @@ abstract class AppLocalizations {
   /// No description provided for @everythingInLender.
   ///
   /// In en, this message translates to:
-  /// **'Everything in Lender'**
+  /// **'Everything in Provider'**
   String get everythingInLender;
 
   /// No description provided for @proFeature1.
@@ -1469,7 +1469,7 @@ abstract class AppLocalizations {
   /// No description provided for @dealAgreementLockedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Both borrower and lender have confirmed the deal. You can now unlock contact details to connect directly.'**
+  /// **'Both Requester and Provider have confirmed the deal. You can now unlock contact details to connect directly.'**
   String get dealAgreementLockedSubtitle;
 
   /// No description provided for @includedInPlan.
@@ -1505,7 +1505,7 @@ abstract class AppLocalizations {
   /// No description provided for @unlockFeeAppliesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.'**
+  /// **'Your welcome unlock has been used. Upgrade to Provider or Pro for unlimited free unlocks.'**
   String get unlockFeeAppliesSubtitle;
 
   /// No description provided for @whatHappensNext.
@@ -1601,7 +1601,7 @@ abstract class AppLocalizations {
   /// No description provided for @lender.
   ///
   /// In en, this message translates to:
-  /// **'Lender'**
+  /// **'Provider'**
   String get lender;
 
   /// No description provided for @directContactNotice.
@@ -3215,7 +3215,7 @@ abstract class AppLocalizations {
   /// No description provided for @kycGateBody.
   ///
   /// In en, this message translates to:
-  /// **'To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.'**
+  /// **'To post Loan, Forex or Needs requests and connect with Providers, you need to complete identity verification. It only takes a few minutes.'**
   String get kycGateBody;
 
   /// No description provided for @kycGatePendingTitle.

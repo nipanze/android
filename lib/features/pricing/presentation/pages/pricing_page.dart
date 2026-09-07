@@ -96,9 +96,7 @@ class _PricingPageBody extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.bg2Dark
-                            : AppColors.bg2Light,
+                        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
                         border: Border.all(
                             color: isDark
                                 ? AppColors.borderDark.withValues(alpha: 0.5)
@@ -144,14 +142,14 @@ class _PricingPageBody extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // ── Lender plan ────────────────────────────────────────────────
+              // ── Provider plan ──────────────────────────────────────────────
               _PlanCard(
                 plan: SubscriptionPlan.lender,
                 price: isLoading
                     ? '…'
                     : '${prices.lenderAmountFormatted}${l10n?.perMonth ?? ' / month'}',
                 subtitle: l10n?.lenderTierDesc ??
-                    'For anyone ready to make structured offers and earn returns on Nipanze.',
+                    'For anyone ready to make structured offers across Loans, Forex and Needs.',
                 features: [
                   l10n?.everythingInFree ?? 'Everything in Free',
                   'Post up to 5 active loan requests',
@@ -175,7 +173,7 @@ class _PricingPageBody extends StatelessWidget {
                 subtitle: l10n?.proTierDesc ??
                     'Priority visibility, improved matching and stronger marketplace performance.',
                 features: [
-                  l10n?.everythingInLender ?? 'Everything in Lender',
+                  l10n?.everythingInLender ?? 'Everything in Provider',
                   'Post up to 15 active loan requests',
                   'Preferred loan terms and Forex rate',
                   'Priority visibility and improved matching',

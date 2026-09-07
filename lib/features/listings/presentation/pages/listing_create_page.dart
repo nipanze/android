@@ -338,9 +338,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         title: Text(l10n?.affordabilityDialogTitle ?? 'Publish anyway?'),
         content: Text(
           l10n?.affordabilityDialogBody ??
-              'Your repayment terms appear lower than what most lenders will accept. '
-              'Total repayment of $currency ${fmtAmount(totalRepayment)} is below your requested $currency ${fmtAmount(principal)}. '
-              'You can still publish, but you may not receive offers. Consider adjusting your installment amount.',
+              'Your repayment terms appear lower than what most Providers will accept. '
+                  'Total repayment of $currency ${fmtAmount(totalRepayment)} is below your requested $currency ${fmtAmount(principal)}. '
+                  'You can still publish, but you may not receive offers. Consider adjusting your installment amount.',
         ),
         actions: [
           TextButton(
@@ -461,7 +461,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         title: Text(l10n?.requestSubmittedTitle ?? 'Request submitted'),
         content: Text(
           l10n?.requestSubmittedContent ??
-              'Your loan request is now live on the marketplace. Lenders can review it and make offers.',
+              'Your loan request is now live on the marketplace. Providers can review it and make offers.',
         ),
         actions: [
           TextButton(
@@ -821,7 +821,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   labelText: l10n?.descriptionOptionalLabel ??
                       'Description (optional)',
                   hintText: l10n?.descriptionOptionalHint ??
-                      'Add any context lenders should know',
+                      'Add any context Providers should know',
                   alignLabelWithHint: true,
                 ),
               ),
@@ -1048,7 +1048,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   labelText: l10n?.dueDayLabel ?? 'Due day / frequency',
                   prefixIcon: const Icon(Icons.today_outlined, size: 20),
                 ),
-                hint: Text(l10n?.dueDayHint ?? 'Select due day (e.g. 5th of every month)'),
+                hint: Text(l10n?.dueDayHint ??
+                    'Select due day (e.g. 5th of every month)'),
                 items: (_preferredRepaymentPlan == 'weekly'
                         ? _weeklyDueDayOptions
                         : _preferredRepaymentPlan == 'one_time'
@@ -1072,7 +1073,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       'Due cutoff time (for late fee timing)',
                   prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
                 ),
-                hint: Text(l10n?.dueCutoffTimeHint ?? 'Select due time (e.g. 5:00 PM)'),
+                hint: Text(l10n?.dueCutoffTimeHint ??
+                    'Select due time (e.g. 5:00 PM)'),
                 items: _dueTimeOptions
                     .map((time) => DropdownMenuItem(
                           value: time,
@@ -1090,8 +1092,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 textCapitalization: TextCapitalization.sentences,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText:
-                      l10n?.repaymentTimelineLabel ?? 'Repayment timeline & schedule',
+                  labelText: l10n?.repaymentTimelineLabel ??
+                      'Repayment timeline & schedule',
                   hintText: l10n?.repaymentTimelineHint ??
                       'e.g. Paid by the 5th of every month by 5:00 PM for 8 months',
                   alignLabelWithHint: true,
@@ -1117,14 +1119,16 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           // ── Affordability warning (borrower mirror of lender loss-alert) ──
           Builder(builder: (context) {
             final principal = int.tryParse(_amountController.text) ?? 0;
-            final installment = int.tryParse(_repaymentAmountController.text) ?? 0;
+            final installment =
+                int.tryParse(_repaymentAmountController.text) ?? 0;
             final periods = switch (_preferredRepaymentPlan) {
               'weekly' => (int.tryParse(_durationController.text) ?? 0) * 4,
               'one_time' => 1,
               _ => int.tryParse(_durationController.text) ?? 0,
             };
             final totalRepayment = installment * periods;
-            if (installment <= 0 || principal <= 0) return const SizedBox.shrink();
+            if (installment <= 0 || principal <= 0)
+              return const SizedBox.shrink();
             return Column(
               children: [
                 const SizedBox(height: 10),
@@ -1143,7 +1147,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             principal: int.tryParse(_amountController.text) ?? 0,
             durationMonths: int.tryParse(_durationController.text) ?? 0,
             repaymentPlan: _preferredRepaymentPlan,
-            installmentAmount: int.tryParse(_repaymentAmountController.text) ?? 0,
+            installmentAmount:
+                int.tryParse(_repaymentAmountController.text) ?? 0,
           ),
           // ── Payment schedule timeline ─────────────────────────────────────
           if (_preferredRepaymentPlan != null &&
@@ -1154,7 +1159,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             RepaymentScheduleTimeline(
               durationMonths: int.tryParse(_durationController.text) ?? 0,
               repaymentPlan: _preferredRepaymentPlan!,
-              installmentAmount: int.tryParse(_repaymentAmountController.text) ?? 0,
+              installmentAmount:
+                  int.tryParse(_repaymentAmountController.text) ?? 0,
               currency: currency,
               selectedDueDay: _selectedDueDay,
               selectedDueTime: _selectedDueTime,
@@ -1227,7 +1233,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       decoration: InputDecoration(
                         labelText: l10n?.suggestedLateFeeLabel ??
                             'Suggested late payment fee (%)',
-                        prefixIcon: const Icon(Icons.warning_amber_rounded, size: 20),
+                        prefixIcon:
+                            const Icon(Icons.warning_amber_rounded, size: 20),
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return null;
@@ -1244,16 +1251,18 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       decoration: InputDecoration(
                         labelText: l10n?.suggestedRepaymentScheduleLabel ??
                             'Suggested repayment schedule',
-                        prefixIcon:
-                            const Icon(Icons.event_available_outlined, size: 20),
+                        prefixIcon: const Icon(Icons.event_available_outlined,
+                            size: 20),
                       ),
                       items: _repaymentPlans
                           .map((p) => DropdownMenuItem(
                                 value: p['value'],
-                                child: Text(_getLocalizedRepaymentPlan(p['value'])),
+                                child: Text(
+                                    _getLocalizedRepaymentPlan(p['value'])),
                               ))
                           .toList(),
-                      onChanged: (v) => setState(() => _suggestedRepaymentPlan = v),
+                      onChanged: (v) =>
+                          setState(() => _suggestedRepaymentPlan = v),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -1263,8 +1272,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.price_check_outlined, size: 20),
                       ).copyWith(
-                        labelText: l10n?.suggestedInstallmentAmountLabel(currency) ??
-                            'Suggested installment amount ($currency)',
+                        labelText:
+                            l10n?.suggestedInstallmentAmountLabel(currency) ??
+                                'Suggested installment amount ($currency)',
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return null;
@@ -1292,7 +1302,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                           Expanded(
                             child: Text(
                               l10n?.freeTermsBanner ??
-                                  'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.',
+                                  'Leave this blank — Providers will propose their own terms. Upgrade to Pro to suggest rates.',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
@@ -1541,5 +1551,4 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       ),
     );
   }
-
 }

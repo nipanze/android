@@ -19,7 +19,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'A trusted marketplace connecting borrowers with lenders.';
+      'A trusted marketplace connecting Requesters with Providers.';
 
   @override
   String get selectLanguage => 'Select Language';
@@ -355,7 +355,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noLoanRequestsSubtitle =>
-      'Post a request and lenders will compete to offer you the best rate.';
+      'Post a request and Providers will compete to offer you the best rate.';
 
   @override
   String get createLoanRequest => 'Create a loan request';
@@ -656,18 +656,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nipanze is a non-custodial matchmaking platform. We do not hold, move, or settle funds. All transactions occur direct between participants.';
 
   @override
-  String get lenderRequired => 'Lender required';
+  String get lenderRequired => 'Provider access required';
 
   @override
   String get lenderRequiredSubtitle =>
-      'Making offers is part of the Lender plan (also included in Pro). Upgrade to unlock offer placement on any listing.';
+      'Making offers is part of the Provider plan (also included in Pro). Upgrade to unlock offer placement across Loans, Forex and Needs.';
 
   @override
-  String get lenderTier => 'Lender tier';
+  String get lenderTier => 'Provider plan';
 
   @override
   String get lenderTierDesc =>
-      'For anyone ready to make structured offers and earn returns on Nipanze.';
+      'For anyone ready to make structured offers and participate on the supply side of Nipanze.';
 
   @override
   String get everythingInFree => 'Everything in Free';
@@ -680,7 +680,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lenderFeature2 => 'See offer detail where you participate';
 
   @override
-  String get chooseLender => 'Choose Lender';
+  String get chooseLender => 'Choose Provider';
 
   @override
   String get notNow => 'Not now';
@@ -704,7 +704,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Priority visibility, improved matching and stronger marketplace performance.';
 
   @override
-  String get everythingInLender => 'Everything in Lender';
+  String get everythingInLender => 'Everything in Provider';
 
   @override
   String get proFeature1 => 'Preferred loan terms and Forex rate';
@@ -772,7 +772,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dealAgreementLockedSubtitle =>
-      'Both borrower and lender have confirmed the deal. You can now unlock contact details to connect directly.';
+      'Both Requester and Provider have confirmed the deal. You can now unlock contact details to connect directly.';
 
   @override
   String includedInPlan(String plan) {
@@ -797,7 +797,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlockFeeAppliesSubtitle =>
-      'Your welcome unlock has been used. Upgrade to Lender or Pro for unlimited free unlocks.';
+      'Your welcome unlock has been used. Upgrade to Provider or Pro for unlimited free unlocks.';
 
   @override
   String get whatHappensNext => 'What happens next';
@@ -850,7 +850,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get borrower => 'Borrower';
 
   @override
-  String get lender => 'Lender';
+  String get lender => 'Provider';
 
   @override
   String get directContactNotice =>
@@ -1739,7 +1739,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kycGateBody =>
-      'To post loan or forex requests and connect with lenders, you need to complete identity verification. It only takes a few minutes.';
+      'To post Loan, Forex or Needs requests and connect with Providers, you need to complete identity verification. It only takes a few minutes.';
 
   @override
   String get kycGatePendingTitle => 'Verification in review';

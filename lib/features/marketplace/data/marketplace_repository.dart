@@ -59,8 +59,19 @@ class MarketplaceRepository {
             .map((e) => MarketplaceItem.forex(ForexListingModel.fromMap(e))));
       }
 
-      if (module == MarketplaceModule.needs) {
-        return const [];
+      if (module == null || module == MarketplaceModule.needs) {
+        try {
+          var query = _client.from(ViewNames.needsListings).select();
+          if (country != null) {
+            query = query.eq('country', country) as dynamic;
+          }
+          final data = await (query as PostgrestFilterBuilder)
+              .order('listed_at', ascending: false);
+          items.addAll((data as List)
+              .map((e) => MarketplaceItem.needs(NeedsListing.fromMap(e))));
+        } catch (_) {
+          // Older deployments may not have the Needs view yet.
+        }
       }
 
       items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
@@ -90,6 +101,19 @@ class MarketplaceRepository {
 
         return LoanListing.fromMap(data);
       }
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<NeedsListing> getNeedsDetail(String requestId) async {
+    try {
+      final data = await _client
+          .from(ViewNames.needsListings)
+          .select()
+          .eq('request_id', requestId)
+          .single();
+      return NeedsListing.fromMap(data);
     } catch (e) {
       throw parseSupabaseError(e);
     }

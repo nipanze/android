@@ -7,14 +7,14 @@ class AppColors {
   AppColors._();
 
   // Brand – Nipanze primary: Electric Royal Blue (Vibrant Fintech)
-  static const Color accent = Color(0xFF078DF5); // Nipanze primary blue
+  static const Color accent = Color(0xFF2563EB); // Nipanze primary blue
   static const Color accentDark = Color(0xFF056FC2); // Pressed primary blue
   static const Color accentLight =
       Color(0xFF62B8FF); // Light variant for dark-mode text & glow
-  static const Color success = Color(0xFF0BCFA8); // Loans emerald
-  static const Color warning = Color(0xFFF5A832); // Needs gold
+  static const Color success = Color(0xFF22C55E); // Loans green
+  static const Color warning = Color(0xFFF59E0B); // Needs amber
   static const Color danger = Color(0xFFFF4D5E); // Alerts
-  static const Color purple = Color(0xFF974CF6); // Forex purple
+  static const Color purple = Color(0xFF06B6D4); // Forex cyan
 
   // Dark theme surfaces
   static const Color bgDark = Color(0xFF010F23);
