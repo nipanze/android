@@ -39,7 +39,7 @@
   "navMarkets": "Marchés",
   "navWatchlist": "Favoris",
   "navRequest": "Demander",
-  "navPositions": "Activité",
+  "navPositions": "Positions",
   "navAccount": "Compte",
   "marketplaceTitle": "Marché",
   "listingsLive": "{count} offres · en direct",
@@ -77,6 +77,28 @@
     }
   },
   "expired": "Expiré",
+  "marketplaceAll": "Tout",
+  "marketplaceLoan": "Prêt",
+  "marketplaceLoans": "Prêts",
+  "marketplaceForex": "Forex",
+  "marketplaceNeeds": "Besoins",
+  "marketplaceNeeded": "Demandé",
+  "viewDetails": "Voir détails",
+  "proAdvancedFilters": "Filtres Pro avancés",
+  "today": "Aujourd'hui",
+  "weekAgo": "Il y a 1 semaine",
+  "daysAgo": "Il y a {count} jours",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeksAgo": "Il y a {count} semaines",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "watchlistTitle": "Favoris",
   "watchlistSubtitle": "Annonces que vous suivez",
@@ -969,5 +991,4 @@
   "reachOutToBorrowerDirectly": "Contactez l'emprunteur directement",
   "nipanzeDisclaimerCardText": "Nipanze ne détient pas de fonds et n'intervient pas dans la transaction.\nConfirmez les détails avant d'envoyer quoi que ce soit."
 }
-
 

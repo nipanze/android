@@ -66,8 +66,10 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     }
   }
 
-  Future<void> refresh() =>
-      load(district: _districtFilter, module: _moduleFilter, country: _countryFilter);
+  Future<void> refresh() => load(
+      district: _districtFilter,
+      module: _moduleFilter,
+      country: _countryFilter);
 
   Future<void> setModuleFilter(MarketplaceModule? module) async {
     if (isClosed) return;
@@ -77,7 +79,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _proFilter = _proFilter.copyWith(institutionMatchOnly: false);
       _cachedProFilteredIds = null;
     }
-    await load(district: _districtFilter, module: module, country: _countryFilter);
+    await load(
+        district: _districtFilter, module: module, country: _countryFilter);
     if (_proFilter.isActive) {
       await applyProFilters(_proFilter);
     }
@@ -250,8 +253,11 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     }
   }
 
-  String _offerKey(MarketplaceItem item) =>
-      '${item.module == MarketplaceModule.loan ? 'loan' : 'forex'}:${item.requestId}';
+  String _offerKey(MarketplaceItem item) => switch (item.module) {
+        MarketplaceModule.loan => 'loan:${item.requestId}',
+        MarketplaceModule.forex => 'forex:${item.requestId}',
+        MarketplaceModule.needs => 'needs:${item.requestId}',
+      };
 
   String _resolveViewerFeedKey() {
     try {
@@ -278,6 +284,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   double _feedScore(MarketplaceItem item) {
+    if (item.module == MarketplaceModule.needs) return 0;
+
     final now = DateTime.now().toUtc();
     final listedAt = item.listedAt.toUtc();
     final ageHours = now.difference(listedAt).inHours.clamp(0, 24 * 14);
@@ -371,6 +379,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         listings.where((l) => l.module == MarketplaceModule.loan).toList();
     final forex =
         listings.where((l) => l.module == MarketplaceModule.forex).toList();
+    final needs =
+        listings.where((l) => l.module == MarketplaceModule.needs).toList();
 
     if (loans.isEmpty || forex.isEmpty) return listings;
 
@@ -418,6 +428,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       }
     }
 
-    return mixed;
+    return [...mixed, ...needs];
   }
 }

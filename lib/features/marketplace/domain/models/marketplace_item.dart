@@ -1,7 +1,7 @@
 import '../../../../shared/models/forex_listing_model.dart';
 import 'loan_listing.dart';
 
-enum MarketplaceModule { loan, forex }
+enum MarketplaceModule { loan, forex, needs }
 
 class MarketplaceItem {
   const MarketplaceItem.loan(this.loan)

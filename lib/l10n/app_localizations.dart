@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @navPositions.
   ///
   /// In en, this message translates to:
-  /// **'Activity'**
+  /// **'Positions'**
   String get navPositions;
 
   /// No description provided for @navAccount.
@@ -445,6 +445,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Expired'**
   String get expired;
+
+  /// No description provided for @marketplaceAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get marketplaceAll;
+
+  /// No description provided for @marketplaceLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan'**
+  String get marketplaceLoan;
+
+  /// No description provided for @marketplaceLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans'**
+  String get marketplaceLoans;
+
+  /// No description provided for @marketplaceForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex'**
+  String get marketplaceForex;
+
+  /// No description provided for @marketplaceNeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs'**
+  String get marketplaceNeeds;
+
+  /// No description provided for @marketplaceNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed'**
+  String get marketplaceNeeded;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get viewDetails;
+
+  /// No description provided for @proAdvancedFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro advanced filters'**
+  String get proAdvancedFilters;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @weekAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week ago'**
+  String get weekAgo;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String daysAgo(int count);
+
+  /// No description provided for @weeksAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks ago'**
+  String weeksAgo(int count);
 
   /// No description provided for @watchlistTitle.
   ///

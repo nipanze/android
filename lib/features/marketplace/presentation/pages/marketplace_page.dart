@@ -36,8 +36,7 @@ class MarketplacePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-              getIt<MarketplaceCubit>()..load(country: userCountry),
+          create: (_) => getIt<MarketplaceCubit>()..load(country: userCountry),
         ),
         BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
       ],
@@ -92,7 +91,10 @@ class _MarketplaceView extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .headlineMedium
-                              ?.copyWith(fontSize: 22),
+                              ?.copyWith(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                              ),
                         ),
                         const SizedBox(height: 2),
                         BlocBuilder<MarketplaceCubit, MarketplaceState>(
@@ -111,8 +113,8 @@ class _MarketplaceView extends StatelessWidget {
                                       .listingsLive(count),
                                   style: const TextStyle(
                                     color: AppColors.success,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                                 if (proActive) ...[
@@ -193,10 +195,7 @@ class _MarketplaceView extends StatelessWidget {
               child: Container(
                 margin: const EdgeInsets.fromLTRB(6, 0, 6, 0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surface
-                      .withValues(alpha: 0.72),
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
@@ -265,7 +264,7 @@ class _MarketplaceView extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                           itemCount: state.listings.length,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final listing = state.listings[index];
                             return BlocBuilder<WatchlistCubit, WatchlistState>(
@@ -326,7 +325,8 @@ class _ModuleFilterRow extends StatelessWidget {
           child: Row(
             children: [
               _FilterPill(
-                label: 'All',
+                label: AppLocalizations.of(context)!.marketplaceAll,
+                icon: Icons.grid_view_rounded,
                 selected: selected == null,
                 accentColor: AppColors.accent,
                 onTap: () =>
@@ -334,7 +334,7 @@ class _ModuleFilterRow extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               _FilterPill(
-                label: 'Loans',
+                label: AppLocalizations.of(context)!.marketplaceLoans,
                 icon: Icons.payments_rounded,
                 selected: selected == MarketplaceModule.loan,
                 accentColor: AppColors.success,
@@ -344,13 +344,23 @@ class _ModuleFilterRow extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               _FilterPill(
-                label: 'Forex',
+                label: AppLocalizations.of(context)!.marketplaceForex,
                 icon: Icons.currency_exchange_rounded,
                 selected: selected == MarketplaceModule.forex,
                 accentColor: AppColors.purple,
                 onTap: () => context
                     .read<MarketplaceCubit>()
                     .setModuleFilter(MarketplaceModule.forex),
+              ),
+              const SizedBox(width: 6),
+              _FilterPill(
+                label: AppLocalizations.of(context)!.marketplaceNeeds,
+                icon: Icons.inventory_2_rounded,
+                selected: selected == MarketplaceModule.needs,
+                accentColor: AppColors.warning,
+                onTap: () => context
+                    .read<MarketplaceCubit>()
+                    .setModuleFilter(MarketplaceModule.needs),
               ),
             ],
           ),
@@ -379,8 +389,9 @@ class _FilterPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final shellColor =
-        selected ? accentColor.withValues(alpha: 0.10) : Colors.transparent;
-    final textColor = accentColor.withValues(alpha: selected ? 1 : 0.95);
+        selected ? accentColor.withValues(alpha: 0.92) : Colors.transparent;
+    final textColor =
+        selected ? Colors.white : accentColor.withValues(alpha: 0.98);
     final borderColor = selected
         ? accentColor.withValues(alpha: 0.9)
         : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.16);
@@ -389,8 +400,8 @@ class _FilterPill extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        constraints: const BoxConstraints(minHeight: 28),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        constraints: const BoxConstraints(minHeight: 40, minWidth: 78),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
           color: shellColor,
           borderRadius: BorderRadius.circular(7),
@@ -409,22 +420,22 @@ class _FilterPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 17,
+                color: textColor,
+              ),
+              const SizedBox(width: 7),
+            ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 13,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
                 color: textColor,
               ),
             ),
-            if (icon != null) ...[
-              const SizedBox(width: 4),
-              Icon(
-                icon,
-                size: 12,
-                color: accentColor.withValues(alpha: selected ? 1 : 0.95),
-              ),
-            ],
           ],
         ),
       ),
@@ -449,7 +460,7 @@ class _ProFilterButton extends StatelessWidget {
           width: 34,
           height: 34,
           child: Tooltip(
-            message: 'Pro Advanced Filters',
+            message: AppLocalizations.of(context)!.proAdvancedFilters,
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(8),

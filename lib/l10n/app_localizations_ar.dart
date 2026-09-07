@@ -127,7 +127,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navRequest => 'طلب';
 
   @override
-  String get navPositions => 'الأنشطة';
+  String get navPositions => 'المراكز';
 
   @override
   String get navAccount => 'الحساب';
@@ -189,6 +189,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get expired => 'منتهي';
+
+  @override
+  String get marketplaceAll => 'الكل';
+
+  @override
+  String get marketplaceLoan => 'قرض';
+
+  @override
+  String get marketplaceLoans => 'القروض';
+
+  @override
+  String get marketplaceForex => 'الفوركس';
+
+  @override
+  String get marketplaceNeeds => 'الاحتياجات';
+
+  @override
+  String get marketplaceNeeded => 'مطلوب';
+
+  @override
+  String get viewDetails => 'عرض التفاصيل';
+
+  @override
+  String get proAdvancedFilters => 'فلاتر Pro المتقدمة';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get weekAgo => 'منذ أسبوع واحد';
+
+  @override
+  String daysAgo(int count) {
+    return 'منذ $count أيام';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return 'منذ $count أسابيع';
+  }
 
   @override
   String get watchlistTitle => 'قائمة المتابعة';

@@ -39,7 +39,7 @@
   "navMarkets": "الأسواق",
   "navWatchlist": "قائمة المتابعة",
   "navRequest": "طلب",
-  "navPositions": "الأنشطة",
+  "navPositions": "المراكز",
   "navAccount": "الحساب",
   "marketplaceTitle": "السوق",
   "listingsLive": "{count} عروض · مباشر",
@@ -77,6 +77,28 @@
     }
   },
   "expired": "منتهي",
+  "marketplaceAll": "الكل",
+  "marketplaceLoan": "قرض",
+  "marketplaceLoans": "القروض",
+  "marketplaceForex": "الفوركس",
+  "marketplaceNeeds": "الاحتياجات",
+  "marketplaceNeeded": "مطلوب",
+  "viewDetails": "عرض التفاصيل",
+  "proAdvancedFilters": "فلاتر Pro المتقدمة",
+  "today": "اليوم",
+  "weekAgo": "منذ أسبوع واحد",
+  "daysAgo": "منذ {count} أيام",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeksAgo": "منذ {count} أسابيع",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "watchlistTitle": "قائمة المتابعة",
   "watchlistSubtitle": "العروض التي تتابعها",
@@ -964,5 +986,4 @@
   "reachOutToBorrowerDirectly": "تواصل مع المقترض مباشرة",
   "nipanzeDisclaimerCardText": "لا تحتجز Nipanze الأموال ولا تتوسط في الصفقات.\nيرجى التأكد من التفاصيل قبل إرسال أي مبلغ."
 }
-
 

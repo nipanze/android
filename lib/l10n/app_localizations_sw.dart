@@ -130,7 +130,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get navRequest => 'Omba';
 
   @override
-  String get navPositions => 'Shughuli';
+  String get navPositions => 'Nafasi';
 
   @override
   String get navAccount => 'Akaunti';
@@ -192,6 +192,46 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get expired => 'Imemalizika';
+
+  @override
+  String get marketplaceAll => 'Zote';
+
+  @override
+  String get marketplaceLoan => 'Mkopo';
+
+  @override
+  String get marketplaceLoans => 'Mikopo';
+
+  @override
+  String get marketplaceForex => 'Forex';
+
+  @override
+  String get marketplaceNeeds => 'Mahitaji';
+
+  @override
+  String get marketplaceNeeded => 'Inahitajika';
+
+  @override
+  String get viewDetails => 'Tazama maelezo';
+
+  @override
+  String get proAdvancedFilters => 'Vichujio vya juu vya Pro';
+
+  @override
+  String get today => 'Leo';
+
+  @override
+  String get weekAgo => 'Wiki 1 iliyopita';
+
+  @override
+  String daysAgo(int count) {
+    return 'Siku $count zilizopita';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return 'Wiki $count zilizopita';
+  }
 
   @override
   String get watchlistTitle => 'Orodha ya Ufuatiliaji';

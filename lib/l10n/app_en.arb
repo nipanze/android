@@ -39,7 +39,7 @@
   "navMarkets": "Markets",
   "navWatchlist": "Watchlist",
   "navRequest": "Request",
-  "navPositions": "Activity",
+  "navPositions": "Positions",
   "navAccount": "Account",
   "marketplaceTitle": "Marketplace",
   "listingsLive": "{count} listings · live",
@@ -77,6 +77,28 @@
     }
   },
   "expired": "Expired",
+  "marketplaceAll": "All",
+  "marketplaceLoan": "Loan",
+  "marketplaceLoans": "Loans",
+  "marketplaceForex": "Forex",
+  "marketplaceNeeds": "Needs",
+  "marketplaceNeeded": "Needed",
+  "viewDetails": "View details",
+  "proAdvancedFilters": "Pro advanced filters",
+  "today": "Today",
+  "weekAgo": "1 week ago",
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeksAgo": "{count} weeks ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "watchlistTitle": "Watchlist",
   "watchlistSubtitle": "Listings you're tracking",
@@ -1001,5 +1023,4 @@
   "viewOppositePartyContact": "View Opposite Party Contact",
   "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender."
 }
-
 

@@ -130,7 +130,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get navRequest => 'Saba';
 
   @override
-  String get navPositions => 'Ibikorwa';
+  String get navPositions => 'Imyanya';
 
   @override
   String get navAccount => 'Konti';
@@ -192,6 +192,46 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get expired => 'Byarangiye';
+
+  @override
+  String get marketplaceAll => 'Byose';
+
+  @override
+  String get marketplaceLoan => 'Inguzanyo';
+
+  @override
+  String get marketplaceLoans => 'Inguzanyo';
+
+  @override
+  String get marketplaceForex => 'Forex';
+
+  @override
+  String get marketplaceNeeds => 'Ibikenewe';
+
+  @override
+  String get marketplaceNeeded => 'Bikenewe';
+
+  @override
+  String get viewDetails => 'Reba ibisobanuro';
+
+  @override
+  String get proAdvancedFilters => 'Amayunguruzo ya Pro yisumbuye';
+
+  @override
+  String get today => 'Uyu munsi';
+
+  @override
+  String get weekAgo => 'Icyumweru 1 gishize';
+
+  @override
+  String daysAgo(int count) {
+    return 'Iminsi $count ishize';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return 'Ibyumweru $count bishize';
+  }
 
   @override
   String get watchlistTitle => 'Urutonde rw\'Ikurikirana';

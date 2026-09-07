@@ -128,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navRequest => 'Request';
 
   @override
-  String get navPositions => 'Activity';
+  String get navPositions => 'Positions';
 
   @override
   String get navAccount => 'Account';
@@ -190,6 +190,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get expired => 'Expired';
+
+  @override
+  String get marketplaceAll => 'All';
+
+  @override
+  String get marketplaceLoan => 'Loan';
+
+  @override
+  String get marketplaceLoans => 'Loans';
+
+  @override
+  String get marketplaceForex => 'Forex';
+
+  @override
+  String get marketplaceNeeds => 'Needs';
+
+  @override
+  String get marketplaceNeeded => 'Needed';
+
+  @override
+  String get viewDetails => 'View details';
+
+  @override
+  String get proAdvancedFilters => 'Pro advanced filters';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get weekAgo => '1 week ago';
+
+  @override
+  String daysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return '$count weeks ago';
+  }
 
   @override
   String get watchlistTitle => 'Watchlist';

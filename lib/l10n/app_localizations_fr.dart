@@ -132,7 +132,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navRequest => 'Demander';
 
   @override
-  String get navPositions => 'Activité';
+  String get navPositions => 'Positions';
 
   @override
   String get navAccount => 'Compte';
@@ -194,6 +194,46 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get expired => 'Expiré';
+
+  @override
+  String get marketplaceAll => 'Tout';
+
+  @override
+  String get marketplaceLoan => 'Prêt';
+
+  @override
+  String get marketplaceLoans => 'Prêts';
+
+  @override
+  String get marketplaceForex => 'Forex';
+
+  @override
+  String get marketplaceNeeds => 'Besoins';
+
+  @override
+  String get marketplaceNeeded => 'Demandé';
+
+  @override
+  String get viewDetails => 'Voir détails';
+
+  @override
+  String get proAdvancedFilters => 'Filtres Pro avancés';
+
+  @override
+  String get today => 'Aujourd\'hui';
+
+  @override
+  String get weekAgo => 'Il y a 1 semaine';
+
+  @override
+  String daysAgo(int count) {
+    return 'Il y a $count jours';
+  }
+
+  @override
+  String weeksAgo(int count) {
+    return 'Il y a $count semaines';
+  }
 
   @override
   String get watchlistTitle => 'Favoris';

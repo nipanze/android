@@ -39,7 +39,7 @@
   "navMarkets": "Amasoko",
   "navWatchlist": "Ibyo ukurikira",
   "navRequest": "Saba",
-  "navPositions": "Ibikorwa",
+  "navPositions": "Imyanya",
   "navAccount": "Konti",
   "marketplaceTitle": "Isoko ry'Inguzanyo",
   "listingsLive": "{count} urutonde · Imbona-nkubone",
@@ -77,6 +77,28 @@
     }
   },
   "expired": "Byarangiye",
+  "marketplaceAll": "Byose",
+  "marketplaceLoan": "Inguzanyo",
+  "marketplaceLoans": "Inguzanyo",
+  "marketplaceForex": "Forex",
+  "marketplaceNeeds": "Ibikenewe",
+  "marketplaceNeeded": "Bikenewe",
+  "viewDetails": "Reba ibisobanuro",
+  "proAdvancedFilters": "Amayunguruzo ya Pro yisumbuye",
+  "today": "Uyu munsi",
+  "weekAgo": "Icyumweru 1 gishize",
+  "daysAgo": "Iminsi {count} ishize",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeksAgo": "Ibyumweru {count} bishize",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "watchlistTitle": "Urutonde rw'Ikurikirana",
   "watchlistSubtitle": "Inguzanyo ukurikira",
@@ -967,5 +989,4 @@
   "reachOutToBorrowerDirectly": "Vugana n'umusabi imbona nkubone",
   "nipanzeDisclaimerCardText": "Nipanze ntiyabika amafaranga cyangwa ngo ikemure amasezerano.\nBanza wemeze amakuru mbere yo kohereza icyo ari cyo cyose."
 }
-
 

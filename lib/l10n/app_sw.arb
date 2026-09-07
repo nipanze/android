@@ -39,7 +39,7 @@
   "navMarkets": "Soko",
   "navWatchlist": "Fuatilia",
   "navRequest": "Omba",
-  "navPositions": "Shughuli",
+  "navPositions": "Nafasi",
   "navAccount": "Akaunti",
   "marketplaceTitle": "Soko la Mikopo",
   "listingsLive": "{count} orodha · mubashara",
@@ -77,6 +77,28 @@
     }
   },
   "expired": "Imemalizika",
+  "marketplaceAll": "Zote",
+  "marketplaceLoan": "Mkopo",
+  "marketplaceLoans": "Mikopo",
+  "marketplaceForex": "Forex",
+  "marketplaceNeeds": "Mahitaji",
+  "marketplaceNeeded": "Inahitajika",
+  "viewDetails": "Tazama maelezo",
+  "proAdvancedFilters": "Vichujio vya juu vya Pro",
+  "today": "Leo",
+  "weekAgo": "Wiki 1 iliyopita",
+  "daysAgo": "Siku {count} zilizopita",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "weeksAgo": "Wiki {count} zilizopita",
+  "@weeksAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "watchlistTitle": "Orodha ya Ufuatiliaji",
   "watchlistSubtitle": "Orodha unazofuatilia",
@@ -991,6 +1013,5 @@
   "reachOutToBorrowerDirectly": "Wasiliana na mkopaji moja kwa moja",
   "nipanzeDisclaimerCardText": "Nipanze haishikilii fedha wala kupatanisha dili.\nThibitisha maelezo kabla ya kutuma chochote."
 }
-
 
 

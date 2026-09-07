@@ -7,22 +7,23 @@ class AppColors {
   AppColors._();
 
   // Brand – Nipanze primary: Electric Royal Blue (Vibrant Fintech)
-  static const Color accent      = Color(0xFF2563EB); // Vibrant Electric Royal Blue
-  static const Color accentDark  = Color(0xFF1D4ED8); // Pressed / Deep gradient variant
-  static const Color accentLight = Color(0xFF60A5FA); // Light variant for dark-mode text & glow
-  static const Color success = Color(0xFF10B981); // green
-  static const Color warning = Color(0xFFF59E0B); // amber
-  static const Color danger  = Color(0xFFEF4444); // red
-  static const Color purple  = Color(0xFF7C3AED); // Pro-tier only
+  static const Color accent = Color(0xFF078DF5); // Nipanze primary blue
+  static const Color accentDark = Color(0xFF056FC2); // Pressed primary blue
+  static const Color accentLight =
+      Color(0xFF62B8FF); // Light variant for dark-mode text & glow
+  static const Color success = Color(0xFF0BCFA8); // Loans emerald
+  static const Color warning = Color(0xFFF5A832); // Needs gold
+  static const Color danger = Color(0xFFFF4D5E); // Alerts
+  static const Color purple = Color(0xFF974CF6); // Forex purple
 
   // Dark theme surfaces
-  static const Color bgDark = Color(0xFF191917);
-  static const Color bg2Dark = Color(0xFF242422);
-  static const Color bg3Dark = Color(0xFF2C2C2A);
-  static const Color borderDark = Color(0xFF474744);
-  static const Color textDark = Color(0xFFF5F5F1);
-  static const Color text2Dark = Color(0xFFB7B5AE);
-  static const Color text3Dark = Color(0xFF8A8881);
+  static const Color bgDark = Color(0xFF010F23);
+  static const Color bg2Dark = Color(0xFF0A2A47);
+  static const Color bg3Dark = Color(0xFF0D3558);
+  static const Color borderDark = Color(0xFF17476E);
+  static const Color textDark = Color(0xFFF5F7FA);
+  static const Color text2Dark = Color(0xFFAABFDA);
+  static const Color text3Dark = Color(0xFF7794B8);
 
   // Light theme surfaces
   static const Color bgLight = Color(0xFFF8F9FC);

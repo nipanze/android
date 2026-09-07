@@ -59,6 +59,10 @@ class MarketplaceRepository {
             .map((e) => MarketplaceItem.forex(ForexListingModel.fromMap(e))));
       }
 
+      if (module == MarketplaceModule.needs) {
+        return const [];
+      }
+
       items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
       return items;
     } catch (e) {
@@ -217,16 +221,16 @@ class MarketplaceRepository {
   /// Real-time stream of the marketplace feed.
   Stream<List<MarketplaceItem>> watchListings(
       {MarketplaceModule? module, String? country}) {
-    return _client.from(TableNames.loanRequests).stream(
-        primaryKey: ['id'])
-        .asyncMap((_) => getListings(module: module, country: country));
+    return _client.from(TableNames.loanRequests).stream(primaryKey: [
+      'id'
+    ]).asyncMap((_) => getListings(module: module, country: country));
   }
 
   Stream<List<MarketplaceItem>> watchForexListings(
       {MarketplaceModule? module, String? country}) {
-    return _client.from(TableNames.forexRequests).stream(
-        primaryKey: ['id'])
-        .asyncMap((_) => getListings(module: module, country: country));
+    return _client.from(TableNames.forexRequests).stream(primaryKey: [
+      'id'
+    ]).asyncMap((_) => getListings(module: module, country: country));
   }
 
   /// Real-time stream for a single listing's offers.
