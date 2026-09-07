@@ -154,7 +154,7 @@ AppException _parsePostgrestError(String code, String message) {
   }
   if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED') ||
       message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
-    return const SubscriptionRequiredException('Lender');
+    return const SubscriptionRequiredException('Provider');
   }
   if (message.contains('NIPANZE_PRO_REQUIRED')) {
     return const SubscriptionRequiredException('Pro');
@@ -245,7 +245,7 @@ AppException? _parseForexError(String code, String message) {
     );
   }
   if (code == 'P0113' || message.contains('NIPANZE_SUBSCRIPTION_REQUIRED')) {
-    return const SubscriptionRequiredException('Lender');
+    return const SubscriptionRequiredException('Provider');
   }
   if (code == 'P0114' ||
       message.contains('NIPANZE_FOREX_OFFER_TERMS_REQUIRED')) {

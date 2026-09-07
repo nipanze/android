@@ -311,12 +311,12 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: AppColors.purple.withValues(alpha: 0.15),
+                        color: AppColors.proPurple.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.tune_rounded,
-                        color: AppColors.purple,
+                        color: AppColors.proPurple,
                         size: 16,
                       ),
                     ),
@@ -336,7 +336,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                                 'Pro · Narrow the marketplace feed',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.purple.withValues(alpha: 0.85),
+                              color: AppColors.proPurple.withValues(alpha: 0.85),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -503,17 +503,17 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
-                        color: AppColors.purple.withValues(alpha: 0.07),
+                        color: AppColors.proPurple.withValues(alpha: 0.07),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: AppColors.purple.withValues(alpha: 0.18),
+                          color: AppColors.proPurple.withValues(alpha: 0.18),
                         ),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(Icons.info_outline_rounded,
-                              size: 14, color: AppColors.purple),
+                              size: 14, color: AppColors.proPurple),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -569,7 +569,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
                       child: ElevatedButton(
                         onPressed: _applyAndClose,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.purple,
+                          backgroundColor: AppColors.proPurple,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           elevation: 0,
@@ -618,7 +618,7 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 15, color: AppColors.purple),
+        Icon(icon, size: 15, color: AppColors.proPurple),
         const SizedBox(width: 7),
         Expanded(
           child: Column(
@@ -665,12 +665,12 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.purple.withValues(alpha: 0.18)
+              ? AppColors.proPurple.withValues(alpha: 0.18)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: selected
-                ? AppColors.purple
+                ? AppColors.proPurple
                 : AppColors.borderDark.withValues(alpha: 0.5),
             width: selected ? 1.3 : 1,
           ),
@@ -680,7 +680,7 @@ class _FilterChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected ? AppColors.purple : null,
+            color: selected ? AppColors.proPurple : null,
           ),
         ),
       ),
@@ -752,8 +752,8 @@ class _ToggleTile extends StatelessWidget {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: AppColors.purple,
-              activeTrackColor: AppColors.purple.withValues(alpha: 0.35),
+              activeThumbColor: AppColors.proPurple,
+              activeTrackColor: AppColors.proPurple.withValues(alpha: 0.35),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],

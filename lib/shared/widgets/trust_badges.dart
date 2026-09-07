@@ -69,7 +69,7 @@ class TrustBadgeRow extends StatelessWidget {
         const _TrustBadge(
           icon: Icons.verified_rounded,
           label: 'Verified',
-          color: AppColors.purple,
+          color: AppColors.verified,
         ),
     ];
 

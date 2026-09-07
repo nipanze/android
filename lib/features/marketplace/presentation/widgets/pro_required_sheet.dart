@@ -84,7 +84,7 @@ class _ProRequiredSheet extends StatelessWidget {
                   const Icon(
                     Icons.workspace_premium_rounded,
                     size: 22,
-                    color: AppColors.purple,
+                    color: AppColors.proPurple,
                   ),
                   const SizedBox(width: 10),
                   Text(

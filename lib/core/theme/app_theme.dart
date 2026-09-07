@@ -15,11 +15,13 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B); // Needs amber
   static const Color danger = Color(0xFFFF4D5E); // Alerts
   static const Color purple = Color(0xFF06B6D4); // Forex cyan
+  static const Color proPurple = Color(0xFF8B5CF6); // Pro features
+  static const Color verified = accent; // Trust signal across the app
 
   // Dark theme surfaces
-  static const Color bgDark = Color(0xFF010F23);
-  static const Color bg2Dark = Color(0xFF0A2A47);
-  static const Color bg3Dark = Color(0xFF0D3558);
+  static const Color bgDark = Color(0xFF06080E);
+  static const Color bg2Dark = Color(0xFF0B1D2E);
+  static const Color bg3Dark = Color(0xFF0D2A43);
   static const Color borderDark = Color(0xFF17476E);
   static const Color textDark = Color(0xFFF5F7FA);
   static const Color text2Dark = Color(0xFFAABFDA);

@@ -123,14 +123,14 @@ class _MarketplaceView extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColors.purple
+                                      color: AppColors.proPurple
                                           .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       AppLocalizations.of(context)!.filtered,
                                       style: const TextStyle(
-                                        color: AppColors.purple,
+                                        color: AppColors.proPurple,
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 0.3,
@@ -231,14 +231,14 @@ class _MarketplaceView extends StatelessWidget {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.purple,
+                                  color: AppColors.proPurple,
                                 ),
                               ),
                               const SizedBox(height: 10),
                               Text(
                                 AppLocalizations.of(context)!.applyingFilters,
                                 style: const TextStyle(
-                                    fontSize: 12.5, color: AppColors.purple),
+                                    fontSize: 12.5, color: AppColors.proPurple),
                               ),
                             ],
                           ),
@@ -402,8 +402,8 @@ class _FilterPill extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        constraints: const BoxConstraints(minHeight: 40, minWidth: 78),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+        constraints: const BoxConstraints(minHeight: 28, minWidth: 64),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
           color: shellColor,
           borderRadius: BorderRadius.circular(7),
@@ -421,19 +421,21 @@ class _FilterPill extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (icon != null) ...[
               Icon(
                 icon,
-                size: 17,
+                size: 13,
                 color: textColor,
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 4),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
                 color: textColor,
               ),
@@ -459,8 +461,8 @@ class _ProFilterButton extends StatelessWidget {
             state is MarketplaceLoaded && state.proFilterCriteria.isActive;
 
         return SizedBox(
-          width: 34,
-          height: 34,
+          width: 32,
+          height: 32,
           child: Tooltip(
             message: AppLocalizations.of(context)!.proAdvancedFilters,
             child: InkWell(
@@ -471,17 +473,17 @@ class _ProFilterButton extends StatelessWidget {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 30,
-                    height: 30,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: hasActiveFilters
-                          ? AppColors.purple.withValues(alpha: 0.18)
-                          : AppColors.purple.withValues(alpha: 0.10),
+                          ? AppColors.proPurple.withValues(alpha: 0.18)
+                          : AppColors.proPurple.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: hasActiveFilters
-                            ? AppColors.purple
-                            : AppColors.purple.withValues(alpha: 0.35),
+                            ? AppColors.proPurple
+                            : AppColors.proPurple.withValues(alpha: 0.35),
                         width: hasActiveFilters ? 1.3 : 1,
                       ),
                     ),

@@ -239,7 +239,7 @@ class _PricingPageBody extends StatelessWidget {
 
   static String _label(SubscriptionPlan plan) => switch (plan) {
         SubscriptionPlan.free => 'Free',
-        SubscriptionPlan.lender => 'Lender',
+        SubscriptionPlan.lender => 'Provider',
         SubscriptionPlan.pro => 'Pro',
       };
 }
@@ -268,7 +268,7 @@ class _PlanCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final isCurrent = plan == current;
     final color = plan == SubscriptionPlan.pro
-        ? AppColors.purple
+        ? AppColors.proPurple
         : plan == SubscriptionPlan.lender
             ? AppColors.accent
             : AppColors.success;

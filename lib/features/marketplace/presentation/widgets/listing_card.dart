@@ -37,7 +37,9 @@ class ListingCard extends StatelessWidget {
         : isForex
             ? const Color(0xFF06B6D4)
             : const Color(0xFF22C55E);
-    final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
+    final surfaceColor = isDark
+      ? AppColors.bg2Dark
+      : theme.colorScheme.surfaceContainerHighest;
     final borderColor = isDark
         ? accent.withValues(alpha: 0.95)
         : AppColors.accent.withValues(alpha: 0.22);
@@ -102,6 +104,8 @@ class ListingCard extends StatelessWidget {
                 verified: isVerified,
                 mutedColor: mutedColor,
                 description: description,
+                isSaved: isSaved,
+                onWatchlistToggle: onWatchlistToggle,
                 attributes: [
                   if (needs != null) needs.category,
                   if (needs != null) needs.urgency,
@@ -115,12 +119,6 @@ class ListingCard extends StatelessWidget {
 
               return Column(
                 children: [
-                  _CardTopRow(
-                    accent: accent,
-                    isSaved: isSaved,
-                    onWatchlistToggle: onWatchlistToggle,
-                  ),
-                  const SizedBox(height: 8),
                   Align(alignment: Alignment.centerLeft, child: main),
                 ],
               );
@@ -157,14 +155,12 @@ class ListingCard extends StatelessWidget {
   }
 }
 
-class _CardTopRow extends StatelessWidget {
-  const _CardTopRow({
-    required this.accent,
+class _WatchlistButton extends StatelessWidget {
+  const _WatchlistButton({
     required this.isSaved,
     required this.onWatchlistToggle,
   });
 
-  final Color accent;
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
 
@@ -173,15 +169,14 @@ class _CardTopRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        Expanded(child: Divider(color: accent.withValues(alpha: 0.24))),
         IconButton(
           tooltip: isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist,
           visualDensity: VisualDensity.compact,
-          constraints: const BoxConstraints.tightFor(width: 30, height: 30),
+          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
           padding: EdgeInsets.zero,
           icon: Icon(
             isSaved ? Icons.star_rounded : Icons.star_border_rounded,
-            size: 24,
+            size: 19,
             color: isSaved ? AppColors.warning : AppColors.accent,
           ),
           onPressed: onWatchlistToggle,
@@ -203,6 +198,8 @@ class _MainListingArea extends StatelessWidget {
     required this.verified,
     required this.mutedColor,
     required this.description,
+    required this.isSaved,
+    required this.onWatchlistToggle,
     required this.attributes,
   });
 
@@ -216,6 +213,8 @@ class _MainListingArea extends StatelessWidget {
   final bool verified;
   final Color mutedColor;
   final String description;
+  final bool isSaved;
+  final VoidCallback onWatchlistToggle;
   final List<String> attributes;
 
   @override
@@ -225,16 +224,31 @@ class _MainListingArea extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 9,
-          runSpacing: 6,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _ModuleBadge(label: moduleLabel, icon: moduleIcon, color: accent),
-            _MetaIcon(
-              icon: Icons.schedule_rounded,
-              label: posted,
-              color: mutedColor,
+            Expanded(
+              child: Wrap(
+                spacing: 9,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _ModuleBadge(
+                    label: moduleLabel,
+                    icon: moduleIcon,
+                    color: accent,
+                  ),
+                  _MetaIcon(
+                    icon: Icons.schedule_rounded,
+                    label: posted,
+                    color: mutedColor,
+                  ),
+                ],
+              ),
+            ),
+            _WatchlistButton(
+              isSaved: isSaved,
+              onWatchlistToggle: onWatchlistToggle,
             ),
           ],
         ),
@@ -245,20 +259,29 @@ class _MainListingArea extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleLarge?.copyWith(
             fontSize: 17,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             height: 1.12,
           ),
         ),
         const SizedBox(height: 3),
-        Text(
-          amount,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: accent,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            height: 1.05,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: accent.withValues(alpha: 0.30)),
+          ),
+          child: Text(
+            amount,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: accent,
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -276,7 +299,7 @@ class _MainListingArea extends StatelessWidget {
               _MetaIcon(
                 icon: Icons.verified_user_rounded,
                 label: l10n.verified,
-                color: accent,
+                color: AppColors.verified,
               ),
             for (final attribute in attributes)
               _MetaIcon(
@@ -316,7 +339,7 @@ class _ModuleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(7),
@@ -325,14 +348,14 @@ class _ModuleBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
               height: 1,
             ),
           ),
@@ -369,7 +392,7 @@ class _MetaIcon extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: 12.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               height: 1,
             ),
           ),

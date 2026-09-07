@@ -309,7 +309,7 @@ class ContactRevealData extends Equatable {
       borrowerReviewCount: b?['review_count'] as int? ?? 18,
       borrowerCompletedDeals: b?['completed_deals'] as int? ?? 9,
       borrowerIsVerified: b?['is_verified'] as bool? ?? true,
-      lenderName: l?['full_name'] as String? ?? 'Lender',
+      lenderName: l?['full_name'] as String? ?? 'Provider',
       lenderPhone: l?['phone'] as String? ?? '',
       lenderEmail: l?['email'] as String? ?? '',
       lenderDistrict: l?['district'] as String? ?? l?['location'] as String? ?? 'Kampala, Uganda',
