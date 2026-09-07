@@ -29,7 +29,7 @@ class LenderOfferCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _borderColor(context)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -55,134 +55,96 @@ class LenderOfferCard extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Offer amount
-        Row(children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(l10n?.offeredAmountLabel ?? 'Offered amount',
-                style: Theme.of(context).textTheme.bodySmall),
-            CurrencyAmount(offer.offerAmount,
-                currency: offer.currency, fontSize: 16),
-          ]),
-          const Spacer(),
-          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(l10n?.statusLabel ?? 'Status',
-                style: Theme.of(context).textTheme.bodySmall),
-            Text(offer.status.name.toUpperCase(),
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: AppColors.accent)),
-          ]),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l10n?.offeredAmountLabel ?? 'Offered amount',
+              style: Theme.of(context).textTheme.bodySmall),
+          CurrencyAmount(offer.offerAmount,
+              currency: offer.currency, fontSize: 16),
         ]),
 
-        // Structured terms (Stage 4)
         const SizedBox(height: 10),
-        _TermRow(
-          icon: Icons.percent,
-          label: l10n?.interestLabel ?? 'Interest',
-          value: '${offer.interestRatePct.toStringAsFixed(1)}%',
-        ),
-        const SizedBox(height: 4),
-        _TermRow(
-          icon: Icons.gavel_outlined,
-          label: l10n?.lateFeeLabel ?? 'Late fee',
-          value: l10n?.lateFeePerMissedInstallment(
-                '${offer.lateFeePct.toStringAsFixed(1)}%',
-              ) ??
-              '${offer.lateFeePct.toStringAsFixed(1)}% per missed installment',
-        ),
-        const SizedBox(height: 4),
-        _TermRow(
-          icon: Icons.calendar_today,
-          label: l10n?.repaymentLabel ?? 'Repayment',
-          value:
-              '${offer.currency} ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
-        ),
-        const SizedBox(height: 4),
-        _TermRow(
-          icon: Icons.account_balance_wallet,
-          label: l10n?.totalPayableLabel ?? 'Total payable',
-          value: '${offer.currency} ${_fmt(offer.totalRepayment)}',
+        _OfferTermsGrid(
+          leftTerms: [
+            _OfferTerm(
+              icon: Icons.percent,
+              label: l10n?.interestLabel ?? 'Interest',
+              value: '${offer.interestRatePct.toStringAsFixed(1)}%',
+            ),
+            _OfferTerm(
+              icon: Icons.event_available_outlined,
+              label: l10n?.lateFeeLabel ?? 'Late fee',
+              value: l10n?.lateFeePerMissedInstallment(
+                    '${offer.lateFeePct.toStringAsFixed(1)}%',
+                  ) ??
+                  '${offer.lateFeePct.toStringAsFixed(1)}% per missed installment',
+            ),
+          ],
+          rightTerms: [
+            _OfferTerm(
+              icon: Icons.rotate_left_rounded,
+              label: l10n?.repaymentLabel ?? 'Repayment',
+              value:
+                  '${offer.currency} ${_fmt(offer.installmentAmount)} ${offer.repaymentFrequencyLabel.toLowerCase()}',
+            ),
+            _OfferTerm(
+              icon: Icons.account_balance_wallet_outlined,
+              label: l10n?.totalPayableLabel ?? 'Total payable',
+              value: '${offer.currency} ${_fmt(offer.totalRepayment)}',
+            ),
+          ],
         ),
 
         if (offer.proposedExpectations != null &&
             offer.proposedExpectations!.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: AppColors.accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.accent.withValues(alpha: 0.16),
+              ),
             ),
-            child: Text(
-              offer.proposedExpectations!,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontStyle: FontStyle.italic),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline_rounded,
+                    size: 13, color: AppColors.accentLight),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    offer.proposedExpectations!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.72),
+                        ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
 
-        const SizedBox(height: 12),
-
-        // Placed at
-        Row(
-          children: [
-            Text(
-              l10n?.sentDateLabel(_fmtDate(offer.placedAt)) ??
-                  'Sent ${_fmtDate(offer.placedAt)}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            if (offer.expiresAt != null && offer.isPending) ...[
-              const SizedBox(width: 8),
-              _OfferCountdownChip(expiresAt: offer.expiresAt!),
-            ],
-          ],
+        const SizedBox(height: 10),
+        _OfferFooter(
+          sentLabel: l10n?.sentDateLabel(_fmtDate(offer.placedAt)) ??
+              'Sent ${_fmtDate(offer.placedAt)}',
+          countdown: offer.expiresAt != null && offer.isPending
+              ? _OfferCountdownChip(expiresAt: offer.expiresAt!)
+              : null,
+          onViewListing: () => context.push('/marketplace/${offer.requestId}'),
+          onViewContract:
+              offer.isAccepted ? () => _viewContract(context) : null,
+          onWithdraw: offer.canWithdraw ? onWithdraw : null,
+          viewListingLabel: l10n?.viewListing ?? 'View listing',
+          viewContractLabel: l10n?.viewContract ?? 'View Deal',
+          withdrawLabel: l10n?.withdraw ?? 'Withdraw',
         ),
-
-        // Actions
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () => context.push('/marketplace/${offer.requestId}'),
-              style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  textStyle: const TextStyle(fontSize: 11)),
-              child: Text(l10n?.viewListing ?? 'View listing'),
-            ),
-          ),
-          if (offer.isAccepted) ...[
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _viewContract(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  foregroundColor: AppColors.success,
-                  side: const BorderSide(color: AppColors.success),
-                  textStyle: const TextStyle(fontSize: 11),
-                ),
-                child: Text(l10n?.viewContract ?? 'View Deal'),
-              ),
-            ),
-          ],
-          if (offer.canWithdraw) ...[
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: onWithdraw,
-              style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  foregroundColor: AppColors.danger,
-                  side: const BorderSide(color: AppColors.danger),
-                  textStyle: const TextStyle(fontSize: 11),
-                  minimumSize: Size.zero),
-              child: Text(l10n?.withdraw ?? 'Withdraw'),
-            ),
-          ],
-        ]),
       ]),
     );
   }
@@ -312,8 +274,8 @@ class _OfferCountdownChipState extends State<_OfferCountdownChip> {
   }
 }
 
-class _TermRow extends StatelessWidget {
-  const _TermRow({
+class _OfferTerm {
+  const _OfferTerm({
     required this.icon,
     required this.label,
     required this.value,
@@ -322,25 +284,205 @@ class _TermRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+}
+
+class _OfferTermsGrid extends StatelessWidget {
+  const _OfferTermsGrid({
+    required this.leftTerms,
+    required this.rightTerms,
+  });
+
+  final List<_OfferTerm> leftTerms;
+  final List<_OfferTerm> rightTerms;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 320) {
+          return Column(
+            children: [
+              ...leftTerms.map(_TermLine.new),
+              ...rightTerms.map(_TermLine.new),
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _TermColumn(terms: leftTerms)),
+            Container(
+              width: 1,
+              height: 48,
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              color: AppColors.accent.withValues(alpha: 0.24),
+            ),
+            Expanded(child: _TermColumn(terms: rightTerms)),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _TermColumn extends StatelessWidget {
+  const _TermColumn({required this.terms});
+
+  final List<_OfferTerm> terms;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: terms.map(_TermLine.new).toList());
+  }
+}
+
+class _TermLine extends StatelessWidget {
+  const _TermLine(this.term);
+
+  final _OfferTerm term;
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.bodySmall;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(term.icon, size: 13, color: AppColors.accent),
+        const SizedBox(width: 6),
+        Expanded(
+          child: RichText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              style: textStyle,
+              children: [
+                TextSpan(text: '${term.label}: '),
+                TextSpan(
+                  text: term.value,
+                  style: textStyle?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OfferFooter extends StatelessWidget {
+  const _OfferFooter({
+    required this.sentLabel,
+    required this.countdown,
+    required this.onViewListing,
+    required this.onViewContract,
+    required this.onWithdraw,
+    required this.viewListingLabel,
+    required this.viewContractLabel,
+    required this.withdrawLabel,
+  });
+
+  final String sentLabel;
+  final Widget? countdown;
+  final VoidCallback onViewListing;
+  final VoidCallback? onViewContract;
+  final VoidCallback? onWithdraw;
+  final String viewListingLabel;
+  final String viewContractLabel;
+  final String withdrawLabel;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 12, color: AppColors.accent),
-        const SizedBox(width: 6),
-        Text('$label: ', style: Theme.of(context).textTheme.bodySmall),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis,
+          child: Row(
+            children: [
+              const Icon(Icons.calendar_month_outlined,
+                  size: 13, color: AppColors.accentLight),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  sentLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              if (countdown != null) ...[
+                const SizedBox(width: 6),
+                Flexible(child: countdown!),
+              ],
+            ],
           ),
         ),
+        const SizedBox(width: 8),
+        _ActionPill(
+          onPressed: onViewListing,
+          icon: Icons.visibility_rounded,
+          label: viewListingLabel,
+        ),
+        if (onViewContract != null) ...[
+          const SizedBox(width: 8),
+          _ActionPill(
+            onPressed: onViewContract!,
+            icon: Icons.description_outlined,
+            label: viewContractLabel,
+            foregroundColor: AppColors.success,
+          ),
+        ],
+        if (onWithdraw != null) ...[
+          const SizedBox(width: 8),
+          _ActionPill(
+            onPressed: onWithdraw!,
+            icon: Icons.cancel_outlined,
+            label: withdrawLabel,
+            foregroundColor: AppColors.danger,
+            compact: true,
+          ),
+        ],
       ],
+    );
+  }
+}
+
+class _ActionPill extends StatelessWidget {
+  const _ActionPill({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    this.foregroundColor = AppColors.accent,
+    this.compact = false,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+  final Color foregroundColor;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 13),
+      label: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        side: BorderSide(color: foregroundColor),
+        minimumSize: Size(compact ? 0 : 120, 34),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: 8,
+        ),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+      ),
     );
   }
 }

@@ -17,6 +17,7 @@ class ActivityCubit extends Cubit<ActivityState> {
 
   final ActivityRepository _repository;
   StreamSubscription<List<LenderOffer>>? _offersSub;
+  final Set<String> _hiddenOfferIds = {};
 
   Future<void> load() async {
     emit(const ActivityLoading());
@@ -28,7 +29,7 @@ class ActivityCubit extends Cubit<ActivityState> {
       ]);
 
       emit(ActivityLoaded(
-        offers: results[0] as List<LenderOffer>,
+        offers: _visibleOffers(results[0] as List<LenderOffer>),
         activity: results[1] as Map<String, dynamic>?,
         deals: results[2] as List<dynamic>,
       ));
@@ -45,7 +46,7 @@ class ActivityCubit extends Cubit<ActivityState> {
       (offers) {
         if (!isClosed && state is ActivityLoaded) {
           final current = state as ActivityLoaded;
-          emit(current.copyWith(offers: offers));
+          emit(current.copyWith(offers: _visibleOffers(offers)));
         }
       },
       onError: (_) {},
@@ -56,21 +57,22 @@ class ActivityCubit extends Cubit<ActivityState> {
     if (state is! ActivityLoaded) return;
     final current = state as ActivityLoaded;
 
-    // Optimistic local update
-    final updated = current.offers
-        .map((o) => o.offerId == offerId
-            ? o.copyWith(status: OfferStatus.withdrawn)
-            : o)
-        .toList();
+    _hiddenOfferIds.add(offerId);
+    final updated = _visibleOffers(current.offers);
     emit(current.copyWith(offers: updated));
 
     try {
       await _repository.withdrawOffer(offerId);
     } catch (e) {
-      emit(current); // rollback
+      _hiddenOfferIds.remove(offerId);
       emit(ActivityError(userFacingErrorMessage(e)));
+      emit(current); // rollback
     }
   }
+
+  List<LenderOffer> _visibleOffers(List<LenderOffer> offers) => offers
+      .where((offer) => !_hiddenOfferIds.contains(offer.offerId))
+      .toList();
 
   Future<void> refresh() => load();
 

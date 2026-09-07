@@ -17,6 +17,11 @@ fi
 
 TARGET="${1:-chrome}"
 
+if [ ! -f lib/core/di/injection.config.dart ]; then
+  echo "🔧 Generating dependency injection code..."
+  dart run build_runner build --delete-conflicting-outputs
+fi
+
 echo "🚀 Starting on $TARGET → $URL"
 WEB_RESOURCE_ARGS=()
 if [[ "$TARGET" == "chrome" || "$TARGET" == "web" ]]; then

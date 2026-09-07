@@ -2824,6 +2824,10 @@ CREATE POLICY "loan_offers: lender withdraw or admin"
     USING (
         (lender_id = auth.uid() AND status = 'pending')
         OR private.is_admin()
+    )
+    WITH CHECK (
+        (lender_id = auth.uid() AND status = 'withdrawn')
+        OR private.is_admin()
     );
 
 -- watchlist

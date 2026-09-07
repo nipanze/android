@@ -21,6 +21,7 @@ class ActivityRepository {
           .from(ViewNames.lenderOffers)
           .select()
           .eq('lender_id', _uid)
+          .neq('offer_status', 'withdrawn')
           .order('offered_at', ascending: false);
 
       return (data as List).map((e) => LenderOffer.fromMap(e)).toList();
@@ -34,7 +35,10 @@ class ActivityRepository {
     try {
       await _client
           .from(TableNames.loanOffers)
-          .update({'status': 'withdrawn'})
+          .update({
+            'status': 'withdrawn',
+            'withdrawn_at': DateTime.now().toIso8601String(),
+          })
           .eq('id', offerId)
           .eq('lender_id', _uid)
           .eq('status', 'pending');

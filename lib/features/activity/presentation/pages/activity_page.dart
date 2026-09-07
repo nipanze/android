@@ -69,9 +69,24 @@ class _ActivityViewState extends State<_ActivityView>
                       AppLocalizations.of(context)!.myActivityTitle,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    Text(
-                      AppLocalizations.of(context)!.myActivitySubtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
+                    BlocBuilder<ActivityCubit, ActivityState>(
+                      builder: (context, state) {
+                        final loaded = state is ActivityLoaded ? state : null;
+                        final requests =
+                            (loaded?.activity?['active_listings'] as num?)?.toInt() ??
+                                0;
+                        final offers = loaded?.offers
+                                .where((offer) =>
+                                    offer.status == OfferStatus.pending)
+                                .length ??
+                            0;
+                        final deals = loaded?.deals.length ?? 0;
+
+                        return Text(
+                            '$requests Requests - $offers Offers - $deals Deals',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -187,10 +202,9 @@ class _LenderTab extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => context.read<ActivityCubit>().refresh(),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
           if (pending.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.activeOffers),
             ...pending.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(
@@ -270,10 +284,9 @@ class _DealsTab extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => context.read<ActivityCubit>().refresh(),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
           if (deals.isNotEmpty) ...[
-            SectionHeader(AppLocalizations.of(context)!.tabDeals),
             ...deals.map((deal) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _DealCard(deal: deal),
