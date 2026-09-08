@@ -30,7 +30,7 @@ class WelcomePage extends StatelessWidget {
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor =
         isDark ? const Color(0xFF9E9EB8) : const Color(0xFF64748B);
-    const purpleColor = AppColors.purple;
+    const purpleColor = AppColors.proPurple;
 
     showModalBottomSheet<void>(
       context: context,
@@ -177,7 +177,7 @@ class WelcomePage extends StatelessWidget {
                         ),
                         child: const Icon(
                           Icons.login_rounded,
-                          color: AppColors.purple,
+                          color: AppColors.proPurple,
                           size: 22,
                         ),
                       ),
@@ -410,7 +410,7 @@ class WelcomePage extends StatelessWidget {
                           child: ElevatedButton.icon(
                             onPressed: () => _showAuthPrompt(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.purple,
+                              backgroundColor: AppColors.proPurple,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),

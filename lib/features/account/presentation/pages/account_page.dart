@@ -289,6 +289,7 @@ class _AccountView extends StatelessWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      backgroundColor: AppColors.bg3Dark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

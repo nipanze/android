@@ -37,13 +37,13 @@ class _LenderRequiredSheet extends StatelessWidget {
     } catch (_) {}
     final country = EastAfricaCountries.findByCode(countryCode);
 
-    final bg = isDark ? const Color(0xFF1C1F26) : AppColors.bg2Light;
-    final cardBg = isDark ? const Color(0xFF14171E) : AppColors.bg3Light;
-    final cardBorder =
-        isDark ? const Color(0xFF1F4885) : const Color(0xFFBFDBFE);
-    final badgeBg = isDark ? const Color(0xFF0F2C54) : const Color(0xFFDBEAFE);
-    final badgeText =
-        isDark ? const Color(0xFF388DF8) : const Color(0xFF1D4ED8);
+    final bg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+    final cardBg = isDark ? AppColors.bg2Dark : AppColors.bg3Light;
+    final cardBorder = isDark ? AppColors.accent : AppColors.accentLight;
+    final badgeBg = isDark
+        ? AppColors.accent.withValues(alpha: 0.18)
+        : AppColors.accent.withValues(alpha: 0.1);
+    final badgeText = isDark ? AppColors.accentLight : AppColors.accent;
     final textPrimary = isDark ? AppColors.textDark : AppColors.textLight;
     final textSecondary = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final textMuted = isDark ? AppColors.text3Dark : AppColors.text3Light;

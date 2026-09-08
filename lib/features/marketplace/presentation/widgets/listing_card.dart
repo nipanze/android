@@ -36,7 +36,7 @@ class ListingCard extends StatelessWidget {
         ? const Color(0xFFF59E0B)
         : isForex
             ? const Color(0xFF06B6D4)
-            : const Color(0xFF22C55E);
+        : AppColors.accent;
     final surfaceColor = isDark
       ? AppColors.bg2Dark
       : theme.colorScheme.surfaceContainerHighest;
@@ -100,6 +100,7 @@ class ListingCard extends StatelessWidget {
                 posted: _postedAgo(context, listing.listedAt),
                 title: title,
                 amount: amount,
+                isLoan: loan != null,
                 location: location,
                 verified: isVerified,
                 mutedColor: mutedColor,
@@ -194,6 +195,7 @@ class _MainListingArea extends StatelessWidget {
     required this.posted,
     required this.title,
     required this.amount,
+    required this.isLoan,
     required this.location,
     required this.verified,
     required this.mutedColor,
@@ -209,6 +211,7 @@ class _MainListingArea extends StatelessWidget {
   final String posted;
   final String title;
   final String amount;
+  final bool isLoan;
   final String location;
   final bool verified;
   final Color mutedColor;
@@ -219,7 +222,6 @@ class _MainListingArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,10 +297,10 @@ class _MainListingArea extends StatelessWidget {
               label: location,
               color: mutedColor,
             ),
-            if (verified)
-              _MetaIcon(
-                icon: Icons.verified_user_rounded,
-                label: l10n.verified,
+            if (verified && isLoan)
+              const _MetaIcon(
+                icon: Icons.shield_rounded,
+                label: 'Secured',
                 color: AppColors.verified,
               ),
             for (final attribute in attributes)

@@ -104,10 +104,11 @@ Future<void> showProFiltersSheet(
   BuildContext context, {
   required MarketplaceCubit cubit,
 }) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: isDark ? AppColors.bg3Dark : AppColors.bg2Light,
     builder: (_) => BlocProvider.value(
       value: cubit,
       child: const _ProFiltersSheet(),
@@ -271,7 +272,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+    final bg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final l10n = AppLocalizations.of(context);

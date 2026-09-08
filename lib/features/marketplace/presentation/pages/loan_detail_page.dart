@@ -199,6 +199,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     final canViewCollateral = isOwner ||
         (authState is AuthAuthenticated &&
             authState.user.subscriptionPlan == SubscriptionPlan.pro);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final detailSurface =
+      isDark ? AppColors.bg2Dark : Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       appBar: AppBar(
@@ -241,7 +244,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: detailSurface,
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -336,60 +339,56 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   const SizedBox(height: 6),
-                  // Purpose description
-                  Text(
-                    listing.purpose,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.76),
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
 
-                  const SizedBox(height: 16),
-
-                  // ── Funded progress bar ──────────────────────────────────
-                  _FundedProgressBar(
-                    offers: _offers,
-                    requestedAmount: listing.requestedAmount,
-                    kycStatus: listing.kycStatus,
-                    isOwner: isOwner,
+                  // ── Loan facts ───────────────────────────────────────────
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _LoanFact(
+                        icon: Icons.calendar_month_rounded,
+                        label: 'Term',
+                        value:
+                            '${listing.durationMonths} ${l10n?.months ?? 'months'}',
+                      ),
+                      _LoanFact(
+                        icon: Icons.location_on_rounded,
+                        label: 'Location',
+                        value: listing.district,
+                      ),
+                      _LoanFact(
+                        icon: Icons.shield_rounded,
+                        label: l10n?.collateralLabel ?? 'Collateral',
+                        value: listing.hasCollateral
+                            ? (l10n?.securedCollateralLabel ?? 'Secured')
+                            : 'Not specified',
+                      ),
+                      _LoanFact(
+                        icon: Icons.category_rounded,
+                        label: 'Loan type',
+                        value: listing.title,
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 12),
 
-                  // ── Preferred terms badges row ───────────────────────────
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _TermBadge(
-                          '${listing.durationMonths} ${l10n?.months ?? 'months'}',
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: _TermBadge(
-                          '${listing.currency} ${fmtAmount(listing.repaymentAmountPerPeriod)}${l10n?.perMonth ?? ' / month'}',
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _TermBadge(
-                          listing.suggestedInterestRatePct == null
-                              ? (l10n?.borrowerTermsMissing ?? '—')
-                              : (l10n?.interestPercent(
-                                    listing.suggestedInterestRatePct!
-                                        .toStringAsFixed(0),
-                                  ) ??
-                                  '${listing.suggestedInterestRatePct!.toStringAsFixed(0)}% interest'),
-                        ),
-                      ),
-                    ],
-                  ),
+                  if (listing.purpose.trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _DescriptionSection(
+                      title: 'About the request',
+                      body: listing.purpose,
+                    ),
+                  ],
+
+                  if (listing.suggestedInterestRatePct != null ||
+                      listing.suggestedLateFeePct != null ||
+                      listing.suggestedInstallmentAmount != null) ...[
+                    const SizedBox(height: 16),
+                    _ProposedRepaymentPlan(listing: listing),
+                  ],
+
+                  const SizedBox(height: 12),
 
                   if (canViewCollateral && listing.hasCollateral) ...[
                     const SizedBox(height: 16),
@@ -403,11 +402,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     ),
                   ],
 
-                  if (listing.suggestedInterestRatePct != null ||
-                      listing.suggestedLateFeePct != null) ...[
-                    const SizedBox(height: 16),
-                    _ProposedRepaymentPlan(listing: listing),
-                  ],
                 ],
               ),
             ),
@@ -419,7 +413,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: detailSurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -585,6 +579,66 @@ class _DescriptionSection extends StatelessWidget {
           Text(body, style: Theme.of(context).textTheme.bodyMedium),
         ],
       );
+}
+
+class _LoanFact extends StatelessWidget {
+  const _LoanFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 156,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.accent, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatLoanAmount(int amount) {
+  final value = amount.toString();
+  final buffer = StringBuffer();
+  for (int i = 0; i < value.length; i++) {
+    if (i > 0 && (value.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(value[i]);
+  }
+  return buffer.toString();
 }
 
 class _ProposedRepaymentPlan extends StatefulWidget {
@@ -1026,18 +1080,15 @@ class _FundedProgressBar extends StatelessWidget {
   const _FundedProgressBar({
     required this.offers,
     required this.requestedAmount,
-    this.kycStatus,
     this.isOwner = false,
   });
 
   final List<LoanOffer> offers;
   final int requestedAmount;
-  final String? kycStatus;
   final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final totalFunded = offers.fold<int>(0, (s, o) => s + o.offerAmount);
     final pct = requestedAmount > 0
         ? (totalFunded / requestedAmount).clamp(0.0, 1.0)
@@ -1046,15 +1097,11 @@ class _FundedProgressBar extends StatelessWidget {
     // Offer count is only ever shown to the listing owner.
     // Lenders and participants see a generic "Active listing" label so they
     // cannot discover how many competing bids are in the book.
-    final bidsLabel = kycStatus != null
-        ? (l10n?.userVerificationStatus(kycStatus!.toUpperCase()) ??
-            'User verification status: ${kycStatus!.toUpperCase()}')
-        : (isOwner
-            ? (offers.isEmpty
-                ? (l10n?.noOffersYet ?? 'No offers yet')
-                : (l10n?.listingOfferCount(offers.length) ??
-                    '${offers.length} offer${offers.length > 1 ? 's' : ''}'))
-            : (l10n?.activeListingLabel ?? 'Active listing'));
+    final bidsLabel = isOwner
+      ? (offers.isEmpty
+        ? 'No offers yet'
+        : '${offers.length} offer${offers.length > 1 ? 's' : ''}')
+      : 'Active listing';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1062,7 +1109,7 @@ class _FundedProgressBar extends StatelessWidget {
         Row(
           children: [
             Text(
-              l10n?.fundedLabel ?? 'Funded',
+              'Funded',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context)
                         .colorScheme

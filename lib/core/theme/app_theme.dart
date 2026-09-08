@@ -129,6 +129,15 @@ class AppTheme {
         ),
       ),
 
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: isDark ? AppColors.bg3Dark : AppColors.bg2Light,
+        modalBackgroundColor: isDark ? AppColors.bg3Dark : AppColors.bg2Light,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? AppColors.bg3Dark : AppColors.bg3Light,

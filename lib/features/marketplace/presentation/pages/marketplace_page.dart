@@ -339,7 +339,7 @@ class _ModuleFilterRow extends StatelessWidget {
                 label: AppLocalizations.of(context)!.marketplaceLoans,
                 icon: Icons.payments_rounded,
                 selected: selected == MarketplaceModule.loan,
-                accentColor: AppColors.success,
+                accentColor: AppColors.accent,
                 onTap: () => context
                     .read<MarketplaceCubit>()
                     .setModuleFilter(MarketplaceModule.loan),
