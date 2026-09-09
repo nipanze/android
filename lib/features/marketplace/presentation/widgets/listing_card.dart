@@ -156,8 +156,8 @@ class ListingCard extends StatelessWidget {
   }
 }
 
-class _WatchlistButton extends StatelessWidget {
-  const _WatchlistButton({
+class _MoreActionsButton extends StatelessWidget {
+  const _MoreActionsButton({
     required this.isSaved,
     required this.onWatchlistToggle,
   });
@@ -168,19 +168,22 @@ class _WatchlistButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        IconButton(
-          tooltip: isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist,
-          visualDensity: VisualDensity.compact,
-          constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-          padding: EdgeInsets.zero,
-          icon: Icon(
-            isSaved ? Icons.star_rounded : Icons.star_border_rounded,
-            size: 19,
-            color: isSaved ? AppColors.warning : AppColors.accent,
+    return PopupMenuButton<String>(
+      tooltip: 'More actions',
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+      icon: const Icon(
+        Icons.more_vert_rounded,
+        size: 19,
+        color: AppColors.accent,
+      ),
+      onSelected: (_) => onWatchlistToggle(),
+      itemBuilder: (_) => [
+        PopupMenuItem<String>(
+          value: 'toggle',
+          child: Text(
+            isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist,
           ),
-          onPressed: onWatchlistToggle,
         ),
       ],
     );
@@ -248,7 +251,7 @@ class _MainListingArea extends StatelessWidget {
                 ],
               ),
             ),
-            _WatchlistButton(
+            _MoreActionsButton(
               isSaved: isSaved,
               onWatchlistToggle: onWatchlistToggle,
             ),
@@ -298,7 +301,7 @@ class _MainListingArea extends StatelessWidget {
               color: mutedColor,
             ),
             if (verified && isLoan)
-              _MetaIcon(
+              const _MetaIcon(
                 icon: Icons.shield_rounded,
                 label: 'Secured',
                 color: AppColors.success,
