@@ -123,7 +123,7 @@ class UserAvatar extends StatelessWidget {
                 width: badgeSize,
                 height: badgeSize,
                 decoration: BoxDecoration(
-                  color: AppColors.success,
+                  color: AppColors.accent,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,

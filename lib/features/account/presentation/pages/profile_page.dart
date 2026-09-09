@@ -1005,7 +1005,7 @@ class _ProfileViewState extends State<_ProfileView> {
   Widget _buildKycBadge(String? status) {
     if (status == null) return const SizedBox.shrink();
     final (label, color) = switch (status) {
-      'approved' => ('Verified', AppColors.success),
+      'approved' => ('Verified', AppColors.accent),
       'pending' => ('Pending', AppColors.warning),
       'rejected' => ('Rejected', AppColors.danger),
       _ => ('Unverified', AppColors.text2Dark),

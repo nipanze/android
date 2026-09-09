@@ -298,10 +298,10 @@ class _MainListingArea extends StatelessWidget {
               color: mutedColor,
             ),
             if (verified && isLoan)
-              const _MetaIcon(
+              _MetaIcon(
                 icon: Icons.shield_rounded,
                 label: 'Secured',
-                color: AppColors.verified,
+                color: AppColors.success,
               ),
             for (final attribute in attributes)
               _MetaIcon(

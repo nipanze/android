@@ -773,14 +773,14 @@ class _VerifiedBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.14),
+          color: AppColors.accent.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(AppLocalizations.of(context)!.verified,
             style: const TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
-                color: AppColors.success)),
+                color: AppColors.accent)),
       );
 }
 
