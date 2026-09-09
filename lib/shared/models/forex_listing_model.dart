@@ -8,6 +8,7 @@ class ForexListingModel extends Equatable {
     required this.currencyNeeded,
     required this.amount,
     required this.country,
+    required this.district,
     required this.settlementPreference,
     this.preferredRate,
     this.termsLockedAt,
@@ -32,6 +33,7 @@ class ForexListingModel extends Equatable {
   final String currencyNeeded;
   final int amount;
   final String country;
+  final String district;
   final String settlementPreference;
   final double? preferredRate;
   final DateTime? termsLockedAt;
@@ -67,6 +69,7 @@ class ForexListingModel extends Equatable {
       currencyNeeded: map['currency_needed'] as String? ?? 'USD',
       amount: (map['amount'] as num?)?.toInt() ?? 0,
       country: map['country'] as String? ?? 'UG',
+      district: map['district'] as String? ?? map['location'] as String? ?? 'Other',
       settlementPreference: map['settlement_preference'] as String? ?? '',
       preferredRate: (map['preferred_rate'] as num?)?.toDouble(),
       termsLockedAt: map['terms_locked_at'] != null

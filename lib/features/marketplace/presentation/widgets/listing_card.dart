@@ -66,7 +66,7 @@ class ListingCard extends StatelessWidget {
         _forexDescription(forex, context);
     final location = needs?.location ??
         loan?.district ??
-        _settlementCity(forex!.settlementPreference);
+        _forexLocation(forex);
     final isVerified = needs?.trustIsVerified ??
         loan?.trustIsVerified ??
         forex?.trustIsVerified ??
@@ -142,8 +142,7 @@ class ListingCard extends StatelessWidget {
   }
 
   String _forexDescription(dynamic forex, BuildContext context) {
-    final settlement = forex.settlementPreference?.trim() ?? '';
-    return settlement.isEmpty ? 'Market request' : settlement;
+    return '';
   }
 
   String _forexSettlementLabel(dynamic forex) {
@@ -199,6 +198,58 @@ class ListingCard extends StatelessWidget {
     }
     if (cleaned.isEmpty) return '';
     return cleaned;
+  }
+
+  String _forexLocation(dynamic forex) {
+    final district = (forex.district ?? '').trim();
+    if (district.isNotEmpty && district.toLowerCase() != 'other') {
+      return district;
+    }
+
+    final raw = (forex.settlementPreference ?? '').trim();
+    final value = raw.toLowerCase();
+    final isSettlementMethod = value.contains('bank') ||
+        value.contains('mobile') ||
+        value.contains('transfer') ||
+        value.contains('money') ||
+        value.contains('cash') ||
+        value.contains('person');
+
+    if (raw.isEmpty || isSettlementMethod) {
+      final country = (forex.country ?? '').trim();
+      final city = _preferCityName(raw, country);
+      return city.isNotEmpty ? city : (country.isNotEmpty ? country : 'Nearby');
+    }
+
+    return _settlementCity(raw);
+  }
+
+  String _preferCityName(String settlement, String fallbackCountry) {
+    var candidate = settlement.trim();
+    final wordsToStrip = <String>{
+      'bank', 'mobile', 'money', 'transfer', 'cash', 'person', 'in', 'via',
+      'to', 'pickup', 'banking'
+    };
+
+    final parts = candidate
+        .replaceAll(':', ' ')
+        .replaceAll('/', ' ')
+        .replaceAll('|', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(',', ' ')
+        .split(RegExp(r'\s+'))
+        .where((part) => part.trim().isNotEmpty)
+        .where((part) => !wordsToStrip.contains(part.toLowerCase()))
+        .toList();
+
+    candidate = parts.join(' ');
+
+    if (candidate.isNotEmpty &&
+        !candidate.toLowerCase().contains(fallbackCountry.toLowerCase())) {
+      return candidate;
+    }
+
+    return fallbackCountry;
   }
 
   String _settlementCity(String value) {
@@ -413,17 +464,19 @@ class _MainListingArea extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 7),
-        Text(
-          description,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: mutedColor,
-            fontSize: 13,
-            height: 1.25,
+        if (description.trim().isNotEmpty) ...[
+          const SizedBox(height: 7),
+          Text(
+            description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: mutedColor,
+              fontSize: 13,
+              height: 1.25,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

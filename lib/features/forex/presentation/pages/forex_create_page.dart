@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
@@ -102,6 +103,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   String? _currencyHeld;
   String? _currencyNeeded;
   String _settlementPreference = _settlementPreferences.first;
+  String? _district;
   bool _submitting = false;
   List<CurrencyModel>? _currencies;
 
@@ -190,6 +192,8 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final l10n = AppLocalizations.of(context);
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
+    final district = _district ??
+        EastAfricaCountries.findByCode(authState.user.country).regions.first;
     if (!authState.user.kycApproved) {
       _showMessage(
         l10n?.kycGateForex ??
@@ -206,6 +210,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         currencyHeld: _currencyHeld!,
         currencyNeeded: _currencyNeeded!,
         amount: _parseAmount(_amountController.text)!,
+        district: district,
         settlementPreference: _settlementPreference,
         preferredRate: canSetPreferredRate
             ? _parseDecimal(_preferredRateController.text)
@@ -282,6 +287,10 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final neededCurrencyOptions = currencies
         ?.where((currency) => currency.code != _currencyHeld)
         .toList();
+    final countryInfo = authState is AuthAuthenticated
+        ? EastAfricaCountries.findByCode(authState.user.country)
+        : EastAfricaCountries.defaultCountry;
+    final selectedLocation = _district ?? countryInfo.regions.first;
     final isPro = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
@@ -343,6 +352,25 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 14),
+                      DropdownButtonFormField<String>(
+                        value: selectedLocation,
+                        decoration: InputDecoration(
+                          labelText: countryInfo.regionsLabel,
+                        ),
+                        items: countryInfo.regions
+                            .map((region) => DropdownMenuItem(
+                                  value: region,
+                                  child: Text(region),
+                                ))
+                            .toList(),
+                        onChanged: (value) => setState(() {
+                          _district = value ?? countryInfo.regions.first;
+                        }),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Select a location'
+                            : null,
                       ),
                       const SizedBox(height: 14),
                       TextFormField(

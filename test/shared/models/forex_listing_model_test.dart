@@ -9,6 +9,7 @@ void main() {
     'currency_needed': 'USD',
     'amount': 1000000,
     'country': 'UG',
+    'district': 'Kampala',
     'settlement_preference': 'mobile_money',
     'preferred_rate': 0.00027,
     'status': 'active',
@@ -29,6 +30,7 @@ void main() {
       expect(listing.currencyNeeded, 'USD');
       expect(listing.amount, 1000000);
       expect(listing.country, 'UG');
+      expect(listing.district, 'Kampala');
       expect(listing.settlementPreference, 'mobile_money');
       expect(listing.preferredRate, 0.00027);
       expect(listing.status, 'active');
@@ -46,6 +48,7 @@ void main() {
       expect(listing.currencyNeeded, 'USD');
       expect(listing.amount, 0);
       expect(listing.country, 'UG');
+      expect(listing.district, 'Other');
       expect(listing.status, 'active');
       expect(listing.numberOfOffers, 0);
       expect(listing.preferredRate, isNull);
