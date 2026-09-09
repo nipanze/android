@@ -9,12 +9,14 @@ import 'package:intl/intl.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../features/marketplace/domain/models/loan_listing.dart';
+import '../../../../features/marketplace/domain/models/marketplace_item.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../marketplace/presentation/widgets/listing_card.dart';
 import '../../domain/models/my_listing.dart';
 import '../cubit/my_listings_cubit.dart';
-import '../widgets/my_listing_card.dart';
 
 class MyListingsPage extends StatelessWidget {
   const MyListingsPage({super.key});
@@ -139,10 +141,14 @@ class _ListingsBody extends StatelessWidget {
           if (_activeForex.isNotEmpty) ...[
             ..._activeForex.map((f) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: _ForexRequestCard(
-                    request: f,
+                  child: ListingCard(
+                    listing: MarketplaceItem.forex(f),
                     onTap: () => context.push('/forex/${f.requestId}'),
-                    onCancel: () => _confirmCancelForex(context, f),
+                    isSaved: false,
+                    onWatchlistToggle: () => _confirmCancelForex(context, f),
+                    showMoreActions: true,
+                    moreActionLabel: 'Cancel request',
+                    onMoreAction: () => _confirmCancelForex(context, f),
                   ),
                 )),
           ],
@@ -150,10 +156,14 @@ class _ListingsBody extends StatelessWidget {
           if (_active.isNotEmpty) ...[
             ..._active.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: MyListingCard(
-                    listing: l,
+                  child: ListingCard(
+                    listing: MarketplaceItem.loan(_myListingToLoanListing(l)),
                     onTap: () => context.push('/marketplace/${l.id}'),
-                    onCancel: () => _confirmCancel(context, l),
+                    isSaved: false,
+                    onWatchlistToggle: () => _confirmCancel(context, l),
+                    showMoreActions: true,
+                    moreActionLabel: 'Cancel request',
+                    onMoreAction: () => _confirmCancel(context, l),
                   ),
                 )),
           ],
@@ -164,10 +174,12 @@ class _ListingsBody extends StatelessWidget {
                 AppLocalizations.of(context)!.sectionClosed(_closed.length)),
             ..._closed.map((l) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: MyListingCard(
-                    listing: l,
+                  child: ListingCard(
+                    listing: MarketplaceItem.loan(_myListingToLoanListing(l)),
                     onTap: () => context.push('/marketplace/${l.id}'),
-                    onCancel: () {},
+                    isSaved: false,
+                    onWatchlistToggle: () {},
+                    showMoreActions: false,
                   ),
                 )),
           ],
@@ -221,6 +233,43 @@ class _ListingsBody extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  LoanListing _myListingToLoanListing(MyListing listing) {
+    return LoanListing(
+      requestId: listing.id,
+      title: listing.title,
+      purpose: listing.purpose,
+      district: listing.district,
+      country: 'UG',
+      durationMonths: listing.durationMonths,
+      requestedAmount: listing.requestedAmount,
+      incomeSource: listing.incomeSource,
+      preferredRepaymentPlan: listing.preferredRepaymentPlan,
+      repaymentAmountPerPeriod: listing.repaymentAmountPerPeriod,
+      repaymentTimeline: listing.repaymentTimeline,
+      suggestedInterestRatePct: listing.suggestedInterestRatePct,
+      suggestedLateFeePct: listing.suggestedLateFeePct,
+      suggestedRepaymentFrequency: listing.suggestedRepaymentFrequency,
+      suggestedInstallmentAmount: listing.suggestedInstallmentAmount,
+      hasCollateral: listing.hasCollateral,
+      collateralDetails: listing.collateralDetails,
+      collateralEstimatedValue: listing.collateralEstimatedValue,
+      collateralLocation: listing.collateralLocation,
+      status: switch (listing.status) {
+        ListingStatus.pendingKyc => 'pending_kyc',
+        ListingStatus.active => 'active',
+        ListingStatus.contracted => 'contracted',
+        ListingStatus.expired => 'expired',
+        ListingStatus.cancelled => 'cancelled',
+      },
+      listedAt: listing.listedAt,
+      expiresAt: listing.expiresAt,
+      numberOfOffers: listing.numberOfOffers,
+      trustIsVerified: false,
+      currency: listing.currency,
+      isSponsored: listing.isSponsored,
     );
   }
 
@@ -311,12 +360,10 @@ class _ForexRequestCard extends StatelessWidget {
   const _ForexRequestCard({
     required this.request,
     required this.onTap,
-    this.onCancel,
   });
 
   final ForexListingModel request;
   final VoidCallback onTap;
-  final VoidCallback? onCancel;
 
   Color _statusColor(BuildContext context) {
     switch (request.status) {
@@ -464,14 +511,14 @@ class _ForexRequestCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (request.status == 'active' && onCancel != null)
+                      if (request.status == 'active')
                         PopupMenuButton<_ForexRequestAction>(
                           tooltip: 'More actions',
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints.tightFor(
                               width: 28, height: 28),
                           icon: const Icon(Icons.more_vert, size: 19),
-                          onSelected: (_) => onCancel!(),
+                          onSelected: (_) => {},
                           itemBuilder: (_) => const [
                             PopupMenuItem(
                               value: _ForexRequestAction.cancel,

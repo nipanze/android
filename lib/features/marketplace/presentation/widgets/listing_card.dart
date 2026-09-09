@@ -15,12 +15,18 @@ class ListingCard extends StatelessWidget {
     required this.onTap,
     required this.isSaved,
     required this.onWatchlistToggle,
+    this.showMoreActions = true,
+    this.moreActionLabel,
+    this.onMoreAction,
   });
 
   final MarketplaceItem listing;
   final VoidCallback onTap;
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
+  final bool showMoreActions;
+  final String? moreActionLabel;
+  final VoidCallback? onMoreAction;
 
   @override
   Widget build(BuildContext context) {
@@ -107,10 +113,15 @@ class ListingCard extends StatelessWidget {
                 description: description,
                 isSaved: isSaved,
                 onWatchlistToggle: onWatchlistToggle,
+                showMoreActions: showMoreActions,
+                moreActionLabel: moreActionLabel,
+                onMoreAction: onMoreAction,
                 attributes: [
                   if (needs != null) needs.category,
                   if (needs != null) needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
+                  if (forex != null)
+                    _forexSettlementLabel(forex),
                   if (forex != null && forex.preferredRate != null)
                     forex.preferredRate!.toStringAsFixed(2),
                   if (showCollateral && loan.collateralPreview != null)
@@ -131,7 +142,63 @@ class ListingCard extends StatelessWidget {
   }
 
   String _forexDescription(dynamic forex, BuildContext context) {
-    return '${forex.settlementPreference}. ${forex.currencyNeeded} ${AppLocalizations.of(context)!.marketplaceNeeded.toLowerCase()}';
+    final settlement = forex.settlementPreference?.trim() ?? '';
+    return settlement.isEmpty ? 'Market request' : settlement;
+  }
+
+  String _forexSettlementLabel(dynamic forex) {
+    final raw = (forex.settlementPreference ?? '').trim();
+    if (raw.isEmpty) return 'Flexible';
+
+    final value = raw.toLowerCase();
+    if (value.contains('equity')) return 'Equity Bank';
+    if (value.contains('mpesa') || value.contains('m-pesa') || value.contains('m pesa')) {
+      return 'M-Pesa';
+    }
+    if (value.contains('airtel')) return 'Airtel Money';
+    if (value.contains('bank')) {
+      final bankLabel = _decodeSettlementLabel(raw, ['bank transfer', 'bank', 'transfer']);
+      return bankLabel.isEmpty ? 'Bank' : bankLabel;
+    }
+    if (value.contains('mobile')) {
+      final mobileLabel = _decodeSettlementLabel(raw, ['mobile money', 'mobile', 'money']);
+      return mobileLabel.isEmpty ? 'Mobile Money' : mobileLabel;
+    }
+    if (value.contains('person') || value.contains('cash')) {
+      final personLabel = _decodeSettlementLabel(raw, ['in person', 'cash', 'pickup']);
+      return personLabel.isEmpty ? 'In person' : personLabel;
+    }
+    return raw;
+  }
+
+  String _decodeSettlementLabel(String raw, List<String> keywords) {
+    var cleaned = raw.trim();
+    final lower = cleaned.toLowerCase();
+
+    for (final keyword in keywords) {
+      final target = keyword.toLowerCase();
+      if (lower.contains(target)) {
+        cleaned = cleaned.replaceAll(RegExp(target, caseSensitive: false), '').trim();
+      }
+    }
+
+    cleaned = cleaned
+        .replaceAll(':', ' ')
+        .replaceAll('|', ' ')
+        .replaceAll('/', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll(',', ' ')
+        .replaceAll('  ', ' ')
+        .trim();
+
+    if (cleaned.toLowerCase().startsWith('to ')) {
+      cleaned = cleaned.substring(3).trim();
+    }
+    if (cleaned.toLowerCase().startsWith('via ')) {
+      cleaned = cleaned.substring(4).trim();
+    }
+    if (cleaned.isEmpty) return '';
+    return cleaned;
   }
 
   String _settlementCity(String value) {
@@ -160,14 +227,22 @@ class _MoreActionsButton extends StatelessWidget {
   const _MoreActionsButton({
     required this.isSaved,
     required this.onWatchlistToggle,
+    this.moreActionLabel,
+    this.onMoreAction,
   });
 
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
+  final String? moreActionLabel;
+  final VoidCallback? onMoreAction;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final label = moreActionLabel ??
+        (isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist);
+    final action = onMoreAction ?? onWatchlistToggle;
+
     return PopupMenuButton<String>(
       tooltip: 'More actions',
       padding: EdgeInsets.zero,
@@ -177,13 +252,11 @@ class _MoreActionsButton extends StatelessWidget {
         size: 19,
         color: AppColors.accent,
       ),
-      onSelected: (_) => onWatchlistToggle(),
+      onSelected: (_) => action(),
       itemBuilder: (_) => [
         PopupMenuItem<String>(
           value: 'toggle',
-          child: Text(
-            isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist,
-          ),
+          child: Text(label),
         ),
       ],
     );
@@ -205,6 +278,9 @@ class _MainListingArea extends StatelessWidget {
     required this.description,
     required this.isSaved,
     required this.onWatchlistToggle,
+    required this.showMoreActions,
+    required this.moreActionLabel,
+    required this.onMoreAction,
     required this.attributes,
   });
 
@@ -221,7 +297,27 @@ class _MainListingArea extends StatelessWidget {
   final String description;
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
+  final bool showMoreActions;
+  final String? moreActionLabel;
+  final VoidCallback? onMoreAction;
   final List<String> attributes;
+
+  IconData _attributeIcon(String attribute) {
+    final value = attribute.toLowerCase();
+    if (value.contains('equity') || value.contains('bank')) {
+      return Icons.account_balance_rounded;
+    }
+    if (value.contains('mpesa') || value.contains('m-pesa') || value.contains('airtel') || value.contains('mobile')) {
+      return Icons.phone_iphone_rounded;
+    }
+    if (value.contains('person') || value.contains('cash')) {
+      return Icons.people_alt_rounded;
+    }
+    if (value.contains('rate') || value.contains('.')) {
+      return Icons.percent_rounded;
+    }
+    return Icons.calendar_month_rounded;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,10 +347,13 @@ class _MainListingArea extends StatelessWidget {
                 ],
               ),
             ),
-            _MoreActionsButton(
-              isSaved: isSaved,
-              onWatchlistToggle: onWatchlistToggle,
-            ),
+            if (showMoreActions)
+              _MoreActionsButton(
+                isSaved: isSaved,
+                onWatchlistToggle: onWatchlistToggle,
+                moreActionLabel: moreActionLabel,
+                onMoreAction: onMoreAction,
+              ),
           ],
         ),
         const SizedBox(height: 7),
@@ -308,7 +407,7 @@ class _MainListingArea extends StatelessWidget {
               ),
             for (final attribute in attributes)
               _MetaIcon(
-                icon: Icons.calendar_month_rounded,
+                icon: _attributeIcon(attribute),
                 label: attribute,
                 color: mutedColor,
               ),
