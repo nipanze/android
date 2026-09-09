@@ -64,4 +64,6 @@ WHERE fr.status = 'active'
     )
   );
 
+GRANT SELECT ON public.v_forex_listings TO authenticated, anon;
+
 COMMIT;

@@ -100,6 +100,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _preferredRateController = TextEditingController();
+  final _customDistrictController = TextEditingController();
   String? _currencyHeld;
   String? _currencyNeeded;
   String _settlementPreference = _settlementPreferences.first;
@@ -143,6 +144,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     _amountController.dispose();
     _preferredRateController.removeListener(_refreshButtonState);
     _preferredRateController.dispose();
+    _customDistrictController.dispose();
     super.dispose();
   }
 
@@ -192,8 +194,13 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final l10n = AppLocalizations.of(context);
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
-    final district = _district ??
+    final fallbackRegion =
         EastAfricaCountries.findByCode(authState.user.country).regions.first;
+    final district = _district == 'Other'
+        ? _customDistrictController.text.trim().isNotEmpty
+            ? _customDistrictController.text.trim()
+            : 'Other'
+        : (_district ?? fallbackRegion);
     if (!authState.user.kycApproved) {
       _showMessage(
         l10n?.kycGateForex ??
@@ -367,11 +374,32 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                             .toList(),
                         onChanged: (value) => setState(() {
                           _district = value ?? countryInfo.regions.first;
+                          if (value != 'Other') {
+                            _customDistrictController.clear();
+                          }
                         }),
                         validator: (value) => value == null || value.isEmpty
                             ? 'Select a location'
                             : null,
                       ),
+                      if (selectedLocation == 'Other') ...[
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          controller: _customDistrictController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: 'Enter custom location',
+                            hintText: 'e.g. Jinja, Fort Portal, or local area',
+                          ),
+                          validator: (value) {
+                            if (selectedLocation == 'Other' &&
+                                (value == null || value.trim().isEmpty)) {
+                              return 'Tell us the location';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: _amountController,
