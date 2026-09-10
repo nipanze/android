@@ -238,9 +238,9 @@ class _MoreActionsButton extends StatelessWidget {
         width: 20,
         height: 20,
         child: Icon(
-          Icons.arrow_forward_rounded,
+          isSaved ? Icons.star_rounded : Icons.star_border_rounded,
           size: 18,
-          color: AppColors.accent,
+          color: isSaved ? AppColors.warning : AppColors.text3Light,
         ),
       ),
     );
@@ -298,7 +298,7 @@ class _MainListingArea extends StatelessWidget {
       return Icons.people_alt_rounded;
     }
     if (value.contains('rate') || value.contains('.')) {
-      return Icons.percent_rounded;
+      return Icons.swap_horiz_rounded;
     }
     return Icons.calendar_month_rounded;
   }
