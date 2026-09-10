@@ -490,7 +490,7 @@ class _ProFilterButton extends StatelessWidget {
                     child: const Icon(
                       Icons.tune_rounded,
                       size: 15,
-                      color: AppColors.purple,
+                      color: AppColors.proPurple,
                     ),
                   ),
                   // Active-filter dot indicator
@@ -502,7 +502,7 @@ class _ProFilterButton extends StatelessWidget {
                         width: 6,
                         height: 6,
                         decoration: const BoxDecoration(
-                          color: AppColors.purple,
+                          color: AppColors.proPurple,
                           shape: BoxShape.circle,
                         ),
                       ),

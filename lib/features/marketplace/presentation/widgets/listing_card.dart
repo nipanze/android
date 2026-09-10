@@ -123,7 +123,9 @@ class ListingCard extends StatelessWidget {
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
                   if (forex != null)
                     _forexSettlementLabel(forex),
-                  if (forex != null && forex.preferredRate != null)
+                  if (forex != null &&
+                      forex.preferredRate != null &&
+                      forex.preferredRate! > 0)
                     forex.preferredRate!.toStringAsFixed(2),
                   if (showCollateral && loan.collateralPreview != null)
                     loan.collateralPreview!,
@@ -229,22 +231,18 @@ class _MoreActionsButton extends StatelessWidget {
         (isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist);
     final action = onMoreAction ?? onWatchlistToggle;
 
-    return PopupMenuButton<String>(
-      tooltip: 'More actions',
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-      icon: const Icon(
-        Icons.more_vert_rounded,
-        size: 19,
-        color: AppColors.accent,
-      ),
-      onSelected: (_) => action(),
-      itemBuilder: (_) => [
-        PopupMenuItem<String>(
-          value: 'toggle',
-          child: Text(label),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: action,
+      child: SizedBox(
+        width: 20,
+        height: 20,
+        child: Icon(
+          Icons.arrow_forward_rounded,
+          size: 18,
+          color: AppColors.accent,
         ),
-      ],
+      ),
     );
   }
 }
