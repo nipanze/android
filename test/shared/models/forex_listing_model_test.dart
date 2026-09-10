@@ -54,6 +54,19 @@ void main() {
       expect(listing.preferredRate, isNull);
     });
 
+    test('settlement provider and city are split correctly', () {
+      final label = ForexListingModel.settlementLabelFromPreference(
+        'Mobile money (MTN Momo), Kampala',
+      );
+      final location = ForexListingModel.locationFromSettlement(
+        'Mobile money (MTN Momo), Kampala',
+        null,
+      );
+
+      expect(label, 'MTN Momo');
+      expect(location, 'Kampala');
+    });
+
     test('receiveEstimate rounds amount times rate', () {
       final listing = ForexListingModel.fromMap(baseMap);
       expect(listing.receiveEstimate, (1000000 * 0.00027).round());

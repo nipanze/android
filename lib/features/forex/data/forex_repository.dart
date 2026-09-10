@@ -38,6 +38,8 @@ class ForexRepository {
     required int amount,
     required String district,
     required String settlementPreference,
+    String? settlementMethod,
+    String? settlementDetails,
     double? preferredRate,
     String country = 'UG',
   }) async {
@@ -51,6 +53,10 @@ class ForexRepository {
             'amount': amount,
             'district': district,
             'settlement_preference': settlementPreference,
+            if (settlementMethod != null) 'settlement_method': settlementMethod,
+            if (settlementDetails != null &&
+                settlementDetails.trim().isNotEmpty)
+              'settlement_details': settlementDetails.trim(),
             'country': country,
             if (preferredRate != null) 'preferred_rate': preferredRate,
           })

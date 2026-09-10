@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/models/forex_listing_model.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/models/marketplace_item.dart';
@@ -146,82 +147,16 @@ class ListingCard extends StatelessWidget {
   }
 
   String _forexSettlementLabel(dynamic forex) {
-    final raw = (forex.settlementPreference ?? '').trim();
-    if (raw.isEmpty) return 'Flexible';
-
-    final value = raw.toLowerCase();
-    if (value.contains('equity')) return 'Equity Bank';
-    if (value.contains('mpesa') || value.contains('m-pesa') || value.contains('m pesa')) {
-      return 'M-Pesa';
-    }
-    if (value.contains('airtel')) return 'Airtel Money';
-    if (value.contains('bank')) {
-      final bankLabel = _decodeSettlementLabel(raw, ['bank transfer', 'bank', 'transfer']);
-      return bankLabel.isEmpty ? 'Bank' : bankLabel;
-    }
-    if (value.contains('mobile')) {
-      final mobileLabel = _decodeSettlementLabel(raw, ['mobile money', 'mobile', 'money']);
-      return mobileLabel.isEmpty ? 'Mobile Money' : mobileLabel;
-    }
-    if (value.contains('person') || value.contains('cash')) {
-      final personLabel = _decodeSettlementLabel(raw, ['in person', 'cash', 'pickup']);
-      return personLabel.isEmpty ? 'In person' : personLabel;
-    }
-    return raw;
-  }
-
-  String _decodeSettlementLabel(String raw, List<String> keywords) {
-    var cleaned = raw.trim();
-    final lower = cleaned.toLowerCase();
-
-    for (final keyword in keywords) {
-      final target = keyword.toLowerCase();
-      if (lower.contains(target)) {
-        cleaned = cleaned.replaceAll(RegExp(target, caseSensitive: false), '').trim();
-      }
-    }
-
-    cleaned = cleaned
-        .replaceAll(':', ' ')
-        .replaceAll('|', ' ')
-        .replaceAll('/', ' ')
-        .replaceAll('-', ' ')
-        .replaceAll(',', ' ')
-        .replaceAll('  ', ' ')
-        .trim();
-
-    if (cleaned.toLowerCase().startsWith('to ')) {
-      cleaned = cleaned.substring(3).trim();
-    }
-    if (cleaned.toLowerCase().startsWith('via ')) {
-      cleaned = cleaned.substring(4).trim();
-    }
-    if (cleaned.isEmpty) return '';
-    return cleaned;
+    return ForexListingModel.settlementLabelFromPreference(
+      forex.settlementPreference,
+    );
   }
 
   String _forexLocation(dynamic forex) {
-    final district = (forex.district ?? '').trim();
-    if (district.isNotEmpty && district.toLowerCase() != 'other') {
-      return district;
-    }
-
-    final raw = (forex.settlementPreference ?? '').trim();
-    final value = raw.toLowerCase();
-    final isSettlementMethod = value.contains('bank') ||
-        value.contains('mobile') ||
-        value.contains('transfer') ||
-        value.contains('money') ||
-        value.contains('cash') ||
-        value.contains('person');
-
-    if (raw.isEmpty || isSettlementMethod) {
-      final country = (forex.country ?? '').trim();
-      final city = _preferCityName(raw, country);
-      return city.isNotEmpty ? city : (country.isNotEmpty ? country : 'Nearby');
-    }
-
-    return _settlementCity(raw);
+    return ForexListingModel.locationFromSettlement(
+      forex.settlementPreference,
+      forex.district,
+    );
   }
 
   String _preferCityName(String settlement, String fallbackCountry) {

@@ -82,12 +82,233 @@ const _defaultTradeableCurrencies = [
   CurrencyModel(code: 'INR', name: 'Indian Rupee', forexTradingEnabled: true),
 ];
 
-const _settlementPreferences = [
-  'In person',
-  'Mobile money',
-  'Bank transfer',
-  'Other',
-];
+List<String> _settlementPreferencesForCountry(String countryCode) {
+  switch (countryCode) {
+    case 'KE':
+      return ['In person', 'M-Pesa', 'Bank transfer', 'Other'];
+    case 'TZ':
+      return ['In person', 'M-Pesa / Tigo Pesa', 'Bank transfer', 'Other'];
+    case 'RW':
+      return ['In person', 'MTN MoMo / Airtel', 'Bank transfer', 'Other'];
+    case 'NG':
+      return ['In person', 'Bank transfer', 'Cash pickup', 'Other'];
+    case 'ZA':
+      return ['In person', 'Bank transfer', 'Cash pickup', 'Other'];
+    case 'EG':
+      return ['In person', 'Vodafone Cash', 'Bank transfer', 'Other'];
+    case 'UG':
+    default:
+      return ['In person', 'Mobile money', 'Bank transfer', 'Other'];
+  }
+}
+
+String _normalizeSettlementLabel(String value) {
+  final normalized = value.trim();
+  if (normalized.isEmpty) return 'Other';
+  if (normalized.toLowerCase().contains('bank')) return 'Bank transfer';
+  if (normalized.toLowerCase().contains('m-pesa') ||
+      normalized.toLowerCase().contains('mpesa') ||
+      normalized.toLowerCase().contains('momo') ||
+      normalized.toLowerCase().contains('airtel') ||
+      normalized.toLowerCase().contains('vodafone') ||
+      normalized.toLowerCase().contains('mobile money') ||
+      normalized.toLowerCase().contains('mobile')) {
+    return 'Mobile money';
+  }
+  if (normalized.toLowerCase().contains('cash pickup') ||
+      normalized.toLowerCase().contains('pickup') ||
+      normalized.toLowerCase().contains('cash') ||
+      normalized.toLowerCase().contains('person')) {
+    return 'In person';
+  }
+  return normalized;
+}
+
+String _settlementInputHint(String countryCode, String selected) {
+  final normalized = _normalizeSettlementLabel(selected);
+  switch (countryCode) {
+    case 'KE':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. KCB, Nairobi CBD or Westlands branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. M-Pesa, Nairobi CBD / Westlands';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Nairobi CBD, Westlands, or nearby area';
+      }
+      return 'e.g. agreed location or provider';
+    case 'TZ':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. CRDB, Dar es Salaam branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. Tigo Pesa, Dar es Salaam / Arusha';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Dar es Salaam CBD or nearby meetup area';
+      }
+      return 'e.g. agreed location or provider';
+    case 'RW':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. Bank of Kigali, Kigali branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. MTN MoMo, Kigali / Huye';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Kigali city center or nearby area';
+      }
+      return 'e.g. agreed location or provider';
+    case 'NG':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. Access Bank, Lagos branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. Opay, Lagos / Abuja';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Lagos island or local pickup point';
+      }
+      return 'e.g. agreed location or provider';
+    case 'ZA':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. Capitec Bank, Johannesburg branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. Capitec Pay, Johannesburg / Cape Town';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Cape Town CBD or nearby area';
+      }
+      return 'e.g. agreed location or provider';
+    case 'EG':
+      if (normalized == 'Bank transfer') {
+        return 'e.g. CIB, Cairo branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. Vodafone Cash, Cairo / Alexandria';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Cairo downtown or nearby meetup area';
+      }
+      return 'e.g. agreed location or provider';
+    case 'UG':
+    default:
+      if (normalized == 'Bank transfer') {
+        return 'e.g. Stanbic, Kampala branch';
+      }
+      if (normalized == 'Mobile money') {
+        return 'e.g. MTN/Airtel, Kampala / Jinja';
+      }
+      if (normalized == 'In person') {
+        return 'e.g. Kampala CBD or nearby meeting point';
+      }
+      return 'e.g. agreed location or provider';
+  }
+}
+
+String _suggestedLocationForCountry(String countryCode) {
+  switch (countryCode) {
+    case 'KE':
+      return 'Nairobi CBD';
+    case 'TZ':
+      return 'Dar es Salaam CBD';
+    case 'RW':
+      return 'Kigali city center';
+    case 'NG':
+      return 'Lagos island';
+    case 'ZA':
+      return 'Johannesburg CBD';
+    case 'EG':
+      return 'Cairo downtown';
+    case 'UG':
+    default:
+      return 'Kampala CBD';
+  }
+}
+
+String _suggestedRateHint(
+    String countryCode, String? currencyHeld, String? currencyNeeded) {
+  if (currencyHeld == null ||
+      currencyNeeded == null ||
+      currencyHeld == currencyNeeded) {
+    return 'Suggested local market area: ${_suggestedLocationForCountry(countryCode)}';
+  }
+
+  final rates = {
+    'UG': {
+      'USD': 3600.0,
+      'KES': 29.0,
+      'TZS': 0.9,
+      'RWF': 2.5,
+      'NGN': 0.4,
+      'ZAR': 0.2,
+      'EGP': 0.07
+    },
+    'KE': {
+      'USD': 128.0,
+      'UGX': 0.035,
+      'TZS': 0.05,
+      'RWF': 0.1,
+      'NGN': 0.085,
+      'ZAR': 0.007,
+      'EGP': 0.013
+    },
+    'TZ': {
+      'USD': 2500.0,
+      'UGX': 0.69,
+      'KES': 19.5,
+      'RWF': 1.9,
+      'NGN': 1.7,
+      'ZAR': 0.14,
+      'EGP': 0.051
+    },
+    'RW': {
+      'USD': 1300.0,
+      'UGX': 0.36,
+      'KES': 10.1,
+      'TZS': 0.52,
+      'NGN': 0.87,
+      'ZAR': 0.07,
+      'EGP': 0.027
+    },
+    'NG': {
+      'USD': 1500.0,
+      'UGX': 0.42,
+      'KES': 11.7,
+      'TZS': 0.6,
+      'RWF': 1.15,
+      'ZAR': 0.083,
+      'EGP': 0.03
+    },
+    'ZA': {
+      'USD': 18.0,
+      'UGX': 0.005,
+      'KES': 0.14,
+      'TZS': 0.007,
+      'RWF': 0.014,
+      'NGN': 0.012,
+      'EGP': 0.37
+    },
+    'EG': {
+      'USD': 49.0,
+      'UGX': 0.0136,
+      'KES': 0.38,
+      'TZS': 0.02,
+      'RWF': 0.038,
+      'NGN': 0.033,
+      'ZAR': 0.27
+    },
+  };
+
+  final countryMap = rates[countryCode] ?? rates['UG']!;
+  final quoteRate = countryMap[currencyNeeded] ?? 1.0;
+  final baseText = quoteRate >= 1
+      ? '1 $currencyHeld ≈ ${quoteRate.toStringAsFixed(0)} $currencyNeeded'
+      : '1 $currencyHeld ≈ ${quoteRate.toStringAsFixed(4)} $currencyNeeded';
+  return 'Suggested market area: ${_suggestedLocationForCountry(countryCode)} • Suggested rate: $baseText';
+}
 
 class ForexCreatePage extends StatefulWidget {
   const ForexCreatePage({super.key});
@@ -101,9 +322,10 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   final _amountController = TextEditingController();
   final _preferredRateController = TextEditingController();
   final _customDistrictController = TextEditingController();
+  final _customSettlementController = TextEditingController();
   String? _currencyHeld;
   String? _currencyNeeded;
-  String _settlementPreference = _settlementPreferences.first;
+  String _settlementPreference = 'In person';
   String? _district;
   bool _submitting = false;
   List<CurrencyModel>? _currencies;
@@ -145,6 +367,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     _preferredRateController.removeListener(_refreshButtonState);
     _preferredRateController.dispose();
     _customDistrictController.dispose();
+    _customSettlementController.dispose();
     super.dispose();
   }
 
@@ -213,12 +436,15 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
     setState(() => _submitting = true);
     try {
+      final settlementPreference = _formattedSettlementPreference();
       final id = await getIt<ForexRepository>().createRequest(
         currencyHeld: _currencyHeld!,
         currencyNeeded: _currencyNeeded!,
         amount: _parseAmount(_amountController.text)!,
         district: district,
-        settlementPreference: _settlementPreference,
+        settlementPreference: settlementPreference,
+        settlementMethod: _settlementMethodKey(_settlementPreference),
+        settlementDetails: _customSettlementController.text.trim(),
         preferredRate: canSetPreferredRate
             ? _parseDecimal(_preferredRateController.text)
             : null,
@@ -264,6 +490,40 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     }
   }
 
+  String _settlementMethodKey(String value) {
+    final normalized = _normalizeSettlementLabel(value).toLowerCase();
+    if (normalized.contains('bank')) return 'bank';
+    if (normalized.contains('mobile') ||
+        normalized.contains('m-pesa') ||
+        normalized.contains('mpesa') ||
+        normalized.contains('momo') ||
+        normalized.contains('airtel') ||
+        normalized.contains('vodafone')) {
+      return 'mobile_money';
+    }
+    if (normalized.contains('person') ||
+        normalized.contains('cash') ||
+        normalized.contains('pickup')) {
+      return 'in_person';
+    }
+    return 'other';
+  }
+
+  String _formattedSettlementPreference() {
+    final detail = _customSettlementController.text.trim();
+    final normalized = _normalizeSettlementLabel(_settlementPreference);
+    switch (normalized) {
+      case 'Bank transfer':
+        return detail.isEmpty ? 'Bank transfer' : 'Bank transfer — $detail';
+      case 'Mobile money':
+        return detail.isEmpty ? 'Mobile money' : 'Mobile money — $detail';
+      case 'In person':
+        return detail.isEmpty ? 'In person' : 'In person — $detail';
+      default:
+        return detail.isEmpty ? normalized : '$normalized — $detail';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -297,6 +557,11 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final countryInfo = authState is AuthAuthenticated
         ? EastAfricaCountries.findByCode(authState.user.country)
         : EastAfricaCountries.defaultCountry;
+    final settlementOptions =
+        _settlementPreferencesForCountry(countryInfo.code);
+    final selectedSettlement = settlementOptions.contains(_settlementPreference)
+        ? _settlementPreference
+        : settlementOptions.first;
     final selectedLocation = _district ?? countryInfo.regions.first;
     final isPro = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
@@ -425,23 +690,79 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<String>(
-                        initialValue: _settlementPreference,
+                        value: selectedSettlement,
                         decoration: InputDecoration(
                           labelText:
                               l10n?.forexSettlementPreference ?? 'Settlement',
                         ),
-                        items: _settlementPreferences
+                        items: settlementOptions
                             .map((p) => DropdownMenuItem(
                                   value: p,
                                   child:
                                       Text(_getLocalizedSettlement(context, p)),
                                 ))
                             .toList(),
-                        onChanged: (v) => setState(
-                          () => _settlementPreference =
-                              v ?? _settlementPreferences.first,
-                        ),
+                        onChanged: (v) => setState(() {
+                          _settlementPreference = v ?? settlementOptions.first;
+                          if (_normalizeSettlementLabel(
+                                  _settlementPreference) ==
+                              'In person') {
+                            _customSettlementController.clear();
+                          }
+                        }),
                       ),
+                      if (_normalizeSettlementLabel(_settlementPreference) !=
+                          'In person') ...[
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          controller: _customSettlementController,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            labelText: switch (_normalizeSettlementLabel(
+                                _settlementPreference)) {
+                              'Bank transfer' => 'Bank name or branch',
+                              'Mobile money' => 'Provider / wallet / area',
+                              'Other' => 'Settlement detail',
+                              _ => 'Settlement detail',
+                            },
+                            hintText: _settlementInputHint(
+                              countryInfo.code,
+                              _settlementPreference,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (_normalizeSettlementLabel(
+                                    _settlementPreference) ==
+                                'In person') return null;
+                            final text = value?.trim() ?? '';
+                            if (text.isEmpty) {
+                              return switch (_normalizeSettlementLabel(
+                                  _settlementPreference)) {
+                                'Bank transfer' => 'Enter the bank name',
+                                'Mobile money' =>
+                                  'Enter the mobile money provider',
+                                'Other' => 'Add the settlement detail',
+                                _ => 'Add a detail',
+                              };
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      if (_currencyHeld != null && _currencyNeeded != null)
+                        Text(
+                          _suggestedRateHint(
+                            countryInfo.code,
+                            _currencyHeld,
+                            _currencyNeeded,
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.text2Dark
+                                : AppColors.text2Light,
+                          ),
+                        ),
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: _preferredRateController,

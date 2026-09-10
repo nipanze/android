@@ -84,4 +84,5 @@ void main() {
 
     await authBloc.close();
   });
+
 }
