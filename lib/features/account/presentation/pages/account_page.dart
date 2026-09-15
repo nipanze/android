@@ -289,28 +289,41 @@ class _AccountView extends StatelessWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      backgroundColor: AppColors.bg3Dark,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetCtx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                child: Text(
-                  AppLocalizations.of(sheetCtx)!.settingsTitle,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700),
+        final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
+        final sheetBg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+        final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
+        final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: sheetBg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: Text(
+                    AppLocalizations.of(sheetCtx)!.settingsTitle,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: sheetText,
+                    ),
+                  ),
                 ),
-              ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               _ThemeToggleRow(),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               // Language row – switch app language dynamically
               ValueListenableBuilder<Locale?>(
                 valueListenable: LanguageService.instance.notifier,
@@ -327,7 +340,7 @@ class _AccountView extends StatelessWidget {
                   );
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               // Subscription Currency row – locked to registered phone country code
               _ActionRow(
                 icon: Icons.monetization_on_outlined,
@@ -339,10 +352,10 @@ class _AccountView extends StatelessWidget {
                     _SettingsBadge(
                         '${userCountry.flag} ${userCountry.currency}'),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.lock_outline_rounded,
                       size: 14,
-                      color: AppColors.text3Dark,
+                      color: isDark ? AppColors.text3Dark : AppColors.text3Light,
                     ),
                   ],
                 ),
@@ -351,7 +364,7 @@ class _AccountView extends StatelessWidget {
                   _showCurrencyLockedInfoDialog(context, userCountry);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               _ActionRow(
                 icon: Icons.lock_outline_rounded,
                 label: AppLocalizations.of(sheetCtx)?.security ?? 'Security',
@@ -360,7 +373,7 @@ class _AccountView extends StatelessWidget {
                   _showSecuritySheet(context);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               _ActionRow(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: AppLocalizations.of(sheetCtx)!.contactUs,
@@ -369,7 +382,7 @@ class _AccountView extends StatelessWidget {
                   _showContactDialog(context);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               _ActionRow(
                 icon: Icons.groups_outlined,
                 label: AppLocalizations.of(sheetCtx)!.community,
@@ -378,7 +391,7 @@ class _AccountView extends StatelessWidget {
                   _showCommunityDialog(context);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               _ActionRow(
                 icon: Icons.gavel_outlined,
                 label: AppLocalizations.of(sheetCtx)!.legal,
@@ -387,7 +400,7 @@ class _AccountView extends StatelessWidget {
                   _showLegalDialog(context);
                 },
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: sheetDivider),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -405,9 +418,9 @@ class _AccountView extends StatelessWidget {
               ),
             ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   }
 
   void _showCurrencyLockedInfoDialog(
@@ -574,55 +587,71 @@ class _AccountView extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetCtx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          child: ValueListenableBuilder<bool>(
-            valueListenable: AppLockService.instance.enabled,
-            builder: (context, enabled, _) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                    child: Text(
-                      'Security',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
+        final sheetBg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+        final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
+        final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: sheetBg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: AppLockService.instance.enabled,
+              builder: (context, enabled, _) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      child: Text(
+                        'Security',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: sheetText,
+                        ),
+                      ),
                     ),
-                  ),
-                  const Divider(height: 1),
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.fingerprint_rounded),
-                    title: const Text('App Lock'),
-                    subtitle: const Text(
-                      'Require biometrics or device PIN after cold start or 30 seconds in the background.',
-                    ),
-                    value: enabled,
-                    onChanged: (value) async {
-                      final ok =
-                          await AppLockService.instance.setEnabled(value);
-                      if (!context.mounted) return;
-                      if (!ok) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'App Lock is not available on this device.',
+                    Divider(height: 1, color: sheetDivider),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      secondary: const Icon(Icons.fingerprint_rounded),
+                      title: Text('App Lock', style: TextStyle(color: sheetText)),
+                      subtitle: Text(
+                        'Require biometrics or device PIN after cold start or 30 seconds in the background.',
+                        style: TextStyle(color: isDark ? AppColors.text2Dark : AppColors.text2Light),
+                      ),
+                      value: enabled,
+                      onChanged: (value) async {
+                        final ok =
+                            await AppLockService.instance.setEnabled(value);
+                        if (!context.mounted) return;
+                        if (!ok) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'App Lock is not available on this device.',
+                              ),
+                              backgroundColor: AppColors.danger,
                             ),
-                            backgroundColor: AppColors.danger,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              );
-            },
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         );
       },
@@ -1186,36 +1215,65 @@ class _ActionRow extends StatelessWidget {
   final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-          child: Row(children: [
-            Icon(icon, size: 18, color: AppColors.text2Dark),
-            const SizedBox(width: 12),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-            if (trailing != null) ...[trailing!, const SizedBox(width: 6)],
-            const Icon(Icons.chevron_right,
-                size: 18, color: AppColors.text3Dark),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        child: Row(children: [
+          Icon(
+            icon,
+            size: 18,
+            color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+            ),
+          ),
+          if (trailing != null) ...[trailing!, const SizedBox(width: 6)],
+          Icon(
+            Icons.chevron_right,
+            size: 18,
+            color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 class _ThemeToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeService.instance.notifier,
       builder: (context, mode, _) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(children: [
-            const Icon(Icons.brightness_6_outlined,
-                size: 20, color: AppColors.text2Dark),
+            Icon(
+              Icons.brightness_6_outlined,
+              size: 20,
+              color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+            ),
             const SizedBox(width: 12),
-            const Expanded(
-                child: Text('Appearance', style: TextStyle(fontSize: 13))),
+            Expanded(
+              child: Text(
+                'Appearance',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                ),
+              ),
+            ),
             SegmentedButton<ThemeMode>(
               style: SegmentedButton.styleFrom(
                 textStyle:
