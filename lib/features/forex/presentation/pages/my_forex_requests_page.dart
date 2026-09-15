@@ -45,8 +45,16 @@ class MyForexRequestsPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final request = requests[index];
               return ListTile(
-                title: Text(
-                  '${request.currencyHeld} to ${request.currencyNeeded}',
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${l10n?.iHold ?? 'I hold'}: ${request.currencyHeld}',
+                    ),
+                    Text(
+                      '${l10n?.iNeed ?? 'I need'}: ${request.currencyNeeded}',
+                    ),
+                  ],
                 ),
                 subtitle: Text(
                   '${request.amount} · ${request.settlementPreference}',

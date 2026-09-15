@@ -117,6 +117,8 @@ class ListingCard extends StatelessWidget {
                 showMoreActions: showMoreActions,
                 moreActionLabel: moreActionLabel,
                 onMoreAction: onMoreAction,
+                showForexRatePanel: false,
+                projectedMoney: '',
                 attributes: [
                   if (needs != null) needs.category,
                   if (needs != null) needs.urgency,
@@ -265,6 +267,8 @@ class _MainListingArea extends StatelessWidget {
     required this.showMoreActions,
     required this.moreActionLabel,
     required this.onMoreAction,
+    required this.showForexRatePanel,
+    required this.projectedMoney,
     required this.attributes,
   });
 
@@ -284,6 +288,8 @@ class _MainListingArea extends StatelessWidget {
   final bool showMoreActions;
   final String? moreActionLabel;
   final VoidCallback? onMoreAction;
+  final bool showForexRatePanel;
+  final String projectedMoney;
   final List<String> attributes;
 
   IconData _attributeIcon(String attribute) {

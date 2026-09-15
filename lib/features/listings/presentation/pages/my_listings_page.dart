@@ -141,14 +141,10 @@ class _ListingsBody extends StatelessWidget {
           if (_activeForex.isNotEmpty) ...[
             ..._activeForex.map((f) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: ListingCard(
-                    listing: MarketplaceItem.forex(f),
+                  child: _ForexRequestCard(
+                    request: f,
                     onTap: () => context.push('/forex/${f.requestId}'),
-                    isSaved: false,
-                    onWatchlistToggle: () => _confirmCancelForex(context, f),
-                    showMoreActions: true,
-                    moreActionLabel: 'Cancel request',
-                    onMoreAction: () => _confirmCancelForex(context, f),
+                    onDelete: () => _confirmCancelForex(context, f),
                   ),
                 )),
           ],
@@ -228,6 +224,7 @@ class _ListingsBody extends StatelessWidget {
                   child: _ForexRequestCard(
                     request: f,
                     onTap: () => context.push('/forex/${f.requestId}'),
+                    onDelete: () {},
                   ),
                 )),
           ],
@@ -360,10 +357,12 @@ class _ForexRequestCard extends StatelessWidget {
   const _ForexRequestCard({
     required this.request,
     required this.onTap,
+    required this.onDelete,
   });
 
   final ForexListingModel request;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   Color _statusColor(BuildContext context) {
     switch (request.status) {
@@ -416,187 +415,189 @@ class _ForexRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = _statusColor(context);
-    final metadata = [
-      if (request.settlementPreference.trim().isNotEmpty)
-        request.settlementPreference.trim(),
-      if (request.country.trim().isNotEmpty) request.country.trim(),
-    ].join(' · ');
-
+    final accent = const Color(0xFF06B6D4);
     final isDark = theme.brightness == Brightness.dark;
-    final surfaceColor =
-        isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
+    final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
     final borderColor =
         isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.borderLight;
+    final mutedColor =
+        isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
+    final heldAmount = '${request.currencyHeld} ${_fmtAmount(request.amount)}';
+    final projectedAmount =
+        '${request.currencyNeeded} ${_fmtAmount(request.receiveEstimate)}';
+    final offersLabel = '${request.numberOfOffers} Offers';
 
-    final borderRadius = BorderRadius.circular(8);
     return Material(
       color: surfaceColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: borderRadius,
+        borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: borderColor, width: 1.2),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: borderRadius,
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 30, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Header row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.purple.withOpacity(0.16),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.currency_exchange_rounded,
-                          size: 18,
-                          color: AppColors.purple,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${request.currencyHeld} → ${request.currencyNeeded}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            if (metadata.isNotEmpty)
-                              Text(
-                                metadata,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 9, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(_statusIcon(), size: 11, color: statusColor),
-                            const SizedBox(width: 4),
-                            Text(
-                              request.status[0].toUpperCase() +
-                                  request.status.substring(1),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: statusColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (request.status == 'active')
-                        PopupMenuButton<_ForexRequestAction>(
-                          tooltip: 'More actions',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints.tightFor(
-                              width: 28, height: 28),
-                          icon: const Icon(Icons.more_vert, size: 19),
-                          onSelected: (_) => {},
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: _ForexRequestAction.cancel,
-                              child: Text('Cancel request'),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  CurrencyAmount(
-                    request.amount,
-                    currency: request.currencyHeld,
-                    fontSize: 19,
-                  ),
-
-                  const SizedBox(height: 10),
-                  Divider(
-                    height: 1,
-                    color: theme.dividerColor.withOpacity(0.35),
-                  ),
-                  const SizedBox(height: 9),
-
-                  // Request metrics
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _ForexRequestMetric(
-                          icon: Icons.people_outline_rounded,
-                          value:
-                              '${request.numberOfOffers} ${request.numberOfOffers == 1 ? 'Offer' : 'Offers'}',
-                          color: request.numberOfOffers > 0
-                              ? AppColors.purple
-                              : null,
-                        ),
-                      ),
-                      Expanded(
-                        child: _ForexRequestMetric(
-                          icon: Icons.payments_outlined,
-                          value: request.receiveEstimate > 0
-                              ? 'Est. ${request.currencyNeeded} ${_fmtAmount(request.receiveEstimate)}'
-                              : 'Open rate',
-                        ),
-                      ),
-                      if (_timeLabel().isNotEmpty)
-                        Expanded(
-                          child: _ForexRequestMetric(
-                            icon: Icons.schedule_outlined,
-                            value: _timeLabel(),
-                            color: request.isClosingSoon24h
-                                ? AppColors.danger
-                                : null,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(7),
+                      border: Border.all(color: accent.withValues(alpha: 0.95)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.currency_exchange_rounded, size: 12, color: accent),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Forex',
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            height: 1,
                           ),
                         ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 9),
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 15,
+                    color: mutedColor,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    _timeLabel().isNotEmpty ? _timeLabel() : '3 weeks ago',
+                    style: TextStyle(
+                      color: mutedColor,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      height: 1,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: AppColors.danger,
+                    ),
+                    tooltip: 'Delete request',
                   ),
                 ],
               ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      Icons.chevron_right_rounded,
-                      size: 24,
-                      color:
-                          theme.colorScheme.onSurfaceVariant.withOpacity(0.72),
-                    ),
-                  ),
+              const SizedBox(height: 10),
+              const SizedBox(height: 9),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: accent.withValues(alpha: 0.30)),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final available = constraints.maxWidth;
+                    final leftWidth = available * 0.48;
+                    final rightWidth = available - leftWidth - 52;
+
+                    return Row(
+                      children: [
+                        SizedBox(
+                          width: leftWidth,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.account_balance_wallet_rounded,
+                                size: 18,
+                                color: accent,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  heldAmount,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    color: accent,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w900,
+                                    height: 1.05,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: accent,
+                        ),
+                        const SizedBox(width: 6),
+                        SizedBox(
+                          width: rightWidth.clamp(70.0, double.infinity),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Projected Money',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFB7D5FF),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                projectedAmount,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF4FD6FF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 14,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _ForexRequestMetric(
+                    icon: Icons.people_outline_rounded,
+                    value: offersLabel,
+                    color: mutedColor,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -624,7 +625,7 @@ class _ForexRequestMetric extends StatelessWidget {
       children: [
         Icon(icon, size: 17, color: foreground),
         const SizedBox(width: 6),
-        Flexible(
+        Expanded(
           child: Text(
             value,
             maxLines: 1,
