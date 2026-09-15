@@ -2088,35 +2088,35 @@ class AppLocalizationsSw extends AppLocalizations {
   String get sendAnyway => 'Tuma Ofa Hata Hivyo';
 
   @override
-  String get safetyToolkit => 'Safety Toolkit';
+  String get safetyToolkit => 'Kifaa cha Usalama';
 
   @override
-  String get safetyTips => 'Safety tips';
+  String get safetyTips => 'Vidokezo vya usalama';
 
   @override
-  String get reportListingOrUser => 'Report listing or user';
+  String get reportListingOrUser => 'Ripoti tangazo au mtumiaji';
 
   @override
-  String get supportAndHelp => 'Support & help';
+  String get supportAndHelp => 'Msaada na usaidizi';
 
   @override
-  String get appLock => 'App Lock';
+  String get appLock => 'Kufunga App';
 
   @override
   String get appLockDescription =>
-      'Require biometrics or device PIN after cold start or 30 seconds in the background.';
+      'Hitaji biometrics au PIN ya kifaa baada ya kuanza au baada ya sekunde 30 kwenye background.';
 
   @override
-  String get unlockNipanze => 'Unlock Nipanze';
+  String get unlockNipanze => 'Fungua Nipanze';
 
   @override
-  String get referralChecking => 'Checking referral code...';
+  String get referralChecking => 'Inakagua namba ya rufaa...';
 
   @override
-  String get referralAccepted => 'Referral code accepted.';
+  String get referralAccepted => 'Namba ya rufaa imekubaliwa.';
 
   @override
-  String get profilePicture => 'Profile Picture';
+  String get profilePicture => 'Picha ya Wasifu';
 
   @override
   String get profilePictureKycNote =>

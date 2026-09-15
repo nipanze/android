@@ -541,7 +541,25 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     showLenderRequiredSheet(context);
                     return;
                   }
-                  setState(() => _showOfferSheet = true);
+                  showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (sheetCtx) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+                      ),
+                      child: MakeOfferSheet(
+                        listing: listing,
+                        onClose: () => Navigator.of(sheetCtx).pop(),
+                        onOfferPlaced: () {
+                          Navigator.of(sheetCtx).pop();
+                          _loadOnce();
+                        },
+                      ),
+                    ),
+                  );
                 },
                 child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
               )

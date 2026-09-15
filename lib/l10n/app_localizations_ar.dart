@@ -1873,72 +1873,71 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kycDismiss => 'تجاهل';
 
   @override
-  String get referAndEarn => 'Refer & Earn';
+  String get referAndEarn => 'الإحالة والمكافأة';
 
   @override
-  String get yourReferralCode => 'Your referral code';
+  String get yourReferralCode => 'رمز الإحالة الخاص بك';
 
   @override
-  String get enterCode => 'Enter Code';
+  String get enterCode => 'أدخل الرمز';
 
   @override
-  String get shareLink => 'Share Link';
+  String get shareLink => 'مشاركة الرابط';
 
   @override
-  String get copyCode => 'Copy Code';
+  String get copyCode => 'نسخ الرمز';
 
   @override
-  String get enterReferralCode => 'Enter referral code';
+  String get enterReferralCode => 'أدخل رمز الإحالة';
 
   @override
   String get referralCodeSubtitle =>
-      'If a friend invited you to Nipanze, enter their referral code below.';
+      'إذا قام صديق بدعوتك إلى Nipanze، أدخل رمز إحالة هنا أدناه.';
 
   @override
-  String get referralCodeHint => 'e.g. JOHN1234';
+  String get referralCodeHint => 'مثال: JOHN1234';
 
   @override
-  String get referralCodeLabel => 'Referral code';
+  String get referralCodeLabel => 'رمز الإحالة';
 
   @override
-  String get applyCode => 'Apply Code';
+  String get applyCode => 'تطبيق الرمز';
 
   @override
-  String get totalReferrals => 'Total referrals';
+  String get totalReferrals => 'إجمالي الإحالات';
 
   @override
-  String get registered => 'Registered';
+  String get registered => 'المسجلون';
 
   @override
-  String get qualified => 'Qualified';
+  String get qualified => 'المؤهلون';
 
   @override
-  String get pendingRewards => 'Pending rewards';
+  String get pendingRewards => 'المكافآت المعلقة';
 
   @override
-  String get availableRewards => 'Available';
+  String get availableRewards => 'المكافآت المتاحة';
 
   @override
-  String get totalEarned => 'Total earned';
+  String get totalEarned => 'إجمالي ما تمكنا من كسبه';
 
   @override
-  String get totalPaid => 'Total paid';
+  String get totalPaid => 'إجمالي ما تم دفعه';
 
   @override
-  String get referralHistory => 'Referral history';
+  String get referralHistory => 'سجل الإحالات';
 
   @override
-  String get noReferralsYet => 'No referrals yet';
+  String get noReferralsYet => 'لا توجد إحالات بعد';
 
   @override
-  String get noReferralsSubtitle =>
-      'Shared referrals will appear here after signup.';
+  String get noReferralsSubtitle => 'ستظهر الإحالات المشتركة هنا بعد التسجيل.';
 
   @override
-  String get referralCodeCopied => 'Referral code copied';
+  String get referralCodeCopied => 'تم نسخ رمز الإحالة';
 
   @override
-  String get referralCodeApplied => 'Referral code applied successfully!';
+  String get referralCodeApplied => 'تم تطبيق رمز الإحالة بنجاح!';
 
   @override
   String get privacyAndVisibility => 'الخصوصية والرؤية';
@@ -2062,35 +2061,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sendAnyway => 'إرسال العرض على أي حال';
 
   @override
-  String get safetyToolkit => 'Safety Toolkit';
+  String get safetyToolkit => 'مجموعة أدوات السلامة';
 
   @override
-  String get safetyTips => 'Safety tips';
+  String get safetyTips => 'نصائح السلامة';
 
   @override
-  String get reportListingOrUser => 'Report listing or user';
+  String get reportListingOrUser => 'الإبلاغ عن إعلان أو مستخدم';
 
   @override
-  String get supportAndHelp => 'Support & help';
+  String get supportAndHelp => 'الدعم والمساعدة';
 
   @override
-  String get appLock => 'App Lock';
+  String get appLock => 'قفل التطبيق';
 
   @override
   String get appLockDescription =>
-      'Require biometrics or device PIN after cold start or 30 seconds in the background.';
+      'اطلب التعرف البيولوجي أو رمز الجهاز بعد التشغيل البارد أو خلال 30 ثانية في الخلفية.';
 
   @override
-  String get unlockNipanze => 'Unlock Nipanze';
+  String get unlockNipanze => 'فتح Nipanze';
 
   @override
-  String get referralChecking => 'Checking referral code...';
+  String get referralChecking => 'جارٍ التحقق من رمز الإحالة...';
 
   @override
-  String get referralAccepted => 'Referral code accepted.';
+  String get referralAccepted => 'تم قبول رمز الإحالة.';
 
   @override
-  String get profilePicture => 'Profile Picture';
+  String get profilePicture => 'صورة الملف الشخصي';
 
   @override
   String get profilePictureKycNote =>

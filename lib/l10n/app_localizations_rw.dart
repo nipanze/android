@@ -1895,72 +1895,72 @@ class AppLocalizationsRw extends AppLocalizations {
   String get kycDismiss => 'Reka';
 
   @override
-  String get referAndEarn => 'Refer & Earn';
+  String get referAndEarn => 'Tumira kandi ubone ibihembo';
 
   @override
-  String get yourReferralCode => 'Your referral code';
+  String get yourReferralCode => 'Kode yawe y\'itumanaho';
 
   @override
-  String get enterCode => 'Enter Code';
+  String get enterCode => 'Injira kode';
 
   @override
-  String get shareLink => 'Share Link';
+  String get shareLink => 'Sangiza link';
 
   @override
-  String get copyCode => 'Copy Code';
+  String get copyCode => 'Kopiyaho kode';
 
   @override
-  String get enterReferralCode => 'Enter referral code';
+  String get enterReferralCode => 'Injira kode y\'itumanaho';
 
   @override
   String get referralCodeSubtitle =>
-      'If a friend invited you to Nipanze, enter their referral code below.';
+      'Niba inshuti yakwitumye kuri Nipanze, injiza kode yayo aha munsi.';
 
   @override
-  String get referralCodeHint => 'e.g. JOHN1234';
+  String get referralCodeHint => 'urugero: JOHN1234';
 
   @override
-  String get referralCodeLabel => 'Referral code';
+  String get referralCodeLabel => 'Kode y\'itumanaho';
 
   @override
-  String get applyCode => 'Apply Code';
+  String get applyCode => 'Ongera kode';
 
   @override
-  String get totalReferrals => 'Total referrals';
+  String get totalReferrals => 'Umubare w\'itumanaho';
 
   @override
-  String get registered => 'Registered';
+  String get registered => 'Biyandikishije';
 
   @override
-  String get qualified => 'Qualified';
+  String get qualified => 'Bakuye ibisabwa';
 
   @override
-  String get pendingRewards => 'Pending rewards';
+  String get pendingRewards => 'Ibihembo birimo gutegereza';
 
   @override
-  String get availableRewards => 'Available';
+  String get availableRewards => 'Ibihembo bihari';
 
   @override
-  String get totalEarned => 'Total earned';
+  String get totalEarned => 'Igiteranyo cyabitswe';
 
   @override
-  String get totalPaid => 'Total paid';
+  String get totalPaid => 'Igiteranyo cyishyuwe';
 
   @override
-  String get referralHistory => 'Referral history';
+  String get referralHistory => 'Amateka y\'itumanaho';
 
   @override
-  String get noReferralsYet => 'No referrals yet';
+  String get noReferralsYet => 'Nta bitumanaho bihari';
 
   @override
   String get noReferralsSubtitle =>
-      'Shared referrals will appear here after signup.';
+      'Ibitumanaho wasangiza bizagaragara aha nyuma yo kwiyandikisha.';
 
   @override
-  String get referralCodeCopied => 'Referral code copied';
+  String get referralCodeCopied => 'Kode y\'itumanaho yakopijwe';
 
   @override
-  String get referralCodeApplied => 'Referral code applied successfully!';
+  String get referralCodeApplied => 'Kode y\'itumanaho yakoreshejwe neza!';
 
   @override
   String get privacyAndVisibility => 'Ubusuguzi n\'Ukugaragara';
@@ -2086,35 +2086,36 @@ class AppLocalizationsRw extends AppLocalizations {
   String get sendAnyway => 'Ohereza icyifuzo uko biri';
 
   @override
-  String get safetyToolkit => 'Safety Toolkit';
+  String get safetyToolkit => 'Igikoresho cy\'umutekano';
 
   @override
-  String get safetyTips => 'Safety tips';
+  String get safetyTips => 'Inama z\'umutekano';
 
   @override
-  String get reportListingOrUser => 'Report listing or user';
+  String get reportListingOrUser =>
+      'Raporo y\'itangazamakuru cyangwa umukoresha';
 
   @override
-  String get supportAndHelp => 'Support & help';
+  String get supportAndHelp => 'Ubufasha n\'ubwunganizi';
 
   @override
-  String get appLock => 'App Lock';
+  String get appLock => 'Gufunga porogaramu';
 
   @override
   String get appLockDescription =>
-      'Require biometrics or device PIN after cold start or 30 seconds in the background.';
+      'Saba biometrics cyangwa PIN y\'igikoresho nyuma yo gutangira cyangwa mu masegonda 30 ku mugongo.';
 
   @override
-  String get unlockNipanze => 'Unlock Nipanze';
+  String get unlockNipanze => 'Fungura Nipanze';
 
   @override
-  String get referralChecking => 'Checking referral code...';
+  String get referralChecking => 'Igenzura ry\'kode y\'itumanaho...';
 
   @override
-  String get referralAccepted => 'Referral code accepted.';
+  String get referralAccepted => 'Kode y\'itumanaho yemerewe.';
 
   @override
-  String get profilePicture => 'Profile Picture';
+  String get profilePicture => 'Ifoto y\'umwirondoro';
 
   @override
   String get profilePictureKycNote =>

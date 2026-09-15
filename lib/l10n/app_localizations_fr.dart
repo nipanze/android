@@ -1913,72 +1913,72 @@ class AppLocalizationsFr extends AppLocalizations {
   String get kycDismiss => 'Fermer';
 
   @override
-  String get referAndEarn => 'Refer & Earn';
+  String get referAndEarn => 'Parrainer et gagner';
 
   @override
-  String get yourReferralCode => 'Your referral code';
+  String get yourReferralCode => 'Votre code de parrainage';
 
   @override
-  String get enterCode => 'Enter Code';
+  String get enterCode => 'Entrer le code';
 
   @override
-  String get shareLink => 'Share Link';
+  String get shareLink => 'Partager le lien';
 
   @override
-  String get copyCode => 'Copy Code';
+  String get copyCode => 'Copier le code';
 
   @override
-  String get enterReferralCode => 'Enter referral code';
+  String get enterReferralCode => 'Entrer le code de parrainage';
 
   @override
   String get referralCodeSubtitle =>
-      'If a friend invited you to Nipanze, enter their referral code below.';
+      'Si un ami vous a parrainé sur Nipanze, entrez son code ici ci-dessous.';
 
   @override
-  String get referralCodeHint => 'e.g. JOHN1234';
+  String get referralCodeHint => 'exemple: JOHN1234';
 
   @override
-  String get referralCodeLabel => 'Referral code';
+  String get referralCodeLabel => 'Code de parrainage';
 
   @override
-  String get applyCode => 'Apply Code';
+  String get applyCode => 'Appliquer le code';
 
   @override
-  String get totalReferrals => 'Total referrals';
+  String get totalReferrals => 'Nombre total de parrainages';
 
   @override
-  String get registered => 'Registered';
+  String get registered => 'Inscrits';
 
   @override
-  String get qualified => 'Qualified';
+  String get qualified => 'Qualifiés';
 
   @override
-  String get pendingRewards => 'Pending rewards';
+  String get pendingRewards => 'Récompenses en attente';
 
   @override
-  String get availableRewards => 'Available';
+  String get availableRewards => 'Récompenses disponibles';
 
   @override
-  String get totalEarned => 'Total earned';
+  String get totalEarned => 'Total gagné';
 
   @override
-  String get totalPaid => 'Total paid';
+  String get totalPaid => 'Total payé';
 
   @override
-  String get referralHistory => 'Referral history';
+  String get referralHistory => 'Historique de parrainage';
 
   @override
-  String get noReferralsYet => 'No referrals yet';
+  String get noReferralsYet => 'Aucun parrainage pour l\'instant';
 
   @override
   String get noReferralsSubtitle =>
-      'Shared referrals will appear here after signup.';
+      'Les parrainages partagés apparaîtront ici après l\'inscription.';
 
   @override
-  String get referralCodeCopied => 'Referral code copied';
+  String get referralCodeCopied => 'Code de parrainage copié';
 
   @override
-  String get referralCodeApplied => 'Referral code applied successfully!';
+  String get referralCodeApplied => 'Code de parrainage appliqué avec succès !';
 
   @override
   String get privacyAndVisibility => 'Confidentialité et visibilité';
@@ -2105,35 +2105,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sendAnyway => 'Envoyer l\'offre quand même';
 
   @override
-  String get safetyToolkit => 'Safety Toolkit';
+  String get safetyToolkit => 'Boîte à outils de sécurité';
 
   @override
-  String get safetyTips => 'Safety tips';
+  String get safetyTips => 'Conseils de sécurité';
 
   @override
-  String get reportListingOrUser => 'Report listing or user';
+  String get reportListingOrUser => 'Signaler une annonce ou un utilisateur';
 
   @override
-  String get supportAndHelp => 'Support & help';
+  String get supportAndHelp => 'Support et aide';
 
   @override
-  String get appLock => 'App Lock';
+  String get appLock => 'Verrouillage de l\'application';
 
   @override
   String get appLockDescription =>
-      'Require biometrics or device PIN after cold start or 30 seconds in the background.';
+      'Exiger une vérification biométrique ou un code de l\'appareil après un démarrage à froid ou après 30 secondes en arrière-plan.';
 
   @override
-  String get unlockNipanze => 'Unlock Nipanze';
+  String get unlockNipanze => 'Déverrouiller Nipanze';
 
   @override
-  String get referralChecking => 'Checking referral code...';
+  String get referralChecking => 'Vérification du code de parrainage...';
 
   @override
-  String get referralAccepted => 'Referral code accepted.';
+  String get referralAccepted => 'Code de parrainage accepté.';
 
   @override
-  String get profilePicture => 'Profile Picture';
+  String get profilePicture => 'Photo de profil';
 
   @override
   String get profilePictureKycNote =>

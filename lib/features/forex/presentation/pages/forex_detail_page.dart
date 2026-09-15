@@ -29,7 +29,6 @@ class ForexDetailPage extends StatefulWidget {
 
 class _ForexDetailPageState extends State<ForexDetailPage> {
   late Future<_ForexDetailData> _future;
-  bool _showOfferSheet = false;
   ForexListingModel? _cachedListing;
   String? _ownerId;
 
@@ -49,6 +48,42 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
 
   void _refresh() {
     setState(() => _future = _load());
+  }
+
+  void _openOfferSheet() {
+    final authState = context.read<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
+
+    if (user == null) {
+      context.go(AppRoutes.login);
+      return;
+    }
+
+    if (!user.canLend) {
+      showLenderRequiredSheet(context);
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+        ),
+        child: _MakeOfferSheet(
+          requestId: widget.requestId,
+          listing: _cachedListing,
+          onClose: () => Navigator.of(sheetCtx).pop(),
+          onOfferPlaced: () {
+            Navigator.of(sheetCtx).pop();
+            _refresh();
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -205,17 +240,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (user == null) {
-                            context.go(AppRoutes.login);
-                            return;
-                          }
-                          if (!user.canLend) {
-                            showLenderRequiredSheet(context);
-                            return;
-                          }
-                          setState(() => _showOfferSheet = true);
-                        },
+                        onPressed: _openOfferSheet,
                         child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
                       ),
                     ),
@@ -225,17 +250,6 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
           );
         },
       ),
-      bottomSheet: _showOfferSheet
-          ? _MakeOfferSheet(
-              requestId: widget.requestId,
-              listing: _cachedListing,
-              onClose: () => setState(() => _showOfferSheet = false),
-              onOfferPlaced: () {
-                setState(() => _showOfferSheet = false);
-                _refresh();
-              },
-            )
-          : null,
     );
   }
 }
