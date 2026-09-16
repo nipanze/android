@@ -1021,6 +1021,48 @@
   "whatsappCopiedToClipboard": "WhatsApp number copied to clipboard",
   "notProvided": "Not provided",
   "viewOppositePartyContact": "View Opposite Party Contact",
-  "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender."
+  "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.",
+  "needsRequestTitle": "Needs request",
+  "createNeedsRequestTitle": "Post a Needs request",
+  "needsTitleLabel": "Need title",
+  "needsTitleHint": "e.g. Solar kit for my shop",
+  "needsCategoryLabel": "Category",
+  "needsSpecificationLabel": "Specification",
+  "needsSpecificationHint": "Describe what you need, quantity, quality, and any delivery expectations.",
+  "needsSpecificationRequired": "Describe what you need",
+  "needsSpecificationMinLength": "Use at least 12 characters",
+  "needsBudgetLabel": "Budget ({currency})",
+  "@needsBudgetLabel": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "needsBudgetHint": "e.g. 500000",
+  "needsBudgetHelper": "Enter 0 if you want providers to quote.",
+  "needsLocationRequired": "Select a location",
+  "needsCustomLocationLabel": "Enter custom location",
+  "needsCustomLocationHint": "e.g. Jinja, Fort Portal, or local area",
+  "needsUrgencyLabel": "Urgency",
+  "needsPublishBtn": "Publish Needs request",
+  "needsRequestSubmittedContent": "Your Needs request is now live on the marketplace. Providers can review it and respond.",
+  "needsBudgetPreview": "Budget: {currency} {amount}",
+  "@needsBudgetPreview": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "needsCategoryBusinessEquipment": "Business equipment",
+  "needsCategoryInventory": "Inventory",
+  "needsCategoryAgriculture": "Agriculture",
+  "needsCategoryEducation": "Education",
+  "needsCategoryHealth": "Health",
+  "needsCategoryHomeEnergy": "Home & energy",
+  "needsCategoryCommunity": "Community",
+  "needsCategoryTechnology": "Technology",
+  "needsCategoryTransport": "Transport",
+  "needsUrgencyUrgent": "Urgent",
+  "needsUrgencyWithin30Days": "Within 30 days",
+  "needsUrgencyThisMonth": "This month",
+  "needsUrgencyFlexible": "Flexible"
 }
-

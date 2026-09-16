@@ -4245,6 +4245,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.'**
   String get tapToViewContactDetails;
+
+  /// No description provided for @needsRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs request'**
+  String get needsRequestTitle;
+
+  /// No description provided for @createNeedsRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Post a Needs request'**
+  String get createNeedsRequestTitle;
+
+  /// No description provided for @needsTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Need title'**
+  String get needsTitleLabel;
+
+  /// No description provided for @needsTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Solar kit for my shop'**
+  String get needsTitleHint;
+
+  /// No description provided for @needsCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get needsCategoryLabel;
+
+  /// No description provided for @needsSpecificationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Specification'**
+  String get needsSpecificationLabel;
+
+  /// No description provided for @needsSpecificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what you need, quantity, quality, and any delivery expectations.'**
+  String get needsSpecificationHint;
+
+  /// No description provided for @needsSpecificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe what you need'**
+  String get needsSpecificationRequired;
+
+  /// No description provided for @needsSpecificationMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 12 characters'**
+  String get needsSpecificationMinLength;
+
+  /// No description provided for @needsBudgetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget ({currency})'**
+  String needsBudgetLabel(String currency);
+
+  /// No description provided for @needsBudgetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 500000'**
+  String get needsBudgetHint;
+
+  /// No description provided for @needsBudgetHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 0 if you want providers to quote.'**
+  String get needsBudgetHelper;
+
+  /// No description provided for @needsLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a location'**
+  String get needsLocationRequired;
+
+  /// No description provided for @needsCustomLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter custom location'**
+  String get needsCustomLocationLabel;
+
+  /// No description provided for @needsCustomLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Jinja, Fort Portal, or local area'**
+  String get needsCustomLocationHint;
+
+  /// No description provided for @needsUrgencyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgency'**
+  String get needsUrgencyLabel;
+
+  /// No description provided for @needsPublishBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish Needs request'**
+  String get needsPublishBtn;
+
+  /// No description provided for @needsRequestSubmittedContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Needs request is now live on the marketplace. Providers can review it and respond.'**
+  String get needsRequestSubmittedContent;
+
+  /// No description provided for @needsBudgetPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget: {currency} {amount}'**
+  String needsBudgetPreview(String currency, String amount);
+
+  /// No description provided for @needsCategoryBusinessEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Business equipment'**
+  String get needsCategoryBusinessEquipment;
+
+  /// No description provided for @needsCategoryInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get needsCategoryInventory;
+
+  /// No description provided for @needsCategoryAgriculture.
+  ///
+  /// In en, this message translates to:
+  /// **'Agriculture'**
+  String get needsCategoryAgriculture;
+
+  /// No description provided for @needsCategoryEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get needsCategoryEducation;
+
+  /// No description provided for @needsCategoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get needsCategoryHealth;
+
+  /// No description provided for @needsCategoryHomeEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Home & energy'**
+  String get needsCategoryHomeEnergy;
+
+  /// No description provided for @needsCategoryCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get needsCategoryCommunity;
+
+  /// No description provided for @needsCategoryTechnology.
+  ///
+  /// In en, this message translates to:
+  /// **'Technology'**
+  String get needsCategoryTechnology;
+
+  /// No description provided for @needsCategoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get needsCategoryTransport;
+
+  /// No description provided for @needsUrgencyUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get needsUrgencyUrgent;
+
+  /// No description provided for @needsUrgencyWithin30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Within 30 days'**
+  String get needsUrgencyWithin30Days;
+
+  /// No description provided for @needsUrgencyThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get needsUrgencyThisMonth;
+
+  /// No description provided for @needsUrgencyFlexible.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible'**
+  String get needsUrgencyFlexible;
 }
 
 class _AppLocalizationsDelegate

@@ -44,6 +44,7 @@ class MainScaffold extends StatelessWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(AppRoutes.forexCreate)) return 2;
+    if (location.startsWith(AppRoutes.needsCreate)) return 2;
     for (int i = 0; i < _tabs.length; i++) {
       if (location.startsWith(_tabs[i].route)) return i;
     }
@@ -176,6 +177,14 @@ class MainScaffold extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.forexCreate);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.handyman_outlined),
+                title: Text(l10n?.needsRequestTitle ?? 'Needs request'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.go(AppRoutes.needsCreate);
                 },
               ),
             ],

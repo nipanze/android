@@ -2311,4 +2311,107 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tapToViewContactDetails =>
       'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.';
+
+  @override
+  String get needsRequestTitle => 'Needs request';
+
+  @override
+  String get createNeedsRequestTitle => 'Post a Needs request';
+
+  @override
+  String get needsTitleLabel => 'Need title';
+
+  @override
+  String get needsTitleHint => 'e.g. Solar kit for my shop';
+
+  @override
+  String get needsCategoryLabel => 'Category';
+
+  @override
+  String get needsSpecificationLabel => 'Specification';
+
+  @override
+  String get needsSpecificationHint =>
+      'Describe what you need, quantity, quality, and any delivery expectations.';
+
+  @override
+  String get needsSpecificationRequired => 'Describe what you need';
+
+  @override
+  String get needsSpecificationMinLength => 'Use at least 12 characters';
+
+  @override
+  String needsBudgetLabel(String currency) {
+    return 'Budget ($currency)';
+  }
+
+  @override
+  String get needsBudgetHint => 'e.g. 500000';
+
+  @override
+  String get needsBudgetHelper => 'Enter 0 if you want providers to quote.';
+
+  @override
+  String get needsLocationRequired => 'Select a location';
+
+  @override
+  String get needsCustomLocationLabel => 'Enter custom location';
+
+  @override
+  String get needsCustomLocationHint =>
+      'e.g. Jinja, Fort Portal, or local area';
+
+  @override
+  String get needsUrgencyLabel => 'Urgency';
+
+  @override
+  String get needsPublishBtn => 'Publish Needs request';
+
+  @override
+  String get needsRequestSubmittedContent =>
+      'Your Needs request is now live on the marketplace. Providers can review it and respond.';
+
+  @override
+  String needsBudgetPreview(String currency, String amount) {
+    return 'Budget: $currency $amount';
+  }
+
+  @override
+  String get needsCategoryBusinessEquipment => 'Business equipment';
+
+  @override
+  String get needsCategoryInventory => 'Inventory';
+
+  @override
+  String get needsCategoryAgriculture => 'Agriculture';
+
+  @override
+  String get needsCategoryEducation => 'Education';
+
+  @override
+  String get needsCategoryHealth => 'Health';
+
+  @override
+  String get needsCategoryHomeEnergy => 'Home & energy';
+
+  @override
+  String get needsCategoryCommunity => 'Community';
+
+  @override
+  String get needsCategoryTechnology => 'Technology';
+
+  @override
+  String get needsCategoryTransport => 'Transport';
+
+  @override
+  String get needsUrgencyUrgent => 'Urgent';
+
+  @override
+  String get needsUrgencyWithin30Days => 'Within 30 days';
+
+  @override
+  String get needsUrgencyThisMonth => 'This month';
+
+  @override
+  String get needsUrgencyFlexible => 'Flexible';
 }

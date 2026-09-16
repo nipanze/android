@@ -2296,4 +2296,107 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get tapToViewContactDetails =>
       'انقر لعرض تفاصيل الاتصال بالطرف المقابل.\nالشروط النهائية هي حصريًا بين المقترض والمقرض.';
+
+  @override
+  String get needsRequestTitle => 'طلب احتياجات';
+
+  @override
+  String get createNeedsRequestTitle => 'نشر طلب احتياجات';
+
+  @override
+  String get needsTitleLabel => 'عنوان الاحتياج';
+
+  @override
+  String get needsTitleHint => 'مثال: مجموعة طاقة شمسية لمتجري';
+
+  @override
+  String get needsCategoryLabel => 'الفئة';
+
+  @override
+  String get needsSpecificationLabel => 'المواصفات';
+
+  @override
+  String get needsSpecificationHint =>
+      'صف ما تحتاجه والكمية والجودة وأي توقعات للتسليم.';
+
+  @override
+  String get needsSpecificationRequired => 'صف ما تحتاجه';
+
+  @override
+  String get needsSpecificationMinLength => 'استخدم 12 حرفاً على الأقل';
+
+  @override
+  String needsBudgetLabel(String currency) {
+    return 'الميزانية ($currency)';
+  }
+
+  @override
+  String get needsBudgetHint => 'مثال: 500000';
+
+  @override
+  String get needsBudgetHelper => 'أدخل 0 إذا كنت تريد عروض أسعار من المزودين.';
+
+  @override
+  String get needsLocationRequired => 'اختر موقعاً';
+
+  @override
+  String get needsCustomLocationLabel => 'أدخل موقعاً مخصصاً';
+
+  @override
+  String get needsCustomLocationHint =>
+      'مثال: جينجا أو فورت بورتال أو منطقة محلية';
+
+  @override
+  String get needsUrgencyLabel => 'درجة الاستعجال';
+
+  @override
+  String get needsPublishBtn => 'نشر طلب الاحتياجات';
+
+  @override
+  String get needsRequestSubmittedContent =>
+      'طلب الاحتياجات الخاص بك متاح الآن في السوق. يمكن للمزودين مراجعته والرد عليه.';
+
+  @override
+  String needsBudgetPreview(String currency, String amount) {
+    return 'الميزانية: $currency $amount';
+  }
+
+  @override
+  String get needsCategoryBusinessEquipment => 'معدات الأعمال';
+
+  @override
+  String get needsCategoryInventory => 'المخزون';
+
+  @override
+  String get needsCategoryAgriculture => 'الزراعة';
+
+  @override
+  String get needsCategoryEducation => 'التعليم';
+
+  @override
+  String get needsCategoryHealth => 'الصحة';
+
+  @override
+  String get needsCategoryHomeEnergy => 'المنزل والطاقة';
+
+  @override
+  String get needsCategoryCommunity => 'المجتمع';
+
+  @override
+  String get needsCategoryTechnology => 'التكنولوجيا';
+
+  @override
+  String get needsCategoryTransport => 'النقل';
+
+  @override
+  String get needsUrgencyUrgent => 'عاجل';
+
+  @override
+  String get needsUrgencyWithin30Days => 'خلال 30 يوماً';
+
+  @override
+  String get needsUrgencyThisMonth => 'هذا الشهر';
+
+  @override
+  String get needsUrgencyFlexible => 'مرن';
 }

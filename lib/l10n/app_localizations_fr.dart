@@ -2348,4 +2348,107 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get tapToViewContactDetails =>
       'Appuyez pour voir les coordonnées de l\'autre partie.\nLes conditions finales relèvent uniquement de l\'emprunteur et du prêteur.';
+
+  @override
+  String get needsRequestTitle => 'Demande de besoin';
+
+  @override
+  String get createNeedsRequestTitle => 'Publier une demande de besoin';
+
+  @override
+  String get needsTitleLabel => 'Titre du besoin';
+
+  @override
+  String get needsTitleHint => 'ex. Kit solaire pour ma boutique';
+
+  @override
+  String get needsCategoryLabel => 'Catégorie';
+
+  @override
+  String get needsSpecificationLabel => 'Spécification';
+
+  @override
+  String get needsSpecificationHint =>
+      'Décrivez ce dont vous avez besoin, la quantité, la qualité et les attentes de livraison.';
+
+  @override
+  String get needsSpecificationRequired => 'Décrivez ce dont vous avez besoin';
+
+  @override
+  String get needsSpecificationMinLength => 'Utilisez au moins 12 caractères';
+
+  @override
+  String needsBudgetLabel(String currency) {
+    return 'Budget ($currency)';
+  }
+
+  @override
+  String get needsBudgetHint => 'ex. 500000';
+
+  @override
+  String get needsBudgetHelper =>
+      'Saisissez 0 si vous voulez recevoir des devis.';
+
+  @override
+  String get needsLocationRequired => 'Sélectionnez un lieu';
+
+  @override
+  String get needsCustomLocationLabel => 'Saisir un lieu personnalisé';
+
+  @override
+  String get needsCustomLocationHint => 'ex. Jinja, Fort Portal ou zone locale';
+
+  @override
+  String get needsUrgencyLabel => 'Urgence';
+
+  @override
+  String get needsPublishBtn => 'Publier la demande de besoin';
+
+  @override
+  String get needsRequestSubmittedContent =>
+      'Votre demande de besoin est maintenant visible sur la place de marché. Les fournisseurs peuvent l\'examiner et répondre.';
+
+  @override
+  String needsBudgetPreview(String currency, String amount) {
+    return 'Budget : $currency $amount';
+  }
+
+  @override
+  String get needsCategoryBusinessEquipment => 'Équipement professionnel';
+
+  @override
+  String get needsCategoryInventory => 'Stock';
+
+  @override
+  String get needsCategoryAgriculture => 'Agriculture';
+
+  @override
+  String get needsCategoryEducation => 'Éducation';
+
+  @override
+  String get needsCategoryHealth => 'Santé';
+
+  @override
+  String get needsCategoryHomeEnergy => 'Maison et énergie';
+
+  @override
+  String get needsCategoryCommunity => 'Communauté';
+
+  @override
+  String get needsCategoryTechnology => 'Technologie';
+
+  @override
+  String get needsCategoryTransport => 'Transport';
+
+  @override
+  String get needsUrgencyUrgent => 'Urgent';
+
+  @override
+  String get needsUrgencyWithin30Days => 'Sous 30 jours';
+
+  @override
+  String get needsUrgencyThisMonth => 'Ce mois-ci';
+
+  @override
+  String get needsUrgencyFlexible => 'Flexible';
 }

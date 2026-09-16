@@ -2323,4 +2323,108 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get tapToViewContactDetails =>
       'Kanda urebere amakuru yo guhamagara y\'undi munyabyarwa.\nAmasezerano ya nyuma ari hagati y\'umuguzi n\'umuguzanya pe.';
+
+  @override
+  String get needsRequestTitle => 'Ubusabe bw\'ibikenewe';
+
+  @override
+  String get createNeedsRequestTitle => 'Tanga ubusabe bw\'Ibikenewe';
+
+  @override
+  String get needsTitleLabel => 'Umutwe w\'icyo ukeneye';
+
+  @override
+  String get needsTitleHint => 'urug. ibikoresho bya sola ku iduka ryanjye';
+
+  @override
+  String get needsCategoryLabel => 'Icyiciro';
+
+  @override
+  String get needsSpecificationLabel => 'Ibisobanuro';
+
+  @override
+  String get needsSpecificationHint =>
+      'Sobanura icyo ukeneye, ingano, ubwiza, n\'ibiteganyijwe mu kugemura.';
+
+  @override
+  String get needsSpecificationRequired => 'Sobanura icyo ukeneye';
+
+  @override
+  String get needsSpecificationMinLength => 'Koresha nibura inyuguti 12';
+
+  @override
+  String needsBudgetLabel(String currency) {
+    return 'Ingengo ($currency)';
+  }
+
+  @override
+  String get needsBudgetHint => 'urug. 500000';
+
+  @override
+  String get needsBudgetHelper =>
+      'Shyiramo 0 niba ushaka ko abatanga serivisi baguha ibiciro.';
+
+  @override
+  String get needsLocationRequired => 'Hitamo ahantu';
+
+  @override
+  String get needsCustomLocationLabel => 'Andika ahantu hihariye';
+
+  @override
+  String get needsCustomLocationHint =>
+      'urug. Jinja, Fort Portal, cyangwa agace uherereyemo';
+
+  @override
+  String get needsUrgencyLabel => 'Byihutirwa';
+
+  @override
+  String get needsPublishBtn => 'Tangaza ubusabe bw\'Ibikenewe';
+
+  @override
+  String get needsRequestSubmittedContent =>
+      'Ubusabe bwawe bw\'Ibikenewe buri ku isoko. Abatanga serivisi bashobora kubureba no gusubiza.';
+
+  @override
+  String needsBudgetPreview(String currency, String amount) {
+    return 'Ingengo: $currency $amount';
+  }
+
+  @override
+  String get needsCategoryBusinessEquipment => 'Ibikoresho by\'ubucuruzi';
+
+  @override
+  String get needsCategoryInventory => 'Ibicuruzwa byo mu bubiko';
+
+  @override
+  String get needsCategoryAgriculture => 'Ubuhinzi';
+
+  @override
+  String get needsCategoryEducation => 'Uburezi';
+
+  @override
+  String get needsCategoryHealth => 'Ubuzima';
+
+  @override
+  String get needsCategoryHomeEnergy => 'Urugo n\'ingufu';
+
+  @override
+  String get needsCategoryCommunity => 'Umuryango';
+
+  @override
+  String get needsCategoryTechnology => 'Ikoranabuhanga';
+
+  @override
+  String get needsCategoryTransport => 'Ubwikorezi';
+
+  @override
+  String get needsUrgencyUrgent => 'Byihutirwa cyane';
+
+  @override
+  String get needsUrgencyWithin30Days => 'Mu minsi 30';
+
+  @override
+  String get needsUrgencyThisMonth => 'Muri uku kwezi';
+
+  @override
+  String get needsUrgencyFlexible => 'Biroroshye guhinduka';
 }

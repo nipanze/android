@@ -2325,4 +2325,107 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get tapToViewContactDetails =>
       'Gusa ili kutazama maelezo ya mawasiliano ya upande mwingine.\nMasharti ya mwisho ni kati ya mkopaji na mkopeshi pekee.';
+
+  @override
+  String get needsRequestTitle => 'Ombi la mahitaji';
+
+  @override
+  String get createNeedsRequestTitle => 'Tuma ombi la Mahitaji';
+
+  @override
+  String get needsTitleLabel => 'Kichwa cha hitaji';
+
+  @override
+  String get needsTitleHint => 'mf. Seti ya sola kwa duka langu';
+
+  @override
+  String get needsCategoryLabel => 'Aina';
+
+  @override
+  String get needsSpecificationLabel => 'Maelezo';
+
+  @override
+  String get needsSpecificationHint =>
+      'Eleza unachohitaji, idadi, ubora, na matarajio yoyote ya usafirishaji.';
+
+  @override
+  String get needsSpecificationRequired => 'Eleza unachohitaji';
+
+  @override
+  String get needsSpecificationMinLength => 'Tumia angalau herufi 12';
+
+  @override
+  String needsBudgetLabel(String currency) {
+    return 'Bajeti ($currency)';
+  }
+
+  @override
+  String get needsBudgetHint => 'mf. 500000';
+
+  @override
+  String get needsBudgetHelper => 'Weka 0 kama unataka watoa huduma watoe bei.';
+
+  @override
+  String get needsLocationRequired => 'Chagua eneo';
+
+  @override
+  String get needsCustomLocationLabel => 'Weka eneo maalum';
+
+  @override
+  String get needsCustomLocationHint =>
+      'mf. Jinja, Fort Portal, au eneo la karibu';
+
+  @override
+  String get needsUrgencyLabel => 'Uharaka';
+
+  @override
+  String get needsPublishBtn => 'Chapisha ombi la Mahitaji';
+
+  @override
+  String get needsRequestSubmittedContent =>
+      'Ombi lako la Mahitaji sasa liko sokoni. Watoa huduma wanaweza kulipitia na kujibu.';
+
+  @override
+  String needsBudgetPreview(String currency, String amount) {
+    return 'Bajeti: $currency $amount';
+  }
+
+  @override
+  String get needsCategoryBusinessEquipment => 'Vifaa vya biashara';
+
+  @override
+  String get needsCategoryInventory => 'Bidhaa za akiba';
+
+  @override
+  String get needsCategoryAgriculture => 'Kilimo';
+
+  @override
+  String get needsCategoryEducation => 'Elimu';
+
+  @override
+  String get needsCategoryHealth => 'Afya';
+
+  @override
+  String get needsCategoryHomeEnergy => 'Nyumbani na nishati';
+
+  @override
+  String get needsCategoryCommunity => 'Jamii';
+
+  @override
+  String get needsCategoryTechnology => 'Teknolojia';
+
+  @override
+  String get needsCategoryTransport => 'Usafiri';
+
+  @override
+  String get needsUrgencyUrgent => 'Haraka';
+
+  @override
+  String get needsUrgencyWithin30Days => 'Ndani ya siku 30';
+
+  @override
+  String get needsUrgencyThisMonth => 'Mwezi huu';
+
+  @override
+  String get needsUrgencyFlexible => 'Rahisi';
 }

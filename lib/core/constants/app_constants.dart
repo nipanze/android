@@ -12,6 +12,7 @@ class TableNames {
   static const String forexOffers = 'forex_offers';
   static const String forexAgreements = 'forex_agreements';
   static const String forexContactReveals = 'forex_contact_reveals';
+  static const String needsRequests = 'needs_requests';
   static const String agreements = 'agreements';
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';
