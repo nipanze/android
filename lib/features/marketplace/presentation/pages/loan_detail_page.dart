@@ -219,7 +219,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         actions: [
           IconButton(
             tooltip: 'Safety Toolkit',
-            icon: const Icon(Icons.shield_outlined),
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+            icon: const Icon(Icons.shield_outlined, size: 18),
             onPressed: () => showSafetyToolkitSheet(
               context,
               kycStatus: listing.kycStatus,

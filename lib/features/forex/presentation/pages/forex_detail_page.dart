@@ -68,7 +68,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
@@ -105,21 +105,22 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
         ),
         title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
         actions: [
-          if (user != null && _ownerId != null && _ownerId != user.id)
-            IconButton(
-              tooltip: 'Safety Toolkit',
-              icon: const Icon(Icons.shield_outlined),
-              onPressed: () => showSafetyToolkitSheet(
-                context,
-                kycStatus: _cachedListing?.kycStatus,
-                phoneVerified: _cachedListing?.trustPhoneVerified ?? false,
-                ratingAvg: _cachedListing?.trustRatingAvg,
-                reviewCount: _cachedListing?.trustReviewCount ?? 0,
-                completedDealsCount:
-                    _cachedListing?.trustCompletedDealsCount ?? 0,
-                dealStatus: _cachedListing?.status,
-              ),
+          IconButton(
+            tooltip: 'Safety Toolkit',
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+            icon: const Icon(Icons.shield_outlined, size: 18),
+            onPressed: () => showSafetyToolkitSheet(
+              context,
+              kycStatus: _cachedListing?.kycStatus,
+              phoneVerified: _cachedListing?.trustPhoneVerified ?? false,
+              ratingAvg: _cachedListing?.trustRatingAvg,
+              reviewCount: _cachedListing?.trustReviewCount ?? 0,
+              completedDealsCount:
+                  _cachedListing?.trustCompletedDealsCount ?? 0,
+              dealStatus: _cachedListing?.status,
             ),
+          ),
         ],
       ),
       body: FutureBuilder<_ForexDetailData>(
@@ -143,9 +144,12 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(12, 14, 12, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: LayoutBuilder(
+                builder: (context, constraints) => ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   // ── Background carveout card ───────────────────────────────
                   Container(
                     width: double.infinity,
@@ -244,7 +248,9 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                         child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
                       ),
                     ),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           );

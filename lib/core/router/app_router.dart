@@ -169,6 +169,14 @@ class AppRouter {
             name: 'forexCreate',
             pageBuilder: (_, state) => _fade(state, const ForexCreatePage()),
           ),
+          GoRoute(
+            path: AppRoutes.forexDetail,
+            name: 'forexDetail',
+            pageBuilder: (_, state) => _slide(
+              state,
+              ForexDetailPage(requestId: state.pathParameters['requestId']!),
+            ),
+          ),
           // ── My listings — accessible via profile/account, not the tab ──
           GoRoute(
             path: AppRoutes.myListings,
@@ -197,14 +205,6 @@ class AppRouter {
         path: AppRoutes.myForexRequests,
         name: 'myForexRequests',
         pageBuilder: (_, state) => _slide(state, const MyForexRequestsPage()),
-      ),
-      GoRoute(
-        path: AppRoutes.forexDetail,
-        name: 'forexDetail',
-        pageBuilder: (_, state) => _slide(
-          state,
-          ForexDetailPage(requestId: state.pathParameters['requestId']!),
-        ),
       ),
       GoRoute(
         path: AppRoutes.agreement,
