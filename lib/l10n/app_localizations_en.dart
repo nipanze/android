@@ -19,7 +19,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'A trusted marketplace connecting Requesters with Providers.';
+      'Your trusted marketplace with authentic providers.';
 
   @override
   String get selectLanguage => 'Select Language';

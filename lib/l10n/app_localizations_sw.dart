@@ -19,7 +19,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'Soko linaloaminika linalounganisha wakopaji na wakopeshi.';
+      'Soko lako linaloaminika lenye watoa huduma halisi.';
 
   @override
   String get selectLanguage => 'Chagua Lugha';

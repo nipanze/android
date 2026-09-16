@@ -19,7 +19,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get welcomeSubtitle =>
-      'Une plateforme de confiance reliant emprunteurs et prêteurs.';
+      'Votre plateforme de confiance avec des prestataires authentiques.';
 
   @override
   String get selectLanguage => 'Sélectionnez la langue';

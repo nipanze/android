@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'A trusted marketplace connecting Requesters with Providers.'**
+  /// **'Your trusted marketplace with authentic providers.'**
   String get welcomeSubtitle;
 
   /// No description provided for @selectLanguage.

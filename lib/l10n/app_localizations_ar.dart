@@ -18,7 +18,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeTagline => 'استكشف العروض المحلية';
 
   @override
-  String get welcomeSubtitle => 'سوق موثوق يربط بين المقترضين والمقرضين.';
+  String get welcomeSubtitle => 'سوقك الموثوق مع مقدمي خدمات موثوقين.';
 
   @override
   String get selectLanguage => 'اختر اللغة';
