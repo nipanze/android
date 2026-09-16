@@ -1,6 +1,6 @@
 -- Sample Needs marketplace requests: 10 each for every country listed below.
 -- Safe to paste into the Supabase SQL editor.
--- Existing needs_requests tables and v_needs_listings views are not replaced.
+-- The marketplace view is refreshed so the seeded rows appear in the app.
 
 create table if not exists public.needs_requests (
   request_id uuid primary key default gen_random_uuid(),
@@ -18,37 +18,27 @@ create table if not exists public.needs_requests (
   trust_is_verified boolean not null default false
 );
 
--- Create the read model used by the Flutter marketplace when it is absent.
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_views
-    where schemaname = 'public'
-      and viewname = 'v_needs_listings'
-  ) then
-    execute $view$
-      create view public.v_needs_listings as
-      select
-        request_id,
-        title,
-        specification,
-        category,
-        budget,
-        currency,
-        location,
-        country,
-        urgency,
-        status,
-        listed_at,
-        created_at,
-        trust_is_verified
-      from public.needs_requests
-      where status = 'active'
-    $view$;
-  end if;
-end
-$$;
+-- Create or refresh the read model used by the Flutter marketplace.
+create or replace view public.v_needs_listings as
+select
+  request_id,
+  title,
+  specification,
+  category,
+  budget,
+  currency,
+  location,
+  country,
+  urgency,
+  status,
+  listed_at,
+  created_at,
+  trust_is_verified
+from public.needs_requests
+where status = 'active';
+
+grant select on public.needs_requests to anon, authenticated;
+grant select on public.v_needs_listings to anon, authenticated;
 
 insert into public.needs_requests (
   request_id, title, specification, category, budget, currency,

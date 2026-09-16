@@ -19,6 +19,7 @@ class ListingCard extends StatelessWidget {
     this.showMoreActions = true,
     this.moreActionLabel,
     this.onMoreAction,
+    this.showDeleteAction = false,
   });
 
   final MarketplaceItem listing;
@@ -28,6 +29,7 @@ class ListingCard extends StatelessWidget {
   final bool showMoreActions;
   final String? moreActionLabel;
   final VoidCallback? onMoreAction;
+  final bool showDeleteAction;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +119,7 @@ class ListingCard extends StatelessWidget {
                 showMoreActions: showMoreActions,
                 moreActionLabel: moreActionLabel,
                 onMoreAction: onMoreAction,
+                showDeleteAction: showDeleteAction,
                 showForexRatePanel: false,
                 projectedMoney: '',
                 attributes: [
@@ -219,12 +222,14 @@ class _MoreActionsButton extends StatelessWidget {
     required this.onWatchlistToggle,
     this.moreActionLabel,
     this.onMoreAction,
+    required this.showDeleteAction,
   });
 
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
   final String? moreActionLabel;
   final VoidCallback? onMoreAction;
+  final bool showDeleteAction;
 
   @override
   Widget build(BuildContext context) {
@@ -240,9 +245,13 @@ class _MoreActionsButton extends StatelessWidget {
         width: 20,
         height: 20,
         child: Icon(
-          isSaved ? Icons.star_rounded : Icons.star_border_rounded,
+          showDeleteAction
+            ? Icons.delete_outline_rounded
+            : (isSaved ? Icons.star_rounded : Icons.star_border_rounded),
           size: 18,
-          color: isSaved ? AppColors.warning : AppColors.text3Light,
+          color: showDeleteAction
+            ? AppColors.danger
+            : (isSaved ? AppColors.warning : AppColors.text3Light),
         ),
       ),
     );
@@ -267,6 +276,7 @@ class _MainListingArea extends StatelessWidget {
     required this.showMoreActions,
     required this.moreActionLabel,
     required this.onMoreAction,
+    required this.showDeleteAction,
     required this.showForexRatePanel,
     required this.projectedMoney,
     required this.attributes,
@@ -288,6 +298,7 @@ class _MainListingArea extends StatelessWidget {
   final bool showMoreActions;
   final String? moreActionLabel;
   final VoidCallback? onMoreAction;
+  final bool showDeleteAction;
   final bool showForexRatePanel;
   final String projectedMoney;
   final List<String> attributes;
@@ -343,6 +354,7 @@ class _MainListingArea extends StatelessWidget {
                 onWatchlistToggle: onWatchlistToggle,
                 moreActionLabel: moreActionLabel,
                 onMoreAction: onMoreAction,
+                showDeleteAction: showDeleteAction,
               ),
           ],
         ),

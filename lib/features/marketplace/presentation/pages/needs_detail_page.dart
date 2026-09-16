@@ -28,27 +28,107 @@ class NeedsDetailPage extends StatelessWidget {
         }
 
         final need = snapshot.data!;
+        final theme = Theme.of(context);
+        final detailSurface = theme.brightness == Brightness.dark
+            ? AppColors.bg2Dark
+            : theme.colorScheme.surface;
         return Scaffold(
-          appBar: AppBar(title: const Text('Need details')),
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+            title: const Text('Need details'),
+          ),
           body: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(12, 14, 12, 32),
             children: [
-              Text(need.category.toUpperCase(),
-                  style: const TextStyle(
-                      color: AppColors.warning,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800)),
-              const SizedBox(height: 10),
-              Text(need.title,
-                  style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              Text(need.specification),
-              const SizedBox(height: 24),
-              _DetailRow(label: 'Budget', value: _budget(need)),
-              _DetailRow(label: 'Location', value: need.location),
-              _DetailRow(label: 'Urgency', value: need.urgency),
-              if (need.trustIsVerified)
-                const _DetailRow(label: 'Trust', value: 'Verified requester'),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+                decoration: BoxDecoration(
+                  color: detailSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            need.category.toUpperCase(),
+                            style: const TextStyle(
+                              color: AppColors.warning,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        _UrgencyBadge(urgency: need.urgency),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      need.title,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _budget(need),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: AppColors.warning,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 18,
+                      runSpacing: 12,
+                      children: [
+                        _NeedFact(
+                          icon: Icons.location_on_rounded,
+                          label: 'Location',
+                          value: need.location,
+                        ),
+                        _NeedFact(
+                          icon: Icons.priority_high_rounded,
+                          label: 'Urgency',
+                          value: need.urgency,
+                        ),
+                        if (need.trustIsVerified)
+                          const _NeedFact(
+                            icon: Icons.verified_user_rounded,
+                            label: 'Trust',
+                            value: 'Verified requester',
+                          ),
+                      ],
+                    ),
+                    if (need.specification.trim().isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        'ABOUT THE NEED',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        need.specification,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         );
@@ -61,21 +141,78 @@ class NeedsDetailPage extends StatelessWidget {
       : 'Open to suitable proposals';
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+class _UrgencyBadge extends StatelessWidget {
+  const _UrgencyBadge({required this.urgency});
 
+  final String urgency;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.access_time_rounded,
+              size: 11, color: AppColors.warning),
+          const SizedBox(width: 4),
+          Text(
+            urgency,
+            style: const TextStyle(
+              color: AppColors.warning,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NeedFact extends StatelessWidget {
+  const _NeedFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+    return SizedBox(
+      width: 145,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 92, child: Text(label)),
-          Expanded(child: Text(value)),
+          Icon(icon, color: AppColors.accent, size: 19),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.55),
+                        )),
+                const SizedBox(height: 2),
+                Text(value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
         ],
       ),
     );

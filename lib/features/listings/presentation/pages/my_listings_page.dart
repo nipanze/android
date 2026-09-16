@@ -158,6 +158,7 @@ class _ListingsBody extends StatelessWidget {
                     isSaved: false,
                     onWatchlistToggle: () => _confirmCancel(context, l),
                     showMoreActions: true,
+                    showDeleteAction: true,
                     moreActionLabel: 'Cancel request',
                     onMoreAction: () => _confirmCancel(context, l),
                   ),
