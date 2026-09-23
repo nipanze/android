@@ -73,3 +73,60 @@ Before marking any task or feature as **complete**, the agent must verify:
 - [ ] **Database Integrity**: Database modifications are contained in a new standalone SQL patch and validate multi-party permissions.
 - [ ] **Documentation**: Updated `README.md` and/or build plan documents to reflect implemented changes.
 - [ ] **Code Verification**: `flutter analyze` passes with zero issues and `flutter test` completes successfully.
+
+## 6. AI Agent Operating Rules
+
+These rules apply to any AI coding agent working on Nipanze, including local models such as Ollama/Qwen.
+
+### Before Making Changes
+
+- Inspect the existing implementation before proposing changes.
+- Read the relevant feature files, repository, models, routes, localization files, and database definitions before editing.
+- Do not invent tables, columns, RPCs, views, policies, routes, models, or services that do not exist.
+- Reuse existing architecture and patterns wherever possible.
+- Do not rewrite working code unnecessarily.
+- Do not make unrelated changes.
+
+### Database Safety
+
+- Never modify historical SQL migrations or existing database patches for a new change.
+- Create a new standalone SQL patch for every database change.
+- Never expose, hardcode, or commit Supabase service-role keys, API keys, passwords, tokens, or other secrets.
+- Never place secrets in source code, documentation, prompts, agent instructions, or test fixtures.
+- Before creating SQL, inspect the current schema and existing functions/policies.
+
+### Code Changes
+
+- Make the smallest safe change that solves the requested task.
+- Preserve existing BLoC/Cubit, repository, dependency-injection, and routing patterns.
+- Do not introduce a new state-management or architectural pattern without explicit approval.
+- Do not remove existing functionality unless explicitly requested.
+- Do not silently change business rules.
+
+### Verification
+
+After implementation:
+
+1. Run `flutter analyze`.
+2. Run the relevant tests.
+3. Run `flutter test`.
+4. Verify localization.
+5. Verify Light and Dark themes.
+6. Verify currency and number formatting.
+7. Verify navigation and deep-link fallbacks.
+8. Verify loading, disabled, success, and error states.
+9. Review the git diff for unintended changes.
+10. Update README/build-plan documentation when required.
+
+### Reporting
+
+When finished, report:
+
+- Files changed
+- What changed
+- Database patches created
+- Tests run
+- Verification results
+- Any remaining warnings or limitations
+
+Never claim a task is complete if required verification has not actually been performed.
