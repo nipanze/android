@@ -3,14 +3,36 @@ version: 1.0.0
 schema: v1
 
 models:
-  - name: Qwen2.5 Coder 3B
+
+  # Main model for Chat, Agent and code editing
+  - name: Qwen3 4B Agent
     provider: ollama
-    model: qwen2.5-coder:3b
+    model: qwen3:4b
     apiBase: http://localhost:11434
     roles:
       - chat
       - edit
       - apply
-      - autocomplete
     capabilities:
       - tool_use
+    defaultCompletionOptions:
+      contextLength: 8192
+      maxTokens: 2048
+      temperature: 0.2
+      keepAlive: 300
+
+  # Fast local autocomplete
+  - name: Qwen2.5 Coder 3B Autocomplete
+    provider: ollama
+    model: qwen2.5-coder:3b
+    apiBase: http://localhost:11434
+    roles:
+      - autocomplete
+    defaultCompletionOptions:
+      contextLength: 4096
+      maxTokens: 256
+      temperature: 0.1
+      keepAlive: 300
+
+rules:
+  - file:///home/mango/Projects/android/.agents/AGENTS.md
