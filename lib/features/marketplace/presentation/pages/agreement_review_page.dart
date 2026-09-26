@@ -105,7 +105,7 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/activity');
+              context.go('/positions');
             }
           },
         ),

@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/account/presentation/pages/blocked_users_page.dart';
 import '../../features/account/presentation/pages/profile_page.dart';
-import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -51,7 +51,7 @@ class AppRoutes {
   static const String dealUnlock = '/marketplace/deal-unlock/:agreementId';
   static const String watchlist = '/watchlist';
   static const String activity = '/activity';
-  static const String positions = '/activity';
+  static const String positions = '/positions';
   static const String myListings = '/listings/my-listings';
   static const String listingCreate =
       '/listings/create'; // ← top-level, not nested
@@ -191,13 +191,14 @@ class AppRouter {
             pageBuilder: (_, state) => _fade(state, const MyListingsPage()),
           ),
           GoRoute(
-            path: AppRoutes.activity,
-            name: 'activity',
-            pageBuilder: (_, state) => _fade(state, const ActivityPage()),
+            path: AppRoutes.positions,
+            name: 'positions',
+            pageBuilder: (_, state) => _fade(state, const PositionsPage()),
           ),
           GoRoute(
-            path: '/positions',
-            redirect: (_, __) => AppRoutes.activity,
+            path: AppRoutes.activity,
+            name: 'activity',
+            redirect: (_, __) => AppRoutes.positions,
           ),
           GoRoute(
             path: AppRoutes.account,

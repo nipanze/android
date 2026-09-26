@@ -1,22 +1,22 @@
-// lib/features/activity/presentation/cubit/activity_state.dart
-part of 'activity_cubit.dart';
+// lib/features/positions/presentation/cubit/positions_state.dart
+part of 'positions_cubit.dart';
 
-abstract class ActivityState extends Equatable {
-  const ActivityState();
+abstract class PositionsState extends Equatable {
+  const PositionsState();
   @override
   List<Object?> get props => [];
 }
 
-class ActivityInitial extends ActivityState {
-  const ActivityInitial();
+class PositionsInitial extends PositionsState {
+  const PositionsInitial();
 }
 
-class ActivityLoading extends ActivityState {
-  const ActivityLoading();
+class PositionsLoading extends PositionsState {
+  const PositionsLoading();
 }
 
-class ActivityLoaded extends ActivityState {
-  const ActivityLoaded({
+class PositionsLoaded extends PositionsState {
+  const PositionsLoaded({
     required this.offers,
     this.activity,
     this.deals = const [],
@@ -26,12 +26,12 @@ class ActivityLoaded extends ActivityState {
   final Map<String, dynamic>? activity;
   final List<dynamic> deals;
 
-  ActivityLoaded copyWith({
+  PositionsLoaded copyWith({
     List<LenderOffer>? offers,
     Map<String, dynamic>? activity,
     List<dynamic>? deals,
   }) =>
-      ActivityLoaded(
+      PositionsLoaded(
         offers: offers ?? this.offers,
         activity: activity ?? this.activity,
         deals: deals ?? this.deals,
@@ -41,8 +41,8 @@ class ActivityLoaded extends ActivityState {
   List<Object?> get props => [offers, activity, deals];
 }
 
-class ActivityError extends ActivityState {
-  const ActivityError(this.message);
+class PositionsError extends PositionsState {
+  const PositionsError(this.message);
   final String message;
   @override
   List<Object?> get props => [message];

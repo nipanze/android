@@ -1,4 +1,4 @@
-// lib/features/activity/presentation/pages/activity_page.dart
+// lib/features/positions/presentation/pages/positions_page.dart
 // ignore_for_file: unused_import
 
 import 'package:flutter/material.dart';
@@ -14,29 +14,29 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../listings/presentation/pages/my_listings_page.dart';
 import '../../../marketplace/domain/models/agreement.dart';
 import '../../domain/models/lender_offer.dart';
-import '../cubit/activity_cubit.dart';
+import '../cubit/positions_cubit.dart';
 import '../widgets/lender_offer_card.dart';
 
-class ActivityPage extends StatelessWidget {
-  const ActivityPage({super.key});
+class PositionsPage extends StatelessWidget {
+  const PositionsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<ActivityCubit>()..load(),
-      child: const _ActivityView(),
+      create: (_) => getIt<PositionsCubit>()..load(),
+      child: const _PositionsView(),
     );
   }
 }
 
-class _ActivityView extends StatefulWidget {
-  const _ActivityView();
+class _PositionsView extends StatefulWidget {
+  const _PositionsView();
 
   @override
-  State<_ActivityView> createState() => _ActivityViewState();
+  State<_PositionsView> createState() => _PositionsViewState();
 }
 
-class _ActivityViewState extends State<_ActivityView>
+class _PositionsViewState extends State<_PositionsView>
     with SingleTickerProviderStateMixin {
   late final TabController _tc;
 
@@ -66,12 +66,12 @@ class _ActivityViewState extends State<_ActivityView>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.myActivityTitle,
+                      AppLocalizations.of(context)!.navPositions,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    BlocBuilder<ActivityCubit, ActivityState>(
+                    BlocBuilder<PositionsCubit, PositionsState>(
                       builder: (context, state) {
-                        final loaded = state is ActivityLoaded ? state : null;
+                        final loaded = state is PositionsLoaded ? state : null;
                         final requests =
                             (loaded?.activity?['active_listings'] as num?)?.toInt() ??
                                 0;
@@ -91,9 +91,9 @@ class _ActivityViewState extends State<_ActivityView>
                   ],
                 ),
                 const Spacer(),
-                BlocBuilder<ActivityCubit, ActivityState>(
+                BlocBuilder<PositionsCubit, PositionsState>(
                   builder: (context, state) {
-                    final activeCount = state is ActivityLoaded
+                    final activeCount = state is PositionsLoaded
                         ? (state.activity?['active_listings'] ?? 0) +
                             state.offers
                                 .where((o) => o.status == OfferStatus.pending)
@@ -137,9 +137,9 @@ class _ActivityViewState extends State<_ActivityView>
 
           // ── Tab views ───────────────────────────────────────────────
           Expanded(
-            child: BlocConsumer<ActivityCubit, ActivityState>(
+            child: BlocConsumer<PositionsCubit, PositionsState>(
               listener: (context, state) {
-                if (state is ActivityError) {
+                if (state is PositionsError) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(state.message),
                       backgroundColor: AppColors.danger));
@@ -165,21 +165,21 @@ class _ActivityViewState extends State<_ActivityView>
 
 class _LenderTab extends StatelessWidget {
   const _LenderTab({required this.state});
-  final ActivityState state;
+  final PositionsState state;
 
   @override
   Widget build(BuildContext context) {
-    if (state is ActivityLoading || state is ActivityInitial) {
+    if (state is PositionsLoading || state is PositionsInitial) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (state is ActivityError) {
+    if (state is PositionsError) {
       return ErrorState(
-          message: (state as ActivityError).message,
-          onRetry: () => context.read<ActivityCubit>().refresh());
+          message: (state as PositionsError).message,
+          onRetry: () => context.read<PositionsCubit>().refresh());
     }
-    if (state is! ActivityLoaded) return const SizedBox.shrink();
+    if (state is! PositionsLoaded) return const SizedBox.shrink();
 
-    final offers = (state as ActivityLoaded).offers;
+    final offers = (state as PositionsLoaded).offers;
     if (offers.isEmpty) {
       return EmptyState(
         icon: Icons.payments_outlined,
@@ -200,7 +200,7 @@ class _LenderTab extends StatelessWidget {
         .toList();
 
     return RefreshIndicator(
-      onRefresh: () => context.read<ActivityCubit>().refresh(),
+      onRefresh: () => context.read<PositionsCubit>().refresh(),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
@@ -237,7 +237,7 @@ class _LenderTab extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(dialogCtx);
-              context.read<ActivityCubit>().withdrawOffer(offer.offerId);
+              context.read<PositionsCubit>().withdrawOffer(offer.offerId);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
             child: Text(AppLocalizations.of(context)!.withdraw),
@@ -250,21 +250,21 @@ class _LenderTab extends StatelessWidget {
 
 class _DealsTab extends StatelessWidget {
   const _DealsTab({required this.state});
-  final ActivityState state;
+  final PositionsState state;
 
   @override
   Widget build(BuildContext context) {
-    if (state is ActivityLoading || state is ActivityInitial) {
+    if (state is PositionsLoading || state is PositionsInitial) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (state is ActivityError) {
+    if (state is PositionsError) {
       return ErrorState(
-          message: (state as ActivityError).message,
-          onRetry: () => context.read<ActivityCubit>().refresh());
+          message: (state as PositionsError).message,
+          onRetry: () => context.read<PositionsCubit>().refresh());
     }
-    if (state is! ActivityLoaded) return const SizedBox.shrink();
+    if (state is! PositionsLoaded) return const SizedBox.shrink();
 
-    final loadedState = state as ActivityLoaded;
+    final loadedState = state as PositionsLoaded;
     final acceptedOffers = loadedState.offers
         .where((o) => o.status == OfferStatus.accepted)
         .toList();
@@ -282,7 +282,7 @@ class _DealsTab extends StatelessWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: () => context.read<ActivityCubit>().refresh(),
+      onRefresh: () => context.read<PositionsCubit>().refresh(),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
