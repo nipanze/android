@@ -18,14 +18,14 @@ class AppColors {
   static const Color proPurple = Color(0xFF8B5CF6); // Pro features
   static const Color verified = accent; // Trust signal across the app
 
-  // Dark theme surfaces
-  static const Color bgDark = Color(0xFF06080E);
-  static const Color bg2Dark = Color(0xFF0B1D2E);
-  static const Color bg3Dark = Color(0xFF0D2A43);
-  static const Color borderDark = Color(0xFF17476E);
-  static const Color textDark = Color(0xFFF5F7FA);
-  static const Color text2Dark = Color(0xFFAABFDA);
-  static const Color text3Dark = Color(0xFF7794B8);
+  // Dark theme surfaces — warm black/brown charcoal
+  static const Color bgDark = Color(0xFF0F0A09);
+  static const Color bg2Dark = Color(0xFF1A120F);
+  static const Color bg3Dark = Color(0xFF231813);
+  static const Color borderDark = Color(0xFF4A352D);
+  static const Color textDark = Color(0xFFF5F0EC);
+  static const Color text2Dark = Color(0xFFCFB7A9);
+  static const Color text3Dark = Color(0xFF9C8175);
 
   // Light theme surfaces
   static const Color bgLight = Color(0xFFF8F9FC);
