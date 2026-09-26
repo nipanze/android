@@ -374,7 +374,6 @@ class _MainListingArea extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: accent.withValues(alpha: 0.30)),
           ),
