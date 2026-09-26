@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand – Nipanze primary: Electric Royal Blue (Vibrant Fintech)
-  static const Color accent = Color(0xFF2563EB); // Nipanze primary blue
-  static const Color accentDark = Color(0xFF056FC2); // Pressed primary blue
+  // Brand – Facebook-inspired blue accents for the dark UI
+  static const Color accent = Color(0xFF1877F2); // Facebook blue
+  static const Color accentDark = Color(0xFF166FE5); // Pressed Facebook blue
   static const Color accentLight =
-      Color(0xFF62B8FF); // Light variant for dark-mode text & glow
+      Color(0xFF72A8FF); // Light variant for dark-mode text & glow
   static const Color success = Color(0xFF22C55E); // Loans green
   static const Color warning = Color(0xFFF59E0B); // Needs amber
   static const Color danger = Color(0xFFFF4D5E); // Alerts
@@ -18,14 +18,14 @@ class AppColors {
   static const Color proPurple = Color(0xFF8B5CF6); // Pro features
   static const Color verified = accent; // Trust signal across the app
 
-  // Dark theme surfaces — warm black/brown charcoal
-  static const Color bgDark = Color(0xFF0F0A09);
-  static const Color bg2Dark = Color(0xFF1A120F);
-  static const Color bg3Dark = Color(0xFF231813);
-  static const Color borderDark = Color(0xFF4A352D);
-  static const Color textDark = Color(0xFFF5F0EC);
-  static const Color text2Dark = Color(0xFFCFB7A9);
-  static const Color text3Dark = Color(0xFF9C8175);
+  // Dark theme surfaces — Facebook-style neutral dark mode
+  static const Color bgDark = Color(0xFF18191A);
+  static const Color bg2Dark = Color(0xFF242526);
+  static const Color bg3Dark = Color(0xFF3A3B3C);
+  static const Color borderDark = Color(0xFF3A3B3C);
+  static const Color textDark = Color(0xFFF0F2F5);
+  static const Color text2Dark = Color(0xFFB0B3B8);
+  static const Color text3Dark = Color(0xFF8A8D91);
 
   // Light theme surfaces
   static const Color bgLight = Color(0xFFF8F9FC);
@@ -101,20 +101,30 @@ class AppTheme {
 
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-        selectedItemColor: AppColors.accent,
+        selectedItemColor: isDark ? AppColors.textDark : AppColors.accent,
         unselectedItemColor:
             isDark ? AppColors.text3Dark : AppColors.text3Light,
+        selectedIconTheme: IconThemeData(
+          color: isDark ? AppColors.textDark : AppColors.accent,
+        ),
+        unselectedIconTheme: IconThemeData(
+          color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+        ),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         selectedLabelStyle: const TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 9,
           fontWeight: FontWeight.w600,
+          color: AppColors.textDark,
         ),
         unselectedLabelStyle: const TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 9,
           fontWeight: FontWeight.w500,
+          color: AppColors.text3Dark,
         ),
       ),
 

@@ -50,8 +50,8 @@ class ListingCard extends StatelessWidget {
       ? AppColors.bg2Dark
       : theme.colorScheme.surfaceContainerHighest;
     final borderColor = isDark
-        ? accent.withValues(alpha: 0.95)
-        : AppColors.accent.withValues(alpha: 0.22);
+        ? AppColors.borderDark
+        : AppColors.borderLight;
     final mutedColor =
         isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
     final title = needs?.title ??
@@ -84,13 +84,13 @@ class ListingCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
           decoration: BoxDecoration(
             color: surfaceColor,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: borderColor, width: 1.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: 1.1),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {

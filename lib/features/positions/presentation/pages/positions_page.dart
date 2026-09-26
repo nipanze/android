@@ -125,6 +125,8 @@ class _PositionsViewState extends State<_PositionsView>
           TabBar(
             controller: _tc,
             indicatorColor: AppColors.accent,
+            labelColor: AppColors.textDark,
+            unselectedLabelColor: AppColors.text3Dark,
             labelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
