@@ -857,47 +857,6 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
     );
   }
 
-  // ── Repayment date computation from borrower's exact schedule ─────────────
-  //
-  // The borrower filled these in listing_create_page.dart:
-  //   _selectedDueDay  → e.g. "5th of every month" / "Every Friday"
-  //   _selectedDueTime → e.g. "5:00 PM (End of business day)"
-  // These are joined into listing.repaymentTimeline, e.g.:
-  //   "Paid by the 5th of every month by 5:00 PM for 6 months"
-  // We parse that string to extract the exact day & time so the offer
-  // preview shows the borrower's own chosen due date, not an estimate.
-
-  /// Returns the day-of-month [1..31] that the borrower picked, or null.
-  int? get _borrowerDueDayOfMonth {
-    if (_selectedDueDay == null) return null;
-    final dayStr = _selectedDueDay!.toLowerCase();
-    if (dayStr.contains('1st')) return 1;
-    if (dayStr.contains('5th')) return 5;
-    if (dayStr.contains('10th')) return 10;
-    if (dayStr.contains('15th')) return 15;
-    if (dayStr.contains('20th')) return 20;
-    if (dayStr.contains('25th')) return 25;
-    if (dayStr.contains('last day')) return -1;
-    return null;
-  }
-
-  /// Returns the weekday [1=Mon..7=Sun] the borrower picked, or null.
-  int? get _borrowerDueWeekday {
-    if (_selectedDueDay == null) return null;
-    final dayStr = _selectedDueDay!.toLowerCase();
-    if (dayStr.contains('monday')) return DateTime.monday;
-    if (dayStr.contains('wednesday')) return DateTime.wednesday;
-    if (dayStr.contains('friday')) return DateTime.friday;
-    if (dayStr.contains('sunday')) return DateTime.sunday;
-    return null;
-  }
-
-  /// Returns a short display string like "5:00 PM" from the timeline, or null.
-  String? get _borrowerDueTime {
-    if (_selectedDueTime == null) return null;
-    return _selectedDueTime!.split(' (').first;
-  }
-
   String get _proposedRepaymentTimeline {
     final parts = <String>[];
 
@@ -922,75 +881,6 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
     }
 
     return parts.join(' ');
-  }
-
-  DateTime _getInstalmentDate(int index) {
-    // Anchor: use the listing's listedAt date as the loan start.
-    // If the loan isn't active yet fall back to today.
-    final anchor = widget.listing.listedAt;
-    final freq = _repaymentFrequency.toLowerCase();
-
-    switch (freq) {
-      case 'weekly':
-        // Anchor to the borrower's chosen weekday if available.
-        final targetWeekday = _borrowerDueWeekday;
-        DateTime base = anchor.add(Duration(days: 7 * (index + 1)));
-        if (targetWeekday != null) {
-          // Walk forward from base to find the next occurrence of that weekday.
-          final diff = (targetWeekday - base.weekday) % 7;
-          base = base.add(Duration(days: diff));
-        }
-        return DateTime(base.year, base.month, base.day);
-
-      case 'one_time':
-      case 'lump_sum':
-        final months =
-            widget.listing.durationMonths > 0 ? widget.listing.durationMonths : 1;
-        final targetDay = _borrowerDueDayOfMonth;
-        int day;
-        if (targetDay == null) {
-          day = anchor.day;
-        } else if (targetDay == -1) {
-          // Last day of that month
-          final m = DateTime(anchor.year, anchor.month + months + 1, 0);
-          day = m.day;
-        } else {
-          day = targetDay;
-        }
-        final yr = anchor.year;
-        final mo = anchor.month + months;
-        // clamp day to valid range for that month
-        final daysInMonth = DateTime(yr, mo + 1, 0).day;
-        return DateTime(yr, mo, day.clamp(1, daysInMonth));
-
-      case 'monthly':
-      default:
-        final targetDay = _borrowerDueDayOfMonth;
-        final mo = anchor.month + (index + 1);
-        int day;
-        if (targetDay == null) {
-          day = anchor.day;
-        } else if (targetDay == -1) {
-          day = DateTime(anchor.year, mo + 1, 0).day; // last day
-        } else {
-          final daysInMonth = DateTime(anchor.year, mo + 1, 0).day;
-          day = targetDay.clamp(1, daysInMonth);
-        }
-        return DateTime(anchor.year, mo, day);
-    }
-  }
-
-  String _formatDateShort(DateTime dt) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    // Weekday abbreviations for weekly schedules
-    const weekdays = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final dayName = _repaymentFrequency == 'weekly'
-        ? '${weekdays[dt.weekday]} '
-        : '';
-    return '$dayName${months[dt.month - 1]} ${dt.day}';
   }
 
   Widget _buildStrategyMoodPresets() {
@@ -1063,179 +953,6 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
       ),
     );
   }
-
-  Widget _buildScheduleTimeline() {
-
-    final count = _numberOfInstallments;
-    final displayCount = count.clamp(1, 6);
-    final extraCount = count > 6 ? count - 6 : 0;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calendar_month_outlined,
-                  size: 14, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(
-                'REPAYMENT TIMELINE ($count ${count == 1 ? "instalment" : "instalments"})',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                ...List.generate(displayCount, (index) {
-                  final date = _getInstalmentDate(index);
-                  final isLast = index == displayCount - 1 && extraCount == 0;
-                  return Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Instalment ${index + 1}',
-                              style: const TextStyle(
-                                  fontSize: 9.5, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _formatDateShort(date),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            if (_borrowerDueTime != null) ...[
-                              const SizedBox(height: 1),
-                              Text(
-                                _borrowerDueTime!,
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.55),
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 2),
-                            Text(
-                              '${widget.listing.currency} ${_fmtAmount(_parsedInstallment)}',
-                              style: const TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (!isLast)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 14,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.4),
-                          ),
-                        ),
-                    ],
-                  );
-                }),
-                if (extraCount > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outlineVariant
-                              .withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: Text(
-                        '+$extraCount more',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          // Show the borrower's own schedule text as a source caption
-          if (widget.listing.repaymentTimeline.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.person_outline_rounded,
-                    size: 12,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45)),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    'Borrower\'s schedule: ${widget.listing.repaymentTimeline}',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.5),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
 
   Widget _buildPlainEnglishReturnCard() {
     final currency = widget.listing.currency;
@@ -1403,8 +1120,6 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                         : AppColors.success,
                     isBold: true,
                   ),
-                  const SizedBox(height: 12),
-                  _buildScheduleTimeline(),
                   if (_expController.text.trim().isNotEmpty) ...[
                     const Divider(height: 16),
                     _previewRow('Notes for Borrower', _expController.text.trim()),
@@ -1998,9 +1713,6 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 12),
-                  _buildScheduleTimeline(),
 
                   const SizedBox(height: 16),
                   TextFormField(
