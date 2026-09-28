@@ -37,7 +37,7 @@ class _ProRequiredSheet extends StatelessWidget {
     } catch (_) {}
     final country = EastAfricaCountries.findByCode(countryCode);
 
-    final bg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final cardBg = isDark ? AppColors.bg2Dark : AppColors.bg3Light;
     final cardBorder =
         isDark ? const Color(0xFF5B21B6) : const Color(0xFFDDD6FE);

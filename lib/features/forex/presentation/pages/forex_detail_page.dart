@@ -68,7 +68,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (sheetCtx) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
@@ -154,8 +154,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),

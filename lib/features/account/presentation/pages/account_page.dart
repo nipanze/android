@@ -295,7 +295,7 @@ class _AccountView extends StatelessWidget {
       ),
       builder: (sheetCtx) {
         final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
-        final sheetBg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+        final sheetBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
         final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
         final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
 
@@ -303,6 +303,10 @@ class _AccountView extends StatelessWidget {
           decoration: BoxDecoration(
             color: sheetBg,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 1,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
@@ -593,7 +597,7 @@ class _AccountView extends StatelessWidget {
       ),
       builder: (sheetCtx) {
         final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
-        final sheetBg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+        final sheetBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
         final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
         final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
 
@@ -601,6 +605,10 @@ class _AccountView extends StatelessWidget {
           decoration: BoxDecoration(
             color: sheetBg,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 1,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),

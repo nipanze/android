@@ -37,7 +37,7 @@ class _LenderRequiredSheet extends StatelessWidget {
     } catch (_) {}
     final country = EastAfricaCountries.findByCode(countryCode);
 
-    final bg = isDark ? AppColors.bg3Dark : AppColors.bg2Light;
+    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final cardBg = isDark ? AppColors.bg2Dark : AppColors.bg3Light;
     final cardBorder = isDark ? AppColors.accent : AppColors.accentLight;
     final badgeBg = isDark
