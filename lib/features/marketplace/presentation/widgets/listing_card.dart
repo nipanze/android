@@ -64,6 +64,85 @@ class ListingCard extends StatelessWidget {
         : loan != null
             ? '${loan.currency} ${_fmtAmount(context, loan.requestedAmount)}'
             : '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}';
+    final amountWidget = isForex
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'I hold',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: mutedColor,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: accent,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        height: 1.05,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(
+                  Icons.swap_horiz_rounded,
+                  size: 18,
+                  color: accent,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'I need',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: mutedColor,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${forex.currencyNeeded} ${_fmtAmount(context, forex.preferredRate != null && forex.preferredRate! > 0 ? (forex.amount * forex.preferredRate!).round() : forex.amount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: accent,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        height: 1.05,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : Text(
+            amount,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: accent,
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+            ),
+          );
     final description = needs?.specification ??
         loan?.purpose ??
         _forexDescription(forex, context);
@@ -109,6 +188,7 @@ class ListingCard extends StatelessWidget {
                 posted: _postedAgo(context, listing.listedAt),
                 title: title,
                 amount: amount,
+                amountWidget: amountWidget,
                 isLoan: loan != null,
                 location: location,
                 verified: isVerified,
@@ -266,6 +346,7 @@ class _MainListingArea extends StatelessWidget {
     required this.posted,
     required this.title,
     required this.amount,
+    required this.amountWidget,
     required this.isLoan,
     required this.location,
     required this.verified,
@@ -288,6 +369,7 @@ class _MainListingArea extends StatelessWidget {
   final String posted;
   final String title;
   final String amount;
+  final Widget amountWidget;
   final bool isLoan;
   final String location;
   final bool verified;
@@ -377,17 +459,7 @@ class _MainListingArea extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: accent.withValues(alpha: 0.30)),
           ),
-          child: Text(
-            amount,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: accent,
-              fontSize: 19,
-              fontWeight: FontWeight.w900,
-              height: 1.05,
-            ),
-          ),
+          child: amountWidget,
         ),
         const SizedBox(height: 8),
         Wrap(
