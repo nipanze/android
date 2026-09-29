@@ -177,6 +177,92 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
+
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    final shouldPublish = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.needsPreviewTitle),
+        scrollable: true,
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _previewRow(
+                l10n.needsCategoryLabel,
+                _categoryLocalizedName(l10n, _categorySlug),
+              ),
+              _previewRow(l10n.needsTitleLabel, _titleController.text.trim()),
+              _previewRow(
+                l10n.needsSpecificationLabel,
+                _specificationController.text.trim(),
+              ),
+              for (final field in dynamicFields)
+                _previewRow(
+                  field.label,
+                  field.type == NeedFieldType.boolean
+                      ? ((_dynamicBooleans[field.key] ?? false) ? 'Yes' : 'No')
+                      : _dynamicControllers[field.key]?.text.trim() ?? '',
+                ),
+              _previewRow(
+                l10n.needsBudgetLabel(_currency(authState)),
+                NumberFormat.decimalPattern(
+                  Localizations.localeOf(context).toLanguageTag(),
+                ).format(_budgetValue()),
+              ),
+              _previewRow(
+                _countryInfo(authState).regionsLabel,
+                _effectiveLocation.trim(),
+              ),
+              _previewRow(
+                l10n.needsUrgencyLabel,
+                _urgencyLabel(l10n, _urgency),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.needsPreviewEdit),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.needsPublishBtn),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldPublish == true && mounted) await _publish();
+  }
+
+  Widget _previewRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(height: 3),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _publish() async {
+    final l10n = AppLocalizations.of(context)!;
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
 
