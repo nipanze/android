@@ -1,3 +1,4467 @@
+-- ==============================================================================
+-- NIPANZE FULL DATABASE MERGED SETUP (SUPABASE CLOUD)
+-- ==============================================================================
+-- This file merges sql/schema.sql, sql/seed.sql, and sql/patch.sql in their
+-- required execution order:
+--   1. Base Schema (sql/schema.sql)
+--   2. Base Seed Data (sql/seed.sql)
+--   3. Consolidated Patches & Enhancements (sql/patch.sql)
+--
+-- Safe to run directly in the Supabase Cloud SQL Editor (https://supabase.com/dashboard).
+-- ==============================================================================
+
+
+-- ==============================================================================
+-- 1. BASE SCHEMA (sql/schema.sql)
+-- ==============================================================================
+
+-- ============================================
+-- NIPANZE Database Schema
+-- Version: 5.0 (Multi-Country Expansion + Pro Advanced Filters, on top of the
+--               v4.1 Unified Marketplace Model — Non-Custodial Matchmaking Marketplace)
+-- PostgreSQL 14+ · Flutter + Supabase
+--
+-- Non-custodial peer-to-peer loan listing marketplace.
+-- Uganda-first, architected for the full East African Community (EAC) on one
+-- shared schema. Basic borrowing is free. Premium borrowers can suggest terms.
+-- Lender bids require a subscription.
+-- Platform NEVER holds, tracks, or processes money between borrower and lender.
+-- Contact details are revealed only after a locked contract is generated.
+--
+-- v4.1 change: removed role-based model. There is no stored borrower/lender
+-- role. All marketplace capability comes from subscription_plan. The only
+-- remaining role concept is is_admin (boolean), which governs platform
+-- moderation and is unrelated to marketplace participation.
+--
+-- v4.1.1 fix: reordered two blocks that referenced objects before they
+-- were defined (fixed as ordering bugs found during clean-schema replay):
+--   1) CREATE SCHEMA IF NOT EXISTS private; moved to top of file, before
+--      any private.* function definition.
+--   2) trg_agreements_updated_at trigger moved from right after the
+--      agreements table into the TRIGGERS section, after fn_set_updated_at()
+--      is defined.
+--
+-- v4.2 addition: Pro Advanced Marketplace Filters — fn_income_bracket(),
+-- v_marketplace_pro_filters view, and get_marketplace_pro_filtered() RPC.
+-- Self-gated to callers with an active Pro subscription; returns zero rows
+-- (view) or raises (RPC) for anyone else. Never exposes exact monthly
+-- income or employer/bank names — only bucketed income and categorical
+-- employment type.
+--
+-- v5.0 addition: Multi-Country Expansion. One shared schema now serves every
+-- East African Community member state instead of Uganda only:
+--   1) New `countries` reference table — code, name, currency_code,
+--      phone_prefix, is_active. Seeded with all 8 EAC states (UG active,
+--      the other 7 inactive until each clears its own launch checklist).
+--      Created early in this file so `profiles` and `loan_requests` can
+--      reference it via FK.
+--   2) `profiles.country` — source of truth for a user's market, defaults
+--      to 'UG', set from onboarding (phone-prefix suggestion, never
+--      enforced) via handle_new_auth_user().
+--   3) `loan_requests.country` — copied from the borrower's profile at
+--      insert time by trg_fn_set_request_country(), then immutable
+--      (same "locked after publish" pattern as suggested terms).
+--   4) `loan_offers` gets NO country column — an offer's country is always
+--      read through `request_id -> loan_requests.country`, so there is
+--      exactly one source of truth, never two that can drift apart.
+--   5) `system_settings.country` — nullable; NULL rows are global defaults,
+--      non-null rows are per-market overrides. Composite unique constraint
+--      on (setting_key, country).
+--   6) `subscriptions.amount_ugx` renamed to `amount_minor_units` — the
+--      currency is implied by the subscriber's `profiles.country`, not
+--      hardcoded to UGX.
+--   7) `v_loan_listings` and `v_lender_offers` now expose `country` and
+--      `currency_code` (joined from `countries`) alongside every amount.
+--      `v_marketplace_activity` is now groupable by `country`.
+--   8) New `transactions` table (Stage 6 — Flutterwave or equivalent).
+--      Scoped strictly to Nipanze's own revenue (subscriptions, and the
+--      contact-unlock fee if that open decision is ever resolved to "yes").
+--      NEVER touches P2P loan funds. Only a verified webhook may write
+--      status = 'successful'; the client-side redirect is never trusted.
+--   9) Cross-border offers are ALLOWED by default in this schema (no country
+--      check in trg_fn_validate_offer) per the BUILD_PLAN.md recommendation.
+--      A single clause can be added there later if product direction
+--      changes to single-market-only offers.
+--  10) Marketplace filtering by country is an APPLICATION-LAYER default
+--      (MarketplaceRepository filters `v_loan_listings WHERE country =
+--      :userCountry`), not an RLS boundary — "global browse" was the
+--      chosen policy over hard per-country RLS isolation, to support
+--      diaspora and cross-border lending. See BUILD_PLAN.md for the
+--      documented subquery pattern if hard isolation is ever adopted.
+-- ============================================
+
+
+-- ============================================
+-- EXTENSIONS
+-- ============================================
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
+-- ============================================
+-- SCHEMAS
+-- private schema created early so any private.* function definition
+-- later in this file (e.g. private.accept_offer_internal,
+-- private.reveal_contact_internal, private.unlock_contact_internal,
+-- private.is_admin) has somewhere to live.
+-- ============================================
+
+CREATE SCHEMA IF NOT EXISTS private;
+
+
+-- ============================================
+-- ENUMS
+-- ============================================
+
+CREATE TYPE account_status_enum AS ENUM (
+    'active', 'suspended', 'pending_verification', 'deactivated'
+);
+
+CREATE TYPE kyc_status_enum AS ENUM (
+    'not_submitted', 'pending', 'approved', 'rejected', 'expired'
+);
+
+CREATE TYPE employment_type_enum AS ENUM (
+    'employed', 'government_employee', 'self_employed', 'small_business_owner', 'business_owner', 'student', 'other'
+);
+
+CREATE TYPE subscription_plan_enum AS ENUM (
+    'free', 'lender', 'pro'
+);
+
+CREATE TYPE subscription_status_enum AS ENUM (
+    'active', 'expired', 'cancelled', 'grace_period'
+);
+
+CREATE TYPE loan_status_enum AS ENUM (
+    'active', 'contracted', 'expired', 'cancelled'
+);
+
+CREATE TYPE offer_status_enum AS ENUM (
+    'pending', 'accepted', 'rejected', 'withdrawn', 'expired'
+);
+
+CREATE TYPE reveal_status_enum AS ENUM (
+    'pending', 'revealed'
+);
+
+CREATE TYPE repayment_frequency_enum AS ENUM (
+    'weekly', 'monthly', 'one_time'
+);
+
+CREATE TYPE agreement_status_enum AS ENUM (
+    'pending', 'borrower_agreed', 'lender_agreed', 'locked'
+);
+
+CREATE TYPE notification_type_enum AS ENUM (
+    'offer_received',
+    'offer_accepted',
+    'offer_rejected',
+    'offer_withdrawn',
+    'contact_revealed',
+    'agreement_locked',
+    'kyc_approved',
+    'kyc_rejected',
+    'closing_soon_24h',
+    'closing_soon_6h',
+    'watchlist_new_offer',
+    'system'
+);
+
+CREATE TYPE audit_event_type_enum AS ENUM (
+    'login', 'logout', 'register', 'password_reset',
+    'token_refresh', 'token_reuse_detected',
+    'login_failed', 'account_locked',
+    'kyc_submitted', 'kyc_approved', 'kyc_rejected',
+    'listing_created', 'listing_cancelled',
+    'offer_placed', 'offer_withdrawn', 'offer_accepted',
+    'agreement_locked',
+    'contact_revealed', 'review_submitted',
+    'subscription_changed',
+    'transaction_completed',
+    'admin_action'
+);
+
+CREATE TYPE setting_type_enum AS ENUM (
+    'string', 'number', 'boolean', 'json'
+);
+
+
+-- ============================================
+-- TABLE: countries  (v5.0 — new reference table)
+-- One row per East African Community member state. Seeded with all 8 up
+-- front; launching a market is `UPDATE countries SET is_active = TRUE`,
+-- never a schema migration. profiles and loan_requests both FK to this
+-- table, so it must exist before either is created.
+-- ============================================
+
+CREATE TABLE countries (
+    code           TEXT PRIMARY KEY,          -- ISO 3166-1 alpha-2
+    name           TEXT NOT NULL,
+    currency_code  TEXT NOT NULL,              -- ISO 4217
+    phone_prefix   TEXT NOT NULL,              -- onboarding-time default suggestion only, never enforced
+    is_active      BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  countries IS
+'Reference table for every EAC market Nipanze can operate in. is_active gates whether new
+ listings/subscriptions can be created in that market; existing data and history are untouched
+ when a market is paused. Adding a market is a data change, never a schema migration.';
+COMMENT ON COLUMN countries.phone_prefix IS
+'Onboarding-time default suggestion only (like GPS/IP). Never trusted as the enforced value —
+ profiles.country, once set, is the source of truth.';
+
+INSERT INTO countries (code, name, currency_code, phone_prefix, is_active) VALUES
+    ('UG', 'Uganda',       'UGX', '+256', TRUE),
+    ('KE', 'Kenya',        'KES', '+254', FALSE),
+    ('TZ', 'Tanzania',     'TZS', '+255', FALSE),
+    ('RW', 'Rwanda',       'RWF', '+250', FALSE),
+    ('BI', 'Burundi',      'BIF', '+257', FALSE),
+    ('SS', 'South Sudan',  'SSP', '+211', FALSE),
+    ('CD', 'DR Congo',     'CDF', '+243', FALSE),
+    ('SO', 'Somalia',      'SOS', '+252', FALSE);
+
+CREATE INDEX idx_countries_is_active ON countries (is_active) WHERE is_active = TRUE;
+
+
+-- ============================================
+-- AUTH BRIDGE
+-- Syncs auth.users → public.profiles on registration.
+-- Also creates a free subscription automatically.
+-- v5.0: also resolves the new user's country from onboarding metadata
+-- (phone-prefix guess or explicit selection), falling back to 'UG' if
+-- missing or not a known country code — never trusts an unvalidated value.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_country TEXT;
+    v_phone TEXT;
+BEGIN
+    v_country := UPPER(COALESCE(NEW.raw_user_meta_data->>'country_code', 'UG'));
+    IF NOT EXISTS (SELECT 1 FROM public.countries WHERE code = v_country) THEN
+        v_country := 'UG';
+    END IF;
+
+    v_phone := COALESCE(NEW.raw_user_meta_data->>'phone', NEW.phone);
+
+    INSERT INTO public.profiles (
+        id, full_name, phone, account_status, is_admin, country
+    )
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', SPLIT_PART(NEW.email, '@', 1)),
+        v_phone,
+        'pending_verification',
+        FALSE,
+        v_country
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        full_name = EXCLUDED.full_name,
+        phone = COALESCE(EXCLUDED.phone, public.profiles.phone),
+        country = COALESCE(EXCLUDED.country, public.profiles.country);
+
+    -- Auto confirm mock email users for phone sign ups
+    IF NEW.email LIKE '%@nipanze.test' AND NEW.email_confirmed_at IS NULL THEN
+        UPDATE auth.users SET email_confirmed_at = NOW() WHERE id = NEW.id;
+    END IF;
+
+    -- Every new user gets a free subscription (can browse marketplace and post requests)
+    INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units)
+    VALUES (NEW.id, 'free', 'active', 0)
+    ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_new_auth_user();
+
+COMMENT ON FUNCTION public.handle_new_auth_user IS
+'Syncs auth.users → public.profiles on every registration, resolves the new profile''s country
+ (defaulting to UG if the onboarding suggestion is missing or unrecognized), and provisions a
+ free subscription. Free plan allows marketplace browsing and posting loan requests at no cost.';
+
+
+-- ============================================
+-- TABLE: profiles  (extends auth.users 1-to-1)
+-- v4.1: no stored borrower/lender role. is_admin is the only role concept,
+-- and it governs platform moderation only — never marketplace capability.
+-- v5.0: carries `country`, the source of truth for which EAC market this
+-- account belongs to. Required, defaults to 'UG', editable by the user.
+-- ============================================
+
+CREATE TABLE profiles (
+    id               UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+
+    full_name        TEXT,
+    phone            TEXT UNIQUE,
+    -- Public badge only; the phone number itself remains private until reveal.
+    phone_verified_at TIMESTAMP,
+    country          TEXT NOT NULL DEFAULT 'UG' REFERENCES countries(code),
+    district         TEXT,
+    street_address   TEXT,
+    employment_type  employment_type_enum,
+    employer_name    TEXT,
+    monthly_income     BIGINT,
+    income_currency    VARCHAR(3) NOT NULL DEFAULT 'UGX',  -- ISO 4217; derived from profiles.country
+    preferred_bank      TEXT,
+    institution_type    TEXT CHECK (
+        institution_type IS NULL OR
+        institution_type IN ('bank', 'forex_exchange', 'sacco', 'company')
+    ),
+    is_bank_agent       BOOLEAN NOT NULL DEFAULT FALSE,
+    show_professional_tag BOOLEAN NOT NULL DEFAULT TRUE,
+
+    -- Marketplace filter preferences (v4.5) — mirrors Advanced Filters defaults
+    preferred_employment_types  TEXT[],
+    preferred_income_bracket    TEXT,
+    prefers_suggested_terms     BOOLEAN NOT NULL DEFAULT FALSE,
+    prefers_verified_only       BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- Free contact-unlock credits (welcome gift for free-plan users)
+    free_unlocks_remaining      INT NOT NULL DEFAULT 1,
+
+    account_status   account_status_enum NOT NULL DEFAULT 'pending_verification',
+    is_admin         BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  profiles IS 'Core user profile. Extends auth.users 1-to-1. One account supports both borrower and lender activity, in whichever EAC country the account belongs to.';
+COMMENT ON COLUMN profiles.phone IS 'Masked until contact reveal is triggered post-offer-acceptance.';
+COMMENT ON COLUMN profiles.phone_verified_at IS
+'Timestamp of OTP verification. Only the verified status is exposed as a trust signal.';
+COMMENT ON COLUMN profiles.country IS
+'Source of truth for the account''s market. Editable by the user; loan_requests.country is
+ copied from this value at post time and then frozen, so a later correction here never
+ silently moves an already-published listing into a different market''s feed.';
+COMMENT ON COLUMN profiles.monthly_income IS
+'Free-text numeric income figure used only for fn_income_bracket() bucketing in Pro Advanced
+ Filters — never exposed as an exact figure to any other user, regardless of plan or country.';
+COMMENT ON COLUMN profiles.is_admin IS
+'The only role in the system. Governs platform moderation access, unrelated to marketplace
+ capability, which comes entirely from subscription_plan on the subscriptions table.';
+
+CREATE INDEX idx_profiles_country ON profiles (country);
+
+
+-- ============================================
+-- TABLE: user_blocks
+-- Directional privacy control shared by Loans and Forex.
+-- Blocking affects future marketplace discovery/interactions only; historical
+-- contracts, reviews, audit logs, and completed activity remain untouched.
+-- ============================================
+
+CREATE TABLE user_blocks (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    blocker_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    blocked_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_user_blocks_pair UNIQUE (blocker_id, blocked_id),
+    CONSTRAINT chk_user_blocks_not_self CHECK (blocker_id <> blocked_id)
+);
+
+COMMENT ON TABLE user_blocks IS
+'Directional account-level blocks. If A blocks B, B cannot discover, deep-link, or offer on
+ A''s future loan or forex requests. Existing contracts, reviews, and audit history are kept.';
+
+CREATE INDEX idx_user_blocks_blocker_id ON user_blocks (blocker_id);
+CREATE INDEX idx_user_blocks_blocked_id ON user_blocks (blocked_id);
+
+
+-- ============================================
+-- TABLE: system_settings  (key-value, admin-managed)
+-- v5.0: gains a nullable `country` column. NULL rows are global defaults;
+-- non-null rows override a specific market. Composite-unique on
+-- (setting_key, country) via a normalized expression index below, since a
+-- plain UNIQUE on setting_key alone no longer holds once overrides exist.
+-- ============================================
+
+CREATE TABLE system_settings (
+    setting_id    UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    setting_key   VARCHAR(100) NOT NULL,
+    country       TEXT         REFERENCES countries(code),   -- NULL = global default
+    setting_value TEXT,
+    setting_type  setting_type_enum NOT NULL DEFAULT 'string',
+    category      VARCHAR(50),
+    description   TEXT,
+    is_public     BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  system_settings IS
+'Platform configuration. All business limits read from here at runtime. A row with
+ country IS NULL is the global default; a row with country set overrides that key for
+ that market only. Resolve with: COALESCE(country-specific row, global row).';
+
+-- Composite-unique on (setting_key, country), treating NULL country as a single
+-- normalized value so at most one global-default row can exist per key.
+CREATE UNIQUE INDEX uidx_system_settings_key_country
+    ON system_settings (setting_key, COALESCE(country, '__global__'));
+
+
+-- ============================================
+-- DEFAULT SYSTEM SETTINGS
+-- Global defaults (country IS NULL). Per-country overrides are inserted
+-- later, per market, as each one is prepared for launch — see BUILD_PLAN.md
+-- Stage 4.5/6.
+-- ============================================
+
+INSERT INTO system_settings (setting_key, setting_value, setting_type, category, description, is_public) VALUES
+    ('min_loan_amount',         '100000',   'number',  'limits',      'Minimum loan request amount, in the request''s own currency (global default)', TRUE),
+    ('max_loan_amount',         '50000000', 'number',  'limits',      'Maximum loan request amount, in the request''s own currency (global default)', TRUE),
+    ('min_offer_amount',        '100000',   'number',  'limits',      'Minimum offer amount per lender, in the listing''s own currency (global default)', TRUE),
+    ('max_concurrent_requests', '2',        'number',  'limits',      'Legacy fallback maximum active loan requests per borrower', TRUE),
+    ('max_active_requests_free',   '2',     'number',  'limits',      'Maximum active loan requests for Free subscribers',      TRUE),
+    ('max_active_requests_lender', '5',     'number',  'limits',      'Maximum active loan requests for Lender subscribers',    TRUE),
+    ('max_active_requests_pro',    '15',    'number',  'limits',      'Maximum active loan requests for Pro subscribers',       TRUE),
+    ('listing_duration_days',   '7',        'number',  'marketplace', 'Days a loan request stays listed before expiry',       TRUE),
+    ('kyc_validity_months',     '12',       'number',  'compliance',  'Months until KYC expires and re-verification required', TRUE),
+    ('platform_currency',       'UGX',      'string',  'general',     'Fallback/global-default operating currency (each market''s actual currency comes from countries.currency_code)', TRUE),
+    ('market_interest_rate_baseline_pct', '10.0', 'number', 'marketplace', 'Global default market baseline interest rate percentage, controlled by admin.', TRUE),
+    ('market_late_payment_rate_baseline_pct', '5.0', 'number', 'marketplace', 'Global default market baseline late-payment rate percentage, controlled by admin.', TRUE),
+    ('auto_logout_minutes',     '30',       'number',  'security',    'Idle session timeout in minutes',                      FALSE),
+    ('access_token_minutes',    '15',       'number',  'security',    'Access JWT TTL in minutes',                            FALSE),
+    ('refresh_token_days',      '7',        'number',  'security',    'Refresh token TTL in days',                            FALSE);
+
+
+-- ============================================
+-- TABLE: subscriptions
+-- Free plan → browse + post requests (no cost).
+-- Lender plan → make offers (paid subscription required).
+-- v5.0: amount_ugx renamed to amount_minor_units — currency is implied by
+-- the subscriber's profiles.country, not hardcoded to UGX. Same plan tiers
+-- and capabilities in every market; only the price differs.
+-- ============================================
+
+CREATE TABLE subscriptions (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    plan        subscription_plan_enum   NOT NULL DEFAULT 'free',
+    status      subscription_status_enum NOT NULL DEFAULT 'active',
+
+    started_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP,
+    amount_minor_units BIGINT NOT NULL DEFAULT 0,
+    auto_renew  BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  subscriptions IS
+'One active subscription per user. free = no cost, browse and post requests.
+ lender or pro plan required to make offers. amount_minor_units is only meaningful
+ alongside the subscriber''s profiles.country -> countries.currency_code; the plan
+ tiers themselves are identical across every market, only the price is localized.';
+
+-- Only one active subscription per user at a time
+CREATE UNIQUE INDEX uidx_sub_active_user ON subscriptions (user_id) WHERE status = 'active';
+
+
+-- ============================================
+-- TABLE: kyc_verifications  (optional — admin-reviewed)
+-- ============================================
+
+CREATE TABLE kyc_verifications (
+    id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id               UUID UNIQUE NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    status                kyc_status_enum NOT NULL DEFAULT 'not_submitted',
+
+    national_id_type      VARCHAR(50),
+    national_id_number    VARCHAR(100),
+    national_id_front_url VARCHAR(500),
+    national_id_back_url  VARCHAR(500),
+    selfie_url            VARCHAR(500),
+
+    id_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    selfie_verified       BOOLEAN NOT NULL DEFAULT FALSE,
+
+    verified_by           UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    rejection_reason      TEXT,
+    verification_notes    TEXT,
+
+    submitted_at          TIMESTAMP,
+    reviewed_at           TIMESTAMP,
+    expires_at            TIMESTAMP,   -- set to submitted_at + kyc_validity_months on approval
+
+    created_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE kyc_verifications IS
+'Optional KYC. Verification badge shown on borrower profile when approved.
+ Not required to post a loan request — borrowing is free and open.
+ national_id_type is free text specifically so it can absorb country-specific document
+ types (e.g. Kenyan ID vs Ugandan national ID formats) without a schema change.';
+
+
+-- ============================================
+-- TABLE: loan_requests  (borrower listings)
+-- Borrowers post structured funding requests for free.
+-- Contact details are never exposed until an offer is accepted.
+-- v5.0: carries `country`, copied from the borrower's profile at insert
+-- time by trg_fn_set_request_country() and then frozen — the listing's
+-- market never silently moves if the borrower's profile country is later
+-- corrected.
+-- ============================================
+
+CREATE TABLE loan_requests (
+    id                          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    borrower_id                 UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+    country                     TEXT NOT NULL REFERENCES countries(code),
+
+    title                       TEXT NOT NULL,
+    purpose                     TEXT NOT NULL,
+    requested_amount            BIGINT NOT NULL CONSTRAINT chk_lr_amount_positive CHECK (requested_amount > 0),
+    duration_months             INT NOT NULL
+                                    CONSTRAINT chk_lr_duration CHECK (duration_months BETWEEN 1 AND 60),
+
+    -- Borrower's income context. Stored for request review, but not exposed
+    -- through the public marketplace listing view.
+    income_source               TEXT NOT NULL,          -- e.g. 'Monthly salary from Kampala City Council'
+    preferred_repayment_plan    TEXT NOT NULL           -- weekly, monthly, one_time
+                                    CONSTRAINT chk_lr_repayment_plan
+                                    CHECK (preferred_repayment_plan IN ('weekly', 'monthly', 'one_time')),
+    repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000, in the request's own currency
+                                    CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
+    repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
+
+    -- Borrower-declared collateral. Details/value/location are public risk
+    -- signals only when has_collateral is true; value and location are optional.
+    has_collateral              BOOLEAN NOT NULL DEFAULT FALSE,
+    collateral_details          TEXT,
+    collateral_estimated_value  BIGINT
+                                    CONSTRAINT chk_lr_collateral_value_positive
+                                    CHECK (collateral_estimated_value IS NULL OR collateral_estimated_value > 0),
+    collateral_location         TEXT,
+
+    -- Pro-tier term suggestions. These are optional, public, and
+    -- locked by trigger at publish time.
+    suggested_interest_rate_pct NUMERIC(5,2)
+                                    CONSTRAINT chk_lr_suggested_interest_rate_range
+                                    CHECK (suggested_interest_rate_pct IS NULL OR
+                                           (suggested_interest_rate_pct >= 0 AND suggested_interest_rate_pct <= 100)),
+    suggested_late_fee_pct      NUMERIC(5,2)
+                                    CONSTRAINT chk_lr_suggested_late_fee_range
+                                    CHECK (suggested_late_fee_pct IS NULL OR
+                                           (suggested_late_fee_pct >= 0 AND suggested_late_fee_pct <= 100)),
+    suggested_repayment_frequency TEXT
+                                    CONSTRAINT chk_lr_suggested_repayment_frequency
+                                    CHECK (suggested_repayment_frequency IS NULL OR
+                                           suggested_repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+    suggested_installment_amount BIGINT
+                                    CONSTRAINT chk_lr_suggested_installment_positive
+                                    CHECK (suggested_installment_amount IS NULL OR suggested_installment_amount > 0),
+    terms_locked_at             TIMESTAMP,
+
+    district                    TEXT NOT NULL,
+
+    -- Offer count only — no monetary aggregates (platform never tracks fund totals)
+    number_of_offers            INT NOT NULL DEFAULT 0,
+
+    status                      loan_status_enum NOT NULL DEFAULT 'active',
+
+    listed_at                   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at                  TIMESTAMP,              -- set by trigger on insert
+    contracted_at               TIMESTAMP,
+    cancelled_at                TIMESTAMP,
+
+    views_count                 INT NOT NULL DEFAULT 0,
+
+    created_at                  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE  loan_requests IS
+'Borrower funding requests. Free to post. borrower_id masked on all public views.
+ Income and repayment fields give lenders enough context to make an informed bid.
+ Pro-tier term suggestions are locked on publish. country is copied from the
+ borrower''s profile at insert time and frozen thereafter.';
+COMMENT ON COLUMN loan_requests.borrower_id IS
+'NEVER exposed in v_loan_listings or any marketplace query. Contact revealed only post-acceptance.';
+COMMENT ON COLUMN loan_requests.country IS
+'Set once by trg_fn_set_request_country() at insert, from the borrower''s profiles.country.
+ Immutable thereafter — see trg_fn_lock_request_terms(), which also guards this column.';
+COMMENT ON COLUMN loan_requests.number_of_offers IS
+'Count of offers only. No monetary totals stored — platform is non-custodial.';
+
+CREATE INDEX idx_lr_country        ON loan_requests (country);
+CREATE INDEX idx_lr_country_status ON loan_requests (country, status);
+
+
+-- ============================================
+-- TABLE: loan_offers  (lender offers on a borrower request)
+-- Lenders must have an active lender/pro subscription to make offers.
+-- Lender identity is hidden from the borrower until the offer is accepted.
+-- v5.0: deliberately gets NO country column. An offer's country is always
+-- its parent request's country, read through request_id -> loan_requests.
+-- Storing it a second time here would create a value that can drift from
+-- its source of truth for no benefit. Cross-border offers (a lender in one
+-- EAC country bidding on a request in another) are allowed by default —
+-- see trg_fn_validate_offer() below, which has no country check.
+-- ============================================
+
+CREATE TABLE loan_offers (
+    id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id           UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+    lender_id            UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+
+    offer_amount         BIGINT NOT NULL CONSTRAINT chk_lo_amount_positive CHECK (offer_amount > 0),
+    interest_rate_pct    NUMERIC(5,2) NOT NULL
+                            CONSTRAINT chk_lo_interest_rate_range CHECK (interest_rate_pct >= 0 AND interest_rate_pct <= 100),
+    late_fee_pct         NUMERIC(5,2) NOT NULL
+                            CONSTRAINT chk_lo_late_fee_range CHECK (late_fee_pct >= 0 AND late_fee_pct <= 100),
+    repayment_frequency  TEXT NOT NULL
+                            CONSTRAINT chk_lo_repayment_frequency CHECK (repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+    installment_amount   BIGINT NOT NULL
+                            CONSTRAINT chk_lo_installment_positive CHECK (installment_amount > 0),
+    proposed_expectations TEXT,   -- optional: lender's additional terms or expectations
+    terms_locked_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    status               offer_status_enum NOT NULL DEFAULT 'pending',
+
+    offered_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    accepted_at          TIMESTAMP,
+    withdrawn_at         TIMESTAMP,
+    expires_at           TIMESTAMP,
+
+    created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- a lender can have only one active offer per request
+    UNIQUE (request_id, lender_id)
+);
+
+COMMENT ON COLUMN loan_offers.lender_id IS
+'Internal FK. Lender identity hidden from borrower until the offer is accepted. May belong
+ to a profile in a different EAC country than the listing — cross-border offers are allowed.';
+COMMENT ON COLUMN loan_offers.offer_amount IS
+'Proposed lending amount stated by lender, in the listing''s own currency
+ (loan_offers.request_id -> loan_requests.country -> countries.currency_code).
+ Platform never holds or moves this money.';
+COMMENT ON COLUMN loan_offers.terms_locked_at IS
+'Stage 4: lender bid terms are locked when the bid is submitted.';
+
+
+-- ============================================
+-- TABLE: watchlist
+-- ============================================
+
+CREATE TABLE watchlist (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    request_id  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+    added_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (user_id, request_id)
+);
+
+
+-- ============================================
+-- TABLE: contact_reveals
+-- Post-acceptance contact sharing.
+-- Triggered only after a borrower accepts a lender's offer.
+-- Reveals legal name, phone, and email of both parties.
+-- Logged in audit_logs. Irreversible once triggered.
+-- Platform never discloses identity outside this flow, in any market.
+-- ============================================
+
+CREATE TABLE contact_reveals (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    offer_id    UUID NOT NULL REFERENCES loan_offers(id) ON DELETE CASCADE,
+    request_id  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+
+    -- Which party triggered the reveal (must be the borrower who accepted)
+    revealed_by UUID NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
+
+    status      reveal_status_enum NOT NULL DEFAULT 'pending',
+    revealed_at TIMESTAMP,
+
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- only one reveal record per accepted offer
+    UNIQUE (offer_id)
+);
+
+COMMENT ON TABLE contact_reveals IS
+'Opt-in identity disclosure triggered when a borrower accepts an offer.
+ Reveals legal name, phone, and email of both parties.
+ Irreversible once revealed. Enforced at the API layer, not just the UI.
+ Platform never discloses identity outside this flow. No fee charged today — non-custodial.
+ A flat, disclosed contact-unlock fee is a proposed, not-yet-committed change — see
+ the transactions table and BUILD_PLAN.md.';
+
+
+-- ============================================
+-- TABLE: agreements
+-- Structured locked loan agreement.
+-- Auto-generated and locked after bid acceptance.
+-- Contact reveal is available only after the contract is locked.
+-- ============================================
+
+CREATE TABLE agreements (
+    id                          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    offer_id                    UUID NOT NULL UNIQUE REFERENCES loan_offers(id) ON DELETE CASCADE,
+    request_id                  UUID NOT NULL REFERENCES loan_requests(id) ON DELETE CASCADE,
+
+    -- Locked repayment terms copied from the accepted lender bid
+    repayment_frequency         repayment_frequency_enum NOT NULL,
+    repayment_amount            BIGINT NOT NULL CONSTRAINT chk_agr_repayment_positive CHECK (repayment_amount > 0),
+    repayment_period            INT NOT NULL CONSTRAINT chk_agr_period_positive CHECK (repayment_period > 0),
+    total_repayment_amount      BIGINT NOT NULL CONSTRAINT chk_agr_total_positive CHECK (total_repayment_amount > 0),
+    late_payment_penalty_pct    NUMERIC(5,2) NOT NULL DEFAULT 0 CONSTRAINT chk_agr_penalty_range CHECK (late_payment_penalty_pct >= 0 AND late_payment_penalty_pct <= 100),
+
+    -- Agreement text + snapshot (for audit trail)
+    agreement_text              TEXT NOT NULL,
+    agreement_snapshot          JSONB,  -- Full snapshot at lock time for immutability, includes currency_code
+
+    -- Contract is generated locked by accept_offer.
+    status                      agreement_status_enum NOT NULL DEFAULT 'locked',
+    borrower_agreed_at          TIMESTAMP,
+    lender_agreed_at            TIMESTAMP,
+    locked_at                   TIMESTAMP,
+
+    created_at                  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- only one agreement per accepted offer
+    UNIQUE (offer_id)
+);
+
+COMMENT ON TABLE agreements IS
+'Locked loan agreement. Auto-generated after bid acceptance.
+ Late payment penalty applies only to missed installments, not the total loan.
+ Agreement is read-only after generation (snapshot captured immediately, including currency_code
+ so a generated contract never displays a bare number without its currency).
+ All agreement events are logged in audit_logs for traceability.';
+
+-- ============================================
+-- TABLES: reviews and trust_aggregates
+-- A "completed deal" means a locked agreement whose contact has been revealed.
+-- It deliberately does not imply repayment, which happens off-platform.
+-- Trust aggregates are GLOBAL per user, not per country — see BUILD_PLAN.md
+-- "Multi-Country Expansion Model" for the rationale (reputation doesn't
+-- reset at a border).
+-- ============================================
+
+CREATE TABLE reviews (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id UUID NOT NULL REFERENCES agreements(id) ON DELETE CASCADE,
+    reviewer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    reviewee_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    rating      SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment     TEXT CHECK (comment IS NULL OR char_length(comment) <= 500),
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (contract_id, reviewer_id),
+    CHECK (reviewer_id <> reviewee_id)
+);
+
+CREATE TABLE trust_aggregates (
+    user_id                    UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+    rating_avg                 NUMERIC(3,2),
+    review_count               INT NOT NULL DEFAULT 0,
+    completed_deals_count      INT NOT NULL DEFAULT 0,
+    is_repeat_participant      BOOLEAN NOT NULL DEFAULT FALSE,
+    response_time_bucket       TEXT,
+    success_rate               NUMERIC(5,2),
+    reliability_score          INT,
+    updated_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (response_time_bucket IN ('responds_quickly', 'responds_within_a_day', 'responds_slowly') OR response_time_bucket IS NULL),
+    CHECK (reliability_score BETWEEN 0 AND 100 OR reliability_score IS NULL)
+);
+
+COMMENT ON TABLE reviews IS
+'Immutable, one-per-party review for a completed on-platform deal. It never represents off-platform repayment behaviour.';
+COMMENT ON TABLE trust_aggregates IS
+'Cached, platform-scoped reputation aggregates. One row per user, GLOBAL across every EAC
+ market they have participated in — never one row per user per country. Public fields and
+ Pro-only analytical fields are exposed through separate views.';
+
+-- Indexes
+CREATE INDEX idx_agr_offer_id    ON agreements (offer_id);
+CREATE INDEX idx_agr_request_id  ON agreements (request_id);
+CREATE INDEX idx_agr_status      ON agreements (status);
+CREATE INDEX idx_reviews_reviewee ON reviews (reviewee_id, created_at DESC);
+CREATE INDEX idx_reviews_contract ON reviews (contract_id);
+
+-- NOTE: trg_agreements_updated_at trigger moved to the TRIGGERS section
+-- below (after fn_set_updated_at() is defined) — see "-- agreements" there.
+
+
+-- ============================================
+-- TABLE: notifications
+-- ============================================
+
+CREATE TABLE notifications (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    type        notification_type_enum NOT NULL,
+    title       TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    data        JSONB,
+
+    is_read     BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at     TIMESTAMP,
+
+    -- optional deep-link references
+    request_id  UUID REFERENCES loan_requests(id)  ON DELETE SET NULL,
+    offer_id    UUID REFERENCES loan_offers(id)     ON DELETE SET NULL,
+
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: audit_logs  (append-only; UPDATE/DELETE blocked by RLS)
+-- ============================================
+
+CREATE TABLE audit_logs (
+    id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id      UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    event_type   audit_event_type_enum NOT NULL,
+    entity_type  VARCHAR(50),
+    entity_id    UUID,
+    action       VARCHAR(100),
+    description  TEXT,
+
+    ip_address   INET,
+    user_agent   TEXT,
+
+    old_values   JSONB,
+    new_values   JSONB,
+    metadata     JSONB,
+
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE audit_logs IS 'Immutable audit trail. NEVER update or delete rows. Enforced by RLS.';
+
+
+-- ============================================
+-- TABLE: refresh_tokens  (manual rotation audit chain)
+-- ============================================
+
+CREATE TABLE refresh_tokens (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    token_hash  TEXT NOT NULL UNIQUE,   -- bcrypt hash of the actual token
+    replaced_by UUID REFERENCES refresh_tokens(id) ON DELETE SET NULL,
+    revoked     BOOLEAN NOT NULL DEFAULT FALSE,
+    revoked_at  TIMESTAMP,
+
+    issued_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP NOT NULL,
+
+    ip_address  INET,
+    user_agent  TEXT
+);
+
+COMMENT ON TABLE refresh_tokens IS
+'Rotation chain: when a token is used, replaced_by is set to the new token id.
+ If a revoked token is presented again, token_reuse_detected is logged to audit_logs.';
+
+
+-- ============================================
+-- TABLE: referrals
+-- ============================================
+
+CREATE TABLE referrals (
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    referrer_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    referred_email   TEXT NOT NULL,
+    referred_user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+
+    code             TEXT NOT NULL UNIQUE,
+    is_activated     BOOLEAN NOT NULL DEFAULT FALSE,
+    activated_at     TIMESTAMP,
+    reward_applied   BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ============================================
+-- TABLE: transactions  (Stage 6 — Flutterwave or equivalent aggregator)
+-- Scoped STRICTLY to Nipanze's own revenue: subscription charges, and the
+-- contact-unlock fee IF that open decision is ever resolved to "yes".
+-- NEVER touches money between a borrower and a lender — that stays
+-- entirely off-platform per Architecture Constraint #1. Only a verified
+-- webhook may set status = 'successful'; the client-side redirect after
+-- payment is never trusted to grant access on its own.
+-- ============================================
+
+CREATE TABLE transactions (
+    id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id                  UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+
+    type                     TEXT NOT NULL CONSTRAINT chk_tx_type CHECK (type IN ('subscription', 'contact_unlock')),
+    amount                   BIGINT NOT NULL CONSTRAINT chk_tx_amount_positive CHECK (amount > 0),
+    currency_code            TEXT NOT NULL,
+    country                  TEXT NOT NULL REFERENCES countries(code),   -- payer's country at time of charge
+
+    provider                 TEXT NOT NULL DEFAULT 'flutterwave',        -- plain text, not enum, so a second processor can be added later
+    provider_tx_ref          TEXT NOT NULL UNIQUE,                        -- idempotency key Nipanze generates, sent to the provider
+    provider_tx_id           TEXT,                                        -- provider's own reference, populated on webhook confirm
+
+    status                   TEXT NOT NULL DEFAULT 'pending'
+                                CONSTRAINT chk_tx_status CHECK (status IN ('pending', 'successful', 'failed', 'reversed')),
+
+    related_subscription_id  UUID REFERENCES subscriptions(id),
+    related_reveal_id        UUID REFERENCES contact_reveals(id),
+
+    webhook_verified_at      TIMESTAMP,   -- set only after the provider's webhook signature check passes
+
+    created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE transactions IS
+'Payment records for Nipanze''s own revenue only (subscriptions, and the contact-unlock fee
+ if ever adopted) — never P2P loan funds. provider_tx_ref is generated by Nipanze before the
+ charge is initiated so retries and webhook replays are idempotent. status only ever reaches
+ ''successful'' via the signature-verified webhook handler (a service-role Edge Function),
+ never via the client-side post-payment redirect. A user''s subscriptions.plan upgrades only
+ after a linked transaction reaches ''successful'' — never optimistically.';
+COMMENT ON COLUMN transactions.provider IS
+'Plain text, not an enum, specifically so a second processor can be added later (e.g. a
+ card-only fallback, or a different aggregator for a market Flutterwave covers thinly) without
+ a schema migration.';
+
+CREATE INDEX idx_tx_user_id  ON transactions (user_id);
+CREATE INDEX idx_tx_status   ON transactions (status);
+CREATE INDEX idx_tx_country  ON transactions (country);
+
+
+-- ============================================
+-- INDEXES
+-- ============================================
+
+-- profiles
+CREATE INDEX idx_profiles_is_admin       ON profiles (is_admin) WHERE is_admin = TRUE;
+CREATE INDEX idx_profiles_account_status ON profiles (account_status);
+
+-- subscriptions
+CREATE INDEX idx_sub_user_id  ON subscriptions (user_id);
+CREATE INDEX idx_sub_plan     ON subscriptions (plan);
+CREATE INDEX idx_sub_status   ON subscriptions (status);
+
+-- kyc_verifications
+CREATE INDEX idx_kyc_user_id ON kyc_verifications (user_id);
+CREATE INDEX idx_kyc_status  ON kyc_verifications (status);
+
+-- loan_requests
+CREATE INDEX idx_lr_borrower_id   ON loan_requests (borrower_id);
+CREATE INDEX idx_lr_status        ON loan_requests (status);
+CREATE INDEX idx_lr_expires_at    ON loan_requests (expires_at);
+CREATE INDEX idx_lr_district      ON loan_requests (district);
+CREATE INDEX idx_lr_status_exp    ON loan_requests (status, expires_at);
+CREATE INDEX idx_lr_active        ON loan_requests (status) WHERE status = 'active';
+
+-- loan_offers
+CREATE INDEX idx_lo_request_id    ON loan_offers (request_id);
+CREATE INDEX idx_lo_lender_id     ON loan_offers (lender_id);
+CREATE INDEX idx_lo_status        ON loan_offers (status);
+CREATE INDEX idx_lo_req_status    ON loan_offers (request_id, status);
+CREATE INDEX idx_lo_lender_status ON loan_offers (lender_id, status, offered_at DESC);
+
+-- watchlist
+CREATE INDEX idx_wl_user_id    ON watchlist (user_id);
+CREATE INDEX idx_wl_request_id ON watchlist (request_id);
+
+-- contact_reveals
+CREATE INDEX idx_cr_offer_id   ON contact_reveals (offer_id);
+CREATE INDEX idx_cr_request_id ON contact_reveals (request_id);
+
+-- notifications
+CREATE INDEX idx_notif_user_id   ON notifications (user_id);
+CREATE INDEX idx_notif_user_read ON notifications (user_id, is_read);
+CREATE INDEX idx_notif_created   ON notifications (created_at DESC);
+
+-- audit_logs
+CREATE INDEX idx_al_user_id    ON audit_logs (user_id);
+CREATE INDEX idx_al_event_type ON audit_logs (event_type);
+CREATE INDEX idx_al_entity     ON audit_logs (entity_type, entity_id);
+CREATE INDEX idx_al_created    ON audit_logs (created_at DESC);
+
+-- refresh_tokens
+CREATE INDEX idx_rt_user_id ON refresh_tokens (user_id);
+CREATE INDEX idx_rt_hash    ON refresh_tokens (token_hash);
+CREATE INDEX idx_rt_expires ON refresh_tokens (expires_at);
+CREATE INDEX idx_rt_active  ON refresh_tokens (user_id, expires_at) WHERE revoked = FALSE;
+
+
+-- ============================================
+-- FUNCTIONS: Pro Advanced Marketplace Filters (v4.2)
+-- fn_income_bracket() buckets exact income into a coarse category so it can
+-- be filtered on without ever exposing the exact monthly income figure.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION fn_income_bracket(p_income BIGINT)
+RETURNS TEXT
+LANGUAGE sql IMMUTABLE
+AS $$
+    SELECT CASE
+        WHEN p_income IS NULL THEN NULL
+        WHEN p_income < 2000000  THEN 'under_2m'
+        WHEN p_income < 5000000  THEN '2m_5m'
+        WHEN p_income < 10000000 THEN '5m_10m'
+        ELSE 'over_10m'
+    END;
+$$;
+
+COMMENT ON FUNCTION fn_income_bracket(BIGINT) IS
+'Buckets an exact monthly income figure into a coarse category (under_2m / 2m_5m / 5m_10m /
+ over_10m) for Pro Advanced Filters. Never exposes the exact figure.';
+
+
+-- ============================================
+-- VIEWS
+-- ============================================
+
+-- --------------------------------------------
+-- v_loan_listings
+-- Anonymised public marketplace feed.
+-- borrower_id, phone, email, full_name, and national ID are intentionally excluded.
+-- Exposes enough structured context for lenders to make informed offers.
+-- v5.0: now includes country and currency_code (joined from countries) so
+-- every amount is shown alongside the currency it's denominated in.
+-- --------------------------------------------
+CREATE VIEW v_loan_listings AS
+SELECT
+    lr.id                                                                     AS request_id,
+    lr.title,
+    lr.purpose,
+    lr.district,
+    lr.country,
+    c.currency_code,
+    lr.duration_months,
+    lr.requested_amount,
+    lr.preferred_repayment_plan,
+    lr.repayment_amount_per_period,
+    lr.repayment_timeline,
+    lr.suggested_interest_rate_pct,
+    lr.suggested_late_fee_pct,
+    lr.suggested_repayment_frequency,
+    lr.suggested_installment_amount,
+    lr.terms_locked_at,
+    lr.status,
+    lr.number_of_offers,
+    CASE
+        WHEN lr.number_of_offers = 0 THEN 'low'
+        WHEN lr.number_of_offers <= 2 THEN 'medium'
+        ELSE 'high'
+    END                                                                       AS offer_coverage_tier,
+    lr.listed_at,
+    lr.expires_at,
+    -- KYC badge (status only — no personal verification documents)
+    k.status                                                                  AS kyc_status,
+    -- Public, privacy-safe trust signals for the request owner. GLOBAL across
+    -- every EAC country the owner has participated in, not just this listing's market.
+    ta.rating_avg                                                             AS trust_rating_avg,
+    COALESCE(ta.review_count, 0)                                              AS trust_review_count,
+    COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE)                                AS trust_is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL)                                        AS trust_phone_verified,
+    ta.response_time_bucket                                                   AS trust_response_time_bucket,
+    (k.status = 'approved')                                                   AS trust_is_verified,
+    -- time-remaining helpers
+    GREATEST(lr.expires_at - NOW(), INTERVAL '0')                            AS time_remaining,
+    (lr.expires_at < NOW() + INTERVAL '24 hours')                            AS closing_soon_24h,
+    (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.preferred_bank ELSE NULL END                                    AS preferred_bank,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.institution_type ELSE NULL END                                  AS institution_type,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.is_bank_agent ELSE FALSE END                                    AS is_bank_agent,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN TRUE ELSE FALSE END                                               AS show_professional_tag,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.has_collateral ELSE FALSE END                                  AS has_collateral,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_details ELSE NULL END                               AS collateral_details,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_estimated_value ELSE NULL END                       AS collateral_estimated_value,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_location ELSE NULL END                              AS collateral_location
+FROM  loan_requests   lr
+JOIN  profiles p ON p.id = lr.borrower_id
+JOIN  countries c ON c.code = lr.country
+LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
+WHERE lr.status = 'active'
+  AND (
+    auth.uid() IS NULL OR lr.borrower_id <> auth.uid()
+  )
+  AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
+  AND (
+    auth.uid() IS NULL OR NOT EXISTS (
+      SELECT 1 FROM public.loan_offers lo
+      WHERE lo.request_id = lr.id
+        AND lo.lender_id = auth.uid()
+        AND lo.status IN ('pending', 'accepted')
+    )
+  );
+
+COMMENT ON VIEW v_loan_listings IS
+'Anonymised marketplace feed across every EAC market. borrower_id, contact details, and
+ private documents are never present. Repayment fields and Pro-tier suggestions help lenders
+ make an informed bid without exposing income source. country/currency_code are always
+ returned together with every amount. The Flutter client filters this feed to the user''s
+ own country by default (MarketplaceRepository), with an explicit toggle to browse others —
+ this view itself does not restrict by country, matching the "global browse" policy in
+ BUILD_PLAN.md.';
+
+-- Detail view for a single active loan listing.
+-- Mirrors v_loan_listings but does not hide rows where the caller has already
+-- made an offer; the marketplace feed still uses v_loan_listings.
+CREATE VIEW v_loan_listing_details AS
+SELECT
+    lr.id                                                                     AS request_id,
+    lr.title,
+    lr.purpose,
+    lr.district,
+    lr.country,
+    c.currency_code,
+    lr.duration_months,
+    lr.requested_amount,
+    lr.preferred_repayment_plan,
+    lr.repayment_amount_per_period,
+    lr.repayment_timeline,
+    lr.suggested_interest_rate_pct,
+    lr.suggested_late_fee_pct,
+    lr.suggested_repayment_frequency,
+    lr.suggested_installment_amount,
+    lr.terms_locked_at,
+    lr.status,
+    lr.number_of_offers,
+    CASE
+        WHEN lr.number_of_offers = 0 THEN 'low'
+        WHEN lr.number_of_offers <= 2 THEN 'medium'
+        ELSE 'high'
+    END                                                                       AS offer_coverage_tier,
+    lr.listed_at,
+    lr.expires_at,
+    k.status                                                                  AS kyc_status,
+    ta.rating_avg                                                             AS trust_rating_avg,
+    COALESCE(ta.review_count, 0)                                              AS trust_review_count,
+    COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE)                                AS trust_is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL)                                        AS trust_phone_verified,
+    ta.response_time_bucket                                                   AS trust_response_time_bucket,
+    (k.status = 'approved')                                                   AS trust_is_verified,
+    GREATEST(lr.expires_at - NOW(), INTERVAL '0')                            AS time_remaining,
+    (lr.expires_at < NOW() + INTERVAL '24 hours')                            AS closing_soon_24h,
+    (lr.expires_at < NOW() + INTERVAL '6 hours')                             AS closing_soon_6h,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.preferred_bank ELSE NULL END                                    AS preferred_bank,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.institution_type ELSE NULL END                                  AS institution_type,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN p.is_bank_agent ELSE FALSE END                                    AS is_bank_agent,
+    CASE WHEN p.show_professional_tag AND EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN TRUE ELSE FALSE END                                               AS show_professional_tag,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.has_collateral ELSE FALSE END                                  AS has_collateral,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_details ELSE NULL END                               AS collateral_details,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_estimated_value ELSE NULL END                       AS collateral_estimated_value,
+    CASE WHEN EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+    ) THEN lr.collateral_location ELSE NULL END                              AS collateral_location
+FROM  loan_requests lr
+JOIN  profiles p ON p.id = lr.borrower_id
+JOIN  countries c ON c.code = lr.country
+LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+LEFT  JOIN trust_aggregates ta ON ta.user_id = lr.borrower_id
+WHERE lr.status = 'active'
+  AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at);
+
+COMMENT ON VIEW v_loan_listing_details IS
+'Single-listing detail view for active loan requests. Unlike v_loan_listings, it remains
+ visible to users who already placed an offer, so the detail page can load after offer
+ submission. Collateral and professional tags remain Pro-masked.';
+
+
+-- --------------------------------------------
+-- v_user_marketplace_activity
+-- Dashboard view — one query covers both borrower requests and lender offers.
+-- Used in the Positions / My Requests / My Offers screens.
+-- --------------------------------------------
+CREATE VIEW v_user_marketplace_activity WITH (security_invoker = true) AS
+SELECT
+    p.id                                                                      AS user_id,
+    p.full_name,
+    p.country,
+    p.account_status,
+    -- borrower side
+    COUNT(DISTINCT lr.id) FILTER (
+        WHERE lr.borrower_id = p.id AND lr.status = 'active'
+    )                                                                         AS active_requests,
+    COUNT(DISTINCT lr.id) FILTER (
+        WHERE lr.borrower_id = p.id AND lr.status = 'contracted'
+    )                                                                         AS contracted_as_borrower,
+    COUNT(DISTINCT lr.id) FILTER (
+        WHERE lr.borrower_id = p.id AND lr.status = 'expired'
+    )                                                                         AS expired_requests,
+    -- lender side
+    COUNT(DISTINCT lo.id) FILTER (
+        WHERE lo.lender_id = p.id AND lo.status = 'pending'
+    )                                                                         AS pending_offers,
+    COUNT(DISTINCT lo.id) FILTER (
+        WHERE lo.lender_id = p.id AND lo.status = 'accepted'
+    )                                                                         AS accepted_offers,
+    -- subscription
+    s.plan                                                                    AS subscription_plan,
+    s.status                                                                  AS subscription_status,
+    s.expires_at                                                              AS subscription_expires_at,
+    -- kyc
+    k.status                                                                  AS kyc_status
+FROM  profiles          p
+LEFT  JOIN subscriptions      s  ON s.user_id     = p.id AND s.status = 'active'
+LEFT  JOIN kyc_verifications  k  ON k.user_id     = p.id
+LEFT  JOIN loan_requests      lr ON lr.borrower_id = p.id
+LEFT  JOIN loan_offers        lo ON lo.lender_id   = p.id
+GROUP BY p.id, s.plan, s.status, s.expires_at, k.status;
+
+COMMENT ON VIEW v_user_marketplace_activity IS
+'Dashboard summary covering both borrower requests and lender offers for a single user account.';
+
+-- --------------------------------------------
+-- Trust profile views
+-- These contain no contact details. The public view is intentionally readable
+-- without marketplace participation; the Pro view adds only derived insights.
+-- Both are GLOBAL — not scoped or filtered by country in any way.
+-- --------------------------------------------
+CREATE VIEW v_trust_profile_public AS
+SELECT
+    p.id AS user_id,
+    ta.rating_avg,
+    COALESCE(ta.review_count, 0) AS review_count,
+    COALESCE(ta.completed_deals_count, 0) AS completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE) AS is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL) AS phone_verified,
+    ta.response_time_bucket,
+    (k.status = 'approved') AS is_verified
+FROM profiles p
+LEFT JOIN trust_aggregates ta ON ta.user_id = p.id
+LEFT JOIN kyc_verifications k ON k.user_id = p.id;
+
+CREATE VIEW v_trust_profile_pro AS
+SELECT
+    tp.*,
+    ta.success_rate,
+    ta.reliability_score
+FROM v_trust_profile_public tp
+JOIN trust_aggregates ta ON ta.user_id = tp.user_id
+WHERE EXISTS (
+    SELECT 1 FROM subscriptions s
+    WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+);
+
+
+-- --------------------------------------------
+-- v_lender_offers
+-- Lender offer activity — for My Offers screen.
+-- Does NOT expose borrower contact details.
+-- v5.0: now includes country and currency_code, joined through the parent
+-- listing (loan_offers has no country column of its own).
+-- --------------------------------------------
+CREATE VIEW v_lender_offers WITH (security_invoker = true) AS
+SELECT
+    lo.lender_id,
+    lo.id                                                                     AS offer_id,
+    lo.request_id,
+    lr.title                                                                  AS listing_title,
+    lr.purpose                                                                AS listing_purpose,
+    lr.district,
+    lr.country,
+    c.currency_code,
+    lr.duration_months,
+    lr.requested_amount,
+    lo.offer_amount,
+    lo.interest_rate_pct,
+    lo.late_fee_pct,
+    lo.repayment_frequency,
+    lo.installment_amount,
+    lo.proposed_expectations,
+    lo.terms_locked_at,
+    lo.status                                                                 AS offer_status,
+    lo.offered_at,
+    lo.accepted_at,
+    ta.rating_avg                                                             AS trust_rating_avg,
+    COALESCE(ta.review_count, 0)                                              AS trust_review_count,
+    COALESCE(ta.completed_deals_count, 0)                                     AS trust_completed_deals_count,
+    COALESCE(ta.is_repeat_participant, FALSE)                                AS trust_is_repeat_participant,
+    (p.phone_verified_at IS NOT NULL)                                        AS trust_phone_verified,
+    ta.response_time_bucket                                                   AS trust_response_time_bucket,
+    (k.status = 'approved')                                                   AS trust_is_verified,
+    -- contact reveal status (only populated after acceptance)
+    cr.status                                                                 AS reveal_status,
+    cr.revealed_at
+FROM  loan_offers     lo
+JOIN  loan_requests   lr ON lr.id      = lo.request_id
+JOIN  countries       c  ON c.code     = lr.country
+JOIN  profiles        p  ON p.id       = lo.lender_id
+LEFT  JOIN kyc_verifications k ON k.user_id = lo.lender_id
+LEFT  JOIN trust_aggregates ta ON ta.user_id = lo.lender_id
+LEFT  JOIN contact_reveals cr ON cr.offer_id = lo.id;
+
+COMMENT ON VIEW v_lender_offers IS
+'Lender offer history with reveal status. Borrower contact details not exposed until
+ reveal_status = revealed. country/currency_code are read through the parent listing
+ (loan_requests), never stored on loan_offers itself.';
+
+
+-- --------------------------------------------
+-- v_marketplace_activity
+-- Marketplace-wide KPIs for admin dashboard.
+-- v5.0: now includes country, so admin can filter or group KPIs per market
+-- instead of only seeing a single blended global figure.
+-- --------------------------------------------
+CREATE VIEW v_marketplace_activity WITH (security_invoker = true) AS
+SELECT
+    DATE_TRUNC('month', lr.listed_at)                                        AS month,
+    lr.country,
+    COUNT(lr.id)                                                              AS total_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'active')                        AS active_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'contracted')                    AS contracted_listings,
+    COUNT(lr.id) FILTER (WHERE lr.status = 'expired')                       AS expired_listings,
+    COUNT(DISTINCT lo.id) FILTER (WHERE lo.status = 'pending')              AS pending_offers,
+    COUNT(DISTINCT lo.id) FILTER (WHERE lo.status = 'accepted')             AS accepted_offers,
+    ROUND(
+        COUNT(DISTINCT lo.request_id) * 100.0 / NULLIF(COUNT(lr.id), 0), 1
+    )                                                                         AS match_rate_pct,
+    (SELECT COUNT(*) FROM subscriptions
+     WHERE status = 'active' AND plan != 'free')                             AS active_paid_subscribers
+FROM  loan_requests lr
+LEFT  JOIN loan_offers lo ON lo.request_id = lr.id
+GROUP BY DATE_TRUNC('month', lr.listed_at), lr.country
+ORDER BY month DESC, lr.country;
+
+COMMENT ON VIEW v_marketplace_activity IS
+'Admin KPIs, filterable/groupable by country. No monetary aggregates — non-custodial, and
+ amounts are never summed across markets with different currencies (see BUILD_PLAN.md).
+ Match rate measures how many listings received at least one offer.
+ active_paid_subscribers is intentionally global, not per-country, in this base view.';
+
+
+-- --------------------------------------------
+-- v_marketplace_pro_filters  (Pro Advanced Marketplace Filters, v4.2)
+-- Self-gating view: returns zero rows for any caller without an active Pro
+-- subscription. Never exposes exact monthly income or employer/bank names —
+-- only bucketed income and categorical employment type.
+-- --------------------------------------------
+CREATE VIEW v_marketplace_pro_filters WITH (security_invoker = true) AS
+SELECT
+    lr.id                                       AS request_id,
+    lr.country,
+    p.employment_type,
+    fn_income_bracket(p.monthly_income)         AS income_bracket,
+    (lr.suggested_interest_rate_pct IS NOT NULL) AS has_suggested_terms,
+    (k.status = 'approved')                      AS owner_verified
+FROM  loan_requests lr
+JOIN  profiles p ON p.id = lr.borrower_id
+LEFT  JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+WHERE lr.status = 'active'
+  AND EXISTS (
+      SELECT 1 FROM subscriptions s
+      WHERE s.user_id = auth.uid() AND s.status = 'active' AND s.plan = 'pro'
+  );
+
+COMMENT ON VIEW v_marketplace_pro_filters IS
+'Pro-only filter signals (employment type, bucketed income, suggested-terms flag, owner
+ verification status) for a listing. Self-gated: returns zero rows for any caller without an
+ active Pro subscription, so the DB is the enforcement point, not the Flutter client.';
+
+
+-- --------------------------------------------
+-- get_public_listing_offers
+-- Public anonymized order book for active listings.
+-- Does not expose real lender_id values.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION get_public_listing_offers(p_request_id UUID)
+RETURNS TABLE (
+    id UUID,
+    request_id UUID,
+    lender_id TEXT,
+    offer_amount BIGINT,
+    interest_rate_pct NUMERIC,
+    late_fee_pct NUMERIC,
+    repayment_frequency TEXT,
+    installment_amount BIGINT,
+    proposed_expectations TEXT,
+    terms_locked_at TIMESTAMP,
+    status TEXT,
+    offered_at TIMESTAMP,
+    accepted_at TIMESTAMP
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = ''
+AS $$
+DECLARE
+    v_is_owner BOOLEAN := FALSE;
+    v_is_offer_maker BOOLEAN := FALSE;
+BEGIN
+    SELECT lr.borrower_id = auth.uid() INTO v_is_owner
+    FROM public.loan_requests lr
+    WHERE lr.id = p_request_id;
+
+    SELECT EXISTS (
+        SELECT 1 FROM public.loan_offers own
+        WHERE own.request_id = p_request_id
+          AND own.lender_id = auth.uid()
+          AND own.status IN ('pending', 'accepted')
+    ) INTO v_is_offer_maker;
+
+    IF NOT COALESCE(v_is_owner, FALSE) AND NOT COALESCE(v_is_offer_maker, FALSE) THEN
+        RETURN;
+    END IF;
+
+    IF COALESCE(v_is_owner, FALSE) THEN
+        RETURN QUERY
+        SELECT
+            lo.id,
+            lo.request_id,
+            ('public-offer-' || ROW_NUMBER() OVER (ORDER BY lo.offered_at ASC))::TEXT AS lender_id,
+            lo.offer_amount,
+            lo.interest_rate_pct,
+            lo.late_fee_pct,
+            lo.repayment_frequency,
+            lo.installment_amount,
+            lo.proposed_expectations,
+            lo.terms_locked_at,
+            lo.status::TEXT,
+            lo.offered_at,
+            lo.accepted_at
+        FROM public.loan_offers lo
+        JOIN public.loan_requests lr ON lr.id = lo.request_id
+        WHERE lo.request_id = p_request_id
+          AND lo.status = 'pending'
+          AND (lr.status = 'active' OR lr.borrower_id = auth.uid())
+        ORDER BY lo.offered_at DESC;
+        RETURN;
+    END IF;
+
+    RETURN QUERY
+    SELECT
+        lo.id,
+        lo.request_id,
+        ('your-offer')::TEXT AS lender_id,
+        lo.offer_amount,
+        lo.interest_rate_pct,
+        lo.late_fee_pct,
+        lo.repayment_frequency,
+        lo.installment_amount,
+        lo.proposed_expectations,
+        lo.terms_locked_at,
+        lo.status::TEXT,
+        lo.offered_at,
+        lo.accepted_at
+    FROM public.loan_offers lo
+    WHERE lo.request_id = p_request_id
+      AND lo.lender_id = auth.uid()
+      AND lo.status IN ('pending', 'accepted');
+END;
+$$;
+
+COMMENT ON FUNCTION get_public_listing_offers(UUID) IS
+'Participant-scoped bid book. Listing owners and offer-makers receive exact terms; all other viewers receive only v_loan_listings aggregate coverage.';
+
+
+-- --------------------------------------------
+-- check_phone_registered
+-- Helper RPC for phone onboarding. Checks if a phone number is registered.
+-- Returns the associated user's email if found, otherwise NULL.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION public.check_phone_registered(p_phone TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_email TEXT;
+    v_digits TEXT;
+BEGIN
+    v_digits := regexp_replace(p_phone, '[^\d]', '', 'g');
+
+    SELECT au.email INTO v_email
+    FROM auth.users au
+    LEFT JOIN public.profiles p ON p.id = au.id
+    WHERE p.phone = p_phone 
+       OR au.phone = p_phone 
+       OR au.email = p_phone
+       OR (v_digits <> '' AND (au.email = v_digits || '@nipanze.test' OR p.phone = '+' || v_digits))
+    LIMIT 1;
+
+    RETURN v_email;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.check_phone_registered(TEXT) TO authenticated, anon;
+
+
+-- --------------------------------------------
+-- get_marketplace_pro_filtered
+-- Applies Pro Advanced Filters on top of v_loan_listings. Raises if the
+-- caller does not have an active Pro subscription, rather than silently
+-- returning nothing, so client errors are explicit.
+-- --------------------------------------------
+CREATE OR REPLACE FUNCTION get_marketplace_pro_filtered(
+    p_employment_type      employment_type_enum DEFAULT NULL,
+    p_income_bracket       TEXT                  DEFAULT NULL,
+    p_suggested_terms_only BOOLEAN               DEFAULT FALSE,
+    p_verified_only        BOOLEAN               DEFAULT FALSE,
+    p_country              TEXT                  DEFAULT NULL
+)
+RETURNS SETOF v_loan_listings
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM subscriptions
+        WHERE user_id = auth.uid() AND status = 'active' AND plan = 'pro'
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: Advanced marketplace filters require a Pro subscription.'
+            USING ERRCODE = 'P0050';
+    END IF;
+
+    RETURN QUERY
+    SELECT vl.*
+    FROM v_loan_listings vl
+    JOIN loan_requests lr ON lr.id = vl.request_id
+    JOIN profiles p ON p.id = lr.borrower_id
+    LEFT JOIN kyc_verifications k ON k.user_id = lr.borrower_id
+    WHERE (p_employment_type IS NULL OR p.employment_type = p_employment_type)
+      AND (p_income_bracket IS NULL OR fn_income_bracket(p.monthly_income) = p_income_bracket)
+      AND (NOT p_suggested_terms_only OR lr.suggested_interest_rate_pct IS NOT NULL)
+      AND (NOT p_verified_only OR k.status = 'approved')
+      AND (p_country IS NULL OR vl.country = p_country);
+END;
+$$;
+
+COMMENT ON FUNCTION get_marketplace_pro_filtered IS
+'Pro-only marketplace filtering by employment type, bucketed income, suggested-terms
+ presence, owner verification, and (optionally) country. Raises NIPANZE_PRO_REQUIRED for any
+ caller without an active Pro subscription — the DB is the enforcement point, matching
+ v_marketplace_pro_filters above.';
+
+
+-- Rebuild a user's platform-scoped trust summary. This intentionally counts
+-- only agreements that reached contact reveal, never repayment behaviour,
+-- and is GLOBAL across every country the user has participated in.
+CREATE OR REPLACE FUNCTION public.recompute_trust_aggregates(p_user_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_rating NUMERIC(3,2);
+    v_reviews INT;
+    v_deals INT;
+    v_response_hours NUMERIC;
+    v_bucket TEXT;
+    v_success_rate NUMERIC(5,2);
+    v_score INT;
+BEGIN
+    SELECT ROUND(AVG(rating)::NUMERIC, 2), COUNT(*)
+      INTO v_rating, v_reviews
+      FROM reviews WHERE reviewee_id = p_user_id;
+
+    SELECT COUNT(*) INTO v_deals
+    FROM agreements a
+    JOIN loan_offers lo ON lo.id = a.offer_id
+    JOIN loan_requests lr ON lr.id = a.request_id
+    JOIN contact_reveals cr ON cr.offer_id = lo.id AND cr.status = 'revealed'
+    WHERE lr.borrower_id = p_user_id OR lo.lender_id = p_user_id;
+
+    SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY response_hours)
+      INTO v_response_hours
+    FROM (
+        SELECT EXTRACT(EPOCH FROM (lo.offered_at - lr.listed_at)) / 3600.0 AS response_hours
+        FROM loan_offers lo JOIN loan_requests lr ON lr.id = lo.request_id
+        WHERE lo.lender_id = p_user_id
+        UNION ALL
+        SELECT EXTRACT(EPOCH FROM (first_offer_at - lr.listed_at)) / 3600.0
+        FROM loan_requests lr
+        JOIN LATERAL (
+            SELECT MIN(lo.offered_at) AS first_offer_at
+            FROM loan_offers lo WHERE lo.request_id = lr.id
+        ) first_offer ON first_offer.first_offer_at IS NOT NULL
+        WHERE lr.borrower_id = p_user_id
+    ) response_times;
+
+    v_bucket := CASE
+        WHEN v_response_hours IS NULL THEN NULL
+        WHEN v_response_hours <= 24 THEN 'responds_quickly'
+        WHEN v_response_hours <= 72 THEN 'responds_within_a_day'
+        ELSE 'responds_slowly'
+    END;
+
+    SELECT ROUND(
+        100.0 * COUNT(*) FILTER (WHERE completed) / NULLIF(COUNT(*), 0), 2
+    ) INTO v_success_rate
+    FROM (
+        SELECT lo.id,
+               EXISTS (SELECT 1 FROM agreements a WHERE a.offer_id = lo.id) AS completed
+        FROM loan_offers lo WHERE lo.lender_id = p_user_id
+        UNION ALL
+        SELECT lr.id,
+               EXISTS (SELECT 1 FROM agreements a WHERE a.request_id = lr.id)
+        FROM loan_requests lr WHERE lr.borrower_id = p_user_id
+    ) participation;
+
+    v_score := CASE WHEN v_rating IS NULL THEN NULL ELSE LEAST(100, ROUND(
+        (v_rating / 5.0) * 60 + LEAST(v_deals, 4) * 5 +
+        CASE v_bucket WHEN 'responds_quickly' THEN 20 WHEN 'responds_within_a_day' THEN 10 ELSE 0 END
+    )::INT) END;
+
+    INSERT INTO trust_aggregates (
+        user_id, rating_avg, review_count, completed_deals_count,
+        is_repeat_participant, response_time_bucket, success_rate, reliability_score, updated_at
+    ) VALUES (
+        p_user_id, v_rating, COALESCE(v_reviews, 0), COALESCE(v_deals, 0),
+        COALESCE(v_deals, 0) >= 2, v_bucket, v_success_rate, v_score, NOW()
+    ) ON CONFLICT (user_id) DO UPDATE SET
+        rating_avg = EXCLUDED.rating_avg,
+        review_count = EXCLUDED.review_count,
+        completed_deals_count = EXCLUDED.completed_deals_count,
+        is_repeat_participant = EXCLUDED.is_repeat_participant,
+        response_time_bucket = EXCLUDED.response_time_bucket,
+        success_rate = EXCLUDED.success_rate,
+        reliability_score = EXCLUDED.reliability_score,
+        updated_at = EXCLUDED.updated_at;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.submit_review(
+    p_contract_id UUID, p_rating SMALLINT, p_comment TEXT DEFAULT NULL
+) RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+    v_reviewer UUID := auth.uid();
+    v_reviewee UUID;
+    v_review_id UUID;
+BEGIN
+    IF v_reviewer IS NULL THEN RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED'; END IF;
+    IF p_rating NOT BETWEEN 1 AND 5 THEN RAISE EXCEPTION 'NIPANZE_INVALID_RATING'; END IF;
+
+    SELECT CASE WHEN lr.borrower_id = v_reviewer THEN lo.lender_id ELSE lr.borrower_id END
+      INTO v_reviewee
+    FROM agreements a
+    JOIN loan_offers lo ON lo.id = a.offer_id
+    JOIN loan_requests lr ON lr.id = a.request_id
+    JOIN contact_reveals cr ON cr.offer_id = lo.id AND cr.status = 'revealed'
+    WHERE a.id = p_contract_id
+      AND (lr.borrower_id = v_reviewer OR lo.lender_id = v_reviewer);
+    IF v_reviewee IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_REVIEW_NOT_ELIGIBLE: Reviews require a completed on-platform deal.';
+    END IF;
+
+    INSERT INTO reviews (contract_id, reviewer_id, reviewee_id, rating, comment)
+    VALUES (p_contract_id, v_reviewer, v_reviewee, p_rating, NULLIF(BTRIM(p_comment), ''))
+    RETURNING id INTO v_review_id;
+    PERFORM recompute_trust_aggregates(v_reviewee);
+    INSERT INTO audit_logs (user_id, event_type, entity_type, entity_id, action)
+    VALUES (v_reviewer, 'review_submitted', 'reviews', v_review_id, 'submit_review');
+    RETURN v_review_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.trg_refresh_trust_from_reveal()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_borrower UUID; v_lender UUID;
+BEGIN
+    IF NEW.status = 'revealed' AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'revealed') THEN
+        SELECT lr.borrower_id, lo.lender_id INTO v_borrower, v_lender
+        FROM loan_offers lo JOIN loan_requests lr ON lr.id = lo.request_id WHERE lo.id = NEW.offer_id;
+        PERFORM recompute_trust_aggregates(v_borrower);
+        PERFORM recompute_trust_aggregates(v_lender);
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_refresh_trust_on_reveal
+AFTER INSERT OR UPDATE OF status ON contact_reveals
+FOR EACH ROW EXECUTE FUNCTION trg_refresh_trust_from_reveal();
+
+
+-- ============================================
+-- FUNCTIONS (shared utilities)
+-- ============================================
+
+CREATE OR REPLACE FUNCTION fn_set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+-- Generate locked contract text from accepted bid terms.
+-- v5.0: accepts a currency code so the contract text never displays a bare
+-- number without stating what currency it's denominated in.
+CREATE OR REPLACE FUNCTION fn_generate_locked_contract_text(
+    p_borrower_name TEXT,
+    p_lender_name TEXT,
+    p_loan_amount BIGINT,
+    p_interest_rate_pct NUMERIC,
+    p_total_repayment BIGINT,
+    p_repayment_frequency TEXT,
+    p_installment_amount BIGINT,
+    p_duration_months INT,
+    p_late_fee_pct NUMERIC,
+    p_currency_code TEXT DEFAULT 'UGX'
+)
+RETURNS TEXT LANGUAGE plpgsql STABLE AS $$
+BEGIN
+    RETURN FORMAT(
+'LOAN AGREEMENT
+
+PARTIES
+Borrower: %s
+Lender: %s
+
+LOCKED TERMS
+Loan amount: %s %s
+Interest rate: %s%%
+Total repayment amount: %s %s
+Repayment schedule: %s
+Installment amount: %s %s
+Duration: %s months
+Start date: %s
+End date: %s
+
+LATE PAYMENT RULE
+A %s%% penalty applies only to a missed installment amount, not to the total loan balance.
+
+DISCLAIMER
+Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds.
+
+Audit timestamp: %s',
+        COALESCE(p_borrower_name, 'Borrower'),
+        COALESCE(p_lender_name, 'Lender'),
+        p_currency_code,
+        p_loan_amount,
+        p_interest_rate_pct,
+        p_currency_code,
+        p_total_repayment,
+        p_repayment_frequency,
+        p_currency_code,
+        p_installment_amount,
+        p_duration_months,
+        CURRENT_DATE,
+        CURRENT_DATE + (p_duration_months || ' months')::INTERVAL,
+        p_late_fee_pct,
+        NOW()
+    );
+END;
+$$;
+
+
+-- ============================================
+-- TRIGGER FUNCTIONS
+-- ============================================
+
+-- Set expires_at on loan_request insert using system_settings.
+-- Resolves the per-country override if one exists, falling back to the
+-- global default (country IS NULL) otherwise.
+CREATE OR REPLACE FUNCTION trg_fn_set_listing_expiry()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+DECLARE
+    v_days INT;
+BEGIN
+    SELECT setting_value::INT INTO v_days
+    FROM system_settings
+    WHERE setting_key = 'listing_duration_days'
+      AND (country = NEW.country OR country IS NULL)
+    ORDER BY country NULLS LAST
+    LIMIT 1;
+
+    NEW.expires_at := NOW() + (v_days || ' days')::INTERVAL;
+    RETURN NEW;
+END;
+$$;
+
+
+-- v5.0: copies country from the borrower's profile onto a new loan_requests
+-- row at insert time. Same "locked at post time" pattern as term-locking —
+-- once set here, trg_fn_lock_request_terms() below guards it from edits.
+CREATE OR REPLACE FUNCTION trg_fn_set_request_country()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+BEGIN
+    IF NEW.country IS NULL THEN
+        SELECT country INTO NEW.country FROM profiles WHERE id = NEW.borrower_id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+COMMENT ON FUNCTION trg_fn_set_request_country IS
+'v5.0: sets loan_requests.country from the borrower''s profiles.country at insert time,
+ if not already supplied. Frozen thereafter by trg_fn_lock_request_terms().';
+
+
+-- Block listing if account is not active
+CREATE OR REPLACE FUNCTION trg_fn_require_active_account()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM profiles
+        WHERE id = NEW.borrower_id AND account_status != 'active'
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_ACCOUNT_INACTIVE: Your account must be active to post a listing.'
+            USING ERRCODE = 'P0001';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Enforce plan-specific max concurrent active requests from system_settings.
+-- Completed, contracted, expired, or cancelled requests do not count.
+CREATE OR REPLACE FUNCTION trg_fn_max_concurrent_requests()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+DECLARE
+    v_active_count INT;
+    v_max          INT;
+    v_plan         subscription_plan_enum;
+BEGIN
+    SELECT COALESCE(s.plan, 'free'::subscription_plan_enum) INTO v_plan
+    FROM profiles p
+    LEFT JOIN subscriptions s
+      ON s.user_id = p.id
+     AND s.status = 'active'
+     AND (s.expires_at IS NULL OR s.expires_at > NOW())
+    WHERE p.id = NEW.borrower_id
+    LIMIT 1;
+
+    v_plan := COALESCE(v_plan, 'free'::subscription_plan_enum);
+
+    SELECT setting_value::INT INTO v_max
+    FROM system_settings
+    WHERE setting_key = ('max_active_requests_' || v_plan::TEXT)
+      AND (country = NEW.country OR country IS NULL)
+    ORDER BY country NULLS LAST
+    LIMIT 1;
+
+    IF v_max IS NULL THEN
+        SELECT setting_value::INT INTO v_max
+        FROM system_settings
+        WHERE setting_key = 'max_concurrent_requests'
+          AND (country = NEW.country OR country IS NULL)
+        ORDER BY country NULLS LAST
+        LIMIT 1;
+    END IF;
+
+    v_max := COALESCE(v_max, 2);
+
+    SELECT COUNT(*) INTO v_active_count
+    FROM loan_requests
+    WHERE borrower_id = NEW.borrower_id AND status = 'active';
+
+    IF v_active_count >= v_max THEN
+        RAISE EXCEPTION 'NIPANZE_MAX_REQUESTS: You have reached the maximum of % active listings.', v_max
+            USING ERRCODE = 'P0002';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+-- Validate optional Pro-tier term suggestions before insert.
+CREATE OR REPLACE FUNCTION trg_fn_validate_request_terms()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+DECLARE
+    v_plan subscription_plan_enum;
+    v_has_suggestions BOOLEAN;
+BEGIN
+    v_has_suggestions :=
+        NEW.suggested_interest_rate_pct IS NOT NULL OR
+        NEW.suggested_late_fee_pct IS NOT NULL OR
+        NEW.suggested_repayment_frequency IS NOT NULL OR
+        NEW.suggested_installment_amount IS NOT NULL;
+
+    IF v_has_suggestions THEN
+        SELECT plan INTO v_plan
+        FROM subscriptions
+        WHERE user_id = NEW.borrower_id AND status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 1;
+
+        IF v_plan IS DISTINCT FROM 'pro'::subscription_plan_enum THEN
+            RAISE EXCEPTION 'NIPANZE_PRO_REQUIRED: A Pro subscription is required to suggest interest, late fee, or repayment terms.'
+                USING ERRCODE = 'P0004';
+        END IF;
+    END IF;
+
+    NEW.terms_locked_at := COALESCE(NEW.terms_locked_at, NOW());
+    RETURN NEW;
+END;
+$$;
+
+
+-- Lock request term suggestions AND country after publish.
+CREATE OR REPLACE FUNCTION trg_fn_lock_request_terms()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF OLD.terms_locked_at IS NOT NULL AND (
+        OLD.suggested_interest_rate_pct IS DISTINCT FROM NEW.suggested_interest_rate_pct OR
+        OLD.suggested_late_fee_pct IS DISTINCT FROM NEW.suggested_late_fee_pct OR
+        OLD.suggested_repayment_frequency IS DISTINCT FROM NEW.suggested_repayment_frequency OR
+        OLD.suggested_installment_amount IS DISTINCT FROM NEW.suggested_installment_amount
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_REQUEST_TERMS_LOCKED: Terms cannot be edited after publish.'
+            USING ERRCODE = 'P0005';
+    END IF;
+
+    IF OLD.country IS DISTINCT FROM NEW.country THEN
+        RAISE EXCEPTION 'NIPANZE_REQUEST_COUNTRY_LOCKED: A listing''s country is frozen at publish time and cannot be changed.'
+            USING ERRCODE = 'P0006';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
+-- Validate a lender offer before insert.
+-- v5.0: no country check — cross-border offers are ALLOWED by default per
+-- BUILD_PLAN.md. To restrict to single-market offers only, add a clause
+-- here comparing (SELECT country FROM profiles WHERE id = NEW.lender_id)
+-- against v_listing.country.
+CREATE OR REPLACE FUNCTION trg_fn_validate_offer()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+DECLARE
+    v_listing    loan_requests%ROWTYPE;
+    v_min_offer  BIGINT;
+    v_plan       subscription_plan_enum;
+BEGIN
+    -- Check listing exists and is active
+    SELECT * INTO v_listing FROM loan_requests WHERE id = NEW.request_id;
+
+    IF v_listing.status != 'active' THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE: This listing is no longer accepting bids.'
+            USING ERRCODE = 'P0010';
+    END IF;
+
+    IF v_listing.expires_at < NOW() THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_EXPIRED: This listing has expired.'
+            USING ERRCODE = 'P0011';
+    END IF;
+
+    -- Cannot offer on your own request
+    IF v_listing.borrower_id = NEW.lender_id THEN
+        RAISE EXCEPTION 'NIPANZE_SELF_OFFER: You cannot make a bid on your own listing.'
+            USING ERRCODE = 'P0012';
+    END IF;
+
+    IF private.is_blocked_from_future_request(v_listing.borrower_id, NEW.lender_id, v_listing.listed_at) THEN
+        RAISE EXCEPTION 'NIPANZE_BLOCKED: You cannot make a bid on this listing.'
+            USING ERRCODE = 'P0017';
+    END IF;
+
+    -- Minimum offer amount (global default; per-country override takes precedence if present)
+    SELECT setting_value::BIGINT INTO v_min_offer
+    FROM system_settings
+    WHERE setting_key = 'min_offer_amount'
+      AND (country = v_listing.country OR country IS NULL)
+    ORDER BY country NULLS LAST
+    LIMIT 1;
+
+    IF NEW.offer_amount < v_min_offer THEN
+        RAISE EXCEPTION 'NIPANZE_MIN_OFFER: Bid amount must be at least %.', v_min_offer
+            USING ERRCODE = 'P0013';
+    END IF;
+
+    -- Lender or Pro subscription required to make bids
+    SELECT plan INTO v_plan
+    FROM subscriptions
+    WHERE user_id = NEW.lender_id AND status = 'active';
+
+    IF v_plan NOT IN ('lender', 'pro') THEN
+        RAISE EXCEPTION 'NIPANZE_SUBSCRIPTION_REQUIRED: A Lender or Pro subscription is required to make bids.'
+            USING ERRCODE = 'P0014';
+    END IF;
+
+    IF NEW.interest_rate_pct IS NULL OR NEW.late_fee_pct IS NULL OR
+       NEW.repayment_frequency IS NULL OR NEW.installment_amount IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_BID_TERMS_REQUIRED: Interest, late fee, repayment schedule, and installment amount are required.'
+            USING ERRCODE = 'P0016';
+    END IF;
+
+    NEW.terms_locked_at := COALESCE(NEW.terms_locked_at, NOW());
+    RETURN NEW;
+END;
+$$;
+
+
+-- Lock an accepted offer from further updates
+CREATE OR REPLACE FUNCTION trg_fn_lock_accepted_offer()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF OLD.status = 'accepted' THEN
+        RAISE EXCEPTION 'NIPANZE_OFFER_LOCKED: An accepted offer cannot be modified.'
+            USING ERRCODE = 'P0015';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Lock bid terms after submit. Status-only updates are still allowed.
+CREATE OR REPLACE FUNCTION trg_fn_lock_offer_terms()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF OLD.terms_locked_at IS NOT NULL AND (
+        OLD.offer_amount IS DISTINCT FROM NEW.offer_amount OR
+        OLD.interest_rate_pct IS DISTINCT FROM NEW.interest_rate_pct OR
+        OLD.late_fee_pct IS DISTINCT FROM NEW.late_fee_pct OR
+        OLD.repayment_frequency IS DISTINCT FROM NEW.repayment_frequency OR
+        OLD.installment_amount IS DISTINCT FROM NEW.installment_amount OR
+        OLD.proposed_expectations IS DISTINCT FROM NEW.proposed_expectations
+    ) THEN
+        RAISE EXCEPTION 'NIPANZE_BID_TERMS_LOCKED: Bid terms cannot be edited after submit.'
+            USING ERRCODE = 'P0017';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Auto-expire an offer if expires_at has passed
+CREATE OR REPLACE FUNCTION trg_fn_expire_offer()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+BEGIN
+    IF NEW.expires_at IS NOT NULL AND NEW.expires_at < CURRENT_TIMESTAMP AND NEW.status = 'pending' THEN
+        NEW.status := 'expired'::offer_status_enum;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+-- Sync number_of_offers on loan_requests with pending offers.
+CREATE OR REPLACE FUNCTION trg_fn_sync_offer_count()
+RETURNS TRIGGER LANGUAGE plpgsql
+SET search_path = public AS $$
+DECLARE
+    v_request_id UUID;
+BEGIN
+    v_request_id := COALESCE(NEW.request_id, OLD.request_id);
+
+    UPDATE loan_requests lr
+       SET number_of_offers = (
+           SELECT COUNT(*)::INT
+             FROM loan_offers lo
+            WHERE lo.request_id = v_request_id
+              AND lo.status = 'pending'
+       )
+     WHERE lr.id = v_request_id;
+
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+
+-- ============================================
+-- TRIGGERS
+-- ============================================
+
+-- countries
+CREATE TRIGGER trg_countries_updated_at_noop
+    BEFORE UPDATE ON countries
+    FOR EACH ROW WHEN (FALSE)  -- placeholder no-op; countries has no updated_at column by design
+    EXECUTE FUNCTION fn_set_updated_at();
+
+-- profiles
+CREATE TRIGGER trg_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- subscriptions
+CREATE TRIGGER trg_subscriptions_updated_at
+    BEFORE UPDATE ON subscriptions
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- kyc_verifications
+CREATE TRIGGER trg_kyc_updated_at
+    BEFORE UPDATE ON kyc_verifications
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- system_settings
+CREATE TRIGGER trg_system_settings_updated_at
+    BEFORE UPDATE ON system_settings
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- loan_requests
+CREATE TRIGGER trg_set_request_country
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_set_request_country();
+
+CREATE TRIGGER trg_require_active_account
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_require_active_account();
+
+CREATE TRIGGER trg_max_concurrent_requests
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_max_concurrent_requests();
+
+CREATE TRIGGER trg_set_listing_expiry
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_set_listing_expiry();
+
+CREATE TRIGGER trg_validate_request_terms
+    BEFORE INSERT ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_validate_request_terms();
+
+CREATE TRIGGER trg_lock_request_terms
+    BEFORE UPDATE ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_lock_request_terms();
+
+CREATE TRIGGER trg_loan_requests_updated_at
+    BEFORE UPDATE ON loan_requests
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- loan_offers
+CREATE TRIGGER trg_expire_offer
+    BEFORE INSERT OR UPDATE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_expire_offer();
+
+CREATE TRIGGER trg_validate_offer
+    BEFORE INSERT ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_validate_offer();
+
+CREATE TRIGGER trg_lock_accepted_offer
+    BEFORE UPDATE ON loan_offers
+    FOR EACH ROW
+    WHEN (OLD.status = 'accepted')
+    EXECUTE FUNCTION trg_fn_lock_accepted_offer();
+
+CREATE TRIGGER trg_lock_offer_terms
+    BEFORE UPDATE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_lock_offer_terms();
+
+CREATE TRIGGER trg_sync_offer_count
+    AFTER INSERT OR UPDATE OR DELETE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_sync_offer_count();
+
+CREATE TRIGGER trg_loan_offers_updated_at
+    BEFORE UPDATE ON loan_offers
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- agreements (moved here from right after CREATE TABLE agreements —
+-- fn_set_updated_at() must exist first)
+CREATE TRIGGER trg_agreements_updated_at
+    BEFORE UPDATE ON agreements
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- transactions
+CREATE TRIGGER trg_transactions_updated_at
+    BEFORE UPDATE ON transactions
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+
+-- ============================================
+-- RPC: accept_offer  (Stage 4: Creates locked agreement)
+-- Atomic: accepts the chosen bid, rejects competing pending bids,
+-- marks listing contracted, creates a locked agreement snapshot,
+-- and notifies both parties.
+-- Contact details are NOT returned here — unlock_contact is the only
+-- API that reveals contact details after the contract is locked.
+-- v5.0: the agreement snapshot and contract text now carry currency_code,
+-- resolved from the listing's country.
+-- ============================================
+
+CREATE OR REPLACE FUNCTION private.accept_offer_internal(
+    p_request_id  UUID,
+    p_offer_id    UUID,
+    p_borrower_id UUID,
+    p_caller_id   UUID
+)
+RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = '' AS $$
+DECLARE
+    v_listing public.loan_requests%ROWTYPE;
+    v_offer public.loan_offers%ROWTYPE;
+    v_borrower public.profiles%ROWTYPE;
+    v_lender public.profiles%ROWTYPE;
+    v_currency_code TEXT;
+    v_agreement_id UUID;
+    v_total_repayment BIGINT;
+    v_agreement_text TEXT;
+    v_snapshot JSONB;
+BEGIN
+    IF p_caller_id IS NULL OR p_caller_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Caller is not the borrower.'
+            USING ERRCODE = 'P0021';
+    END IF;
+
+    SELECT * INTO v_listing FROM public.loan_requests WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_FOUND' USING ERRCODE = 'P0020';
+    END IF;
+    IF v_listing.borrower_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the listing owner can accept a bid.'
+            USING ERRCODE = 'P0021';
+    END IF;
+    IF v_listing.status != 'active' THEN
+        RAISE EXCEPTION 'NIPANZE_LISTING_NOT_ACTIVE' USING ERRCODE = 'P0022';
+    END IF;
+
+    SELECT * INTO v_offer FROM public.loan_offers
+     WHERE id = p_offer_id AND request_id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_OFFER_NOT_FOUND' USING ERRCODE = 'P0023';
+    END IF;
+    IF v_offer.status != 'pending' THEN
+        RAISE EXCEPTION 'NIPANZE_OFFER_NOT_PENDING: This bid is no longer available.'
+            USING ERRCODE = 'P0024';
+    END IF;
+
+    SELECT * INTO v_borrower FROM public.profiles WHERE id = p_borrower_id;
+    SELECT * INTO v_lender FROM public.profiles WHERE id = v_offer.lender_id;
+    SELECT currency_code INTO v_currency_code FROM public.countries WHERE code = v_listing.country;
+
+    v_total_repayment := ROUND(v_offer.offer_amount * (1 + (v_offer.interest_rate_pct / 100.0)))::BIGINT;
+
+    v_snapshot := JSONB_BUILD_OBJECT(
+        'request_id', p_request_id,
+        'offer_id', p_offer_id,
+        'borrower_id', p_borrower_id,
+        'lender_id', v_offer.lender_id,
+        'country', v_listing.country,
+        'currency_code', v_currency_code,
+        'loan_amount', v_offer.offer_amount,
+        'interest_rate_pct', v_offer.interest_rate_pct,
+        'total_repayment_amount', v_total_repayment,
+        'repayment_frequency', v_offer.repayment_frequency,
+        'installment_amount', v_offer.installment_amount,
+        'repayment_period', v_listing.duration_months,
+        'late_fee_pct', v_offer.late_fee_pct,
+        'late_fee_rule', 'Late fee applies only to missed installment amount, not total balance.',
+        'start_date', CURRENT_DATE,
+        'end_date', CURRENT_DATE + (v_listing.duration_months || ' months')::INTERVAL,
+        'duration_months', v_listing.duration_months,
+        'legal_disclaimer', 'Nipanze provides this agreement for convenience only. The final obligation is solely between borrower and lender. Nipanze does not enforce repayment or hold funds.',
+        'locked_at', NOW()
+    );
+
+    v_agreement_text := public.fn_generate_locked_contract_text(
+        v_borrower.full_name,
+        v_lender.full_name,
+        v_offer.offer_amount,
+        v_offer.interest_rate_pct,
+        v_total_repayment,
+        v_offer.repayment_frequency,
+        v_offer.installment_amount,
+        v_listing.duration_months,
+        v_offer.late_fee_pct,
+        v_currency_code
+    );
+
+    UPDATE public.loan_offers SET status = 'accepted', accepted_at = NOW() WHERE id = p_offer_id;
+
+    UPDATE public.loan_offers
+       SET status = 'rejected', updated_at = NOW()
+     WHERE request_id = p_request_id AND id != p_offer_id AND status = 'pending';
+
+    UPDATE public.loan_requests
+       SET status = 'contracted', contracted_at = NOW() WHERE id = p_request_id;
+
+    INSERT INTO public.agreements (
+        offer_id,
+        request_id,
+        repayment_frequency,
+        repayment_amount,
+        repayment_period,
+        total_repayment_amount,
+        late_payment_penalty_pct,
+        agreement_text,
+        agreement_snapshot,
+        status,
+        borrower_agreed_at,
+        lender_agreed_at,
+        locked_at
+    )
+    VALUES (
+        p_offer_id,
+        p_request_id,
+        v_offer.repayment_frequency::public.repayment_frequency_enum,
+        v_offer.installment_amount,
+        v_listing.duration_months,
+        v_total_repayment,
+        v_offer.late_fee_pct,
+        v_agreement_text,
+        v_snapshot,
+        'locked'::public.agreement_status_enum,
+        NOW(),
+        NOW(),
+        NOW()
+    )
+    ON CONFLICT (offer_id) DO UPDATE
+       SET repayment_period = EXCLUDED.repayment_period,
+           total_repayment_amount = EXCLUDED.total_repayment_amount,
+           agreement_text = EXCLUDED.agreement_text,
+           agreement_snapshot = EXCLUDED.agreement_snapshot,
+           status = 'locked'::public.agreement_status_enum,
+           borrower_agreed_at = COALESCE(public.agreements.borrower_agreed_at, NOW()),
+           lender_agreed_at = COALESCE(public.agreements.lender_agreed_at, NOW()),
+           locked_at = COALESCE(public.agreements.locked_at, NOW())
+    RETURNING id INTO v_agreement_id;
+
+    INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
+    VALUES
+        (p_borrower_id, 'agreement_locked', 'Contract generated',
+         'Your selected bid is locked into a contract. Unlock contact details to connect.',
+         p_request_id, p_offer_id),
+        (v_offer.lender_id, 'agreement_locked', 'Contract generated',
+         'Your bid was accepted and locked into a contract. Contact unlock is now available.',
+         p_request_id, p_offer_id);
+
+    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES
+        (p_borrower_id, 'offer_accepted', 'loan_offers', p_offer_id, 'accept_offer', v_snapshot),
+        (p_borrower_id, 'agreement_locked', 'agreements', v_agreement_id, 'generate_locked_contract', v_snapshot);
+
+    RETURN v_agreement_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION private.accept_offer_internal(uuid, uuid, uuid, uuid) TO authenticated, service_role;
+
+-- Wrapper: SECURITY INVOKER
+CREATE OR REPLACE FUNCTION public.accept_offer(
+    p_request_id  UUID,
+    p_offer_id    UUID,
+    p_borrower_id UUID
+)
+RETURNS UUID
+LANGUAGE sql SECURITY INVOKER
+SET search_path = public AS $$
+    SELECT private.accept_offer_internal(p_request_id, p_offer_id, p_borrower_id, auth.uid());
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, anon;
+GRANT  EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.accept_offer IS
+'Atomically accepts a bid, rejects others, marks listing contracted, and creates a locked agreement.
+ Returns agreement_id. Contact details are not exposed until unlock_contact() is called.
+ Platform never holds or moves funds. The agreement snapshot and contract text include
+ currency_code, resolved from the listing''s country.';
+
+
+-- ============================================
+-- RPC: reveal_contact
+-- ============================================
+
+CREATE OR REPLACE FUNCTION private.reveal_contact_internal(
+    p_reveal_id   UUID,
+    p_borrower_id UUID,
+    p_caller_id   UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = '' AS $$
+DECLARE
+    v_reveal        public.contact_reveals%ROWTYPE;
+    v_offer         public.loan_offers%ROWTYPE;
+    v_borrower      public.profiles%ROWTYPE;
+    v_lender        public.profiles%ROWTYPE;
+    v_borrower_auth RECORD;
+    v_lender_auth   RECORD;
+    v_result        JSONB;
+BEGIN
+    -- Caller validation (must be the borrower)
+    IF p_caller_id IS NULL OR p_caller_id != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Caller is not the borrower.'
+            USING ERRCODE = 'P0031';
+    END IF;
+
+    SELECT * INTO v_reveal FROM public.contact_reveals WHERE id = p_reveal_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_REVEAL_NOT_FOUND' USING ERRCODE = 'P0030';
+    END IF;
+    IF v_reveal.revealed_by != p_borrower_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only the borrower who accepted can trigger reveal.'
+            USING ERRCODE = 'P0031';
+    END IF;
+    IF v_reveal.status = 'revealed' THEN
+        RAISE EXCEPTION 'NIPANZE_ALREADY_REVEALED: Contact details already revealed.'
+            USING ERRCODE = 'P0032';
+    END IF;
+
+    SELECT * INTO v_offer    FROM public.loan_offers WHERE id = v_reveal.offer_id;
+    SELECT * INTO v_borrower FROM public.profiles    WHERE id = p_borrower_id;
+    SELECT * INTO v_lender   FROM public.profiles    WHERE id = v_offer.lender_id;
+
+    -- auth.users requires service-role — SECURITY DEFINER gives this
+    SELECT email INTO v_borrower_auth FROM auth.users WHERE id = p_borrower_id;
+    SELECT email INTO v_lender_auth   FROM auth.users WHERE id = v_offer.lender_id;
+
+    UPDATE public.contact_reveals SET status = 'revealed', revealed_at = NOW() WHERE id = p_reveal_id;
+
+    v_result := JSONB_BUILD_OBJECT(
+        'borrower', JSONB_BUILD_OBJECT(
+            'full_name', v_borrower.full_name, 'phone', v_borrower.phone, 'email', v_borrower_auth.email),
+        'lender', JSONB_BUILD_OBJECT(
+            'full_name', v_lender.full_name, 'phone', v_lender.phone, 'email', v_lender_auth.email)
+    );
+
+    INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
+    VALUES
+        (p_borrower_id, 'contact_revealed', 'Contact details revealed',
+         'You can now connect with your lender directly.', v_reveal.request_id, v_reveal.offer_id),
+        (v_offer.lender_id, 'contact_revealed', 'Contact details revealed',
+         'The borrower accepted your offer. You can now connect directly.', v_reveal.request_id, v_reveal.offer_id);
+
+    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES (p_borrower_id, 'contact_revealed', 'contact_reveals', p_reveal_id, 'reveal_contact',
+        JSONB_BUILD_OBJECT(
+            'offer_id',   v_reveal.offer_id,
+            'request_id', v_reveal.request_id,
+            'lender_id',  v_offer.lender_id,
+            'revealed_at', NOW()
+        ));
+
+    RETURN v_result;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION private.reveal_contact_internal(uuid, uuid, uuid) TO authenticated, service_role;
+
+-- Wrapper: SECURITY INVOKER
+CREATE OR REPLACE FUNCTION public.reveal_contact(
+    p_reveal_id   UUID,
+    p_borrower_id UUID
+)
+RETURNS JSONB
+LANGUAGE sql SECURITY INVOKER
+SET search_path = public AS $$
+    SELECT private.reveal_contact_internal(p_reveal_id, p_borrower_id, auth.uid());
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) FROM public, anon;
+GRANT  EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.reveal_contact IS
+'Reveals legal name, phone, and email of both borrower and lender after an offer is accepted.
+ Enforced at API layer. Irreversible. Returns contact JSONB to the calling client.
+ Platform never stores or retransmits these details after this point.';
+
+
+-- ============================================
+-- RPC: unlock_contact (Stage 4)
+-- After contract generation, borrower unlocks contact details.
+-- Creates contact_reveal record (or updates existing one to 'revealed').
+-- ============================================
+
+CREATE OR REPLACE FUNCTION private.unlock_contact_internal(
+    p_agreement_id UUID,
+    p_caller_id    UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = '' AS $$
+DECLARE
+    v_agreement  public.agreements%ROWTYPE;
+    v_offer      public.loan_offers%ROWTYPE;
+    v_reveal     public.contact_reveals%ROWTYPE;
+    v_borrower   public.profiles%ROWTYPE;
+    v_lender     public.profiles%ROWTYPE;
+    v_borrower_auth RECORD;
+    v_lender_auth RECORD;
+    v_borrower_id UUID;
+    v_lender_id UUID;
+    v_result JSONB;
+BEGIN
+    SELECT * INTO v_agreement FROM public.agreements WHERE id = p_agreement_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'NIPANZE_AGREEMENT_NOT_FOUND' USING ERRCODE = 'P0041';
+    END IF;
+
+    IF v_agreement.status != 'locked' THEN
+        RAISE EXCEPTION 'NIPANZE_AGREEMENT_NOT_LOCKED: Agreement must be locked before unlocking contact.'
+            USING ERRCODE = 'P0045';
+    END IF;
+
+    SELECT * INTO v_offer FROM public.loan_offers WHERE id = v_agreement.offer_id;
+    SELECT borrower_id INTO v_borrower_id FROM public.loan_requests WHERE id = v_agreement.request_id;
+    v_lender_id := v_offer.lender_id;
+
+    -- Caller validation (must be either borrower or lender)
+    IF p_caller_id != v_borrower_id AND p_caller_id != v_lender_id THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED: Only deal participants can unlock contact details.'
+            USING ERRCODE = 'P0046';
+    END IF;
+
+    -- Get profiles
+    SELECT * INTO v_borrower FROM public.profiles WHERE id = v_borrower_id;
+    SELECT * INTO v_lender FROM public.profiles WHERE id = v_lender_id;
+
+    -- Get email from auth.users (requires SECURITY DEFINER)
+    SELECT email INTO v_borrower_auth FROM auth.users WHERE id = v_borrower_id;
+    SELECT email INTO v_lender_auth FROM auth.users WHERE id = v_lender_id;
+
+    -- Get or create contact_reveal
+    SELECT * INTO v_reveal FROM public.contact_reveals WHERE offer_id = v_agreement.offer_id;
+    IF v_reveal IS NULL THEN
+        INSERT INTO public.contact_reveals (offer_id, request_id, revealed_by, status, revealed_at)
+        VALUES (v_agreement.offer_id, v_agreement.request_id, p_caller_id, 'revealed', NOW())
+        RETURNING * INTO v_reveal;
+    ELSE
+        UPDATE public.contact_reveals
+           SET status = 'revealed', revealed_at = NOW()
+         WHERE id = v_reveal.id;
+        v_reveal.status := 'revealed';
+        v_reveal.revealed_at := NOW();
+    END IF;
+
+    -- Result includes contact details
+    v_result := JSONB_BUILD_OBJECT(
+        'agreement_id', v_agreement.id,
+        'revealed_at', v_reveal.revealed_at,
+        'borrower', JSONB_BUILD_OBJECT(
+            'full_name', v_borrower.full_name,
+            'phone', v_borrower.phone,
+            'email', v_borrower_auth.email
+        ),
+        'lender', JSONB_BUILD_OBJECT(
+            'full_name', v_lender.full_name,
+            'phone', v_lender.phone,
+            'email', v_lender_auth.email
+        )
+    );
+
+    -- Notify both parties
+    INSERT INTO public.notifications (user_id, type, title, body, request_id, offer_id)
+    VALUES
+        (v_borrower_id, 'contact_revealed', 'Contact details unlocked',
+         'You can now connect with your lender directly.',
+         v_agreement.request_id, v_agreement.offer_id),
+        (v_lender_id, 'contact_revealed', 'Borrower unlocked contact',
+         'You can now connect with the borrower directly.',
+         v_agreement.request_id, v_agreement.offer_id);
+
+    -- Audit
+    INSERT INTO public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    VALUES (p_caller_id, 'contact_revealed', 'contact_reveals', v_reveal.id, 'unlock_contact',
+        JSONB_BUILD_OBJECT(
+            'agreement_id', p_agreement_id,
+            'revealed_at', NOW()
+        ));
+
+    RETURN v_result;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION private.unlock_contact_internal(uuid, uuid) TO authenticated, service_role;
+
+-- Wrapper: SECURITY INVOKER
+CREATE OR REPLACE FUNCTION public.unlock_contact(p_agreement_id UUID)
+RETURNS JSONB
+LANGUAGE sql SECURITY INVOKER
+SET search_path = public AS $$
+    SELECT private.unlock_contact_internal(p_agreement_id, auth.uid());
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.unlock_contact(uuid) FROM public, anon;
+GRANT  EXECUTE ON FUNCTION public.unlock_contact(uuid) TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.unlock_contact IS
+'Borrower unlocks contact details after agreement is locked by bid acceptance.
+ Reveals legal name, phone, and email of both parties. Irreversible. Returns contact JSONB.
+ Platform never stores or retransmits these details after this point.';
+
+
+-- ============================================
+-- ROW-LEVEL SECURITY
+-- ============================================
+
+ALTER TABLE countries            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE system_settings      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kyc_verifications    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_blocks          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_requests        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE loan_offers          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE watchlist            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_reveals      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agreements           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trust_aggregates     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE refresh_tokens       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrals            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions         ENABLE ROW LEVEL SECURITY;
+
+
+-- Helper function to safely fetch the current active user's subscription plan.
+CREATE OR REPLACE FUNCTION public.get_my_subscription_plan()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_plan TEXT;
+BEGIN
+    SELECT plan::TEXT INTO v_plan
+    FROM public.subscriptions
+    WHERE user_id = auth.uid()
+      AND status = 'active'
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF v_plan IS NULL THEN
+        RETURN 'free';
+    END IF;
+    RETURN v_plan;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated;
+
+
+-- is_admin() lives in the `private` schema so it is NOT exposed
+-- via the PostgREST REST API (/rpc/is_admin) but is still
+-- callable by RLS policies and other SECURITY DEFINER functions.
+-- (schema itself already created near the top of this file)
+
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
+SET search_path = public AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE
+    );
+$$;
+
+GRANT USAGE  ON SCHEMA private TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.is_blocked_from_future_request(
+    p_owner_id UUID,
+    p_viewer_id UUID,
+    p_listed_at TIMESTAMP
+)
+RETURNS BOOLEAN LANGUAGE SQL SECURITY DEFINER STABLE
+SET search_path = public AS $$
+    SELECT p_owner_id IS NOT NULL
+       AND p_viewer_id IS NOT NULL
+       AND p_owner_id <> p_viewer_id
+       AND EXISTS (
+           SELECT 1
+           FROM user_blocks ub
+           WHERE ub.blocker_id = p_owner_id
+             AND ub.blocked_id = p_viewer_id
+             AND ub.created_at <= COALESCE(p_listed_at, CURRENT_TIMESTAMP)
+       );
+$$;
+
+GRANT EXECUTE ON FUNCTION private.is_blocked_from_future_request(UUID, UUID, TIMESTAMP)
+    TO authenticated, service_role;
+
+
+-- countries — public reference data, readable by everyone; admin-only writes
+CREATE POLICY "countries: public read"
+    ON countries FOR SELECT TO authenticated, anon USING (TRUE);
+CREATE POLICY "countries: admin write"
+    ON countries FOR ALL TO authenticated USING (private.is_admin());
+
+-- system_settings
+CREATE POLICY "system_settings: authenticated read"
+    ON system_settings FOR SELECT TO authenticated USING (is_public = TRUE OR private.is_admin());
+CREATE POLICY "system_settings: admin write"
+    ON system_settings FOR ALL TO authenticated USING (private.is_admin());
+
+-- profiles
+CREATE POLICY "profiles: own or admin read"
+    ON profiles FOR SELECT TO authenticated
+    USING (id = auth.uid() OR private.is_admin());
+CREATE POLICY "profiles: own update"
+    ON profiles FOR UPDATE TO authenticated
+    USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+
+-- subscriptions
+CREATE POLICY "subscriptions: own or admin read"
+    ON subscriptions FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "subscriptions: own insert"
+    ON subscriptions FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "subscriptions: own update"
+    ON subscriptions FOR UPDATE TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE POLICY "subscriptions: admin write"
+    ON subscriptions FOR ALL TO authenticated USING (private.is_admin());
+
+
+-- kyc_verifications
+CREATE POLICY "kyc: own or admin read"
+    ON kyc_verifications FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "kyc: own insert"
+    ON kyc_verifications FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+CREATE POLICY "kyc: own or admin update"
+    ON kyc_verifications FOR UPDATE TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+
+-- user_blocks
+CREATE POLICY "user_blocks: blocker manages rows"
+    ON user_blocks FOR ALL TO authenticated
+    USING (blocker_id = auth.uid() OR private.is_admin())
+    WITH CHECK (blocker_id = auth.uid() OR private.is_admin());
+
+-- loan_requests
+-- NOTE: "global browse" policy (BUILD_PLAN.md) — this does NOT restrict
+-- reads to the caller's own country. The Flutter client applies the
+-- country default via MarketplaceRepository. If hard per-country RLS
+-- isolation is ever adopted instead, add:
+--   AND (country = (SELECT country FROM profiles WHERE id = auth.uid()) OR borrower_id = auth.uid() OR private.is_admin())
+CREATE POLICY "loan_requests: marketplace read"
+    ON loan_requests FOR SELECT TO authenticated
+    USING (
+        borrower_id = auth.uid()
+        OR private.is_admin()
+        OR (
+            status = 'active'
+            AND NOT private.is_blocked_from_future_request(borrower_id, auth.uid(), listed_at)
+        )
+    );
+CREATE POLICY "loan_requests: own insert"
+    ON loan_requests FOR INSERT TO authenticated
+    WITH CHECK (borrower_id = auth.uid());
+CREATE POLICY "loan_requests: own or admin update"
+    ON loan_requests FOR UPDATE TO authenticated
+    USING (borrower_id = auth.uid() OR private.is_admin());
+CREATE POLICY "loan_requests: admin delete"
+    ON loan_requests FOR DELETE TO authenticated USING (private.is_admin());
+
+-- loan_offers
+-- Borrowers see offers on their own listings; lenders see their own offers; admins see all.
+-- No country restriction — cross-border offers are allowed by default (see trg_fn_validate_offer).
+CREATE POLICY "loan_offers: relevant parties read"
+    ON loan_offers FOR SELECT TO authenticated
+    USING (
+        lender_id = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM loan_requests lr
+             WHERE lr.id = loan_offers.request_id AND lr.borrower_id = auth.uid()
+        )
+        OR private.is_admin()
+    );
+CREATE POLICY "loan_offers: lender insert"
+    ON loan_offers FOR INSERT TO authenticated
+    WITH CHECK (
+        lender_id = auth.uid()
+        AND EXISTS (
+            SELECT 1 FROM loan_requests lr
+             WHERE lr.id = loan_offers.request_id
+               AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
+        )
+    );
+CREATE POLICY "loan_offers: lender withdraw or admin"
+    ON loan_offers FOR UPDATE TO authenticated
+    USING (
+        (lender_id = auth.uid() AND status = 'pending')
+        OR private.is_admin()
+    )
+    WITH CHECK (
+        (lender_id = auth.uid() AND status = 'withdrawn')
+        OR private.is_admin()
+    );
+
+-- watchlist
+CREATE POLICY "watchlist: own rows"
+    ON watchlist FOR ALL TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- agreements
+-- Only the matched parties (borrower / lender) can see the locked agreement.
+CREATE POLICY "agreements: matched parties read"
+    ON agreements FOR SELECT TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM loan_requests lr
+             WHERE lr.id = agreements.request_id AND lr.borrower_id = auth.uid()
+        )
+        OR EXISTS (
+            SELECT 1 FROM loan_offers lo
+             WHERE lo.id = agreements.offer_id AND lo.lender_id = auth.uid()
+        )
+        OR private.is_admin()
+    );
+CREATE POLICY "agreements: service role insert"
+    ON agreements FOR INSERT TO service_role WITH CHECK (TRUE);
+CREATE POLICY "agreements: service role update"
+    ON agreements FOR UPDATE TO service_role USING (TRUE) WITH CHECK (TRUE);
+CREATE POLICY "agreements: admin all"
+    ON agreements FOR ALL TO authenticated USING (private.is_admin());
+
+-- Reviews are written only through submit_review(), which validates both
+-- parties and the revealed agreement. Raw review data is readable only by
+-- its author/admin; public reputation is exposed through the safe views.
+CREATE POLICY "reviews: author or admin read"
+    ON reviews FOR SELECT TO authenticated
+    USING (reviewer_id = auth.uid() OR private.is_admin());
+CREATE POLICY "reviews: no direct writes"
+    ON reviews FOR ALL TO authenticated USING (FALSE) WITH CHECK (FALSE);
+CREATE POLICY "trust aggregates: admin only"
+    ON trust_aggregates FOR SELECT TO authenticated USING (private.is_admin());
+
+-- contact_reveals
+-- Only the parties on the matched offer (borrower / lender) can see the reveal record.
+CREATE POLICY "contact_reveals: matched parties read"
+    ON contact_reveals FOR SELECT TO authenticated
+    USING (
+        revealed_by = auth.uid()
+        OR EXISTS (
+            SELECT 1 FROM loan_offers lo
+             WHERE lo.id = contact_reveals.offer_id AND lo.lender_id = auth.uid()
+        )
+        OR private.is_admin()
+    );
+CREATE POLICY "contact_reveals: own insert"
+    ON contact_reveals FOR INSERT TO authenticated
+    WITH CHECK (revealed_by = auth.uid());
+CREATE POLICY "contact_reveals: admin write"
+    ON contact_reveals FOR ALL TO authenticated USING (private.is_admin());
+
+-- notifications
+CREATE POLICY "notifications: own rows"
+    ON notifications FOR SELECT TO authenticated USING (
+        user_id = auth.uid()
+        AND (
+            request_id IS NULL
+            OR NOT EXISTS (
+                SELECT 1 FROM loan_requests lr
+                 WHERE lr.id = notifications.request_id
+                   AND private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at)
+            )
+        )
+    );
+CREATE POLICY "notifications: own mark read"
+    ON notifications FOR UPDATE TO authenticated
+    USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE POLICY "notifications: admin write"
+    ON notifications FOR ALL TO authenticated USING (private.is_admin());
+
+-- audit_logs  (append-only — UPDATE and DELETE are blocked)
+CREATE POLICY "audit_logs: own or admin read"
+    ON audit_logs FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "audit_logs: insert only"
+    ON audit_logs FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "audit_logs: no update"
+    ON audit_logs FOR UPDATE TO authenticated USING (FALSE);
+CREATE POLICY "audit_logs: no delete"
+    ON audit_logs FOR DELETE TO authenticated USING (FALSE);
+
+-- refresh_tokens
+CREATE POLICY "refresh_tokens: own or admin read"
+    ON refresh_tokens FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "refresh_tokens: own insert"
+    ON refresh_tokens FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "refresh_tokens: own update"
+    ON refresh_tokens FOR UPDATE TO authenticated USING (user_id = auth.uid());
+
+-- referrals
+CREATE POLICY "referrals: own or admin read"
+    ON referrals FOR SELECT TO authenticated
+    USING (referrer_id = auth.uid() OR private.is_admin());
+CREATE POLICY "referrals: own insert"
+    ON referrals FOR INSERT TO authenticated WITH CHECK (referrer_id = auth.uid());
+CREATE POLICY "referrals: admin write"
+    ON referrals FOR ALL TO authenticated USING (private.is_admin());
+
+-- transactions — own or admin read; all writes go through the service-role
+-- webhook Edge Function, never directly from the Flutter client.
+CREATE POLICY "transactions: own or admin read"
+    ON transactions FOR SELECT TO authenticated
+    USING (user_id = auth.uid() OR private.is_admin());
+CREATE POLICY "transactions: service role write"
+    ON transactions FOR ALL TO service_role USING (TRUE) WITH CHECK (TRUE);
+
+
+-- ============================================
+-- REALTIME PUBLICATIONS
+-- ============================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+        CREATE PUBLICATION supabase_realtime;
+    END IF;
+END $$;
+
+ALTER PUBLICATION supabase_realtime ADD TABLE loan_requests;
+ALTER PUBLICATION supabase_realtime ADD TABLE loan_offers;
+ALTER PUBLICATION supabase_realtime ADD TABLE agreements;
+ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE contact_reveals;
+
+
+-- ============================================
+-- DATABASE COMMENT
+-- ============================================
+
+DO $$
+DECLARE db TEXT;
+BEGIN
+    SELECT current_database() INTO db;
+    EXECUTE FORMAT('COMMENT ON DATABASE %I IS %L', db,
+        'Nipanze v5.0 — Non-custodial loan listing matchmaking marketplace across the East '
+        'African Community, Uganda-first. Unified marketplace: no stored borrower/lender role, '
+        'capability comes from subscription_plan. Country is explicit, indexed, and locked at '
+        'creation for listings; trust signals are global, not per-country. Borrowing is free. '
+        'Lender offers require a subscription. Contact revealed only after offer acceptance. '
+        'Platform never holds or tracks funds between borrower and lender, in any market.');
+END $$;
+
+
+-- ============================================
+-- STORAGE BUCKETS
+-- ============================================
+-- Create via Supabase CLI or dashboard:
+--   supabase storage create verification-documents --public=false
+
+-- ============================================
+-- STORAGE RLS POLICIES: verification-documents
+-- ============================================
+-- Files are stored under <user_uuid>/<docType>_<timestamp>.<ext>
+-- Policy: each user may only access their own folder.
+
+-- Users can upload their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can upload their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can upload their own KYC documents"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Users can read (view) their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can view their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can view their own KYC documents"
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Users can replace (upsert) their own KYC documents
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Users can update their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can update their own KYC documents"
+    ON storage.objects FOR UPDATE
+    TO authenticated
+    USING (
+      bucket_id = 'verification-documents'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
+
+-- Admins (service_role) can read all KYC documents for review
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename  = 'objects'
+      AND policyname = 'Admins can view all KYC documents'
+  ) THEN
+    CREATE POLICY "Admins can view all KYC documents"
+    ON storage.objects FOR SELECT
+    TO service_role
+    USING (bucket_id = 'verification-documents');
+  END IF;
+END $$;
+
+-- ============================================
+-- FUNCTION SECURITY (Disable public access for SECURITY DEFINER functions)
+-- ============================================
+
+-- Revoke public/authenticated/anon access on trigger/internal functions
+REVOKE EXECUTE ON FUNCTION public.handle_new_auth_user() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_require_active_account() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_max_concurrent_requests() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_validate_offer() FROM public, authenticated, anon;
+REVOKE EXECUTE ON FUNCTION public.trg_fn_set_request_country() FROM public, authenticated, anon;
+
+-- Revoke public/anon access on client-facing RPCs and restrict to authenticated/service_role
+-- is_admin is in the private schema — only grant to authenticated for RLS use
+REVOKE EXECUTE ON FUNCTION private.is_admin() FROM public, anon;
+GRANT  EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.accept_offer(uuid, uuid, uuid) TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.reveal_contact(uuid, uuid) TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.get_my_subscription_plan() FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_subscription_plan() TO authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION get_marketplace_pro_filtered(employment_type_enum, TEXT, BOOLEAN, BOOLEAN, TEXT) FROM public, anon;
+GRANT EXECUTE ON FUNCTION get_marketplace_pro_filtered(employment_type_enum, TEXT, BOOLEAN, BOOLEAN, TEXT) TO authenticated, service_role;
+
+
+-- ============================================
+-- VIEW: v_lender_rate_history
+-- Safe, identity-preserving view for lender rate sparklines.
+-- Exposes only numeric trend data — no borrower info, no PII.
+-- ============================================
+CREATE OR REPLACE VIEW public.v_lender_rate_history
+WITH (security_invoker = true) AS
+SELECT
+    lender_id,
+    interest_rate_pct,
+    late_fee_pct,
+    installment_amount,
+    offered_at,
+    ROW_NUMBER() OVER (
+        PARTITION BY lender_id ORDER BY offered_at DESC
+    ) AS rn
+FROM public.loan_offers
+WHERE status IN ('pending', 'accepted', 'rejected');
+
+
+-- ============================================
+-- RPC: consume_free_unlock()
+-- Atomically decrements free_unlocks_remaining for the calling user.
+-- Returns new remaining count. Raises NIPANZE_NO_FREE_UNLOCKS if count=0.
+-- ============================================
+CREATE OR REPLACE FUNCTION public.consume_free_unlock()
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_user_id   UUID := auth.uid();
+    v_remaining INT;
+BEGIN
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_UNAUTHORIZED';
+    END IF;
+
+    SELECT free_unlocks_remaining
+      INTO v_remaining
+      FROM profiles
+     WHERE id = v_user_id
+       FOR UPDATE;
+
+    IF v_remaining IS NULL THEN
+        RAISE EXCEPTION 'NIPANZE_PROFILE_NOT_FOUND';
+    END IF;
+
+    IF v_remaining <= 0 THEN
+        RAISE EXCEPTION 'NIPANZE_NO_FREE_UNLOCKS';
+    END IF;
+
+    UPDATE profiles
+       SET free_unlocks_remaining = free_unlocks_remaining - 1,
+           updated_at             = NOW()
+     WHERE id = v_user_id
+    RETURNING free_unlocks_remaining INTO v_remaining;
+
+    RETURN v_remaining;
+END;
+$$;
+
+COMMENT ON FUNCTION public.consume_free_unlock() IS
+'Atomically decrements free_unlocks_remaining for the calling authenticated user. '
+'Returns new remaining count. Raises NIPANZE_NO_FREE_UNLOCKS if count is already 0.';
+
+
+-- ============================================
+-- END OF SCHEMA v5.0
+-- ============================================
+-- Grants for views
+GRANT SELECT ON countries TO authenticated, anon;
+GRANT SELECT ON v_loan_listings TO authenticated, anon;
+GRANT SELECT ON v_loan_listing_details TO authenticated, anon;
+GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
+GRANT SELECT ON v_lender_offers TO authenticated, anon;
+GRANT SELECT ON v_marketplace_activity TO authenticated, anon;
+GRANT SELECT ON v_marketplace_pro_filters TO authenticated;
+GRANT SELECT ON v_trust_profile_public TO authenticated, anon;
+GRANT SELECT ON v_trust_profile_pro TO authenticated;
+GRANT EXECUTE ON FUNCTION fn_income_bracket(BIGINT) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.submit_review(UUID, SMALLINT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.recompute_trust_aggregates(UUID) TO service_role;
+
+-- Explicitly grant privileges on schema and tables
+GRANT USAGE ON SCHEMA public TO authenticated, anon, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO authenticated, anon, service_role;
+GRANT EXECUTE ON FUNCTION public.check_phone_registered(TEXT) TO authenticated, anon, service_role;
+
+GRANT SELECT ON public.v_lender_rate_history TO authenticated;
+GRANT EXECUTE ON FUNCTION public.consume_free_unlock() TO authenticated;
+
+
+-- ==============================================================================
+-- 2. BASE SEED DATA (sql/seed.sql)
+-- ==============================================================================
+
+-- ============================================
+-- NIPANZE Seed Data  sql/seed.sql
+-- Version: 5.1 (Country-organized, user counts matched across all countries)
+-- Matches schema v5.0 exactly (countries table, profiles.country,
+-- loan_requests.country, subscriptions.amount_minor_units, no
+-- loan_offers.country -- country is always read through request_id).
+-- ============================================
+--
+-- v5.1: every country now has the SAME number of users as Uganda (17),
+-- mirroring Uganda's role mix so each country's block is a drop-in
+-- parallel of the others:
+--   8 active borrowers (free plan)
+--   5 lenders (mix of 'lender' / 'pro' plans)
+--   1 pending_verification borrower (tests the account-status gate)
+--   2 admins (is_admin = TRUE)
+--   1 test user
+-- = 17 users per country x 8 countries (UG + KE, TZ, RW, BI, SS, CD, SO)
+--   = 136 total seeded users.
+--
+-- Organization: Part A seeds users country-by-country (auth.users ->
+-- profiles -> subscriptions), so any single country's users can be
+-- inspected, reset, or re-run independently. Part B (marketplace data)
+-- is separate because loan_offers can legitimately cross borders
+-- (trg_fn_validate_offer allows this by default) -- a request seeded in
+-- one country's block may carry an offer from a lender seeded in a
+-- different country's block, so requests/offers/agreements/reveals are
+-- grouped together afterward, by the request's country, in listing order.
+--
+-- Password for ALL accounts: Test1234!
+--
+-- FIXED UUIDs -- Uganda (unchanged from prior versions): ...0001-...0017
+-- FIXED UUIDs -- new countries, 17 consecutive IDs each, in this order:
+--   Kenya       ...0018-...0034   (borrowers 018-025, lenders 026-030, pending 031, admins 032-033, test 034)
+--   Tanzania    ...0035-...0051   (borrowers 035-042, lenders 043-047, pending 048, admins 049-050, test 051)
+--   Rwanda      ...0052-...0068   (borrowers 052-059, lenders 060-064, pending 065, admins 066-067, test 068)
+--   Burundi     ...0069-...0085   (borrowers 069-076, lenders 077-081, pending 082, admins 083-084, test 085)
+--   South Sudan ...0086-...0102   (borrowers 086-093, lenders 094-098, pending 099, admins 100-101, test 102)
+--   DR Congo    ...0103-...0119   (borrowers 103-110, lenders 111-115, pending 116, admins 117-118, test 119)
+--   Somalia     ...0120-...0136   (borrowers 120-127, lenders 128-132, pending 133, admins 134-135, test 136)
+--
+-- Each country's borrower[0] and lender[0] (first names in each list) are
+-- the ones referenced in the marketplace demo data in Part B, so e.g.
+-- Kenya's "Wanjiru Kamau" (...0018) and "Otieno Mwangi" (...0026) keep
+-- their names and roles from earlier seed versions.
+-- ============================================
+
+
+-- ============================================================
+-- PART A -- USERS, ORGANIZED BY COUNTRY
+-- ============================================================
+-- COUNTRY: UGANDA (UG)
+-- ============================================
+
+-- ---- UG: auth.users ----
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'david.mukasa@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-15 08:30:00', '2024-01-15 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"David Mukasa","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'sarah.namukasa@yahoo.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-18 10:45:00', '2024-01-18 10:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Sarah Namukasa","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'james.okello@outlook.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-20 14:20:00', '2024-01-20 14:20:00', '{"provider":"email","providers":["email"]}', '{"full_name":"James Okello","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'maria.nakato@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-22 09:10:00', '2024-01-22 09:10:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Maria Nakato","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'robert.ssemwanga@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-25 11:30:00', '2024-01-25 11:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Robert Ssemwanga","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'info@greenleafagro.co.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-02-18 09:20:00', '2024-02-18 09:20:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Michael Semakula","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'contact@kampalatech.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-02-20 11:40:00', '2024-02-20 11:40:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Sandra Namutebi","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'invest@pearlcapital.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-01 10:10:00', '2024-03-01 10:10:00', '{"provider":"email","providers":["email"]}', '{"full_name":"William Kasujja","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000000', 'funds@victoriainvest.co.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-03 12:30:00', '2024-03-03 12:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Catherine Namboze","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000000', 'lending@equatorfinance.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-05 09:45:00', '2024-03-05 09:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"George Mulindwa","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000000', 'frank.omondi@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-08 14:15:00', '2024-03-08 14:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Frank Omondi","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000000', 'lucy.nambi@yahoo.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-10 11:20:00', '2024-03-10 11:20:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Lucy Nambi","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000013', '00000000-0000-0000-0000-000000000000', 'charles.mwesigwa@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-03-12 16:40:00', '2024-03-12 16:40:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Charles Mwesigwa","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000014', '00000000-0000-0000-0000-000000000000', 'alice.namuli@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2026-01-25 09:15:00', '2026-01-25 09:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Alice Namuli","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000000', 'admin1@nipanze.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin One","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000016', '00000000-0000-0000-0000-000000000000', 'admin2@nipanze.ug', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2024-01-01 08:00:00', '2024-01-01 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Two","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000017', '00000000-0000-0000-0000-000000000000', 'test.user@gmail.com', crypt('Test1234!', gen_salt('bf')),
+ NOW(), '2026-02-06 10:00:00', '2026-02-06 10:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User","country_code":"UG"}',
+ FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- ---- UG: profiles / subscriptions fallback provisioning ----
+-- (Guards against the on_auth_user_created trigger not firing if these
+-- auth.users rows already existed from a prior run — see header note.)
+INSERT INTO public.profiles (id, full_name, account_status, is_admin, country)
+SELECT au.id, COALESCE(au.raw_user_meta_data->>'full_name', SPLIT_PART(au.email, '@', 1)), 'pending_verification', FALSE, 'UG'
+FROM auth.users au
+WHERE au.id::text LIKE '10000000-0000-0000-0000-0000000000%'
+  AND au.id::text ~ '0000000000(0[1-9]|1[0-7])$'
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units)
+SELECT au.id, 'free', 'active', 0
+FROM auth.users au
+WHERE au.id::text ~ '0000000000(0[1-9]|1[0-7])$'
+ON CONFLICT (user_id) WHERE status = 'active' DO NOTHING;
+
+-- ---- UG: profile details ----
+UPDATE profiles SET full_name='David Mukasa', phone='+256701234567', district='Central', country='UG',
+    employment_type='government_employee', employer_name='Uganda Revenue Authority', monthly_income=4500000, income_currency='UGX',
+    account_status='active', created_at='2024-01-15 08:30:00'
+WHERE id='10000000-0000-0000-0000-000000000001';
+
+UPDATE profiles SET full_name='Sarah Namukasa', phone='+256702345678', district='Central', country='UG',
+    employment_type='employed', employer_name='Stanbic Bank Uganda', monthly_income=3200000, income_currency='UGX',
+    account_status='active', created_at='2024-01-18 10:45:00'
+WHERE id='10000000-0000-0000-0000-000000000002';
+
+UPDATE profiles SET full_name='James Okello', phone='+256703456789', district='Central', country='UG',
+    employment_type='employed', employer_name='MTN Uganda', monthly_income=5800000, income_currency='UGX',
+    account_status='active', created_at='2024-01-20 14:20:00'
+WHERE id='10000000-0000-0000-0000-000000000003';
+
+UPDATE profiles SET full_name='Maria Nakato', phone='+256704567890', district='Central', country='UG',
+    employment_type='small_business_owner', employer_name='Nakato Boutique', monthly_income=2800000, income_currency='UGX',
+    account_status='active', created_at='2024-01-22 09:10:00'
+WHERE id='10000000-0000-0000-0000-000000000004';
+
+UPDATE profiles SET full_name='Robert Ssemwanga', phone='+256705678901', district='Central', country='UG',
+    employment_type='employed', employer_name='DFCU Bank', monthly_income=6500000, income_currency='UGX',
+    account_status='active', created_at='2024-01-25 11:30:00'
+WHERE id='10000000-0000-0000-0000-000000000005';
+
+UPDATE profiles SET full_name='Michael Semakula', phone='+256711234567', district='Central', country='UG',
+    employment_type='business_owner', employer_name='GreenLeaf Agro Solutions Ltd', monthly_income=15000000, income_currency='UGX',
+    account_status='active', created_at='2024-02-18 09:20:00'
+WHERE id='10000000-0000-0000-0000-000000000006';
+
+UPDATE profiles SET full_name='Sandra Namutebi', phone='+256712345678', district='Central', country='UG',
+    employment_type='business_owner', employer_name='Kampala Tech Innovations', monthly_income=12000000, income_currency='UGX',
+    account_status='active', created_at='2024-02-20 11:40:00'
+WHERE id='10000000-0000-0000-0000-000000000007';
+
+UPDATE profiles SET full_name='William Kasujja', phone='+256716789012', district='Central', country='UG',
+    employment_type='business_owner', employer_name='Pearl Capital Investment Fund', monthly_income=25000000, income_currency='UGX',
+    account_status='active', created_at='2024-03-01 10:10:00'
+WHERE id='10000000-0000-0000-0000-000000000008';
+
+UPDATE profiles SET full_name='Catherine Namboze', phone='+256717890123', district='Central', country='UG',
+    employment_type='business_owner', employer_name='Victoria Investment Group', monthly_income=22000000, income_currency='UGX',
+    account_status='active', created_at='2024-03-03 12:30:00'
+WHERE id='10000000-0000-0000-0000-000000000009';
+
+UPDATE profiles SET full_name='George Mulindwa', phone='+256718901234', district='Central', country='UG',
+    employment_type='business_owner', employer_name='Equator Finance Corporation', monthly_income=28000000, income_currency='UGX',
+    account_status='active', created_at='2024-03-05 09:45:00'
+WHERE id='10000000-0000-0000-0000-000000000010';
+
+UPDATE profiles SET full_name='Frank Omondi', phone='+256719012345', district='Eastern', country='UG',
+    employment_type='employed', employer_name='Bank of Africa', monthly_income=3300000, income_currency='UGX',
+    account_status='active', created_at='2024-03-08 14:15:00'
+WHERE id='10000000-0000-0000-0000-000000000011';
+
+UPDATE profiles SET full_name='Lucy Nambi', phone='+256720123456', district='Central', country='UG',
+    employment_type='employed', employer_name='National Social Security Fund', monthly_income=2900000, income_currency='UGX',
+    account_status='active', created_at='2024-03-10 11:20:00'
+WHERE id='10000000-0000-0000-0000-000000000012';
+
+UPDATE profiles SET full_name='Charles Mwesigwa', phone='+256721234567', district='Western', country='UG',
+    employment_type='employed', employer_name='Shell Uganda', monthly_income=5200000, income_currency='UGX',
+    account_status='active', created_at='2024-03-12 16:40:00'
+WHERE id='10000000-0000-0000-0000-000000000013';
+
+-- Alice Namuli — pending_verification (tests the account-status gate)
+UPDATE profiles SET full_name='Alice Namuli', phone='+256726789012', district='Central', country='UG',
+    employment_type='employed', employer_name='Equity Bank', monthly_income=2700000, income_currency='UGX',
+    account_status='pending_verification', created_at='2026-01-25 09:15:00'
+WHERE id='10000000-0000-0000-0000-000000000014';
+
+-- Admins (is_admin boolean is the only role concept — no `role` column)
+UPDATE profiles SET full_name='Admin One', phone='+256700000001', district='Central', country='UG',
+    account_status='active', is_admin=TRUE, created_at='2024-01-01 08:00:00'
+WHERE id='10000000-0000-0000-0000-000000000015';
+
+UPDATE profiles SET full_name='Admin Two', phone='+256700000002', district='Central', country='UG',
+    account_status='active', is_admin=TRUE, created_at='2024-01-01 08:00:00'
+WHERE id='10000000-0000-0000-0000-000000000016';
+
+-- Test user — tests onboarding gate
+UPDATE profiles SET full_name='Test User', phone='+256799999999', district='Central', country='UG',
+    account_status='active', created_at='2026-02-06 10:00:00'
+WHERE id='10000000-0000-0000-0000-000000000017';
+
+-- ---- UG: KYC (optional; not required to post a request) ----
+INSERT INTO kyc_verifications (
+    id, user_id, status, national_id_type, national_id_number,
+    national_id_front_url, national_id_back_url, selfie_url,
+    id_verified, selfie_verified, verified_by,
+    submitted_at, reviewed_at, expires_at, created_at
+) VALUES
+('a1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'approved', 'national_id', 'CM88015KL234567', 'https://storage.nipanze.ug/kyc/user-001-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-001-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-001-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-01-15 09:15:00', '2024-01-16 10:30:00', '2027-01-15 00:00:00', '2024-01-15 09:15:00'),
+('a1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'approved', 'national_id', 'CM92022NM345678', 'https://storage.nipanze.ug/kyc/user-002-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-002-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-002-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-01-18 11:00:00', '2024-01-19 11:45:00', '2027-01-18 00:00:00', '2024-01-18 11:00:00'),
+('a1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'approved', 'national_id', 'CM85011OK345679', 'https://storage.nipanze.ug/kyc/user-003-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-003-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-003-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-01-20 14:30:00', '2024-01-21 09:30:00', '2027-01-20 00:00:00', '2024-01-20 14:30:00'),
+('a1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'approved', 'national_id', 'CM90014NK567890', 'https://storage.nipanze.ug/kyc/user-004-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-004-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-004-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-01-22 09:30:00', '2024-01-23 14:30:00', '2027-01-22 00:00:00', '2024-01-22 09:30:00'),
+('a1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000005', 'approved', 'national_id', 'CM87030SS678901', 'https://storage.nipanze.ug/kyc/user-005-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-005-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-005-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-01-25 11:45:00', '2024-01-25 16:00:00', '2027-01-25 00:00:00', '2024-01-25 11:45:00'),
+('a1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000006', 'approved', 'national_id', 'CM80020SM456789', 'https://storage.nipanze.ug/kyc/user-006-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-006-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-006-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-02-18 09:00:00', '2024-02-19 10:30:00', '2027-02-18 00:00:00', '2024-02-18 09:00:00'),
+('a1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000007', 'approved', 'national_id', 'CM83015SN789012', 'https://storage.nipanze.ug/kyc/user-007-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-007-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-007-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-02-20 10:00:00', '2024-02-21 11:00:00', '2027-02-20 00:00:00', '2024-02-20 10:00:00'),
+('a1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000008', 'approved', 'national_id', 'CM75018WK890123', 'https://storage.nipanze.ug/kyc/user-008-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-008-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-008-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-03-01 09:00:00', '2024-03-02 10:00:00', '2027-03-01 00:00:00', '2024-03-01 09:00:00'),
+('a1000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000009', 'approved', 'national_id', 'CM77012CN901234', 'https://storage.nipanze.ug/kyc/user-009-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-009-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-009-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-03-03 11:00:00', '2024-03-04 11:00:00', '2027-03-03 00:00:00', '2024-03-03 11:00:00'),
+('a1000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000010', 'approved', 'national_id', 'CM79025GM012345', 'https://storage.nipanze.ug/kyc/user-010-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-010-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-010-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-03-05 09:00:00', '2024-03-06 10:00:00', '2027-03-05 00:00:00', '2024-03-05 09:00:00'),
+('a1000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000011', 'approved', 'national_id', 'CM91114OM789012', 'https://storage.nipanze.ug/kyc/user-011-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-011-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-011-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-03-08 09:30:00', '2024-03-09 14:00:00', '2027-03-08 00:00:00', '2024-03-08 09:30:00'),
+('a1000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000012', 'approved', 'national_id', 'CM88047NB890123', 'https://storage.nipanze.ug/kyc/user-012-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-012-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-012-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000015', '2024-03-10 09:00:00', '2024-03-11 11:00:00', '2027-03-10 00:00:00', '2024-03-10 09:00:00'),
+('a1000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000013', 'approved', 'national_id', 'CM84021MW901234', 'https://storage.nipanze.ug/kyc/user-013-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-013-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-013-selfie.jpg', TRUE, TRUE, '10000000-0000-0000-0000-000000000016', '2024-03-12 12:00:00', '2024-03-13 15:00:00', '2027-03-12 00:00:00', '2024-03-12 12:00:00'),
+('a1000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000014', 'pending', 'national_id', 'CM93255NM789013', 'https://storage.nipanze.ug/kyc/user-014-id-front.jpg', 'https://storage.nipanze.ug/kyc/user-014-id-back.jpg', 'https://storage.nipanze.ug/kyc/user-014-selfie.jpg', FALSE, FALSE, NULL, '2026-01-25 10:30:00', NULL, NULL, '2026-01-25 10:30:00')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- ---- UG: subscriptions (upgrade lenders; borrowers stay on free) ----
+UPDATE subscriptions SET plan='lender', status='active', amount_minor_units=35000,  started_at='2024-02-18 10:00:00', expires_at='2028-02-18 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000006';
+UPDATE subscriptions SET plan='lender', status='active', amount_minor_units=35000,  started_at='2024-02-20 12:00:00', expires_at='2028-02-20 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000007';
+UPDATE subscriptions SET plan='pro',    status='active', amount_minor_units=150000, started_at='2024-03-01 11:00:00', expires_at='2028-03-01 11:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000008';
+UPDATE subscriptions SET plan='pro',    status='active', amount_minor_units=150000, started_at='2024-03-03 13:00:00', expires_at='2028-03-03 13:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000009';
+UPDATE subscriptions SET plan='lender', status='active', amount_minor_units=35000,  started_at='2024-03-05 10:00:00', expires_at='2028-03-05 10:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000010';
+UPDATE subscriptions SET plan='pro',    status='active', amount_minor_units=150000, started_at='2024-01-20 15:00:00', expires_at='2028-01-20 15:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000003';
+UPDATE subscriptions SET plan='lender', status='active', amount_minor_units=35000,  started_at='2024-01-25 12:00:00', expires_at='2028-01-25 12:00:00', auto_renew=TRUE  WHERE user_id='10000000-0000-0000-0000-000000000005';
+-- remaining UG borrowers (001, 002, 004, 011, 012, 013, 014, 017) stay free — no update needed
+
+
+-- ============================================
+-- ============================================
+-- COUNTRY: KENYA (KE) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000018', '00000000-0000-0000-0000-000000000000', 'wanjiru.kamau@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Wanjiru Kamau","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000019', '00000000-0000-0000-0000-000000000000', 'njoroge.kariuki@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Njoroge Kariuki","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000000', 'achieng.odhiambo@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Achieng Odhiambo","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000000', 'chebet.korir@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Chebet Korir","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000022', '00000000-0000-0000-0000-000000000000', 'mutua.kilonzo@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mutua Kilonzo","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000000', 'wambui.gathoni@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Wambui Gathoni","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000024', '00000000-0000-0000-0000-000000000000', 'omondi.owino@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Omondi Owino","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000000', 'nyambura.macharia@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nyambura Macharia","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000026', '00000000-0000-0000-0000-000000000000', 'otieno.mwangi@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Otieno Mwangi","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000027', '00000000-0000-0000-0000-000000000000', 'kiptoo.rotich@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kiptoo Rotich","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000000', 'wanjiku.muriithi@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Wanjiku Muriithi","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000029', '00000000-0000-0000-0000-000000000000', 'mburu.njuguna@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mburu Njuguna","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000000', 'adhiambo.onyango@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Adhiambo Onyango","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000000', 'akinyi.otieno@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Akinyi Otieno","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000000', 'admin.kenya.one@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Kenya One","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000000', 'admin.kenya.two@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Kenya Two","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000000', 'test.user.kenya@nipanze-ke.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User Kenya","country_code":"KE"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Kenya: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000018', 'Wanjiru Kamau', '+254710002466', 'Nairobi', 'KE', 'employed', 'Wanjiru Household Income', 150000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000019', 'Njoroge Kariuki', '+254710002603', 'Nairobi', 'KE', 'government_employee', 'Njoroge Household Income', 195000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000020', 'Achieng Odhiambo', '+254710002740', 'Nairobi', 'KE', 'self_employed', 'Achieng Household Income', 120000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000021', 'Chebet Korir', '+254710002877', 'Nairobi', 'KE', 'small_business_owner', 'Chebet Household Income', 165000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000022', 'Mutua Kilonzo', '+254710003014', 'Nairobi', 'KE', 'employed', 'Mutua Household Income', 135000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000023', 'Wambui Gathoni', '+254710003151', 'Nairobi', 'KE', 'government_employee', 'Wambui Household Income', 225000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000024', 'Omondi Owino', '+254710003288', 'Nairobi', 'KE', 'self_employed', 'Omondi Household Income', 105000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000025', 'Nyambura Macharia', '+254710003425', 'Nairobi', 'KE', 'small_business_owner', 'Nyambura Household Income', 180000, 'KES', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000026', 'Otieno Mwangi', '+254720003926', 'Nairobi', 'KE', 'business_owner', 'Otieno Capital Partners', 700000, 'KES', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000027', 'Kiptoo Rotich', '+254720004077', 'Nairobi', 'KE', 'business_owner', 'Kiptoo Capital Partners', 420000, 'KES', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000028', 'Wanjiku Muriithi', '+254720004228', 'Nairobi', 'KE', 'business_owner', 'Wanjiku Capital Partners', 1540000, 'KES', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000029', 'Mburu Njuguna', '+254720004379', 'Nairobi', 'KE', 'business_owner', 'Mburu Capital Partners', 560000, 'KES', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000030', 'Adhiambo Onyango', '+254720004530', 'Nairobi', 'KE', 'business_owner', 'Adhiambo Capital Partners', 1750000, 'KES', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000031', 'Akinyi Otieno', '+25473000000', 'Nairobi', 'KE', 'employed', 'Local Employer Ltd', 135000, 'KES', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000032', 'Admin Kenya One', '+254700000000', 'Nairobi', 'KE', NULL, NULL, NULL, 'KES', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000033', 'Admin Kenya Two', '+254700000001', 'Nairobi', 'KE', NULL, NULL, NULL, 'KES', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000034', 'Test User Kenya', '+254799999999', 'Nairobi', 'KE', NULL, NULL, NULL, 'KES', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- Kenya: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000018', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000019', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000020', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000021', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000022', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000023', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000024', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000025', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000026', 'lender', 'active', 1633, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000027', 'lender', 'active', 1633, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000028', 'pro', 'active', 7000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000029', 'lender', 'active', 1633, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000030', 'pro', 'active', 7000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000031', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000032', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000033', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000034', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: TANZANIA (TZ) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000035', '00000000-0000-0000-0000-000000000000', 'amina.juma@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Amina Juma","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000036', '00000000-0000-0000-0000-000000000000', 'mwakalinga.ndege@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mwakalinga Ndege","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000037', '00000000-0000-0000-0000-000000000000', 'hassan.mbwana@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Hassan Mbwana","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000038', '00000000-0000-0000-0000-000000000000', 'fatuma.kisoma@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Fatuma Kisoma","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000039', '00000000-0000-0000-0000-000000000000', 'juma.mwakisu@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Juma Mwakisu","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000040', '00000000-0000-0000-0000-000000000000', 'neema.kileo@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Neema Kileo","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000000', 'salum.ally@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Salum Ally","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000000', 'zainab.rashidi@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Zainab Rashidi","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000000', 'baraka.mushi@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Baraka Mushi","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000000', 'godfrey.massawe@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Godfrey Massawe","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000000', 'rehema.chuma@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Rehema Chuma","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000046', '00000000-0000-0000-0000-000000000000', 'emmanuel.sanga@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Emmanuel Sanga","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000047', '00000000-0000-0000-0000-000000000000', 'halima.mnyapala@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Halima Mnyapala","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000000', 'fadhili.mrema@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Fadhili Mrema","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000049', '00000000-0000-0000-0000-000000000000', 'admin.tanzania.one@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Tanzania One","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000000', 'admin.tanzania.two@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Tanzania Two","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000000', 'test.user.tanzania@nipanze-tz.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User Tanzania","country_code":"TZ"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Tanzania: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000035', 'Amina Juma', '+255710004795', 'Dar es Salaam', 'TZ', 'employed', 'Amina Household Income', 1800000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000036', 'Mwakalinga Ndege', '+255710004932', 'Dar es Salaam', 'TZ', 'government_employee', 'Mwakalinga Household Income', 2340000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000037', 'Hassan Mbwana', '+255710005069', 'Dar es Salaam', 'TZ', 'self_employed', 'Hassan Household Income', 1440000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000038', 'Fatuma Kisoma', '+255710005206', 'Dar es Salaam', 'TZ', 'small_business_owner', 'Fatuma Household Income', 1980000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000039', 'Juma Mwakisu', '+255710005343', 'Dar es Salaam', 'TZ', 'employed', 'Juma Household Income', 1620000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000040', 'Neema Kileo', '+255710005480', 'Dar es Salaam', 'TZ', 'government_employee', 'Neema Household Income', 2700000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000041', 'Salum Ally', '+255710005617', 'Dar es Salaam', 'TZ', 'self_employed', 'Salum Household Income', 1260000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000042', 'Zainab Rashidi', '+255710005754', 'Dar es Salaam', 'TZ', 'small_business_owner', 'Zainab Household Income', 2160000, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000043', 'Baraka Mushi', '+255720006493', 'Dar es Salaam', 'TZ', 'business_owner', 'Baraka Capital Partners', 8500000, 'TZS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000044', 'Godfrey Massawe', '+255720006644', 'Dar es Salaam', 'TZ', 'business_owner', 'Godfrey Capital Partners', 5100000, 'TZS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000045', 'Rehema Chuma', '+255720006795', 'Dar es Salaam', 'TZ', 'business_owner', 'Rehema Capital Partners', 18700000, 'TZS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000046', 'Emmanuel Sanga', '+255720006946', 'Dar es Salaam', 'TZ', 'business_owner', 'Emmanuel Capital Partners', 6800000, 'TZS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000047', 'Halima Mnyapala', '+255720007097', 'Dar es Salaam', 'TZ', 'business_owner', 'Halima Capital Partners', 21250000, 'TZS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000048', 'Fadhili Mrema', '+25573000000', 'Dar es Salaam', 'TZ', 'employed', 'Local Employer Ltd', 1620000, 'TZS', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000049', 'Admin Tanzania One', '+255700000000', 'Dar es Salaam', 'TZ', NULL, NULL, NULL, 'TZS', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000050', 'Admin Tanzania Two', '+255700000001', 'Dar es Salaam', 'TZ', NULL, NULL, NULL, 'TZS', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000051', 'Test User Tanzania', '+255799999999', 'Dar es Salaam', 'TZ', NULL, NULL, NULL, 'TZS', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- Tanzania: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000035', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000036', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000037', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000038', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000039', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000040', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000041', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000042', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000043', 'lender', 'active', 19833, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000044', 'lender', 'active', 19833, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000045', 'pro', 'active', 85000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000046', 'lender', 'active', 19833, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000047', 'pro', 'active', 85000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000048', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000049', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000050', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000051', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: RWANDA (RW) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000000', 'uwase.claudine@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Uwase Claudine","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000000', 'mugisha.emmanuel@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mugisha Emmanuel","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000000', 'ingabire.solange@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ingabire Solange","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000055', '00000000-0000-0000-0000-000000000000', 'habimana.eric@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Habimana Eric","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000056', '00000000-0000-0000-0000-000000000000', 'uwimana.alice@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Uwimana Alice","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000057', '00000000-0000-0000-0000-000000000000', 'nsengimana.jean@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nsengimana Jean","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000058', '00000000-0000-0000-0000-000000000000', 'mukamana.diane@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mukamana Diane","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000059', '00000000-0000-0000-0000-000000000000', 'bizimana.patrick@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Bizimana Patrick","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000060', '00000000-0000-0000-0000-000000000000', 'rugamba.innocent@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Rugamba Innocent","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000061', '00000000-0000-0000-0000-000000000000', 'mutesi.christine@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mutesi Christine","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000062', '00000000-0000-0000-0000-000000000000', 'karangwa.vincent@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Karangwa Vincent","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000063', '00000000-0000-0000-0000-000000000000', 'nyiraneza.josiane@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nyiraneza Josiane","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000064', '00000000-0000-0000-0000-000000000000', 'twagirayezu.faustin@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Twagirayezu Faustin","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000065', '00000000-0000-0000-0000-000000000000', 'ishimwe.sandrine@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ishimwe Sandrine","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000066', '00000000-0000-0000-0000-000000000000', 'admin.rwanda.one@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Rwanda One","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000067', '00000000-0000-0000-0000-000000000000', 'admin.rwanda.two@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Rwanda Two","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000068', '00000000-0000-0000-0000-000000000000', 'test.user.rwanda@nipanze-rw.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User Rwanda","country_code":"RW"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Rwanda: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000052', 'Uwase Claudine', '+250710007124', 'Kigali', 'RW', 'employed', 'Uwase Household Income', 750000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000053', 'Mugisha Emmanuel', '+250710007261', 'Kigali', 'RW', 'government_employee', 'Mugisha Household Income', 975000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000054', 'Ingabire Solange', '+250710007398', 'Kigali', 'RW', 'self_employed', 'Ingabire Household Income', 600000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000055', 'Habimana Eric', '+250710007535', 'Kigali', 'RW', 'small_business_owner', 'Habimana Household Income', 825000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000056', 'Uwimana Alice', '+250710007672', 'Kigali', 'RW', 'employed', 'Uwimana Household Income', 675000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000057', 'Nsengimana Jean', '+250710007809', 'Kigali', 'RW', 'government_employee', 'Nsengimana Household Income', 1125000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000058', 'Mukamana Diane', '+250710007946', 'Kigali', 'RW', 'self_employed', 'Mukamana Household Income', 525000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000059', 'Bizimana Patrick', '+250710008083', 'Kigali', 'RW', 'small_business_owner', 'Bizimana Household Income', 900000, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000060', 'Rugamba Innocent', '+250720009060', 'Kigali', 'RW', 'business_owner', 'Rugamba Capital Partners', 3800000, 'RWF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000061', 'Mutesi Christine', '+250720009211', 'Kigali', 'RW', 'business_owner', 'Mutesi Capital Partners', 2280000, 'RWF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000062', 'Karangwa Vincent', '+250720009362', 'Kigali', 'RW', 'business_owner', 'Karangwa Capital Partners', 8360000, 'RWF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000063', 'Nyiraneza Josiane', '+250720009513', 'Kigali', 'RW', 'business_owner', 'Nyiraneza Capital Partners', 3040000, 'RWF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000064', 'Twagirayezu Faustin', '+250720009664', 'Kigali', 'RW', 'business_owner', 'Twagirayezu Capital Partners', 9500000, 'RWF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000065', 'Ishimwe Sandrine', '+25073000000', 'Kigali', 'RW', 'employed', 'Local Employer Ltd', 675000, 'RWF', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000066', 'Admin Rwanda One', '+250700000000', 'Kigali', 'RW', NULL, NULL, NULL, 'RWF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000067', 'Admin Rwanda Two', '+250700000001', 'Kigali', 'RW', NULL, NULL, NULL, 'RWF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000068', 'Test User Rwanda', '+250799999999', 'Kigali', 'RW', NULL, NULL, NULL, 'RWF', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- Rwanda: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000052', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000053', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000054', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000055', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000056', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000057', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000058', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000059', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000060', 'lender', 'active', 8866, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000061', 'lender', 'active', 8866, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000062', 'pro', 'active', 38000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000063', 'lender', 'active', 8866, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000064', 'pro', 'active', 38000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000065', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000066', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000067', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000068', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: BURUNDI (BI) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000069', '00000000-0000-0000-0000-000000000000', 'ndayishimiye.aline@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ndayishimiye Aline","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000000', 'nkurunziza.gilbert@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nkurunziza Gilbert","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000000', 'niyonzima.chantal@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Niyonzima Chantal","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000000', 'bigirimana.willy@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Bigirimana Willy","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000000', 'nizigiyimana.solange@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nizigiyimana Solange","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000074', '00000000-0000-0000-0000-000000000000', 'hakizimana.eric@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Hakizimana Eric","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000000', 'nduwimana.aisha@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nduwimana Aisha","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000076', '00000000-0000-0000-0000-000000000000', 'ntahonkiriye.fabrice@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ntahonkiriye Fabrice","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000077', '00000000-0000-0000-0000-000000000000', 'nshimirimana.pacifique@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nshimirimana Pacifique","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000078', '00000000-0000-0000-0000-000000000000', 'ndikumana.alexis@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ndikumana Alexis","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000079', '00000000-0000-0000-0000-000000000000', 'nizeyimana.beatrice@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nizeyimana Beatrice","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000000', 'nsabimana.olivier@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nsabimana Olivier","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000081', '00000000-0000-0000-0000-000000000000', 'ntirampeba.clarisse@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ntirampeba Clarisse","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000000', 'irakoze.divine@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Irakoze Divine","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000083', '00000000-0000-0000-0000-000000000000', 'admin.burundi.one@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Burundi One","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000084', '00000000-0000-0000-0000-000000000000', 'admin.burundi.two@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Burundi Two","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000085', '00000000-0000-0000-0000-000000000000', 'test.user.burundi@nipanze-bi.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User Burundi","country_code":"BI"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Burundi: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000069', 'Ndayishimiye Aline', '+257710009453', 'Bujumbura', 'BI', 'employed', 'Ndayishimiye Household Income', 850000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000070', 'Nkurunziza Gilbert', '+257710009590', 'Bujumbura', 'BI', 'government_employee', 'Nkurunziza Household Income', 1105000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000071', 'Niyonzima Chantal', '+257710009727', 'Bujumbura', 'BI', 'self_employed', 'Niyonzima Household Income', 680000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000072', 'Bigirimana Willy', '+257710009864', 'Bujumbura', 'BI', 'small_business_owner', 'Bigirimana Household Income', 935000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000073', 'Nizigiyimana Solange', '+257710010001', 'Bujumbura', 'BI', 'employed', 'Nizigiyimana Household Income', 765000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000074', 'Hakizimana Eric', '+257710010138', 'Bujumbura', 'BI', 'government_employee', 'Hakizimana Household Income', 1275000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000075', 'Nduwimana Aisha', '+257710010275', 'Bujumbura', 'BI', 'self_employed', 'Nduwimana Household Income', 595000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000076', 'Ntahonkiriye Fabrice', '+257710010412', 'Bujumbura', 'BI', 'small_business_owner', 'Ntahonkiriye Household Income', 1020000, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000077', 'Nshimirimana Pacifique', '+257720011627', 'Bujumbura', 'BI', 'business_owner', 'Nshimirimana Capital Partners', 4700000, 'BIF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000078', 'Ndikumana Alexis', '+257720011778', 'Bujumbura', 'BI', 'business_owner', 'Ndikumana Capital Partners', 2820000, 'BIF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000079', 'Nizeyimana Beatrice', '+257720011929', 'Bujumbura', 'BI', 'business_owner', 'Nizeyimana Capital Partners', 10340000, 'BIF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000080', 'Nsabimana Olivier', '+257720012080', 'Bujumbura', 'BI', 'business_owner', 'Nsabimana Capital Partners', 3760000, 'BIF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000081', 'Ntirampeba Clarisse', '+257720012231', 'Bujumbura', 'BI', 'business_owner', 'Ntirampeba Capital Partners', 11750000, 'BIF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000082', 'Irakoze Divine', '+25773000000', 'Bujumbura', 'BI', 'employed', 'Local Employer Ltd', 765000, 'BIF', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000083', 'Admin Burundi One', '+257700000000', 'Bujumbura', 'BI', NULL, NULL, NULL, 'BIF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000084', 'Admin Burundi Two', '+257700000001', 'Bujumbura', 'BI', NULL, NULL, NULL, 'BIF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000085', 'Test User Burundi', '+257799999999', 'Bujumbura', 'BI', NULL, NULL, NULL, 'BIF', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- Burundi: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000069', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000070', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000071', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000072', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000073', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000074', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000075', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000076', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000077', 'lender', 'active', 10966, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000078', 'lender', 'active', 10966, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000079', 'pro', 'active', 47000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000080', 'lender', 'active', 10966, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000081', 'pro', 'active', 47000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000082', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000083', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000084', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000085', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: SOUTH SUDAN (SS) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000086', '00000000-0000-0000-0000-000000000000', 'akol.deng@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Akol Deng","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000087', '00000000-0000-0000-0000-000000000000', 'achol.mayen@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Achol Mayen","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000088', '00000000-0000-0000-0000-000000000000', 'garang.bior@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Garang Bior","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000089', '00000000-0000-0000-0000-000000000000', 'nyibol.kuot@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nyibol Kuot","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000090', '00000000-0000-0000-0000-000000000000', 'deng.majok@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Deng Majok","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000091', '00000000-0000-0000-0000-000000000000', 'akech.aluel@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Akech Aluel","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000092', '00000000-0000-0000-0000-000000000000', 'malual.chol@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Malual Chol","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000093', '00000000-0000-0000-0000-000000000000', 'adut.manyang@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Adut Manyang","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000094', '00000000-0000-0000-0000-000000000000', 'nyandeng.malual@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nyandeng Malual","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000095', '00000000-0000-0000-0000-000000000000', 'wek.ajak@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Wek Ajak","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000096', '00000000-0000-0000-0000-000000000000', 'achuoth.mabior@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Achuoth Mabior","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000097', '00000000-0000-0000-0000-000000000000', 'nyanchiew.gatkuoth@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nyanchiew Gatkuoth","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000098', '00000000-0000-0000-0000-000000000000', 'riek.machot@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Riek Machot","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000099', '00000000-0000-0000-0000-000000000000', 'ayen.lual@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ayen Lual","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000100', '00000000-0000-0000-0000-000000000000', 'admin.south.sudan.one@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin South Sudan One","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000000', 'admin.south.sudan.two@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin South Sudan Two","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000000', 'test.user.south.sudan@nipanze-ss.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User South Sudan","country_code":"SS"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- South Sudan: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000086', 'Akol Deng', '+211710011782', 'Juba', 'SS', 'employed', 'Akol Household Income', 300000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000087', 'Achol Mayen', '+211710011919', 'Juba', 'SS', 'government_employee', 'Achol Household Income', 390000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000088', 'Garang Bior', '+211710012056', 'Juba', 'SS', 'self_employed', 'Garang Household Income', 240000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000089', 'Nyibol Kuot', '+211710012193', 'Juba', 'SS', 'small_business_owner', 'Nyibol Household Income', 330000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000090', 'Deng Majok', '+211710012330', 'Juba', 'SS', 'employed', 'Deng Household Income', 270000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000091', 'Akech Aluel', '+211710012467', 'Juba', 'SS', 'government_employee', 'Akech Household Income', 450000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000092', 'Malual Chol', '+211710012604', 'Juba', 'SS', 'self_employed', 'Malual Household Income', 210000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000093', 'Adut Manyang', '+211710012741', 'Juba', 'SS', 'small_business_owner', 'Adut Household Income', 360000, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000094', 'Nyandeng Malual', '+211720014194', 'Juba', 'SS', 'business_owner', 'Nyandeng Capital Partners', 1600000, 'SSP', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000095', 'Wek Ajak', '+211720014345', 'Juba', 'SS', 'business_owner', 'Wek Capital Partners', 960000, 'SSP', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000096', 'Achuoth Mabior', '+211720014496', 'Juba', 'SS', 'business_owner', 'Achuoth Capital Partners', 3520000, 'SSP', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000097', 'Nyanchiew Gatkuoth', '+211720014647', 'Juba', 'SS', 'business_owner', 'Nyanchiew Capital Partners', 1280000, 'SSP', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000098', 'Riek Machot', '+211720014798', 'Juba', 'SS', 'business_owner', 'Riek Capital Partners', 4000000, 'SSP', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000099', 'Ayen Lual', '+21173000000', 'Juba', 'SS', 'employed', 'Local Employer Ltd', 270000, 'SSP', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000100', 'Admin South Sudan One', '+211700000000', 'Juba', 'SS', NULL, NULL, NULL, 'SSP', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000101', 'Admin South Sudan Two', '+211700000001', 'Juba', 'SS', NULL, NULL, NULL, 'SSP', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000102', 'Test User South Sudan', '+211799999999', 'Juba', 'SS', NULL, NULL, NULL, 'SSP', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- South Sudan: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000086', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000087', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000088', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000089', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000090', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000091', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000092', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000093', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000094', 'lender', 'active', 3733, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000095', 'lender', 'active', 3733, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000096', 'pro', 'active', 16000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000097', 'lender', 'active', 3733, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000098', 'pro', 'active', 16000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000099', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000100', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000101', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000102', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: DR CONGO (CD) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000000', 'mbuyi.ilunga@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mbuyi Ilunga","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000000', 'kabongo.tshimanga@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kabongo Tshimanga","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000000', 'mwamba.kalala@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mwamba Kalala","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000106', '00000000-0000-0000-0000-000000000000', 'ntumba.kasongo@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ntumba Kasongo","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000000', 'kalenga.mutombo@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kalenga Mutombo","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000108', '00000000-0000-0000-0000-000000000000', 'lukusa.ngoy@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Lukusa Ngoy","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000109', '00000000-0000-0000-0000-000000000000', 'mujinga.banza@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mujinga Banza","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000110', '00000000-0000-0000-0000-000000000000', 'kasongo.ilunga@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kasongo Ilunga","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000111', '00000000-0000-0000-0000-000000000000', 'kalonji.mukendi@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kalonji Mukendi","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000112', '00000000-0000-0000-0000-000000000000', 'tshibangu.mbayo@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Tshibangu Mbayo","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000113', '00000000-0000-0000-0000-000000000000', 'mutombo.kanyinda@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mutombo Kanyinda","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000114', '00000000-0000-0000-0000-000000000000', 'nkulu.ngalula@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Nkulu Ngalula","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000115', '00000000-0000-0000-0000-000000000000', 'ilunga.mwepu@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ilunga Mwepu","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000116', '00000000-0000-0000-0000-000000000000', 'kanku.mbuyi@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Kanku Mbuyi","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000117', '00000000-0000-0000-0000-000000000000', 'admin.dr.congo.one@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin DR Congo One","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000118', '00000000-0000-0000-0000-000000000000', 'admin.dr.congo.two@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin DR Congo Two","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000119', '00000000-0000-0000-0000-000000000000', 'test.user.dr.congo@nipanze-cd.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User DR Congo","country_code":"CD"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- DR Congo: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000103', 'Mbuyi Ilunga', '+243710014111', 'Kinshasa', 'CD', 'employed', 'Mbuyi Household Income', 1100000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000104', 'Kabongo Tshimanga', '+243710014248', 'Kinshasa', 'CD', 'government_employee', 'Kabongo Household Income', 1430000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000105', 'Mwamba Kalala', '+243710014385', 'Kinshasa', 'CD', 'self_employed', 'Mwamba Household Income', 880000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000106', 'Ntumba Kasongo', '+243710014522', 'Kinshasa', 'CD', 'small_business_owner', 'Ntumba Household Income', 1210000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000107', 'Kalenga Mutombo', '+243710014659', 'Kinshasa', 'CD', 'employed', 'Kalenga Household Income', 990000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000108', 'Lukusa Ngoy', '+243710014796', 'Kinshasa', 'CD', 'government_employee', 'Lukusa Household Income', 1650000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000109', 'Mujinga Banza', '+243710014933', 'Kinshasa', 'CD', 'self_employed', 'Mujinga Household Income', 770000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000110', 'Kasongo Ilunga', '+243710015070', 'Kinshasa', 'CD', 'small_business_owner', 'Kasongo Household Income', 1320000, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000111', 'Kalonji Mukendi', '+243720016761', 'Kinshasa', 'CD', 'business_owner', 'Kalonji Capital Partners', 6000000, 'CDF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000112', 'Tshibangu Mbayo', '+243720016912', 'Kinshasa', 'CD', 'business_owner', 'Tshibangu Capital Partners', 3600000, 'CDF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000113', 'Mutombo Kanyinda', '+243720017063', 'Kinshasa', 'CD', 'business_owner', 'Mutombo Capital Partners', 13200000, 'CDF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000114', 'Nkulu Ngalula', '+243720017214', 'Kinshasa', 'CD', 'business_owner', 'Nkulu Capital Partners', 4800000, 'CDF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000115', 'Ilunga Mwepu', '+243720017365', 'Kinshasa', 'CD', 'business_owner', 'Ilunga Capital Partners', 15000000, 'CDF', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000116', 'Kanku Mbuyi', '+24373000000', 'Kinshasa', 'CD', 'employed', 'Local Employer Ltd', 990000, 'CDF', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000117', 'Admin DR Congo One', '+243700000000', 'Kinshasa', 'CD', NULL, NULL, NULL, 'CDF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000118', 'Admin DR Congo Two', '+243700000001', 'Kinshasa', 'CD', NULL, NULL, NULL, 'CDF', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000119', 'Test User DR Congo', '+243799999999', 'Kinshasa', 'CD', NULL, NULL, NULL, 'CDF', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- DR Congo: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000103', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000104', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000105', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000106', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000107', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000108', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000109', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000110', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000111', 'lender', 'active', 14000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000112', 'lender', 'active', 14000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000113', 'pro', 'active', 60000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000114', 'lender', 'active', 14000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000115', 'pro', 'active', 60000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000116', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000117', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000118', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000119', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+
+-- ============================================
+-- COUNTRY: SOMALIA (SO) — 17 users, mirrors Uganda's structure
+-- 8 active borrowers, 5 lenders (lender/pro), 1 pending-verification borrower,
+-- 2 admins, 1 test user.
+-- ============================================
+
+INSERT INTO auth.users (
+    id, instance_id, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    is_super_admin, role, aud,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, phone_change,
+    phone_change_token, reauthentication_token
+) VALUES
+('10000000-0000-0000-0000-000000000120', '00000000-0000-0000-0000-000000000000', 'hodan.ali@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:00:00', '2026-02-10 08:00:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Hodan Ali","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000121', '00000000-0000-0000-0000-000000000000', 'abdirahman.yusuf@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:03:00', '2026-02-11 08:03:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Abdirahman Yusuf","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000122', '00000000-0000-0000-0000-000000000000', 'fadumo.hassan@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-12 08:06:00', '2026-02-12 08:06:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Fadumo Hassan","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000123', '00000000-0000-0000-0000-000000000000', 'cabdullahi.nur@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-13 08:09:00', '2026-02-13 08:09:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Cabdullahi Nur","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000124', '00000000-0000-0000-0000-000000000000', 'sahra.mohamed@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-14 08:12:00', '2026-02-14 08:12:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Sahra Mohamed","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000125', '00000000-0000-0000-0000-000000000000', 'mohamed.farah@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-15 08:15:00', '2026-02-15 08:15:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Mohamed Farah","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000126', '00000000-0000-0000-0000-000000000000', 'halima.isse@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-16 08:18:00', '2026-02-16 08:18:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Halima Isse","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000127', '00000000-0000-0000-0000-000000000000', 'bashir.aden@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-17 08:21:00', '2026-02-17 08:21:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Bashir Aden","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000128', '00000000-0000-0000-0000-000000000000', 'abdullahi.warsame@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-18 08:24:00', '2026-02-18 08:24:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Abdullahi Warsame","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000129', '00000000-0000-0000-0000-000000000000', 'cabdiraxman.warfaa@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-19 08:27:00', '2026-02-19 08:27:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Cabdiraxman Warfaa","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000130', '00000000-0000-0000-0000-000000000000', 'ifrah.guuleed@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-20 08:30:00', '2026-02-20 08:30:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ifrah Guuleed","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000131', '00000000-0000-0000-0000-000000000000', 'xasan.nuur@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-21 08:33:00', '2026-02-21 08:33:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Xasan Nuur","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000132', '00000000-0000-0000-0000-000000000000', 'zamzam.aweys@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-22 08:36:00', '2026-02-22 08:36:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Zamzam Aweys","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000133', '00000000-0000-0000-0000-000000000000', 'ubax.farah@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-23 08:39:00', '2026-02-23 08:39:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Ubax Farah","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000134', '00000000-0000-0000-0000-000000000000', 'admin.somalia.one@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-24 08:42:00', '2026-02-24 08:42:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Somalia One","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000135', '00000000-0000-0000-0000-000000000000', 'admin.somalia.two@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-10 08:45:00', '2026-02-10 08:45:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Admin Somalia Two","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', ''),
+('10000000-0000-0000-0000-000000000136', '00000000-0000-0000-0000-000000000000', 'test.user.somalia@nipanze-so.test', crypt('Test1234!', gen_salt('bf')), NOW(), '2026-02-11 08:48:00', '2026-02-11 08:48:00', '{"provider":"email","providers":["email"]}', '{"full_name":"Test User Somalia","country_code":"SO"}', FALSE, 'authenticated', 'authenticated', '', '', '', '', '', '', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Somalia: profiles (bulk upsert — sets full details regardless of whether
+-- the on_auth_user_created trigger already created a bare row)
+INSERT INTO public.profiles (
+    id, full_name, phone, district, country, employment_type, employer_name,
+    monthly_income, income_currency, phone_verified_at, account_status, is_admin, created_at
+) VALUES
+('10000000-0000-0000-0000-000000000120', 'Hodan Ali', '+252710016440', 'Mogadishu', 'SO', 'employed', 'Hodan Household Income', 3800000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000121', 'Abdirahman Yusuf', '+252710016577', 'Mogadishu', 'SO', 'government_employee', 'Abdirahman Household Income', 4940000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000122', 'Fadumo Hassan', '+252710016714', 'Mogadishu', 'SO', 'self_employed', 'Fadumo Household Income', 3040000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000123', 'Cabdullahi Nur', '+252710016851', 'Mogadishu', 'SO', 'small_business_owner', 'Cabdullahi Household Income', 4180000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000124', 'Sahra Mohamed', '+252710016988', 'Mogadishu', 'SO', 'employed', 'Sahra Household Income', 3420000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000125', 'Mohamed Farah', '+252710017125', 'Mogadishu', 'SO', 'government_employee', 'Mohamed Household Income', 5700000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000126', 'Halima Isse', '+252710017262', 'Mogadishu', 'SO', 'self_employed', 'Halima Household Income', 2660000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000127', 'Bashir Aden', '+252710017399', 'Mogadishu', 'SO', 'small_business_owner', 'Bashir Household Income', 4560000, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:00:00'),
+('10000000-0000-0000-0000-000000000128', 'Abdullahi Warsame', '+252720019328', 'Mogadishu', 'SO', 'business_owner', 'Abdullahi Capital Partners', 16000000, 'SOS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000129', 'Cabdiraxman Warfaa', '+252720019479', 'Mogadishu', 'SO', 'business_owner', 'Cabdiraxman Capital Partners', 9600000, 'SOS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000130', 'Ifrah Guuleed', '+252720019630', 'Mogadishu', 'SO', 'business_owner', 'Ifrah Capital Partners', 35200000, 'SOS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000131', 'Xasan Nuur', '+252720019781', 'Mogadishu', 'SO', 'business_owner', 'Xasan Capital Partners', 12800000, 'SOS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000132', 'Zamzam Aweys', '+252720019932', 'Mogadishu', 'SO', 'business_owner', 'Zamzam Capital Partners', 40000000, 'SOS', '2026-02-10 09:00:00', 'active', FALSE, '2026-02-10 08:05:00'),
+('10000000-0000-0000-0000-000000000133', 'Ubax Farah', '+25273000000', 'Mogadishu', 'SO', 'employed', 'Local Employer Ltd', 3420000, 'SOS', NULL, 'pending_verification', FALSE, '2026-02-10 08:10:00'),
+('10000000-0000-0000-0000-000000000134', 'Admin Somalia One', '+252700000000', 'Mogadishu', 'SO', NULL, NULL, NULL, 'SOS', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000135', 'Admin Somalia Two', '+252700000001', 'Mogadishu', 'SO', NULL, NULL, NULL, 'SOS', NULL, 'active', TRUE, '2026-01-01 08:00:00'),
+('10000000-0000-0000-0000-000000000136', 'Test User Somalia', '+252799999999', 'Mogadishu', 'SO', NULL, NULL, NULL, 'SOS', NULL, 'active', FALSE, '2026-02-10 08:15:00')
+ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name, phone = EXCLUDED.phone, district = EXCLUDED.district,
+    country = EXCLUDED.country, employment_type = EXCLUDED.employment_type,
+    employer_name = EXCLUDED.employer_name, monthly_income = EXCLUDED.monthly_income,
+    income_currency = EXCLUDED.income_currency, phone_verified_at = EXCLUDED.phone_verified_at,
+    account_status = EXCLUDED.account_status, is_admin = EXCLUDED.is_admin;
+
+-- Somalia: subscriptions (borrowers/pending/admins/test stay free; lenders upgraded)
+INSERT INTO public.subscriptions (user_id, plan, status, amount_minor_units, started_at, expires_at, auto_renew) VALUES
+('10000000-0000-0000-0000-000000000120', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000121', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000122', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000123', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000124', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000125', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000126', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000127', 'free', 'active', 0, '2026-02-10 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000128', 'lender', 'active', 37333, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000129', 'lender', 'active', 37333, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000130', 'pro', 'active', 160000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000131', 'lender', 'active', 37333, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000132', 'pro', 'active', 160000, '2026-02-10 09:00:00', '2028-02-10 09:00:00', TRUE),
+('10000000-0000-0000-0000-000000000133', 'free', 'active', 0, '2026-02-10 08:10:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000134', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000135', 'free', 'active', 0, '2024-01-01 08:00:00', NULL, TRUE),
+('10000000-0000-0000-0000-000000000136', 'free', 'active', 0, '2026-02-10 08:15:00', NULL, TRUE)
+ON CONFLICT (user_id) DO UPDATE SET
+    plan = EXCLUDED.plan, status = EXCLUDED.status, amount_minor_units = EXCLUDED.amount_minor_units,
+    started_at = EXCLUDED.started_at, expires_at = EXCLUDED.expires_at, auto_renew = EXCLUDED.auto_renew;
+-- ============================================================
+-- PART B -- MARKETPLACE DATA (loan_requests, loan_offers,
+-- agreements, contact_reveals). Grouped by the request's country,
+-- but offers may legitimately come from a lender in a different
+-- country -- cross-border bidding is allowed by default (v5.0).
+-- ============================================================
+
+SET session_replication_role = 'replica';
+-- ---- loan_requests: UGANDA ----
+INSERT INTO loan_requests (
+    id, borrower_id, country, title, purpose, requested_amount, duration_months,
+    income_source, preferred_repayment_plan, repayment_amount_per_period, repayment_timeline,
+    district, status, listed_at, expires_at, contracted_at, number_of_offers, views_count, created_at
+) VALUES
+('c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'UG',
+ 'Home Renovation Loan', 'Kitchen and bathroom upgrade at family home in Kampala',
+ 5000000, 12, 'Salary — UGX 4,500,000', 'monthly', 450000, '12 months starting March 2024', 'Central',
+ 'contracted', '2024-02-01 09:00:00', NOW() + INTERVAL '10 days', NOW() + INTERVAL '10 days', 2, 87, '2024-02-01 08:45:00'),
+
+('c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'UG',
+ 'Professional Certification', 'Financial management certification at Makerere University Business School',
+ 3500000, 12, 'Salary — UGX 3,200,000', 'monthly', 320000, '12 months starting April 2024', 'Central',
+ 'contracted', '2024-03-01 10:00:00', NOW() + INTERVAL '12 days', '2024-03-05 11:00:00', 1, 54, '2024-03-01 09:45:00'),
+
+('c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'UG',
+ 'Business Expansion — IT Equipment', 'Purchase servers and networking equipment for growing IT consultancy',
+ 8000000, 18, 'Salary — UGX 5,800,000', 'monthly', 500000, '18 months starting February 2026', 'Central',
+ 'active', NOW() - INTERVAL '2 days', NOW() + INTERVAL '15 days', NULL, 3, 112, NOW() - INTERVAL '2 days 15 minutes'),
+
+('c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'UG',
+ 'Boutique Inventory Stock', 'Pre-season clothing stock purchase for Nakato Boutique ahead of Easter season',
+ 3500000, 12, 'Business income — UGX 2,800,000', 'monthly', 320000, '12 months starting February 2026', 'Central',
+ 'active', NOW() - INTERVAL '3 days', NOW() + INTERVAL '14 days', NULL, 1, 35, NOW() - INTERVAL '3 days 15 minutes'),
+
+('c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000011', 'UG',
+ 'Medical Expense Cover', 'Surgery and recovery costs at Mulago National Referral Hospital',
+ 4500000, 18, 'Salary — UGX 3,300,000', 'monthly', 280000, '18 months starting February 2026', 'Eastern',
+ 'active', NOW() - INTERVAL '1 day', NOW() + INTERVAL '16 days', NULL, 1, 41, NOW() - INTERVAL '1 day 15 minutes'),
+
+('c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000012', 'UG',
+ 'Farm Equipment Purchase', 'Irrigation pump and tilling equipment for family farm in Wakiso district',
+ 6000000, 24, 'Salary — UGX 2,900,000', 'monthly', 280000, '24 months starting February 2026', 'Central',
+ 'active', NOW() - INTERVAL '4 days', NOW() + INTERVAL '13 days', NULL, 3, 18, NOW() - INTERVAL '4 days 15 minutes'),
+
+('c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000013', 'UG',
+ 'Vehicle Purchase — Delivery Van', 'Toyota Hiace for goods delivery business serving Mbarara and Kampala',
+ 9000000, 24, 'Salary — UGX 5,200,000', 'monthly', 420000, '24 months starting January 2026', 'Western',
+ 'active', NOW() - INTERVAL '5 days', NOW() + INTERVAL '15 days', NULL, 3, 67, NOW() - INTERVAL '5 days 15 minutes'),
+
+('c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000005', 'UG',
+ 'Business Working Capital', 'Short-term working capital to fulfil supplier contracts at DFCU Bank',
+ 7000000, 6, 'Salary — UGX 6,500,000', 'monthly', 1200000, '6 months starting February 2026', 'Central',
+ 'active', NOW() - INTERVAL '6 days 20 hours', NOW() + INTERVAL '14 days', NULL, 2, 29, NOW() - INTERVAL '6 days 21 hours');
+-- ---- loan_requests: other EAC countries (one each, demonstrating cross-border marketplace) ----
+INSERT INTO loan_requests (
+    id, borrower_id, country, title, purpose, requested_amount, duration_months,
+    income_source, preferred_repayment_plan, repayment_amount_per_period, repayment_timeline,
+    district, status, listed_at, expires_at, contracted_at, number_of_offers, views_count, created_at
+) VALUES
+-- Kenya — contracted (accepted locally, one rejected cross-border offer)
+('c2000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000018', 'KE',
+ 'Boda-boda Motorcycle Purchase', 'Buy a motorcycle for boda-boda transport business in Nairobi',
+ 150000, 12, 'Salary — KES 150,000', 'monthly', 14375, '12 months starting March 2026', 'Nairobi',
+ 'contracted', NOW() - INTERVAL '7 days', NOW() + INTERVAL '8 days', NOW() - INTERVAL '2 days', 2, 19, NOW() - INTERVAL '7 days 10 minutes'),
+
+-- TZ — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000035', 'TZ',
+ 'Tailoring Machine Purchase', 'Industrial sewing machine to expand a home tailoring business in Dar es Salaam',
+ 800000, 12, 'Salary — TZS 2,100,000', 'monthly', 71000, '12 months starting March 2026', 'Dar es Salaam',
+ 'active', NOW() - INTERVAL '6 days', NOW() + INTERVAL '9 days', NULL, 1, 18, NOW() - INTERVAL '6 days 10 minutes'),
+
+-- RW — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000052', 'RW',
+ 'University Tuition Fees', 'Second-year tuition fees at a private university in Kigali',
+ 600000, 10, 'Salary — RWF 850,000', 'monthly', 67500, '10 months starting March 2026', 'Kigali',
+ 'active', NOW() - INTERVAL '5 days', NOW() + INTERVAL '10 days', NULL, 1, 17, NOW() - INTERVAL '5 days 10 minutes'),
+
+-- BI — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000069', 'BI',
+ 'Retail Shop Stock Restock', 'Restocking a small retail shop in central Bujumbura ahead of a busy season',
+ 700000, 12, 'Salary — BIF 950,000', 'monthly', 64750, '12 months starting March 2026', 'Bujumbura',
+ 'active', NOW() - INTERVAL '4 days', NOW() + INTERVAL '11 days', NULL, 1, 16, NOW() - INTERVAL '4 days 10 minutes'),
+
+-- SS — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000086', 'SS',
+ 'Water Borehole Drilling', 'Community borehole drilling to secure a clean water supply near Juba',
+ 250000, 18, 'Salary — SSP 300,000', 'monthly', 15500, '18 months starting March 2026', 'Juba',
+ 'active', NOW() - INTERVAL '3 days', NOW() + INTERVAL '12 days', NULL, 1, 15, NOW() - INTERVAL '3 days 10 minutes'),
+
+-- CD — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000103', 'CD',
+ 'Generator Purchase for Shop', 'Backup generator to keep a small retail shop in Kinshasa running during outages',
+ 900000, 12, 'Salary — CDF 1,100,000', 'monthly', 83250, '12 months starting March 2026', 'Kinshasa',
+ 'active', NOW() - INTERVAL '2 days', NOW() + INTERVAL '13 days', NULL, 1, 14, NOW() - INTERVAL '2 days 10 minutes'),
+
+-- SO — active, cross-border offer pending
+('c2000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000120', 'SO',
+ 'Sewing Equipment Expansion', 'Additional sewing machines and materials to grow a tailoring business in Mogadishu',
+ 3500000, 12, 'Salary — SOS 4,200,000', 'monthly', 340000, '12 months starting March 2026', 'Mogadishu',
+ 'active', NOW() - INTERVAL '1 days', NOW() + INTERVAL '14 days', NULL, 1, 13, NOW() - INTERVAL '1 days 10 minutes');
+
+-- ---- loan_offers: other EAC countries (all cross-border by design) ----
+INSERT INTO loan_offers (
+    id, request_id, lender_id, offer_amount, interest_rate_pct, late_fee_pct,
+    repayment_frequency, installment_amount, proposed_expectations,
+    terms_locked_at, status, offered_at, accepted_at, created_at
+) VALUES
+-- Kenya listing: local lender accepted
+('d2000000-0000-0000-0000-000000000001', 'c2000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000026',
+ 150000, 15.0, 2.0, 'monthly', 14375, 'Can fund the full motorcycle purchase at 15% per annum, monthly repayments.',
+ NOW() - INTERVAL '7 days', 'accepted', NOW() - INTERVAL '7 days', NOW() - INTERVAL '2 days', NOW() - INTERVAL '7 days'),
+
+-- Kenya listing: Tanzanian cross-border lender rejected
+('d2000000-0000-0000-0000-000000000002', 'c2000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000043',
+ 150000, 16.5, 2.0, 'monthly', 14655, 'Willing to fund cross-border at 16.5% per annum.',
+ NOW() - INTERVAL '6 days', 'rejected', NOW() - INTERVAL '6 days', NULL, NOW() - INTERVAL '6 days'),
+
+-- TZ listing — cross-border offer from a RW lender
+('d2000000-0000-0000-0000-000000000003', 'c2000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000060',
+ 800000, 13.0, 2.0, 'monthly', 75333, 'Cross-border offer at 13.0% per annum.',
+ NOW() - INTERVAL '5 days', 'pending', NOW() - INTERVAL '5 days', NULL, NOW() - INTERVAL '5 days'),
+
+-- RW listing — cross-border offer from a BI lender
+('d2000000-0000-0000-0000-000000000004', 'c2000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000077',
+ 600000, 12.5, 2.0, 'monthly', 67500, 'Cross-border offer at 12.5% per annum.',
+ NOW() - INTERVAL '4 days', 'pending', NOW() - INTERVAL '4 days', NULL, NOW() - INTERVAL '4 days'),
+
+-- BI listing — cross-border offer from a SS lender
+('d2000000-0000-0000-0000-000000000005', 'c2000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000094',
+ 700000, 14.0, 2.0, 'monthly', 66500, 'Cross-border offer at 14.0% per annum.',
+ NOW() - INTERVAL '3 days', 'pending', NOW() - INTERVAL '3 days', NULL, NOW() - INTERVAL '3 days'),
+
+-- SS listing — cross-border offer from a CD lender
+('d2000000-0000-0000-0000-000000000006', 'c2000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000111',
+ 250000, 17.0, 2.0, 'monthly', 16250, 'Cross-border offer at 17.0% per annum.',
+ NOW() - INTERVAL '2 days', 'pending', NOW() - INTERVAL '2 days', NULL, NOW() - INTERVAL '2 days'),
+
+-- CD listing — cross-border offer from a SO lender
+('d2000000-0000-0000-0000-000000000007', 'c2000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000128',
+ 900000, 15.5, 2.0, 'monthly', 86625, 'Cross-border offer at 15.5% per annum.',
+ NOW() - INTERVAL '1 days', 'pending', NOW() - INTERVAL '1 days', NULL, NOW() - INTERVAL '1 days'),
+
+-- SO listing — cross-border offer from a KE lender
+('d2000000-0000-0000-0000-000000000008', 'c2000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000026',
+ 3500000, 18.0, 2.0, 'monthly', 344166, 'Cross-border offer at 18.0% per annum.',
+ NOW() - INTERVAL '0 days', 'pending', NOW() - INTERVAL '0 days', NULL, NOW() - INTERVAL '0 days');
+-- ---- loan_offers: UGANDA (unchanged from prior seed) ----
+INSERT INTO loan_offers (
+    id, request_id, lender_id, offer_amount, interest_rate_pct, late_fee_pct,
+    repayment_frequency, installment_amount, proposed_expectations,
+    terms_locked_at, status, offered_at, accepted_at, created_at
+) VALUES
+('d1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000008',
+ 5000000, 11.0, 2.0, 'monthly', 462500, 'I can provide the full amount at 11% per annum. Monthly instalments work for me.',
+ '2024-02-02 10:30:00', 'accepted', '2024-02-02 10:30:00', NOW() + INTERVAL '10 days', '2024-02-02 10:30:00'),
+
+('d1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000009',
+ 5000000, 11.5, 2.0, 'monthly', 464583, 'Happy to lend the full amount. Expecting 11.5% per annum with monthly repayments.',
+ '2024-02-03 09:00:00', 'rejected', '2024-02-03 09:00:00', NULL, '2024-02-03 09:00:00'),
+
+('d1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000009',
+ 3500000, 14.0, 2.0, 'monthly', 332500, 'Willing to fund the full amount at 14% per annum. Monthly repayments as proposed.',
+ '2024-03-02 11:00:00', 'accepted', '2024-03-02 11:00:00', '2024-03-05 11:00:00', '2024-03-02 11:00:00'),
+
+('d1000000-0000-0000-0000-000000000004', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000008',
+ 8000000, 10.0, 2.0, 'monthly', 488888, 'Can cover the full amount at 10% per annum. Happy with 18-month monthly instalments.',
+ '2026-01-21 11:20:00', 'pending', '2026-01-21 11:20:00', NULL, '2026-01-21 11:20:00'),
+
+('d1000000-0000-0000-0000-000000000005', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000010',
+ 8000000, 10.5, 2.0, 'monthly', 491111, 'Offering full amount at 10.5% per annum. Monthly instalments over 18 months.',
+ '2026-01-23 13:15:00', 'pending', '2026-01-23 13:15:00', NULL, '2026-01-23 13:15:00'),
+
+('d1000000-0000-0000-0000-000000000010', 'c1000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000009',
+ 3000000, 9.5, 2.0, 'monthly', 182500, 'Can contribute UGX 3M toward the equipment purchase at 9.5% per annum, repayable monthly.',
+ '2026-01-24 08:40:00', 'pending', '2026-01-24 08:40:00', NULL, '2026-01-24 08:40:00'),
+
+('d1000000-0000-0000-0000-000000000006', 'c1000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000006',
+ 3500000, 14.0, 2.0, 'monthly', 332500, 'Can fund the full requested amount at 14% per annum. Monthly repayments as stated.',
+ '2026-01-27 10:30:00', 'pending', '2026-01-27 10:30:00', NULL, '2026-01-27 10:30:00'),
+
+('d1000000-0000-0000-0000-000000000007', 'c1000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000011',
+ 4500000, 14.5, 1.5, 'monthly', 286250, 'Prepared to lend the full amount at 14.5% per annum given the medical urgency.',
+ '2026-01-28 09:15:00', 'pending', '2026-01-28 09:15:00', NULL, '2026-01-28 09:15:00'),
+
+('d1000000-0000-0000-0000-000000000011', 'c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000006',
+ 3000000, 12.0, 2.0, 'monthly', 140000, 'Can fund UGX 3M now for the pump purchase. Comfortable with the 24-month repayment timeline.',
+ NOW() - INTERVAL '3 days 7 hours', 'pending', NOW() - INTERVAL '3 days 7 hours', NULL, NOW() - INTERVAL '3 days 7 hours'),
+
+('d1000000-0000-0000-0000-000000000012', 'c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000008',
+ 6000000, 13.0, 2.0, 'monthly', 282500, 'Can fund the full equipment amount if repayments begin as proposed in February.',
+ NOW() - INTERVAL '2 days 18 hours', 'pending', NOW() - INTERVAL '2 days 18 hours', NULL, NOW() - INTERVAL '2 days 18 hours'),
+
+('d1000000-0000-0000-0000-000000000013', 'c1000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000010',
+ 4000000, 11.5, 2.0, 'monthly', 185833, 'Can cover UGX 4M for the tilling equipment, with monthly payments over 24 months.',
+ NOW() - INTERVAL '1 day 9 hours', 'pending', NOW() - INTERVAL '1 day 9 hours', NULL, NOW() - INTERVAL '1 day 9 hours'),
+
+('d1000000-0000-0000-0000-000000000008', 'c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000006',
+ 9000000, 11.0, 2.0, 'monthly', 416250, 'Happy to fund the full van purchase. Expecting 11% per annum over 24 months.',
+ NOW() - INTERVAL '4 days 23 hours', 'pending', NOW() - INTERVAL '4 days 23 hours', NULL, NOW() - INTERVAL '4 days 23 hours'),
+
+('d1000000-0000-0000-0000-000000000014', 'c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000008',
+ 3000000, 12.5, 2.0, 'monthly', 140625, 'Can offer UGX 3M as partial funding for the van deposit and initial repairs.',
+ NOW() - INTERVAL '3 days 12 hours', 'pending', NOW() - INTERVAL '3 days 12 hours', NULL, NOW() - INTERVAL '3 days 12 hours'),
+
+('d1000000-0000-0000-0000-000000000015', 'c1000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000009',
+ 5000000, 11.5, 2.0, 'monthly', 232291, 'Can fund UGX 5M toward the van purchase with slightly faster monthly repayment preferred.',
+ NOW() - INTERVAL '2 days 6 hours', 'pending', NOW() - INTERVAL '2 days 6 hours', NULL, NOW() - INTERVAL '2 days 6 hours'),
+
+('d1000000-0000-0000-0000-000000000009', 'c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000010',
+ 7000000, 9.5, 2.0, 'monthly', 1277500, 'Can provide full working capital at 9.5% per annum. Six monthly repayments.',
+ NOW() - INTERVAL '2 hours', 'pending', NOW() - INTERVAL '2 hours', NULL, NOW() - INTERVAL '2 hours'),
+
+('d1000000-0000-0000-0000-000000000016', 'c1000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000008',
+ 3000000, 10.0, 2.0, 'monthly', 550000, 'Can cover UGX 3M of the working capital need if the supplier contract is confirmed.',
+ NOW() - INTERVAL '45 minutes', 'pending', NOW() - INTERVAL '45 minutes', NULL, NOW() - INTERVAL '45 minutes');
+
+-- ---- agreements: UGANDA (unchanged) + KENYA (cross-border-flow demo) ----
+INSERT INTO public.agreements (
+    id, offer_id, request_id, repayment_frequency, repayment_amount, repayment_period,
+    total_repayment_amount, late_payment_penalty_pct, agreement_text, agreement_snapshot, status,
+    borrower_agreed_at, lender_agreed_at, locked_at
+) VALUES
+('a9000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
+ 'monthly'::public.repayment_frequency_enum, 462500, 12, 5550000, 2.00,
+ 'LOAN AGREEMENT between David Mukasa and William Kasujja. Principal: UGX 5,000,000 at 11% interest. Repayments: Monthly UGX 462,500.',
+ '{"payment_frequency": "monthly", "payment_amount": 462500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 5550000, "duration_months": 12, "loan_amount": 5000000, "interest_rate_pct": 11.0, "currency_code": "UGX"}'::jsonb,
+ 'locked'::public.agreement_status_enum, '2024-02-06 14:30:00', '2024-02-06 14:30:00', '2024-02-06 14:30:00'),
+
+('a9000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
+ 'monthly'::public.repayment_frequency_enum, 332500, 12, 3990000, 2.00,
+ 'LOAN AGREEMENT between Sarah Namukasa and Catherine Namboze. Principal: UGX 3,500,000 at 14% interest. Repayments: Monthly UGX 332,500.',
+ '{"payment_frequency": "monthly", "payment_amount": 332500, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 3990000, "duration_months": 12, "loan_amount": 3500000, "interest_rate_pct": 14.0, "currency_code": "UGX"}'::jsonb,
+ 'locked'::public.agreement_status_enum, '2024-03-05 11:00:00', '2024-03-05 11:00:00', '2024-03-05 11:00:00'),
+
+('a9000000-0000-0000-0000-000000000003', 'd2000000-0000-0000-0000-000000000001', 'c2000000-0000-0000-0000-000000000001',
+ 'monthly'::public.repayment_frequency_enum, 14375, 12, 172500, 2.00,
+ 'LOAN AGREEMENT between Wanjiru Kamau and Otieno Mwangi. Principal: KES 150,000 at 15% interest. Repayments: Monthly KES 14,375.',
+ '{"payment_frequency": "monthly", "payment_amount": 14375, "penalty_pct": 2.00, "repayment_period": 12, "total_repayment_amount": 172500, "duration_months": 12, "loan_amount": 150000, "interest_rate_pct": 15.0, "currency_code": "KES"}'::jsonb,
+ 'locked'::public.agreement_status_enum, NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days');
+
+SET session_replication_role = 'origin';
+
+-- ---- contact_reveals ----
+INSERT INTO contact_reveals (id, offer_id, request_id, revealed_by, status, revealed_at, created_at) VALUES
+('f1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000001', 'revealed', NOW() + INTERVAL '13 days', '2024-02-06 14:31:00'),
+
+('f1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', 'c1000000-0000-0000-0000-000000000002',
+ '10000000-0000-0000-0000-000000000002', 'pending', NULL, '2024-03-05 11:01:00'),
+
+('f1000000-0000-0000-0000-000000000003', 'd2000000-0000-0000-0000-000000000001', 'c2000000-0000-0000-0000-000000000001',
+ '10000000-0000-0000-0000-000000000018', 'revealed', NOW() - INTERVAL '1 day', NOW() - INTERVAL '2 days')
+ON CONFLICT (offer_id) DO NOTHING;
+
+-- ============================================================
+-- PART C -- WATCHLIST, NOTIFICATIONS, REFERRALS
+-- ============================================================
+
+INSERT INTO watchlist (id, user_id, request_id, added_at) VALUES
+('e3000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'c1000000-0000-0000-0000-000000000003', '2026-01-21 08:00:00'),
+('e3000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'c1000000-0000-0000-0000-000000000005', '2026-01-26 11:00:00'),
+('e3000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000009', 'c1000000-0000-0000-0000-000000000004', '2026-01-25 14:00:00'),
+('e3000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000007', 'c1000000-0000-0000-0000-000000000008', NOW() - INTERVAL '3 hours'),
+('e3000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000012', 'c1000000-0000-0000-0000-000000000003', '2026-01-22 10:00:00'),
+('e3000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000094', 'c2000000-0000-0000-0000-000000000006', NOW() - INTERVAL '1 day'),
+('e3000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000043', 'c2000000-0000-0000-0000-000000000007', NOW() - INTERVAL '12 hours')
+ON CONFLICT (user_id, request_id) DO NOTHING;
+
+INSERT INTO notifications (id, user_id, type, title, body, is_read, request_id, offer_id, created_at) VALUES
+-- David Mukasa (UG) -- offer accepted, contact revealed
+('e4000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'offer_accepted', 'Offer accepted',
+ 'You accepted Pearl Capital''s offer. Contact details have been shared.', TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', NOW() + INTERVAL '11 days'),
+('e4000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'offer_accepted', 'Your offer was accepted',
+ 'David Mukasa accepted your offer. Contact details have been shared.', TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', NOW() + INTERVAL '11 days'),
+('e4000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'contact_revealed', 'Contact details revealed',
+ 'You can now connect with Pearl Capital Investment Fund directly.', TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-07 10:00:00'),
+('e4000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000008', 'contact_revealed', 'Contact details revealed',
+ 'The borrower has revealed contact details. You can now connect directly.', TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000001', '2024-02-07 10:00:00'),
+-- Sarah Namukasa (UG) -- offer accepted, contact pending reveal
+('e4000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', 'offer_accepted', 'Offer accepted',
+ 'You accepted Victoria Investment Group''s offer. Reveal contact details to connect.', FALSE, 'c1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', '2024-03-05 11:01:00'),
+('e4000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000009', 'offer_accepted', 'Your offer was accepted',
+ 'Sarah Namukasa accepted your offer. Waiting for contact details to be revealed.', FALSE, 'c1000000-0000-0000-0000-000000000002', 'd1000000-0000-0000-0000-000000000003', '2024-03-05 11:01:00'),
+-- James Okello (UG) -- offers received
+('e4000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000003', 'offer_received', 'New offer received',
+ 'Pearl Capital Investment Fund made an offer on your listing.', FALSE, 'c1000000-0000-0000-0000-000000000003', 'd1000000-0000-0000-0000-000000000004', '2026-01-21 11:21:00'),
+('e4000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000003', 'offer_received', 'New offer received',
+ 'Equator Finance Corporation made an offer on your listing.', FALSE, 'c1000000-0000-0000-0000-000000000003', 'd1000000-0000-0000-0000-000000000005', '2026-01-23 13:16:00'),
+-- Maria Nakato (UG) -- offer received
+('e4000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000004', 'offer_received', 'New offer received',
+ 'GreenLeaf Agro Solutions made an offer on your listing.', FALSE, 'c1000000-0000-0000-0000-000000000004', 'd1000000-0000-0000-0000-000000000006', '2026-01-27 10:31:00'),
+-- Robert Ssemwanga (UG) -- closing soon
+('e4000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000005', 'closing_soon_6h', 'Listing closing soon',
+ 'Your listing "Business Working Capital" closes in under 6 hours.', FALSE, 'c1000000-0000-0000-0000-000000000008', NULL, NOW() - INTERVAL '1 hour'),
+-- David's second lender rejected
+('e4000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000009', 'offer_rejected', 'Your offer was not selected',
+ 'David Mukasa selected a different offer. Your offer on "Home Renovation Loan" was not chosen.', TRUE, 'c1000000-0000-0000-0000-000000000001', 'd1000000-0000-0000-0000-000000000002', NOW() + INTERVAL '12 days'),
+-- Kenya — offer accepted, contact revealed (cross-border flow demo)
+('e4000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000018', 'offer_accepted', 'Offer accepted',
+ 'You accepted Otieno Mwangi''s offer. Contact details have been shared.', TRUE, 'c2000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '2 days'),
+('e4000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000026', 'offer_accepted', 'Your offer was accepted',
+ 'Wanjiru Kamau accepted your offer. Contact details have been shared.', TRUE, 'c2000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '2 days'),
+('e4000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000018', 'contact_revealed', 'Contact details revealed',
+ 'You can now connect with Otieno Mwangi directly.', TRUE, 'c2000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '1 day'),
+('e4000000-0000-0000-0000-000000000015', '10000000-0000-0000-0000-000000000026', 'contact_revealed', 'Contact details revealed',
+ 'The borrower has revealed contact details. You can now connect directly.', TRUE, 'c2000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000001', NOW() - INTERVAL '1 day'),
+('e4000000-0000-0000-0000-000000000016', '10000000-0000-0000-0000-000000000043', 'offer_rejected', 'Your offer was not selected',
+ 'Wanjiru Kamau selected a different offer. Your cross-border offer was not chosen.', TRUE, 'c2000000-0000-0000-0000-000000000001', 'd2000000-0000-0000-0000-000000000002', NOW() - INTERVAL '2 days'),
+-- New-country offer_received notifications
+('e4000000-0000-0000-0000-000000000017', '10000000-0000-0000-0000-000000000035', 'offer_received', 'New offer received',
+ 'A lender from Rwanda made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000002', 'd2000000-0000-0000-0000-000000000003', NOW() - INTERVAL '6 days'),
+('e4000000-0000-0000-0000-000000000018', '10000000-0000-0000-0000-000000000052', 'offer_received', 'New offer received',
+ 'A lender from Burundi made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000003', 'd2000000-0000-0000-0000-000000000004', NOW() - INTERVAL '5 days'),
+('e4000000-0000-0000-0000-000000000019', '10000000-0000-0000-0000-000000000069', 'offer_received', 'New offer received',
+ 'A lender from South Sudan made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000004', 'd2000000-0000-0000-0000-000000000005', NOW() - INTERVAL '4 days'),
+('e4000000-0000-0000-0000-000000000020', '10000000-0000-0000-0000-000000000086', 'offer_received', 'New offer received',
+ 'A lender from DR Congo made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000005', 'd2000000-0000-0000-0000-000000000006', NOW() - INTERVAL '3 days'),
+('e4000000-0000-0000-0000-000000000021', '10000000-0000-0000-0000-000000000103', 'offer_received', 'New offer received',
+ 'A lender from Somalia made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000006', 'd2000000-0000-0000-0000-000000000007', NOW() - INTERVAL '2 days'),
+('e4000000-0000-0000-0000-000000000022', '10000000-0000-0000-0000-000000000120', 'offer_received', 'New offer received',
+ 'A lender from Kenya made a cross-border offer on your listing.', FALSE, 'c2000000-0000-0000-0000-000000000007', 'd2000000-0000-0000-0000-000000000008', NOW() - INTERVAL '1 days')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO referrals (id, referrer_id, referred_email, referred_user_id, code, is_activated, activated_at, reward_applied, created_at) VALUES
+('e5000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'frank.omondi@gmail.com', '10000000-0000-0000-0000-000000000011', 'NIP-DAVID-01', TRUE, '2024-03-08 15:00:00', TRUE, '2024-03-01 10:00:00'),
+('e5000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000008', 'lucy.nambi@yahoo.com', '10000000-0000-0000-0000-000000000012', 'NIP-PEARL-01', TRUE, '2024-03-10 12:00:00', TRUE, '2024-03-05 09:00:00'),
+('e5000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'charles.mwesigwa@gmail.com', '10000000-0000-0000-0000-000000000013', 'NIP-JAMES-01', TRUE, '2024-03-12 17:00:00', FALSE, '2024-03-08 11:00:00'),
+('e5000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'newuser@example.com', NULL, 'NIP-DAVID-02', FALSE, NULL, FALSE, '2026-01-20 09:00:00'),
+('e5000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000018', 'otieno.mwangi@nipanze-ke.test', '10000000-0000-0000-0000-000000000026', 'NIP-WANJIRU-01', TRUE, '2026-02-10 08:05:00', TRUE, '2026-02-09 12:00:00')
+ON CONFLICT DO NOTHING;
+-- ============================================================
+-- PART D — VERIFICATION
+-- ============================================================
+
+SELECT c.code, c.name, c.currency_code, c.is_active, COUNT(p.id) AS user_count
+FROM countries c
+LEFT JOIN profiles p ON p.country = c.code AND p.id::text LIKE '10000000%'
+GROUP BY c.code, c.name, c.currency_code, c.is_active
+ORDER BY c.code;
+
+SELECT table_name, record_count FROM (
+    SELECT 'auth.users'           AS table_name, COUNT(*) AS record_count FROM auth.users           WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'profiles',                 COUNT(*) FROM profiles                              WHERE id::text LIKE '10000000%'
+    UNION ALL SELECT 'subscriptions',            COUNT(*) FROM subscriptions
+    UNION ALL SELECT 'kyc_verifications',        COUNT(*) FROM kyc_verifications
+    UNION ALL SELECT 'loan_requests',            COUNT(*) FROM loan_requests
+    UNION ALL SELECT 'loan_offers',              COUNT(*) FROM loan_offers
+    UNION ALL SELECT 'agreements',               COUNT(*) FROM agreements
+    UNION ALL SELECT 'contact_reveals',          COUNT(*) FROM contact_reveals
+    UNION ALL SELECT 'watchlist',                COUNT(*) FROM watchlist
+    UNION ALL SELECT 'notifications',            COUNT(*) FROM notifications
+    UNION ALL SELECT 'referrals',                COUNT(*) FROM referrals
+) t ORDER BY table_name;
+
+SELECT p.country, p.full_name, au.email,
+       au.email_confirmed_at IS NOT NULL AS confirmed,
+       p.account_status, p.is_admin,
+       s.plan AS subscription_plan, s.status AS subscription_status
+FROM profiles p
+LEFT JOIN auth.users  au ON au.id = p.id
+LEFT JOIN subscriptions s ON s.user_id = p.id AND s.status = 'active'
+WHERE p.id::text LIKE '10000000%'
+ORDER BY p.country, p.created_at;
+
+SELECT lr.country, lr.title, lr.district, lr.requested_amount,
+       lr.repayment_amount_per_period, lr.number_of_offers, lr.status, lr.expires_at,
+       (lr.expires_at < NOW() + INTERVAL '24 hours') AS closing_soon
+FROM loan_requests lr
+WHERE lr.status = 'active'
+ORDER BY lr.country, lr.listed_at DESC;
+
+SELECT lr.country AS listing_country, p_lender.country AS lender_country,
+       lo.status AS offer_status, lo.offer_amount, lr.title AS listing_title,
+       cr.status AS reveal_status
+FROM loan_offers lo
+JOIN loan_requests lr ON lr.id = lo.request_id
+JOIN profiles p_lender ON p_lender.id = lo.lender_id
+LEFT JOIN contact_reveals cr ON cr.offer_id = lo.id
+ORDER BY lr.country, lo.offered_at;
+
+SELECT '✅ Nipanze seed v5.1 inserted successfully — 8 countries x 17 users each (136 total), identical role structure per country, full cross-border marketplace demo, no schema mismatches' AS status;
+
+
+-- ==============================================================================
+-- 3. CONSOLIDATED PATCHES & EXTENSIONS (sql/patch.sql)
+-- ==============================================================================
+
 -- ============================================
 -- NIPANZE Combined Database Patch
 --
@@ -7912,4 +12376,3 @@ grant select on public.v_needs_listings to anon, authenticated;
 -- ============================================================
 -- END MERGED SECTION: 20260916_enable_needs_request_posting.sql
 -- ============================================================
-
