@@ -2021,7 +2021,7 @@ abstract class AppLocalizations {
   /// No description provided for @descriptionOptionalHint.
   ///
   /// In en, this message translates to:
-  /// **'Add any context lenders should know'**
+  /// **'Add any context providers should know'**
   String get descriptionOptionalHint;
 
   /// No description provided for @incomeSourceLabel.
@@ -2351,7 +2351,7 @@ abstract class AppLocalizations {
   /// No description provided for @requestSubmittedContent.
   ///
   /// In en, this message translates to:
-  /// **'Your loan request is now live on the marketplace. Lenders can review it and make offers.'**
+  /// **'Your loan request is now live on the marketplace. Providers can review it and make offers.'**
   String get requestSubmittedContent;
 
   /// No description provided for @couldNotPublishRequest.
@@ -2879,13 +2879,13 @@ abstract class AppLocalizations {
   /// No description provided for @lenderNumberLabel.
   ///
   /// In en, this message translates to:
-  /// **'Lender #{number}'**
+  /// **'Provider #{number}'**
   String lenderNumberLabel(int number);
 
   /// No description provided for @lenderTextLabel.
   ///
   /// In en, this message translates to:
-  /// **'Lender #{id}'**
+  /// **'Provider #{id}'**
   String lenderTextLabel(String id);
 
   /// No description provided for @fullOfferLabel.
@@ -2909,7 +2909,7 @@ abstract class AppLocalizations {
   /// No description provided for @lenderNotesLabel.
   ///
   /// In en, this message translates to:
-  /// **'Lender notes'**
+  /// **'Provider notes'**
   String get lenderNotesLabel;
 
   /// No description provided for @acceptOfferLabel.
@@ -3161,13 +3161,13 @@ abstract class AppLocalizations {
   /// No description provided for @freeTermsBanner.
   ///
   /// In en, this message translates to:
-  /// **'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.'**
+  /// **'Leave this blank — providers will propose their own terms. Upgrade to Pro to suggest rates.'**
   String get freeTermsBanner;
 
   /// No description provided for @offerReadOnlyNotice.
   ///
   /// In en, this message translates to:
-  /// **'Review the lender\'s proposed terms below. Accept or wait for a better offer.'**
+  /// **'Review the provider\'s proposed terms below. Accept or wait for a better offer.'**
   String get offerReadOnlyNotice;
 
   /// No description provided for @sponsoredLabel.
@@ -3906,7 +3906,7 @@ abstract class AppLocalizations {
   /// No description provided for @affordabilityWarningBody.
   ///
   /// In en, this message translates to:
-  /// **'Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Lenders require a return — consider increasing your installment.'**
+  /// **'Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Providers require a return — consider increasing your installment.'**
   String affordabilityWarningBody(
       String currency, String total, String shortfall);
 
@@ -3919,7 +3919,7 @@ abstract class AppLocalizations {
   /// No description provided for @affordabilityDialogBody.
   ///
   /// In en, this message translates to:
-  /// **'Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.'**
+  /// **'Your repayment terms appear lower than what most providers will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.'**
   String get affordabilityDialogBody;
 
   /// No description provided for @paymentScheduleTitle.
@@ -4195,7 +4195,7 @@ abstract class AppLocalizations {
   /// No description provided for @reachOutToLenderDirectly.
   ///
   /// In en, this message translates to:
-  /// **'Reach out to the lender directly'**
+  /// **'Reach out to the provider directly'**
   String get reachOutToLenderDirectly;
 
   /// No description provided for @reachOutToBorrowerDirectly.
@@ -4243,7 +4243,7 @@ abstract class AppLocalizations {
   /// No description provided for @tapToViewContactDetails.
   ///
   /// In en, this message translates to:
-  /// **'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.'**
+  /// **'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and provider.'**
   String get tapToViewContactDetails;
 
   /// No description provided for @needsRequestTitle.
@@ -4347,6 +4347,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Publish Needs request'**
   String get needsPublishBtn;
+
+  /// No description provided for @needsPreviewBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview request'**
+  String get needsPreviewBtn;
+
+  /// No description provided for @needsPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your request'**
+  String get needsPreviewTitle;
+
+  /// No description provided for @needsPreviewEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get needsPreviewEdit;
 
   /// No description provided for @needsRequestSubmittedContent.
   ///

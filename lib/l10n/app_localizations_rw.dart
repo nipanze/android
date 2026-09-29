@@ -2382,6 +2382,15 @@ class AppLocalizationsRw extends AppLocalizations {
   String get needsPublishBtn => 'Tangaza ubusabe bw\'Ibikenewe';
 
   @override
+  String get needsPreviewBtn => 'Banza urebe ubusabe';
+
+  @override
+  String get needsPreviewTitle => 'Ongera usuzume ubusabe bwawe';
+
+  @override
+  String get needsPreviewEdit => 'Hindura';
+
+  @override
   String get needsRequestSubmittedContent =>
       'Ubusabe bwawe bw\'Ibikenewe buri ku isoko. Abatanga serivisi bashobora kubureba no gusubiza.';
 

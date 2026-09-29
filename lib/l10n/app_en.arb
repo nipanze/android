@@ -489,7 +489,7 @@
   "durationLabel": "Duration",
   "durationHintMonths": "6 months",
   "descriptionOptionalLabel": "Description (optional)",
-  "descriptionOptionalHint": "Add any context lenders should know",
+  "descriptionOptionalHint": "Add any context providers should know",
   "incomeSourceLabel": "Income source",
   "incomeSourceHint": "e.g. Salary, shop income, farming, side work",
   "preferredRepaymentPlanLabel": "Preferred repayment plan",
@@ -570,7 +570,7 @@
   "reviewContactPrivacyNotice": "Your contact details stay hidden until an offer is accepted and the unlock flow is completed.",
 
   "requestSubmittedTitle": "Request submitted",
-  "requestSubmittedContent": "Your loan request is now live on the marketplace. Lenders can review it and make offers.",
+  "requestSubmittedContent": "Your loan request is now live on the marketplace. Providers can review it and make offers.",
   "couldNotPublishRequest": "Could not publish this request. Try again.",
   "kycGateListing": "Complete KYC verification before posting a listing.",
   "notAllowedListing": "Your account is not allowed to post a listing.",
@@ -694,13 +694,13 @@
   },
   "proposedRepaymentPlanLabel": "Proposed repayment plan",
   "yourOfferLabel": "Your offer",
-  "lenderNumberLabel": "Lender #{number}",
+  "lenderNumberLabel": "Provider #{number}",
   "@lenderNumberLabel": {
     "placeholders": {
       "number": { "type": "int" }
     }
   },
-  "lenderTextLabel": "Lender #{id}",
+  "lenderTextLabel": "Provider #{id}",
   "@lenderTextLabel": {
     "placeholders": {
       "id": { "type": "String" }
@@ -719,7 +719,7 @@
       "value": { "type": "String" }
     }
   },
-  "lenderNotesLabel": "Lender notes",
+  "lenderNotesLabel": "Provider notes",
   "acceptOfferLabel": "Accept offer",
   "fullCoverageOfferLabel": "Full coverage offer",
   "partialCoverageLabel": "Partial coverage · {coverage}%",
@@ -792,8 +792,8 @@
   "totalAmountPayableLabel": "Total amount payable",
   "totalInterestLabel": "Total interest",
   "liveCalcNoData": "Fill in the fields above to see your repayment breakdown.",
-  "freeTermsBanner": "Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.",
-  "offerReadOnlyNotice": "Review the lender's proposed terms below. Accept or wait for a better offer.",
+  "freeTermsBanner": "Leave this blank — providers will propose their own terms. Upgrade to Pro to suggest rates.",
+  "offerReadOnlyNotice": "Review the provider's proposed terms below. Accept or wait for a better offer.",
   "sponsoredLabel": "Sponsored",
   "borrowerTermsMissing": "—",
   "repaymentCalcFormula": "installment × number of payments = total payback",
@@ -937,7 +937,7 @@
   "profilePicture": "Profile Picture",
   "profilePictureKycNote": "Required for identity verification. Upload a clear photo of yourself.",
   "affordabilityWarningTitle": "Repayment may be too low",
-  "affordabilityWarningBody": "Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Lenders require a return — consider increasing your installment.",
+  "affordabilityWarningBody": "Your total repayment of {currency} {total} is {currency} {shortfall} below the requested amount. Providers require a return — consider increasing your installment.",
   "@affordabilityWarningBody": {
     "placeholders": {
       "currency": { "type": "String" },
@@ -946,7 +946,7 @@
     }
   },
   "affordabilityDialogTitle": "Publish anyway?",
-  "affordabilityDialogBody": "Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.",
+  "affordabilityDialogBody": "Your repayment terms appear lower than what most providers will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.",
   "paymentScheduleTitle": "PAYMENT SCHEDULE ({count} {count, plural, one {instalment} other {instalments}})",
   "@paymentScheduleTitle": {
     "placeholders": {
@@ -1013,7 +1013,7 @@
   "goToMyDeals": "Go to My Deals",
   "backToActivity": "Back to activity",
   "previewDeal": "Preview Deal",
-  "reachOutToLenderDirectly": "Reach out to the lender directly",
+  "reachOutToLenderDirectly": "Reach out to the provider directly",
   "reachOutToBorrowerDirectly": "Reach out to the borrower directly",
   "nipanzeDisclaimerCardText": "Nipanze doesn’t hold funds or mediate the deal.\nConfirm details before you send anything.",
   "phoneCopiedToClipboard": "Phone number copied to clipboard",
@@ -1021,7 +1021,7 @@
   "whatsappCopiedToClipboard": "WhatsApp number copied to clipboard",
   "notProvided": "Not provided",
   "viewOppositePartyContact": "View Opposite Party Contact",
-  "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.",
+  "tapToViewContactDetails": "Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and provider.",
   "needsRequestTitle": "Needs request",
   "createNeedsRequestTitle": "Post a Needs request",
   "needsTitleLabel": "Need title",
@@ -1044,6 +1044,9 @@
   "needsCustomLocationHint": "e.g. Jinja, Fort Portal, or local area",
   "needsUrgencyLabel": "Urgency",
   "needsPublishBtn": "Publish Needs request",
+  "needsPreviewBtn": "Preview request",
+  "needsPreviewTitle": "Review your request",
+  "needsPreviewEdit": "Edit",
   "needsRequestSubmittedContent": "Your Needs request is now live on the marketplace. Providers can review it and respond.",
   "needsBudgetPreview": "Budget: {currency} {amount}",
   "@needsBudgetPreview": {

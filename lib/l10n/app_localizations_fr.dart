@@ -2405,6 +2405,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get needsPublishBtn => 'Publier la demande de besoin';
 
   @override
+  String get needsPreviewBtn => 'Aperçu de la demande';
+
+  @override
+  String get needsPreviewTitle => 'Vérifiez votre demande';
+
+  @override
+  String get needsPreviewEdit => 'Modifier';
+
+  @override
   String get needsRequestSubmittedContent =>
       'Votre demande de besoin est maintenant visible sur la place de marché. Les fournisseurs peuvent l\'examiner et répondre.';
 

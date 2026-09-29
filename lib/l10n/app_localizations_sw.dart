@@ -2382,6 +2382,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get needsPublishBtn => 'Chapisha ombi la Mahitaji';
 
   @override
+  String get needsPreviewBtn => 'Hakiki ombi';
+
+  @override
+  String get needsPreviewTitle => 'Kagua ombi lako';
+
+  @override
+  String get needsPreviewEdit => 'Hariri';
+
+  @override
   String get needsRequestSubmittedContent =>
       'Ombi lako la Mahitaji sasa liko sokoni. Watoa huduma wanaweza kulipitia na kujibu.';
 

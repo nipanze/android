@@ -597,7 +597,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(l10n.needsPublishBtn),
+              : Text(l10n.needsPreviewBtn),
         ),
       ),
     );

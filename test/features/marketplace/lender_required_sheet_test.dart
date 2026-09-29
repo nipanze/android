@@ -30,9 +30,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Lender Required Sheet content
-    expect(find.text('Lender required'), findsOneWidget);
+    expect(find.text('Provider access required'), findsOneWidget);
     expect(find.text('UGX 19,900'), findsOneWidget);
-    expect(find.text('Choose Lender'), findsOneWidget);
+    expect(find.text('Choose Provider'), findsOneWidget);
     expect(find.text('Not now'), findsNothing);
     expect(
       find.text('Everything in Free'),

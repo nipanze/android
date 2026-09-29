@@ -2353,6 +2353,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get needsPublishBtn => 'نشر طلب الاحتياجات';
 
   @override
+  String get needsPreviewBtn => 'معاينة الطلب';
+
+  @override
+  String get needsPreviewTitle => 'راجع طلبك';
+
+  @override
+  String get needsPreviewEdit => 'تعديل';
+
+  @override
   String get needsRequestSubmittedContent =>
       'طلب الاحتياجات الخاص بك متاح الآن في السوق. يمكن للمزودين مراجعته والرد عليه.';
 

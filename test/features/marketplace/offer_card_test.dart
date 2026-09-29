@@ -51,7 +51,7 @@ void main() {
     )));
 
     // Lender identity must stay anonymised for non-participants.
-    expect(find.text('Lender #1'), findsOneWidget);
+    expect(find.text('Provider #1'), findsOneWidget);
     // Non-participants see approximate coverage instead of the real amount.
     expect(find.text('≈40%'), findsOneWidget);
     expect(find.text('400,000'), findsNothing);

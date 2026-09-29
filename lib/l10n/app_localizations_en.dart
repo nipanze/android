@@ -1076,7 +1076,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get descriptionOptionalLabel => 'Description (optional)';
 
   @override
-  String get descriptionOptionalHint => 'Add any context lenders should know';
+  String get descriptionOptionalHint => 'Add any context providers should know';
 
   @override
   String get incomeSourceLabel => 'Income source';
@@ -1255,7 +1255,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestSubmittedContent =>
-      'Your loan request is now live on the marketplace. Lenders can review it and make offers.';
+      'Your loan request is now live on the marketplace. Providers can review it and make offers.';
 
   @override
   String get couldNotPublishRequest =>
@@ -1541,12 +1541,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String lenderNumberLabel(int number) {
-    return 'Lender #$number';
+    return 'Provider #$number';
   }
 
   @override
   String lenderTextLabel(String id) {
-    return 'Lender #$id';
+    return 'Provider #$id';
   }
 
   @override
@@ -1563,7 +1563,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lenderNotesLabel => 'Lender notes';
+  String get lenderNotesLabel => 'Provider notes';
 
   @override
   String get acceptOfferLabel => 'Accept offer';
@@ -1705,11 +1705,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freeTermsBanner =>
-      'Leave this blank — lenders will propose their own terms. Upgrade to Pro to suggest rates.';
+      'Leave this blank — providers will propose their own terms. Upgrade to Pro to suggest rates.';
 
   @override
   String get offerReadOnlyNotice =>
-      'Review the lender\'s proposed terms below. Accept or wait for a better offer.';
+      'Review the provider\'s proposed terms below. Accept or wait for a better offer.';
 
   @override
   String get sponsoredLabel => 'Sponsored';
@@ -2115,7 +2115,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String affordabilityWarningBody(
       String currency, String total, String shortfall) {
-    return 'Your total repayment of $currency $total is $currency $shortfall below the requested amount. Lenders require a return — consider increasing your installment.';
+    return 'Your total repayment of $currency $total is $currency $shortfall below the requested amount. Providers require a return — consider increasing your installment.';
   }
 
   @override
@@ -2123,7 +2123,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get affordabilityDialogBody =>
-      'Your repayment terms appear lower than what most lenders will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.';
+      'Your repayment terms appear lower than what most providers will accept. You can still publish, but you may not receive offers. Consider increasing your installment amount.';
 
   @override
   String paymentScheduleTitle(int count) {
@@ -2284,7 +2284,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get previewDeal => 'Preview Deal';
 
   @override
-  String get reachOutToLenderDirectly => 'Reach out to the lender directly';
+  String get reachOutToLenderDirectly => 'Reach out to the provider directly';
 
   @override
   String get reachOutToBorrowerDirectly => 'Reach out to the borrower directly';
@@ -2310,7 +2310,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToViewContactDetails =>
-      'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and lender.';
+      'Tap to view contact details for the opposite party.\nFinal terms are solely between borrower and provider.';
 
   @override
   String get needsRequestTitle => 'Needs request';
@@ -2366,6 +2366,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get needsPublishBtn => 'Publish Needs request';
+
+  @override
+  String get needsPreviewBtn => 'Preview request';
+
+  @override
+  String get needsPreviewTitle => 'Review your request';
+
+  @override
+  String get needsPreviewEdit => 'Edit';
 
   @override
   String get needsRequestSubmittedContent =>
