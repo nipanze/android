@@ -2451,4 +2451,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get needsUrgencyFlexible => 'Flexible';
+
+  @override
+  String get needsCategoryTravelInternational => 'Voyages & International';
+
+  @override
+  String get needsCategoryMachineryEquipment => 'Machines & Équipements';
+
+  @override
+  String get needsCategoryProfessionalServices => 'Services Professionnels';
+
+  @override
+  String get needsCategoryTransportLogistics => 'Transport & Logistique';
+
+  @override
+  String get needsCategorySpecializedProducts => 'Produits Spécialisés & Approvisionnement';
+
+  @override
+  String get needsMakeOffer => 'Faire une offre';
+
+  @override
+  String get needsProviderOffers => 'Offres des prestataires';
+
+  @override
+  String get needsAcceptOffer => 'Accepter l\'offre';
 }

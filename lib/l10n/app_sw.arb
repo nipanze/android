@@ -1053,6 +1053,14 @@
   "needsUrgencyUrgent": "Haraka",
   "needsUrgencyWithin30Days": "Ndani ya siku 30",
   "needsUrgencyThisMonth": "Mwezi huu",
-  "needsUrgencyFlexible": "Rahisi"
+  "needsUrgencyFlexible": "Rahisi",
+  "needsCategoryTravelInternational": "Usafiri na Kimataifa",
+  "needsCategoryMachineryEquipment": "Mitambo na Vifaa",
+  "needsCategoryProfessionalServices": "Huduma za Kitaalamu",
+  "needsCategoryTransportLogistics": "Usafirishaji na Vifaa",
+  "needsCategorySpecializedProducts": "Bidhaa Maalum na Ununuzi",
+  "needsMakeOffer": "Toa Ofa",
+  "needsProviderOffers": "Ofa za Watoa Huduma",
+  "needsAcceptOffer": "Kubali Ofa"
 }
 

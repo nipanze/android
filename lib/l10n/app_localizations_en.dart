@@ -2414,4 +2414,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get needsUrgencyFlexible => 'Flexible';
+
+  @override
+  String get needsCategoryTravelInternational => 'Travel & International';
+
+  @override
+  String get needsCategoryMachineryEquipment => 'Machinery & Equipment';
+
+  @override
+  String get needsCategoryProfessionalServices => 'Professional Services';
+
+  @override
+  String get needsCategoryTransportLogistics => 'Transport & Logistics';
+
+  @override
+  String get needsCategorySpecializedProducts => 'Specialized Products & Procurement';
+
+  @override
+  String get needsMakeOffer => 'Make an Offer';
+
+  @override
+  String get needsProviderOffers => 'Provider Offers';
+
+  @override
+  String get needsAcceptOffer => 'Accept Offer';
 }

@@ -108,12 +108,21 @@ class MarketplaceRepository {
 
   Future<NeedsListing> getNeedsDetail(String requestId) async {
     try {
-      final data = await _client
-          .from(ViewNames.needsListings)
-          .select()
-          .eq('request_id', requestId)
-          .single();
-      return NeedsListing.fromMap(data);
+      try {
+        final data = await _client
+            .from(ViewNames.needsListings)
+            .select()
+            .eq('request_id', requestId)
+            .single();
+        return NeedsListing.fromMap(data);
+      } catch (_) {
+        final data = await _client
+            .from(TableNames.needsRequests)
+            .select()
+            .eq('request_id', requestId)
+            .single();
+        return NeedsListing.fromMap(data);
+      }
     } catch (e) {
       throw parseSupabaseError(e);
     }

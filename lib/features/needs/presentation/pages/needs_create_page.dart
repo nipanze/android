@@ -13,6 +13,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/needs_repository.dart';
+import '../../domain/models/need_category.dart';
+import '../../domain/models/need_form_schema.dart';
 
 class NeedsCreatePage extends StatefulWidget {
   const NeedsCreatePage({super.key});
@@ -28,23 +30,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   final _budgetController = TextEditingController();
   final _customLocationController = TextEditingController();
 
-  String _category = 'Business Equipment';
+  final Map<String, TextEditingController> _dynamicControllers = {};
+  final Map<String, bool> _dynamicBooleans = {};
+
+  String _categorySlug = 'machinery_equipment';
   String _urgency = 'Within 30 days';
   String? _location;
   bool _submitting = false;
-
-  static const _categories = [
-    'Business Equipment',
-    'Inventory',
-    'Agriculture',
-    'Education',
-    'Health',
-    'Home & Energy',
-    'Community',
-    'Technology',
-    'Transport',
-    'Other',
-  ];
 
   static const _urgencies = [
     'Urgent',
@@ -60,6 +52,21 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _specificationController.addListener(_refresh);
     _budgetController.addListener(_refresh);
     _customLocationController.addListener(_refresh);
+    _initCategoryControllers();
+  }
+
+  void _initCategoryControllers() {
+    final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    for (final field in fields) {
+      if (field.type == NeedFieldType.boolean) {
+        _dynamicBooleans.putIfAbsent(field.key, () => false);
+      } else {
+        _dynamicControllers.putIfAbsent(
+          field.key,
+          () => TextEditingController()..addListener(_refresh),
+        );
+      }
+    }
   }
 
   @override
@@ -68,6 +75,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _specificationController.dispose();
     _budgetController.dispose();
     _customLocationController.dispose();
+    for (final controller in _dynamicControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -80,11 +90,27 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final specification = _specificationController.text.trim();
     final budget = int.tryParse(_budgetController.text.replaceAll(',', ''));
     final location = _effectiveLocation.trim();
-    return title.length >= 4 &&
-        specification.length >= 12 &&
-        budget != null &&
-        budget >= 0 &&
-        location.isNotEmpty;
+
+    if (title.length < 4 ||
+        specification.length < 12 ||
+        budget == null ||
+        budget < 0 ||
+        location.isEmpty) {
+      return false;
+    }
+
+    // Verify required category fields
+    final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    for (final f in fields) {
+      if (f.isRequired && f.type != NeedFieldType.boolean) {
+        final ctrl = _dynamicControllers[f.key];
+        if (ctrl == null || ctrl.text.trim().isEmpty) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   CountryInfo _countryInfo(AuthState authState) {
@@ -113,18 +139,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return int.tryParse(_budgetController.text.replaceAll(',', '')) ?? 0;
   }
 
-  String _categoryLabel(AppLocalizations l10n, String value) {
-    return switch (value) {
-      'Business Equipment' => l10n.needsCategoryBusinessEquipment,
-      'Inventory' => l10n.needsCategoryInventory,
-      'Agriculture' => l10n.needsCategoryAgriculture,
-      'Education' => l10n.needsCategoryEducation,
-      'Health' => l10n.needsCategoryHealth,
-      'Home & Energy' => l10n.needsCategoryHomeEnergy,
-      'Community' => l10n.needsCategoryCommunity,
-      'Technology' => l10n.needsCategoryTechnology,
-      'Transport' => l10n.needsCategoryTransport,
-      _ => l10n.purposeOther,
+  String _categoryLocalizedName(AppLocalizations l10n, String slug) {
+    return switch (slug) {
+      'travel_international' => 'Travel & International',
+      'machinery_equipment' => 'Machinery & Equipment',
+      'professional_services' => 'Professional Services',
+      'transport_logistics' => 'Transport & Logistics',
+      _ => 'Specialized Products & Procurement',
     };
   }
 
@@ -137,6 +158,22 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     };
   }
 
+  Map<String, dynamic> _collectDetails() {
+    final map = <String, dynamic>{};
+    final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    for (final field in fields) {
+      if (field.type == NeedFieldType.boolean) {
+        map[field.key] = _dynamicBooleans[field.key] ?? false;
+      } else if (field.type == NeedFieldType.number) {
+        final text = _dynamicControllers[field.key]?.text.trim() ?? '';
+        map[field.key] = num.tryParse(text) ?? text;
+      } else {
+        map[field.key] = _dynamicControllers[field.key]?.text.trim() ?? '';
+      }
+    }
+    return map;
+  }
+
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
@@ -146,10 +183,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() => _submitting = true);
     try {
       final country = EastAfricaCountries.findByCode(authState.user.country);
+      final categoryObj = NeedCategory.findBySlug(_categorySlug);
       final requestId = await getIt<NeedsRepository>().createRequest(
         title: _titleController.text,
         specification: _specificationController.text,
-        category: _category,
+        categorySlug: _categorySlug,
+        categoryName: categoryObj.name,
+        details: _collectDetails(),
         budget: _budgetValue(),
         currency: _currency(authState),
         location: _effectiveLocation,
@@ -193,6 +233,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authState = context.watch<AuthBloc>().state;
+    final theme = Theme.of(context);
 
     if (authState is AuthAuthenticated) {
       if (!authState.user.kycApproved) {
@@ -217,6 +258,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       Localizations.localeOf(context).toLanguageTag(),
     );
 
+    final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -235,12 +278,51 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Choose Need Category',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  initialValue: _categorySlug,
+                  decoration: InputDecoration(
+                    labelText: l10n.needsCategoryLabel,
+                    border: const OutlineInputBorder(),
+                  ),
+                  items: NeedCategory.defaultCategories
+                      .map(
+                        (cat) => DropdownMenuItem(
+                          value: cat.slug,
+                          child: Row(
+                            children: [
+                              Text(cat.icon, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Text(_categoryLocalizedName(l10n, cat.slug)),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null && value != _categorySlug) {
+                      setState(() {
+                        _categorySlug = value;
+                        _initCategoryControllers();
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleController,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: l10n.needsTitleLabel,
                     hintText: l10n.needsTitleHint,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     final text = value?.trim() ?? '';
@@ -250,32 +332,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   },
                 ),
                 const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
-                  initialValue: _category,
-                  decoration:
-                      InputDecoration(labelText: l10n.needsCategoryLabel),
-                  items: _categories
-                      .map(
-                        (category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(_categoryLabel(l10n, category)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) => setState(
-                    () => _category = value ?? _categories.first,
-                  ),
-                ),
-                const SizedBox(height: 14),
                 TextFormField(
                   controller: _specificationController,
-                  minLines: 4,
-                  maxLines: 7,
+                  minLines: 3,
+                  maxLines: 6,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: l10n.needsSpecificationLabel,
                     hintText: l10n.needsSpecificationHint,
                     alignLabelWithHint: true,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     final text = value?.trim() ?? '';
@@ -288,6 +354,52 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     return null;
                   },
                 ),
+                if (dynamicFields.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    'Category Specifics',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  for (final field in dynamicFields) ...[
+                    if (field.type == NeedFieldType.boolean)
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(field.label),
+                        value: _dynamicBooleans[field.key] ?? false,
+                        onChanged: (val) {
+                          setState(() {
+                            _dynamicBooleans[field.key] = val;
+                          });
+                        },
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: TextFormField(
+                          controller: _dynamicControllers[field.key],
+                          keyboardType: field.type == NeedFieldType.number
+                              ? TextInputType.number
+                              : TextInputType.text,
+                          decoration: InputDecoration(
+                            labelText: field.label,
+                            hintText: field.hint,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (val) {
+                            if (field.isRequired &&
+                                (val == null || val.trim().isEmpty)) {
+                              return 'Please fill in this requirement';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                  ],
+                ],
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _budgetController,
@@ -297,6 +409,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     labelText: l10n.needsBudgetLabel(currency),
                     hintText: l10n.needsBudgetHint,
                     helperText: l10n.needsBudgetHelper,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     final text = value?.trim() ?? '';
@@ -311,7 +424,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
                   initialValue: selectedLocation,
-                  decoration: InputDecoration(labelText: country.regionsLabel),
+                  decoration: InputDecoration(
+                    labelText: country.regionsLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                   items: country.regions
                       .map(
                         (region) => DropdownMenuItem(
@@ -340,6 +456,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     decoration: InputDecoration(
                       labelText: l10n.needsCustomLocationLabel,
                       hintText: l10n.needsCustomLocationHint,
+                      border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (selectedLocation != 'Other') return null;
@@ -353,8 +470,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
                   initialValue: _urgency,
-                  decoration:
-                      InputDecoration(labelText: l10n.needsUrgencyLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.needsUrgencyLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                   items: _urgencies
                       .map(
                         (urgency) => DropdownMenuItem(
@@ -373,9 +492,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     currency,
                     formatter.format(_budgetValue()),
                   ),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),

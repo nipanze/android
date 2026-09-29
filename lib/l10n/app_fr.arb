@@ -1053,5 +1053,13 @@
   "needsUrgencyUrgent": "Urgent",
   "needsUrgencyWithin30Days": "Sous 30 jours",
   "needsUrgencyThisMonth": "Ce mois-ci",
-  "needsUrgencyFlexible": "Flexible"
+  "needsUrgencyFlexible": "Flexible",
+  "needsCategoryTravelInternational": "Voyages & International",
+  "needsCategoryMachineryEquipment": "Machines & Équipements",
+  "needsCategoryProfessionalServices": "Services Professionnels",
+  "needsCategoryTransportLogistics": "Transport & Logistique",
+  "needsCategorySpecializedProducts": "Produits Spécialisés & Approvisionnement",
+  "needsMakeOffer": "Faire une offre",
+  "needsProviderOffers": "Offres des prestataires",
+  "needsAcceptOffer": "Accepter l'offre"
 }

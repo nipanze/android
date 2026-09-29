@@ -13,6 +13,13 @@ class TableNames {
   static const String forexAgreements = 'forex_agreements';
   static const String forexContactReveals = 'forex_contact_reveals';
   static const String needsRequests = 'needs_requests';
+  static const String needCategories = 'need_categories';
+  static const String needCapabilities = 'need_capabilities';
+  static const String needOffers = 'need_offers';
+  static const String needContactReveals = 'need_contact_reveals';
+  static const String providerCapabilities = 'provider_capabilities';
+  static const String userInterests = 'user_interests';
+  static const String userInterestEvents = 'user_interest_events';
   static const String agreements = 'agreements';
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';
@@ -32,6 +39,7 @@ class ViewNames {
   static const String loanListingDetails = 'v_loan_listing_details';
   static const String forexListings = 'v_forex_listings';
   static const String needsListings = 'v_needs_listings';
+  static const String providerBadges = 'v_provider_badges';
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
   static const String forexOffers = 'v_forex_offers';
@@ -47,12 +55,18 @@ class RpcNames {
 
   static const String acceptOffer = 'accept_offer';
   static const String acceptForexOffer = 'accept_forex_offer';
+  static const String acceptNeedOffer = 'accept_need_offer';
   static const String getPublicListingOffers = 'get_public_listing_offers';
   static const String getPublicForexOffers = 'get_public_forex_offers';
+  static const String getPublicNeedOffers = 'get_public_need_offers';
   static const String unlockContact = 'unlock_contact';
   static const String unlockForexContact = 'unlock_forex_contact';
+  static const String unlockNeedContact = 'unlock_need_contact';
   static const String revealContact = 'reveal_contact';
   static const String submitForexReview = 'submit_forex_review';
+  static const String getForYouNeeds = 'get_for_you_needs';
+  static const String getProviderOpportunities = 'get_provider_opportunities';
+  static const String recordInterestEvent = 'record_interest_event';
   // Pro Advanced Filters (schema v4.2)
   static const String getMarketplaceProFiltered =
       'get_marketplace_pro_filtered';

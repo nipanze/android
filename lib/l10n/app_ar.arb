@@ -1048,5 +1048,13 @@
   "needsUrgencyUrgent": "عاجل",
   "needsUrgencyWithin30Days": "خلال 30 يوماً",
   "needsUrgencyThisMonth": "هذا الشهر",
-  "needsUrgencyFlexible": "مرن"
+  "needsUrgencyFlexible": "مرن",
+  "needsCategoryTravelInternational": "السفر والدولي",
+  "needsCategoryMachineryEquipment": "الآلات والمعدات",
+  "needsCategoryProfessionalServices": "الخدمات المهنية",
+  "needsCategoryTransportLogistics": "النقل واللوجستيات",
+  "needsCategorySpecializedProducts": "المنتجات المتخصصة والمشتريات",
+  "needsMakeOffer": "تقديم عرض",
+  "needsProviderOffers": "عروض المزودين",
+  "needsAcceptOffer": "قبول العرض"
 }

@@ -1051,5 +1051,13 @@
   "needsUrgencyUrgent": "Byihutirwa cyane",
   "needsUrgencyWithin30Days": "Mu minsi 30",
   "needsUrgencyThisMonth": "Muri uku kwezi",
-  "needsUrgencyFlexible": "Biroroshye guhinduka"
+  "needsUrgencyFlexible": "Biroroshye guhinduka",
+  "needsCategoryTravelInternational": "Ingendo n'Amahanga",
+  "needsCategoryMachineryEquipment": "Imashini n'Ibikoresho",
+  "needsCategoryProfessionalServices": "Serivisi z'Abanyamwuga",
+  "needsCategoryTransportLogistics": "Ubwikorezi n'Ingendo",
+  "needsCategorySpecializedProducts": "Ibicuruzwa Byihariye no Gutumiza",
+  "needsMakeOffer": "Tanga Igiciro",
+  "needsProviderOffers": "Ibiciro by'Abatanga Serivisi",
+  "needsAcceptOffer": "Emera Igiciro"
 }

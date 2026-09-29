@@ -4437,6 +4437,15 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flexible'**
   String get needsUrgencyFlexible;
+
+  String get needsCategoryTravelInternational;
+  String get needsCategoryMachineryEquipment;
+  String get needsCategoryProfessionalServices;
+  String get needsCategoryTransportLogistics;
+  String get needsCategorySpecializedProducts;
+  String get needsMakeOffer;
+  String get needsProviderOffers;
+  String get needsAcceptOffer;
 }
 
 class _AppLocalizationsDelegate

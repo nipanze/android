@@ -2399,4 +2399,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get needsUrgencyFlexible => 'مرن';
+
+  @override
+  String get needsCategoryTravelInternational => 'السفر والدولي';
+
+  @override
+  String get needsCategoryMachineryEquipment => 'الآلات والمعدات';
+
+  @override
+  String get needsCategoryProfessionalServices => 'الخدمات المهنية';
+
+  @override
+  String get needsCategoryTransportLogistics => 'النقل واللوجستيات';
+
+  @override
+  String get needsCategorySpecializedProducts => 'المنتجات المتخصصة والمشتريات';
+
+  @override
+  String get needsMakeOffer => 'تقديم عرض';
+
+  @override
+  String get needsProviderOffers => 'عروض المزودين';
+
+  @override
+  String get needsAcceptOffer => 'قبول العرض';
 }

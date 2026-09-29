@@ -2428,4 +2428,28 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get needsUrgencyFlexible => 'Biroroshye guhinduka';
+
+  @override
+  String get needsCategoryTravelInternational => 'Ingendo n\'Amahanga';
+
+  @override
+  String get needsCategoryMachineryEquipment => 'Imashini n\'Ibikoresho';
+
+  @override
+  String get needsCategoryProfessionalServices => 'Serivisi z\'Abanyamwuga';
+
+  @override
+  String get needsCategoryTransportLogistics => 'Ubwikorezi n\'Ingendo';
+
+  @override
+  String get needsCategorySpecializedProducts => 'Ibicuruzwa Byihariye no Gutumiza';
+
+  @override
+  String get needsMakeOffer => 'Tanga Igiciro';
+
+  @override
+  String get needsProviderOffers => 'Ibiciro by\'Abatanga Serivisi';
+
+  @override
+  String get needsAcceptOffer => 'Emera Igiciro';
 }

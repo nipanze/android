@@ -176,12 +176,12 @@ class ListingCard extends StatelessWidget {
               final main = _MainListingArea(
                 accent: accent,
                 moduleLabel: isNeeds
-                    ? l10n.marketplaceNeeds
+                    ? '${needs.categoryIcon} ${needs.category}'
                     : isForex
                         ? l10n.marketplaceForex
                         : l10n.marketplaceLoan,
                 moduleIcon: isNeeds
-                    ? Icons.inventory_2_rounded
+                    ? Icons.handshake_rounded
                     : isForex
                         ? Icons.currency_exchange_rounded
                         : Icons.widgets_rounded,
@@ -203,8 +203,8 @@ class ListingCard extends StatelessWidget {
                 showForexRatePanel: false,
                 projectedMoney: '',
                 attributes: [
-                  if (needs != null) needs.category,
-                  if (needs != null) needs.urgency,
+                  if (needs != null) '${needs.numberOfOffers} offers',
+                  if (needs != null) needs.timeRemaining ?? needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
                   if (forex != null)
                     _forexSettlementLabel(forex),

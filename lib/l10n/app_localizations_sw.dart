@@ -2428,4 +2428,28 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get needsUrgencyFlexible => 'Rahisi';
+
+  @override
+  String get needsCategoryTravelInternational => 'Usafiri na Kimataifa';
+
+  @override
+  String get needsCategoryMachineryEquipment => 'Mitambo na Vifaa';
+
+  @override
+  String get needsCategoryProfessionalServices => 'Huduma za Kitaalamu';
+
+  @override
+  String get needsCategoryTransportLogistics => 'Usafirishaji na Vifaa';
+
+  @override
+  String get needsCategorySpecializedProducts => 'Bidhaa Maalum na Ununuzi';
+
+  @override
+  String get needsMakeOffer => 'Toa Ofa';
+
+  @override
+  String get needsProviderOffers => 'Ofa za Watoa Huduma';
+
+  @override
+  String get needsAcceptOffer => 'Kubali Ofa';
 }
