@@ -201,7 +201,7 @@ values
   ('max_active_needs_free', '3', 'number', 'needs', 'Max active Needs for free plan', false),
   ('max_active_needs_lender', '8', 'number', 'needs', 'Max active Needs for lender plan', false),
   ('max_active_needs_pro', '20', 'number', 'needs', 'Max active Needs for pro plan', false)
-on conflict on constraint uidx_system_settings_key_country do nothing;
+on conflict (setting_key, coalesce(country, '__global__')) do nothing;
 
 -- 9. BACKFILL EXISTING SAMPLE REQUESTS
 update public.needs_requests
@@ -252,7 +252,7 @@ select
   end as time_remaining,
   nr.listed_at,
   nr.created_at,
-  coalesce(p.kyc_status = 'approved', nr.trust_is_verified) as trust_is_verified,
+  coalesce(k.status = 'approved', nr.trust_is_verified) as trust_is_verified,
   coalesce(p.phone_verified_at is not null, false) as trust_phone_verified,
   ta.rating_avg as trust_rating_avg,
   ta.review_count as trust_review_count,
@@ -261,6 +261,7 @@ select
 from public.needs_requests nr
 left join public.need_categories nc on nc.slug = nr.category_slug
 left join public.profiles p on p.id = nr.requester_id
+left join public.kyc_verifications k on k.user_id = nr.requester_id
 left join public.trust_aggregates ta on ta.user_id = nr.requester_id
 where nr.status = 'active'
   and (nr.expires_at is null or nr.expires_at > now())
@@ -288,12 +289,13 @@ select
   cat.name as category_name,
   cat.icon as category_icon,
   pc.verification_level,
-  p.kyc_status = 'approved' as kyc_verified,
+  coalesce(k.status = 'approved', false) as kyc_verified,
   p.phone_verified_at is not null as phone_verified
 from public.provider_capabilities pc
 join public.need_capabilities nc on nc.slug = pc.capability_slug
 join public.need_categories cat on cat.slug = nc.category_slug
-join public.profiles p on p.id = pc.user_id;
+join public.profiles p on p.id = pc.user_id
+left join public.kyc_verifications k on k.user_id = pc.user_id;
 
 -- 11. ROW LEVEL SECURITY & PRIVACY POLICIES
 

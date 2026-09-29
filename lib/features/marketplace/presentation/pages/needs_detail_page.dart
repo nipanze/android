@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
 import '../../data/marketplace_repository.dart';
@@ -120,7 +119,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                       decoration: const InputDecoration(
                         labelText: 'Delivery / Execution Timeline',
                         hintText: 'e.g. In 3 days, Immediate, Within 2 weeks',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
                       validator: (val) {
                         if ((val ?? '').trim().isEmpty) {
@@ -138,7 +137,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                       decoration: const InputDecoration(
                         labelText: 'Proposal Details & Experience',
                         hintText: 'Describe how you will fulfill this need...',
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
                       validator: (val) {
                         if ((val ?? '').trim().length < 5) {
@@ -605,9 +604,9 @@ class _OfferCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: const BorderRadius.all(Radius.circular(4)),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Verified Provider',
                     style: TextStyle(
                       fontSize: 10,
