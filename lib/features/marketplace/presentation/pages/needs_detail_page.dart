@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
 import '../../data/marketplace_repository.dart';
@@ -58,7 +54,6 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   }
 
   Future<void> _showMakeOfferSheet(NeedsListing need) async {
-    final l10n = AppLocalizations.of(context)!;
     final priceController = TextEditingController();
     final timelineController = TextEditingController();
     final messageController = TextEditingController();
@@ -214,7 +209,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
           backgroundColor: AppColors.success,
         ),
       );
-      _loadOffers();
+      await _loadOffers();
     }
   }
 
@@ -304,9 +299,6 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final currentUserId = context.watch<AuthBloc>().state is AuthAuthenticated
-        ? (context.watch<AuthBloc>().state as AuthAuthenticated).user.id
-        : null;
 
     final detailSurface = isDark
         ? AppColors.bg2Dark
@@ -612,15 +604,15 @@ class _OfferCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
+                    color: AppColors.accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Verified Provider',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: AppColors.accent,
                     ),
                   ),
                 ),

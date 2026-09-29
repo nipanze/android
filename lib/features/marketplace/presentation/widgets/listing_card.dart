@@ -82,7 +82,7 @@ class ListingCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}',
+                      '${forex.currencyHeld} ${_fmtAmount(context, forex.amount)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.headlineSmall?.copyWith(
@@ -246,40 +246,6 @@ class ListingCard extends StatelessWidget {
     );
   }
 
-  String _preferCityName(String settlement, String fallbackCountry) {
-    var candidate = settlement.trim();
-    final wordsToStrip = <String>{
-      'bank', 'mobile', 'money', 'transfer', 'cash', 'person', 'in', 'via',
-      'to', 'pickup', 'banking'
-    };
-
-    final parts = candidate
-        .replaceAll(':', ' ')
-        .replaceAll('/', ' ')
-        .replaceAll('|', ' ')
-        .replaceAll('-', ' ')
-        .replaceAll(',', ' ')
-        .split(RegExp(r'\s+'))
-        .where((part) => part.trim().isNotEmpty)
-        .where((part) => !wordsToStrip.contains(part.toLowerCase()))
-        .toList();
-
-    candidate = parts.join(' ');
-
-    if (candidate.isNotEmpty &&
-        !candidate.toLowerCase().contains(fallbackCountry.toLowerCase())) {
-      return candidate;
-    }
-
-    return fallbackCountry;
-  }
-
-  String _settlementCity(String value) {
-    final pieces = value.split(',');
-    final city = pieces.isEmpty ? value.trim() : pieces.last.trim();
-    return city.isEmpty ? value : city;
-  }
-
   String _postedAgo(BuildContext context, DateTime listedAt) {
     final l10n = AppLocalizations.of(context)!;
     final diff = DateTime.now().difference(listedAt);
@@ -313,9 +279,6 @@ class _MoreActionsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final label = moreActionLabel ??
-        (isSaved ? l10n.removeFromWatchlist : l10n.saveToWatchlist);
     final action = onMoreAction ?? onWatchlistToggle;
 
     return GestureDetector(

@@ -195,13 +195,13 @@ create table if not exists public.user_interest_events (
 create index if not exists idx_user_interest_events_user on public.user_interest_events(user_id, created_at desc);
 
 -- 8. SYSTEM SETTINGS FOR NEEDS
-insert into public.system_settings (key, value, description)
+insert into public.system_settings (setting_key, setting_value, setting_type, category, description, is_public)
 values
-  ('needs_free_offers_per_month', '3', 'Free subscription plan monthly offer cap on Needs'),
-  ('max_active_needs_free', '3', 'Max active Needs for free plan'),
-  ('max_active_needs_lender', '8', 'Max active Needs for lender plan'),
-  ('max_active_needs_pro', '20', 'Max active Needs for pro plan')
-on conflict (key) do nothing;
+  ('needs_free_offers_per_month', '3', 'number', 'needs', 'Free subscription plan monthly offer cap on Needs', false),
+  ('max_active_needs_free', '3', 'number', 'needs', 'Max active Needs for free plan', false),
+  ('max_active_needs_lender', '8', 'number', 'needs', 'Max active Needs for lender plan', false),
+  ('max_active_needs_pro', '20', 'number', 'needs', 'Max active Needs for pro plan', false)
+on conflict on constraint uidx_system_settings_key_country do nothing;
 
 -- 9. BACKFILL EXISTING SAMPLE REQUESTS
 update public.needs_requests
@@ -297,7 +297,8 @@ join public.profiles p on p.id = pc.user_id;
 
 -- 11. ROW LEVEL SECURITY & PRIVACY POLICIES
 
--- Privacy fix on needs_requests: revoke direct anon select
+-- Privacy fix on needs_requests: drop old anon-read policy then revoke direct anon select
+drop policy if exists "Anyone can read active needs requests" on public.needs_requests;
 revoke select on public.needs_requests from anon;
 
 alter table public.needs_requests enable row level security;
@@ -429,8 +430,8 @@ begin
   -- Subscription plan check for monthly cap
   select subscription_plan into v_plan from public.profiles where id = NEW.offer_maker_id;
   if coalesce(v_plan, 'free') = 'free' then
-    select coalesce(nullif(value, '')::int, 3) into v_free_offer_cap
-    from public.system_settings where key = 'needs_free_offers_per_month';
+    select coalesce(nullif(setting_value, '')::int, 3) into v_free_offer_cap
+    from public.system_settings where setting_key = 'needs_free_offers_per_month';
 
     select count(*) into v_offer_count_month
     from public.need_offers
