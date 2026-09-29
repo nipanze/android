@@ -2465,7 +2465,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get needsCategoryTransportLogistics => 'Transport & Logistique';
 
   @override
-  String get needsCategorySpecializedProducts => 'Produits Spécialisés & Approvisionnement';
+  String get needsCategorySpecializedProducts =>
+      'Produits Spécialisés & Approvisionnement';
 
   @override
   String get needsMakeOffer => 'Faire une offre';

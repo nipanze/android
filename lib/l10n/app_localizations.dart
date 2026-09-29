@@ -4438,13 +4438,52 @@ abstract class AppLocalizations {
   /// **'Flexible'**
   String get needsUrgencyFlexible;
 
+  /// No description provided for @needsCategoryTravelInternational.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel & International'**
   String get needsCategoryTravelInternational;
+
+  /// No description provided for @needsCategoryMachineryEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Machinery & Equipment'**
   String get needsCategoryMachineryEquipment;
+
+  /// No description provided for @needsCategoryProfessionalServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional Services'**
   String get needsCategoryProfessionalServices;
+
+  /// No description provided for @needsCategoryTransportLogistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport & Logistics'**
   String get needsCategoryTransportLogistics;
+
+  /// No description provided for @needsCategorySpecializedProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialized Products & Procurement'**
   String get needsCategorySpecializedProducts;
+
+  /// No description provided for @needsMakeOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Make an Offer'**
   String get needsMakeOffer;
+
+  /// No description provided for @needsProviderOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider Offers'**
   String get needsProviderOffers;
+
+  /// No description provided for @needsAcceptOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Offer'**
   String get needsAcceptOffer;
 }
 

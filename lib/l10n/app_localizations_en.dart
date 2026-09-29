@@ -2428,7 +2428,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needsCategoryTransportLogistics => 'Transport & Logistics';
 
   @override
-  String get needsCategorySpecializedProducts => 'Specialized Products & Procurement';
+  String get needsCategorySpecializedProducts =>
+      'Specialized Products & Procurement';
 
   @override
   String get needsMakeOffer => 'Make an Offer';

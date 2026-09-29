@@ -2442,7 +2442,8 @@ class AppLocalizationsRw extends AppLocalizations {
   String get needsCategoryTransportLogistics => 'Ubwikorezi n\'Ingendo';
 
   @override
-  String get needsCategorySpecializedProducts => 'Ibicuruzwa Byihariye no Gutumiza';
+  String get needsCategorySpecializedProducts =>
+      'Ibicuruzwa Byihariye no Gutumiza';
 
   @override
   String get needsMakeOffer => 'Tanga Igiciro';
