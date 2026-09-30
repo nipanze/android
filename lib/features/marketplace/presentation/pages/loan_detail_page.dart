@@ -205,7 +205,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 48,
         leading: IconButton(
+          padding: const EdgeInsets.all(8),
+          constraints: const BoxConstraints.tightFor(width: 48, height: 48),
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 18,
