@@ -327,8 +327,8 @@ class _ModuleFilterRow extends StatelessWidget {
           child: Row(
             children: [
               _FilterPill(
-                label: AppLocalizations.of(context)!.marketplaceAll,
-                icon: Icons.grid_view_rounded,
+                label: AppLocalizations.of(context)!.marketplaceForYou,
+                icon: Icons.auto_awesome_rounded,
                 selected: selected == null,
                 accentColor: AppColors.accent,
                 onTap: () =>

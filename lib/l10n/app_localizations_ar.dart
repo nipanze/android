@@ -191,6 +191,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get expired => 'منتهي';
 
   @override
+  String get marketplaceForYou => 'من أجلك';
+
+  @override
   String get marketplaceAll => 'الكل';
 
   @override
