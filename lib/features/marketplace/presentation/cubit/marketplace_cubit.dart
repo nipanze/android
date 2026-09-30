@@ -284,26 +284,36 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   double _feedScore(MarketplaceItem item) {
-    if (item.module == MarketplaceModule.needs) return 0;
-
     final now = DateTime.now().toUtc();
     final listedAt = item.listedAt.toUtc();
     final ageHours = now.difference(listedAt).inHours.clamp(0, 24 * 14);
     final freshness = 28 * (1 - (ageHours / (24 * 14)));
 
-    final remaining =
-        (item.loan?.expiresAt ?? item.forex!.expiresAt).toUtc().difference(now);
-    final urgency = remaining.isNegative
-        ? -30
-        : remaining.inHours <= 6
-            ? 16
-            : remaining.inHours <= 24
-                ? 10
-                : remaining.inHours <= 72
-                    ? 4
-                    : 0;
+    final expiresAt =
+        item.loan?.expiresAt ?? item.forex?.expiresAt ?? item.needs?.expiresAt;
+    final double urgency;
+    if (expiresAt != null) {
+      final remaining = expiresAt.toUtc().difference(now);
+      urgency = remaining.isNegative
+          ? -30
+          : remaining.inHours <= 6
+              ? 16
+              : remaining.inHours <= 24
+                  ? 10
+                  : remaining.inHours <= 72
+                      ? 4
+                      : 0;
+    } else if (item.needs?.urgency.toLowerCase() == 'urgent' ||
+        item.needs?.urgency.toLowerCase() == 'high') {
+      urgency = 10;
+    } else {
+      urgency = 0;
+    }
 
-    final offers = item.loan?.numberOfOffers ?? item.forex!.numberOfOffers;
+    final offers = item.loan?.numberOfOffers ??
+        item.forex?.numberOfOffers ??
+        item.needs?.numberOfOffers ??
+        0;
     final offerCoverage = switch (offers) {
       0 => 14,
       1 => 8,
@@ -320,19 +330,28 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   double _trustScore(MarketplaceItem item) {
-    final rating = item.loan?.trustRatingAvg ?? item.forex?.trustRatingAvg;
-    final reviewCount =
-        item.loan?.trustReviewCount ?? item.forex?.trustReviewCount ?? 0;
+    final rating = item.loan?.trustRatingAvg ??
+        item.forex?.trustRatingAvg ??
+        item.needs?.trustRatingAvg;
+    final reviewCount = item.loan?.trustReviewCount ??
+        item.forex?.trustReviewCount ??
+        item.needs?.trustReviewCount ??
+        0;
     final completedDeals = item.loan?.trustCompletedDealsCount ??
         item.forex?.trustCompletedDealsCount ??
+        item.needs?.trustCompletedDealsCount ??
         0;
-    final verified =
-        item.loan?.trustIsVerified ?? item.forex?.trustIsVerified ?? false;
+    final verified = item.loan?.trustIsVerified ??
+        item.forex?.trustIsVerified ??
+        item.needs?.trustIsVerified ??
+        false;
     final phoneVerified = item.loan?.trustPhoneVerified ??
         item.forex?.trustPhoneVerified ??
+        item.needs?.trustPhoneVerified ??
         false;
     final repeat = item.loan?.trustIsRepeatParticipant ??
         item.forex?.trustIsRepeatParticipant ??
+        item.needs?.trustIsRepeatParticipant ??
         false;
 
     return (rating == null ? 0 : (rating - 3).clamp(0, 2) * 3) +
@@ -352,10 +371,21 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
           .toDouble();
     }
 
-    final forex = item.forex!;
-    return ((forex.preferredRate != null ? 4 : 0) +
-            (forex.termsLockedAt != null ? 3 : 0))
-        .toDouble();
+    final forex = item.forex;
+    if (forex != null) {
+      return ((forex.preferredRate != null ? 4 : 0) +
+              (forex.termsLockedAt != null ? 3 : 0))
+          .toDouble();
+    }
+
+    final needs = item.needs;
+    if (needs != null) {
+      return ((needs.capabilitySlug != null ? 4 : 0) +
+              (needs.budget > 0 ? 3 : 0))
+          .toDouble();
+    }
+
+    return 0.0;
   }
 
   double _personalizedJitter(MarketplaceItem item) {
@@ -375,59 +405,64 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   List<MarketplaceItem> _interleaveModules(List<MarketplaceItem> listings) {
-    final loans =
-        listings.where((l) => l.module == MarketplaceModule.loan).toList();
-    final forex =
-        listings.where((l) => l.module == MarketplaceModule.forex).toList();
-    final needs =
-        listings.where((l) => l.module == MarketplaceModule.needs).toList();
+    final modules = [
+      listings.where((l) => l.module == MarketplaceModule.loan).toList(),
+      listings.where((l) => l.module == MarketplaceModule.forex).toList(),
+      listings.where((l) => l.module == MarketplaceModule.needs).toList(),
+    ].where((list) => list.isNotEmpty).toList();
 
-    if (loans.isEmpty || forex.isEmpty) return listings;
+    if (modules.length <= 1) return listings;
 
+    final indices = List<int>.filled(modules.length, 0);
     final mixed = <MarketplaceItem>[];
-    var loanIndex = 0;
-    var forexIndex = 0;
-    MarketplaceModule? lastModule;
+    int? lastModuleIdx;
     var streak = 0;
     final dayBucket = DateTime.now().toUtc().millisecondsSinceEpoch ~/
         Duration.millisecondsPerDay;
     final random = Random(_stableHash('$_feedKey|$dayBucket|module-mix'));
 
-    while (loanIndex < loans.length || forexIndex < forex.length) {
-      final canPickLoan = loanIndex < loans.length;
-      final canPickForex = forexIndex < forex.length;
-      final forceSwitch = streak >= 2 && canPickLoan && canPickForex;
+    while (true) {
+      final availableIndices = <int>[];
+      for (var i = 0; i < modules.length; i++) {
+        if (indices[i] < modules[i].length) {
+          availableIndices.add(i);
+        }
+      }
+      if (availableIndices.isEmpty) break;
 
-      late final MarketplaceModule nextModule;
-      if (!canPickLoan) {
-        nextModule = MarketplaceModule.forex;
-      } else if (!canPickForex) {
-        nextModule = MarketplaceModule.loan;
-      } else if (forceSwitch) {
-        nextModule = lastModule == MarketplaceModule.loan
-            ? MarketplaceModule.forex
-            : MarketplaceModule.loan;
+      int selectedIdx;
+      if (availableIndices.length == 1) {
+        selectedIdx = availableIndices.first;
+      } else if (streak >= 2 &&
+          lastModuleIdx != null &&
+          availableIndices.any((i) => i != lastModuleIdx)) {
+        final otherIndices =
+            availableIndices.where((i) => i != lastModuleIdx).toList();
+        selectedIdx = otherIndices[random.nextInt(otherIndices.length)];
       } else {
-        final loanWeight = loans.length - loanIndex;
-        final forexWeight = forex.length - forexIndex;
-        final pick = random.nextInt(loanWeight + forexWeight);
-        nextModule = pick < loanWeight
-            ? MarketplaceModule.loan
-            : MarketplaceModule.forex;
+        final totalWeight = availableIndices.fold<int>(
+            0, (sum, i) => sum + (modules[i].length - indices[i]));
+        var pick = random.nextInt(totalWeight);
+        selectedIdx = availableIndices.first;
+        for (final i in availableIndices) {
+          final weight = modules[i].length - indices[i];
+          if (pick < weight) {
+            selectedIdx = i;
+            break;
+          }
+          pick -= weight;
+        }
       }
 
-      mixed.add(nextModule == MarketplaceModule.loan
-          ? loans[loanIndex++]
-          : forex[forexIndex++]);
-
-      if (lastModule == nextModule) {
+      mixed.add(modules[selectedIdx][indices[selectedIdx]++]);
+      if (lastModuleIdx == selectedIdx) {
         streak++;
       } else {
-        lastModule = nextModule;
+        lastModuleIdx = selectedIdx;
         streak = 1;
       }
     }
 
-    return [...mixed, ...needs];
+    return mixed;
   }
 }

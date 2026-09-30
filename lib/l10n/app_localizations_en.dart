@@ -192,6 +192,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expired => 'Expired';
 
   @override
+  String get marketplaceForYou => 'For You';
+
+  @override
   String get marketplaceAll => 'All';
 
   @override
