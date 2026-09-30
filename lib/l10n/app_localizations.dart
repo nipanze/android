@@ -446,12 +446,6 @@ abstract class AppLocalizations {
   /// **'Expired'**
   String get expired;
 
-  /// No description provided for @marketplaceForYou.
-  ///
-  /// In en, this message translates to:
-  /// **'For You'**
-  String get marketplaceForYou;
-
   /// No description provided for @marketplaceAll.
   ///
   /// In en, this message translates to:
