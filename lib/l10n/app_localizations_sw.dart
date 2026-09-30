@@ -194,9 +194,6 @@ class AppLocalizationsSw extends AppLocalizations {
   String get expired => 'Imemalizika';
 
   @override
-  String get marketplaceForYou => 'Kwa Ajili Yako';
-
-  @override
   String get marketplaceAll => 'Zote';
 
   @override
