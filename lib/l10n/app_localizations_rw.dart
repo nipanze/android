@@ -195,6 +195,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get expired => 'Byarangiye';
 
   @override
+  String get marketplaceForYou => 'Ibyawe';
+
+  @override
   String get marketplaceAll => 'Byose';
 
   @override
