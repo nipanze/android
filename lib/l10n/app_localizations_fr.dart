@@ -2617,4 +2617,52 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Dites-nous quels services, compétences ou ressources vous proposez...';
+
+  @override
+  String get needsCategoryConstructionBuilding => 'Construction et Bâtiment';
+
+  @override
+  String get needsCategoryAgricultureAgribusiness =>
+      'Agriculture et Agroalimentaire';
+
+  @override
+  String get needsCategoryTechnologyDigital => 'Technologie et Numérique';
+
+  @override
+  String get needsCategoryEventsProduction => 'Événements et Production';
+
+  @override
+  String get needsCategoryEnergyUtilities => 'Énergie et Services Publics';
+
+  @override
+  String get postServiceAction => 'Proposer un service';
+
+  @override
+  String get postServiceSubtitle =>
+      'Listez vos services et recevez des demandes de clients';
+
+  @override
+  String get needsSpecificServiceLabel => 'Service spécifique (Optionnel)';
+
+  @override
+  String get needsAnySpecificService => 'Tout / Général dans cette catégorie';
+
+  @override
+  String get declareCapabilityToBidTitle => 'Déclaration de service requise';
+
+  @override
+  String get declareCapabilityToBidMessage =>
+      'Pour soumettre une offre sur cette demande, vous devez d\'abord déclarer que vous proposez des services dans cette catégorie.';
+
+  @override
+  String get declareServiceNow => 'Ajouter le service et continuer';
+
+  @override
+  String get newOpportunityNotificationTitle =>
+      'Nouvelle demande correspondante disponible';
+
+  @override
+  String newOpportunityNotificationBody(String title) {
+    return 'Une nouvelle demande correspondant à vos services a été publiée : $title';
+  }
 }

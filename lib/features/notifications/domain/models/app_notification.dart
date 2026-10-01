@@ -22,6 +22,7 @@ enum NotificationType {
   referralRewardApproved,
   referralRewardPaid,
   referralRewardRejected,
+  newOpportunity,
   system,
 }
 
@@ -58,6 +59,7 @@ class AppNotification extends Equatable {
   String? get deepLinkRoute {
     final agreementId =
         (data?['agreement_id'] ?? data?['agreementId'])?.toString();
+    final needId = (data?['need_id'] ?? data?['needId'])?.toString();
 
     // 1. Specific notification types with explicit destination screens:
     if (type == NotificationType.contactRevealed) {
@@ -79,8 +81,14 @@ class AppNotification extends Equatable {
       if (requestId != null) return '/marketplace/agreement/$requestId';
     }
 
+    if (type == NotificationType.newOpportunity) {
+      if (needId != null) return '/marketplace/needs/$needId';
+      return '/account/services';
+    }
+
     // 2. Explicit agreement ID in notification data payload:
     if (agreementId != null) return '/marketplace/agreement/$agreementId';
+    if (needId != null) return '/marketplace/needs/$needId';
 
     // 3. System feature routes:
     switch (type) {
@@ -195,6 +203,8 @@ class AppNotification extends Equatable {
         return NotificationType.referralRewardPaid;
       case 'referral_reward_rejected':
         return NotificationType.referralRewardRejected;
+      case 'new_opportunity':
+        return NotificationType.newOpportunity;
       default:
         return NotificationType.system;
     }

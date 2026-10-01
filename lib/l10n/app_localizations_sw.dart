@@ -2589,4 +2589,52 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tuambie huduma, ujuzi au rasilimali unazotoa...';
+
+  @override
+  String get needsCategoryConstructionBuilding => 'Ujenzi na Majengo';
+
+  @override
+  String get needsCategoryAgricultureAgribusiness =>
+      'Kilimo na Biashara ya Kilimo';
+
+  @override
+  String get needsCategoryTechnologyDigital => 'Teknolojia na Dijitali';
+
+  @override
+  String get needsCategoryEventsProduction => 'Matukio na Uzalishaji';
+
+  @override
+  String get needsCategoryEnergyUtilities => 'Nishati na Huduma za Umma';
+
+  @override
+  String get postServiceAction => 'Toa Huduma';
+
+  @override
+  String get postServiceSubtitle =>
+      'Orodhesha huduma zako na upate maombi ya wateja';
+
+  @override
+  String get needsSpecificServiceLabel => 'Huduma Mahususi (Si Lazima)';
+
+  @override
+  String get needsAnySpecificService => 'Yoyote / Jumla katika kitengo hiki';
+
+  @override
+  String get declareCapabilityToBidTitle => 'Uwezo wa Huduma Unahitajika';
+
+  @override
+  String get declareCapabilityToBidMessage =>
+      'Ili kuwasilisha ofa kwenye ombi hili, lazima kwanza utangaze kuwa unatoa huduma katika kitengo hiki.';
+
+  @override
+  String get declareServiceNow => 'Ongeza Huduma na Uendelee';
+
+  @override
+  String get newOpportunityNotificationTitle =>
+      'Ombi jipya linalolingana linapatikana';
+
+  @override
+  String newOpportunityNotificationBody(String title) {
+    return 'Ombi jipya linalolingana na huduma zako limetumwa: $title';
+  }
 }

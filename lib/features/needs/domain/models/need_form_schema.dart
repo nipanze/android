@@ -130,6 +130,90 @@ class NeedFormSchema {
         hint: 'e.g. Mbarara warehouse',
       ),
     ],
+    'construction_building': [
+      NeedFormField.text(
+        'project_type',
+        label: 'Construction or work type',
+        hint: 'e.g. Residential roofing, Commercial plumbing',
+      ),
+      NeedFormField.text(
+        'site_location',
+        label: 'Site / property location',
+        hint: 'e.g. Mukono plot 45',
+      ),
+      NeedFormField.text(
+        'project_scope',
+        label: 'Scope & materials needed',
+        hint: 'e.g. 200 sqm roof replacement, contractor to provide timber',
+      ),
+    ],
+    'agriculture_agribusiness': [
+      NeedFormField.text(
+        'agri_item',
+        label: 'Commodity, machinery or inputs',
+        hint: 'e.g. Hybrid maize seeds, Combine harvester hire',
+      ),
+      NeedFormField.text(
+        'farm_location',
+        label: 'Farm / district location',
+        hint: 'e.g. Nakasongola farm block',
+      ),
+      NeedFormField.text(
+        'volume_or_acres',
+        label: 'Quantity, acreage or duration',
+        hint: 'e.g. 50 bags / 20 acres',
+      ),
+    ],
+    'technology_digital': [
+      NeedFormField.text(
+        'tech_requirement',
+        label: 'Project or tech requirement',
+        hint: 'e.g. E-commerce Flutter app, Office CCTV networking',
+      ),
+      NeedFormField.text(
+        'deliverables',
+        label: 'Key features / deliverables',
+        hint: 'e.g. Mobile app on Play Store, Admin portal',
+      ),
+      NeedFormField.text(
+        'timeline',
+        label: 'Desired completion timeline',
+        hint: 'e.g. 6 weeks',
+      ),
+    ],
+    'events_production': [
+      NeedFormField.text(
+        'event_type',
+        label: 'Event type & guest count',
+        hint: 'e.g. Corporate gala dinner (200 guests)',
+      ),
+      NeedFormField.date(
+        'event_date',
+        label: 'Event date',
+        hint: 'e.g. 15 November 2026',
+      ),
+      NeedFormField.text(
+        'venue_location',
+        label: 'Venue or town',
+        hint: 'e.g. Serena Hotel gardens, Kampala',
+      ),
+    ],
+    'energy_utilities': [
+      NeedFormField.text(
+        'system_type',
+        label: 'Power or utility system',
+        hint: 'e.g. 10kW Commercial Solar System, Borehole pump',
+      ),
+      NeedFormField.text(
+        'installation_site',
+        label: 'Installation location / facility',
+        hint: 'e.g. Poultry farm, Masaka',
+      ),
+      NeedFormField.boolean(
+        'installation_labor_needed',
+        label: 'Installation & commissioning labor required',
+      ),
+    ],
   };
 
   static List<NeedFormField> fieldsForCategory(String slug) {

@@ -5,8 +5,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
+import '../../../provider/domain/repositories/provider_repository_interface.dart';
+import '../../../provider/presentation/pages/add_service_sheet.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -169,6 +172,16 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                   }
                                 } catch (e) {
                                   setSheetState(() => _submittingOffer = false);
+                                  final errStr = e.toString();
+                                  final isGatingError = errStr.contains('P0203') ||
+                                      errStr.toLowerCase().contains('declare a capability');
+                                  if (isGatingError && sheetContext.mounted) {
+                                    Navigator.pop(sheetContext, false);
+                                    if (context.mounted) {
+                                      _promptCapabilityDeclaration(need);
+                                    }
+                                    return;
+                                  }
                                   if (sheetContext.mounted) {
                                     ScaffoldMessenger.of(sheetContext).showSnackBar(
                                       SnackBar(
@@ -209,6 +222,59 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
         ),
       );
       await _loadOffers();
+    }
+  }
+
+  Future<void> _promptCapabilityDeclaration(NeedsListing need) async {
+    final l10n = AppLocalizations.of(context);
+    final shouldAdd = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(
+          l10n?.declareCapabilityToBidTitle ?? 'Service Capability Required',
+        ),
+        content: Text(
+          l10n?.declareCapabilityToBidMessage ??
+              'To submit an offer on this request, you must first declare that you offer services in this category.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: Text(l10n?.cancel ?? 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: Text(l10n?.declareServiceNow ?? 'Add Service & Continue'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldAdd == true && mounted) {
+      final provRepo = getIt<IProviderRepository>();
+      final existing = await provRepo.getProviderCapabilities();
+      if (!mounted) return;
+      final existingSlugs = existing.map((c) => c.capabilitySlug).toSet();
+      final slugs = await AddServiceSheet.show(
+        context,
+        existingSlugs: existingSlugs,
+        preselectedCategorySlug: need.categorySlug,
+        needsRepository: getIt<NeedsRepository>(),
+      );
+      if (slugs != null && slugs.isNotEmpty && mounted) {
+        await provRepo.addCapabilities(slugs);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n?.servicesCount(slugs.length) ?? 'Services added',
+              ),
+              backgroundColor: AppColors.success,
+            ),
+          );
+          _showMakeOfferSheet(need);
+        }
+      }
     }
   }
 

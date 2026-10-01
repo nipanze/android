@@ -308,6 +308,24 @@ class MainScaffold extends StatelessWidget {
                   context.go(AppRoutes.needsCreate);
                 },
               ),
+              ListTile(
+                leading: const Icon(
+                  Icons.business_center_outlined,
+                  color: Color(0xFF3B82F6),
+                ),
+                title: Text(
+                  l10n?.postServiceAction ?? 'Offer a Service',
+                  style: optionTitleStyle,
+                ),
+                subtitle: Text(
+                  l10n?.postServiceSubtitle ??
+                      'List your services and get matched with client requests',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.push(AppRoutes.accountServices);
+                },
+              ),
             ],
           ),
         ),
