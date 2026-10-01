@@ -14,6 +14,7 @@ class ProviderVerificationChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final isVerified = level == ProviderVerificationLevel.providerVerified;
     final color = isVerified ? AppColors.accent : AppColors.warning;

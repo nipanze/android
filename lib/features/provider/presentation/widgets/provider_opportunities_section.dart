@@ -1,7 +1,9 @@
 // lib/features/provider/presentation/widgets/provider_opportunities_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_opportunity.dart';
@@ -84,7 +86,7 @@ class _OpportunityRow extends StatelessWidget {
     final icon = opportunity.categoryIcon ?? '🔧';
     final name = opportunity.capabilityName ?? opportunity.capabilitySlug;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final subtitleColor = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -102,7 +104,7 @@ class _OpportunityRow extends StatelessWidget {
             l10n.opportunitiesCount(opportunity.opportunityCount),
             style: TextStyle(
               fontSize: 12,
-              color: subtitleColor,
+              color: AppColors.accent,
               fontWeight: FontWeight.w600,
             ),
           ),

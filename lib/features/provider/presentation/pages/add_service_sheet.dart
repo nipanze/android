@@ -9,7 +9,7 @@ import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 
 /// Bottom sheet for adding provider capabilities.
-/// Returns `List<String>` of selected slugs, or null if dismissed.
+/// Returns List<String> of selected slugs, or null if dismissed.
 class AddServiceSheet extends StatefulWidget {
   const AddServiceSheet({
     super.key,
@@ -72,7 +72,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         (c) => c.slug == widget.preselectedCategorySlug,
         orElse: () => cats.first,
       );
-      await _selectCategory(cat);
+      _selectCategory(cat);
     }
   }
 
@@ -274,7 +274,7 @@ class _CapabilityList extends StatelessWidget {
         return ListTile(
           enabled: !alreadyOwned,
           leading: alreadyOwned
-              ? const Icon(Icons.check_circle_rounded,
+              ? Icon(Icons.check_circle_rounded,
                   color: AppColors.success, size: 22)
               : Checkbox(
                   value: isSelected,

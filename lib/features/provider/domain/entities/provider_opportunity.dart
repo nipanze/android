@@ -13,9 +13,7 @@ class ProviderOpportunity {
   factory ProviderOpportunity.fromMap(Map<String, dynamic> map) {
     return ProviderOpportunity(
       capabilitySlug: map['capability_slug'] as String? ?? '',
-      opportunityCount: (map['opportunity_count'] as num?)?.toInt() ??
-          (map['open_needs_count'] as num?)?.toInt() ??
-          0,
+      opportunityCount: (map['opportunity_count'] as num?)?.toInt() ?? 0,
       capabilityName: map['capability_name'] as String?,
       categorySlug: map['category_slug'] as String?,
       categoryName: map['category_name'] as String?,
