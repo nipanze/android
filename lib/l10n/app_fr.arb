@@ -1168,6 +1168,17 @@
   "needsAcceptOffer": "Accepter l'offre",
   "providerServicesTitle": "Services de prestataire",
   "providerServicesSubtitle": "Dites aux gens en quoi vous pouvez les aider.",
+  "servicesCount": "{count} services",
+  "@servicesCount": {
+    "description": "Number of capabilities the user has selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zeroServicesAdded": "0 service ajouté",
+  "addServices": "Ajouter des services",
   "addService": "Ajouter un service",
   "providerVerified": "Prestataire vérifié",
   "selfDeclared": "Auto-déclaré",

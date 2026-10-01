@@ -1161,6 +1161,17 @@
   "needsAcceptOffer": "قبول العرض",
   "providerServicesTitle": "خدمات المزود",
   "providerServicesSubtitle": "أخبر الناس بما يمكنك مساعدتهم فيه.",
+  "servicesCount": "{count} خدمة",
+  "@servicesCount": {
+    "description": "Number of capabilities the user has selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zeroServicesAdded": "تمت إضافة 0 خدمة",
+  "addServices": "إضافة خدمات",
   "addService": "إضافة خدمة",
   "providerVerified": "مزود موثق",
   "selfDeclared": "معلن ذاتياً",

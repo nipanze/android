@@ -7,20 +7,40 @@ import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_capability.dart';
 
 class ProviderVerificationChip extends StatelessWidget {
-  const ProviderVerificationChip({super.key, required this.level});
+  const ProviderVerificationChip({
+    super.key,
+    required this.level,
+    this.phoneVerified = false,
+    this.identityVerified = false,
+  });
 
   final ProviderVerificationLevel level;
+  final bool phoneVerified;
+  final bool identityVerified;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final isVerified = level == ProviderVerificationLevel.providerVerified;
-    final color = isVerified ? AppColors.accent : AppColors.warning;
-    final label =
-        isVerified ? l10n.providerVerified : l10n.selfDeclared;
-    final icon = isVerified ? Icons.verified_rounded : Icons.info_outline_rounded;
+    final isProviderVerified =
+      level == ProviderVerificationLevel.providerVerified;
+    final color = isProviderVerified || identityVerified
+      ? AppColors.accent
+      : phoneVerified
+        ? AppColors.success
+        : AppColors.warning;
+    final label = isProviderVerified
+      ? l10n.providerVerified
+      : identityVerified
+        ? l10n.kycIdentityVerified
+        : phoneVerified
+          ? l10n.phoneVerified
+          : l10n.selfDeclared;
+    final icon = isProviderVerified || identityVerified
+      ? Icons.verified_rounded
+      : phoneVerified
+        ? Icons.phone_iphone_rounded
+        : Icons.info_outline_rounded;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

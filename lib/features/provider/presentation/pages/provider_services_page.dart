@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../cubit/capabilities_cubit.dart';
@@ -19,8 +20,13 @@ class ProviderServicesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<CapabilitiesCubit>()..loadWithOpportunities(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => getIt<CapabilitiesCubit>()..loadWithOpportunities(),
+        ),
+        BlocProvider(create: (_) => getIt<ProfileCubit>()..load()),
+      ],
       child: const _ProviderServicesView(),
     );
   }
@@ -62,6 +68,10 @@ class _ProviderServicesView extends StatelessWidget {
           final loaded = state as CapabilitiesLoaded;
           final caps = loaded.capabilities;
           final opps = loaded.opportunities;
+            final profileState = context.watch<ProfileCubit>().state;
+            final profile = profileState is ProfileCubitLoaded
+              ? profileState.profile
+              : null;
 
           if (caps.isEmpty) {
             return _EmptyState(l10n: l10n, isDark: isDark);
@@ -95,6 +105,8 @@ class _ProviderServicesView extends StatelessWidget {
                 ...caps.map(
                   (cap) => CapabilityBadge(
                     capability: cap,
+                    phoneVerified: profile?.trustPhoneVerified ?? false,
+                    identityVerified: profile?.isKycApproved ?? false,
                     opportunityCount: opps
                         .where((o) =>
                             o.capabilitySlug == cap.capabilitySlug)

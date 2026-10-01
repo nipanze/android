@@ -1219,6 +1219,17 @@
   "needsAcceptOffer": "Accept Offer",
   "providerServicesTitle": "Provider Services",
   "providerServicesSubtitle": "Tell people what you can help them with.",
+  "servicesCount": "{count} services",
+  "@servicesCount": {
+    "description": "Number of capabilities the user has selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zeroServicesAdded": "0 services added",
+  "addServices": "Add services",
   "addService": "Add Service",
   "providerVerified": "Provider Verified",
   "selfDeclared": "Self-declared",

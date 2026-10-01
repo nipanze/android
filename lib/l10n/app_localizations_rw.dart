@@ -2474,6 +2474,17 @@ class AppLocalizationsRw extends AppLocalizations {
       'Bwira abantu icyo ushobora kubafashamo.';
 
   @override
+  String servicesCount(int count) {
+    return 'Serivisi $count';
+  }
+
+  @override
+  String get zeroServicesAdded => 'Nta serivisi zongeweho';
+
+  @override
+  String get addServices => 'Ongeraho serivisi';
+
+  @override
   String get addService => 'Ongeraho Serivisi';
 
   @override

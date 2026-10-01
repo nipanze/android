@@ -1161,6 +1161,17 @@
   "needsAcceptOffer": "Kubali Ofa",
   "providerServicesTitle": "Huduma za Mtoa Huduma",
   "providerServicesSubtitle": "Waambie watu unachoweza kuwasaidia nacho.",
+  "servicesCount": "Huduma {count}",
+  "@servicesCount": {
+    "description": "Number of capabilities the user has selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zeroServicesAdded": "Hakuna huduma zilizoongezwa",
+  "addServices": "Ongeza huduma",
   "addService": "Ongeza Huduma",
   "providerVerified": "Mtoa Huduma Imethibitishwa",
   "selfDeclared": "Imejitangaza",

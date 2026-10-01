@@ -114,6 +114,7 @@ select category_slug, count(*) from needs_requests group by 1;
 - Trigger forces `verification_level = 'self_declared'` and clears `verified_*` unless `private.is_admin()`.
 - RLS: user manages own rows (level locked by trigger); public sees badge via a view `v_provider_badges` (capability, level only, no evidence URL).
 - Flutter: `features/provider/` — `ProviderServicesPage` (`/account/services`), `CapabilityBadge`, `ProviderVerificationChip` (combines capability level + phone + KYC).
+- Account: `YOUR SERVICES` entry between Trust & Reputation and Subscription, showing the user's saved capability count/preview or an add-services action; opens `/account/services`.
 - Offer form is disabled with a "Add this service to offer" prompt when no matching capability.
 
 **Acceptance:** user cannot raise own `verification_level` (test via direct update); offer without capability rejected server-side.

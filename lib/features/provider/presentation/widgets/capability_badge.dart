@@ -11,11 +11,15 @@ class CapabilityBadge extends StatelessWidget {
   const CapabilityBadge({
     super.key,
     required this.capability,
+    this.phoneVerified = false,
+    this.identityVerified = false,
     this.opportunityCount,
     this.onRemove,
   });
 
   final ProviderCapability capability;
+  final bool phoneVerified;
+  final bool identityVerified;
   final int? opportunityCount;
   final VoidCallback? onRemove;
 
@@ -78,7 +82,11 @@ class CapabilityBadge extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 4,
                   children: [
-                    ProviderVerificationChip(level: capability.verificationLevel),
+                    ProviderVerificationChip(
+                      level: capability.verificationLevel,
+                      phoneVerified: phoneVerified,
+                      identityVerified: identityVerified,
+                    ),
                     if (opportunityCount != null && opportunityCount! > 0)
                       _OpportunityPill(count: opportunityCount!, l10n: l10n),
                   ],

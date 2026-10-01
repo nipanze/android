@@ -1161,6 +1161,17 @@
   "needsAcceptOffer": "Emera Igiciro",
   "providerServicesTitle": "Serivisi z'Utanga Serivisi",
   "providerServicesSubtitle": "Bwira abantu icyo ushobora kubafashamo.",
+  "servicesCount": "Serivisi {count}",
+  "@servicesCount": {
+    "description": "Number of capabilities the user has selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "zeroServicesAdded": "Nta serivisi zongeweho",
+  "addServices": "Ongeraho serivisi",
   "addService": "Ongeraho Serivisi",
   "providerVerified": "Uwatanze Serivisi Yemejwe",
   "selfDeclared": "Yiyemeje",

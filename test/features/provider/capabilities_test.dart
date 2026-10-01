@@ -3,9 +3,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nipanze/core/di/injection.dart';
+import 'package:nipanze/features/account/data/profile_repository.dart';
+import 'package:nipanze/features/account/domain/models/user_profile.dart';
+import 'package:nipanze/features/account/presentation/cubit/profile_cubit.dart';
 import 'package:nipanze/features/needs/data/needs_repository.dart';
 import 'package:nipanze/features/needs/domain/models/need_capability.dart';
 import 'package:nipanze/features/needs/domain/models/need_category.dart';
@@ -22,6 +24,7 @@ import 'package:nipanze/l10n/app_localizations.dart';
 
 class MockProviderRepository extends Mock implements IProviderRepository {}
 class MockNeedsRepository extends Mock implements NeedsRepository {}
+class MockProfileRepository extends Mock implements ProfileRepository {}
 
 void main() {
   late MockProviderRepository mockRepo;
@@ -179,10 +182,12 @@ void main() {
     testWidgets('Add Service opens the category sheet', (tester) async {
       final mockProviderRepo = MockProviderRepository();
       final mockNeedsRepo = MockNeedsRepository();
+      final mockProfileRepo = MockProfileRepository();
 
       getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
       getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
       getIt.registerSingleton<CapabilitiesCubit>(CapabilitiesCubit(mockProviderRepo));
+      getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
 
       addTearDown(() {
         getIt.reset();
@@ -192,6 +197,12 @@ void main() {
           .thenAnswer((_) async => const <ProviderCapability>[]);
       when(() => mockProviderRepo.getProviderOpportunities())
           .thenAnswer((_) async => const <ProviderOpportunity>[]);
+      when(() => mockProfileRepo.getProfile()).thenAnswer((_) async =>
+          const UserProfile(
+            id: 'u-1',
+            email: 'user@test.com',
+            accountStatus: 'active',
+          ));
       when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
             NeedCategory(
               slug: 'machinery_equipment',
@@ -263,6 +274,33 @@ void main() {
 
       expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
       expect(find.text('Self-declared'), findsOneWidget);
+    });
+
+    testWidgets('ProviderVerificationChip renders phone verification', (tester) async {
+      await tester.pumpWidget(createLocalizedWidget(
+        const ProviderVerificationChip(
+          level: ProviderVerificationLevel.selfDeclared,
+          phoneVerified: true,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.phone_iphone_rounded), findsOneWidget);
+      expect(find.text('Phone verified'), findsOneWidget);
+    });
+
+    testWidgets('ProviderVerificationChip prioritizes identity verification', (tester) async {
+      await tester.pumpWidget(createLocalizedWidget(
+        const ProviderVerificationChip(
+          level: ProviderVerificationLevel.selfDeclared,
+          phoneVerified: true,
+          identityVerified: true,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.verified_rounded), findsOneWidget);
+      expect(find.text('Identity verified'), findsOneWidget);
     });
 
     testWidgets('CapabilityBadge renders capability details and chip', (tester) async {

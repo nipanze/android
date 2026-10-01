@@ -2443,6 +2443,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerServicesSubtitle => 'أخبر الناس بما يمكنك مساعدتهم فيه.';
 
   @override
+  String servicesCount(int count) {
+    return '$count خدمة';
+  }
+
+  @override
+  String get zeroServicesAdded => 'تمت إضافة 0 خدمة';
+
+  @override
+  String get addServices => 'إضافة خدمات';
+
+  @override
   String get addService => 'إضافة خدمة';
 
   @override

@@ -2473,6 +2473,17 @@ class AppLocalizationsSw extends AppLocalizations {
       'Waambie watu unachoweza kuwasaidia nacho.';
 
   @override
+  String servicesCount(int count) {
+    return 'Huduma $count';
+  }
+
+  @override
+  String get zeroServicesAdded => 'Hakuna huduma zilizoongezwa';
+
+  @override
+  String get addServices => 'Ongeza huduma';
+
+  @override
   String get addService => 'Ongeza Huduma';
 
   @override

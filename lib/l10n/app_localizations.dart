@@ -4522,6 +4522,24 @@ abstract class AppLocalizations {
   /// **'Tell people what you can help them with.'**
   String get providerServicesSubtitle;
 
+  /// Number of capabilities the user has selected
+  ///
+  /// In en, this message translates to:
+  /// **'{count} services'**
+  String servicesCount(int count);
+
+  /// No description provided for @zeroServicesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'0 services added'**
+  String get zeroServicesAdded;
+
+  /// No description provided for @addServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Add services'**
+  String get addServices;
+
   /// No description provided for @addService.
   ///
   /// In en, this message translates to:

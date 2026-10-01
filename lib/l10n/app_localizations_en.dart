@@ -2460,6 +2460,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tell people what you can help them with.';
 
   @override
+  String servicesCount(int count) {
+    return '$count services';
+  }
+
+  @override
+  String get zeroServicesAdded => '0 services added';
+
+  @override
+  String get addServices => 'Add services';
+
+  @override
   String get addService => 'Add Service';
 
   @override

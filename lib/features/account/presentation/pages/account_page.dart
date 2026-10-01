@@ -16,6 +16,8 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/widgets/language_selector_sheet.dart';
+import '../../../provider/presentation/cubit/capabilities_cubit.dart';
+import '../../../provider/presentation/cubit/capabilities_state.dart';
 import '../../domain/models/user_profile.dart';
 import '../cubit/profile_cubit.dart';
 
@@ -172,6 +174,13 @@ class _AccountView extends StatelessWidget {
                       _PublicTrustInfoCard(
                           onTap: () => _showTrustExplainer(context)),
                       const SizedBox(height: 4),
+
+                      // ── Your Services ────────────────────────────────────
+                      SectionHeader(
+                          AppLocalizations.of(context)!.yourServices
+                              .toUpperCase()),
+                      const _YourServicesSection(),
+                      const SizedBox(height: 8),
 
                       // ── Subscription ──────────────────────────────────────
                       SectionHeader(
@@ -904,6 +913,133 @@ class _StatChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _YourServicesSection extends StatelessWidget {
+  const _YourServicesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<CapabilitiesCubit>()..load(),
+      child: const _YourServicesCard(),
+    );
+  }
+}
+
+class _YourServicesCard extends StatelessWidget {
+  const _YourServicesCard();
+
+  Future<void> _openServices(BuildContext context) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    await context.push(AppRoutes.accountServices);
+    if (context.mounted) await cubit.load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+
+    return BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
+      builder: (context, state) {
+        final capabilities = state is CapabilitiesLoaded
+            ? state.capabilities
+            : const [];
+        final isLoading =
+            state is CapabilitiesLoading || state is CapabilitiesInitial;
+
+        return Card(
+          margin: EdgeInsets.zero,
+          child: InkWell(
+            onTap: () => _openServices(context),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.handyman_outlined,
+                        color: AppColors.accent, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.yourServices,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 3),
+                        if (isLoading)
+                          const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        else if (state is CapabilitiesError)
+                          Text(state.message,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12, color: text2))
+                        else if (capabilities.isEmpty) ...[
+                          Text(l10n.zeroServicesAdded,
+                              style: TextStyle(fontSize: 12, color: text2)),
+                          const SizedBox(height: 2),
+                          Text(l10n.providerServicesSubtitle,
+                              style: TextStyle(fontSize: 12, color: text2)),
+                        ] else ...[
+                          Text(l10n.servicesCount(capabilities.length),
+                              style: TextStyle(fontSize: 12, color: text2)),
+                          const SizedBox(height: 2),
+                          Text(
+                            capabilities
+                                .map((capability) => capability.capabilityName ??
+                                    capability.capabilitySlug)
+                                .join(' · '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12, color: text2),
+                          ),
+                        ],
+                        if (!isLoading && capabilities.isEmpty &&
+                            state is! CapabilitiesError)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: () => _openServices(context),
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: Text(l10n.addServices),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.only(top: 8),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                foregroundColor: AppColors.accent,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (!isLoading)
+                    Icon(Icons.chevron_right_rounded,
+                        color: text2, size: 20),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
