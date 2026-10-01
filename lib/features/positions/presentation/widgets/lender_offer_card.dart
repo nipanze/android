@@ -493,11 +493,12 @@ class _OfferStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = switch (status) {
       OfferStatus.pending => AppColors.accent,
       OfferStatus.accepted => AppColors.success,
       OfferStatus.rejected => AppColors.danger,
-      _ => AppColors.text2Dark,
+      _ => isDark ? AppColors.text2Dark : AppColors.text2Light,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

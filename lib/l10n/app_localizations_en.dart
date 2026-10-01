@@ -2543,13 +2543,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postChoiceTitle => 'What do you want to post?';
 
   @override
-  String get postLoanAction => '💰 Loan Request';
+  String get postLoanAction => 'Loan Request';
 
   @override
-  String get postForexAction => '💱 Forex Request';
+  String get postForexAction => 'Forex Request';
 
   @override
-  String get postNeedAction => '🔎 Need Request';
+  String get postNeedAction => 'Need Request';
 
   @override
   String get forYouTitle => 'For You';

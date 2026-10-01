@@ -691,20 +691,26 @@ class _ProfileViewState extends State<_ProfileView> {
                                     isKycApproved
                                         ? 'Your account identity is verified'
                                         : 'Upload ID document for full access',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: AppColors.text2Dark,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? AppColors.text2Dark
+                                          : AppColors.text2Light,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            _buildKycBadge(kycStatus),
+                            _buildKycBadge(context, kycStatus),
                             const SizedBox(width: 4),
-                            const Icon(
+                            Icon(
                               Icons.chevron_right_rounded,
                               size: 18,
-                              color: AppColors.text3Dark,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppColors.text3Dark
+                                  : AppColors.text3Light,
                             ),
                           ],
                         ),
@@ -777,10 +783,13 @@ class _ProfileViewState extends State<_ProfileView> {
                                 ),
                               ),
                               const SizedBox(width: 2),
-                              const Icon(
+                              Icon(
                                 Icons.lock_outline_rounded,
                                 size: 14,
-                                color: AppColors.text3Dark,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? AppColors.text3Dark
+                                    : AppColors.text3Light,
                               ),
                             ],
                           ),
@@ -1002,13 +1011,17 @@ class _ProfileViewState extends State<_ProfileView> {
     );
   }
 
-  Widget _buildKycBadge(String? status) {
+  Widget _buildKycBadge(BuildContext context, String? status) {
     if (status == null) return const SizedBox.shrink();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (label, color) = switch (status) {
       'approved' => ('Verified', AppColors.accent),
       'pending' => ('Pending', AppColors.warning),
       'rejected' => ('Rejected', AppColors.danger),
-      _ => ('Unverified', AppColors.text2Dark),
+      _ => (
+          'Unverified',
+          isDark ? AppColors.text2Dark : AppColors.text2Light,
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

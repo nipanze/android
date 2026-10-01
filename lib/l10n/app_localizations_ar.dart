@@ -2527,13 +2527,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get postChoiceTitle => 'ماذا تريد أن تنشر؟';
 
   @override
-  String get postLoanAction => '💰 طلب قرض';
+  String get postLoanAction => 'طلب قرض';
 
   @override
-  String get postForexAction => '💱 طلب فوركس';
+  String get postForexAction => 'طلب فوركس';
 
   @override
-  String get postNeedAction => '🔎 طلب احتياج';
+  String get postNeedAction => 'طلب احتياج';
 
   @override
   String get forYouTitle => 'لك خصيصاً';

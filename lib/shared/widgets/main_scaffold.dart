@@ -98,19 +98,12 @@ class MainScaffold extends StatelessWidget {
                           width: 46,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accent.withValues(alpha: 0.35),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            color: theme.colorScheme.primary,
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.add_rounded,
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                             size: 24,
                           ),
                         ),
@@ -147,9 +140,8 @@ class MainScaffold extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final color = isSelected
-        ? AppColors.accent
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
+    final baseColor = Theme.of(context).colorScheme.onSurface;
+    final color = isSelected ? baseColor : baseColor.withValues(alpha: 0.5);
 
     return Expanded(
       child: InkWell(
@@ -178,9 +170,8 @@ class MainScaffold extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final color = isSelected
-        ? AppColors.accent
-        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5);
+    final baseColor = Theme.of(context).colorScheme.onSurface;
+    final color = isSelected ? baseColor : baseColor.withValues(alpha: 0.5);
 
     return Expanded(
       child: InkWell(
@@ -241,6 +232,9 @@ class MainScaffold extends StatelessWidget {
   void _showRequestChoice(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final optionTitleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
 
     showModalBottomSheet<void>(
       context: context,
@@ -268,7 +262,10 @@ class MainScaffold extends StatelessWidget {
                   Icons.account_balance_wallet_outlined,
                   color: AppColors.accent,
                 ),
-                title: Text(l10n?.postLoanAction ?? '💰 Loan Request'),
+                title: Text(
+                  l10n?.postLoanAction ?? 'Loan Request',
+                  style: optionTitleStyle,
+                ),
                 subtitle: const Text(
                   'Borrow or finance capital for business or personal needs',
                 ),
@@ -282,7 +279,10 @@ class MainScaffold extends StatelessWidget {
                   Icons.currency_exchange_rounded,
                   color: AppColors.success,
                 ),
-                title: Text(l10n?.postForexAction ?? '💱 Forex Request'),
+                title: Text(
+                  l10n?.postForexAction ?? 'Forex Request',
+                  style: optionTitleStyle,
+                ),
                 subtitle: const Text(
                   'Exchange foreign currency at negotiated peer rates',
                 ),
@@ -296,7 +296,10 @@ class MainScaffold extends StatelessWidget {
                   Icons.search_rounded,
                   color: Color(0xFFF59E0B),
                 ),
-                title: Text(l10n?.postNeedAction ?? '🔎 Need Request'),
+                title: Text(
+                  l10n?.postNeedAction ?? 'Need Request',
+                  style: optionTitleStyle,
+                ),
                 subtitle: const Text(
                   'Post what equipment, service, or procurement you need',
                 ),

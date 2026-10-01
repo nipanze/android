@@ -190,8 +190,11 @@ class _PricingPageBody extends StatelessWidget {
                 l10n?.paymentSecurityDisclaimer ??
                     'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 11, color: AppColors.text3Dark),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.text3Dark
+                    : AppColors.text3Light),
               ),
             ],
           );

@@ -4663,19 +4663,19 @@ abstract class AppLocalizations {
   /// No description provided for @postLoanAction.
   ///
   /// In en, this message translates to:
-  /// **'💰 Loan Request'**
+  /// **'Loan Request'**
   String get postLoanAction;
 
   /// No description provided for @postForexAction.
   ///
   /// In en, this message translates to:
-  /// **'💱 Forex Request'**
+  /// **'Forex Request'**
   String get postForexAction;
 
   /// No description provided for @postNeedAction.
   ///
   /// In en, this message translates to:
-  /// **'🔎 Need Request'**
+  /// **'Need Request'**
   String get postNeedAction;
 
   /// No description provided for @forYouTitle.

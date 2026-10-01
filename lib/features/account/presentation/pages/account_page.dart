@@ -36,6 +36,7 @@ class _AccountView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
         child: MultiBlocListener(
@@ -236,10 +237,13 @@ class _AccountView extends StatelessWidget {
                         AppLocalizations.of(context)?.nipanzeDisclaimer ??
                             'Nipanze connects Requesters with Providers. Agreements are private between users.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.text3Dark,
-                            height: 1.5),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isDark
+                              ? AppColors.text3Dark
+                              : AppColors.text3Light,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
@@ -430,6 +434,7 @@ class _AccountView extends StatelessWidget {
   void _showCurrencyLockedInfoDialog(
       BuildContext context, CountryInfo country) {
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -458,8 +463,11 @@ class _AccountView extends StatelessWidget {
             Text(
               l10n?.subscriptionCurrencyLocked ??
                   'Subscription currency is locked to your phone number region for payment compatibility and cannot be changed manually.',
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.text2Dark, height: 1.4),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+                height: 1.4,
+              ),
             ),
           ],
         ),
@@ -702,6 +710,10 @@ class _ProfileHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor =
+      isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final tertiaryTextColor =
+      isDark ? AppColors.text3Dark : AppColors.text3Light;
     final isVerified = profile?.isKycApproved == true;
     return Material(
       color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
@@ -756,22 +768,21 @@ class _ProfileHeaderCard extends StatelessWidget {
                     // Email
                     Text(
                       profile?.email ?? '',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.text2Dark),
+                        style: TextStyle(fontSize: 11, color: secondaryTextColor),
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     // Location
                     Row(children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 12, color: AppColors.text3Dark),
+                        Icon(Icons.location_on_outlined,
+                          size: 12, color: tertiaryTextColor),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           profile?.district ??
                               AppLocalizations.of(context)!.districtNotSet,
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.text2Dark),
+                            style:
+                              TextStyle(fontSize: 11, color: secondaryTextColor),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -780,23 +791,23 @@ class _ProfileHeaderCard extends StatelessWidget {
                     if (profile?.memberSince != null) ...[
                       const SizedBox(height: 3),
                       Row(children: [
-                        const Icon(Icons.calendar_today_outlined,
-                            size: 11, color: AppColors.text3Dark),
+                        Icon(Icons.calendar_today_outlined,
+                          size: 11, color: tertiaryTextColor),
                         const SizedBox(width: 4),
                         Text(
                           AppLocalizations.of(context)!.memberSince(
                               DateFormat('MMM yyyy')
                                   .format(profile!.memberSince!)),
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.text2Dark),
+                            style:
+                              TextStyle(fontSize: 11, color: secondaryTextColor),
                         ),
                       ]),
                     ],
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  size: 20, color: AppColors.text3Dark),
+                Icon(Icons.chevron_right_rounded,
+                  size: 20, color: tertiaryTextColor),
             ],
           ),
         ),
@@ -886,8 +897,10 @@ class _StatChip extends StatelessWidget {
                     const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
             const SizedBox(height: 1),
             Text(subtitle,
-                style: const TextStyle(
-                    fontSize: 10.5, color: AppColors.text2Dark)),
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+                )),
           ],
         ),
       ),
@@ -930,8 +943,11 @@ class _TrustPanel extends StatelessWidget {
                         size: 22, color: AppColors.accent),
                     const SizedBox(height: 4),
                     Text(l10n.trustScore,
-                        style: const TextStyle(
-                            fontSize: 9, color: AppColors.text2Dark),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: isDark
+                          ? AppColors.text2Dark
+                          : AppColors.text2Light),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 4),
                     Text(
@@ -944,8 +960,11 @@ class _TrustPanel extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       l10n.completeDealsToBuild,
-                      style: const TextStyle(
-                          fontSize: 8, color: AppColors.text3Dark),
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: isDark
+                          ? AppColors.text3Dark
+                          : AppColors.text3Light),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -988,10 +1007,12 @@ class _TrustPanel extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           '${(scorePct * 100).round()}%',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.text2Dark),
+                            color: isDark
+                              ? AppColors.text2Dark
+                              : AppColors.text2Light),
                         ),
                       ],
                     ),
@@ -1077,6 +1098,7 @@ class _PublicTrustInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: AppColors.accent.withValues(alpha: 0.07),
       borderRadius: BorderRadius.circular(8),
@@ -1092,8 +1114,11 @@ class _PublicTrustInfoCard extends StatelessWidget {
             Expanded(
                 child: Text(l10n.publicTrustSignals,
                     style: const TextStyle(fontSize: 10, height: 1.3))),
-            const Icon(Icons.chevron_right_rounded,
-                size: 18, color: AppColors.text3Dark),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+            ),
           ]),
         ),
       ),

@@ -274,10 +274,14 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (label, color) = switch (status) {
       ListingStatus.active => ('Active', AppColors.success),
       ListingStatus.contracted => ('Contracted', AppColors.accent),
-      ListingStatus.expired => ('Expired', AppColors.text2Dark),
+      ListingStatus.expired => (
+          'Expired',
+          isDark ? AppColors.text2Dark : AppColors.text2Light,
+        ),
       ListingStatus.cancelled => ('Cancelled', AppColors.danger),
       ListingStatus.pendingKyc => ('Pending KYC', AppColors.warning),
     };

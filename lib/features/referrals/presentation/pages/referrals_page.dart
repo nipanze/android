@@ -469,9 +469,10 @@ class _ReferralHistoryTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _statusColor(item.status).withValues(alpha: 0.12),
+            backgroundColor:
+              _statusColor(context, item.status).withValues(alpha: 0.12),
           child: Icon(Icons.person_outline_rounded,
-              color: _statusColor(item.status), size: 20),
+              color: _statusColor(context, item.status), size: 20),
         ),
         title: Text(
           item.displayName,
@@ -492,12 +493,13 @@ class _ReferralHistoryTile extends StatelessWidget {
     );
   }
 
-  Color _statusColor(String status) {
+  Color _statusColor(BuildContext context, String status) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return switch (status) {
       'qualified' || 'paid' || 'reward_earned' => AppColors.success,
       'verified' || 'registered' || 'reward_pending' => AppColors.accent,
       'rejected' || 'fraud_flagged' || 'fraud_hold' => AppColors.danger,
-      _ => AppColors.text2Dark,
+      _ => isDark ? AppColors.text2Dark : AppColors.text2Light,
     };
   }
 

@@ -128,9 +128,13 @@ class _Overview extends StatelessWidget {
                       _Metric('Latest match rate', '$rate%', AppColors.success),
                     ]),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                     'Metrics are read from the security-invoker marketplace activity view.',
-                    style: TextStyle(fontSize: 11, color: AppColors.text3Dark)),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.text3Dark
+                      : AppColors.text3Light)),
               ]));
         },
       );

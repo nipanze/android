@@ -18,7 +18,7 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final (icon, color) = _iconAndColor(notification.type);
+    final (icon, color) = _iconAndColor(context, notification.type);
 
     return InkWell(
       onTap: onTap,
@@ -111,7 +111,8 @@ class NotificationTile extends StatelessWidget {
     );
   }
 
-  (IconData, Color) _iconAndColor(NotificationType type) {
+  (IconData, Color) _iconAndColor(
+      BuildContext context, NotificationType type) {
     switch (type) {
       case NotificationType.bidReceived:
         return (Icons.how_to_vote_outlined, AppColors.accent);
@@ -150,7 +151,12 @@ class NotificationTile extends StatelessWidget {
       case NotificationType.referralRewardRejected:
         return (Icons.money_off_csred_outlined, AppColors.danger);
       case NotificationType.system:
-        return (Icons.info_outline_rounded, AppColors.text2Dark);
+        return (
+          Icons.info_outline_rounded,
+          Theme.of(context).brightness == Brightness.dark
+              ? AppColors.text2Dark
+              : AppColors.text2Light,
+        );
     }
   }
 

@@ -2554,13 +2554,13 @@ class AppLocalizationsSw extends AppLocalizations {
   String get postChoiceTitle => 'Ungependa kutuma nini?';
 
   @override
-  String get postLoanAction => '💰 Ombi la Mkopo';
+  String get postLoanAction => 'Ombi la Mkopo';
 
   @override
-  String get postForexAction => '💱 Ombi la Forex';
+  String get postForexAction => 'Ombi la Forex';
 
   @override
-  String get postNeedAction => '🔎 Ombi la Hitaji';
+  String get postNeedAction => 'Ombi la Hitaji';
 
   @override
   String get forYouTitle => 'Kwa Ajili Yako';

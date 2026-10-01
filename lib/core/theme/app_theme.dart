@@ -114,17 +114,17 @@ class AppTheme {
         elevation: 0,
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 9,
           fontWeight: FontWeight.w600,
-          color: AppColors.textDark,
+          color: isDark ? AppColors.textDark : AppColors.textLight,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 9,
           fontWeight: FontWeight.w500,
-          color: AppColors.text3Dark,
+          color: isDark ? AppColors.text3Dark : AppColors.text3Light,
         ),
       ),
 

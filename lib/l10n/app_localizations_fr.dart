@@ -2581,13 +2581,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postChoiceTitle => 'Que souhaitez-vous publier ?';
 
   @override
-  String get postLoanAction => '💰 Demande de prêt';
+  String get postLoanAction => 'Demande de prêt';
 
   @override
-  String get postForexAction => '💱 Demande Forex';
+  String get postForexAction => 'Demande Forex';
 
   @override
-  String get postNeedAction => '🔎 Demande de besoin';
+  String get postNeedAction => 'Demande de besoin';
 
   @override
   String get forYouTitle => 'Pour vous';

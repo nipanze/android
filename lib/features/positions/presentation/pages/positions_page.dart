@@ -125,8 +125,11 @@ class _PositionsViewState extends State<_PositionsView>
           TabBar(
             controller: _tc,
             indicatorColor: AppColors.accent,
-            labelColor: AppColors.textDark,
-            unselectedLabelColor: AppColors.text3Dark,
+            labelColor: Theme.of(context).colorScheme.onSurface,
+            unselectedLabelColor:
+              Theme.of(context).brightness == Brightness.dark
+                ? AppColors.text3Dark
+                : AppColors.text3Light,
             labelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),

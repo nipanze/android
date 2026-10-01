@@ -2555,13 +2555,13 @@ class AppLocalizationsRw extends AppLocalizations {
   String get postChoiceTitle => 'Urashaka kohereza iki?';
 
   @override
-  String get postLoanAction => '💰 Gusaba Inguzanyo';
+  String get postLoanAction => 'Gusaba Inguzanyo';
 
   @override
-  String get postForexAction => '💱 Gusaba Forex';
+  String get postForexAction => 'Gusaba Forex';
 
   @override
-  String get postNeedAction => '🔎 Gusaba Icyo Ukeneye';
+  String get postNeedAction => 'Gusaba Icyo Ukeneye';
 
   @override
   String get forYouTitle => 'Ibyakugenewe';
