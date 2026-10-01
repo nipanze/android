@@ -1,6 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../marketplace/domain/models/marketplace_item.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../domain/models/need_capability.dart';
@@ -196,5 +198,38 @@ class NeedsRepository {
     } catch (e) {
       throw parseSupabaseError(e);
     }
+  }
+
+  /// Get personalized 'For You' needs
+  Future<List<NeedsListing>> getForYouNeeds({String country = 'UG', int limit = 10}) async {
+    try {
+      final data = await _client.rpc(
+        RpcNames.getForYouNeeds,
+        params: {'p_country': country, 'p_limit': limit},
+      );
+      return (data as List).map((e) => NeedsListing.fromMap(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      try {
+        final fallback = await _client
+            .from('v_needs_listings')
+            .select()
+            .order('listed_at', ascending: false)
+            .limit(limit);
+        return (fallback as List).map((e) => NeedsListing.fromMap(e as Map<String, dynamic>)).toList();
+      } catch (_) {
+        return const [];
+      }
+    }
+  }
+
+  /// Record interest event for personalization
+  Future<void> recordInterestEvent(String categorySlug, String event) async {
+    try {
+      if (currentViewerId == null) return;
+      await _client.rpc(
+        RpcNames.recordInterestEvent,
+        params: {'p_category_slug': categorySlug, 'p_event': event},
+      );
+    } catch (_) {}
   }
 }

@@ -1,3 +1,5 @@
+import '../../features/provider/presentation/pages/provider_services_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,7 +14,6 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/forex/presentation/pages/forex_create_page.dart';
 import '../../features/forex/presentation/pages/forex_detail_page.dart';
 import '../../features/forex/presentation/pages/my_forex_requests_page.dart';
@@ -41,6 +42,7 @@ class AppRoutes {
   static const String verifyEmail = '/auth/verify-email';
   static const String resetPassword = '/auth/reset-password';
 
+  static const String home = '/home';
   static const String dashboard = '/dashboard';
   static const String marketplace = '/marketplace';
   static const String marketplaceDetail = '/marketplace/:requestId';
@@ -63,6 +65,7 @@ class AppRoutes {
   static const String kyc = '/kyc';
   static const String profile = '/profile';
   static const String account = '/account';
+  static const String accountServices = '/account/services';
   static const String blockedUsers = '/account/blocked-users';
   static const String admin = '/admin';
   static const String pricing = '/pricing';
@@ -75,14 +78,14 @@ class AppRouter {
   final AuthBloc authBloc;
 
   late final GoRouter router = GoRouter(
-    initialLocation: AppRoutes.marketplace,
+    initialLocation: AppRoutes.home,
     debugLogDiagnostics: false,
     redirect: _redirect,
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
     routes: [
       GoRoute(
         path: '/',
-        redirect: (_, __) => AppRoutes.marketplace,
+        redirect: (_, __) => AppRoutes.home,
       ),
       // ── Auth routes (no shell) ──────────────────────────────────────
       GoRoute(
@@ -124,9 +127,14 @@ class AppRouter {
         builder: (context, state, child) => MainScaffold(child: child),
         routes: [
           GoRoute(
+            path: AppRoutes.home,
+            name: 'home',
+            pageBuilder: (_, state) => _fade(state, const HomePage()),
+          ),
+          GoRoute(
             path: AppRoutes.dashboard,
             name: 'dashboard',
-            pageBuilder: (_, state) => _fade(state, const DashboardPage()),
+            redirect: (_, __) => AppRoutes.home,
           ),
           GoRoute(
             path: AppRoutes.marketplace,
@@ -261,6 +269,11 @@ class AppRouter {
         pageBuilder: (_, state) => _slide(state, const KycPage()),
       ),
       GoRoute(
+        path: AppRoutes.accountServices,
+        name: 'accountServices',
+        pageBuilder: (_, state) => _slide(state, const ProviderServicesPage()),
+      ),
+      GoRoute(
         path: AppRoutes.profile,
         name: 'profile',
         pageBuilder: (_, state) =>
@@ -301,7 +314,7 @@ class AppRouter {
     }
 
     if (authState is AuthAuthenticated) {
-      if (onAuth || onReferralSignup) return AppRoutes.marketplace;
+      if (onAuth || onReferralSignup) return AppRoutes.home;
       if (authState.needsEmailVerification) return AppRoutes.verifyEmail;
       if (state.matchedLocation == AppRoutes.admin && !authState.user.isAdmin) {
         return AppRoutes.marketplace;

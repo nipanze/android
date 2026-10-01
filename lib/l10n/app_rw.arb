@@ -1193,5 +1193,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navHome": "Ahabanza",
+  "navPost": "Ohereza",
+  "navActivity": "Ibikorwa",
+  "postChoiceTitle": "Urashaka kohereza iki?",
+  "postLoanAction": "💰 Gusaba Inguzanyo",
+  "postForexAction": "💱 Gusaba Forex",
+  "postNeedAction": "🔎 Gusaba Icyo Ukeneye",
+  "forYouTitle": "Ibyakugenewe",
+  "peopleLookingForServices": "Abantu barashaka serivisi utanga",
+  "addYourServicesPrompt": "Ufite serivisi waza ufasha abantu?"
 }

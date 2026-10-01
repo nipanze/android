@@ -1,4 +1,4 @@
-# Nipanze — Needs Layer Build Plan (Stage 4.8)
+# Nipanze — Needs Layer & Provider Services Build Plan (Stage 4.8 — Implemented)
 
 Goal: add **Needs** as the third module beside Loans and Forex, plus intent-based onboarding and a personalized Home. Loans and Forex stay untouched. Everything reuses existing auth, plans, trust, blocks, contact reveal and the private/public RPC wrapper pattern.
 

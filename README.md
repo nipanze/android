@@ -195,7 +195,7 @@ shared/widgets/      # + NeedCard, CategoryChip, CapabilityBadge, ProviderVerifi
 
 **Roadmap** — add after Stage 4.7:
 
-### Stage 4.8 — Needs Layer ⬜ Planned
+### Stage 4.8 — Needs Layer & Provider Services ✅ Implemented
 - Needs categories + capabilities, extended `needs_requests`, `need_offers`, contact reveal, provider capabilities with progressive verification
 - Intent-based onboarding, personalized Home, `For You` ranking, provider opportunities
 - Per-category, per-market enablement flag (`need_categories.is_active` plus a country override in `system_settings`)

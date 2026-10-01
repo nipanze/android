@@ -516,15 +516,19 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                   ),
                 )
               else
-                ..._offers.map(
-                  (offer) => _OfferCard(
-                    offer: offer,
+                ..._offers.asMap().entries.map(
+                  (entry) => _OfferCard(
+                    offer: entry.value,
+                    index: entry.key + 1,
+                    capabilityName: need.capabilitySlug != null
+                        ? _formatKey(need.capabilitySlug!)
+                        : null,
                     onAccept: _actionInProgress
                         ? null
-                        : () => _acceptOffer(offer.id),
+                        : () => _acceptOffer(entry.value.id),
                     onUnlock: _actionInProgress
                         ? null
-                        : () => _unlockContact(offer.id),
+                        : () => _unlockContact(entry.value.id),
                   ),
                 ),
               const SizedBox(height: 24),
@@ -558,11 +562,15 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
 class _OfferCard extends StatelessWidget {
   const _OfferCard({
     required this.offer,
+    required this.index,
+    this.capabilityName,
     this.onAccept,
     this.onUnlock,
   });
 
   final NeedOffer offer;
+  final int index;
+  final String? capabilityName;
   final VoidCallback? onAccept;
   final VoidCallback? onUnlock;
 
@@ -571,27 +579,61 @@ class _OfferCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isAccepted = offer.status == 'accepted';
+    final isOwn = offer.isOwnOffer;
+
+    final offerTitle = isOwn ? 'Your Offer (#$index)' : 'Offer #$index';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isAccepted
             ? AppColors.success.withValues(alpha: 0.1)
             : (isDark ? AppColors.bg2Dark : theme.colorScheme.surfaceContainerHighest),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isAccepted
               ? AppColors.success
               : (isDark ? AppColors.borderDark : AppColors.borderLight),
+          width: isAccepted ? 1.5 : 1.0,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Offer Anonymous Header ──────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                children: [
+                  Text(
+                    offerTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isOwn ? AppColors.accent : null,
+                    ),
+                  ),
+                  if (isAccepted) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Accepted',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.success,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
               Text(
                 '${offer.currency} ${NumberFormat.decimalPattern().format(offer.price)}',
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -599,26 +641,94 @@ class _OfferCard extends StatelessWidget {
                   color: const Color(0xFFF59E0B),
                 ),
               ),
-              if (offer.isProviderVerified)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.15),
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                  ),
-                  child: const Text(
-                    'Verified Provider',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                ),
             ],
           ),
+          const SizedBox(height: 8),
+
+          // ── Non-identifying Trust Indicators Row ────────────────────
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (offer.providerRatingAvg != null && offer.providerRatingAvg! > 0)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 2),
+                    Text(
+                      offer.providerRatingAvg!.toStringAsFixed(1),
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                    ),
+                    if (offer.providerReviewCount > 0)
+                      Text(
+                        ' (${offer.providerReviewCount})',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                  ],
+                ),
+              if (offer.providerCompletedDeals > 0)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.handshake_outlined, size: 13, color: AppColors.accent),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${offer.providerCompletedDeals} completed',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              if (offer.providerPhoneVerified)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.phone_android_rounded, size: 13, color: AppColors.success),
+                    const SizedBox(width: 2),
+                    const Text(
+                      'Phone verified',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: (offer.isProviderVerified ? AppColors.accent : AppColors.warning)
+                      .withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      offer.isProviderVerified ? Icons.verified_rounded : Icons.info_outline_rounded,
+                      size: 11,
+                      color: offer.isProviderVerified ? AppColors.accent : AppColors.warning,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      offer.isProviderVerified
+                          ? (capabilityName != null ? '$capabilityName · Provider Verified' : 'Provider Verified')
+                          : (capabilityName != null ? '$capabilityName · Self-declared' : 'Self-declared'),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: offer.isProviderVerified ? AppColors.accent : AppColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
           if (offer.timelineText.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               'Timeline: ${offer.timelineText}',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),

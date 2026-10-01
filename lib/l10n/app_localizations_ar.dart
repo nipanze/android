@@ -2513,4 +2513,34 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navPost => 'نشر';
+
+  @override
+  String get navActivity => 'النشاط';
+
+  @override
+  String get postChoiceTitle => 'ماذا تريد أن تنشر؟';
+
+  @override
+  String get postLoanAction => '💰 طلب قرض';
+
+  @override
+  String get postForexAction => '💱 طلب فوركس';
+
+  @override
+  String get postNeedAction => '🔎 طلب احتياج';
+
+  @override
+  String get forYouTitle => 'لك خصيصاً';
+
+  @override
+  String get peopleLookingForServices => 'يبحث الأشخاص عما تقدمه';
+
+  @override
+  String get addYourServicesPrompt => 'هل يمكنك مساعدة الناس في تقديم خدمة؟';
 }

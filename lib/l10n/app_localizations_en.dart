@@ -2529,4 +2529,35 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navPost => 'Post';
+
+  @override
+  String get navActivity => 'Activity';
+
+  @override
+  String get postChoiceTitle => 'What do you want to post?';
+
+  @override
+  String get postLoanAction => '💰 Loan Request';
+
+  @override
+  String get postForexAction => '💱 Forex Request';
+
+  @override
+  String get postNeedAction => '🔎 Need Request';
+
+  @override
+  String get forYouTitle => 'For You';
+
+  @override
+  String get peopleLookingForServices =>
+      'People are looking for what you provide';
+
+  @override
+  String get addYourServicesPrompt => 'Can you help people with something?';
 }

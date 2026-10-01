@@ -1193,5 +1193,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navHome": "الرئيسية",
+  "navPost": "نشر",
+  "navActivity": "النشاط",
+  "postChoiceTitle": "ماذا تريد أن تنشر؟",
+  "postLoanAction": "💰 طلب قرض",
+  "postForexAction": "💱 طلب فوركس",
+  "postNeedAction": "🔎 طلب احتياج",
+  "forYouTitle": "لك خصيصاً",
+  "peopleLookingForServices": "يبحث الأشخاص عما تقدمه",
+  "addYourServicesPrompt": "هل يمكنك مساعدة الناس في تقديم خدمة؟"
 }

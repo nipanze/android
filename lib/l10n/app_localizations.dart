@@ -4635,6 +4635,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 opportunity} other{{count} opportunities}}'**
   String opportunitiesCount(int count);
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get navPost;
+
+  /// No description provided for @navActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get navActivity;
+
+  /// No description provided for @postChoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to post?'**
+  String get postChoiceTitle;
+
+  /// No description provided for @postLoanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'💰 Loan Request'**
+  String get postLoanAction;
+
+  /// No description provided for @postForexAction.
+  ///
+  /// In en, this message translates to:
+  /// **'💱 Forex Request'**
+  String get postForexAction;
+
+  /// No description provided for @postNeedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'🔎 Need Request'**
+  String get postNeedAction;
+
+  /// No description provided for @forYouTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For You'**
+  String get forYouTitle;
+
+  /// No description provided for @peopleLookingForServices.
+  ///
+  /// In en, this message translates to:
+  /// **'People are looking for what you provide'**
+  String get peopleLookingForServices;
+
+  /// No description provided for @addYourServicesPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Can you help people with something?'**
+  String get addYourServicesPrompt;
 }
 
 class _AppLocalizationsDelegate

@@ -1193,5 +1193,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navHome": "Nyumbani",
+  "navPost": "Tuma",
+  "navActivity": "Shughuli",
+  "postChoiceTitle": "Ungependa kutuma nini?",
+  "postLoanAction": "💰 Ombi la Mkopo",
+  "postForexAction": "💱 Ombi la Forex",
+  "postNeedAction": "🔎 Ombi la Hitaji",
+  "forYouTitle": "Kwa Ajili Yako",
+  "peopleLookingForServices": "Watu wanatafuta huduma unazotoa",
+  "addYourServicesPrompt": "Je, unaweza kusaidia watu na huduma fulani?"
 }

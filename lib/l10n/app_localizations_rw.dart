@@ -2541,4 +2541,34 @@ class AppLocalizationsRw extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get navHome => 'Ahabanza';
+
+  @override
+  String get navPost => 'Ohereza';
+
+  @override
+  String get navActivity => 'Ibikorwa';
+
+  @override
+  String get postChoiceTitle => 'Urashaka kohereza iki?';
+
+  @override
+  String get postLoanAction => '💰 Gusaba Inguzanyo';
+
+  @override
+  String get postForexAction => '💱 Gusaba Forex';
+
+  @override
+  String get postNeedAction => '🔎 Gusaba Icyo Ukeneye';
+
+  @override
+  String get forYouTitle => 'Ibyakugenewe';
+
+  @override
+  String get peopleLookingForServices => 'Abantu barashaka serivisi utanga';
+
+  @override
+  String get addYourServicesPrompt => 'Ufite serivisi waza ufasha abantu?';
 }

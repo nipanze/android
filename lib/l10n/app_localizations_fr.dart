@@ -2567,4 +2567,36 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get navHome => 'Accueil';
+
+  @override
+  String get navPost => 'Publier';
+
+  @override
+  String get navActivity => 'Activité';
+
+  @override
+  String get postChoiceTitle => 'Que souhaitez-vous publier ?';
+
+  @override
+  String get postLoanAction => '💰 Demande de prêt';
+
+  @override
+  String get postForexAction => '💱 Demande Forex';
+
+  @override
+  String get postNeedAction => '🔎 Demande de besoin';
+
+  @override
+  String get forYouTitle => 'Pour vous';
+
+  @override
+  String get peopleLookingForServices =>
+      'Des personnes recherchent ce que vous proposez';
+
+  @override
+  String get addYourServicesPrompt =>
+      'Pouvez-vous aider les gens avec un service ?';
 }

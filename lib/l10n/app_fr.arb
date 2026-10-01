@@ -1200,5 +1200,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navHome": "Accueil",
+  "navPost": "Publier",
+  "navActivity": "Activité",
+  "postChoiceTitle": "Que souhaitez-vous publier ?",
+  "postLoanAction": "💰 Demande de prêt",
+  "postForexAction": "💱 Demande Forex",
+  "postNeedAction": "🔎 Demande de besoin",
+  "forYouTitle": "Pour vous",
+  "peopleLookingForServices": "Des personnes recherchent ce que vous proposez",
+  "addYourServicesPrompt": "Pouvez-vous aider les gens avec un service ?"
 }

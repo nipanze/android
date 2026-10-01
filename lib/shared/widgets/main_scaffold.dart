@@ -20,19 +20,19 @@ class MainScaffold extends StatelessWidget {
 
   static const _tabs = [
     _TabItem(
-        label: 'Markets',
-        icon: Icons.show_chart_rounded,
-        route: AppRoutes.marketplace),
+        label: 'Home',
+        icon: Icons.home_rounded,
+        route: AppRoutes.home),
     _TabItem(
         label: 'Watchlist',
         icon: Icons.star_outline_rounded,
         route: AppRoutes.watchlist),
     _TabItem(
-        label: 'Request',
+        label: 'Post',
         icon: Icons.add_circle_rounded,
         route: AppRoutes.listingCreate),
     _TabItem(
-        label: 'Positions',
+        label: 'Activity',
         icon: Icons.receipt_long_outlined,
         route: AppRoutes.positions),
     _TabItem(
@@ -43,11 +43,15 @@ class MainScaffold extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location.startsWith(AppRoutes.forexCreate)) return 2;
-    if (location.startsWith(AppRoutes.needsCreate)) return 2;
-    for (int i = 0; i < _tabs.length; i++) {
-      if (location.startsWith(_tabs[i].route)) return i;
-    }
+    if (location.startsWith(AppRoutes.home) || location.startsWith(AppRoutes.dashboard)) return 0;
+    if (location.startsWith(AppRoutes.watchlist)) return 1;
+    if (location.startsWith(AppRoutes.listingCreate) ||
+        location.startsWith(AppRoutes.forexCreate) ||
+        location.startsWith(AppRoutes.needsCreate)) return 2;
+    if (location.startsWith(AppRoutes.positions) ||
+        location.startsWith(AppRoutes.activity) ||
+        location.startsWith(AppRoutes.myListings)) return 3;
+    if (location.startsWith(AppRoutes.account)) return 4;
     return 0;
   }
 
@@ -55,14 +59,14 @@ class MainScaffold extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     if (l10n == null) return key;
     switch (key) {
-      case 'Markets':
-        return l10n.navMarkets;
+      case 'Home':
+        return l10n.navHome;
       case 'Watchlist':
         return l10n.navWatchlist;
-      case 'Request':
-        return l10n.navRequest;
+      case 'Post':
+        return l10n.navPost;
       case 'Activity':
-        return l10n.navPositions;
+        return l10n.navActivity;
       case 'Account':
         return l10n.navAccount;
       default:
@@ -88,9 +92,10 @@ class MainScaffold extends StatelessWidget {
             ),
           ),
           child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
             currentIndex: currentIndex,
             onTap: (index) {
-              if (_tabs[index].label == 'Request') {
+              if (_tabs[index].label == 'Post') {
                 _showRequestChoice(context);
                 return;
               }
@@ -109,11 +114,11 @@ class MainScaffold extends StatelessWidget {
   }
 
   Widget _buildIcon(BuildContext context, _TabItem tab, int currentIndex) {
-    final isRequest = tab.label == 'Request';
+    final isPost = tab.label == 'Post';
 
     Widget icon = Icon(
       tab.icon,
-      size: isRequest ? 28 : 22,
+      size: isPost ? 28 : 22,
     );
 
     // Red dot indicator over Account ONLY when the user has incomplete account steps
@@ -154,6 +159,8 @@ class MainScaffold extends StatelessWidget {
 
   void _showRequestChoice(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -162,26 +169,40 @@ class MainScaffold extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  l10n?.postChoiceTitle ?? 'What do you want to post?',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
               ListTile(
-                leading: const Icon(Icons.account_balance_wallet_outlined),
-                title: Text(l10n?.loanRequestTitle ?? 'Loan request'),
+                leading: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.accent),
+                title: Text(l10n?.postLoanAction ?? '💰 Loan Request'),
+                subtitle: const Text('Borrow or finance capital for business or personal needs'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.listingCreate);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.currency_exchange_rounded),
-                title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
+                leading: const Icon(Icons.currency_exchange_rounded, color: AppColors.success),
+                title: Text(l10n?.postForexAction ?? '💱 Forex Request'),
+                subtitle: const Text('Exchange foreign currency at negotiated peer rates'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.forexCreate);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.handyman_outlined),
-                title: Text(l10n?.needsRequestTitle ?? 'Needs request'),
+                leading: const Icon(Icons.search_rounded, color: Color(0xFFF59E0B)),
+                title: Text(l10n?.postNeedAction ?? '🔎 Need Request'),
+                subtitle: const Text('Post what equipment, service, or procurement you need'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   context.go(AppRoutes.needsCreate);

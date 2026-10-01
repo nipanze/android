@@ -1251,5 +1251,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "navHome": "Home",
+  "navPost": "Post",
+  "navActivity": "Activity",
+  "postChoiceTitle": "What do you want to post?",
+  "postLoanAction": "💰 Loan Request",
+  "postForexAction": "💱 Forex Request",
+  "postNeedAction": "🔎 Need Request",
+  "forYouTitle": "For You",
+  "peopleLookingForServices": "People are looking for what you provide",
+  "addYourServicesPrompt": "Can you help people with something?"
 }

@@ -2540,4 +2540,35 @@ class AppLocalizationsSw extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get navHome => 'Nyumbani';
+
+  @override
+  String get navPost => 'Tuma';
+
+  @override
+  String get navActivity => 'Shughuli';
+
+  @override
+  String get postChoiceTitle => 'Ungependa kutuma nini?';
+
+  @override
+  String get postLoanAction => '💰 Ombi la Mkopo';
+
+  @override
+  String get postForexAction => '💱 Ombi la Forex';
+
+  @override
+  String get postNeedAction => '🔎 Ombi la Hitaji';
+
+  @override
+  String get forYouTitle => 'Kwa Ajili Yako';
+
+  @override
+  String get peopleLookingForServices => 'Watu wanatafuta huduma unazotoa';
+
+  @override
+  String get addYourServicesPrompt =>
+      'Je, unaweza kusaidia watu na huduma fulani?';
 }
