@@ -3,6 +3,7 @@ class NeedCategory {
     required this.slug,
     required this.name,
     required this.icon,
+    this.description,
     this.sortOrder = 0,
     this.isActive = true,
   });
@@ -12,6 +13,7 @@ class NeedCategory {
       slug: map['slug'] as String,
       name: map['name'] as String,
       icon: map['icon'] as String? ?? '🔎',
+      description: map['description'] as String?,
       sortOrder: (map['sort_order'] as num?)?.toInt() ?? 0,
       isActive: map['is_active'] as bool? ?? true,
     );
@@ -20,6 +22,7 @@ class NeedCategory {
   final String slug;
   final String name;
   final String icon;
+  final String? description;
   final int sortOrder;
   final bool isActive;
 

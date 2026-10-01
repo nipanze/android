@@ -248,6 +248,19 @@ class _CategoryList extends StatelessWidget {
           ),
           title: Text(cat.name,
               style: const TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: cat.description == null || cat.description!.isEmpty
+              ? null
+              : Text(
+                cat.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                fontSize: 12,
+                color: isDark
+                  ? AppColors.text2Dark
+                  : AppColors.text2Light,
+                ),
+              ),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => onSelect(cat),
         );
