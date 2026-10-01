@@ -45,7 +45,9 @@
   "listingsLive": "{count} عروض · مباشر",
   "@listingsLive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "filtered": "مصفى",
@@ -61,19 +63,25 @@
   "daysLeft": "{count} يوم متبقٍ",
   "@daysLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "hoursLeft": "{count} ساعة متبقية",
   "@hoursLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "minutesLeft": "{count} دقيقة متبقية",
   "@minutesLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "expired": "منتهي",
@@ -91,22 +99,27 @@
   "daysAgo": "منذ {count} أيام",
   "@daysAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeksAgo": "منذ {count} أسابيع",
   "@weeksAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "watchlistTitle": "قائمة المتابعة",
   "watchlistSubtitle": "العروض التي تتابعها",
   "watchlistSaved": "{count} محفوظ",
   "@watchlistSaved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "watchlistInfoSubscribed": "مجاني للجميع. احصل على إشعارات عند تغيير العروض أو تحسن الأسعار أو إغلاق الإعلانات.",
@@ -117,15 +130,18 @@
   "browseMarketplace": "تصفح السوق",
   "removedFromWatchlist": "تمت الإزالة من قائمة المتابعة",
   "undo": "تراجع",
-  "tryAgain": "حاول مجدداً",
-
+  "tryAgain": "إعادة المحاولة",
   "myActivityTitle": "نشاطي",
   "myActivitySubtitle": "إدارة إعلاناتك وعروضك",
   "myActivityStats": "{listings} إعلانات · {offers} عروض نشطة",
   "@myActivityStats": {
     "placeholders": {
-      "listings": { "type": "int" },
-      "offers": { "type": "int" }
+      "listings": {
+        "type": "int"
+      },
+      "offers": {
+        "type": "int"
+      }
     }
   },
   "tabMyRequests": "طلباتي",
@@ -143,29 +159,36 @@
   "withdrawConfirm": "هل أنت متأكد من سحب عرضك بقيمة UGX {amount}؟",
   "@withdrawConfirm": {
     "placeholders": {
-      "amount": { "type": "int" }
+      "amount": {
+        "type": "int"
+      }
     }
   },
   "keepOffer": "احتفظ بالعرض",
   "withdraw": "سحب",
-
   "myRequestsTitle": "طلباتي",
   "sectionActive": "نشط · {count}",
   "@sectionActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionContracted": "متعاقد عليه · {count}",
   "@sectionContracted": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionClosed": "مغلق · {count}",
   "@sectionClosed": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noLoanRequests": "لا توجد طلبات قرض بعد",
@@ -175,7 +198,9 @@
   "cancelListingConfirm": "سيؤدي هذا إلى إزالة \"{title}\" من السوق. سيتم رفض جميع العروض المعلقة.",
   "@cancelListingConfirm": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "keepIt": "الإبقاء عليه",
@@ -191,7 +216,9 @@
   "lateFeePerMissedInstallment": "{value} لكل قسط فائت",
   "@lateFeePerMissedInstallment": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "repaymentLabel": "السداد",
@@ -199,22 +226,27 @@
   "sentDateLabel": "أُرسل في {date}",
   "@sentDateLabel": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "errorLoadingContract": "خطأ في تحميل العقد: {error}",
   "@errorLoadingContract": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "listingOfferCount": "{count} {count, plural, one {عرض} other {عروض}}",
   "@listingOfferCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "accountTitle": "الحساب",
   "settingsTitle": "الإعدادات",
   "contactUs": "اتصل بنا",
@@ -231,7 +263,9 @@
   "selectRegionLabel": "اختر {label}",
   "@selectRegionLabel": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "incomeTypeLabel": "نوع الدخل",
@@ -256,13 +290,17 @@
   "avatarUploadFailed": "فشل رفع الصورة: {error}",
   "@avatarUploadFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "couldNotSelectImage": "تعذر اختيار الصورة: {error}",
   "@couldNotSelectImage": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "choosePhoto": "اختر صورة",
@@ -298,7 +336,9 @@
   "memberSince": "عضو منذ {date}",
   "@memberSince": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "verified": "موثق",
@@ -325,7 +365,7 @@
   "choosePro": "اختيار Pro",
   "plansAndPricing": "الخطط والأسعار",
   "chooseAccessTitle": "اختر مستوى الوصول الذي تحتاجه",
-  "chooseAccessSubtitle": "يمكن لحساب واحد نشر الطلبات تقديم العروض. تتطابق الأسعار مع منطقة حسابك ({flag} {country}).",
+  "chooseAccessSubtitle": "يمكن لحساب واحد نشر الطلبات وتقديم العروض. تتطابق الأسعار مع منطقة حسابك ({flag} {country}).",
   "perMonth": " / شهرياً",
   "freePlanSubtitle": "التصفح، متابعة الإعلانات، نشر الطلبات الأساسية، وقبول العروض.",
   "freeFeature1": "تصفح السوق",
@@ -341,7 +381,7 @@
   "dealAgreementLockedSubtitle": "أكد كل من المقترض والمقرض الصفقة. يمكنك الآن فتح بيانات الاتصال للتواصل مباشرة.",
   "includedInPlan": "مضمن في خطة {plan} الخاصة بك",
   "unlimitedUnlocksSubtitle": "فتح غير محدود لبيانات الاتصال بدون رسوم إضافية.",
-  "welcomeGiftUnlocks": "🎁 هدية الترحيب — متبقي {count} عملية فتح مجانية",
+  "welcomeGiftUnlocks": "🎁 هدية الترحيب — {count} فتح مجاني متبقي",
   "welcomeGiftSubtitle": "تستخدم هذه الصفقة إحدى عمليات الفتح المجانية الخاصة بك. تكلفة عمليات الفتح الإضافية 5,000 شلن أوغندي.",
   "unlockFeeApplies": "تطبق رسوم فتح بقيمة 5,000 شلن أوغندي",
   "unlockFeeAppliesSubtitle": "تم استخدام فتح الترحيب الخاص بك. قم بالترقية إلى المقرض أو Pro للحصول على فتح مجاني غير محدود.",
@@ -376,7 +416,6 @@
   "phoneVerified": "الهاتف موثق",
   "phoneNotVerified": "الهاتف غير موثق",
   "publicTrustSignals": "تستند مؤشرات الثقة العامة فقط إلى النشاط المكتمل عبر Nipanze.",
-
   "advancedFilters": "فلاتر متقدمة",
   "advancedFiltersBadge": "Pro · تضييق نطاق بحثك",
   "filterReset": "إعادة ضبط",
@@ -393,7 +432,6 @@
   "filterVerifiedBorrower": "مقترض موثق",
   "filterVerifiedBorrowerSubtitle": "فقط الطلبات من أصحاب الحسابات الموثقة عبر KYC",
   "filterPrivacyNote": "لا تُظهر أسماء جهات العمل أو الدخل الدقيق أبداً. الشرائح الدخلية وفئات التوظيف هي الإشارات الوحيدة المتاحة، بتصميم مقصود.",
-
   "empGovEmployee": "موظف حكومي",
   "empEmployedPrivate": "موظف (خاص)",
   "empSelfEmployed": "عامل حر",
@@ -401,26 +439,29 @@
   "empBusinessOwner": "صاحب عمل",
   "empStudent": "طالب",
   "empOther": "أخرى",
-
   "incomeUnder2m": "أقل من 2 مليون UGX / شهر",
   "income2m5m": "2 – 5 مليون UGX / شهر",
   "income5m10m": "5 – 10 مليون UGX / شهر",
   "incomeOver10m": "أكثر من 10 مليون UGX / شهر",
-
   "iHold": "لدي",
   "rate": "سعر الصرف",
   "iNeed": "أحتاج",
   "marketRate": "سعر السوق",
-
   "stepIncomeRepayment": "الدخل والسداد",
   "stepReviewPublish": "المراجعة والنشر",
   "requestALoan": "طلب قروض",
   "stepCounter": "الخطوة {current} من {total} · {subtitle}",
   "@stepCounter": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" },
-      "subtitle": { "type": "String" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "subtitle": {
+        "type": "String"
+      }
     }
   },
   "subtitleLoanDetails": "تفاصيل القرض",
@@ -429,7 +470,9 @@
   "amountLabelWithCurrency": "المبلغ ({currency})",
   "@amountLabelWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "amountToExchangeOut": "المبلغ المراد تحويله",
@@ -438,160 +481,205 @@
   "repaymentAmountPerPeriodLabel": "مبلغ السداد لكل فترة ({currency})",
   "@repaymentAmountPerPeriodLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "suggestedInstallmentAmountLabel": "مبلغ القسط المقترح ({currency})",
   "@suggestedInstallmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "validationMinAmount": "الحد الأدنى {currency} {min}",
   "@validationMinAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
     }
   },
   "validationMaxAmount": "الحد الأقصى {currency} {max}",
   "@validationMaxAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "userVerificationStatus": "حالة التحقق من المستخدم: {status}",
+  "userVerificationStatus": "حالة تحقق المستخدم: {status}",
   "@userVerificationStatus": {
     "placeholders": {
-      "status": { "type": "String" }
+      "status": {
+        "type": "String"
+      }
     }
   },
-  "interestPercent": "{value}% فائدة",
+  "interestPercent": "فائدة {value}%",
   "@interestPercent": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "lenderNumberLabel": "المقرض #{number}",
   "@lenderNumberLabel": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "lenderTextLabel": "المقرض #{id}",
   "@lenderTextLabel": {
     "placeholders": {
-      "id": { "type": "String" }
+      "id": {
+        "type": "String"
+      }
     }
   },
   "partialOfferLabel": "جزئي · {coverage}%",
   "@partialOfferLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "vsAskLabel": "{value} مقابل الطلب",
+  "vsAskLabel": "{value} مقارنة بالطلب",
   "@vsAskLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "successfulDeals": "{count} صفقات ناجحة",
   "@successfulDeals": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "الإجمالي المستحق ({periods} دفعات)",
+  "totalPayablePaymentsLabel": "إجمالي السداد ({periods} دفعات)",
   "@totalPayablePaymentsLabel": {
     "placeholders": {
-      "periods": { "type": "int" }
+      "periods": {
+        "type": "int"
+      }
     }
   },
-  "borrowingCostLabel": "تكلفة القرض: {amount}",
+  "borrowingCostLabel": "تكلفة الاقتراض: {amount}",
   "@borrowingCostLabel": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
-  "infoBannerText": "{currency} {min}-{max} · حتى 60 شهرًا · يتم قفل الشروط عند النشر",
+  "infoBannerText": "{currency} {min}-{max} · حتى 60 شهراً · تُقفل الشروط عند النشر",
   "@infoBannerText": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "welcomeGiftUnlocks": "🎁 هدية الترحيب — {count} فتح مجاني متبقي",
   "@welcomeGiftUnlocks": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "planTitle": "خطة {plan}",
   "@planTitle": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "choosePlan": "اختيار {plan}",
   "@choosePlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "planSelectedMessage": "تم اختيار {plan}. ستتوفر عملية تفعيل الدفع الآمن قريبًا.",
   "@planSelectedMessage": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "includedInPlan": "مضمن في خطة {plan} الخاصة بك",
   "@includedInPlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "monthlyIncomeWithCurrency": "الدخل الشهري ({currency})",
   "@monthlyIncomeWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "enterMobileNumberForProvider": "رقم هاتف {provider}",
   "@enterMobileNumberForProvider": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "mobileMoneyPromptHint": "سيتلقى هاتفك تنبيه {provider} للموافقة على الدفع.",
+  "mobileMoneyPromptHint": "ستتلقى إشعارًا من {provider} على هاتفك لتأكيد الدفع.",
   "@mobileMoneyPromptHint": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "chooseAccessSubtitle": "يمكن لحساب واحد نشر الطلبات وتقديم العروض. تتطابق الأسعار مع منطقة حسابك ({flag} {country}).",
   "@chooseAccessSubtitle": {
     "placeholders": {
-      "flag": { "type": "String" },
-      "country": { "type": "String" }
+      "flag": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      }
     }
   },
-
   "panelTheBasics": "الأساسيات",
   "panelTheNumbers": "الأرقام",
   "panelLocationDetails": "الموقع والتفاصيل",
   "panelRepaymentSource": "مصدر السداد",
   "panelAbilityToRepay": "القدرة على السداد",
   "panelPreferredTerms": "الشروط المفضلة",
-
   "requestTitleLabel": "عنوان الطلب",
   "requestTitleHint": "مثال: شاحنة توصيل لخط كامبالا",
   "purposeLabel": "الغرض",
   "selectPurposeHint": "اختر الغرض",
   "describePurposeLabel": "صف غرضك",
-  "amountLabelWithCurrency": "المبلغ ({currency})",
   "amountHintLoan": "7,000,000",
   "durationLabel": "المدة",
   "durationHintMonths": "6 أشهر",
@@ -601,7 +689,6 @@
   "incomeSourceHint": "مثال: راتب، دخل متجر، زراعة، عمل إضافي",
   "preferredRepaymentPlanLabel": "خطة السداد المفضلة",
   "selectRepaymentPlanHint": "اختر خطة السداد",
-  "repaymentAmountPerPeriodLabel": "مبلغ السداد لكل فترة ({currency})",
   "repaymentAmountHint": "مثال: 250,000",
   "repaymentTimelineLabel": "الجدول والوقت المحدد للسداد",
   "repaymentTimelineHint": "مثال: يدفع بحلول اليوم الخامس من كل شهر الساعة 5:00 مساءً لمدة 8 أشهر",
@@ -613,16 +700,12 @@
   "suggestedInterestRateLabel": "سعر الفائدة المقترح (%)",
   "suggestedLateFeeLabel": "رسوم التأخير المقترحة (%)",
   "suggestedRepaymentScheduleLabel": "جدول السداد المقترح",
-  "suggestedInstallmentAmountLabel": "مبلغ القسط المقترح ({currency})",
-
   "validationTitleRequired": "أدخل عنواناً",
   "validationTitleMinLength": "استخدم 4 أحرف على الأقل",
   "validationPurposeRequired": "اختر غرضاً",
   "validationPurposeContinue": "اختر غرضاً للمتابعة.",
   "validationAmountRequired": "أدخل مبلغا",
   "validationValidNumber": "أدخل رقماً صالباً",
-  "validationMinAmount": "الحد الأدنى {currency} {min}",
-  "validationMaxAmount": "الحد الأقصى {currency} {max}",
   "validationDurationRequired": "أدخل المدة",
   "validationDurationRange": "من 1 إلى 60 شهراً",
   "validationIncomeSourceRequired": "أدخل مصدر السداد الخاص بك",
@@ -634,11 +717,9 @@
   "validationRepaymentTimelineRequired": "أدخل الجدول الزمني للسداد",
   "validationRepaymentTimelineDetail": "أضف جدولاً زمنيًا أكثر وضوحًا",
   "validationPercentRange": "استخدم من 0 إلى 100",
-
   "btnContinue": "متابعة",
   "btnPublishToMarketplace": "النشر في السوق",
   "btnBack": "رجوع",
-
   "reviewYourRequest": "راجع طلبك",
   "reviewConfirmDetails": "تأكد من التفاصيل قبل النشر في السوق.",
   "reviewTitle": "العنوان",
@@ -653,17 +734,13 @@
   "reviewLockedTerms": "الشروط المفضلة المقفلة",
   "reviewPerPeriod": "لكل فترة",
   "reviewContactPrivacyNotice": "تبقى تفاصيل الاتصال بك مخفية حتى قبول العرض وإكمال عملية الفتح.",
-
   "requestSubmittedTitle": "تم تقديم الطلب",
   "requestSubmittedContent": "طلب القرض الخاص بك متاح الآن في السوق. يمكن للمقرضين مراجعته وتقديم العروض.",
   "couldNotPublishRequest": "تعذر نشر هذا الطلب. حاول مرة أخرى.",
   "kycGateListing": "أكمل التحقق من الهوية KYC قبل نشر العرض.",
   "notAllowedListing": "حسابك غير مصرح له بنشر عرض.",
-
-  "infoBannerText": "{currency} {min}-{max} · حتى 60 شهراً · تُقفل الشروط عند النشر",
   "termsLockedNotice": "مقفل عند نشر الطلب.",
   "upgradeToProForTerms": "ترقية إلى Pro لاقتراح الفائدة ورسوم التأخير وشروط السداد.",
-
   "purposeAgri": "معدات زراعية",
   "purposeBusiness": "توسيع الأعمال",
   "purposeEdu": "التعليم / الرسوم الدراسية",
@@ -678,11 +755,9 @@
   "purposeWater": "المياه والصرف الصحي",
   "purposeWedding": "زفاف / مناسبة",
   "purposeOther": "أخرى",
-
   "planMonthly": "شهري",
   "planWeekly": "أسبوعي",
   "planOneTime": "دفعة واحدة",
-
   "createForexRequestTitle": "إنشاء طلب عملات",
   "forexCurrencyHeld": "العملة التي تمتلكها",
   "forexCurrencyNeeded": "العملة التي تحتاجها",
@@ -720,7 +795,9 @@
   "collateralValueLabel": "القيمة التقريبية ({currency})",
   "@collateralValueLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "estimatedValueLabel": "القيمة التقديرية",
@@ -729,7 +806,9 @@
   "offerCountdownLabel": "متبقٍ {time}",
   "@offerCountdownLabel": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "expiredLabel": "منتهي",
@@ -743,7 +822,9 @@
   "installmentAmountLabel": "قيمة القسط ({currency})",
   "@installmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "additionalExpectationsLabel": "توقعات إضافية",
@@ -755,26 +836,20 @@
   "settlementTermsLabel": "شروط التسوية",
   "activeListingLabel": "طلب نشط",
   "fundedLabel": "ممول",
-  "userVerificationStatus": "حالة تحقق المستخدم: {status}",
-  "interestPercent": "فائدة {value}%",
   "proposedRepaymentPlanLabel": "خطة السداد المقترحة",
   "yourOfferLabel": "عرضك",
-  "lenderNumberLabel": "المقرض #{number}",
-  "lenderTextLabel": "المقرض #{id}",
   "fullOfferLabel": "عرض كامل",
-  "partialOfferLabel": "جزئي · {coverage}%",
-  "vsAskLabel": "{value} مقارنة بالطلب",
   "lenderNotesLabel": "ملاحظات المقرض",
   "acceptOfferLabel": "قبول العرض",
   "fullCoverageOfferLabel": "عرض تغطية كاملة",
   "partialCoverageLabel": "تغطية جزئية · {coverage}%",
   "@partialCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "إجمالي السداد ({periods} دفعات)",
-  "borrowingCostLabel": "تكلفة الاقتراض: {amount}",
   "flutterwaveCheckoutTitle": "الدفع عبر فلوترفيلف",
   "orderSummary": "ملخص الطلب",
   "paymentMethod": "طريقة الدفع",
@@ -790,22 +865,21 @@
   "paymentStep1": "التفاصيل",
   "paymentStep2": "المعالجة",
   "paymentStep3": "تم",
-  "paymentProcessingStep1": "الاتصال بـ Flutterwave\u2026",
-  "paymentProcessingStep2": "التحقق من الدفع\u2026",
-  "paymentProcessingStep3": "تفعيل الاشتراك\u2026",
+  "paymentProcessingStep1": "الاتصال بـ Flutterwave…",
+  "paymentProcessingStep2": "التحقق من الدفع…",
+  "paymentProcessingStep3": "تفعيل الاشتراك…",
   "transactionRef": "المرجع: {ref}",
   "@transactionRef": {
     "placeholders": {
-      "ref": { "type": "String" }
+      "ref": {
+        "type": "String"
+      }
     }
   },
   "poweredByFlutterwave": "مدعوم من Flutterwave",
-  "enterMobileNumberForProvider": "رقم هاتف {provider}",
-  "mobileMoneyPromptHint": "ستتلقى إشعارًا من {provider} على هاتفك لتأكيد الدفع.",
   "prefilledFromAccount": "تم التعبئة تلقائيًا من حسابك",
   "editPhoneNumber": "تعديل",
-  "lockPhoneNumber": "قفل"
-,
+  "lockPhoneNumber": "قفل",
   "liveCalcTitle": "تفاصيل السداد",
   "liveCalcLoanAmount": "مبلغ القرض",
   "liveCalcPlan": "خطة السداد",
@@ -823,9 +897,24 @@
   "borrowerTermsMissing": "—",
   "repaymentCalcFormula": "القسط × عدد المدفوعات = إجمالي السداد",
   "liveCalcWeeklyNote": "خطة أسبوعية: {months} أشهر × 4 = {count} دفعة",
-  "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
+  "@liveCalcWeeklyNote": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcMonthlyNote": "{count} دفعة شهرية",
-  "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
+  "@liveCalcMonthlyNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcOneTimeNote": "دفعة واحدة",
   "kycGateTitle": "تأكيد الهوية أولاً",
   "kycGateBody": "لإرسال طلبات القروض أو العملات الأجنبية والتواصل مع المُقرضين، يلزم إكمال التحقق من الهوية. يستغرق ذلك بضع دقائق فقط.",
@@ -840,8 +929,6 @@
   "kycStep3": "أنشئ طلباتك بمجرد الموافقة",
   "kycGateCta": "بدء التحقق",
   "kycGateResubmitCta": "إعادة تقديم التحقق",
-  "browseMarketplace": "تصفح السوق",
-
   "kycPageTitle": "التحقق من الهوية",
   "kycStatusApproved": "تمت الموافقة على KYC",
   "kycStatusApprovedDesc": "تم التحقق من الهوية. يمكنك الآن إنشاء الإعلانات.",
@@ -856,7 +943,13 @@
   "kycRejectionReason": "سبب الرفض",
   "kycIdentityVerified": "تم التحقق من الهوية",
   "kycExpires": "ينتهي في {date}",
-  "@kycExpires": {"placeholders": {"date": {"type": "String"}}},
+  "@kycExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "kycPendingNotice": "تم تقديم المستندات — مراجعة المشرف جارية. يستغرق هذا عادةً من 1 إلى 2 يوم عمل.",
   "kycRequiredDocs": "المستندات المطلوبة",
   "kycRequiredDocsSubtitle": "ارفع صوراً واضحة وجيدة الإضاءة. جميع المستندات مخزّنة بأمان.",
@@ -912,7 +1005,6 @@
   "blockUser": "حظر المستخدم",
   "blockUserConfirmTitle": "حظر هذا المستخدم؟",
   "blockUserConfirmBody": "لن يتمكنوا بعد الآن من رؤية طلبات القروض أو العملات المستقبلية الخاصة بك أو التفاعل معها.",
-  "cancel": "إلغاء",
   "block": "حظر",
   "unblock": "إلغاء الحظر",
   "unblockUserConfirmTitle": "إلغاء حظر هذا المستخدم؟",
@@ -924,12 +1016,13 @@
   "blockedOnDate": "تم الحظر في {date}",
   "@blockedOnDate": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "invitePeopleAndTrackRewards": "دعوة الأشخاص ومتابعة المكافآت",
   "codeGenerating": "جاري إنشاء الرمز الخاص بك…",
-  "tryAgain": "إعادة المحاولة",
   "inviteEarnDescription": "ادعُ الأشخاص إلى Nipanze واكسب المكافآت عند إكمالهم الإجراءات المطلوبة.",
   "stepShare": "مشاركة",
   "stepSignUp": "تسجيل",
@@ -948,9 +1041,15 @@
   "subscriptionCurrencyDesc": "تم تعيين عملة الاشتراك الخاصة بك إلى {currency} ({country}) بناءً على رمز منطقتك ({dialCode}).",
   "@subscriptionCurrencyDesc": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "country": { "type": "String" },
-      "dialCode": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      },
+      "dialCode": {
+        "type": "String"
+      }
     }
   },
   "subscriptionCurrencyLocked": "عملة الاشتراك مقفلة حسب منطقة رقم هاتفك لضمان توافق عمليات الدفع ولا يمكن تغييرها يدويًا.",
@@ -998,7 +1097,6 @@
   "oppositePartyContact": "جهات اتصال الطرف المقابل",
   "successfulDealsCount": "{count} تطابقات",
   "reviewsCount": "{count} تقييمات",
-  "phoneNumberLabel": "رقم الهاتف",
   "emailAddressLabel": "عنوان البريد الإلكتروني",
   "whatsappLabel": "واتساب",
   "callAction": "اتصال",
@@ -1060,5 +1158,40 @@
   "needsCategorySpecializedProducts": "المنتجات المتخصصة والمشتريات",
   "needsMakeOffer": "تقديم عرض",
   "needsProviderOffers": "عروض المزودين",
-  "needsAcceptOffer": "قبول العرض"
+  "needsAcceptOffer": "قبول العرض",
+  "providerServicesTitle": "خدمات المزود",
+  "providerServicesSubtitle": "أخبر الناس بما يمكنك مساعدتهم فيه.",
+  "addService": "إضافة خدمة",
+  "providerVerified": "مزود موثق",
+  "selfDeclared": "معلن ذاتياً",
+  "yourServices": "خدماتك",
+  "yourServicesSubtitle": "إدارة الخدمات التي تقدمها للآخرين",
+  "noServicesYet": "لم يتم إضافة خدمات بعد",
+  "noServicesYetSubtitle": "أضف ما يمكنك تقديمه لتلقي الفرص المطابقة وتقديم عروض على الاحتياجات.",
+  "chooseCategory": "اختر الفئة",
+  "chooseCapabilities": "اختر القدرات",
+  "addSelected": "إضافة المحدد",
+  "removeService": "إزالة الخدمة",
+  "removeServiceConfirm": "هل أنت متأكد من رغبتك في إزالة هذه الخدمة من ملفك الشخصي؟",
+  "providerOpportunitiesTitle": "يبحث الناس عما تقدمه",
+  "viewOpportunities": "عرض الفرص",
+  "addYourServices": "أضف خدماتك",
+  "canYouHelp": "هل يمكنك مساعدة الناس في شيء ما؟",
+  "youDontProvideThisService": "أنت لا تقدم هذه الخدمة بعد.",
+  "addCapabilityAction": "إضافة {capability}",
+  "@addCapabilityAction": {
+    "placeholders": {
+      "capability": {
+        "type": "String"
+      }
+    }
+  },
+  "opportunitiesCount": "{count, plural, =1{فرصة واحدة} =2{فرصتان} few{{count} فرص} many{{count} فرصة} other{{count} فرصة}}",
+  "@opportunitiesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

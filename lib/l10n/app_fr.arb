@@ -45,7 +45,9 @@
   "listingsLive": "{count} offres · en direct",
   "@listingsLive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "filtered": "Filtré",
@@ -61,19 +63,25 @@
   "daysLeft": "{count}j restants",
   "@daysLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "hoursLeft": "{count}h restants",
   "@hoursLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "minutesLeft": "{count}m restants",
   "@minutesLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "expired": "Expiré",
@@ -91,22 +99,27 @@
   "daysAgo": "Il y a {count} jours",
   "@daysAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeksAgo": "Il y a {count} semaines",
   "@weeksAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "watchlistTitle": "Favoris",
   "watchlistSubtitle": "Annonces que vous suivez",
   "watchlistSaved": "{count} enregistré(s)",
   "@watchlistSaved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "watchlistInfoSubscribed": "Gratuit pour tous. Soyez notifié quand les offres changent, les taux s'améliorent ou une annonce se ferme.",
@@ -118,14 +131,17 @@
   "removedFromWatchlist": "Retiré des favoris",
   "undo": "Annuler",
   "tryAgain": "Réessayer",
-
   "myActivityTitle": "Mon Activité",
   "myActivitySubtitle": "Gérez vos annonces et offres",
   "myActivityStats": "{listings} Annonces · {offers} Offres Actives",
   "@myActivityStats": {
     "placeholders": {
-      "listings": { "type": "int" },
-      "offers": { "type": "int" }
+      "listings": {
+        "type": "int"
+      },
+      "offers": {
+        "type": "int"
+      }
     }
   },
   "tabMyRequests": "Mes Demandes",
@@ -143,29 +159,36 @@
   "withdrawConfirm": "Êtes-vous sûr de retirer votre offre de UGX {amount} ?",
   "@withdrawConfirm": {
     "placeholders": {
-      "amount": { "type": "int" }
+      "amount": {
+        "type": "int"
+      }
     }
   },
   "keepOffer": "Garder l'offre",
   "withdraw": "Retirer",
-
   "myRequestsTitle": "Mes Demandes",
   "sectionActive": "Actif · {count}",
   "@sectionActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionContracted": "Contracté · {count}",
   "@sectionContracted": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionClosed": "Fermé · {count}",
   "@sectionClosed": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noLoanRequests": "Aucune demande de prêt pour l'instant",
@@ -175,7 +198,9 @@
   "cancelListingConfirm": "Cela supprimera \"{title}\" du marché. Toutes les offres en attente seront rejetées.",
   "@cancelListingConfirm": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "keepIt": "Garder",
@@ -191,7 +216,9 @@
   "lateFeePerMissedInstallment": "{value} par échéance manquée",
   "@lateFeePerMissedInstallment": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "repaymentLabel": "Remboursement",
@@ -199,22 +226,27 @@
   "sentDateLabel": "Envoyée le {date}",
   "@sentDateLabel": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "errorLoadingContract": "Erreur lors du chargement du contrat : {error}",
   "@errorLoadingContract": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "listingOfferCount": "{count} {count, plural, one {offre} other {offres}}",
   "@listingOfferCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "accountTitle": "Compte",
   "settingsTitle": "Paramètres",
   "contactUs": "Contactez-nous",
@@ -231,7 +263,9 @@
   "selectRegionLabel": "Sélectionner {label}",
   "@selectRegionLabel": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "incomeTypeLabel": "Type de revenu",
@@ -256,13 +290,17 @@
   "avatarUploadFailed": "Échec du téléversement de l'avatar : {error}",
   "@avatarUploadFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "couldNotSelectImage": "Impossible de sélectionner l'image : {error}",
   "@couldNotSelectImage": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "choosePhoto": "Choisir une photo",
@@ -298,7 +336,9 @@
   "memberSince": "Membre depuis {date}",
   "@memberSince": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "verified": "Vérifié",
@@ -376,7 +416,6 @@
   "phoneVerified": "Téléphone vérifié",
   "phoneNotVerified": "Téléphone non vérifié",
   "publicTrustSignals": "Les signaux publics de confiance reposent uniquement sur l'activité effectuée via Nipanze.",
-
   "advancedFilters": "Filtres avancés",
   "advancedFiltersBadge": "Pro · Affiner le flux du marché",
   "filterReset": "Réinitialiser",
@@ -393,7 +432,6 @@
   "filterVerifiedBorrower": "Emprunteur vérifié",
   "filterVerifiedBorrowerSubtitle": "Uniquement les demandes des titulaires de comptes approuvés KYC",
   "filterPrivacyNote": "Les noms d'employeurs et le revenu exact ne sont jamais affichés. Les tranches de revenu et les catégories d'emploi sont les seuls signaux disponibles, par conception.",
-
   "empGovEmployee": "Employé gouvernemental",
   "empEmployedPrivate": "Employé (privé)",
   "empSelfEmployed": "Indépendant",
@@ -401,26 +439,29 @@
   "empBusinessOwner": "Chef d'entreprise",
   "empStudent": "Étudiant",
   "empOther": "Autre",
-
   "incomeUnder2m": "Moins de 2M UGX / mois",
   "income2m5m": "2M – 5M UGX / mois",
   "income5m10m": "5M – 10M UGX / mois",
   "incomeOver10m": "Plus de 10M UGX / mois",
-
   "iHold": "J'ai",
   "rate": "Taux",
   "iNeed": "J'ai besoin de",
   "marketRate": "Taux du marché",
-
   "stepIncomeRepayment": "Revenu et remboursement",
   "stepReviewPublish": "Vérifier et publier",
   "requestALoan": "Demander un prêt",
   "stepCounter": "Étape {current} sur {total} · {subtitle}",
   "@stepCounter": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" },
-      "subtitle": { "type": "String" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "subtitle": {
+        "type": "String"
+      }
     }
   },
   "subtitleLoanDetails": "détails du prêt",
@@ -429,7 +470,9 @@
   "amountLabelWithCurrency": "Montant ({currency})",
   "@amountLabelWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "amountToExchangeOut": "Montant à échanger",
@@ -438,160 +481,205 @@
   "repaymentAmountPerPeriodLabel": "Montant de remboursement par période ({currency})",
   "@repaymentAmountPerPeriodLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "suggestedInstallmentAmountLabel": "Montant de versement suggéré ({currency})",
   "@suggestedInstallmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "validationMinAmount": "Minimum {currency} {min}",
   "@validationMinAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
     }
   },
   "validationMaxAmount": "Maximum {currency} {max}",
   "@validationMaxAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "userVerificationStatus": "Statut de vérification de l'utilisateur : {status}",
+  "userVerificationStatus": "Statut de vérification utilisateur : {status}",
   "@userVerificationStatus": {
     "placeholders": {
-      "status": { "type": "String" }
+      "status": {
+        "type": "String"
+      }
     }
   },
   "interestPercent": "{value}% d'intérêt",
   "@interestPercent": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "lenderNumberLabel": "Prêteur #{number}",
+  "lenderNumberLabel": "Prêteur n° {number}",
   "@lenderNumberLabel": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
-  "lenderTextLabel": "Prêteur #{id}",
+  "lenderTextLabel": "Prêteur n° {id}",
   "@lenderTextLabel": {
     "placeholders": {
-      "id": { "type": "String" }
+      "id": {
+        "type": "String"
+      }
     }
   },
-  "partialOfferLabel": "Partiel · {coverage}%",
+  "partialOfferLabel": "Partielle · {coverage}%",
   "@partialOfferLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "vsAskLabel": "{value} vs demande",
+  "vsAskLabel": "{value} vs demandé",
   "@vsAskLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "successfulDeals": "{count} transactions réussies",
   "@successfulDeals": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "Total payable ({periods} paiements)",
+  "totalPayablePaymentsLabel": "Total à payer ({periods} paiements)",
   "@totalPayablePaymentsLabel": {
     "placeholders": {
-      "periods": { "type": "int" }
+      "periods": {
+        "type": "int"
+      }
     }
   },
   "borrowingCostLabel": "Coût d'emprunt : {amount}",
   "@borrowingCostLabel": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
-  "infoBannerText": "{currency} {min}-{max} · Jusqu'à 60 mois · les conditions sont verrouillées lors de la publication",
+  "infoBannerText": "{currency} {min}-{max} · Jusqu'à 60 mois · conditions verrouillées à la publication",
   "@infoBannerText": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "welcomeGiftUnlocks": "🎁 Cadeau de bienvenue — {count} déblocage(s) gratuit(s) restant(s)",
   "@welcomeGiftUnlocks": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "planTitle": "Plan {plan}",
   "@planTitle": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "choosePlan": "Choisir {plan}",
   "@choosePlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "planSelectedMessage": "{plan} sélectionné. L'activation du paiement sécurisé sera bientôt disponible.",
   "@planSelectedMessage": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "includedInPlan": "Inclus dans votre plan {plan}",
   "@includedInPlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "monthlyIncomeWithCurrency": "Revenu mensuel ({currency})",
   "@monthlyIncomeWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "enterMobileNumberForProvider": "Numéro de téléphone {provider}",
   "@enterMobileNumberForProvider": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "mobileMoneyPromptHint": "Vous recevrez une demande {provider} sur votre téléphone pour approuver le paiement.",
+  "mobileMoneyPromptHint": "Vous recevrez une invite {provider} sur votre téléphone pour valider le paiement.",
   "@mobileMoneyPromptHint": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "chooseAccessSubtitle": "Un seul compte peut publier des demandes et faire des offres. Les prix correspondent à votre région ({flag} {country}).",
   "@chooseAccessSubtitle": {
     "placeholders": {
-      "flag": { "type": "String" },
-      "country": { "type": "String" }
+      "flag": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      }
     }
   },
-
   "panelTheBasics": "Les bases",
   "panelTheNumbers": "Les chiffres",
   "panelLocationDetails": "Lieu et détails",
   "panelRepaymentSource": "Source de remboursement",
   "panelAbilityToRepay": "Capacité de remboursement",
   "panelPreferredTerms": "Conditions préférées",
-
   "requestTitleLabel": "Titre de la demande",
   "requestTitleHint": "ex. Camionnette de livraison pour trajet Kampala",
   "purposeLabel": "Motif",
   "selectPurposeHint": "Sélectionner le motif",
   "describePurposeLabel": "Décrivez votre motif",
-  "amountLabelWithCurrency": "Montant ({currency})",
   "amountHintLoan": "7 000 000",
   "durationLabel": "Durée",
   "durationHintMonths": "6 mois",
@@ -601,7 +689,6 @@
   "incomeSourceHint": "ex. Salaire, commerce, agriculture, activité secondaire",
   "preferredRepaymentPlanLabel": "Plan de remboursement préféré",
   "selectRepaymentPlanHint": "Sélectionner le plan de remboursement",
-  "repaymentAmountPerPeriodLabel": "Montant de remboursement par période ({currency})",
   "repaymentAmountHint": "ex. 250 000",
   "repaymentTimelineLabel": "Calendrier et horaire de remboursement",
   "repaymentTimelineHint": "ex. Payé le 5 de chaque mois avant 17h00 pendant 8 mois",
@@ -613,16 +700,12 @@
   "suggestedInterestRateLabel": "Taux d'intérêt suggéré (%)",
   "suggestedLateFeeLabel": "Frais de retard suggérés (%)",
   "suggestedRepaymentScheduleLabel": "Échéancier suggéré",
-  "suggestedInstallmentAmountLabel": "Montant de versement suggéré ({currency})",
-
   "validationTitleRequired": "Entrez un titre",
   "validationTitleMinLength": "Utilisez au moins 4 caractères",
   "validationPurposeRequired": "Sélectionnez un motif",
   "validationPurposeContinue": "Sélectionnez un motif pour continuer.",
   "validationAmountRequired": "Entrez un montant",
   "validationValidNumber": "Entrez un nombre valide",
-  "validationMinAmount": "Minimum {currency} {min}",
-  "validationMaxAmount": "Maximum {currency} {max}",
   "validationDurationRequired": "Entrez la durée",
   "validationDurationRange": "1 à 60 mois",
   "validationIncomeSourceRequired": "Entrez votre source de remboursement",
@@ -634,11 +717,9 @@
   "validationRepaymentTimelineRequired": "Entrez le calendrier de remboursement",
   "validationRepaymentTimelineDetail": "Ajoutez un calendrier plus clair",
   "validationPercentRange": "Utilisez 0 à 100",
-
   "btnContinue": "Continuer",
   "btnPublishToMarketplace": "Publier sur le marché",
   "btnBack": "Retour",
-
   "reviewYourRequest": "Vérifiez votre demande",
   "reviewConfirmDetails": "Confirmez les détails avant de publier sur le marché.",
   "reviewTitle": "Titre",
@@ -653,17 +734,13 @@
   "reviewLockedTerms": "Conditions préférées verrouillées",
   "reviewPerPeriod": "par période",
   "reviewContactPrivacyNotice": "Vos coordonnées restent masquées jusqu'à ce qu'une offre soit acceptée et le déverrouillage terminé.",
-
   "requestSubmittedTitle": "Demande soumise",
   "requestSubmittedContent": "Votre demande de prêt est maintenant en ligne sur le marché. Les prêteurs peuvent l'examiner et faire des offres.",
   "couldNotPublishRequest": "Impossible de publier cette demande. Réessayez.",
   "kycGateListing": "Complétez la vérification KYC avant de publier une demande.",
   "notAllowedListing": "Votre compte n'est pas autorisé à publier une demande.",
-
-  "infoBannerText": "{currency} {min}-{max} · Jusqu'à 60 mois · conditions verrouillées à la publication",
   "termsLockedNotice": "Verrouillé lors de la publication de la demande.",
   "upgradeToProForTerms": "Passez à Pro pour suggérer le taux d'intérêt, les frais de retard et le calendrier.",
-
   "purposeAgri": "Équipement agricole",
   "purposeBusiness": "Extension d'entreprise",
   "purposeEdu": "Éducation / Frais scolaires",
@@ -678,11 +755,9 @@
   "purposeWater": "Eau et assainissement",
   "purposeWedding": "Mariage / Événement",
   "purposeOther": "Autre",
-
   "planMonthly": "Mensuel",
   "planWeekly": "Hebdomadaire",
   "planOneTime": "Paiement unique",
-
   "createForexRequestTitle": "Créer une demande de change",
   "forexCurrencyHeld": "Devise possédée",
   "forexCurrencyNeeded": "Devise recherchée",
@@ -720,7 +795,9 @@
   "collateralValueLabel": "Valeur estimée ({currency})",
   "@collateralValueLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "estimatedValueLabel": "Valeur estimée",
@@ -729,7 +806,9 @@
   "offerCountdownLabel": "{time} restantes",
   "@offerCountdownLabel": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "expiredLabel": "Expiré",
@@ -743,7 +822,9 @@
   "installmentAmountLabel": "Montant de l'échéance ({currency})",
   "@installmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "additionalExpectationsLabel": "Attentes supplémentaires",
@@ -755,26 +836,20 @@
   "settlementTermsLabel": "Conditions de règlement",
   "activeListingLabel": "Annonce active",
   "fundedLabel": "Financé",
-  "userVerificationStatus": "Statut de vérification utilisateur : {status}",
-  "interestPercent": "{value}% d'intérêt",
   "proposedRepaymentPlanLabel": "Plan de remboursement proposé",
   "yourOfferLabel": "Votre offre",
-  "lenderNumberLabel": "Prêteur n° {number}",
-  "lenderTextLabel": "Prêteur n° {id}",
   "fullOfferLabel": "Offre complète",
-  "partialOfferLabel": "Partielle · {coverage}%",
-  "vsAskLabel": "{value} vs demandé",
   "lenderNotesLabel": "Notes du prêteur",
   "acceptOfferLabel": "Accepter l'offre",
   "fullCoverageOfferLabel": "Offre de couverture complète",
   "partialCoverageLabel": "Couverture partielle · {coverage}%",
   "@partialCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "Total à payer ({periods} paiements)",
-  "borrowingCostLabel": "Coût d'emprunt : {amount}",
   "flutterwaveCheckoutTitle": "Paiement Flutterwave",
   "orderSummary": "Résumé de la commande",
   "paymentMethod": "Mode de paiement",
@@ -783,34 +858,35 @@
   "phoneOrAccount": "N° de téléphone / compte",
   "enterMobileNumber": "Entrez le numéro Mobile Money",
   "payWithFlutterwave": "Payer avec Flutterwave",
-  "processingPayment": "Traitement du paiement Flutterwave\u2026",
+  "processingPayment": "Traitement du paiement Flutterwave…",
   "paymentSuccessful": "Paiement réussi !",
   "subscriptionActivated": "Votre abonnement {plan} est maintenant actif.",
   "@subscriptionActivated": {
     "placeholders": {
-      "plan": { "type": "Object" }
+      "plan": {
+        "type": "Object"
+      }
     }
   },
   "paymentFailed": "Le paiement a échoué. Veuillez réessayer.",
   "paymentStep1": "Détails",
   "paymentStep2": "Traitement",
   "paymentStep3": "Terminé",
-  "paymentProcessingStep1": "Connexion à Flutterwave\u2026",
-  "paymentProcessingStep2": "Vérification du paiement\u2026",
-  "paymentProcessingStep3": "Activation de l'abonnement\u2026",
+  "paymentProcessingStep1": "Connexion à Flutterwave…",
+  "paymentProcessingStep2": "Vérification du paiement…",
+  "paymentProcessingStep3": "Activation de l'abonnement…",
   "transactionRef": "Réf. : {ref}",
   "@transactionRef": {
     "placeholders": {
-      "ref": { "type": "String" }
+      "ref": {
+        "type": "String"
+      }
     }
   },
   "poweredByFlutterwave": "Propulsé par Flutterwave",
-  "enterMobileNumberForProvider": "Numéro de téléphone {provider}",
-  "mobileMoneyPromptHint": "Vous recevrez une invite {provider} sur votre téléphone pour valider le paiement.",
   "prefilledFromAccount": "Pré-rempli depuis votre compte",
   "editPhoneNumber": "Modifier",
-  "lockPhoneNumber": "Verrouiller"
-,
+  "lockPhoneNumber": "Verrouiller",
   "liveCalcTitle": "Détail du remboursement",
   "liveCalcLoanAmount": "Montant du prêt",
   "liveCalcPlan": "Plan de remboursement",
@@ -828,9 +904,24 @@
   "borrowerTermsMissing": "—",
   "repaymentCalcFormula": "versement × nombre de paiements = total à rembourser",
   "liveCalcWeeklyNote": "Plan hebdomadaire : {months} mois × 4 = {count} paiements",
-  "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
+  "@liveCalcWeeklyNote": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcMonthlyNote": "{count} paiements mensuels",
-  "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
+  "@liveCalcMonthlyNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcOneTimeNote": "1 paiement unique",
   "kycGateTitle": "Vérifiez d'abord votre identité",
   "kycGateBody": "Pour publier des demandes de prêt ou de devises et vous connecter avec des prêteurs, vous devez effectuer une vérification d'identité. Cela ne prend que quelques minutes.",
@@ -845,8 +936,6 @@
   "kycStep3": "Publiez vos demandes une fois approuvé",
   "kycGateCta": "Commencer la vérification",
   "kycGateResubmitCta": "Re-soumettre la vérification",
-  "browseMarketplace": "Parcourir le marché",
-
   "kycPageTitle": "Vérification d'identité",
   "kycStatusApproved": "KYC approuvé",
   "kycStatusApprovedDesc": "Identité vérifiée. Vous pouvez maintenant créer des annonces.",
@@ -861,7 +950,13 @@
   "kycRejectionReason": "Motif de rejet",
   "kycIdentityVerified": "Identité vérifiée",
   "kycExpires": "Expire le {date}",
-  "@kycExpires": {"placeholders": {"date": {"type": "String"}}},
+  "@kycExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "kycPendingNotice": "Documents soumis — examen administrateur en cours. Cela prend généralement 1 à 2 jours ouvrables.",
   "kycRequiredDocs": "Documents requis",
   "kycRequiredDocsSubtitle": "Téléversez des photos claires et bien éclairées. Tous les documents sont stockés en toute sécurité.",
@@ -917,7 +1012,6 @@
   "blockUser": "Bloquer l'utilisateur",
   "blockUserConfirmTitle": "Bloquer cet utilisateur ?",
   "blockUserConfirmBody": "Ils ne pourront plus voir ni interagir avec vos futures demandes de prêt ou de devises.",
-  "cancel": "Annuler",
   "block": "Bloquer",
   "unblock": "Débloquer",
   "unblockUserConfirmTitle": "Débloquer cet utilisateur ?",
@@ -929,12 +1023,13 @@
   "blockedOnDate": "Bloqué le {date}",
   "@blockedOnDate": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "invitePeopleAndTrackRewards": "Inviter des personnes et suivre les récompenses",
   "codeGenerating": "Votre code est en cours de génération…",
-  "tryAgain": "Réessayer",
   "inviteEarnDescription": "Invitez des personnes sur Nipanze et gagnez des récompenses lorsqu'elles accomplissent les actions requises.",
   "stepShare": "Partager",
   "stepSignUp": "S'inscrire",
@@ -953,9 +1048,15 @@
   "subscriptionCurrencyDesc": "Votre devise d'abonnement est définie sur {currency} ({country}) en fonction du code de votre numéro de téléphone ({dialCode}).",
   "@subscriptionCurrencyDesc": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "country": { "type": "String" },
-      "dialCode": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      },
+      "dialCode": {
+        "type": "String"
+      }
     }
   },
   "subscriptionCurrencyLocked": "La devise d'abonnement est verrouillée selon la région de votre numéro de téléphone pour la compatibilité des paiements.",
@@ -1003,7 +1104,6 @@
   "oppositePartyContact": "Contact de la contrepartie",
   "successfulDealsCount": "{count} correspondances",
   "reviewsCount": "{count} avis",
-  "phoneNumberLabel": "Numéro de téléphone",
   "emailAddressLabel": "Adresse email",
   "whatsappLabel": "WhatsApp",
   "callAction": "Appeler",
@@ -1065,5 +1165,40 @@
   "needsCategorySpecializedProducts": "Produits Spécialisés & Approvisionnement",
   "needsMakeOffer": "Faire une offre",
   "needsProviderOffers": "Offres des prestataires",
-  "needsAcceptOffer": "Accepter l'offre"
+  "needsAcceptOffer": "Accepter l'offre",
+  "providerServicesTitle": "Services de prestataire",
+  "providerServicesSubtitle": "Dites aux gens en quoi vous pouvez les aider.",
+  "addService": "Ajouter un service",
+  "providerVerified": "Prestataire vérifié",
+  "selfDeclared": "Auto-déclaré",
+  "yourServices": "Vos services",
+  "yourServicesSubtitle": "Gérez les services que vous proposez aux autres",
+  "noServicesYet": "Aucun service ajouté pour le moment",
+  "noServicesYetSubtitle": "Ajoutez ce que vous proposez pour recevoir des opportunités correspondantes et faire des offres sur les Besoins.",
+  "chooseCategory": "Choisir une catégorie",
+  "chooseCapabilities": "Choisir les compétences",
+  "addSelected": "Ajouter la sélection",
+  "removeService": "Supprimer le service",
+  "removeServiceConfirm": "Voulez-vous vraiment retirer ce service de votre profil ?",
+  "providerOpportunitiesTitle": "Des personnes recherchent ce que vous proposez",
+  "viewOpportunities": "Voir les opportunités",
+  "addYourServices": "Ajoutez vos services",
+  "canYouHelp": "Pouvez-vous aider les gens avec quelque chose ?",
+  "youDontProvideThisService": "Vous ne fournissez pas encore ce service.",
+  "addCapabilityAction": "Ajouter {capability}",
+  "@addCapabilityAction": {
+    "placeholders": {
+      "capability": {
+        "type": "String"
+      }
+    }
+  },
+  "opportunitiesCount": "{count, plural, =1{1 opportunité} other{{count} opportunités}}",
+  "@opportunitiesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -2465,4 +2465,80 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get needsAcceptOffer => 'Emera Igiciro';
+
+  @override
+  String get providerServicesTitle => 'Serivisi z\'Utanga Serivisi';
+
+  @override
+  String get providerServicesSubtitle =>
+      'Bwira abantu icyo ushobora kubafashamo.';
+
+  @override
+  String get addService => 'Ongeraho Serivisi';
+
+  @override
+  String get providerVerified => 'Uwatanze Serivisi Yemejwe';
+
+  @override
+  String get selfDeclared => 'Yiyemeje';
+
+  @override
+  String get yourServices => 'Serivisi Zawe';
+
+  @override
+  String get yourServicesSubtitle => 'Cunga serivisi utanga ku bandi';
+
+  @override
+  String get noServicesYet => 'Nta serivisi zongeyeho kugeza ubu';
+
+  @override
+  String get noServicesYetSubtitle =>
+      'Ongeraho ibyo ushobora gutanga kugira ngo ubone amahirwe ajyanye n\'ibyo ushobora gukora no gutanga ibiciro ku Byifuzo.';
+
+  @override
+  String get chooseCategory => 'Hitamo Icyiciro';
+
+  @override
+  String get chooseCapabilities => 'Hitamo Ubushobozi';
+
+  @override
+  String get addSelected => 'Ongeraho Ibyatoranyijwe';
+
+  @override
+  String get removeService => 'Kuraho Serivisi';
+
+  @override
+  String get removeServiceConfirm =>
+      'Uremeza ko ushaka gukuraho iyi serivisi ku mwirondoro wawe?';
+
+  @override
+  String get providerOpportunitiesTitle => 'Abantu barashaka ibyo utanga';
+
+  @override
+  String get viewOpportunities => 'Reba amahirwe';
+
+  @override
+  String get addYourServices => 'Ongeraho serivisi zawe';
+
+  @override
+  String get canYouHelp => 'Ushobora gufasha abantu mu kintu runaka?';
+
+  @override
+  String get youDontProvideThisService => 'Nturatanga iyi serivisi kugeza ubu.';
+
+  @override
+  String addCapabilityAction(String capability) {
+    return 'Ongeraho $capability';
+  }
+
+  @override
+  String opportunitiesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Amahirwe $count',
+      one: 'Amahirwe 1',
+    );
+    return '$_temp0';
+  }
 }

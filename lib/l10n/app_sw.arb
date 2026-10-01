@@ -45,7 +45,9 @@
   "listingsLive": "{count} orodha · mubashara",
   "@listingsLive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "filtered": "Imechujwa",
@@ -61,19 +63,25 @@
   "daysLeft": "{count}s imebaki",
   "@daysLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "hoursLeft": "{count}s imebaki",
   "@hoursLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "minutesLeft": "{count}d imebaki",
   "@minutesLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "expired": "Imemalizika",
@@ -91,22 +99,27 @@
   "daysAgo": "Siku {count} zilizopita",
   "@daysAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeksAgo": "Wiki {count} zilizopita",
   "@weeksAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "watchlistTitle": "Orodha ya Ufuatiliaji",
   "watchlistSubtitle": "Orodha unazofuatilia",
   "watchlistSaved": "{count} zilizohifadhiwa",
   "@watchlistSaved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "watchlistInfoSubscribed": "Bure kwa watumiaji wote. Pokea arifa wakati orodha inabadilika, viwango vinavyoboreka, au orodha inafunga.",
@@ -118,14 +131,17 @@
   "removedFromWatchlist": "Imeondolewa kwenye watchlist",
   "undo": "Tendua",
   "tryAgain": "Jaribu tena",
-
   "myActivityTitle": "Shughuli Zangu",
   "myActivitySubtitle": "Simamia orodha na maombi yako",
   "myActivityStats": "{listings} Orodha · {offers} Maombi Yanayoendelea",
   "@myActivityStats": {
     "placeholders": {
-      "listings": { "type": "int" },
-      "offers": { "type": "int" }
+      "listings": {
+        "type": "int"
+      },
+      "offers": {
+        "type": "int"
+      }
     }
   },
   "tabMyRequests": "Maombi Yangu",
@@ -143,29 +159,36 @@
   "withdrawConfirm": "Una uhakika unataka kuondoa pendekezo lako la UGX {amount}?",
   "@withdrawConfirm": {
     "placeholders": {
-      "amount": { "type": "int" }
+      "amount": {
+        "type": "int"
+      }
     }
   },
   "keepOffer": "Weka Pendekezo",
   "withdraw": "Ondoa",
-
   "myRequestsTitle": "Maombi Yangu",
   "sectionActive": "Yanayoendelea · {count}",
   "@sectionActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionContracted": "Yaliyosainiwa · {count}",
   "@sectionContracted": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionClosed": "Yaliyofungwa · {count}",
   "@sectionClosed": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noLoanRequests": "Hakuna maombi ya mkopo bado",
@@ -175,7 +198,9 @@
   "cancelListingConfirm": "Hii itaondoa \"{title}\" kutoka sokoni. Maombi yote yanayosubiri yatakataliwa.",
   "@cancelListingConfirm": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "keepIt": "Iacha",
@@ -191,7 +216,9 @@
   "lateFeePerMissedInstallment": "{value} kwa awamu iliyokosekana",
   "@lateFeePerMissedInstallment": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "repaymentLabel": "Marejesho",
@@ -199,22 +226,27 @@
   "sentDateLabel": "Ilitumwa {date}",
   "@sentDateLabel": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "errorLoadingContract": "Hitilafu kupakia mkataba: {error}",
   "@errorLoadingContract": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "listingOfferCount": "{count} {count, plural, one {bei} other {bei}}",
   "@listingOfferCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "accountTitle": "Akaunti",
   "settingsTitle": "Mipangilio",
   "contactUs": "Wasiliana Nasi",
@@ -227,11 +259,13 @@
   "profileSaved": "Wasifu umehifadhiwa.",
   "editProfile": "Hariri Wasifu",
   "changeProfilePicture": "Badilisha picha ya wasifu",
-  "phoneNumberLabel": "Nambari ya simu",
+  "phoneNumberLabel": "Nambari ya Simu",
   "selectRegionLabel": "Chagua {label}",
   "@selectRegionLabel": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "incomeTypeLabel": "Aina ya mapato",
@@ -256,13 +290,17 @@
   "avatarUploadFailed": "Kupakia picha kumeshindikana: {error}",
   "@avatarUploadFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "couldNotSelectImage": "Haikuweza kuchagua picha: {error}",
   "@couldNotSelectImage": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "choosePhoto": "Chagua picha",
@@ -298,10 +336,12 @@
   "memberSince": "Mwanachama tangu {date}",
   "@memberSince": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
-  "verified": "Imethibitishwa",
+  "verified": "Waliothibitishwa",
   "districtNotSet": "Wilaya haijawekwa",
   "nipanzeDisclaimer": "Nipanze ni jukwaa la kuoanisha tu. Hatushikili, hatuhamishe, wala hatutatuliwe fedha. Miamala yote hutokea moja kwa moja kati ya washiriki.",
   "lenderRequired": "Kiwango cha Mkopeshi kinahitajika",
@@ -376,7 +416,6 @@
   "phoneVerified": "Simu imethibitishwa",
   "phoneNotVerified": "Simu haijathibitishwa",
   "publicTrustSignals": "Ishara za uaminifu za umma zinatokana tu na shughuli zilizokamilishwa kupitia Nipanze.",
-
   "advancedFilters": "Vichujio vya Hali ya Juu",
   "advancedFiltersBadge": "Pro · Punguza matokeo ya soko",
   "filterReset": "Weka upya",
@@ -393,7 +432,6 @@
   "filterVerifiedBorrower": "Mkopaji aliyethibitishwa",
   "filterVerifiedBorrowerSubtitle": "Maombi tu kutoka kwa wamiliki wa akaunti walioidhinishwa na KYC",
   "filterPrivacyNote": "Majina ya waajiri na mapato halisi hayaonyeshwi kamwe. Viwango vya mapato na vikundi vya ajira ndivyo ishara pekee zinazopatikana, kwa muundo.",
-
   "empGovEmployee": "Mfanyakazi wa serikali",
   "empEmployedPrivate": "Mfanyakazi (binafsi)",
   "empSelfEmployed": "Mfanyabiashara binafsi",
@@ -401,26 +439,29 @@
   "empBusinessOwner": "Mmiliki wa biashara",
   "empStudent": "Mwanafunzi",
   "empOther": "Nyingine",
-
   "incomeUnder2m": "Chini ya 2M UGX / mwezi",
   "income2m5m": "2M – 5M UGX / mwezi",
   "income5m10m": "5M – 10M UGX / mwezi",
   "incomeOver10m": "Zaidi ya 10M UGX / mwezi",
-
   "iHold": "Ninazo",
   "rate": "Kiwango",
   "iNeed": "Nahitaji",
   "marketRate": "Kiwango cha soko",
-
   "stepIncomeRepayment": "Mapato na marejesho",
   "stepReviewPublish": "Kagua na uchapishe",
   "requestALoan": "Omba mkopo",
   "stepCounter": "Hatua ya {current} kati ya {total} · {subtitle}",
   "@stepCounter": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" },
-      "subtitle": { "type": "String" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "subtitle": {
+        "type": "String"
+      }
     }
   },
   "subtitleLoanDetails": "maelezo ya mkopo",
@@ -429,169 +470,216 @@
   "amountLabelWithCurrency": "Kiasi ({currency})",
   "@amountLabelWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
-  "amountToExchangeOut": "Kiasi cha kubadilisha",
-  "forexAmountToServe": "Kiasi cha kutumika",
-  "forexServesLabel": "Hutumikia",
+  "amountToExchangeOut": "Kiasi cha kutoa",
+  "forexAmountToServe": "Kiasi cha kuhudumiwa",
+  "forexServesLabel": "Inahudumia",
   "repaymentAmountPerPeriodLabel": "Kiasi cha marejesho kwa kila kipindi ({currency})",
   "@repaymentAmountPerPeriodLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "suggestedInstallmentAmountLabel": "Kiasi cha awamu kinachopendekezwa ({currency})",
   "@suggestedInstallmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "validationMinAmount": "Kiwango cha chini {currency} {min}",
   "@validationMinAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
     }
   },
   "validationMaxAmount": "Kiwango cha juu {currency} {max}",
   "@validationMaxAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
   "userVerificationStatus": "Hali ya uthibitisho wa mtumiaji: {status}",
   "@userVerificationStatus": {
     "placeholders": {
-      "status": { "type": "String" }
+      "status": {
+        "type": "String"
+      }
     }
   },
   "interestPercent": "{value}% riba",
   "@interestPercent": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "lenderNumberLabel": "Mkopeshi #{number}",
   "@lenderNumberLabel": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "lenderTextLabel": "Mkopeshi #{id}",
   "@lenderTextLabel": {
     "placeholders": {
-      "id": { "type": "String" }
+      "id": {
+        "type": "String"
+      }
     }
   },
   "partialOfferLabel": "Sehemu · {coverage}%",
   "@partialOfferLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "vsAskLabel": "{value} dhidi ya ombi",
   "@vsAskLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "successfulDeals": "Mikataba {count} iliyofanikiwa",
   "@successfulDeals": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "totalPayablePaymentsLabel": "Jumla ya kulipa ({periods} malipo)",
   "@totalPayablePaymentsLabel": {
     "placeholders": {
-      "periods": { "type": "int" }
+      "periods": {
+        "type": "int"
+      }
     }
   },
   "borrowingCostLabel": "Gharama ya mkopo: {amount}",
   "@borrowingCostLabel": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
-  "infoBannerText": "{currency} {min}-{max} · Hadi miezi 60 · masharti yanafungwa kwenye uchapishaji",
+  "infoBannerText": "{currency} {min}-{max} · Hadi miezi 60 · vigezo vinafungwa ukichapisha",
   "@infoBannerText": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "welcomeGiftUnlocks": "🎁 Zawadi ya kuwakaribisha — zimebaki fursa {count} za kufungua bure",
   "@welcomeGiftUnlocks": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "planTitle": "Mpango wa {plan}",
   "@planTitle": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "choosePlan": "Chagua {plan}",
   "@choosePlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "planSelectedMessage": "{plan} imechaguliwa. Uwashaji wa malipo salama utapatikana hivi karibuni.",
   "@planSelectedMessage": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "includedInPlan": "Imejumuishwa kwenye mpango wako wa {plan}",
   "@includedInPlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "monthlyIncomeWithCurrency": "Mapato ya mwezi ({currency})",
   "@monthlyIncomeWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
-  "enterMobileNumberForProvider": "Nambari ya simu {provider}",
+  "enterMobileNumberForProvider": "Nambari ya simu ya {provider}",
   "@enterMobileNumberForProvider": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "mobileMoneyPromptHint": "Utapokea prompt ya {provider} kwenye simu yako ili kuthibitisha malipo.",
+  "mobileMoneyPromptHint": "Utapokea arifa ya {provider} kwenye simu yako ili kuthibitisha malipo.",
   "@mobileMoneyPromptHint": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "chooseAccessSubtitle": "Akaunti moja inaweza kuchapisha maombi na kutoa dau. Bei zinarandana na eneo la akaunti yako ({flag} {country}).",
   "@chooseAccessSubtitle": {
     "placeholders": {
-      "flag": { "type": "String" },
-      "country": { "type": "String" }
+      "flag": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      }
     }
   },
-
   "panelTheBasics": "Mambo ya msingi",
   "panelTheNumbers": "Nambari",
   "panelLocationDetails": "Mahali na maelezo",
   "panelRepaymentSource": "Chanzo cha marejesho",
   "panelAbilityToRepay": "Uwezo wa kulipa",
   "panelPreferredTerms": "Vigezo unavyopendelea",
-
   "requestTitleLabel": "Kichwa cha ombi",
   "requestTitleHint": "mfano: Gari la biashara ya Kampala",
   "purposeLabel": "Dhumuni",
   "selectPurposeHint": "Chagua dhumuni",
   "describePurposeLabel": "Eleza dhumuni lako",
-  "amountLabelWithCurrency": "Kiasi ({currency})",
   "amountHintLoan": "7,000,000",
   "durationLabel": "Muda",
   "durationHintMonths": "Miezi 6",
@@ -601,7 +689,6 @@
   "incomeSourceHint": "mfano: Mshahara, duka, kilimo, kazi za kando",
   "preferredRepaymentPlanLabel": "Mpango wa marejesho unaopendelea",
   "selectRepaymentPlanHint": "Chagua mpango wa marejesho",
-  "repaymentAmountPerPeriodLabel": "Kiasi cha marejesho kwa kila kipindi ({currency})",
   "repaymentAmountHint": "mfano: 250,000",
   "repaymentTimelineLabel": "Ratiba na muda wa marejesho",
   "repaymentTimelineHint": "mfano: Kulipwa tarehe 5 ya kila mwezi saa 11:00 jioni kwa miezi 8",
@@ -613,16 +700,12 @@
   "suggestedInterestRateLabel": "Kiwango cha riba kinachopendekezwa (%)",
   "suggestedLateFeeLabel": "Ada ya kuchelewa inayopendekezwa (%)",
   "suggestedRepaymentScheduleLabel": "Ratiba inayopendekezwa",
-  "suggestedInstallmentAmountLabel": "Kiasi cha awamu kinachopendekezwa ({currency})",
-
   "validationTitleRequired": "Weka kichwa",
   "validationTitleMinLength": "Tumia angalau herufi 4",
   "validationPurposeRequired": "Chagua dhumuni",
   "validationPurposeContinue": "Chagua dhumuni ili kuendelea.",
   "validationAmountRequired": "Weka kiasi",
   "validationValidNumber": "Weka nambari sahihi",
-  "validationMinAmount": "Kiwango cha chini {currency} {min}",
-  "validationMaxAmount": "Kiwango cha juu {currency} {max}",
   "validationDurationRequired": "Weka muda",
   "validationDurationRange": "Miezi 1 hadi 60",
   "validationIncomeSourceRequired": "Weka chanzo chako cha marejesho",
@@ -634,11 +717,9 @@
   "validationRepaymentTimelineRequired": "Weka ratiba ya marejesho",
   "validationRepaymentTimelineDetail": "Weka ratiba inayoeleweka zaidi",
   "validationPercentRange": "Tumia 0 hadi 100",
-
   "btnContinue": "Endelea",
   "btnPublishToMarketplace": "Chapishe kwenye soko",
   "btnBack": "Nyuma",
-
   "reviewYourRequest": "Kagua ombi lako",
   "reviewConfirmDetails": "Thibitisha maelezo kabla ya kuchapisha sokoni.",
   "reviewTitle": "Kichwa",
@@ -653,17 +734,13 @@
   "reviewLockedTerms": "Vigezo vilivyofungwa",
   "reviewPerPeriod": "kwa kila kipindi",
   "reviewContactPrivacyNotice": "Maelezo yako ya mawasiliano yanasalia kufichwa hadi ofa ikubaliwe.",
-
   "requestSubmittedTitle": "Ombi limewasilishwa",
   "requestSubmittedContent": "Ombi lako la mkopo sasa liko sokoni. Wakopeshi wanaweza kulikagua na kutoa ofa.",
   "couldNotPublishRequest": "Haikuweza kuchapisha ombi hili. Jaribu tena.",
   "kycGateListing": "Kamilisha uhakiki wa KYC kabla ya kuchapisha ombi.",
   "notAllowedListing": "Akaunti yako hairuhusiwi kuchapisha ombi.",
-
-  "infoBannerText": "{currency} {min}-{max} · Hadi miezi 60 · vigezo vinafungwa ukichapisha",
   "termsLockedNotice": "Vimfungwa wakati ombi linapochapishwa.",
   "upgradeToProForTerms": "Boresha hadi Pro ili kupendekeza riba, ada ya kuchelewa, na ratiba.",
-
   "purposeAgri": "Vifaa vya kilimo",
   "purposeBusiness": "Kupanua biashara",
   "purposeEdu": "Elimu / Karo za shule",
@@ -678,11 +755,9 @@
   "purposeWater": "Maji na usafi",
   "purposeWedding": "Harusi / Sherehe",
   "purposeOther": "Nyingine",
-
   "planMonthly": "Kila mwezi",
   "planWeekly": "Kila wiki",
   "planOneTime": "Malipo ya mara moja",
-
   "createForexRequestTitle": "Tengeneza Ombi la Forex",
   "forexCurrencyHeld": "Sarafu uliyo nayo",
   "forexCurrencyNeeded": "Sarafu unayohitaji",
@@ -720,7 +795,9 @@
   "collateralValueLabel": "Thamani ya kukadiria ({currency})",
   "@collateralValueLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "estimatedValueLabel": "Thamani iliyokadiriwa",
@@ -729,7 +806,9 @@
   "offerCountdownLabel": "{time} zimesalia",
   "@offerCountdownLabel": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "expiredLabel": "Imeisha",
@@ -743,7 +822,9 @@
   "installmentAmountLabel": "Kiasi cha awamu ({currency})",
   "@installmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "additionalExpectationsLabel": "Matarajio ya ziada",
@@ -752,32 +833,23 @@
   "couldNotSendOffer": "Haikuweza kutuma bei.",
   "rateOfferedLabel": "Bei inayotolewa",
   "amountAvailableLabel": "Kiasi kinachopatikana",
-  "forexAmountToServe": "Kiasi cha kuhudumiwa",
-  "forexServesLabel": "Inahudumia",
-  "amountToExchangeOut": "Kiasi cha kutoa",
   "settlementTermsLabel": "Masharti ya makubaliano",
   "activeListingLabel": "Ombi linaloendelea",
   "fundedLabel": "Imefadhiliwa",
-  "userVerificationStatus": "Hali ya uthibitisho wa mtumiaji: {status}",
-  "interestPercent": "{value}% riba",
   "proposedRepaymentPlanLabel": "Mpango wa malipo uliopendekezwa",
   "yourOfferLabel": "Bei yako",
-  "lenderNumberLabel": "Mkopeshi #{number}",
-  "lenderTextLabel": "Mkopeshi #{id}",
   "fullOfferLabel": "Bei kamili",
-  "partialOfferLabel": "Sehemu · {coverage}%",
-  "vsAskLabel": "{value} dhidi ya ombi",
   "lenderNotesLabel": "Maelezo ya mkopeshaji",
   "acceptOfferLabel": "Kubali bei",
   "fullCoverageOfferLabel": "Bei ya kufadhili yote",
   "partialCoverageLabel": "Ufadhili wa sehemu · {coverage}%",
   "@partialCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "Jumla ya kulipa ({periods} malipo)",
-  "borrowingCostLabel": "Gharama ya mkopo: {amount}",
   "flutterwaveCheckoutTitle": "Malipo ya Flutterwave",
   "orderSummary": "Muhtasari wa Agizo",
   "paymentMethod": "Njia ya Malipo",
@@ -793,22 +865,21 @@
   "paymentStep1": "Maelezo",
   "paymentStep2": "Inashughulikia",
   "paymentStep3": "Imekamilika",
-  "paymentProcessingStep1": "Kuunganisha na Flutterwave\u2026",
-  "paymentProcessingStep2": "Kuthibitisha malipo\u2026",
-  "paymentProcessingStep3": "Kuamilisha usajili\u2026",
+  "paymentProcessingStep1": "Kuunganisha na Flutterwave…",
+  "paymentProcessingStep2": "Kuthibitisha malipo…",
+  "paymentProcessingStep3": "Kuamilisha usajili…",
   "transactionRef": "Kumb: {ref}",
   "@transactionRef": {
     "placeholders": {
-      "ref": { "type": "String" }
+      "ref": {
+        "type": "String"
+      }
     }
   },
   "poweredByFlutterwave": "Inaendeshwa na Flutterwave",
-  "enterMobileNumberForProvider": "Nambari ya simu ya {provider}",
-  "mobileMoneyPromptHint": "Utapokea arifa ya {provider} kwenye simu yako ili kuthibitisha malipo.",
   "prefilledFromAccount": "Imejazwa kutoka kwa akaunti yako",
   "editPhoneNumber": "Hariri",
-  "lockPhoneNumber": "Funga"
-,
+  "lockPhoneNumber": "Funga",
   "liveCalcTitle": "Muhtasari wa malipo",
   "liveCalcLoanAmount": "Kiasi cha mkopo",
   "liveCalcPlan": "Mpango wa malipo",
@@ -826,9 +897,24 @@
   "borrowerTermsMissing": "—",
   "repaymentCalcFormula": "malipo × idadi ya malipo = jumla ya kulipa",
   "liveCalcWeeklyNote": "Mpango wa wiki: miezi {months} × 4 = malipo {count}",
-  "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
+  "@liveCalcWeeklyNote": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcMonthlyNote": "Malipo {count} ya kila mwezi",
-  "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
+  "@liveCalcMonthlyNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcOneTimeNote": "Malipo 1 ya mara moja",
   "kycGateTitle": "Thibitisha kitambulisho chako kwanza",
   "kycGateBody": "Ili kuchapisha maombi ya mkopo au sarafu na kuungana na wakopeshaji, unahitaji kukamilisha uhakiki wa kitambulisho. Inachukua dakika chache tu.",
@@ -843,8 +929,6 @@
   "kycStep3": "Chapisha maombi mara tu unapoidhinishwa",
   "kycGateCta": "Anza uhakiki",
   "kycGateResubmitCta": "Tuma tena uhakiki",
-  "browseMarketplace": "Vinjari soko",
-
   "kycPageTitle": "Uthibitisho wa kitambulisho",
   "kycStatusApproved": "KYC Imeidhinishwa",
   "kycStatusApprovedDesc": "Kitambulisho kimethibitishwa. Sasa unaweza kuunda matangazo.",
@@ -859,7 +943,13 @@
   "kycRejectionReason": "Sababu ya kukataliwa",
   "kycIdentityVerified": "Kitambulisho kimethibitishwa",
   "kycExpires": "Inaisha tarehe {date}",
-  "@kycExpires": {"placeholders": {"date": {"type": "String"}}},
+  "@kycExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "kycPendingNotice": "Stakabadhi zimewasilishwa — ukaguzi wa msimamizi unaendelea. Hii kawaida huchukua siku 1–2 za kazi.",
   "kycRequiredDocs": "Hati zinazohitajika",
   "kycRequiredDocsSubtitle": "Pakia picha wazi na zenye mwanga mzuri. Hati zote zimehifadhiwa kwa usalama.",
@@ -878,7 +968,6 @@
   "kycSourceCamera": "Kamera",
   "kycSourceLibrary": "Maktaba ya picha",
   "kycDismiss": "Ondoa",
-
   "referAndEarn": "Alika na Upate",
   "yourReferralCode": "Kodi yako ya rufaa",
   "enterCode": "Weka Kodi",
@@ -891,7 +980,6 @@
   "applyCode": "Weka Kodi",
   "totalReferrals": "Jumla ya rufaa",
   "registered": "Waliosajiliwa",
-  "verified": "Waliothibitishwa",
   "qualified": "Waliostahili",
   "pendingRewards": "Zawadi zinazosubiri",
   "availableRewards": "Zinazopatikana",
@@ -917,7 +1005,6 @@
   "blockUser": "Mwekee Vikwazo Mtumiaji",
   "blockUserConfirmTitle": "Unataka kumwekea vikwazo mtumiaji huyu?",
   "blockUserConfirmBody": "Hawatakuwa na uwezo wa kuona au kushirikiana na maombi yako ya baadaye ya Mkopo au Sarafu.",
-  "cancel": "Ghairi",
   "block": "Weka Vikwazo",
   "unblock": "Ondoa Vikwazo",
   "unblockUserConfirmTitle": "Ondoa vikwazo kwa mtumiaji huyu?",
@@ -929,12 +1016,13 @@
   "blockedOnDate": "Aliwekewa vikwazo {date}",
   "@blockedOnDate": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "invitePeopleAndTrackRewards": "Alika watu na ufuatilie zawadi",
   "codeGenerating": "Kodi yako inatengenezwa…",
-  "tryAgain": "Jaribu tena",
   "inviteEarnDescription": "Alika watu kwenye Nipanze na upate zawadi wanapokamilisha vitendo vinavyohitajika.",
   "stepShare": "Shiriki",
   "stepSignUp": "Jiunge",
@@ -953,9 +1041,15 @@
   "subscriptionCurrencyDesc": "Sarafu yako ya usajili imewekwa kuwa {currency} ({country}) kulingana na eneo la nambari yako ya simu ({dialCode}).",
   "@subscriptionCurrencyDesc": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "country": { "type": "String" },
-      "dialCode": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      },
+      "dialCode": {
+        "type": "String"
+      }
     }
   },
   "subscriptionCurrencyLocked": "Sarafu ya usajili imefungwa kwenye eneo la nambari yako ya simu kwa utangamano wa malipo na haiwezi kubadilishwa.",
@@ -1003,7 +1097,6 @@
   "oppositePartyContact": "Mawasiliano ya Upande Mwingine",
   "successfulDealsCount": "{count} Mechi",
   "reviewsCount": "Tathmini {count}",
-  "phoneNumberLabel": "Nambari ya Simu",
   "emailAddressLabel": "Anwani ya Barua Pepe",
   "whatsappLabel": "WhatsApp",
   "callAction": "Piga Simu",
@@ -1065,6 +1158,40 @@
   "needsCategorySpecializedProducts": "Bidhaa Maalum na Ununuzi",
   "needsMakeOffer": "Toa Ofa",
   "needsProviderOffers": "Ofa za Watoa Huduma",
-  "needsAcceptOffer": "Kubali Ofa"
+  "needsAcceptOffer": "Kubali Ofa",
+  "providerServicesTitle": "Huduma za Mtoa Huduma",
+  "providerServicesSubtitle": "Waambie watu unachoweza kuwasaidia nacho.",
+  "addService": "Ongeza Huduma",
+  "providerVerified": "Mtoa Huduma Imethibitishwa",
+  "selfDeclared": "Imejitangaza",
+  "yourServices": "Huduma Zako",
+  "yourServicesSubtitle": "Simamia huduma unazotoa kwa wengine",
+  "noServicesYet": "Bado Hakuna Huduma Zilizoongezwa",
+  "noServicesYetSubtitle": "Ongeza unachoweza kutoa ili kupokea fursa zinazolingana na kutoa ofa kwenye Mahitaji.",
+  "chooseCategory": "Chagua Kitengo",
+  "chooseCapabilities": "Chagua Uwezo",
+  "addSelected": "Ongeza Zilizochaguliwa",
+  "removeService": "Ondoa Huduma",
+  "removeServiceConfirm": "Una uhakika unataka kuondoa huduma hii kwenye wasifu wako?",
+  "providerOpportunitiesTitle": "Watu wanatafuta unachotoa",
+  "viewOpportunities": "Tazama fursa",
+  "addYourServices": "Ongeza huduma zako",
+  "canYouHelp": "Je, unaweza kusaidia watu na jambo fulani?",
+  "youDontProvideThisService": "Hutoi huduma hii bado.",
+  "addCapabilityAction": "Ongeza {capability}",
+  "@addCapabilityAction": {
+    "placeholders": {
+      "capability": {
+        "type": "String"
+      }
+    }
+  },
+  "opportunitiesCount": "{count, plural, =1{fursa 1} other{fursa {count}}}",
+  "@opportunitiesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
-

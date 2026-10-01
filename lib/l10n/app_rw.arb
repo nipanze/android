@@ -45,7 +45,9 @@
   "listingsLive": "{count} urutonde · Imbona-nkubone",
   "@listingsLive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "filtered": "Shunguwe",
@@ -61,19 +63,25 @@
   "daysLeft": "{count} iminsi isigaye",
   "@daysLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "hoursLeft": "{count} amasaha asigaye",
   "@hoursLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "minutesLeft": "{count} iminota isigaye",
   "@minutesLeft": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "expired": "Byarangiye",
@@ -91,22 +99,27 @@
   "daysAgo": "Iminsi {count} ishize",
   "@daysAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeksAgo": "Ibyumweru {count} bishize",
   "@weeksAgo": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "watchlistTitle": "Urutonde rw'Ikurikirana",
   "watchlistSubtitle": "Inguzanyo ukurikira",
   "watchlistSaved": "{count} zachunwe",
   "@watchlistSaved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "watchlistInfoSubscribed": "Kubuntu ku batumiaji bose. Menya iyo habaye impinduka ku nguzanyo, inyungu zigabanuka, cyangwa inguzanyo iri gufunga.",
@@ -114,18 +127,21 @@
   "watchlistError": "Ikosa mu gufungura urutonde rw'ikurikirana",
   "watchlistEmpty": "Nta nguzanyo zachunwe",
   "watchlistEmptySubtitle": "Shakisha isoko hanyuma kanda \"Bika mu byo ukurikira\" ku nguzanyo iyo ari yo yose.",
-  "browseMarketplace": "Shakisha isoko",
+  "browseMarketplace": "Reba isoko",
   "removedFromWatchlist": "Yakuwe mu byo ukurikira",
   "undo": "Subiraho",
-  "tryAgain": "Gerageza nanone",
-
+  "tryAgain": "Ongera ugerageze",
   "myActivityTitle": "Ibikorwa Byanjye",
   "myActivitySubtitle": "Genzura inguzanyo n'ibirego byawe",
   "myActivityStats": "{listings} Inguzanyo · {offers} Ibirego Bikomeje",
   "@myActivityStats": {
     "placeholders": {
-      "listings": { "type": "int" },
-      "offers": { "type": "int" }
+      "listings": {
+        "type": "int"
+      },
+      "offers": {
+        "type": "int"
+      }
     }
   },
   "tabMyRequests": "Izimusaba Zanjye",
@@ -143,29 +159,36 @@
   "withdrawConfirm": "Urizera kuraho irigo ryawe rya UGX {amount}?",
   "@withdrawConfirm": {
     "placeholders": {
-      "amount": { "type": "int" }
+      "amount": {
+        "type": "int"
+      }
     }
   },
   "keepOffer": "Bika Irego",
   "withdraw": "Kuraho",
-
   "myRequestsTitle": "Izimusaba Zanjye",
   "sectionActive": "Zikomeje · {count}",
   "@sectionActive": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionContracted": "Zisigiriwe · {count}",
   "@sectionContracted": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sectionClosed": "Zafunzwe · {count}",
   "@sectionClosed": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "noLoanRequests": "Nta zimusaba z'inguzanyo zirahari",
@@ -175,7 +198,9 @@
   "cancelListingConfirm": "Iki kizakuraho \"{title}\" ku isoko. Ibirego byose bicomeje bizavanwa.",
   "@cancelListingConfirm": {
     "placeholders": {
-      "title": { "type": "String" }
+      "title": {
+        "type": "String"
+      }
     }
   },
   "keepIt": "Bika",
@@ -191,7 +216,9 @@
   "lateFeePerMissedInstallment": "{value} kuri buri gice cyakererewe",
   "@lateFeePerMissedInstallment": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
   "repaymentLabel": "Kwishyura",
@@ -199,22 +226,27 @@
   "sentDateLabel": "Byoherejwe {date}",
   "@sentDateLabel": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "errorLoadingContract": "Ikosa mu gufungura amasezerano: {error}",
   "@errorLoadingContract": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "listingOfferCount": "{count} {count, plural, one {igiciro} other {ibiciro}}",
   "@listingOfferCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "accountTitle": "Konti",
   "settingsTitle": "Igenamiterere",
   "contactUs": "Twandikire",
@@ -222,16 +254,18 @@
   "legal": "Amategeko",
   "signOut": "Sohoka",
   "signOutConfirm": "Urizera gusohoka muri konti yawe?",
-  "cancel": "Hagarika",
+  "cancel": "Kurekera",
   "profileUpdated": "Umwirondoro wasuzumwe.",
   "profileSaved": "Umwirondoro wabitswe.",
   "editProfile": "Hindura Umwirondoro",
   "changeProfilePicture": "Hindura ifoto y'umwirondoro",
-  "phoneNumberLabel": "Nomero ya telefone",
+  "phoneNumberLabel": "Numero ya Telefone",
   "selectRegionLabel": "Hitamo {label}",
   "@selectRegionLabel": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "incomeTypeLabel": "Ubwoko bw'inyungu",
@@ -256,13 +290,17 @@
   "avatarUploadFailed": "Kohereza ifoto byanze: {error}",
   "@avatarUploadFailed": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "couldNotSelectImage": "Ntibyashobotse guhitamo ifoto: {error}",
   "@couldNotSelectImage": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "choosePhoto": "Hitamo ifoto",
@@ -298,7 +336,9 @@
   "memberSince": "Umunyamuryango kuva {date}",
   "@memberSince": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "verified": "Byemejwe",
@@ -376,7 +416,6 @@
   "phoneVerified": "Terefone yaremejwe",
   "phoneNotVerified": "Terefone ntiyaremejwe",
   "publicTrustSignals": "Ibyerekana ikizere by'abantu bishingiye gusa ku bikorwa byakozwe binyuze kuri Nipanze.",
-
   "advancedFilters": "Uyunguruzo bwisumbuye",
   "advancedFiltersBadge": "Pro · Shungura ibiri kuri isoko",
   "filterReset": "Subira imbere",
@@ -393,7 +432,6 @@
   "filterVerifiedBorrower": "Umusabi wemejwe",
   "filterVerifiedBorrowerSubtitle": "Izimusaba gusa zivuye ku bafite konti zemejwe na KYC",
   "filterPrivacyNote": "Amazina y'abakora ndetse n'inyungu nyayo ntibigaragazwa na rimwe. Imikorere y'inyungu n'amoko y'akazi ni ibyerekana by'ingenzi gusa, by'ingenzi.",
-
   "empGovEmployee": "Umukozi wa leta",
   "empEmployedPrivate": "Umukozi (abikorera)",
   "empSelfEmployed": "Akora afite ubwe",
@@ -401,26 +439,29 @@
   "empBusinessOwner": "Nyir'ubucuruzi",
   "empStudent": "Umunyeshuri",
   "empOther": "Ikindi",
-
   "incomeUnder2m": "Munsi ya 2M UGX / ukwezi",
   "income2m5m": "2M – 5M UGX / ukwezi",
   "income5m10m": "5M – 10M UGX / ukwezi",
   "incomeOver10m": "Hejuru ya 10M UGX / ukwezi",
-
   "iHold": "Mfite",
   "rate": "Igipimo",
   "iNeed": "Nkeneye",
   "marketRate": "Igipimo cy'isoko",
-
   "stepIncomeRepayment": "Inyungu no kwishyura",
   "stepReviewPublish": "Kusuzuma no gutangaza",
   "requestALoan": "Saba inguzanyo",
   "stepCounter": "Intambwe ya {current} kuri {total} · {subtitle}",
   "@stepCounter": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" },
-      "subtitle": { "type": "String" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "subtitle": {
+        "type": "String"
+      }
     }
   },
   "subtitleLoanDetails": "iBIKUBIYE MU NGUZANYO",
@@ -429,169 +470,216 @@
   "amountLabelWithCurrency": "Umubare ({currency})",
   "@amountLabelWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
-  "amountToExchangeOut": "Umubare wo guhana",
-  "forexAmountToServe": "Umubare wo gutanga",
-  "forexServesLabel": "Gutanga",
+  "amountToExchangeOut": "Ayavunjwa",
+  "forexAmountToServe": "Ayazatangwa",
+  "forexServesLabel": "Ibikora",
   "repaymentAmountPerPeriodLabel": "Ayishyurwa mu gihe ({currency})",
   "@repaymentAmountPerPeriodLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "suggestedInstallmentAmountLabel": "Kwisbyura mu byiciro ({currency})",
   "@suggestedInstallmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "validationMinAmount": "Kuri make {currency} {min}",
   "@validationMinAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
     }
   },
   "validationMaxAmount": "Kuri menshi {currency} {max}",
   "@validationMaxAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "userVerificationStatus": "Imiterere y'ukemezwa: {status}",
+  "userVerificationStatus": "Imiterere yo kwemeza umukoresha: {status}",
   "@userVerificationStatus": {
     "placeholders": {
-      "status": { "type": "String" }
+      "status": {
+        "type": "String"
+      }
     }
   },
-  "interestPercent": "{value}% y'inyungu",
+  "interestPercent": "{value}% inyungu",
   "@interestPercent": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "lenderNumberLabel": "Umuguriza #{number}",
+  "lenderNumberLabel": "Utanga inguzanyo #{number}",
   "@lenderNumberLabel": {
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
-  "lenderTextLabel": "Umuguriza #{id}",
+  "lenderTextLabel": "Utanga inguzanyo #{id}",
   "@lenderTextLabel": {
     "placeholders": {
-      "id": { "type": "String" }
+      "id": {
+        "type": "String"
+      }
     }
   },
   "partialOfferLabel": "Igice · {coverage}%",
   "@partialOfferLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "vsAskLabel": "{value} vs ibisabwa",
+  "vsAskLabel": "{value} ugereranyije n'icyasabwe",
   "@vsAskLabel": {
     "placeholders": {
-      "value": { "type": "String" }
+      "value": {
+        "type": "String"
+      }
     }
   },
-  "successfulDeals": "Amasezerano {count} yagezweho neza",
   "@successfulDeals": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "Igiteranyo cyo kwishyura ({periods} byishyurwa)",
+  "totalPayablePaymentsLabel": "Amafaranga yose yo kwishyura ({periods} kwishyura)",
   "@totalPayablePaymentsLabel": {
     "placeholders": {
-      "periods": { "type": "int" }
+      "periods": {
+        "type": "int"
+      }
     }
   },
-  "borrowingCostLabel": "Igiciro cy'inguzanyo: {amount}",
+  "borrowingCostLabel": "Ikiguzi cy'inguzanyo: {amount}",
   "@borrowingCostLabel": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
-  "infoBannerText": "{currency} {min}-{max} · Kubera amezi 60 · amasezerano afungwa igihe atangazwa",
+  "infoBannerText": "{currency} {min}-{max} · Kugeza ku miezi 60 · amasezerano afungwa gutangazwa",
   "@infoBannerText": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "min": { "type": "String" },
-      "max": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
     }
   },
-  "welcomeGiftUnlocks": "🎁 Impano y'ikaze — haracyari fursa {count} zo gufungura kubuntu",
   "@welcomeGiftUnlocks": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "planTitle": "Ipulani ya {plan}",
   "@planTitle": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "choosePlan": "Hitamo {plan}",
   "@choosePlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "planSelectedMessage": "{plan} yatoranyijwe. Kwishyura kwizewe bizaboneka vuba.",
   "@planSelectedMessage": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "includedInPlan": "Biri mu ipulani yawe ya {plan}",
   "@includedInPlan": {
     "placeholders": {
-      "plan": { "type": "String" }
+      "plan": {
+        "type": "String"
+      }
     }
   },
-  "monthlyIncomeWithCurrency": "Amafaranga winjiza buri kwezi ({currency})",
   "@monthlyIncomeWithCurrency": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
-  "enterMobileNumberForProvider": "Nomero ya telefone {provider}",
+  "enterMobileNumberForProvider": "Numero ya terefone ya {provider}",
   "@enterMobileNumberForProvider": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "mobileMoneyPromptHint": "Uzahabwa ibimenyetso {provider} kuri telefone yawe kugira ngo wemere kwishyura.",
+  "mobileMoneyPromptHint": "Urakira ubutumwa bwa {provider} kuri terefone yawe wemeze kwishyura.",
   "@mobileMoneyPromptHint": {
     "placeholders": {
-      "provider": { "type": "String" }
+      "provider": {
+        "type": "String"
+      }
     }
   },
-  "chooseAccessSubtitle": "Konti imwe ishobora gusaba no gutanga ibyifuzo. Ibiciro bihura n'akarere ka konti yawe ({flag} {country}).",
   "@chooseAccessSubtitle": {
     "placeholders": {
-      "flag": { "type": "String" },
-      "country": { "type": "String" }
+      "flag": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      }
     }
   },
-
   "panelTheBasics": "Iby'iremezo",
   "panelTheNumbers": "Imibare",
   "panelLocationDetails": "Ahantu n'ibindi",
   "panelRepaymentSource": "Inkomoko y'ubwishyu",
   "panelAbilityToRepay": "Ubushobozi bwo kwishyura",
   "panelPreferredTerms": "Amasezerano wifuza",
-
   "requestTitleLabel": "Umutwe w'usabe",
   "requestTitleHint": "urugero: Imodoka y'ubucuruzi ya Kampala",
   "purposeLabel": "Impamvu",
   "selectPurposeHint": "Hitamo impamvu",
   "describePurposeLabel": "Sobanura impamvu",
-  "amountLabelWithCurrency": "Umubare ({currency})",
   "amountHintLoan": "7,000,000",
   "durationLabel": "Igihe",
   "durationHintMonths": "Amezi 6",
@@ -601,7 +689,6 @@
   "incomeSourceHint": "urugero: Umushahara, iduka, ubuhinzi",
   "preferredRepaymentPlanLabel": "Uburyo bwo kwishyura wifuza",
   "selectRepaymentPlanHint": "Hitamo uburyo bwo kwishyura",
-  "repaymentAmountPerPeriodLabel": "Ayishyurwa mu gihe ({currency})",
   "repaymentAmountHint": "urugero: 250,000",
   "repaymentTimelineLabel": "Igihe n'isaha yo kwishyura",
   "repaymentTimelineHint": "urugero: Kwishyurwa ku itariki 5 za buri kwezi mbele ya saa kumi n'imwe z'umugoroba mu miezi 8",
@@ -613,16 +700,12 @@
   "suggestedInterestRateLabel": "Inyungu isabwa (%)",
   "suggestedLateFeeLabel": "Amande y'ubukererwe (%)",
   "suggestedRepaymentScheduleLabel": "Igihe cyo kwishyura gisasabwa",
-  "suggestedInstallmentAmountLabel": "Kwisbyura mu byiciro ({currency})",
-
   "validationTitleRequired": "Andika umutwe",
   "validationTitleMinLength": "Andika nibura inyuguti 4",
   "validationPurposeRequired": "Hitamo impamvu",
   "validationPurposeContinue": "Hitamo impamvu kugira ngo ukomeze.",
   "validationAmountRequired": "Andika umubare",
   "validationValidNumber": "Andika umubare ukwiye",
-  "validationMinAmount": "Kuri make {currency} {min}",
-  "validationMaxAmount": "Kuri menshi {currency} {max}",
   "validationDurationRequired": "Andika igihe",
   "validationDurationRange": "Amezi 1 kugeza kuri 60",
   "validationIncomeSourceRequired": "Andika inkomoko y'ubwishyu",
@@ -634,11 +717,9 @@
   "validationRepaymentTimelineRequired": "Andika igihe cyo kwishyura",
   "validationRepaymentTimelineDetail": "Andika igihe cyumvikana",
   "validationPercentRange": "Koresha 0 kugeza 100",
-
   "btnContinue": "Komeza",
   "btnPublishToMarketplace": "Tangaza ku isoko",
   "btnBack": "Subira inyuma",
-
   "reviewYourRequest": "Suzuza usabe wabyo",
   "reviewConfirmDetails": "Emeza ibikubiyemo mbere yo gutangaza ku isoko.",
   "reviewTitle": "Umutwe",
@@ -653,17 +734,13 @@
   "reviewLockedTerms": "Amasezerano yafunzwe",
   "reviewPerPeriod": "mu gihe",
   "reviewContactPrivacyNotice": "Umwirondoro wawe uguma uhishwe kugeza icyifuzo cyemewe.",
-
   "requestSubmittedTitle": "Usabe yoherejwe",
   "requestSubmittedContent": "Inguzanyo usaba iri ku isoko ubu. Abakuguriza bazozi suzuma.",
   "couldNotPublishRequest": "Ntabwo bishobotse gutangaza ubusabe. Ongera ugerageze.",
   "kycGateListing": "Wuzuza KYC mbere yo gutangaza.",
   "notAllowedListing": "Konte yawe ntiyemerewe gutangaza.",
-
-  "infoBannerText": "{currency} {min}-{max} · Kugeza ku miezi 60 · amasezerano afungwa gutangazwa",
   "termsLockedNotice": "Bifungirwa igihe ubusabe butangajwe.",
   "upgradeToProForTerms": "Zamura ugeze kuri Pro kugira ngo utange inyungu n'amande.",
-
   "purposeAgri": "Ibyuma by'ubuhinzi",
   "purposeBusiness": "Kwagura ubucuruzi",
   "purposeEdu": "Uburezi / Amafaranga y'ishuri",
@@ -678,11 +755,9 @@
   "purposeWater": "Azi n'isuku",
   "purposeWedding": "Ubukwe / Ibikorwa",
   "purposeOther": "Ikindi",
-
   "planMonthly": "Buri kwezi",
   "planWeekly": "Buri cyumweru",
   "planOneTime": "Inshuro imwe",
-
   "createForexRequestTitle": "Kurema ubusabe bwa forex",
   "forexCurrencyHeld": "Icyiciro ufite",
   "forexCurrencyNeeded": "Icyiciro nkeneye",
@@ -699,9 +774,6 @@
   "forexSettlementMobileMoney": "Mobile Money",
   "forexSettlementBankTransfer": "Banki",
   "forexSettlementOther": "Ikindi",
-  "forexAmountToServe": "Ayazatangwa",
-  "forexServesLabel": "Ibikora",
-  "amountToExchangeOut": "Ayavunjwa",
   "forexRequestTitle": "Ubusabe bwa forex",
   "myForexRequestsTitle": "Ubusabe bwanjye bwa forex",
   "noForexRequestsYet": "Nta ubusabe bwa forex buhari.",
@@ -723,7 +795,9 @@
   "collateralValueLabel": "Agaciro kagereranyijwe ({currency})",
   "@collateralValueLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "estimatedValueLabel": "Agaciro kagereranyijwe",
@@ -732,7 +806,9 @@
   "offerCountdownLabel": "Hasigaye {time}",
   "@offerCountdownLabel": {
     "placeholders": {
-      "time": { "type": "String" }
+      "time": {
+        "type": "String"
+      }
     }
   },
   "expiredLabel": "Byarangiye",
@@ -746,7 +822,9 @@
   "installmentAmountLabel": "Amafaranga ya buri gice ({currency})",
   "@installmentAmountLabel": {
     "placeholders": {
-      "currency": { "type": "String" }
+      "currency": {
+        "type": "String"
+      }
     }
   },
   "additionalExpectationsLabel": "Ibindi wifuza",
@@ -758,26 +836,20 @@
   "settlementTermsLabel": "Amabwiriza y'iryozwa",
   "activeListingLabel": "Ubusabe buri gukora",
   "fundedLabel": "Byamaze guterwa inkunga",
-  "userVerificationStatus": "Imiterere yo kwemeza umukoresha: {status}",
-  "interestPercent": "{value}% inyungu",
   "proposedRepaymentPlanLabel": "Gahunda yo kwishyura yatanzwe",
   "yourOfferLabel": "Igiciro cyawe",
-  "lenderNumberLabel": "Utanga inguzanyo #{number}",
-  "lenderTextLabel": "Utanga inguzanyo #{id}",
   "fullOfferLabel": "Igiciro cyuzuye",
-  "partialOfferLabel": "Igice · {coverage}%",
-  "vsAskLabel": "{value} ugereranyije n'icyasabwe",
   "lenderNotesLabel": "Ibisobanuro by'utanga inguzanyo",
   "acceptOfferLabel": "Emera igiciro",
   "fullCoverageOfferLabel": "Igiciro gifata byose",
   "partialCoverageLabel": "Igice gifashwa · {coverage}%",
   "@partialCoverageLabel": {
     "placeholders": {
-      "coverage": { "type": "int" }
+      "coverage": {
+        "type": "int"
+      }
     }
   },
-  "totalPayablePaymentsLabel": "Amafaranga yose yo kwishyura ({periods} kwishyura)",
-  "borrowingCostLabel": "Ikiguzi cy'inguzanyo: {amount}",
   "flutterwaveCheckoutTitle": "Kwishyura kuri Flutterwave",
   "orderSummary": "Inshamake y'igiciro",
   "paymentMethod": "Uburyo bwo kwishyura",
@@ -793,22 +865,21 @@
   "paymentStep1": "Amakuru",
   "paymentStep2": "Birakora",
   "paymentStep3": "Byarangiye",
-  "paymentProcessingStep1": "Guhuza na Flutterwave\u2026",
-  "paymentProcessingStep2": "Kwemeza kwishyura\u2026",
-  "paymentProcessingStep3": "Gufungura ifatabuguzi\u2026",
+  "paymentProcessingStep1": "Guhuza na Flutterwave…",
+  "paymentProcessingStep2": "Kwemeza kwishyura…",
+  "paymentProcessingStep3": "Gufungura ifatabuguzi…",
   "transactionRef": "Inomero: {ref}",
   "@transactionRef": {
     "placeholders": {
-      "ref": { "type": "String" }
+      "ref": {
+        "type": "String"
+      }
     }
   },
   "poweredByFlutterwave": "Ishyirwa mu bikorwa na Flutterwave",
-  "enterMobileNumberForProvider": "Numero ya terefone ya {provider}",
-  "mobileMoneyPromptHint": "Urakira ubutumwa bwa {provider} kuri terefone yawe wemeze kwishyura.",
   "prefilledFromAccount": "Yatanzwe na konti yawe",
   "editPhoneNumber": "Hindura",
-  "lockPhoneNumber": "Funga"
-,
+  "lockPhoneNumber": "Funga",
   "liveCalcTitle": "Imyanzuro y'ibisubizo",
   "liveCalcLoanAmount": "Ingano y'inguzanyo",
   "liveCalcPlan": "Gahunda yo gusubiza",
@@ -826,9 +897,24 @@
   "borrowerTermsMissing": "—",
   "repaymentCalcFormula": "igishoro × umubare w'ibisubizo = igiteranyo",
   "liveCalcWeeklyNote": "Gahunda ya buri cyumweru: amezi {months} × 4 = {count} bisubizo",
-  "@liveCalcWeeklyNote": {"placeholders": {"months": {"type": "int"}, "count": {"type": "int"}}},
+  "@liveCalcWeeklyNote": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcMonthlyNote": "Bisubizo {count} bya buri kwezi",
-  "@liveCalcMonthlyNote": {"placeholders": {"count": {"type": "int"}}},
+  "@liveCalcMonthlyNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveCalcOneTimeNote": "Isubizwa 1 rimwe",
   "kycGateTitle": "Banza wemeze umwirondoro wawe",
   "kycGateBody": "Kugira ngo usabe inguzanyo cyangwa ivunjisha kandi uhuzwe n'abategereje kugukopa, ugomba kubanza kwemeza umwirondoro. Bitwara iminota mike gusa.",
@@ -843,8 +929,6 @@
   "kycStep3": "Saba inguzanyo mugihe wamaze kwemerwa",
   "kycGateCta": "Tanga umwirondoro",
   "kycGateResubmitCta": "Yongera utange umwirondoro",
-  "browseMarketplace": "Reba isoko",
-
   "kycPageTitle": "Kwemeza indangamuntu",
   "kycStatusApproved": "KYC Yemejwe",
   "kycStatusApprovedDesc": "Umwirondoro wemejwe. Ubu urashobora gushyira amakuru ku isoko.",
@@ -859,7 +943,13 @@
   "kycRejectionReason": "Impamvu yo guteshwa agaciro",
   "kycIdentityVerified": "Umwirondoro wemejwe",
   "kycExpires": "Irarangira kuwa {date}",
-  "@kycExpires": {"placeholders": {"date": {"type": "String"}}},
+  "@kycExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "kycPendingNotice": "Inyandiko zatanzwe — isuzuma ry'umunyamabanga riragenda. Ibi bisanzwe bitwara iminsi 1–2 y'akazi.",
   "kycRequiredDocs": "Inyandiko zisabwa",
   "kycRequiredDocsSubtitle": "Shiraho amafoto akera neza n'umucyo mwiza. Inyandiko zose zibikwa mu buryo bw'umutekano.",
@@ -915,7 +1005,6 @@
   "blockUser": "Funga umukoresha",
   "blockUserConfirmTitle": "Funga uyu mukoresha?",
   "blockUserConfirmBody": "Ntazashobora kubona cyangwa gukorana n'ibisabwa byawe by'inguzanyo cyangwa amavunja y'ahazaza.",
-  "cancel": "Kurekera",
   "block": "Funga",
   "unblock": "Fungura",
   "unblockUserConfirmTitle": "Fungura uyu mukoresha?",
@@ -927,12 +1016,13 @@
   "blockedOnDate": "Yafunzwe {date}",
   "@blockedOnDate": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "invitePeopleAndTrackRewards": "Tumira abantu kandi urekere ibihembo",
   "codeGenerating": "Kode yawe irimo gukorwa…",
-  "tryAgain": "Ongera ugerageze",
   "inviteEarnDescription": "Tumira abantu kuri Nipanze ubone ibihembo mu gihe bafashe ibikorwa byasabwaga.",
   "stepShare": "Sangiza",
   "stepSignUp": "Iyandikishe",
@@ -951,9 +1041,15 @@
   "subscriptionCurrencyDesc": "Ifaranga ryawe ryo kwiyandikisha riri kuri {currency} ({country}) dukurikije igihugu cy'inimero yawe ({dialCode}).",
   "@subscriptionCurrencyDesc": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "country": { "type": "String" },
-      "dialCode": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "country": {
+        "type": "String"
+      },
+      "dialCode": {
+        "type": "String"
+      }
     }
   },
   "subscriptionCurrencyLocked": "Ifaranga ryo kwiyandikisha rifunze ku karere k'inimero yawe kubera ibyemezo byo kwishyura.",
@@ -1001,7 +1097,6 @@
   "oppositePartyContact": "Amakuru y'Undi Munyabyarwa",
   "successfulDealsCount": "{count} Guhuza",
   "reviewsCount": "Ibitekerezo {count}",
-  "phoneNumberLabel": "Numero ya Telefone",
   "emailAddressLabel": "Aderesi ya Imeli",
   "whatsappLabel": "WhatsApp",
   "callAction": "Hamagara",
@@ -1063,5 +1158,40 @@
   "needsCategorySpecializedProducts": "Ibicuruzwa Byihariye no Gutumiza",
   "needsMakeOffer": "Tanga Igiciro",
   "needsProviderOffers": "Ibiciro by'Abatanga Serivisi",
-  "needsAcceptOffer": "Emera Igiciro"
+  "needsAcceptOffer": "Emera Igiciro",
+  "providerServicesTitle": "Serivisi z'Utanga Serivisi",
+  "providerServicesSubtitle": "Bwira abantu icyo ushobora kubafashamo.",
+  "addService": "Ongeraho Serivisi",
+  "providerVerified": "Uwatanze Serivisi Yemejwe",
+  "selfDeclared": "Yiyemeje",
+  "yourServices": "Serivisi Zawe",
+  "yourServicesSubtitle": "Cunga serivisi utanga ku bandi",
+  "noServicesYet": "Nta serivisi zongeyeho kugeza ubu",
+  "noServicesYetSubtitle": "Ongeraho ibyo ushobora gutanga kugira ngo ubone amahirwe ajyanye n'ibyo ushobora gukora no gutanga ibiciro ku Byifuzo.",
+  "chooseCategory": "Hitamo Icyiciro",
+  "chooseCapabilities": "Hitamo Ubushobozi",
+  "addSelected": "Ongeraho Ibyatoranyijwe",
+  "removeService": "Kuraho Serivisi",
+  "removeServiceConfirm": "Uremeza ko ushaka gukuraho iyi serivisi ku mwirondoro wawe?",
+  "providerOpportunitiesTitle": "Abantu barashaka ibyo utanga",
+  "viewOpportunities": "Reba amahirwe",
+  "addYourServices": "Ongeraho serivisi zawe",
+  "canYouHelp": "Ushobora gufasha abantu mu kintu runaka?",
+  "youDontProvideThisService": "Nturatanga iyi serivisi kugeza ubu.",
+  "addCapabilityAction": "Ongeraho {capability}",
+  "@addCapabilityAction": {
+    "placeholders": {
+      "capability": {
+        "type": "String"
+      }
+    }
+  },
+  "opportunitiesCount": "{count, plural, =1{Amahirwe 1} other{Amahirwe {count}}}",
+  "@opportunitiesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

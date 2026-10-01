@@ -152,8 +152,11 @@ AppException _parsePostgrestError(String code, String message) {
   if (message.contains('NIPANZE_ACCOUNT_INACTIVE')) {
     return const PermissionException('Your account is not active.');
   }
+  if (message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
+    return const SubscriptionRequiredException('Lender');
+  }
   if (message.contains('NIPANZE_SUBSCRIPTION_REQUIRED') ||
-      message.contains('NIPANZE_LENDER_SUBSCRIPTION_REQUIRED')) {
+      message.contains('NIPANZE_PROVIDER_SUBSCRIPTION_REQUIRED')) {
     return const SubscriptionRequiredException('Provider');
   }
   if (message.contains('NIPANZE_PRO_REQUIRED')) {

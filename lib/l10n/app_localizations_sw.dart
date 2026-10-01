@@ -2464,4 +2464,80 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get needsAcceptOffer => 'Kubali Ofa';
+
+  @override
+  String get providerServicesTitle => 'Huduma za Mtoa Huduma';
+
+  @override
+  String get providerServicesSubtitle =>
+      'Waambie watu unachoweza kuwasaidia nacho.';
+
+  @override
+  String get addService => 'Ongeza Huduma';
+
+  @override
+  String get providerVerified => 'Mtoa Huduma Imethibitishwa';
+
+  @override
+  String get selfDeclared => 'Imejitangaza';
+
+  @override
+  String get yourServices => 'Huduma Zako';
+
+  @override
+  String get yourServicesSubtitle => 'Simamia huduma unazotoa kwa wengine';
+
+  @override
+  String get noServicesYet => 'Bado Hakuna Huduma Zilizoongezwa';
+
+  @override
+  String get noServicesYetSubtitle =>
+      'Ongeza unachoweza kutoa ili kupokea fursa zinazolingana na kutoa ofa kwenye Mahitaji.';
+
+  @override
+  String get chooseCategory => 'Chagua Kitengo';
+
+  @override
+  String get chooseCapabilities => 'Chagua Uwezo';
+
+  @override
+  String get addSelected => 'Ongeza Zilizochaguliwa';
+
+  @override
+  String get removeService => 'Ondoa Huduma';
+
+  @override
+  String get removeServiceConfirm =>
+      'Una uhakika unataka kuondoa huduma hii kwenye wasifu wako?';
+
+  @override
+  String get providerOpportunitiesTitle => 'Watu wanatafuta unachotoa';
+
+  @override
+  String get viewOpportunities => 'Tazama fursa';
+
+  @override
+  String get addYourServices => 'Ongeza huduma zako';
+
+  @override
+  String get canYouHelp => 'Je, unaweza kusaidia watu na jambo fulani?';
+
+  @override
+  String get youDontProvideThisService => 'Hutoi huduma hii bado.';
+
+  @override
+  String addCapabilityAction(String capability) {
+    return 'Ongeza $capability';
+  }
+
+  @override
+  String opportunitiesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'fursa $count',
+      one: 'fursa 1',
+    );
+    return '$_temp0';
+  }
 }

@@ -2435,4 +2435,82 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get needsAcceptOffer => 'قبول العرض';
+
+  @override
+  String get providerServicesTitle => 'خدمات المزود';
+
+  @override
+  String get providerServicesSubtitle => 'أخبر الناس بما يمكنك مساعدتهم فيه.';
+
+  @override
+  String get addService => 'إضافة خدمة';
+
+  @override
+  String get providerVerified => 'مزود موثق';
+
+  @override
+  String get selfDeclared => 'معلن ذاتياً';
+
+  @override
+  String get yourServices => 'خدماتك';
+
+  @override
+  String get yourServicesSubtitle => 'إدارة الخدمات التي تقدمها للآخرين';
+
+  @override
+  String get noServicesYet => 'لم يتم إضافة خدمات بعد';
+
+  @override
+  String get noServicesYetSubtitle =>
+      'أضف ما يمكنك تقديمه لتلقي الفرص المطابقة وتقديم عروض على الاحتياجات.';
+
+  @override
+  String get chooseCategory => 'اختر الفئة';
+
+  @override
+  String get chooseCapabilities => 'اختر القدرات';
+
+  @override
+  String get addSelected => 'إضافة المحدد';
+
+  @override
+  String get removeService => 'إزالة الخدمة';
+
+  @override
+  String get removeServiceConfirm =>
+      'هل أنت متأكد من رغبتك في إزالة هذه الخدمة من ملفك الشخصي؟';
+
+  @override
+  String get providerOpportunitiesTitle => 'يبحث الناس عما تقدمه';
+
+  @override
+  String get viewOpportunities => 'عرض الفرص';
+
+  @override
+  String get addYourServices => 'أضف خدماتك';
+
+  @override
+  String get canYouHelp => 'هل يمكنك مساعدة الناس في شيء ما؟';
+
+  @override
+  String get youDontProvideThisService => 'أنت لا تقدم هذه الخدمة بعد.';
+
+  @override
+  String addCapabilityAction(String capability) {
+    return 'إضافة $capability';
+  }
+
+  @override
+  String opportunitiesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count فرصة',
+      many: '$count فرصة',
+      few: '$count فرص',
+      two: 'فرصتان',
+      one: 'فرصة واحدة',
+    );
+    return '$_temp0';
+  }
 }

@@ -4509,6 +4509,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Accept Offer'**
   String get needsAcceptOffer;
+
+  /// No description provided for @providerServicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider Services'**
+  String get providerServicesTitle;
+
+  /// No description provided for @providerServicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people what you can help them with.'**
+  String get providerServicesSubtitle;
+
+  /// No description provided for @addService.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Service'**
+  String get addService;
+
+  /// No description provided for @providerVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider Verified'**
+  String get providerVerified;
+
+  /// No description provided for @selfDeclared.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-declared'**
+  String get selfDeclared;
+
+  /// No description provided for @yourServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Services'**
+  String get yourServices;
+
+  /// No description provided for @yourServicesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage the services you offer to others'**
+  String get yourServicesSubtitle;
+
+  /// No description provided for @noServicesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Services Added Yet'**
+  String get noServicesYet;
+
+  /// No description provided for @noServicesYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add what you can offer to receive matching opportunities and make offers on Needs.'**
+  String get noServicesYetSubtitle;
+
+  /// No description provided for @chooseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Category'**
+  String get chooseCategory;
+
+  /// No description provided for @chooseCapabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Capabilities'**
+  String get chooseCapabilities;
+
+  /// No description provided for @addSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Selected'**
+  String get addSelected;
+
+  /// No description provided for @removeService.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Service'**
+  String get removeService;
+
+  /// No description provided for @removeServiceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove this service from your profile?'**
+  String get removeServiceConfirm;
+
+  /// No description provided for @providerOpportunitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People are looking for what you provide'**
+  String get providerOpportunitiesTitle;
+
+  /// No description provided for @viewOpportunities.
+  ///
+  /// In en, this message translates to:
+  /// **'View opportunities'**
+  String get viewOpportunities;
+
+  /// No description provided for @addYourServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your services'**
+  String get addYourServices;
+
+  /// No description provided for @canYouHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Can you help people with something?'**
+  String get canYouHelp;
+
+  /// No description provided for @youDontProvideThisService.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t provide this service yet.'**
+  String get youDontProvideThisService;
+
+  /// No description provided for @addCapabilityAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {capability}'**
+  String addCapabilityAction(String capability);
+
+  /// No description provided for @opportunitiesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 opportunity} other{{count} opportunities}}'**
+  String opportunitiesCount(int count);
 }
 
 class _AppLocalizationsDelegate

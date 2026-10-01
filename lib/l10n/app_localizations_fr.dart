@@ -2488,4 +2488,83 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get needsAcceptOffer => 'Accepter l\'offre';
+
+  @override
+  String get providerServicesTitle => 'Services de prestataire';
+
+  @override
+  String get providerServicesSubtitle =>
+      'Dites aux gens en quoi vous pouvez les aider.';
+
+  @override
+  String get addService => 'Ajouter un service';
+
+  @override
+  String get providerVerified => 'Prestataire vérifié';
+
+  @override
+  String get selfDeclared => 'Auto-déclaré';
+
+  @override
+  String get yourServices => 'Vos services';
+
+  @override
+  String get yourServicesSubtitle =>
+      'Gérez les services que vous proposez aux autres';
+
+  @override
+  String get noServicesYet => 'Aucun service ajouté pour le moment';
+
+  @override
+  String get noServicesYetSubtitle =>
+      'Ajoutez ce que vous proposez pour recevoir des opportunités correspondantes et faire des offres sur les Besoins.';
+
+  @override
+  String get chooseCategory => 'Choisir une catégorie';
+
+  @override
+  String get chooseCapabilities => 'Choisir les compétences';
+
+  @override
+  String get addSelected => 'Ajouter la sélection';
+
+  @override
+  String get removeService => 'Supprimer le service';
+
+  @override
+  String get removeServiceConfirm =>
+      'Voulez-vous vraiment retirer ce service de votre profil ?';
+
+  @override
+  String get providerOpportunitiesTitle =>
+      'Des personnes recherchent ce que vous proposez';
+
+  @override
+  String get viewOpportunities => 'Voir les opportunités';
+
+  @override
+  String get addYourServices => 'Ajoutez vos services';
+
+  @override
+  String get canYouHelp => 'Pouvez-vous aider les gens avec quelque chose ?';
+
+  @override
+  String get youDontProvideThisService =>
+      'Vous ne fournissez pas encore ce service.';
+
+  @override
+  String addCapabilityAction(String capability) {
+    return 'Ajouter $capability';
+  }
+
+  @override
+  String opportunitiesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count opportunités',
+      one: '1 opportunité',
+    );
+    return '$_temp0';
+  }
 }

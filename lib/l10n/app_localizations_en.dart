@@ -2451,4 +2451,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get needsAcceptOffer => 'Accept Offer';
+
+  @override
+  String get providerServicesTitle => 'Provider Services';
+
+  @override
+  String get providerServicesSubtitle =>
+      'Tell people what you can help them with.';
+
+  @override
+  String get addService => 'Add Service';
+
+  @override
+  String get providerVerified => 'Provider Verified';
+
+  @override
+  String get selfDeclared => 'Self-declared';
+
+  @override
+  String get yourServices => 'Your Services';
+
+  @override
+  String get yourServicesSubtitle => 'Manage the services you offer to others';
+
+  @override
+  String get noServicesYet => 'No Services Added Yet';
+
+  @override
+  String get noServicesYetSubtitle =>
+      'Add what you can offer to receive matching opportunities and make offers on Needs.';
+
+  @override
+  String get chooseCategory => 'Choose Category';
+
+  @override
+  String get chooseCapabilities => 'Choose Capabilities';
+
+  @override
+  String get addSelected => 'Add Selected';
+
+  @override
+  String get removeService => 'Remove Service';
+
+  @override
+  String get removeServiceConfirm =>
+      'Are you sure you want to remove this service from your profile?';
+
+  @override
+  String get providerOpportunitiesTitle =>
+      'People are looking for what you provide';
+
+  @override
+  String get viewOpportunities => 'View opportunities';
+
+  @override
+  String get addYourServices => 'Add your services';
+
+  @override
+  String get canYouHelp => 'Can you help people with something?';
+
+  @override
+  String get youDontProvideThisService =>
+      'You don\'t provide this service yet.';
+
+  @override
+  String addCapabilityAction(String capability) {
+    return 'Add $capability';
+  }
+
+  @override
+  String opportunitiesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count opportunities',
+      one: '1 opportunity',
+    );
+    return '$_temp0';
+  }
 }
