@@ -4725,48 +4725,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tell us what services, skills or resources you offer...'**
   String get whatCanYouHelpWithSubtitle;
-
-  /// No description provided for @needsCategoryConstructionBuilding.
-  String get needsCategoryConstructionBuilding;
-
-  /// No description provided for @needsCategoryAgricultureAgribusiness.
-  String get needsCategoryAgricultureAgribusiness;
-
-  /// No description provided for @needsCategoryTechnologyDigital.
-  String get needsCategoryTechnologyDigital;
-
-  /// No description provided for @needsCategoryEventsProduction.
-  String get needsCategoryEventsProduction;
-
-  /// No description provided for @needsCategoryEnergyUtilities.
-  String get needsCategoryEnergyUtilities;
-
-  /// No description provided for @postServiceAction.
-  String get postServiceAction;
-
-  /// No description provided for @postServiceSubtitle.
-  String get postServiceSubtitle;
-
-  /// No description provided for @needsSpecificServiceLabel.
-  String get needsSpecificServiceLabel;
-
-  /// No description provided for @needsAnySpecificService.
-  String get needsAnySpecificService;
-
-  /// No description provided for @declareCapabilityToBidTitle.
-  String get declareCapabilityToBidTitle;
-
-  /// No description provided for @declareCapabilityToBidMessage.
-  String get declareCapabilityToBidMessage;
-
-  /// No description provided for @declareServiceNow.
-  String get declareServiceNow;
-
-  /// No description provided for @newOpportunityNotificationTitle.
-  String get newOpportunityNotificationTitle;
-
-  /// No description provided for @newOpportunityNotificationBody.
-  String newOpportunityNotificationBody(String title);
 }
 
 class _AppLocalizationsDelegate
