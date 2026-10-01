@@ -123,14 +123,18 @@ class _MarketplaceView extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: AppColors.proPurple
+                                      color: AppColors.accent
                                           .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: AppColors.accent.withValues(alpha: 0.30),
+                                        width: 0.8,
+                                      ),
                                     ),
                                     child: Text(
                                       AppLocalizations.of(context)!.filtered,
                                       style: const TextStyle(
-                                        color: AppColors.proPurple,
+                                        color: AppColors.accent,
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 0.3,
@@ -267,7 +271,7 @@ class _MarketplaceView extends StatelessWidget {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.proPurple,
+                                  color: AppColors.accent,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -275,7 +279,7 @@ class _MarketplaceView extends StatelessWidget {
                                 AppLocalizations.of(context)!.applyingFilters,
                                 style: const TextStyle(
                                     fontSize: 12.5,
-                                    color: AppColors.proPurple),
+                                    color: AppColors.accent),
                               ),
                             ],
                           ),
@@ -376,12 +380,10 @@ class _DiscoveryPromptCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          color: isDark
-              ? AppColors.accent.withValues(alpha: 0.08)
-              : AppColors.accent.withValues(alpha: 0.06),
+          color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.accent.withValues(alpha: isDark ? 0.22 : 0.18),
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
         ),
         child: Row(
@@ -391,7 +393,7 @@ class _DiscoveryPromptCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.15),
+                color: AppColors.accent.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -429,17 +431,17 @@ class _DiscoveryPromptCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            // Right: arrow icon
+            // Right: neutral arrow icon
             Container(
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.15),
+                color: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_forward_rounded,
-                color: AppColors.accent,
+                color: isDark ? AppColors.text2Dark : AppColors.text2Light,
                 size: 16,
               ),
             ),
@@ -497,7 +499,7 @@ class _ModuleFilterRow extends StatelessWidget {
                             AppLocalizations.of(context)!.marketplaceForex,
                         icon: Icons.currency_exchange_rounded,
                         selected: selected == MarketplaceModule.forex,
-                        accentColor: AppColors.purple,
+                        accentColor: const Color(0xFF06B6D4),
                         onTap: () => context
                             .read<MarketplaceCubit>()
                             .setModuleFilter(MarketplaceModule.forex),
@@ -545,14 +547,19 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final shellColor =
-        selected ? accentColor.withValues(alpha: 0.92) : Colors.transparent;
-    final textColor =
-        selected ? Colors.white : accentColor.withValues(alpha: 0.98);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Unselected: neutral bg + neutral text. Selected: solid accent.
+    final shellColor = selected
+        ? accentColor
+        : (isDark ? AppColors.bg2Dark : AppColors.bg2Light);
+    final textColor = selected
+        ? Colors.white
+        : (isDark ? AppColors.text2Dark : AppColors.text2Light);
     final borderColor = selected
-        ? accentColor.withValues(alpha: 0.9)
-        : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.16);
+        ? accentColor
+        : (isDark ? AppColors.borderDark : AppColors.borderLight);
 
     return GestureDetector(
       onTap: onTap,
@@ -564,16 +571,6 @@ class _FilterPill extends StatelessWidget {
           color: shellColor,
           borderRadius: BorderRadius.circular(7),
           border: Border.all(color: borderColor),
-          boxShadow: isDark
-              ? [
-                  BoxShadow(
-                    color:
-                        accentColor.withValues(alpha: selected ? 0.16 : 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -592,7 +589,7 @@ class _FilterPill extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: textColor,
               ),
             ),
@@ -615,6 +612,7 @@ class _ProFilterButton extends StatelessWidget {
       builder: (context, state) {
         final hasActiveFilters =
             state is MarketplaceLoaded && state.proFilterCriteria.isActive;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return SizedBox(
           width: 32,
@@ -633,20 +631,24 @@ class _ProFilterButton extends StatelessWidget {
                     height: 28,
                     decoration: BoxDecoration(
                       color: hasActiveFilters
-                          ? AppColors.proPurple.withValues(alpha: 0.18)
-                          : AppColors.proPurple.withValues(alpha: 0.10),
+                          ? AppColors.accent.withValues(alpha: 0.14)
+                          : (isDark ? AppColors.bg3Dark : AppColors.bg3Light),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: hasActiveFilters
-                            ? AppColors.proPurple
-                            : AppColors.proPurple.withValues(alpha: 0.35),
+                            ? AppColors.accent.withValues(alpha: 0.60)
+                            : (isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight),
                         width: hasActiveFilters ? 1.3 : 1,
                       ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.tune_rounded,
                       size: 15,
-                      color: AppColors.proPurple,
+                      color: hasActiveFilters
+                          ? AppColors.accent
+                          : (isDark ? AppColors.text2Dark : AppColors.text2Light),
                     ),
                   ),
                   // Active-filter dot indicator
@@ -658,7 +660,7 @@ class _ProFilterButton extends StatelessWidget {
                         width: 6,
                         height: 6,
                         decoration: const BoxDecoration(
-                          color: AppColors.proPurple,
+                          color: AppColors.accent,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -680,6 +682,7 @@ class _EmptyProFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -689,12 +692,12 @@ class _EmptyProFilter extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.purple.withValues(alpha: 0.1),
+                color: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.filter_list_off_rounded,
-                color: AppColors.purple,
+                color: isDark ? AppColors.text2Dark : AppColors.text2Light,
                 size: 28,
               ),
             ),
@@ -718,8 +721,8 @@ class _EmptyProFilter extends StatelessWidget {
                 cubit: context.read<MarketplaceCubit>(),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.purple,
-                side: const BorderSide(color: AppColors.purple),
+                foregroundColor: AppColors.accent,
+                side: const BorderSide(color: AppColors.accent),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
