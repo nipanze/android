@@ -488,6 +488,36 @@ abstract class AppLocalizations {
   /// **'Needed'**
   String get marketplaceNeeded;
 
+  /// No description provided for @declareCapabilityToBidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Capability Required'**
+  String get declareCapabilityToBidTitle;
+
+  /// No description provided for @declareCapabilityToBidMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'To submit an offer on this request, you must first declare that you offer services in this category.'**
+  String get declareCapabilityToBidMessage;
+
+  /// No description provided for @declareServiceNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Service & Continue'**
+  String get declareServiceNow;
+
+  /// No description provided for @postServiceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer a Service'**
+  String get postServiceAction;
+
+  /// No description provided for @postServiceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'List your services and get matched with client requests'**
+  String get postServiceSubtitle;
+
   /// No description provided for @viewDetails.
   ///
   /// In en, this message translates to:

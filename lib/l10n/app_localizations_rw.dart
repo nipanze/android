@@ -216,6 +216,23 @@ class AppLocalizationsRw extends AppLocalizations {
   String get marketplaceNeeded => 'Bikenewe';
 
   @override
+  String get declareCapabilityToBidTitle => 'Service Capability Required';
+
+  @override
+  String get declareCapabilityToBidMessage =>
+      'To submit an offer on this request, you must first declare that you offer services in this category.';
+
+  @override
+  String get declareServiceNow => 'Add Service & Continue';
+
+  @override
+  String get postServiceAction => 'Offer a Service';
+
+  @override
+  String get postServiceSubtitle =>
+      'List your services and get matched with client requests';
+
+  @override
   String get viewDetails => 'Reba ibisobanuro';
 
   @override

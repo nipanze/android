@@ -150,6 +150,8 @@ class NotificationTile extends StatelessWidget {
         return (Icons.payments_outlined, AppColors.success);
       case NotificationType.referralRewardRejected:
         return (Icons.money_off_csred_outlined, AppColors.danger);
+      case NotificationType.newOpportunity:
+        return (Icons.work_outline_rounded, AppColors.accent);
       case NotificationType.system:
         return (
           Icons.info_outline_rounded,

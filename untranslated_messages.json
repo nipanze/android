@@ -1,1 +1,33 @@
-{}
+{
+  "ar": [
+    "declareCapabilityToBidTitle",
+    "declareCapabilityToBidMessage",
+    "declareServiceNow",
+    "postServiceAction",
+    "postServiceSubtitle"
+  ],
+
+  "fr": [
+    "declareCapabilityToBidTitle",
+    "declareCapabilityToBidMessage",
+    "declareServiceNow",
+    "postServiceAction",
+    "postServiceSubtitle"
+  ],
+
+  "rw": [
+    "declareCapabilityToBidTitle",
+    "declareCapabilityToBidMessage",
+    "declareServiceNow",
+    "postServiceAction",
+    "postServiceSubtitle"
+  ],
+
+  "sw": [
+    "declareCapabilityToBidTitle",
+    "declareCapabilityToBidMessage",
+    "declareServiceNow",
+    "postServiceAction",
+    "postServiceSubtitle"
+  ]
+}
