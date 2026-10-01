@@ -31,11 +31,26 @@ class AddServiceSheet extends StatefulWidget {
     return showModalBottomSheet<List<String>>(
       context: context,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AddServiceSheet(
-        existingSlugs: existingSlugs,
-        preselectedCategorySlug: preselectedCategorySlug,
-        needsRepository: needsRepository,
+      builder: (sheetContext) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => Navigator.of(sheetContext).pop(),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AddServiceSheet(
+              existingSlugs: existingSlugs,
+              preselectedCategorySlug: preselectedCategorySlug,
+              needsRepository: needsRepository,
+            ),
+          ),
+        ],
       ),
     );
   }

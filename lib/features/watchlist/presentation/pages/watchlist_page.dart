@@ -190,7 +190,7 @@ class _WatchlistView extends StatelessWidget {
                                 SnackBar(
                                   content: Text(AppLocalizations.of(context)!
                                       .removedFromWatchlist),
-                                  duration: const Duration(seconds: 2),
+                                  duration: const Duration(milliseconds: 1200),
                                   action: SnackBarAction(
                                     label: AppLocalizations.of(context)!.undo,
                                     textColor: AppColors.accent,

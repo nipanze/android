@@ -224,6 +224,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Machinery & Equipment'), findsOneWidget);
+
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Machinery & Equipment'), findsNothing);
     });
   });
 
