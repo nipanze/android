@@ -434,6 +434,62 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
 
     final canSetPreferredRate =
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
+    final shouldPublish = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n?.reviewYourRequest ?? 'Review your request'),
+        scrollable: true,
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _previewItem(
+              'Currency pair',
+              '${_currencyHeld ?? ''} to ${_currencyNeeded ?? ''}',
+            ),
+            _previewItem(
+              'Amount to exchange',
+              '${NumberFormat.decimalPattern().format(_parseAmount(_amountController.text) ?? 0)} ${_currencyHeld ?? ''}',
+            ),
+            _previewItem('Estimated amount received',
+                _receivePreview ?? 'Not available'),
+            _previewItem('Location', district),
+            _previewItem(
+              'Settlement',
+              _formattedSettlementPreference(),
+            ),
+            if (canSetPreferredRate)
+              _previewItem(
+                'Preferred rate',
+                _parseDecimal(_preferredRateController.text)?.toString() ??
+                    'Not specified',
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n?.needsPreviewEdit ?? 'Edit'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n?.forexPublishBtn ?? 'Publish forex request'),
+          ),
+        ],
+      ),
+    );
+    if (shouldPublish != true || !mounted) return;
+
     setState(() => _submitting = true);
     try {
       final settlementPreference = _formattedSettlementPreference();
@@ -462,6 +518,25 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                 'Could not publish this forex request.'),
       );
     }
+  }
+
+  Widget _previewItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(height: 3),
+          Text(value),
+        ],
+      ),
+    );
   }
 
   void _showMessage(String message) {
@@ -757,11 +832,13 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                             _currencyHeld,
                             _currencyNeeded,
                           ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.text2Dark
-                                : AppColors.text2Light,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.text2Dark
+                                        : AppColors.text2Light,
+                                  ),
                         ),
                       const SizedBox(height: 14),
                       TextFormField(
@@ -865,6 +942,11 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
         child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           onPressed:
               _submitting || (currencies?.length ?? 0) < 2 || !_isReadyToPublish
                   ? null
@@ -876,7 +958,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  l10n?.forexPublishBtn ?? 'Publish forex request',
+                  l10n?.needsPreviewBtn ?? 'Preview request',
                 ),
         ),
       ),

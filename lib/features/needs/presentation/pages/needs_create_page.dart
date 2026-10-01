@@ -228,10 +228,20 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.needsPreviewEdit),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.needsPublishBtn),
           ),
@@ -384,7 +394,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           value: cat.slug,
                           child: Row(
                             children: [
-                              Text(cat.icon, style: const TextStyle(fontSize: 16)),
+                              Text(cat.icon,
+                                  style: const TextStyle(fontSize: 16)),
                               const SizedBox(width: 8),
                               Text(_categoryLocalizedName(l10n, cat.slug)),
                             ],
@@ -590,6 +601,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
         child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
           onPressed: _submitting || !_isReadyToPublish ? null : _submit,
           child: _submitting
               ? const SizedBox(

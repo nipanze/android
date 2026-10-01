@@ -1745,6 +1745,9 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),

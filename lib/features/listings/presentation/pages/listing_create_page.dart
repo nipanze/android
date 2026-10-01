@@ -1524,6 +1524,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             onPressed: _submitting || !_currentStepReady
                 ? null
                 : (_step < 2 ? _next : _submit),
@@ -1543,6 +1548,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           if (_step > 0) ...[
             const SizedBox(height: 8),
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               onPressed: _submitting ? null : _back,
               child: Text(l10n?.btnBack ?? 'Back'),
             ),
