@@ -2543,4 +2543,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addYourServicesPrompt => 'هل يمكنك مساعدة الناس في تقديم خدمة؟';
+
+  @override
+  String get whatCanYouHelpWith => 'بماذا يمكنك مساعدة الناس؟';
+
+  @override
+  String get whatCanYouHelpWithSubtitle =>
+      'أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها...';
 }

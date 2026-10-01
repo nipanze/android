@@ -1261,5 +1261,7 @@
   "postNeedAction": "🔎 Need Request",
   "forYouTitle": "For You",
   "peopleLookingForServices": "People are looking for what you provide",
-  "addYourServicesPrompt": "Can you help people with something?"
+  "addYourServicesPrompt": "Can you help people with something?",
+  "whatCanYouHelpWith": "What can you help people with?",
+  "whatCanYouHelpWithSubtitle": "Tell us what services, skills or resources you offer..."
 }

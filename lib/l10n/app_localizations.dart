@@ -4695,6 +4695,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Can you help people with something?'**
   String get addYourServicesPrompt;
+
+  /// No description provided for @whatCanYouHelpWith.
+  ///
+  /// In en, this message translates to:
+  /// **'What can you help people with?'**
+  String get whatCanYouHelpWith;
+
+  /// No description provided for @whatCanYouHelpWithSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what services, skills or resources you offer...'**
+  String get whatCanYouHelpWithSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -2571,4 +2571,11 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get addYourServicesPrompt =>
       'Je, unaweza kusaidia watu na huduma fulani?';
+
+  @override
+  String get whatCanYouHelpWith => 'Unaweza kusaidia watu na nini?';
+
+  @override
+  String get whatCanYouHelpWithSubtitle =>
+      'Tuambie huduma, ujuzi au rasilimali unazotoa...';
 }

@@ -1203,5 +1203,7 @@
   "postNeedAction": "🔎 Gusaba Icyo Ukeneye",
   "forYouTitle": "Ibyakugenewe",
   "peopleLookingForServices": "Abantu barashaka serivisi utanga",
-  "addYourServicesPrompt": "Ufite serivisi waza ufasha abantu?"
+  "addYourServicesPrompt": "Ufite serivisi waza ufasha abantu?",
+  "whatCanYouHelpWith": "Ni iki wafasha abandi?",
+  "whatCanYouHelpWithSubtitle": "Tubwire serivisi, ubuhanga cyangwa umutungo utanga..."
 }

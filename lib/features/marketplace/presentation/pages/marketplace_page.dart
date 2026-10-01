@@ -78,7 +78,7 @@ class _MarketplaceView extends StatelessWidget {
           children: [
             // ── Header row ───────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
+              padding: const EdgeInsets.fromLTRB(18, 14, 14, 8),
               child: Row(
                 children: [
                   // Title + live count
@@ -145,9 +145,6 @@ class _MarketplaceView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // ── Pro filter icon button (Option B) ─────────────────
-                  _ProFilterButton(onTap: () => _onProFilterTap(context)),
-                  const SizedBox(width: 6),
                   // ── Notification bell ─────────────────────────────────
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
@@ -157,13 +154,13 @@ class _MarketplaceView extends StatelessWidget {
                         clipBehavior: Clip.none,
                         children: [
                           SizedBox(
-                            width: 34,
-                            height: 34,
+                            width: 36,
+                            height: 36,
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               icon: const Icon(
                                 Icons.notifications_none_rounded,
-                                size: 18,
+                                size: 22,
                               ),
                               onPressed: () =>
                                   context.push(AppRoutes.notifications),
@@ -186,10 +183,49 @@ class _MarketplaceView extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(width: 6),
+                  // ── Compact + Add Service button ──────────────────────
+                  InkWell(
+                    onTap: () => context.push(AppRoutes.accountServices),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.accent,
+                          width: 1.2,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.add_rounded,
+                            size: 14,
+                            color: AppColors.accent,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            AppLocalizations.of(context)!.addService,
+                            style: const TextStyle(
+                              color: AppColors.accent,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            const _ModuleFilterRow(),
+            // ── Filter / Tabs Row with filter button on far right ────────
+            _ModuleFilterRow(
+              onProFilterTap: () => _onProFilterTap(context),
+            ),
             // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
@@ -238,7 +274,8 @@ class _MarketplaceView extends StatelessWidget {
                               Text(
                                 AppLocalizations.of(context)!.applyingFilters,
                                 style: const TextStyle(
-                                    fontSize: 12.5, color: AppColors.proPurple),
+                                    fontSize: 12.5,
+                                    color: AppColors.proPurple),
                               ),
                             ],
                           ),
@@ -251,22 +288,34 @@ class _MarketplaceView extends StatelessWidget {
                         }
                         return EmptyState(
                           icon: Icons.show_chart_rounded,
-                          title: AppLocalizations.of(context)!.noListingsFound,
-                          subtitle:
-                              AppLocalizations.of(context)!.noListingsSubtitle,
+                          title:
+                              AppLocalizations.of(context)!.noListingsFound,
+                          subtitle: AppLocalizations.of(context)!
+                              .noListingsSubtitle,
                         );
                       }
+
+                      // Discovery card is index 0; listings start at index 1.
+                      final totalCount = state.listings.length + 1;
 
                       return RefreshIndicator(
                         onRefresh: () =>
                             context.read<MarketplaceCubit>().refresh(),
                         child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
-                          itemCount: state.listings.length,
+                          padding:
+                              const EdgeInsets.fromLTRB(13, 6, 13, 14),
+                          itemCount: totalCount,
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 8),
                           itemBuilder: (context, index) {
-                            final listing = state.listings[index];
+                            if (index == 0) {
+                              return _DiscoveryPromptCard(
+                                onTap: () => context
+                                    .push(AppRoutes.accountServices),
+                              );
+                            }
+
+                            final listing = state.listings[index - 1];
                             return BlocBuilder<WatchlistCubit, WatchlistState>(
                               builder: (context, _) {
                                 final watchlist =
@@ -313,57 +362,164 @@ class _MarketplaceView extends StatelessWidget {
   }
 }
 
+// ── Discovery prompt card ─────────────────────────────────────────────────────
+
+class _DiscoveryPromptCard extends StatelessWidget {
+  const _DiscoveryPromptCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.accent.withValues(alpha: 0.08)
+              : AppColors.accent.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.accent.withValues(alpha: isDark ? 0.22 : 0.18),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Left: capability icon
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.handshake_outlined,
+                color: AppColors.accent,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Middle: text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.whatCanYouHelpWith,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    AppLocalizations.of(context)!.whatCanYouHelpWithSubtitle,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Right: arrow icon
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: AppColors.accent,
+                size: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ModuleFilterRow extends StatelessWidget {
-  const _ModuleFilterRow();
+  const _ModuleFilterRow({required this.onProFilterTap});
+  final VoidCallback onProFilterTap;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MarketplaceCubit, MarketplaceState>(
       builder: (context, state) {
         final selected = state is MarketplaceLoaded ? state.moduleFilter : null;
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 6),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
           child: Row(
             children: [
-              _FilterPill(
-                label: AppLocalizations.of(context)!.marketplaceForYou,
-                icon: Icons.auto_awesome_rounded,
-                selected: selected == null,
-                accentColor: AppColors.accent,
-                onTap: () =>
-                    context.read<MarketplaceCubit>().setModuleFilter(null),
+              // Scrollable filter pills
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(left: 18),
+                  child: Row(
+                    children: [
+                      _FilterPill(
+                        label:
+                            AppLocalizations.of(context)!.marketplaceForYou,
+                        icon: Icons.auto_awesome_rounded,
+                        selected: selected == null,
+                        accentColor: AppColors.accent,
+                        onTap: () => context
+                            .read<MarketplaceCubit>()
+                            .setModuleFilter(null),
+                      ),
+                      const SizedBox(width: 6),
+                      _FilterPill(
+                        label:
+                            AppLocalizations.of(context)!.marketplaceLoans,
+                        icon: Icons.payments_rounded,
+                        selected: selected == MarketplaceModule.loan,
+                        accentColor: AppColors.accent,
+                        onTap: () => context
+                            .read<MarketplaceCubit>()
+                            .setModuleFilter(MarketplaceModule.loan),
+                      ),
+                      const SizedBox(width: 6),
+                      _FilterPill(
+                        label:
+                            AppLocalizations.of(context)!.marketplaceForex,
+                        icon: Icons.currency_exchange_rounded,
+                        selected: selected == MarketplaceModule.forex,
+                        accentColor: AppColors.purple,
+                        onTap: () => context
+                            .read<MarketplaceCubit>()
+                            .setModuleFilter(MarketplaceModule.forex),
+                      ),
+                      const SizedBox(width: 6),
+                      _FilterPill(
+                        label:
+                            AppLocalizations.of(context)!.marketplaceNeeds,
+                        icon: Icons.inventory_2_rounded,
+                        selected: selected == MarketplaceModule.needs,
+                        accentColor: AppColors.warning,
+                        onTap: () => context
+                            .read<MarketplaceCubit>()
+                            .setModuleFilter(MarketplaceModule.needs),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(width: 6),
-              _FilterPill(
-                label: AppLocalizations.of(context)!.marketplaceLoans,
-                icon: Icons.payments_rounded,
-                selected: selected == MarketplaceModule.loan,
-                accentColor: AppColors.accent,
-                onTap: () => context
-                    .read<MarketplaceCubit>()
-                    .setModuleFilter(MarketplaceModule.loan),
-              ),
-              const SizedBox(width: 6),
-              _FilterPill(
-                label: AppLocalizations.of(context)!.marketplaceForex,
-                icon: Icons.currency_exchange_rounded,
-                selected: selected == MarketplaceModule.forex,
-                accentColor: AppColors.purple,
-                onTap: () => context
-                    .read<MarketplaceCubit>()
-                    .setModuleFilter(MarketplaceModule.forex),
-              ),
-              const SizedBox(width: 6),
-              _FilterPill(
-                label: AppLocalizations.of(context)!.marketplaceNeeds,
-                icon: Icons.inventory_2_rounded,
-                selected: selected == MarketplaceModule.needs,
-                accentColor: AppColors.warning,
-                onTap: () => context
-                    .read<MarketplaceCubit>()
-                    .setModuleFilter(MarketplaceModule.needs),
-              ),
+              // Filter button pinned to far right of the row
+              const SizedBox(width: 8),
+              _ProFilterButton(onTap: onProFilterTap),
             ],
           ),
         );

@@ -2571,4 +2571,11 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get addYourServicesPrompt => 'Ufite serivisi waza ufasha abantu?';
+
+  @override
+  String get whatCanYouHelpWith => 'Ni iki wafasha abandi?';
+
+  @override
+  String get whatCanYouHelpWithSubtitle =>
+      'Tubwire serivisi, ubuhanga cyangwa umutungo utanga...';
 }

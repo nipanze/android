@@ -2599,4 +2599,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get addYourServicesPrompt =>
       'Pouvez-vous aider les gens avec un service ?';
+
+  @override
+  String get whatCanYouHelpWith => 'En quoi pouvez-vous aider les autres ?';
+
+  @override
+  String get whatCanYouHelpWithSubtitle =>
+      'Dites-nous quels services, compétences ou ressources vous proposez...';
 }

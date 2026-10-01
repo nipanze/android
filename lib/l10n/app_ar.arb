@@ -1203,5 +1203,7 @@
   "postNeedAction": "🔎 طلب احتياج",
   "forYouTitle": "لك خصيصاً",
   "peopleLookingForServices": "يبحث الأشخاص عما تقدمه",
-  "addYourServicesPrompt": "هل يمكنك مساعدة الناس في تقديم خدمة؟"
+  "addYourServicesPrompt": "هل يمكنك مساعدة الناس في تقديم خدمة؟",
+  "whatCanYouHelpWith": "بماذا يمكنك مساعدة الناس؟",
+  "whatCanYouHelpWithSubtitle": "أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها..."
 }

@@ -1203,5 +1203,7 @@
   "postNeedAction": "🔎 Ombi la Hitaji",
   "forYouTitle": "Kwa Ajili Yako",
   "peopleLookingForServices": "Watu wanatafuta huduma unazotoa",
-  "addYourServicesPrompt": "Je, unaweza kusaidia watu na huduma fulani?"
+  "addYourServicesPrompt": "Je, unaweza kusaidia watu na huduma fulani?",
+  "whatCanYouHelpWith": "Unaweza kusaidia watu na nini?",
+  "whatCanYouHelpWithSubtitle": "Tuambie huduma, ujuzi au rasilimali unazotoa..."
 }
