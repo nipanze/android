@@ -3,18 +3,25 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:nipanze/core/di/injection.dart';
+import 'package:nipanze/features/needs/data/needs_repository.dart';
+import 'package:nipanze/features/needs/domain/models/need_capability.dart';
+import 'package:nipanze/features/needs/domain/models/need_category.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_capability.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_opportunity.dart';
 import 'package:nipanze/features/provider/domain/repositories/provider_repository_interface.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_cubit.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_state.dart';
+import 'package:nipanze/features/provider/presentation/pages/provider_services_page.dart';
 import 'package:nipanze/features/provider/presentation/widgets/capability_badge.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_opportunities_section.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_verification_chip.dart';
 import 'package:nipanze/l10n/app_localizations.dart';
 
 class MockProviderRepository extends Mock implements IProviderRepository {}
+class MockNeedsRepository extends Mock implements NeedsRepository {}
 
 void main() {
   late MockProviderRepository mockRepo;
@@ -166,6 +173,58 @@ void main() {
         verify(() => mockRepo.removeCapability('excavator_hire')).called(1);
       },
     );
+  });
+
+  group('Provider Services flow', () {
+    testWidgets('Add Service opens the category sheet', (tester) async {
+      final mockProviderRepo = MockProviderRepository();
+      final mockNeedsRepo = MockNeedsRepository();
+
+      getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
+      getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
+      getIt.registerSingleton<CapabilitiesCubit>(CapabilitiesCubit(mockProviderRepo));
+
+      addTearDown(() {
+        getIt.reset();
+      });
+
+      when(() => mockProviderRepo.getProviderCapabilities())
+          .thenAnswer((_) async => const <ProviderCapability>[]);
+      when(() => mockProviderRepo.getProviderOpportunities())
+          .thenAnswer((_) async => const <ProviderOpportunity>[]);
+      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+            NeedCategory(
+              slug: 'machinery_equipment',
+              name: 'Machinery & Equipment',
+              icon: '🚜',
+              sortOrder: 1,
+              isActive: true,
+            ),
+          ]);
+      when(() => mockNeedsRepo.getCapabilities(categorySlug: any(named: 'categorySlug')))
+          .thenAnswer((_) async => const [
+                NeedCapability(
+                  slug: 'excavator_hire',
+                  categorySlug: 'machinery_equipment',
+                  name: 'Excavator Hire',
+                  isActive: true,
+                ),
+              ]);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProviderServicesPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Service'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Machinery & Equipment'), findsOneWidget);
+    });
   });
 
   group('Provider Widgets', () {

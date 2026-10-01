@@ -126,7 +126,7 @@ class _ProviderServicesView extends StatelessWidget {
         ? loaded.capabilities.map((c) => c.capabilitySlug).toSet()
         : <String>{};
 
-    final needsRepo = context.read<NeedsRepository>();
+    final needsRepo = getIt<NeedsRepository>();
     final slugs = await AddServiceSheet.show(
       context,
       existingSlugs: existingSlugs,
