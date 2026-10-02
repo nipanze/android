@@ -210,3 +210,11 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 5. **Localization & RTL**:
    - Fully localized in English (`en`), Swahili (`sw`), French (`fr`), Kinyarwanda (`rw`), and Arabic (`ar`).
 
+## 9. Stage 4.10 — Marketing & Promotion Capabilities (Implemented)
+
+- Renamed the existing `marketing_services` catalog label to Marketing & Promotion without changing its slug, preserving existing provider selections.
+- Added 14 focused marketing capabilities plus `i_have_an_audience` to `professional_services` through `sql/patch_marketing_promotion_capabilities.sql`.
+- Extended the existing provider capability picker for multiple marketing selections and optional audience platforms, follower/member count, location, and interest. Audience data is stored in `provider_capabilities.metadata`.
+- Kept audience information explicitly self-declared; the existing provider verification trigger and capability-based Provider Opportunities RPC are unchanged.
+- Localized the picker and audience fields in `en`, `sw`, `fr`, `rw`, and `ar`.
+

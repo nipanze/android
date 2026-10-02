@@ -1,6 +1,7 @@
 // lib/features/provider/presentation/pages/add_service_sheet.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -8,27 +9,60 @@ import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 
+const _marketingServicesSlug = 'marketing_services';
+const _audienceCapabilitySlug = 'i_have_an_audience';
+const _marketingCapabilitySlugs = {
+  'social_media_marketing',
+  'tiktok_promotion',
+  'instagram_promotion',
+  'youtube_promotion',
+  'facebook_promotion',
+  'influencer_marketing',
+  'content_creation',
+  'product_reviews',
+  'event_promotion',
+  'whatsapp_community_promotion',
+  'affiliate_marketing',
+  'advertising_campaigns',
+  'brand_promotion',
+  'other_marketing_services',
+  _audienceCapabilitySlug,
+};
+
+class ProviderCapabilitySelection {
+  const ProviderCapabilitySelection({
+    required this.slugs,
+    this.metadataBySlug = const {},
+  });
+
+  final List<String> slugs;
+  final Map<String, Map<String, dynamic>> metadataBySlug;
+}
+
 /// Bottom sheet for adding provider capabilities.
-/// Returns List<String> of selected slugs, or null if dismissed.
+/// Returns selected slugs and metadata, or null if dismissed.
 class AddServiceSheet extends StatefulWidget {
   const AddServiceSheet({
     super.key,
     required this.existingSlugs,
+    this.existingAudienceMetadata,
     this.preselectedCategorySlug,
     required this.needsRepository,
   });
 
   final Set<String> existingSlugs;
+  final Map<String, dynamic>? existingAudienceMetadata;
   final String? preselectedCategorySlug;
   final NeedsRepository needsRepository;
 
-  static Future<List<String>?> show(
+  static Future<ProviderCapabilitySelection?> show(
     BuildContext context, {
     required Set<String> existingSlugs,
+    Map<String, dynamic>? existingAudienceMetadata,
     required NeedsRepository needsRepository,
     String? preselectedCategorySlug,
   }) {
-    return showModalBottomSheet<List<String>>(
+    return showModalBottomSheet<ProviderCapabilitySelection>(
       context: context,
       isScrollControlled: true,
       isDismissible: true,
@@ -46,6 +80,7 @@ class AddServiceSheet extends StatefulWidget {
             alignment: Alignment.bottomCenter,
             child: AddServiceSheet(
               existingSlugs: existingSlugs,
+              existingAudienceMetadata: existingAudienceMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
               needsRepository: needsRepository,
             ),
@@ -65,13 +100,65 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   List<NeedCategory> _categories = [];
   List<NeedCapability> _capabilities = [];
   final Set<String> _selected = {};
+  final Set<String> _audiencePlatforms = {};
+  final _audienceCountController = TextEditingController();
+  final _audienceLocationController = TextEditingController();
+  final _audienceInterestController = TextEditingController();
+  bool _showMarketing = false;
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+    final audience = widget.existingAudienceMetadata;
+    if (widget.existingSlugs.contains(_audienceCapabilitySlug)) {
+      _selected.add(_audienceCapabilitySlug);
+      _audiencePlatforms.addAll(
+        (audience?['audience_platforms'] as List? ?? const [])
+            .map((platform) => platform.toString()),
+      );
+      _audienceCountController.text =
+          audience?['audience_followers_count']?.toString() ?? '';
+      _audienceLocationController.text =
+          audience?['audience_main_location']?.toString() ?? '';
+      _audienceInterestController.text =
+          audience?['audience_main_interest']?.toString() ?? '';
+    }
     _loadCategories();
   }
+
+  @override
+  void dispose() {
+    _audienceCountController.dispose();
+    _audienceLocationController.dispose();
+    _audienceInterestController.dispose();
+    super.dispose();
+  }
+
+  ProviderCapabilitySelection _selection() {
+    final slugs = _selected.toList();
+    if (!_selected.contains(_audienceCapabilitySlug)) {
+      return ProviderCapabilitySelection(slugs: slugs);
+    }
+    return ProviderCapabilitySelection(
+      slugs: slugs,
+      metadataBySlug: {
+        _audienceCapabilitySlug: {
+          'audience_platforms': _audiencePlatforms.toList(),
+          'audience_followers_count': int.tryParse(
+            _audienceCountController.text.trim(),
+          ),
+          'audience_main_location': _audienceLocationController.text.trim(),
+          'audience_main_interest': _audienceInterestController.text.trim(),
+        },
+      },
+    );
+  }
+
+  bool get _canSubmit =>
+      _selected.isNotEmpty &&
+      (!_selected.contains(_audienceCapabilitySlug) ||
+          _audiencePlatforms.isNotEmpty);
 
   Future<void> _loadCategories() async {
     final cats = await widget.needsRepository.getCategories();
@@ -103,6 +190,35 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _capabilities = caps;
       _loading = false;
       _step = 1;
+    });
+  }
+
+  Future<void> _openMarketing() async {
+    setState(() {
+      _showMarketing = true;
+      _loading = true;
+    });
+    final caps = await widget.needsRepository.getCapabilities(
+      categorySlug: 'professional_services',
+    );
+    if (!mounted) return;
+    setState(() {
+      _capabilities = caps
+          .where((capability) =>
+              _marketingCapabilitySlugs.contains(capability.slug))
+          .toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+      _loading = false;
+    });
+  }
+
+  void _goBack() {
+    setState(() {
+      if (_showMarketing) {
+        _showMarketing = false;
+      } else {
+        _step = 0;
+      }
     });
   }
 
@@ -146,7 +262,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                   children: [
                     if (_step == 1)
                       GestureDetector(
-                        onTap: () => setState(() => _step = 0),
+                        onTap: _goBack,
                         child: Icon(Icons.arrow_back_rounded,
                             color: text2, size: 22),
                       ),
@@ -155,17 +271,19 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                       child: Text(
                         _step == 0
                             ? l10n.chooseCategory
-                            : (_selectedCategory?.name ?? l10n.chooseCapabilities),
+                            : _showMarketing
+                              ? l10n.marketingAndPromotion
+                              : (_selectedCategory?.name ??
+                                l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
-                    if (_step == 1 && _selected.isNotEmpty)
+                    if (_step == 1 && _canSubmit)
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(_selected.toList()),
+                        onPressed: () => Navigator.of(context).pop(_selection()),
                         child: Text(
                           l10n.addSelected,
                           style: const TextStyle(
@@ -188,11 +306,40 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             scrollController: scrollController,
                             onSelect: _selectCategory,
                           )
-                        : _CapabilityList(
+                        : _showMarketing
+                            ? _MarketingCapabilityList(
+                                capabilities: _capabilities,
+                                existingSlugs: widget.existingSlugs,
+                                selected: _selected,
+                                audiencePlatforms: _audiencePlatforms,
+                                audienceCountController:
+                                    _audienceCountController,
+                                audienceLocationController:
+                                    _audienceLocationController,
+                                audienceInterestController:
+                                    _audienceInterestController,
+                                scrollController: scrollController,
+                                onToggle: (slug) => setState(() {
+                                  if (_selected.contains(slug)) {
+                                    _selected.remove(slug);
+                                  } else {
+                                    _selected.add(slug);
+                                  }
+                                }),
+                                onPlatformToggle: (platform) => setState(() {
+                                  if (_audiencePlatforms.contains(platform)) {
+                                    _audiencePlatforms.remove(platform);
+                                  } else {
+                                    _audiencePlatforms.add(platform);
+                                  }
+                                }),
+                              )
+                            : _CapabilityList(
                             capabilities: _capabilities,
                             existingSlugs: widget.existingSlugs,
                             selected: _selected,
                             scrollController: scrollController,
+                            onMarketingTap: _openMarketing,
                             onToggle: (slug) {
                               setState(() {
                                 if (_selected.contains(slug)) {
@@ -275,6 +422,7 @@ class _CapabilityList extends StatelessWidget {
     required this.existingSlugs,
     required this.selected,
     required this.scrollController,
+    required this.onMarketingTap,
     required this.onToggle,
   });
 
@@ -282,6 +430,7 @@ class _CapabilityList extends StatelessWidget {
   final Set<String> existingSlugs;
   final Set<String> selected;
   final ScrollController scrollController;
+  final VoidCallback onMarketingTap;
   final void Function(String) onToggle;
 
   @override
@@ -296,6 +445,17 @@ class _CapabilityList extends StatelessWidget {
       separatorBuilder: (_, __) => Divider(height: 1, color: border),
       itemBuilder: (_, i) {
         final cap = capabilities[i];
+        if (cap.slug == _marketingServicesSlug) {
+          return ListTile(
+            leading: const Icon(Icons.campaign_outlined),
+            title: Text(
+              AppLocalizations.of(context)!.marketingAndPromotion,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: onMarketingTap,
+          );
+        }
         final alreadyOwned = existingSlugs.contains(cap.slug);
         final isSelected = selected.contains(cap.slug);
 
@@ -321,4 +481,168 @@ class _CapabilityList extends StatelessWidget {
       },
     );
   }
+}
+
+class _MarketingCapabilityList extends StatelessWidget {
+  const _MarketingCapabilityList({
+    required this.capabilities,
+    required this.existingSlugs,
+    required this.selected,
+    required this.audiencePlatforms,
+    required this.audienceCountController,
+    required this.audienceLocationController,
+    required this.audienceInterestController,
+    required this.scrollController,
+    required this.onToggle,
+    required this.onPlatformToggle,
+  });
+
+  final List<NeedCapability> capabilities;
+  final Set<String> existingSlugs;
+  final Set<String> selected;
+  final Set<String> audiencePlatforms;
+  final TextEditingController audienceCountController;
+  final TextEditingController audienceLocationController;
+  final TextEditingController audienceInterestController;
+  final ScrollController scrollController;
+  final void Function(String) onToggle;
+  final void Function(String) onPlatformToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final audienceSelected = selected.contains(_audienceCapabilitySlug);
+    final platforms = <(String, String)>[
+      ('tiktok', l10n.audiencePlatformTikTok),
+      ('instagram', l10n.audiencePlatformInstagram),
+      ('youtube', l10n.audiencePlatformYouTube),
+      ('facebook', l10n.audiencePlatformFacebook),
+      ('whatsapp', l10n.audiencePlatformWhatsApp),
+      ('other', l10n.audiencePlatformOther),
+    ];
+
+    return ListView(
+      controller: scrollController,
+      children: [
+        for (final capability in capabilities)
+          Builder(builder: (context) {
+            final alreadyOwned = existingSlugs.contains(capability.slug);
+            final isSelected = selected.contains(capability.slug);
+            final name = _marketingCapabilityName(capability.slug, l10n);
+            return Column(
+              children: [
+                ListTile(
+                  enabled: !alreadyOwned,
+                  leading: alreadyOwned
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.success, size: 22)
+                      : Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => onToggle(capability.slug),
+                          activeColor: AppColors.accent,
+                        ),
+                  title: Text(
+                    name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: alreadyOwned ? text2 : null,
+                    ),
+                  ),
+                  onTap: alreadyOwned ? null : () => onToggle(capability.slug),
+                ),
+                Divider(height: 1, color: border),
+              ],
+            );
+          }),
+        if (audienceSelected)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.whereIsYourAudience,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.selectAudiencePlatforms,
+                  style: TextStyle(fontSize: 12, color: text2),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 0,
+                  children: [
+                    for (final (slug, label) in platforms)
+                      FilterChip(
+                        label: Text(label),
+                        selected: audiencePlatforms.contains(slug),
+                        onSelected: (_) => onPlatformToggle(slug),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.tellBusinessesAboutYourAudience,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: audienceCountController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    labelText: l10n.audienceFollowersMembersCount,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: audienceLocationController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: l10n.audienceMainLocation,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: audienceInterestController,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    labelText: l10n.audienceMainInterest,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _marketingCapabilityName(String slug, AppLocalizations l10n) =>
+      switch (slug) {
+        'social_media_marketing' => l10n.socialMediaMarketing,
+        'tiktok_promotion' => l10n.tiktokPromotion,
+        'instagram_promotion' => l10n.instagramPromotion,
+        'youtube_promotion' => l10n.youtubePromotion,
+        'facebook_promotion' => l10n.facebookPromotion,
+        'influencer_marketing' => l10n.influencerMarketing,
+        'content_creation' => l10n.contentCreation,
+        'product_reviews' => l10n.productReviews,
+        'event_promotion' => l10n.eventPromotion,
+        'whatsapp_community_promotion' => l10n.whatsAppCommunityPromotion,
+        'affiliate_marketing' => l10n.affiliateMarketing,
+        'advertising_campaigns' => l10n.advertisingCampaigns,
+        'brand_promotion' => l10n.brandPromotion,
+        'other_marketing_services' => l10n.otherMarketingServices,
+        _audienceCapabilitySlug => l10n.iHaveAnAudience,
+        _ => slug,
+      };
 }

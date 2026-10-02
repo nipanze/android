@@ -2530,6 +2530,96 @@ class AppLocalizationsRw extends AppLocalizations {
   String get chooseCapabilities => 'Hitamo Ubushobozi';
 
   @override
+  String get marketingAndPromotion => 'Kwamamaza no Kumenyekanisha';
+
+  @override
+  String get socialMediaMarketing => 'Kwamamaza ku Mbuga Nkoranyambaga';
+
+  @override
+  String get tiktokPromotion => 'Kwamamaza kuri TikTok';
+
+  @override
+  String get instagramPromotion => 'Kwamamaza kuri Instagram';
+
+  @override
+  String get youtubePromotion => 'Kwamamaza kuri YouTube';
+
+  @override
+  String get facebookPromotion => 'Kwamamaza kuri Facebook';
+
+  @override
+  String get influencerMarketing => 'Kwamamaza binyuze ku Bamamare';
+
+  @override
+  String get contentCreation => 'Gukora Ibikubiyemo';
+
+  @override
+  String get productReviews => 'Isuzuma ry\'Ibicuruzwa';
+
+  @override
+  String get eventPromotion => 'Kwamamaza Ibirori';
+
+  @override
+  String get whatsAppCommunityPromotion =>
+      'Kwamamaza kuri WhatsApp / Umuryango';
+
+  @override
+  String get affiliateMarketing => 'Kwamamaza ku Bafatanyabikorwa';
+
+  @override
+  String get advertisingCampaigns => 'Ubukangurambaga bwo Kwamamaza';
+
+  @override
+  String get brandPromotion => 'Kumenyekanisha Ikirango';
+
+  @override
+  String get otherMarketingServices => 'Izindi Serivisi zo Kwamamaza';
+
+  @override
+  String get iHaveAnAudience => 'Mfite Abankurikira';
+
+  @override
+  String get whereIsYourAudience => 'Abankurikira bari he?';
+
+  @override
+  String get selectAudiencePlatforms => 'Hitamo ahantu hose hakureba';
+
+  @override
+  String get audiencePlatformTikTok => 'TikTok';
+
+  @override
+  String get audiencePlatformInstagram => 'Instagram';
+
+  @override
+  String get audiencePlatformYouTube => 'YouTube';
+
+  @override
+  String get audiencePlatformFacebook => 'Facebook';
+
+  @override
+  String get audiencePlatformWhatsApp => 'WhatsApp';
+
+  @override
+  String get audiencePlatformOther => 'Ahandi';
+
+  @override
+  String get tellBusinessesAboutYourAudience =>
+      'Sobanurira ubucuruzi abankurikira bawe';
+
+  @override
+  String get audienceFollowersMembersCount =>
+      'Umubare w\'abagukurikira / abanyamuryango';
+
+  @override
+  String get audienceMainLocation => 'Ahantu nyamukuru abankurikira bari';
+
+  @override
+  String get audienceMainInterest => 'Icyo bakunda / icyiciro nyamukuru';
+
+  @override
+  String get declaredAudience => 'Abankurikira watangaje';
+
+  @override
   String get addSelected => 'Ongeraho Ibyatoranyijwe';
 
   @override
@@ -2606,37 +2696,4 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tubwire serivisi, ubuhanga cyangwa umutungo utanga...';
-
-  @override
-  String get identityVerificationRequiredTitle =>
-      'Kugenzura umwirondoro birakenewe';
-
-  @override
-  String get identityVerificationRequiredDesc =>
-      'Banza wemeze umwirondoro wawe mbere yo gutangaza cyangwa gutanga ibiciro kuri Nipanze.';
-
-  @override
-  String get providerVerificationRequiredTitle =>
-      'Kugenzura byisumbuye birakenewe';
-
-  @override
-  String get providerVerificationRequiredDesc =>
-      'Iki cyiciro gisaba kugenzura umutanga-serivisi mbere yo gutanga iyi serivisi.';
-
-  @override
-  String get verifyIdentityBtn => 'Emeza Umwirondoro';
-
-  @override
-  String get startProviderVerificationBtn =>
-      'Tangira Kugenzura Umutanga-serivisi';
-
-  @override
-  String get maybeLaterBtn => 'Hanyuma';
-
-  @override
-  String get kycStatusSuspended => 'Kugenzura konti byahagaritswe';
-
-  @override
-  String get kycStatusSuspendedDesc =>
-      'Kugenzura kwawe kwahagaritswe. Nyamuneka shakira ubufasha.';
 }

@@ -5,7 +5,10 @@ import '../entities/provider_opportunity.dart';
 
 abstract class IProviderRepository {
   Future<List<ProviderCapability>> getProviderCapabilities();
-  Future<void> addCapabilities(List<String> slugs);
+  Future<void> addCapabilities(
+    List<String> slugs, {
+    Map<String, Map<String, dynamic>> metadataBySlug = const {},
+  });
   Future<void> removeCapability(String capabilitySlug);
   Future<bool> hasCapability(String capabilitySlug);
   Future<List<ProviderOpportunity>> getProviderOpportunities();

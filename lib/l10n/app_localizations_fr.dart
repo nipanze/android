@@ -2554,6 +2554,95 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chooseCapabilities => 'Choisir les compétences';
 
   @override
+  String get marketingAndPromotion => 'Marketing et promotion';
+
+  @override
+  String get socialMediaMarketing => 'Marketing sur les réseaux sociaux';
+
+  @override
+  String get tiktokPromotion => 'Promotion sur TikTok';
+
+  @override
+  String get instagramPromotion => 'Promotion sur Instagram';
+
+  @override
+  String get youtubePromotion => 'Promotion sur YouTube';
+
+  @override
+  String get facebookPromotion => 'Promotion sur Facebook';
+
+  @override
+  String get influencerMarketing => 'Marketing d’influence';
+
+  @override
+  String get contentCreation => 'Création de contenu';
+
+  @override
+  String get productReviews => 'Avis sur les produits';
+
+  @override
+  String get eventPromotion => 'Promotion d’événements';
+
+  @override
+  String get whatsAppCommunityPromotion => 'Promotion WhatsApp / communautaire';
+
+  @override
+  String get affiliateMarketing => 'Marketing d’affiliation';
+
+  @override
+  String get advertisingCampaigns => 'Campagnes publicitaires';
+
+  @override
+  String get brandPromotion => 'Promotion de marque';
+
+  @override
+  String get otherMarketingServices => 'Autres services marketing';
+
+  @override
+  String get iHaveAnAudience => 'J’ai une audience';
+
+  @override
+  String get whereIsYourAudience => 'Où se trouve votre audience ?';
+
+  @override
+  String get selectAudiencePlatforms =>
+      'Sélectionnez toutes les options applicables';
+
+  @override
+  String get audiencePlatformTikTok => 'TikTok';
+
+  @override
+  String get audiencePlatformInstagram => 'Instagram';
+
+  @override
+  String get audiencePlatformYouTube => 'YouTube';
+
+  @override
+  String get audiencePlatformFacebook => 'Facebook';
+
+  @override
+  String get audiencePlatformWhatsApp => 'WhatsApp';
+
+  @override
+  String get audiencePlatformOther => 'Autre';
+
+  @override
+  String get tellBusinessesAboutYourAudience =>
+      'Parlez de votre audience aux entreprises';
+
+  @override
+  String get audienceFollowersMembersCount => 'Nombre d’abonnés / membres';
+
+  @override
+  String get audienceMainLocation => 'Principale localisation de l’audience';
+
+  @override
+  String get audienceMainInterest => 'Centre d’intérêt / catégorie principale';
+
+  @override
+  String get declaredAudience => 'Audience déclarée';
+
+  @override
   String get addSelected => 'Ajouter la sélection';
 
   @override
@@ -2634,37 +2723,4 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Dites-nous quels services, compétences ou ressources vous proposez...';
-
-  @override
-  String get identityVerificationRequiredTitle =>
-      'Vérification d\'identité requise';
-
-  @override
-  String get identityVerificationRequiredDesc =>
-      'Vérifiez votre identité avant de publier ou de faire une offre sur Nipanze.';
-
-  @override
-  String get providerVerificationRequiredTitle =>
-      'Vérification supplémentaire requise';
-
-  @override
-  String get providerVerificationRequiredDesc =>
-      'Cette catégorie nécessite une vérification de fournisseur avant de proposer ce service.';
-
-  @override
-  String get verifyIdentityBtn => 'Vérifier l\'identité';
-
-  @override
-  String get startProviderVerificationBtn =>
-      'Commencer la vérification du fournisseur';
-
-  @override
-  String get maybeLaterBtn => 'Plus tard';
-
-  @override
-  String get kycStatusSuspended => 'Vérification de compte suspendue';
-
-  @override
-  String get kycStatusSuspendedDesc =>
-      'Votre vérification a été suspendue. Veuillez contacter le support.';
 }

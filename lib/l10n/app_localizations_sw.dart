@@ -2529,6 +2529,94 @@ class AppLocalizationsSw extends AppLocalizations {
   String get chooseCapabilities => 'Chagua Uwezo';
 
   @override
+  String get marketingAndPromotion => 'Masoko na Matangazo';
+
+  @override
+  String get socialMediaMarketing => 'Masoko ya Mitandao ya Kijamii';
+
+  @override
+  String get tiktokPromotion => 'Matangazo ya TikTok';
+
+  @override
+  String get instagramPromotion => 'Matangazo ya Instagram';
+
+  @override
+  String get youtubePromotion => 'Matangazo ya YouTube';
+
+  @override
+  String get facebookPromotion => 'Matangazo ya Facebook';
+
+  @override
+  String get influencerMarketing => 'Masoko kupitia Washawishi';
+
+  @override
+  String get contentCreation => 'Uundaji wa Maudhui';
+
+  @override
+  String get productReviews => 'Maoni ya Bidhaa';
+
+  @override
+  String get eventPromotion => 'Matangazo ya Matukio';
+
+  @override
+  String get whatsAppCommunityPromotion => 'Matangazo ya WhatsApp / Jamii';
+
+  @override
+  String get affiliateMarketing => 'Masoko ya Ushirika';
+
+  @override
+  String get advertisingCampaigns => 'Kampeni za Matangazo';
+
+  @override
+  String get brandPromotion => 'Matangazo ya Chapa';
+
+  @override
+  String get otherMarketingServices => 'Huduma Nyingine za Masoko';
+
+  @override
+  String get iHaveAnAudience => 'Nina Wafuasi';
+
+  @override
+  String get whereIsYourAudience => 'Wafuasi wako wako wapi?';
+
+  @override
+  String get selectAudiencePlatforms => 'Chagua zote zinazofaa';
+
+  @override
+  String get audiencePlatformTikTok => 'TikTok';
+
+  @override
+  String get audiencePlatformInstagram => 'Instagram';
+
+  @override
+  String get audiencePlatformYouTube => 'YouTube';
+
+  @override
+  String get audiencePlatformFacebook => 'Facebook';
+
+  @override
+  String get audiencePlatformWhatsApp => 'WhatsApp';
+
+  @override
+  String get audiencePlatformOther => 'Nyingine';
+
+  @override
+  String get tellBusinessesAboutYourAudience =>
+      'Eleza biashara kuhusu wafuasi wako';
+
+  @override
+  String get audienceFollowersMembersCount => 'Idadi ya wafuasi / wanachama';
+
+  @override
+  String get audienceMainLocation => 'Eneo kuu la wafuasi';
+
+  @override
+  String get audienceMainInterest => 'Maslahi / kundi kuu la wafuasi';
+
+  @override
+  String get declaredAudience => 'Wafuasi waliotangazwa';
+
+  @override
   String get addSelected => 'Ongeza Zilizochaguliwa';
 
   @override
@@ -2606,37 +2694,4 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tuambie huduma, ujuzi au rasilimali unazotoa...';
-
-  @override
-  String get identityVerificationRequiredTitle =>
-      'Uthibitishaji wa utambulisho unahitajika';
-
-  @override
-  String get identityVerificationRequiredDesc =>
-      'Thibitisha utambulisho wako kabla ya kuchapisha au kutoa ofa kwenye Nipanze.';
-
-  @override
-  String get providerVerificationRequiredTitle =>
-      'Uthibitishaji wa ziada unahitajika';
-
-  @override
-  String get providerVerificationRequiredDesc =>
-      'Kitengo hiki kinahitaji uthibitisho wa mtoa huduma kabla ya kutoa huduma hii.';
-
-  @override
-  String get verifyIdentityBtn => 'Thibitisha Utambulisho';
-
-  @override
-  String get startProviderVerificationBtn =>
-      'Anza Uthibitishaji wa Mtoa Huduma';
-
-  @override
-  String get maybeLaterBtn => 'Labda Baadaye';
-
-  @override
-  String get kycStatusSuspended => 'Uthibitishaji wa akaunti umesitishwa';
-
-  @override
-  String get kycStatusSuspendedDesc =>
-      'Uthibitishaji wako umesitishwa. Tafadhali wasiliana na usaidizi.';
 }

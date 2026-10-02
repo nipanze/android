@@ -2499,6 +2499,93 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chooseCapabilities => 'اختر القدرات';
 
   @override
+  String get marketingAndPromotion => 'التسويق والترويج';
+
+  @override
+  String get socialMediaMarketing => 'التسويق عبر وسائل التواصل الاجتماعي';
+
+  @override
+  String get tiktokPromotion => 'الترويج عبر TikTok';
+
+  @override
+  String get instagramPromotion => 'الترويج عبر Instagram';
+
+  @override
+  String get youtubePromotion => 'الترويج عبر YouTube';
+
+  @override
+  String get facebookPromotion => 'الترويج عبر Facebook';
+
+  @override
+  String get influencerMarketing => 'التسويق عبر المؤثرين';
+
+  @override
+  String get contentCreation => 'إنشاء المحتوى';
+
+  @override
+  String get productReviews => 'مراجعات المنتجات';
+
+  @override
+  String get eventPromotion => 'الترويج للفعاليات';
+
+  @override
+  String get whatsAppCommunityPromotion => 'الترويج عبر WhatsApp / المجتمعات';
+
+  @override
+  String get affiliateMarketing => 'التسويق بالعمولة';
+
+  @override
+  String get advertisingCampaigns => 'الحملات الإعلانية';
+
+  @override
+  String get brandPromotion => 'الترويج للعلامات التجارية';
+
+  @override
+  String get otherMarketingServices => 'خدمات تسويق أخرى';
+
+  @override
+  String get iHaveAnAudience => 'لدي جمهور';
+
+  @override
+  String get whereIsYourAudience => 'أين يوجد جمهورك؟';
+
+  @override
+  String get selectAudiencePlatforms => 'اختر كل ما ينطبق';
+
+  @override
+  String get audiencePlatformTikTok => 'TikTok';
+
+  @override
+  String get audiencePlatformInstagram => 'Instagram';
+
+  @override
+  String get audiencePlatformYouTube => 'YouTube';
+
+  @override
+  String get audiencePlatformFacebook => 'Facebook';
+
+  @override
+  String get audiencePlatformWhatsApp => 'WhatsApp';
+
+  @override
+  String get audiencePlatformOther => 'أخرى';
+
+  @override
+  String get tellBusinessesAboutYourAudience => 'عرّف الشركات بجمهورك';
+
+  @override
+  String get audienceFollowersMembersCount => 'عدد المتابعين / الأعضاء';
+
+  @override
+  String get audienceMainLocation => 'الموقع الرئيسي للجمهور';
+
+  @override
+  String get audienceMainInterest => 'الاهتمام / الفئة الرئيسية للجمهور';
+
+  @override
+  String get declaredAudience => 'جمهور مُعلن';
+
+  @override
   String get addSelected => 'إضافة المحدد';
 
   @override
@@ -2578,34 +2665,4 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها...';
-
-  @override
-  String get identityVerificationRequiredTitle => 'التحقق من الهوية مطلوب';
-
-  @override
-  String get identityVerificationRequiredDesc =>
-      'تحقق من هويتك قبل أن تتمكن من النشر أو تقديم العروض على Nipanze.';
-
-  @override
-  String get providerVerificationRequiredTitle => 'مطلوب تحقق إضافي';
-
-  @override
-  String get providerVerificationRequiredDesc =>
-      'تتطلب هذه الفئة التحقق من مقدم الخدمة قبل تقديم هذه الخدمة.';
-
-  @override
-  String get verifyIdentityBtn => 'التحقق من الهوية';
-
-  @override
-  String get startProviderVerificationBtn => 'بدء التحقق من المزود';
-
-  @override
-  String get maybeLaterBtn => 'ربما لاحقاً';
-
-  @override
-  String get kycStatusSuspended => 'تم تعليق التحقق من الحساب';
-
-  @override
-  String get kycStatusSuspendedDesc =>
-      'تم تعليق التحقق الخاص بك. يرجى التواصل مع الدعم.';
 }

@@ -33,10 +33,13 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     }
   }
 
-  Future<void> addCapabilities(List<String> slugs) async {
+  Future<void> addCapabilities(
+    List<String> slugs, {
+    Map<String, Map<String, dynamic>> metadataBySlug = const {},
+  }) async {
     try {
-      await _repo.addCapabilities(slugs);
-      await load();
+      await _repo.addCapabilities(slugs, metadataBySlug: metadataBySlug);
+      await loadWithOpportunities();
     } catch (e) {
       emit(CapabilitiesError(e.toString()));
     }
@@ -45,7 +48,7 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   Future<void> removeCapability(String capabilitySlug) async {
     try {
       await _repo.removeCapability(capabilitySlug);
-      await load();
+      await loadWithOpportunities();
     } catch (e) {
       emit(CapabilitiesError(e.toString()));
     }

@@ -61,6 +61,8 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 ### Provider capabilities (what you can help people with)
 
 - **Multi-select, per capability.** Someone can provide *Visa Assistance* and *Excavator Hire* at the same time. Each capability is its own row (`provider_capabilities`), not a single "profession".
+- **Marketing & Promotion** remains in Professional & Business Services and expands to specific options such as TikTok Promotion, Content Creation, and Influencer Marketing. `I Have an Audience` optionally stores platforms, follower/member count, location, and interest in that capability row's `metadata`.
+- Audience details are user-declared profile information, displayed separately from verification. They do not create an account mode or verified audience badge; verification remains admin-controlled by the existing capability verification system.
 - **Offers require a matching capability.** You can only offer on a Need whose category you have declared a capability in. This stops "I provide everything" accounts.
 - **Progressive verification, never trusted from onboarding alone:**
 
@@ -73,6 +75,8 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 | ⭐ Earned | Completed connections + reviews | rating + completed count |
 
 "Verified Provider" labels are only ever set by admin review. A user can never set their own verification level.
+
+The legacy `marketing_services` slug is retained as the Marketing & Promotion display name, so existing provider rows remain valid. Specific marketing options use separate capability slugs and continue to participate in the existing capability-based Provider Opportunities matching.
 
 ### Selective transparency for Needs (same tiers as Loans/Forex)
 

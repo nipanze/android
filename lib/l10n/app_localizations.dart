@@ -4624,6 +4624,180 @@ abstract class AppLocalizations {
   /// **'Choose Capabilities'**
   String get chooseCapabilities;
 
+  /// No description provided for @marketingAndPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing & Promotion'**
+  String get marketingAndPromotion;
+
+  /// No description provided for @socialMediaMarketing.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Media Marketing'**
+  String get socialMediaMarketing;
+
+  /// No description provided for @tiktokPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'TikTok Promotion'**
+  String get tiktokPromotion;
+
+  /// No description provided for @instagramPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram Promotion'**
+  String get instagramPromotion;
+
+  /// No description provided for @youtubePromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube Promotion'**
+  String get youtubePromotion;
+
+  /// No description provided for @facebookPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook Promotion'**
+  String get facebookPromotion;
+
+  /// No description provided for @influencerMarketing.
+  ///
+  /// In en, this message translates to:
+  /// **'Influencer Marketing'**
+  String get influencerMarketing;
+
+  /// No description provided for @contentCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'Content Creation'**
+  String get contentCreation;
+
+  /// No description provided for @productReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Reviews'**
+  String get productReviews;
+
+  /// No description provided for @eventPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Promotion'**
+  String get eventPromotion;
+
+  /// No description provided for @whatsAppCommunityPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp / Community Promotion'**
+  String get whatsAppCommunityPromotion;
+
+  /// No description provided for @affiliateMarketing.
+  ///
+  /// In en, this message translates to:
+  /// **'Affiliate Marketing'**
+  String get affiliateMarketing;
+
+  /// No description provided for @advertisingCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertising Campaigns'**
+  String get advertisingCampaigns;
+
+  /// No description provided for @brandPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand Promotion'**
+  String get brandPromotion;
+
+  /// No description provided for @otherMarketingServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Marketing Services'**
+  String get otherMarketingServices;
+
+  /// No description provided for @iHaveAnAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'I Have an Audience'**
+  String get iHaveAnAudience;
+
+  /// No description provided for @whereIsYourAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Where is your audience?'**
+  String get whereIsYourAudience;
+
+  /// No description provided for @selectAudiencePlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all that apply'**
+  String get selectAudiencePlatforms;
+
+  /// No description provided for @audiencePlatformTikTok.
+  ///
+  /// In en, this message translates to:
+  /// **'TikTok'**
+  String get audiencePlatformTikTok;
+
+  /// No description provided for @audiencePlatformInstagram.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram'**
+  String get audiencePlatformInstagram;
+
+  /// No description provided for @audiencePlatformYouTube.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube'**
+  String get audiencePlatformYouTube;
+
+  /// No description provided for @audiencePlatformFacebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook'**
+  String get audiencePlatformFacebook;
+
+  /// No description provided for @audiencePlatformWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get audiencePlatformWhatsApp;
+
+  /// No description provided for @audiencePlatformOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get audiencePlatformOther;
+
+  /// No description provided for @tellBusinessesAboutYourAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell businesses about your audience'**
+  String get tellBusinessesAboutYourAudience;
+
+  /// No description provided for @audienceFollowersMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Followers / members count'**
+  String get audienceFollowersMembersCount;
+
+  /// No description provided for @audienceMainLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Main audience location'**
+  String get audienceMainLocation;
+
+  /// No description provided for @audienceMainInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Main audience interest / category'**
+  String get audienceMainInterest;
+
+  /// No description provided for @declaredAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Declared audience'**
+  String get declaredAudience;
+
   /// No description provided for @addSelected.
   ///
   /// In en, this message translates to:
@@ -4755,60 +4929,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tell us what services, skills or resources you offer...'**
   String get whatCanYouHelpWithSubtitle;
-
-  /// No description provided for @identityVerificationRequiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Identity verification required'**
-  String get identityVerificationRequiredTitle;
-
-  /// No description provided for @identityVerificationRequiredDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify your identity before you can post or offer on Nipanze.'**
-  String get identityVerificationRequiredDesc;
-
-  /// No description provided for @providerVerificationRequiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Additional verification required'**
-  String get providerVerificationRequiredTitle;
-
-  /// No description provided for @providerVerificationRequiredDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'This category requires provider verification before you can offer this service.'**
-  String get providerVerificationRequiredDesc;
-
-  /// No description provided for @verifyIdentityBtn.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify Identity'**
-  String get verifyIdentityBtn;
-
-  /// No description provided for @startProviderVerificationBtn.
-  ///
-  /// In en, this message translates to:
-  /// **'Start Provider Verification'**
-  String get startProviderVerificationBtn;
-
-  /// No description provided for @maybeLaterBtn.
-  ///
-  /// In en, this message translates to:
-  /// **'Maybe Later'**
-  String get maybeLaterBtn;
-
-  /// No description provided for @kycStatusSuspended.
-  ///
-  /// In en, this message translates to:
-  /// **'Account verification suspended'**
-  String get kycStatusSuspended;
-
-  /// No description provided for @kycStatusSuspendedDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Your verification has been suspended. Please contact support.'**
-  String get kycStatusSuspendedDesc;
 }
 
 class _AppLocalizationsDelegate

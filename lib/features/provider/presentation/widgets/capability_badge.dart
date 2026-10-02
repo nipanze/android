@@ -32,8 +32,11 @@ class CapabilityBadge extends StatelessWidget {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     final icon = capability.categoryIcon ?? '🔧';
-    final name =
-        capability.capabilityName ?? capability.capabilitySlug;
+    final name = _capabilityDisplayName(
+      capability.capabilitySlug,
+      capability.capabilityName ?? capability.capabilitySlug,
+      l10n,
+    );
     final category = capability.categoryName ?? '';
 
     return Container(
@@ -91,6 +94,10 @@ class CapabilityBadge extends StatelessWidget {
                       _OpportunityPill(count: opportunityCount!, l10n: l10n),
                   ],
                 ),
+                if (capability.capabilitySlug == 'i_have_an_audience') ...[
+                  const SizedBox(height: 8),
+                  _DeclaredAudience(capability: capability, l10n: l10n),
+                ],
               ],
             ),
           ),
@@ -106,6 +113,85 @@ class CapabilityBadge extends StatelessWidget {
     );
   }
 }
+
+class _DeclaredAudience extends StatelessWidget {
+  const _DeclaredAudience({required this.capability, required this.l10n});
+
+  final ProviderCapability capability;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final metadata = capability.metadata;
+    final platforms = (metadata['audience_platforms'] as List? ?? const [])
+        .map((platform) => _platformLabel(platform.toString(), l10n))
+        .join(', ');
+    final count = metadata['audience_followers_count']?.toString();
+    final location = metadata['audience_main_location']?.toString();
+    final interest = metadata['audience_main_interest']?.toString();
+    final details = <String>[
+      if (platforms.isNotEmpty) platforms,
+      if (count != null && count.isNotEmpty)
+        '${l10n.audienceFollowersMembersCount}: $count',
+      if (location != null && location.isNotEmpty)
+        '${l10n.audienceMainLocation}: $location',
+      if (interest != null && interest.isNotEmpty)
+        '${l10n.audienceMainInterest}: $interest',
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.declaredAudience,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        if (details.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            details.join(' · '),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+String _platformLabel(String slug, AppLocalizations l10n) => switch (slug) {
+      'tiktok' => l10n.audiencePlatformTikTok,
+      'instagram' => l10n.audiencePlatformInstagram,
+      'youtube' => l10n.audiencePlatformYouTube,
+      'facebook' => l10n.audiencePlatformFacebook,
+      'whatsapp' => l10n.audiencePlatformWhatsApp,
+      _ => l10n.audiencePlatformOther,
+    };
+
+String _capabilityDisplayName(
+  String slug,
+  String fallback,
+  AppLocalizations l10n,
+) => switch (slug) {
+      'marketing_services' => l10n.marketingAndPromotion,
+      'social_media_marketing' => l10n.socialMediaMarketing,
+      'tiktok_promotion' => l10n.tiktokPromotion,
+      'instagram_promotion' => l10n.instagramPromotion,
+      'youtube_promotion' => l10n.youtubePromotion,
+      'facebook_promotion' => l10n.facebookPromotion,
+      'influencer_marketing' => l10n.influencerMarketing,
+      'content_creation' => l10n.contentCreation,
+      'product_reviews' => l10n.productReviews,
+      'event_promotion' => l10n.eventPromotion,
+      'whatsapp_community_promotion' => l10n.whatsAppCommunityPromotion,
+      'affiliate_marketing' => l10n.affiliateMarketing,
+      'advertising_campaigns' => l10n.advertisingCampaigns,
+      'brand_promotion' => l10n.brandPromotion,
+      'other_marketing_services' => l10n.otherMarketingServices,
+      'i_have_an_audience' => l10n.iHaveAnAudience,
+      _ => fallback,
+    };
 
 class _OpportunityPill extends StatelessWidget {
   const _OpportunityPill({required this.count, required this.l10n});

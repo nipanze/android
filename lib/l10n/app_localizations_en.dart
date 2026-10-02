@@ -2516,6 +2516,94 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseCapabilities => 'Choose Capabilities';
 
   @override
+  String get marketingAndPromotion => 'Marketing & Promotion';
+
+  @override
+  String get socialMediaMarketing => 'Social Media Marketing';
+
+  @override
+  String get tiktokPromotion => 'TikTok Promotion';
+
+  @override
+  String get instagramPromotion => 'Instagram Promotion';
+
+  @override
+  String get youtubePromotion => 'YouTube Promotion';
+
+  @override
+  String get facebookPromotion => 'Facebook Promotion';
+
+  @override
+  String get influencerMarketing => 'Influencer Marketing';
+
+  @override
+  String get contentCreation => 'Content Creation';
+
+  @override
+  String get productReviews => 'Product Reviews';
+
+  @override
+  String get eventPromotion => 'Event Promotion';
+
+  @override
+  String get whatsAppCommunityPromotion => 'WhatsApp / Community Promotion';
+
+  @override
+  String get affiliateMarketing => 'Affiliate Marketing';
+
+  @override
+  String get advertisingCampaigns => 'Advertising Campaigns';
+
+  @override
+  String get brandPromotion => 'Brand Promotion';
+
+  @override
+  String get otherMarketingServices => 'Other Marketing Services';
+
+  @override
+  String get iHaveAnAudience => 'I Have an Audience';
+
+  @override
+  String get whereIsYourAudience => 'Where is your audience?';
+
+  @override
+  String get selectAudiencePlatforms => 'Select all that apply';
+
+  @override
+  String get audiencePlatformTikTok => 'TikTok';
+
+  @override
+  String get audiencePlatformInstagram => 'Instagram';
+
+  @override
+  String get audiencePlatformYouTube => 'YouTube';
+
+  @override
+  String get audiencePlatformFacebook => 'Facebook';
+
+  @override
+  String get audiencePlatformWhatsApp => 'WhatsApp';
+
+  @override
+  String get audiencePlatformOther => 'Other';
+
+  @override
+  String get tellBusinessesAboutYourAudience =>
+      'Tell businesses about your audience';
+
+  @override
+  String get audienceFollowersMembersCount => 'Followers / members count';
+
+  @override
+  String get audienceMainLocation => 'Main audience location';
+
+  @override
+  String get audienceMainInterest => 'Main audience interest / category';
+
+  @override
+  String get declaredAudience => 'Declared audience';
+
+  @override
   String get addSelected => 'Add Selected';
 
   @override
@@ -2595,35 +2683,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tell us what services, skills or resources you offer...';
-
-  @override
-  String get identityVerificationRequiredTitle => 'Identity verification required';
-
-  @override
-  String get identityVerificationRequiredDesc =>
-      'Verify your identity before you can post or offer on Nipanze.';
-
-  @override
-  String get providerVerificationRequiredTitle =>
-      'Additional verification required';
-
-  @override
-  String get providerVerificationRequiredDesc =>
-      'This category requires provider verification before you can offer this service.';
-
-  @override
-  String get verifyIdentityBtn => 'Verify Identity';
-
-  @override
-  String get startProviderVerificationBtn => 'Start Provider Verification';
-
-  @override
-  String get maybeLaterBtn => 'Maybe Later';
-
-  @override
-  String get kycStatusSuspended => 'Account verification suspended';
-
-  @override
-  String get kycStatusSuspendedDesc =>
-      'Your verification has been suspended. Please contact support.';
 }

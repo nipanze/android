@@ -139,13 +139,23 @@ class _ProviderServicesView extends StatelessWidget {
         : <String>{};
 
     final needsRepo = getIt<NeedsRepository>();
-    final slugs = await AddServiceSheet.show(
+    final selection = await AddServiceSheet.show(
       context,
       existingSlugs: existingSlugs,
+      existingAudienceMetadata: loaded is CapabilitiesLoaded
+          ? loaded.capabilities
+              .where((cap) => cap.capabilitySlug == 'i_have_an_audience')
+              .firstOrNull
+              ?.metadata
+          : null,
       needsRepository: needsRepo,
     );
-    if (slugs != null && slugs.isNotEmpty) {
-      await cubit.addCapabilities(slugs);
+    if (selection != null &&
+        (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {
+      await cubit.addCapabilities(
+        selection.slugs,
+        metadataBySlug: selection.metadataBySlug,
+      );
     }
   }
 

@@ -265,19 +265,22 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       final existing = await provRepo.getProviderCapabilities();
       if (!mounted) return;
       final existingSlugs = existing.map((c) => c.capabilitySlug).toSet();
-      final slugs = await AddServiceSheet.show(
+      final selection = await AddServiceSheet.show(
         context,
         existingSlugs: existingSlugs,
         preselectedCategorySlug: need.categorySlug,
         needsRepository: getIt<NeedsRepository>(),
       );
-      if (slugs != null && slugs.isNotEmpty && mounted) {
-        await provRepo.addCapabilities(slugs);
+      if (selection != null && selection.slugs.isNotEmpty && mounted) {
+        await provRepo.addCapabilities(
+          selection.slugs,
+          metadataBySlug: selection.metadataBySlug,
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                l10n?.servicesCount(slugs.length) ?? 'Services added',
+                l10n?.servicesCount(selection.slugs.length) ?? 'Services added',
               ),
               backgroundColor: AppColors.success,
             ),

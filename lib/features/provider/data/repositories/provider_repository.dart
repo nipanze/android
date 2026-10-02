@@ -52,7 +52,10 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
-  Future<void> addCapabilities(List<String> slugs) async {
+  Future<void> addCapabilities(
+    List<String> slugs, {
+    Map<String, Map<String, dynamic>> metadataBySlug = const {},
+  }) async {
     try {
       final uid = _uid;
       if (uid == null) throw const AuthException('Not authenticated');
@@ -61,6 +64,8 @@ class ProviderRepository implements IProviderRepository {
                 'user_id': uid,
                 'capability_slug': s,
                 'verification_level': 'self_declared',
+                if (metadataBySlug.containsKey(s))
+                  'metadata': metadataBySlug[s],
               })
           .toList();
       await _client
