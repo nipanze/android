@@ -2578,4 +2578,34 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها...';
+
+  @override
+  String get identityVerificationRequiredTitle => 'التحقق من الهوية مطلوب';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'تحقق من هويتك قبل أن تتمكن من النشر أو تقديم العروض على Nipanze.';
+
+  @override
+  String get providerVerificationRequiredTitle => 'مطلوب تحقق إضافي';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'تتطلب هذه الفئة التحقق من مقدم الخدمة قبل تقديم هذه الخدمة.';
+
+  @override
+  String get verifyIdentityBtn => 'التحقق من الهوية';
+
+  @override
+  String get startProviderVerificationBtn => 'بدء التحقق من المزود';
+
+  @override
+  String get maybeLaterBtn => 'ربما لاحقاً';
+
+  @override
+  String get kycStatusSuspended => 'تم تعليق التحقق من الحساب';
+
+  @override
+  String get kycStatusSuspendedDesc =>
+      'تم تعليق التحقق الخاص بك. يرجى التواصل مع الدعم.';
 }

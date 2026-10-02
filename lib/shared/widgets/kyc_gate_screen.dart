@@ -109,6 +109,13 @@ class _KycGateScreenState extends State<KycGateScreen> {
           l10n?.kycGateExpiredBody ??
               'Your KYC verification has expired. Please re-submit to continue posting requests.',
         ),
+      KycStatus.suspended => (
+          Icons.block_outlined,
+          AppColors.danger,
+          l10n?.kycStatusSuspended ?? 'Account verification suspended',
+          l10n?.kycStatusSuspendedDesc ??
+              'Your verification has been suspended. Please contact support.',
+        ),
       _ => (
           Icons.lock_person_outlined,
           AppColors.accent,

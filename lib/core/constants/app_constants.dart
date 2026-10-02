@@ -30,6 +30,7 @@ class TableNames {
   static const String refreshTokens = 'refresh_tokens';
   static const String referrals = 'referrals';
   static const String subscriptionPrices = 'subscription_prices';
+  static const String verificationRequirements = 'verification_requirements';
 }
 
 class ViewNames {
@@ -67,6 +68,16 @@ class RpcNames {
   static const String getForYouNeeds = 'get_for_you_needs';
   static const String getProviderOpportunities = 'get_provider_opportunities';
   static const String recordInterestEvent = 'record_interest_event';
+  static const String canPerformMarketplaceActivity =
+      'can_perform_marketplace_activity';
+  static const String adminGetVerificationRequirements =
+      'admin_get_verification_requirements';
+  static const String adminUpdateVerificationRequirement =
+      'admin_update_verification_requirement';
+  static const String adminGetProviderCapabilities =
+      'admin_get_provider_capabilities';
+  static const String adminReviewProviderCapability =
+      'admin_review_provider_capability';
   // Pro Advanced Filters (schema v4.2)
   static const String getMarketplaceProFiltered =
       'get_marketplace_pro_filtered';

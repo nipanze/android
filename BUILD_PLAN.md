@@ -184,3 +184,29 @@ Only after Phase 5 metrics look healthy: `Home · Markets · ➕ Post · Activit
 3. Phase 4 → Phase 6 (capability-gated offers with admin queue)
 4. Phase 5 (changes first-run, so ship after offers are stable)
 5. Phase 7 flags per market/category; Phase 8 nav last
+
+---
+
+## 8. Stage 4.9 — Central Verification System & Activity Navigation (Implemented)
+
+### Overview
+Extended the existing Identity Verification (KYC) system in Account → Edit Profile → Identity Verification to serve as the unified, platform-wide central verification system for all marketplace activities.
+
+### Key Additions
+1. **Database Schema & Server-Side Security (`sql/patch_central_verification_system.sql`)**:
+   - `verification_requirements` table with hierarchical evaluation (`capability` -> `category` -> `activity` -> `global`).
+   - Server-side triggers preventing unverified users from inserting into `loan_requests`, `forex_requests`, `needs_requests`, `loan_offers`, `forex_offers`, `need_offers`, `provider_capabilities`.
+   - RPC enforcement in `accept_offer`, `accept_forex_offer`, `accept_need_offer`, and `unlock_need_contact`.
+   - Authoritative RPC: `can_perform_marketplace_activity(p_activity, p_category_slug, p_capability_slug)`.
+   - Admin RPCs for configuration: `admin_get_verification_requirements`, `admin_update_verification_requirement`.
+2. **Flutter Verification Layer**:
+   - `VerificationService`: Cached requirement fetching, hierarchical fallback evaluation, and direct RPC evaluation.
+   - `VerificationGateModal.checkAndGate`: Reusable bottom-sheet gate intercepting Post chooser actions, Make an Offer buttons, and Service Offer forms.
+3. **Identity vs. Provider Verification Distinction**:
+   - **Identity Verified**: User identity confirmed via national ID & selfie (`profiles.kyc_status = 'approved'`).
+   - **Provider Verified**: Category/capability-specific credentials verified by admin review (`provider_capabilities.verification_level = 'provider_verified'`).
+4. **Activity Terminology Standardization**:
+   - Replaced all user-facing "Positions" terminology with "Activity" across bottom navigation (`navActivity`), routes (`AppRoutes.activity`), and page headers.
+5. **Localization & RTL**:
+   - Fully localized in English (`en`), Swahili (`sw`), French (`fr`), Kinyarwanda (`rw`), and Arabic (`ar`).
+

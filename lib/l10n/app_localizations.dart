@@ -4755,6 +4755,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tell us what services, skills or resources you offer...'**
   String get whatCanYouHelpWithSubtitle;
+
+  /// No description provided for @identityVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification required'**
+  String get identityVerificationRequiredTitle;
+
+  /// No description provided for @identityVerificationRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity before you can post or offer on Nipanze.'**
+  String get identityVerificationRequiredDesc;
+
+  /// No description provided for @providerVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional verification required'**
+  String get providerVerificationRequiredTitle;
+
+  /// No description provided for @providerVerificationRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This category requires provider verification before you can offer this service.'**
+  String get providerVerificationRequiredDesc;
+
+  /// No description provided for @verifyIdentityBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Identity'**
+  String get verifyIdentityBtn;
+
+  /// No description provided for @startProviderVerificationBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Provider Verification'**
+  String get startProviderVerificationBtn;
+
+  /// No description provided for @maybeLaterBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get maybeLaterBtn;
+
+  /// No description provided for @kycStatusSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'Account verification suspended'**
+  String get kycStatusSuspended;
+
+  /// No description provided for @kycStatusSuspendedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification has been suspended. Please contact support.'**
+  String get kycStatusSuspendedDesc;
 }
 
 class _AppLocalizationsDelegate

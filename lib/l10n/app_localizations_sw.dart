@@ -2606,4 +2606,37 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tuambie huduma, ujuzi au rasilimali unazotoa...';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Uthibitishaji wa utambulisho unahitajika';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Thibitisha utambulisho wako kabla ya kuchapisha au kutoa ofa kwenye Nipanze.';
+
+  @override
+  String get providerVerificationRequiredTitle =>
+      'Uthibitishaji wa ziada unahitajika';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Kitengo hiki kinahitaji uthibitisho wa mtoa huduma kabla ya kutoa huduma hii.';
+
+  @override
+  String get verifyIdentityBtn => 'Thibitisha Utambulisho';
+
+  @override
+  String get startProviderVerificationBtn =>
+      'Anza Uthibitishaji wa Mtoa Huduma';
+
+  @override
+  String get maybeLaterBtn => 'Labda Baadaye';
+
+  @override
+  String get kycStatusSuspended => 'Uthibitishaji wa akaunti umesitishwa';
+
+  @override
+  String get kycStatusSuspendedDesc =>
+      'Uthibitishaji wako umesitishwa. Tafadhali wasiliana na usaidizi.';
 }

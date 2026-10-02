@@ -2606,4 +2606,37 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Tubwire serivisi, ubuhanga cyangwa umutungo utanga...';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Kugenzura umwirondoro birakenewe';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Banza wemeze umwirondoro wawe mbere yo gutangaza cyangwa gutanga ibiciro kuri Nipanze.';
+
+  @override
+  String get providerVerificationRequiredTitle =>
+      'Kugenzura byisumbuye birakenewe';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Iki cyiciro gisaba kugenzura umutanga-serivisi mbere yo gutanga iyi serivisi.';
+
+  @override
+  String get verifyIdentityBtn => 'Emeza Umwirondoro';
+
+  @override
+  String get startProviderVerificationBtn =>
+      'Tangira Kugenzura Umutanga-serivisi';
+
+  @override
+  String get maybeLaterBtn => 'Hanyuma';
+
+  @override
+  String get kycStatusSuspended => 'Kugenzura konti byahagaritswe';
+
+  @override
+  String get kycStatusSuspendedDesc =>
+      'Kugenzura kwawe kwahagaritswe. Nyamuneka shakira ubufasha.';
 }

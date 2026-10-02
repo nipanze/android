@@ -10,6 +10,7 @@ import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../../provider/presentation/pages/add_service_sheet.dart';
+import '../../../../shared/widgets/verification_gate_modal.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -56,6 +57,15 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   }
 
   Future<void> _showMakeOfferSheet(NeedsListing need) async {
+    final allowed = await VerificationGateModal.checkAndGate(
+      context,
+      action: 'need_offer',
+      categorySlug: need.categorySlug,
+      capabilitySlug: need.capabilitySlug,
+      customMessage: 'Verify your identity before making an offer on Nipanze.',
+    );
+    if (!allowed || !mounted) return;
+
     final priceController = TextEditingController();
     final timelineController = TextEditingController();
     final messageController = TextEditingController();

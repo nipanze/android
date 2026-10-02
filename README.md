@@ -322,3 +322,35 @@ Launch with **Machinery, Professional Services, Transport, Products** first. Ena
 2. **Do Needs need a locked agreement?** The patch skips agreements (accept → reveal only), since a visa or transport job doesn't have loan-style terms. If you want a locked record, add `need_agreements` mirroring `forex_agreements`.
 3. **Contact-unlock fee:** still an open decision in your schema. If adopted, it applies to Needs too.
 4. **Provider licence evidence** per category (what admin checks before "Provider verified").
+
+---
+
+# PART 3 — CENTRAL VERIFICATION & ACTIVITY SYSTEM
+
+## 3.1 Central Platform-Level Verification (Extended KYC)
+
+Identity verification is the central security and trust gate for the entire marketplace across all modules (Loans, Forex, Needs, Offers, and Provider Services).
+
+- **Identity Verified (`profiles.kyc_status = 'approved'` / `kyc_verifications`)**:
+  - Global pre-requisite for posting or making offers.
+  - An unverified user can browse, search, view listings, save watchlist items, and view public profiles.
+  - An unverified user **cannot** post Loan/Forex/Need requests, make Loan/Forex/Need offers, create service capabilities, accept offers, or unlock contact details.
+- **Provider Verified (`provider_capabilities.verification_level = 'provider_verified'`)**:
+  - Capability/category-specific verification based on administrative review of submitted evidence (licenses, certifications, fleet records).
+  - Identity verification does not automatically grant provider verification.
+
+## 3.2 Hierarchical Verification Requirements Engine
+
+Verification rules are stored dynamically in `verification_requirements` and evaluated hierarchically:
+`Capability Level` -> `Category Level` -> `Activity Level` -> `Global Level` (most specific rule applies).
+
+- **Database Enforcement**: Server-side triggers and RPC guards enforce rules (`private.require_identity_verified`, `can_perform_marketplace_activity`).
+- **Flutter Interception**: `VerificationGateModal.checkAndGate` intercepts posting and offer actions before forms open, prompting users to verify and returning them to their intended flow upon completion.
+
+## 3.3 Activity Navigation Update
+
+- Navigation bar, routes, tabs, and user-facing terminology transitioned from **Positions** to **Activity** (`AppRoutes.activity`, `navActivity`).
+
+## 3.4 Standalone Database Migration
+
+- `sql/patch_central_verification_system.sql`: Contains the complete standalone schema, RLS policies, trigger guards on requests/offers/capabilities/unlocks, and admin RPCs.

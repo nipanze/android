@@ -2634,4 +2634,37 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get whatCanYouHelpWithSubtitle =>
       'Dites-nous quels services, compétences ou ressources vous proposez...';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Vérification d\'identité requise';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Vérifiez votre identité avant de publier ou de faire une offre sur Nipanze.';
+
+  @override
+  String get providerVerificationRequiredTitle =>
+      'Vérification supplémentaire requise';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Cette catégorie nécessite une vérification de fournisseur avant de proposer ce service.';
+
+  @override
+  String get verifyIdentityBtn => 'Vérifier l\'identité';
+
+  @override
+  String get startProviderVerificationBtn =>
+      'Commencer la vérification du fournisseur';
+
+  @override
+  String get maybeLaterBtn => 'Plus tard';
+
+  @override
+  String get kycStatusSuspended => 'Vérification de compte suspendue';
+
+  @override
+  String get kycStatusSuspendedDesc =>
+      'Votre vérification a été suspendue. Veuillez contacter le support.';
 }

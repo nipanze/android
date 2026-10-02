@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/user_avatar.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../provider/domain/entities/provider_capability.dart';
+import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
 
@@ -185,6 +188,16 @@ class _KycView extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
+
+              // Marketplace Access Section
+              _MarketplaceAccessSection(isVerified: kyc?.isApproved == true),
+              const SizedBox(height: 24),
+
+              // Additional Verification Section
+              _AdditionalVerificationSection(
+                isIdentityVerified: kyc?.isApproved == true,
+              ),
+              const SizedBox(height: 24),
 
               // Document upload section
               if (kyc?.isApproved != true) ...[
@@ -697,6 +710,313 @@ class _SourcePicker extends StatelessWidget {
         ),
         const SizedBox(height: 8),
       ]),
+    );
+  }
+}
+
+// ─── Marketplace Access Section ───────────────────────────────────────────────
+
+class _MarketplaceAccessSection extends StatelessWidget {
+  const _MarketplaceAccessSection({required this.isVerified});
+  final bool isVerified;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final activities = [
+      {'title': 'Loan Requests', 'icon': Icons.account_balance_wallet_outlined},
+      {'title': 'Forex Requests', 'icon': Icons.currency_exchange_rounded},
+      {'title': 'Need Requests', 'icon': Icons.search_rounded},
+      {'title': 'Make Offers', 'icon': Icons.handshake_outlined},
+      {'title': 'Offer a Service', 'icon': Icons.business_center_outlined},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isVerified
+                    ? Icons.verified_user_rounded
+                    : Icons.lock_outline_rounded,
+                size: 20,
+                color: isVerified ? AppColors.success : AppColors.accent,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Marketplace Access',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isVerified
+                      ? AppColors.success.withValues(alpha: 0.12)
+                      : AppColors.warning.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isVerified ? 'All Active' : 'Restricted',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: isVerified ? AppColors.success : AppColors.warning,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isVerified
+                ? 'Your verified identity grants access to participate in all marketplace activities.'
+                : 'Identity verification is required to post requests, make offers, and provide services.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          ...activities.map(
+            (act) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    isVerified
+                        ? Icons.check_circle_rounded
+                        : Icons.lock_outline_rounded,
+                    size: 16,
+                    color: isVerified
+                        ? AppColors.success
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    act['title'] as String,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isVerified
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    isVerified ? 'Unlocked' : 'Requires KYC',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isVerified
+                          ? AppColors.success
+                          : theme.colorScheme.onSurface
+                              .withValues(alpha: 0.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Additional Verification Section ──────────────────────────────────────────
+
+class _AdditionalVerificationSection extends StatefulWidget {
+  const _AdditionalVerificationSection({required this.isIdentityVerified});
+  final bool isIdentityVerified;
+
+  @override
+  State<_AdditionalVerificationSection> createState() =>
+      _AdditionalVerificationSectionState();
+}
+
+class _AdditionalVerificationSectionState
+    extends State<_AdditionalVerificationSection> {
+  List<ProviderCapability> _capabilities = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCapabilities();
+  }
+
+  Future<void> _loadCapabilities() async {
+    try {
+      final repo = getIt<IProviderRepository>();
+      final caps = await repo.getProviderCapabilities();
+      if (mounted) {
+        setState(() {
+          _capabilities = caps;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.verified_outlined,
+                size: 20,
+                color: AppColors.accent,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Additional Verification',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Some categories require additional verification before you can offer them.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (_loading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else if (_capabilities.isNotEmpty) ...[
+            ..._capabilities.map((cap) {
+              final isVerified = cap.verificationLevel ==
+                  ProviderVerificationLevel.providerVerified;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: theme.dividerColor),
+                ),
+                child: Row(
+                  children: [
+                    Text(cap.categoryIcon ?? '💼',
+                        style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        cap.capabilityName ?? cap.capabilitySlug,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isVerified
+                            ? AppColors.success.withValues(alpha: 0.12)
+                            : AppColors.warning.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isVerified ? 'Provider Verified' : 'Self-declared',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: isVerified
+                              ? AppColors.success
+                              : AppColors.warning,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ] else ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'No specialized provider capabilities declared yet.',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.business_center_outlined, size: 16),
+              label: const Text('Manage Provider Capabilities'),
+              onPressed: () => context.push(AppRoutes.accountServices),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
