@@ -4,16 +4,32 @@ class NeedCategory {
     required this.name,
     required this.icon,
     this.description,
+    this.countryLabels = const {},
+    this.baseName,
+    this.baseDescription,
     this.sortOrder = 0,
     this.isActive = true,
   });
 
-  factory NeedCategory.fromMap(Map<String, dynamic> map) {
+  factory NeedCategory.fromMap(
+    Map<String, dynamic> map, {
+    String? countryCode,
+  }) {
+    final countryLabels =
+        (map['country_labels'] as Map<String, dynamic>?) ?? const {};
+    final countryLabel = countryLabels[countryCode?.toUpperCase()];
+    final countryName =
+        countryLabel is Map ? countryLabel['name'] as String? : null;
+    final countryDescription =
+        countryLabel is Map ? countryLabel['description'] as String? : null;
     return NeedCategory(
       slug: map['slug'] as String,
-      name: map['name'] as String,
+      name: countryName ?? map['name'] as String,
       icon: map['icon'] as String? ?? '🔎',
-      description: map['description'] as String?,
+      description: countryDescription ?? map['description'] as String?,
+      countryLabels: countryLabels,
+      baseName: map['name'] as String,
+      baseDescription: map['description'] as String?,
       sortOrder: (map['sort_order'] as num?)?.toInt() ?? 0,
       isActive: map['is_active'] as bool? ?? true,
     );
@@ -23,8 +39,25 @@ class NeedCategory {
   final String name;
   final String icon;
   final String? description;
+  final Map<String, dynamic> countryLabels;
+  final String? baseName;
+  final String? baseDescription;
   final int sortOrder;
   final bool isActive;
+
+  String nameForCountry(String? countryCode) {
+    final labels = countryLabels[countryCode?.toUpperCase()];
+    if (labels is Map) return labels['name'] as String? ?? baseName ?? name;
+    return baseName ?? name;
+  }
+
+  String? descriptionForCountry(String? countryCode) {
+    final labels = countryLabels[countryCode?.toUpperCase()];
+    if (labels is Map) {
+      return labels['description'] as String? ?? baseDescription ?? description;
+    }
+    return baseDescription ?? description;
+  }
 
   static const List<NeedCategory> defaultCategories = [
     NeedCategory(
@@ -60,6 +93,20 @@ class NeedCategory {
       name: 'Specialized Products & Procurement',
       icon: '🔎',
       sortOrder: 5,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'music_video',
+      name: 'Music & Video',
+      icon: '🎬',
+      sortOrder: 11,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'weddings_celebrations',
+      name: 'Weddings & Celebrations',
+      icon: '🎉',
+      sortOrder: 12,
       isActive: true,
     ),
   ];

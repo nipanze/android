@@ -1,10 +1,9 @@
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../marketplace/domain/models/marketplace_item.dart';
-
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../marketplace/domain/models/marketplace_item.dart';
 import '../domain/models/need_capability.dart';
 import '../domain/models/need_category.dart';
 import '../domain/models/need_offer.dart';
@@ -18,16 +17,34 @@ class NeedsRepository {
   String? get currentViewerId => _client.auth.currentUser?.id;
   String get _uid => _client.auth.currentUser!.id;
 
+  Future<String?> _getCountryCode() async {
+    final uid = currentViewerId;
+    if (uid == null) return null;
+    try {
+      final profile = await _client
+          .from(TableNames.profiles)
+          .select('country')
+          .eq('id', uid)
+          .maybeSingle();
+      return profile?['country'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Fetch active categories
   Future<List<NeedCategory>> getCategories() async {
     try {
+      final countryCode = await _getCountryCode();
       final data = await _client
           .from(TableNames.needCategories)
           .select()
           .eq('is_active', true)
           .order('sort_order', ascending: true);
 
-      return (data as List).map((e) => NeedCategory.fromMap(e)).toList();
+      return (data as List)
+          .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
+          .toList();
     } catch (_) {
       return NeedCategory.defaultCategories;
     }
@@ -36,6 +53,7 @@ class NeedsRepository {
   /// Fetch capabilities for a category
   Future<List<NeedCapability>> getCapabilities({String? categorySlug}) async {
     try {
+      final countryCode = await _getCountryCode();
       var query = _client.from(TableNames.needCapabilities).select();
       if (categorySlug != null) {
         query = query.eq('category_slug', categorySlug) as dynamic;
@@ -44,7 +62,9 @@ class NeedsRepository {
           .eq('is_active', true)
           .order('name', ascending: true);
 
-      return (data as List).map((e) => NeedCapability.fromMap(e)).toList();
+      return (data as List)
+          .map((e) => NeedCapability.fromMap(e, countryCode: countryCode))
+          .toList();
     } catch (_) {
       if (categorySlug != null) {
         return NeedCapability.defaults
@@ -179,9 +199,7 @@ class NeedsRepository {
           .select('capability_slug')
           .eq('user_id', userId);
 
-      return (data as List)
-          .map((e) => e['capability_slug'] as String)
-          .toList();
+      return (data as List).map((e) => e['capability_slug'] as String).toList();
     } catch (_) {
       return const [];
     }
@@ -201,13 +219,16 @@ class NeedsRepository {
   }
 
   /// Get personalized 'For You' needs
-  Future<List<NeedsListing>> getForYouNeeds({String country = 'UG', int limit = 10}) async {
+  Future<List<NeedsListing>> getForYouNeeds(
+      {String country = 'UG', int limit = 10}) async {
     try {
       final data = await _client.rpc(
         RpcNames.getForYouNeeds,
         params: {'p_country': country, 'p_limit': limit},
       );
-      return (data as List).map((e) => NeedsListing.fromMap(e as Map<String, dynamic>)).toList();
+      return (data as List)
+          .map((e) => NeedsListing.fromMap(e as Map<String, dynamic>))
+          .toList();
     } catch (_) {
       try {
         final fallback = await _client
@@ -215,7 +236,9 @@ class NeedsRepository {
             .select()
             .order('listed_at', ascending: false)
             .limit(limit);
-        return (fallback as List).map((e) => NeedsListing.fromMap(e as Map<String, dynamic>)).toList();
+        return (fallback as List)
+            .map((e) => NeedsListing.fromMap(e as Map<String, dynamic>))
+            .toList();
       } catch (_) {
         return const [];
       }

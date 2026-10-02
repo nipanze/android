@@ -159,6 +159,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       (item) => item.slug == slug,
       orElse: () => NeedCategory.findBySlug(slug),
     );
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated &&
+        category.countryLabels
+            .containsKey(authState.user.country.toUpperCase())) {
+      return category.nameForCountry(authState.user.country);
+    }
     return switch (slug) {
       'travel_international' => 'Travel & International',
       'machinery_equipment' => 'Machinery & Equipment',

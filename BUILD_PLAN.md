@@ -218,3 +218,14 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - Kept audience information explicitly self-declared; the existing provider verification trigger and capability-based Provider Opportunities RPC are unchanged.
 - Localized the picker and audience fields in `en`, `sw`, `fr`, `rw`, and `ar`.
 
+## 10. Stage 4.11 — Creative, Graduation & Celebration Opportunities
+
+- Expand the existing Needs catalog through `sql/patch_creative_events_capabilities.sql`; do not add request, provider, offer, trust, verification, or interest tables.
+- Add `music_video` and `weddings_celebrations` capability groups, including performers, studios and post-production, graduation and wedding photography/videography, makeup and hair, bridal styling and outfits, decoration, catering, cakes, DJs/MCs, event planning/transport, and social celebrations.
+- Continue storing each provider selection as a separate `provider_capabilities` row. The existing multi-select picker, matching validation, Provider Opportunities, trust, central verification, and Need → Offer → Accept → Contact Reveal flow remain authoritative.
+- Keep capabilities gender-inclusive. This broadens opportunities likely to resonate with women without splitting the marketplace or restricting access by gender.
+- Add optional `country_labels` JSONB overrides to the existing category and capability catalog rows. Overrides are keyed by ISO country code and do not alter stable slugs, `needs_requests.country`, or currency handling.
+- Add category-specific form fields and offline catalog defaults for music/video and celebrations. Use existing category enablement and local compliance review before rollout in each country; do not change Loans or Forex.
+
+**Acceptance checks:** the patch is re-runnable; new catalog entries use the existing two catalog tables; multiple capabilities can be selected; matching offers use the existing `need_offers` flow; missing country overrides fall back to shared labels; Loans and Forex regression tests remain unchanged.
+

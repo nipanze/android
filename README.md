@@ -62,6 +62,9 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 
 - **Multi-select, per capability.** Someone can provide *Visa Assistance* and *Excavator Hire* at the same time. Each capability is its own row (`provider_capabilities`), not a single "profession".
 - **Marketing & Promotion** remains in Professional & Business Services and expands to specific options such as TikTok Promotion, Content Creation, and Influencer Marketing. `I Have an Audience` optionally stores platforms, follower/member count, location, and interest in that capability row's `metadata`.
+- **Music & Video** and **Weddings & Celebrations** are additional groups in the same Needs capability catalog. They cover performers and production teams, graduation and wedding photography/video, styling, outfits, event suppliers, planning, and social celebrations.
+- These are opportunities for providers of any gender. They include creative, beauty, styling, performance, and event work that can especially resonate with women without creating a women-only marketplace or separate provider mode.
+- Category and capability slugs stay stable across markets. Existing catalog rows support optional ISO country-code label overrides in `country_labels` JSONB (`UG`, `KE`, `TZ`, `RW`, `NG`, `ZA`, `EG`); clients use a country override when present and otherwise show the shared label. Need requests continue to carry their existing country and use the same country-aware feed and offer flow.
 - Audience details are user-declared profile information, displayed separately from verification. They do not create an account mode or verified audience badge; verification remains admin-controlled by the existing capability verification system.
 - **Offers require a matching capability.** You can only offer on a Need whose category you have declared a capability in. This stops "I provide everything" accounts.
 - **Progressive verification, never trusted from onboarding alone:**
@@ -77,6 +80,8 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 "Verified Provider" labels are only ever set by admin review. A user can never set their own verification level.
 
 The legacy `marketing_services` slug is retained as the Marketing & Promotion display name, so existing provider rows remain valid. Specific marketing options use separate capability slugs and continue to participate in the existing capability-based Provider Opportunities matching.
+
+Creative and event capabilities are added by `sql/patch_creative_events_capabilities.sql`. Providers can multi-select across all groups; each selection remains a `provider_capabilities` row and is matched by the existing Need-offer validation. No new request, offer, trust, verification, or interest system is introduced.
 
 ### Selective transparency for Needs (same tiers as Loans/Forex)
 

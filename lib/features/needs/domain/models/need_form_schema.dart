@@ -198,6 +198,40 @@ class NeedFormSchema {
         hint: 'e.g. Serena Hotel gardens, Kampala',
       ),
     ],
+    'music_video': [
+      NeedFormField.text(
+        'production_type',
+        label: 'Music or video project',
+        hint: 'e.g. Music video, live session, short film',
+      ),
+      NeedFormField.date(
+        'shoot_date',
+        label: 'Shoot or performance date',
+        hint: 'e.g. 15 November 2026',
+      ),
+      NeedFormField.text(
+        'location',
+        label: 'Studio, venue, or town',
+        hint: 'e.g. Kampala',
+      ),
+    ],
+    'weddings_celebrations': [
+      NeedFormField.text(
+        'celebration_type',
+        label: 'Celebration type and guest count',
+        hint: 'e.g. Wedding reception, 150 guests',
+      ),
+      NeedFormField.date(
+        'event_date',
+        label: 'Event date',
+        hint: 'e.g. 15 November 2026',
+      ),
+      NeedFormField.text(
+        'venue_location',
+        label: 'Venue or town',
+        hint: 'e.g. Entebbe',
+      ),
+    ],
     'energy_utilities': [
       NeedFormField.text(
         'system_type',
