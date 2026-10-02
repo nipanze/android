@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -6,11 +8,11 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/verification_gate_modal.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../../provider/presentation/pages/add_service_sheet.dart';
-import '../../../../shared/widgets/verification_gate_modal.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -136,7 +138,9 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                     errStr.toLowerCase().contains('declare a capability');
                 if (isGatingError && sheetContext.mounted) {
                   Navigator.pop(sheetContext, false);
-                  if (context.mounted) _promptCapabilityDeclaration(need);
+                  if (context.mounted) {
+                    unawaited(_promptCapabilityDeclaration(need));
+                  }
                   return;
                 }
                 if (sheetContext.mounted) {
@@ -595,7 +599,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   }
 
   List<_OfferSuggestion> _offerSuggestions(String categorySlug) {
-    final common = <_OfferSuggestion>[
+    const common = <_OfferSuggestion>[
       _OfferSuggestion('Mention warranty or support', ['warranty', 'support']),
       _OfferSuggestion('Clarify what is included in the price', [
         'included',
@@ -606,7 +610,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       ]),
     ];
     final category = switch (categorySlug) {
-      'machinery_equipment' => <_OfferSuggestion>[
+      'machinery_equipment' => const <_OfferSuggestion>[
           _OfferSuggestion('Specify equipment type or model', ['model', 'type']),
           _OfferSuggestion('Say whether an operator is included', ['operator']),
           _OfferSuggestion('Clarify transport arrangements', ['transport', 'delivery']),
@@ -615,7 +619,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
           _OfferSuggestion('State operating period or hours', ['hours', 'period']),
           _OfferSuggestion('Clarify maintenance responsibility', ['maintenance']),
         ],
-      'transport_logistics' => <_OfferSuggestion>[
+      'transport_logistics' => const <_OfferSuggestion>[
           _OfferSuggestion('Specify vehicle type', ['vehicle', 'truck', 'van']),
           _OfferSuggestion('State load or capacity', ['capacity', 'tonne', 'load']),
           _OfferSuggestion('Confirm pickup point', ['pickup', 'pick-up']),
@@ -623,7 +627,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
           _OfferSuggestion('Clarify delivery timing', ['delivery', 'deliver']),
           _OfferSuggestion('List what the price includes', ['included', 'includes']),
         ],
-      'professional_services' => <_OfferSuggestion>[
+      'professional_services' => const <_OfferSuggestion>[
           _OfferSuggestion('Mention relevant experience', ['experience', 'years']),
           _OfferSuggestion('Add relevant qualifications', ['qualification', 'certified']),
           _OfferSuggestion('Define deliverables', ['deliverable', 'report', 'files']),
@@ -631,14 +635,14 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
           _OfferSuggestion('Clarify what is included', ['included', 'includes']),
           _OfferSuggestion('Reference previous work', ['previous work', 'portfolio']),
         ],
-      'specialized_products' => <_OfferSuggestion>[
+      'specialized_products' => const <_OfferSuggestion>[
           _OfferSuggestion('Specify product or brand', ['product', 'brand', 'model']),
           _OfferSuggestion('State quantity', ['quantity', 'units', 'pieces']),
           _OfferSuggestion('Break out unit price if useful', ['unit price', 'per unit']),
           _OfferSuggestion('Clarify delivery', ['delivery', 'delivered']),
           _OfferSuggestion('Mention condition and availability', ['condition', 'available']),
         ],
-      'travel_international' => <_OfferSuggestion>[
+      'travel_international' => const <_OfferSuggestion>[
           _OfferSuggestion('Describe the service being provided', ['service', 'assistance']),
           _OfferSuggestion('Specify destination', ['destination', 'travel to']),
           _OfferSuggestion('Clarify timeline', ['timeline', 'days', 'weeks']),
@@ -646,7 +650,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
           _OfferSuggestion('State refund or cancellation conditions', ['refund', 'cancellation']),
           _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
         ],
-      _ => <_OfferSuggestion>[
+      _ => const <_OfferSuggestion>[
           _OfferSuggestion('Clarify what is included', ['included', 'includes']),
           _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
           _OfferSuggestion('Confirm availability and timeline', ['available', 'timeline']),
@@ -733,7 +737,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
               backgroundColor: AppColors.success,
             ),
           );
-          _showMakeOfferSheet(need);
+          unawaited(_showMakeOfferSheet(need));
         }
       }
     }
@@ -1091,6 +1095,87 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       : 'Open to suitable proposals';
 }
 
+class _OfferSuggestion {
+  const _OfferSuggestion(this.label, this.keywords);
+
+  final String label;
+  final List<String> keywords;
+}
+
+class _AssistantCheck extends StatelessWidget {
+  const _AssistantCheck({
+    required this.complete,
+    required this.text,
+  });
+
+  final bool complete;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          complete ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+          size: 16,
+          color: complete
+              ? AppColors.success
+              : (isDark ? AppColors.text3Dark : AppColors.text3Light),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: complete
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AssistantNote extends StatelessWidget {
+  const _AssistantNote({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.lightbulb_outline_rounded,
+            size: 16,
+            color: AppColors.accent,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _OfferCard extends StatelessWidget {
   const _OfferCard({
     required this.offer,
@@ -1233,8 +1318,7 @@ class _OfferCard extends StatelessWidget {
                     const SizedBox(width: 2),
                     const Text(
                       'Phone verified',
-                      style:
-                          TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
