@@ -70,7 +70,11 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
     final priceController = TextEditingController();
     final timelineController = TextEditingController();
     final messageController = TextEditingController();
+    final termsController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    var selectedTimeline = '';
+    var selectedStrategy = '';
+    var isPreview = false;
 
     final submitted = await showModalBottomSheet<bool>(
       context: context,
@@ -80,150 +84,492 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
         final theme = Theme.of(sheetContext);
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
-            return Padding(
+            final price = int.tryParse(priceController.text.trim());
+            final isOfferValid = price != null &&
+                price > 0 &&
+                timelineController.text.trim().isNotEmpty &&
+                messageController.text.trim().length >= 5;
+            final currencyFormat = NumberFormat.decimalPattern(
+              Localizations.localeOf(ctx).toLanguageTag(),
+            );
+            final priceText = price == null
+                ? ''
+                : '${need.currency} ${currencyFormat.format(price)}';
+            final budgetText = need.budget > 0
+                ? '${need.currency} ${currencyFormat.format(need.budget)}'
+                : 'Open to suitable proposals';
+            final combinedText =
+                '${messageController.text} ${termsController.text}'.toLowerCase();
+            final suggestions = _offerSuggestions(need.categorySlug);
+            final strategyHint = switch (selectedStrategy) {
+              'Fastest' => 'Make your earliest realistic delivery point clear.',
+              'Best Price' => 'Explain the value behind your price; your price is unchanged.',
+              'Best Value' => 'Clarify how price, quality, and service fit together.',
+              _ => 'Review the details that help the requester compare offers.',
+            };
+
+            Future<void> submitOffer() async {
+              if (!formKey.currentState!.validate()) {
+                setSheetState(() {});
+                return;
+              }
+              setSheetState(() => _submittingOffer = true);
+              try {
+                final offerMessage = messageController.text.trim();
+                final additionalTerms = termsController.text.trim();
+                await getIt<NeedsRepository>().makeOffer(
+                  needId: need.requestId,
+                  price: int.parse(priceController.text.trim()),
+                  currency: need.currency,
+                  timelineText: timelineController.text.trim(),
+                  message: additionalTerms.isEmpty
+                      ? offerMessage
+                      : '$offerMessage\n\nAdditional terms:\n$additionalTerms',
+                );
+                if (sheetContext.mounted) {
+                  Navigator.pop(sheetContext, true);
+                }
+              } catch (e) {
+                setSheetState(() => _submittingOffer = false);
+                final errStr = e.toString();
+                final isGatingError = errStr.contains('P0203') ||
+                    errStr.toLowerCase().contains('declare a capability');
+                if (isGatingError && sheetContext.mounted) {
+                  Navigator.pop(sheetContext, false);
+                  if (context.mounted) _promptCapabilityDeclaration(need);
+                  return;
+                }
+                if (sheetContext.mounted) {
+                  ScaffoldMessenger.of(sheetContext).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        e is AppException ? e.message : 'Could not submit offer',
+                      ),
+                      backgroundColor: AppColors.warning,
+                    ),
+                  );
+                }
+              }
+            }
+
+            return AnimatedPadding(
+              duration: const Duration(milliseconds: 180),
               padding: EdgeInsets.only(
                 left: 20,
                 right: 20,
                 top: 8,
-                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+                bottom: MediaQuery.viewInsetsOf(ctx).bottom + 12,
               ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Make an Offer',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Submit your proposal directly to the requester.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: priceController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        labelText: 'Offer Price (${need.currency})',
-                        hintText: 'e.g. 450000',
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (val) {
-                        final text = val?.trim() ?? '';
-                        if (text.isEmpty) return 'Enter your proposed price';
-                        final numVal = int.tryParse(text);
-                        if (numVal == null || numVal <= 0) {
-                          return 'Enter a valid amount';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: timelineController,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        labelText: 'Delivery / Execution Timeline',
-                        hintText: 'e.g. In 3 days, Immediate, Within 2 weeks',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) {
-                        if ((val ?? '').trim().isEmpty) {
-                          return 'Specify your timeline';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: messageController,
-                      minLines: 2,
-                      maxLines: 4,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        labelText: 'Proposal Details & Experience',
-                        hintText: 'Describe how you will fulfill this need...',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) {
-                        if ((val ?? '').trim().length < 5) {
-                          return 'Add some details to your offer';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _submittingOffer
-                            ? null
-                            : () async {
-                                if (!formKey.currentState!.validate()) return;
-                                setSheetState(() => _submittingOffer = true);
-                                try {
-                                  final price =
-                                      int.parse(priceController.text.trim());
-                                  await getIt<NeedsRepository>().makeOffer(
-                                    needId: need.requestId,
-                                    price: price,
-                                    currency: need.currency,
-                                    timelineText:
-                                        timelineController.text.trim(),
-                                    message: messageController.text.trim(),
-                                  );
-                                  if (sheetContext.mounted) {
-                                    Navigator.pop(sheetContext, true);
-                                  }
-                                } catch (e) {
-                                  setSheetState(() => _submittingOffer = false);
-                                  final errStr = e.toString();
-                                  final isGatingError =
-                                      errStr.contains('P0203') ||
-                                          errStr
-                                              .toLowerCase()
-                                              .contains('declare a capability');
-                                  if (isGatingError && sheetContext.mounted) {
-                                    Navigator.pop(sheetContext, false);
-                                    if (context.mounted) {
-                                      _promptCapabilityDeclaration(need);
-                                    }
-                                    return;
-                                  }
-                                  if (sheetContext.mounted) {
-                                    ScaffoldMessenger.of(sheetContext)
-                                        .showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          e is AppException
-                                              ? e.message
-                                              : 'Could not submit offer',
-                                        ),
-                                        backgroundColor: AppColors.warning,
+              child: SafeArea(
+                top: false,
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SizedBox(
+                    height: constraints.maxHeight * .96,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isPreview ? 'Preview Offer' : 'Make an Offer',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: isPreview
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _offerPreviewSection(
+                                        'Need',
+                                        need.title,
+                                        context: ctx,
                                       ),
-                                    );
-                                  }
-                                }
-                              },
-                        child: _submittingOffer
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('Submit Offer'),
-                      ),
+                                      _offerPreviewSection(
+                                        'Your Offer',
+                                        priceText,
+                                        context: ctx,
+                                      ),
+                                      _offerPreviewSection(
+                                        'Timeline',
+                                        timelineController.text.trim(),
+                                        context: ctx,
+                                      ),
+                                      _offerPreviewSection(
+                                        "What's included",
+                                        messageController.text.trim(),
+                                        context: ctx,
+                                      ),
+                                      if (termsController.text.trim().isNotEmpty)
+                                        _offerPreviewSection(
+                                          'Additional terms',
+                                          termsController.text.trim(),
+                                          context: ctx,
+                                        ),
+                                      _offerPreviewSection(
+                                        'Provider',
+                                        'Your Nipanze provider account',
+                                        context: ctx,
+                                      ),
+                                    ],
+                                  )
+                                : Form(
+                                    key: formKey,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme
+                                                .surfaceContainerHighest,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "You're offering on",
+                                                style: theme.textTheme.labelMedium
+                                                    ?.copyWith(
+                                                  color: theme.colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                need.title,
+                                                style: theme
+                                                    .textTheme.titleSmall
+                                                    ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                '$budgetText · ${need.location} · ${need.timeRemaining ?? need.urgency}',
+                                                style: theme.textTheme.bodySmall,
+                                              ),
+                                              if (need.specification
+                                                  .trim()
+                                                  .isNotEmpty) ...[
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  need.specification.trim(),
+                                                  style: theme.textTheme.bodySmall
+                                                      ?.copyWith(height: 1.35),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 14),
+                                        TextFormField(
+                                          controller: priceController,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          onChanged: (_) => setSheetState(() {}),
+                                          decoration: InputDecoration(
+                                            labelText:
+                                                'Offer Price (${need.currency})',
+                                            hintText: 'e.g. 450000',
+                                            border: const OutlineInputBorder(),
+                                            helperText: price == null ||
+                                                    need.budget <= 0
+                                                ? null
+                                                : price <= need.budget
+                                                    ? "Within the requester's budget"
+                                                    : "Above the requester's budget",
+                                          ),
+                                          validator: (val) {
+                                            final value =
+                                                int.tryParse(val?.trim() ?? '');
+                                            if (value == null || value <= 0) {
+                                              return 'Enter a valid offer price';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Delivery / Execution Timeline',
+                                          style: theme.textTheme.labelLarge,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 2,
+                                          children: [
+                                            for (final option in [
+                                              '1–3 days',
+                                              '1 week',
+                                              '2–4 weeks',
+                                              'Custom',
+                                            ])
+                                              ChoiceChip(
+                                                label: Text(option),
+                                                selected:
+                                                    selectedTimeline == option,
+                                                onSelected: (_) {
+                                                  setSheetState(() {
+                                                    selectedTimeline = option;
+                                                    timelineController.text =
+                                                        option == 'Custom'
+                                                            ? ''
+                                                            : option;
+                                                  });
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                        if (selectedTimeline == 'Custom') ...[
+                                          const SizedBox(height: 6),
+                                          TextFormField(
+                                            controller: timelineController,
+                                            textCapitalization:
+                                                TextCapitalization.sentences,
+                                            onChanged: (_) =>
+                                                setSheetState(() {}),
+                                            decoration: const InputDecoration(
+                                              hintText:
+                                                  'Describe your timeline',
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            validator: (val) =>
+                                                (val ?? '').trim().isEmpty
+                                                    ? 'Specify your timeline'
+                                                    : null,
+                                          ),
+                                        ],
+                                        if (selectedTimeline != 'Custom')
+                                          FormField<String>(
+                                            initialValue: '',
+                                            validator: (_) => timelineController
+                                                    .text
+                                                    .trim()
+                                                    .isEmpty
+                                                ? 'Choose a timeline'
+                                                : null,
+                                            builder: (field) => field.hasError
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 12, top: 4),
+                                                    child: Text(
+                                                      field.errorText!,
+                                                      style: TextStyle(
+                                                        color: theme.colorScheme
+                                                            .error,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const SizedBox.shrink(),
+                                          ),
+                                        const SizedBox(height: 12),
+                                        TextFormField(
+                                          controller: messageController,
+                                          minLines: 3,
+                                          maxLines: 5,
+                                          textCapitalization:
+                                              TextCapitalization.sentences,
+                                          onChanged: (_) => setSheetState(() {}),
+                                          decoration: const InputDecoration(
+                                            labelText:
+                                                'Proposal Details & Experience',
+                                            hintText:
+                                                "Explain what's included, relevant experience, warranty/support, or important conditions.",
+                                            border: OutlineInputBorder(),
+                                            alignLabelWithHint: true,
+                                          ),
+                                          validator: (val) =>
+                                              (val ?? '').trim().length < 5
+                                                  ? 'Add at least 5 characters of offer details'
+                                                  : null,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        TextFormField(
+                                          controller: termsController,
+                                          minLines: 2,
+                                          maxLines: 4,
+                                          textCapitalization:
+                                              TextCapitalization.sentences,
+                                          onChanged: (_) => setSheetState(() {}),
+                                          decoration: const InputDecoration(
+                                            labelText:
+                                                'Additional Terms or Expectations',
+                                            hintText:
+                                                'Add conditions, requirements, payment expectations, exclusions, or warranty terms.',
+                                            border: OutlineInputBorder(),
+                                            alignLabelWithHint: true,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Quick Offer Strategy',
+                                          style: theme.textTheme.labelLarge,
+                                        ),
+                                        Wrap(
+                                          spacing: 8,
+                                          children: [
+                                            for (final strategy in [
+                                              'Fastest',
+                                              'Best Price',
+                                              'Best Value',
+                                            ])
+                                              ChoiceChip(
+                                                label: Text(switch (strategy) {
+                                                  'Fastest' => '⚡ Fastest',
+                                                  'Best Price' => '💰 Best Price',
+                                                  _ => '⭐ Best Value',
+                                                }),
+                                                selected:
+                                                    selectedStrategy == strategy,
+                                                onSelected: (_) => setSheetState(
+                                                  () => selectedStrategy =
+                                                      selectedStrategy == strategy
+                                                          ? ''
+                                                          : strategy,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        if (selectedStrategy.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 2, bottom: 8),
+                                            child: Text(
+                                              strategyHint,
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ),
+                                        Theme(
+                                          data: theme.copyWith(
+                                            dividerColor: Colors.transparent,
+                                          ),
+                                          child: ExpansionTile(
+                                            tilePadding: EdgeInsets.zero,
+                                            childrenPadding:
+                                                const EdgeInsets.only(bottom: 8),
+                                            title: const Text(
+                                                '✨ Offer Assistant'),
+                                            subtitle: const Text(
+                                              'A few details worth checking',
+                                            ),
+                                            children: [
+                                              _assistantRow(
+                                                price != null && price > 0,
+                                                'Offer price entered',
+                                              ),
+                                              _assistantRow(
+                                                timelineController.text
+                                                    .trim()
+                                                    .isNotEmpty,
+                                                'Timeline entered',
+                                              ),
+                                              if (selectedStrategy == 'Fastest')
+                                                const _AssistantNote(
+                                                  text:
+                                                      'Confirm the earliest realistic timeline.',
+                                                ),
+                                              if (selectedStrategy ==
+                                                  'Best Price')
+                                                const _AssistantNote(
+                                                  text:
+                                                      'A competitive price can still state what is included.',
+                                                ),
+                                              if (selectedStrategy ==
+                                                  'Best Value')
+                                                const _AssistantNote(
+                                                  text:
+                                                      'Balance price with quality and service details.',
+                                                ),
+                                              for (final suggestion
+                                                  in suggestions)
+                                                _assistantRow(
+                                                  suggestion.keywords.any(
+                                                    combinedText.contains,
+                                                  ),
+                                                  suggestion.label,
+                                                ),
+                                              if (need.categorySlug ==
+                                                  'travel_international')
+                                                const _AssistantNote(
+                                                  text:
+                                                      'For visa-related services, do not promise approval or a guaranteed outcome.',
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            if (isPreview) ...[
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: _submittingOffer
+                                      ? null
+                                      : () => setSheetState(
+                                            () => isPreview = false,
+                                          ),
+                                  child: const Text('Edit Offer'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed:
+                                      _submittingOffer ? null : submitOffer,
+                                  child: _submittingOffer
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        )
+                                      : const Text('Submit Offer'),
+                                ),
+                              ),
+                            ] else
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: !_submittingOffer && isOfferValid
+                                      ? () {
+                                          if (formKey.currentState!.validate()) {
+                                            setSheetState(
+                                                () => isPreview = true);
+                                          }
+                                        }
+                                      : null,
+                                  child: const Text('Preview Offer'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -231,6 +577,11 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
         );
       },
     );
+
+    priceController.dispose();
+    timelineController.dispose();
+    messageController.dispose();
+    termsController.dispose();
 
     if (submitted == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -241,6 +592,95 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       );
       await _loadOffers();
     }
+  }
+
+  List<_OfferSuggestion> _offerSuggestions(String categorySlug) {
+    final common = <_OfferSuggestion>[
+      _OfferSuggestion('Mention warranty or support', ['warranty', 'support']),
+      _OfferSuggestion('Clarify what is included in the price', [
+        'included',
+        'includes',
+        'including',
+        'excludes',
+        'excluding',
+      ]),
+    ];
+    final category = switch (categorySlug) {
+      'machinery_equipment' => <_OfferSuggestion>[
+          _OfferSuggestion('Specify equipment type or model', ['model', 'type']),
+          _OfferSuggestion('Say whether an operator is included', ['operator']),
+          _OfferSuggestion('Clarify transport arrangements', ['transport', 'delivery']),
+          _OfferSuggestion('Mention fuel responsibility', ['fuel']),
+          _OfferSuggestion('Confirm availability', ['available', 'availability']),
+          _OfferSuggestion('State operating period or hours', ['hours', 'period']),
+          _OfferSuggestion('Clarify maintenance responsibility', ['maintenance']),
+        ],
+      'transport_logistics' => <_OfferSuggestion>[
+          _OfferSuggestion('Specify vehicle type', ['vehicle', 'truck', 'van']),
+          _OfferSuggestion('State load or capacity', ['capacity', 'tonne', 'load']),
+          _OfferSuggestion('Confirm pickup point', ['pickup', 'pick-up']),
+          _OfferSuggestion('Confirm destination', ['destination', 'to ']),
+          _OfferSuggestion('Clarify delivery timing', ['delivery', 'deliver']),
+          _OfferSuggestion('List what the price includes', ['included', 'includes']),
+        ],
+      'professional_services' => <_OfferSuggestion>[
+          _OfferSuggestion('Mention relevant experience', ['experience', 'years']),
+          _OfferSuggestion('Add relevant qualifications', ['qualification', 'certified']),
+          _OfferSuggestion('Define deliverables', ['deliverable', 'report', 'files']),
+          _OfferSuggestion('Confirm timeline', ['timeline', 'days', 'weeks']),
+          _OfferSuggestion('Clarify what is included', ['included', 'includes']),
+          _OfferSuggestion('Reference previous work', ['previous work', 'portfolio']),
+        ],
+      'specialized_products' => <_OfferSuggestion>[
+          _OfferSuggestion('Specify product or brand', ['product', 'brand', 'model']),
+          _OfferSuggestion('State quantity', ['quantity', 'units', 'pieces']),
+          _OfferSuggestion('Break out unit price if useful', ['unit price', 'per unit']),
+          _OfferSuggestion('Clarify delivery', ['delivery', 'delivered']),
+          _OfferSuggestion('Mention condition and availability', ['condition', 'available']),
+        ],
+      'travel_international' => <_OfferSuggestion>[
+          _OfferSuggestion('Describe the service being provided', ['service', 'assistance']),
+          _OfferSuggestion('Specify destination', ['destination', 'travel to']),
+          _OfferSuggestion('Clarify timeline', ['timeline', 'days', 'weeks']),
+          _OfferSuggestion('List third-party or government fees', ['government fee', 'third-party', 'visa fee']),
+          _OfferSuggestion('State refund or cancellation conditions', ['refund', 'cancellation']),
+          _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
+        ],
+      _ => <_OfferSuggestion>[
+          _OfferSuggestion('Clarify what is included', ['included', 'includes']),
+          _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
+          _OfferSuggestion('Confirm availability and timeline', ['available', 'timeline']),
+        ],
+    };
+    return [...category, ...common];
+  }
+
+  Widget _offerPreviewSection(
+    String label,
+    String value, {
+    required BuildContext context,
+  }) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(value, style: theme.textTheme.bodyLarge),
+        ],
+      ),
+    );
+  }
+
+  Widget _assistantRow(bool complete, String text) {
+    return _AssistantCheck(complete: complete, text: text);
   }
 
   Future<void> _promptCapabilityDeclaration(NeedsListing need) async {
