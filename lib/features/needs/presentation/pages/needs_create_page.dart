@@ -32,6 +32,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   final Map<String, TextEditingController> _dynamicControllers = {};
   final Map<String, bool> _dynamicBooleans = {};
+  List<NeedCategory> _categories = NeedCategory.defaultCategories;
 
   String _categorySlug = 'machinery_equipment';
   String _urgency = 'Within 30 days';
@@ -53,6 +54,20 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _budgetController.addListener(_refresh);
     _customLocationController.addListener(_refresh);
     _initCategoryControllers();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final categories = await getIt<NeedsRepository>().getCategories();
+    if (!mounted || categories.isEmpty) return;
+
+    setState(() {
+      _categories = categories;
+      if (!categories.any((category) => category.slug == _categorySlug)) {
+        _categorySlug = categories.first.slug;
+        _initCategoryControllers();
+      }
+    });
   }
 
   void _initCategoryControllers() {
@@ -140,12 +155,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   }
 
   String _categoryLocalizedName(AppLocalizations l10n, String slug) {
+    final category = _categories.firstWhere(
+      (item) => item.slug == slug,
+      orElse: () => NeedCategory.findBySlug(slug),
+    );
     return switch (slug) {
       'travel_international' => 'Travel & International',
       'machinery_equipment' => 'Machinery & Equipment',
       'professional_services' => 'Professional Services',
       'transport_logistics' => 'Transport & Logistics',
-      _ => 'Specialized Products & Procurement',
+      _ => category.name,
     };
   }
 
@@ -279,7 +298,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() => _submitting = true);
     try {
       final country = EastAfricaCountries.findByCode(authState.user.country);
-      final categoryObj = NeedCategory.findBySlug(_categorySlug);
+      final categoryObj = _categories.firstWhere(
+        (category) => category.slug == _categorySlug,
+        orElse: () => NeedCategory.findBySlug(_categorySlug),
+      );
       final requestId = await getIt<NeedsRepository>().createRequest(
         title: _titleController.text,
         specification: _specificationController.text,
@@ -388,7 +410,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     labelText: l10n.needsCategoryLabel,
                     border: const OutlineInputBorder(),
                   ),
-                  items: NeedCategory.defaultCategories
+                  items: _categories
                       .map(
                         (cat) => DropdownMenuItem(
                           value: cat.slug,
