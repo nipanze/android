@@ -35,9 +35,8 @@ class ProviderRepository implements IProviderRepository {
 
       return (data as List).map((e) {
         final nc = e['need_capabilities'] as Map<String, dynamic>?;
-        final cat = nc != null
-            ? nc['need_categories'] as Map<String, dynamic>?
-            : null;
+        final cat =
+            nc != null ? nc['need_categories'] as Map<String, dynamic>? : null;
         return ProviderCapability.fromMap({
           ...e,
           'capability_name': nc?['name'],

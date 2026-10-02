@@ -37,7 +37,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   }
 
   void _loadNeed() {
-    _futureNeed = getIt<MarketplaceRepository>().getNeedsDetail(widget.requestId);
+    _futureNeed =
+        getIt<MarketplaceRepository>().getNeedsDetail(widget.requestId);
     _loadOffers();
   }
 
@@ -169,12 +170,14 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                 if (!formKey.currentState!.validate()) return;
                                 setSheetState(() => _submittingOffer = true);
                                 try {
-                                  final price = int.parse(priceController.text.trim());
+                                  final price =
+                                      int.parse(priceController.text.trim());
                                   await getIt<NeedsRepository>().makeOffer(
                                     needId: need.requestId,
                                     price: price,
                                     currency: need.currency,
-                                    timelineText: timelineController.text.trim(),
+                                    timelineText:
+                                        timelineController.text.trim(),
                                     message: messageController.text.trim(),
                                   );
                                   if (sheetContext.mounted) {
@@ -183,8 +186,11 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                 } catch (e) {
                                   setSheetState(() => _submittingOffer = false);
                                   final errStr = e.toString();
-                                  final isGatingError = errStr.contains('P0203') ||
-                                      errStr.toLowerCase().contains('declare a capability');
+                                  final isGatingError =
+                                      errStr.contains('P0203') ||
+                                          errStr
+                                              .toLowerCase()
+                                              .contains('declare a capability');
                                   if (isGatingError && sheetContext.mounted) {
                                     Navigator.pop(sheetContext, false);
                                     if (context.mounted) {
@@ -193,7 +199,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                     return;
                                   }
                                   if (sheetContext.mounted) {
-                                    ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                    ScaffoldMessenger.of(sheetContext)
+                                        .showSnackBar(
                                       SnackBar(
                                         content: Text(
                                           e is AppException
@@ -210,7 +217,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Submit Offer'),
                       ),
@@ -378,9 +386,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final detailSurface = isDark
-        ? AppColors.bg2Dark
-        : theme.colorScheme.surfaceContainerHighest;
+    final detailSurface =
+        isDark ? AppColors.bg2Dark : theme.colorScheme.surfaceContainerHighest;
 
     return FutureBuilder<NeedsListing>(
       future: _futureNeed,
@@ -422,7 +429,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                   color: detailSurface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    color:
+                        isDark ? AppColors.borderDark : AppColors.borderLight,
                   ),
                 ),
                 child: Column(
@@ -437,16 +445,19 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.9),
+                              color: const Color(0xFFF59E0B)
+                                  .withValues(alpha: 0.9),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(need.categoryIcon, style: const TextStyle(fontSize: 13)),
+                              Text(need.categoryIcon,
+                                  style: const TextStyle(fontSize: 13)),
                               const SizedBox(width: 4),
                               Text(
                                 need.category,
@@ -528,7 +539,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                             children: [
                               Text(
                                 '${_formatKey(entry.key)}: ',
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                               ),
                               Expanded(
                                 child: Text('${entry.value}'),
@@ -596,20 +608,20 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                 )
               else
                 ..._offers.asMap().entries.map(
-                  (entry) => _OfferCard(
-                    offer: entry.value,
-                    index: entry.key + 1,
-                    capabilityName: need.capabilitySlug != null
-                        ? _formatKey(need.capabilitySlug!)
-                        : null,
-                    onAccept: _actionInProgress
-                        ? null
-                        : () => _acceptOffer(entry.value.id),
-                    onUnlock: _actionInProgress
-                        ? null
-                        : () => _unlockContact(entry.value.id),
-                  ),
-                ),
+                      (entry) => _OfferCard(
+                        offer: entry.value,
+                        index: entry.key + 1,
+                        capabilityName: need.capabilitySlug != null
+                            ? _formatKey(need.capabilitySlug!)
+                            : null,
+                        onAccept: _actionInProgress
+                            ? null
+                            : () => _acceptOffer(entry.value.id),
+                        onUnlock: _actionInProgress
+                            ? null
+                            : () => _unlockContact(entry.value.id),
+                      ),
+                    ),
               const SizedBox(height: 24),
               // ── Make Offer Action Button ─────────────────────────────────
               if (!hasAlreadyOffered && acceptedOffer == null)
@@ -629,7 +641,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
     return key
         .replaceAll('_', ' ')
         .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .map(
+            (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
         .join(' ');
   }
 
@@ -668,7 +681,9 @@ class _OfferCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isAccepted
             ? AppColors.success.withValues(alpha: 0.1)
-            : (isDark ? AppColors.bg2Dark : theme.colorScheme.surfaceContainerHighest),
+            : (isDark
+                ? AppColors.bg2Dark
+                : theme.colorScheme.surfaceContainerHighest),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isAccepted
@@ -696,7 +711,8 @@ class _OfferCard extends StatelessWidget {
                   if (isAccepted) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
@@ -730,22 +746,26 @@ class _OfferCard extends StatelessWidget {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              if (offer.providerRatingAvg != null && offer.providerRatingAvg! > 0)
+              if (offer.providerRatingAvg != null &&
+                  offer.providerRatingAvg! > 0)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                    const Icon(Icons.star_rounded,
+                        size: 14, color: Color(0xFFF59E0B)),
                     const SizedBox(width: 2),
                     Text(
                       offer.providerRatingAvg!.toStringAsFixed(1),
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 11.5, fontWeight: FontWeight.w600),
                     ),
                     if (offer.providerReviewCount > 0)
                       Text(
                         ' (${offer.providerReviewCount})',
                         style: TextStyle(
                           fontSize: 10.5,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.5),
                         ),
                       ),
                   ],
@@ -754,11 +774,13 @@ class _OfferCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.handshake_outlined, size: 13, color: AppColors.accent),
+                    const Icon(Icons.handshake_outlined,
+                        size: 13, color: AppColors.accent),
                     const SizedBox(width: 3),
                     Text(
                       '${offer.providerCompletedDeals} completed',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                          fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -766,18 +788,22 @@ class _OfferCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.phone_android_rounded, size: 13, color: AppColors.success),
+                    const Icon(Icons.phone_android_rounded,
+                        size: 13, color: AppColors.success),
                     const SizedBox(width: 2),
                     const Text(
                       'Phone verified',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: (offer.isProviderVerified ? AppColors.accent : AppColors.warning)
+                  color: (offer.isProviderVerified
+                          ? AppColors.accent
+                          : AppColors.warning)
                       .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -785,19 +811,29 @@ class _OfferCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      offer.isProviderVerified ? Icons.verified_rounded : Icons.info_outline_rounded,
+                      offer.isProviderVerified
+                          ? Icons.verified_rounded
+                          : Icons.info_outline_rounded,
                       size: 11,
-                      color: offer.isProviderVerified ? AppColors.accent : AppColors.warning,
+                      color: offer.isProviderVerified
+                          ? AppColors.accent
+                          : AppColors.warning,
                     ),
                     const SizedBox(width: 3),
                     Text(
                       offer.isProviderVerified
-                          ? (capabilityName != null ? '$capabilityName · Provider Verified' : 'Provider Verified')
-                          : (capabilityName != null ? '$capabilityName · Self-declared' : 'Self-declared'),
+                          ? (capabilityName != null
+                              ? '$capabilityName · Provider Verified'
+                              : 'Provider Verified')
+                          : (capabilityName != null
+                              ? '$capabilityName · Self-declared'
+                              : 'Self-declared'),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: offer.isProviderVerified ? AppColors.accent : AppColors.warning,
+                        color: offer.isProviderVerified
+                            ? AppColors.accent
+                            : AppColors.warning,
                       ),
                     ),
                   ],
@@ -821,13 +857,16 @@ class _OfferCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          if (offer.id.isNotEmpty && offer.status == 'pending' && onAccept != null)
+          if (offer.id.isNotEmpty &&
+              offer.status == 'pending' &&
+              onAccept != null)
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed: onAccept,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   textStyle: const TextStyle(fontSize: 12),
                 ),
                 child: const Text('Accept Offer'),

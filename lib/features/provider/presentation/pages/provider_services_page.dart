@@ -68,10 +68,9 @@ class _ProviderServicesView extends StatelessWidget {
           final loaded = state as CapabilitiesLoaded;
           final caps = loaded.capabilities;
           final opps = loaded.opportunities;
-            final profileState = context.watch<ProfileCubit>().state;
-            final profile = profileState is ProfileCubitLoaded
-              ? profileState.profile
-              : null;
+          final profileState = context.watch<ProfileCubit>().state;
+          final profile =
+              profileState is ProfileCubitLoaded ? profileState.profile : null;
 
           if (caps.isEmpty) {
             return _EmptyState(l10n: l10n, isDark: isDark);
@@ -108,12 +107,9 @@ class _ProviderServicesView extends StatelessWidget {
                     phoneVerified: profile?.trustPhoneVerified ?? false,
                     identityVerified: profile?.isKycApproved ?? false,
                     opportunityCount: opps
-                        .where((o) =>
-                            o.capabilitySlug == cap.capabilitySlug)
-                        .fold<int>(
-                            0, (sum, o) => sum + o.opportunityCount),
-                    onRemove: () =>
-                        _confirmRemove(context, cap, l10n),
+                        .where((o) => o.capabilitySlug == cap.capabilitySlug)
+                        .fold<int>(0, (sum, o) => sum + o.opportunityCount),
+                    onRemove: () => _confirmRemove(context, cap, l10n),
                   ),
                 ),
               ],

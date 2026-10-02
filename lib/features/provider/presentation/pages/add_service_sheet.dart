@@ -174,7 +174,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         (c) => c.slug == widget.preselectedCategorySlug,
         orElse: () => cats.first,
       );
-      _selectCategory(cat);
+      await _selectCategory(cat);
     }
   }
 
@@ -183,8 +183,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _selectedCategory = cat;
       _loading = true;
     });
-    final caps = await widget.needsRepository
-        .getCapabilities(categorySlug: cat.slug);
+    final caps =
+        await widget.needsRepository.getCapabilities(categorySlug: cat.slug);
     if (!mounted) return;
     setState(() {
       _capabilities = caps;
@@ -272,9 +272,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                         _step == 0
                             ? l10n.chooseCategory
                             : _showMarketing
-                              ? l10n.marketingAndPromotion
-                              : (_selectedCategory?.name ??
-                                l10n.chooseCapabilities),
+                                ? l10n.marketingAndPromotion
+                                : (_selectedCategory?.name ??
+                                    l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -283,7 +283,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                     ),
                     if (_step == 1 && _canSubmit)
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(_selection()),
+                        onPressed: () =>
+                            Navigator.of(context).pop(_selection()),
                         child: Text(
                           l10n.addSelected,
                           style: const TextStyle(
@@ -335,21 +336,21 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                 }),
                               )
                             : _CapabilityList(
-                            capabilities: _capabilities,
-                            existingSlugs: widget.existingSlugs,
-                            selected: _selected,
-                            scrollController: scrollController,
-                            onMarketingTap: _openMarketing,
-                            onToggle: (slug) {
-                              setState(() {
-                                if (_selected.contains(slug)) {
-                                  _selected.remove(slug);
-                                } else {
-                                  _selected.add(slug);
-                                }
-                              });
-                            },
-                          ),
+                                capabilities: _capabilities,
+                                existingSlugs: widget.existingSlugs,
+                                selected: _selected,
+                                scrollController: scrollController,
+                                onMarketingTap: _openMarketing,
+                                onToggle: (slug) {
+                                  setState(() {
+                                    if (_selected.contains(slug)) {
+                                      _selected.remove(slug);
+                                    } else {
+                                      _selected.add(slug);
+                                    }
+                                  });
+                                },
+                              ),
               ),
             ],
           ),
@@ -395,19 +396,17 @@ class _CategoryList extends StatelessWidget {
           ),
           title: Text(cat.name,
               style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: cat.description == null || cat.description!.isEmpty
+          subtitle: cat.description == null || cat.description!.isEmpty
               ? null
               : Text(
-                cat.description!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                  ? AppColors.text2Dark
-                  : AppColors.text2Light,
+                  cat.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+                  ),
                 ),
-              ),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => onSelect(cat),
         );
@@ -462,7 +461,7 @@ class _CapabilityList extends StatelessWidget {
         return ListTile(
           enabled: !alreadyOwned,
           leading: alreadyOwned
-              ? Icon(Icons.check_circle_rounded,
+              ? const Icon(Icons.check_circle_rounded,
                   color: AppColors.success, size: 22)
               : Checkbox(
                   value: isSelected,

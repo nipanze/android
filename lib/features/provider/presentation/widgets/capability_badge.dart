@@ -173,7 +173,8 @@ String _capabilityDisplayName(
   String slug,
   String fallback,
   AppLocalizations l10n,
-) => switch (slug) {
+) =>
+    switch (slug) {
       'marketing_services' => l10n.marketingAndPromotion,
       'social_media_marketing' => l10n.socialMediaMarketing,
       'tiktok_promotion' => l10n.tiktokPromotion,
