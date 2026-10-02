@@ -1837,6 +1837,31 @@ class AppLocalizationsRw extends AppLocalizations {
       'KYC yawe yarangiye. Nyamuneka ongera kwemeza.';
 
   @override
+  String get providerVerificationRequiredTitle =>
+      'Kwemeza utanga serivisi birakenewe';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Emeza ko utanga serivisi mbere yo kuzikorera muri iki cyiciro.';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Kwemeza umwirondoro birakenewe';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Emeza umwirondoro wawe mbere yo gutangaza cyangwa gutanga serivisi kuri Nipanze.';
+
+  @override
+  String get startProviderVerificationBtn => 'Tangira kwemeza utanga serivisi';
+
+  @override
+  String get verifyIdentityBtn => 'Emeza umwirondoro';
+
+  @override
+  String get maybeLaterBtn => 'Wenda nyuma';
+
+  @override
   String get kycStatusNotSubmitted => 'Ntibyatanzwe';
 
   @override

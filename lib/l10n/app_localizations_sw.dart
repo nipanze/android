@@ -1840,6 +1840,31 @@ class AppLocalizationsSw extends AppLocalizations {
       'KYC yako imepita muda. Tafadhali thibitisha upya.';
 
   @override
+  String get providerVerificationRequiredTitle =>
+      'Uthibitisho wa mtoa huduma unahitajika';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Kamilisha uthibitisho wa mtoa huduma kabla ya kutoa huduma katika aina hii.';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Uthibitisho wa kitambulisho unahitajika';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Thibitisha kitambulisho chako kabla ya kuchapisha au kutoa huduma kwenye Nipanze.';
+
+  @override
+  String get startProviderVerificationBtn => 'Anza Uthibitisho wa Mtoa Huduma';
+
+  @override
+  String get verifyIdentityBtn => 'Thibitisha Kitambulisho';
+
+  @override
+  String get maybeLaterBtn => 'Labda Baadaye';
+
+  @override
   String get kycStatusNotSubmitted => 'Haijwasilishwa';
 
   @override

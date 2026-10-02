@@ -3374,6 +3374,48 @@ abstract class AppLocalizations {
   /// **'Your KYC has expired. Please re-verify.'**
   String get kycStatusExpiredDesc;
 
+  /// No description provided for @providerVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider verification required'**
+  String get providerVerificationRequiredTitle;
+
+  /// No description provided for @providerVerificationRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete provider verification before offering services in this category.'**
+  String get providerVerificationRequiredDesc;
+
+  /// No description provided for @identityVerificationRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification required'**
+  String get identityVerificationRequiredTitle;
+
+  /// No description provided for @identityVerificationRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity before you can post or offer on Nipanze.'**
+  String get identityVerificationRequiredDesc;
+
+  /// No description provided for @startProviderVerificationBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Provider Verification'**
+  String get startProviderVerificationBtn;
+
+  /// No description provided for @verifyIdentityBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Identity'**
+  String get verifyIdentityBtn;
+
+  /// No description provided for @maybeLaterBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get maybeLaterBtn;
+
   /// No description provided for @kycStatusNotSubmitted.
   ///
   /// In en, this message translates to:

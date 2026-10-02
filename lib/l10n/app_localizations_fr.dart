@@ -1854,6 +1854,32 @@ class AppLocalizationsFr extends AppLocalizations {
       'Votre KYC a expiré. Veuillez vous re-vérifier.';
 
   @override
+  String get providerVerificationRequiredTitle =>
+      'Vérification du prestataire requise';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'Effectuez la vérification du prestataire avant de proposer des services dans cette catégorie.';
+
+  @override
+  String get identityVerificationRequiredTitle =>
+      'Vérification d\'identité requise';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'Vérifiez votre identité avant de publier ou de proposer des services sur Nipanze.';
+
+  @override
+  String get startProviderVerificationBtn =>
+      'Commencer la vérification du prestataire';
+
+  @override
+  String get verifyIdentityBtn => 'Vérifier mon identité';
+
+  @override
+  String get maybeLaterBtn => 'Plus tard';
+
+  @override
   String get kycStatusNotSubmitted => 'Non soumis';
 
   @override

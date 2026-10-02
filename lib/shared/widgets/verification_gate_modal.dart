@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/di/injection.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
-import '../../features/auth/domain/models/nipanze_user.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/kyc/data/verification_service.dart';
 import '../../features/kyc/domain/models/verification_requirement.dart';

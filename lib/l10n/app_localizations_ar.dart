@@ -1815,6 +1815,29 @@ class AppLocalizationsAr extends AppLocalizations {
       'انتهت صلاحية KYC الخاص بك. يُرجى إعادة التحقق.';
 
   @override
+  String get providerVerificationRequiredTitle => 'يلزم التحقق من مقدم الخدمة';
+
+  @override
+  String get providerVerificationRequiredDesc =>
+      'أكمل التحقق من مقدم الخدمة قبل تقديم الخدمات ضمن هذه الفئة.';
+
+  @override
+  String get identityVerificationRequiredTitle => 'يلزم التحقق من الهوية';
+
+  @override
+  String get identityVerificationRequiredDesc =>
+      'تحقق من هويتك قبل النشر أو تقديم الخدمات على Nipanze.';
+
+  @override
+  String get startProviderVerificationBtn => 'بدء التحقق من مقدم الخدمة';
+
+  @override
+  String get verifyIdentityBtn => 'التحقق من الهوية';
+
+  @override
+  String get maybeLaterBtn => 'ربما لاحقًا';
+
+  @override
   String get kycStatusNotSubmitted => 'لم يُقدَّم';
 
   @override
