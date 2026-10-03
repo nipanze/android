@@ -64,6 +64,47 @@ void main() {
     }
   });
 
+  test('all need categories have usable guidance and field explanations', () {
+    const catalogCategorySlugs = [
+      'machinery_equipment',
+      'professional_services',
+      'transport_logistics',
+      'specialized_products',
+      'construction_building',
+      'agriculture_agribusiness',
+      'technology_digital',
+      'events_production',
+      'energy_utilities',
+      'education_training',
+      'travel_international',
+      'music_video',
+      'weddings_celebrations',
+    ];
+
+    for (final categorySlug in catalogCategorySlugs) {
+      final guidance = NeedFormSchema.categoryGuidance[categorySlug];
+
+      expect(guidance, isNotNull, reason: categorySlug);
+      expect(guidance!.titleHint, isNotEmpty, reason: categorySlug);
+      expect(guidance.specificationHint, isNotEmpty, reason: categorySlug);
+      expect(guidance.specificationHelper, isNotEmpty, reason: categorySlug);
+      for (final field in NeedFormSchema.fieldsForCategory(categorySlug)) {
+        expect(field.guidance, isNotEmpty,
+            reason: '$categorySlug/${field.key}');
+      }
+    }
+
+    expect(
+      NeedFormSchema.categoryFields.keys,
+      containsAll(catalogCategorySlugs),
+    );
+    expect(
+      NeedFormSchema.guidanceForCategory('another_need_category')
+          .specificationHelper,
+      isNotEmpty,
+    );
+  });
+
   test('travel fields include actionable helpers and privacy guidance', () {
     final fields = NeedFormSchema.fieldsForCategory('travel_international');
     final byKey = {for (final field in fields) field.key: field};

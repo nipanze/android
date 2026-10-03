@@ -100,6 +100,48 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     if (mounted) setState(() {});
   }
 
+  void _showFieldInfo(String title, String body) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.info_outline_rounded),
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTooltip(String title, String body) {
+    return GestureDetector(
+      onTap: () => _showFieldInfo(title, body),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: Icon(
+          Icons.info_outline_rounded,
+          size: 15,
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.65),
+        ),
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String label, String guidance) {
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 4,
+      children: [
+        Text(label),
+        _buildInfoTooltip(label, guidance),
+      ],
+    );
+  }
+
   bool get _isReadyToPublish {
     final title = _titleController.text.trim();
     final specification = _specificationController.text.trim();
@@ -386,7 +428,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       Localizations.localeOf(context).toLanguageTag(),
     );
 
-    final guidance = NeedFormSchema.categoryGuidance[_categorySlug];
+    final guidance = NeedFormSchema.guidanceForCategory(_categorySlug);
+    final selectedCategory = _categories.firstWhere(
+      (category) => category.slug == _categorySlug,
+      orElse: () => NeedCategory.findBySlug(_categorySlug),
+    );
+    final countryCode =
+        authState is AuthAuthenticated ? authState.user.country : null;
+    final categoryDescription =
+        selectedCategory.descriptionForCountry(countryCode)?.trim();
     final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
 
     return Scaffold(
@@ -418,7 +468,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 DropdownButtonFormField<String>(
                   initialValue: _categorySlug,
                   decoration: InputDecoration(
-                    labelText: l10n.needsCategoryLabel,
+                    label: _fieldLabel(
+                      l10n.needsCategoryLabel,
+                      categoryDescription != null &&
+                              categoryDescription.isNotEmpty
+                          ? categoryDescription
+                          : guidance.specificationHelper,
+                    ),
                     border: const OutlineInputBorder(),
                   ),
                   items: _categories
@@ -450,8 +506,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   controller: _titleController,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: l10n.needsTitleLabel,
-                    hintText: guidance?.titleHint ?? l10n.needsTitleHint,
+                    label: _fieldLabel(
+                      l10n.needsTitleLabel,
+                      guidance.titleHint,
+                    ),
+                    hintText: guidance.titleHint,
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -468,12 +527,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   maxLines: 6,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: _categorySlug == 'education_training'
-                        ? 'Course / Subject / Skill'
-                        : l10n.needsSpecificationLabel,
-                    hintText: guidance?.specificationHint ??
-                        l10n.needsSpecificationHint,
-                    helperText: guidance?.specificationHelper,
+                    label: _fieldLabel(
+                      _categorySlug == 'education_training'
+                          ? 'Course / Subject / Skill'
+                          : l10n.needsSpecificationLabel,
+                      guidance.specificationHelper,
+                    ),
+                    hintText: guidance.specificationHint,
+                    helperText: guidance.specificationHelper,
                     alignLabelWithHint: true,
                     border: const OutlineInputBorder(),
                   ),
@@ -502,7 +563,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     if (field.type == NeedFieldType.boolean)
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(field.label),
+                        title: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(child: Text(field.label)),
+                            _buildInfoTooltip(field.label, field.guidance),
+                          ],
+                        ),
                         subtitle: field.helperText == null
                             ? null
                             : Text(field.helperText!),
@@ -523,7 +590,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                   ? null
                                   : _dynamicControllers[field.key]?.text,
                           decoration: InputDecoration(
-                            labelText: field.label,
+                            label: _fieldLabel(field.label, field.guidance),
                             hintText: field.hint,
                             helperText: field.helperText,
                             border: const OutlineInputBorder(),
@@ -557,7 +624,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               ? TextInputType.number
                               : TextInputType.text,
                           decoration: InputDecoration(
-                            labelText: field.label,
+                            label: _fieldLabel(field.label, field.guidance),
                             hintText: field.hint,
                             helperText: field.helperText,
                             border: const OutlineInputBorder(),
@@ -579,9 +646,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
-                    labelText: _categorySlug == 'education_training'
-                        ? 'Maximum Budget ($currency)'
-                        : l10n.needsBudgetLabel(currency),
+                    label: _fieldLabel(
+                      _categorySlug == 'education_training'
+                          ? 'Maximum Budget ($currency)'
+                          : l10n.needsBudgetLabel(currency),
+                      l10n.needsBudgetHelper,
+                    ),
                     hintText: l10n.needsBudgetHint,
                     helperText: l10n.needsBudgetHelper,
                     border: const OutlineInputBorder(),
@@ -600,7 +670,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 DropdownButtonFormField<String>(
                   initialValue: selectedLocation,
                   decoration: InputDecoration(
-                    labelText: country.regionsLabel,
+                    label: _fieldLabel(
+                      country.regionsLabel,
+                      'Choose the area where you need the service or delivery.',
+                    ),
                     border: const OutlineInputBorder(),
                   ),
                   items: country.regions
@@ -629,7 +702,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     controller: _customLocationController,
                     textCapitalization: TextCapitalization.words,
                     decoration: InputDecoration(
-                      labelText: l10n.needsCustomLocationLabel,
+                      label: _fieldLabel(
+                        l10n.needsCustomLocationLabel,
+                        l10n.needsCustomLocationHint,
+                      ),
                       hintText: l10n.needsCustomLocationHint,
                       border: const OutlineInputBorder(),
                     ),
@@ -646,7 +722,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 DropdownButtonFormField<String>(
                   initialValue: _urgency,
                   decoration: InputDecoration(
-                    labelText: l10n.needsUrgencyLabel,
+                    label: _fieldLabel(
+                      l10n.needsUrgencyLabel,
+                      'Choose when you need providers to respond or complete the work.',
+                    ),
                     border: const OutlineInputBorder(),
                   ),
                   items: _urgencies

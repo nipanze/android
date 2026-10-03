@@ -54,6 +54,20 @@ class NeedFormField {
   final NeedFieldType type;
   final bool isRequired;
   final List<String>? options;
+
+  String get guidance {
+    final helper = helperText?.trim();
+    if (helper != null && helper.isNotEmpty) return helper;
+    final fieldHint = hint.trim();
+    if (fieldHint.isNotEmpty) {
+      final examplePrefix = RegExp(r'^e\.g\.\s*', caseSensitive: false);
+      if (examplePrefix.hasMatch(fieldHint)) {
+        return 'For example, ${fieldHint.replaceFirst(examplePrefix, '')}';
+      }
+      return fieldHint;
+    }
+    return 'Select this if it applies to your request.';
+  }
 }
 
 class NeedFormGuidance {
@@ -152,6 +166,16 @@ class NeedFormSchema {
           'Include the power or water needs, site location, system size if known, and whether installation is required.',
     ),
   };
+
+  static NeedFormGuidance guidanceForCategory(String slug) {
+    return categoryGuidance[slug] ??
+        const NeedFormGuidance(
+          titleHint: 'e.g. Briefly describe what you need',
+          specificationHint: 'Explain what you need and any important details',
+          specificationHelper:
+              'Include quantities, dates, location, preferences, and the result you expect.',
+        );
+  }
 
   static const Map<String, List<NeedFormField>> categoryFields = {
     'education_training': [
