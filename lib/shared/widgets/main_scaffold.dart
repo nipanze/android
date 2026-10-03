@@ -183,8 +183,7 @@ class MainScaffold extends StatelessWidget {
               builder: (context, authState) {
                 final user =
                     authState is AuthAuthenticated ? authState.user : null;
-                final hasIncomplete =
-                    user?.hasIncompleteAccountSteps ?? false;
+                final hasIncomplete = user?.hasIncompleteAccountSteps ?? false;
                 return Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -309,23 +308,34 @@ class MainScaffold extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 8),
-              ListTile(
-                leading: const Icon(
-                  Icons.business_center_outlined,
-                  color: Color(0xFF3B82F6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Material(
+                  color: Color.alphaBlend(
+                    theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                    theme.colorScheme.surface,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.business_center_outlined,
+                      color: Color(0xFF3B82F6),
+                    ),
+                    title: Text(
+                      l10n?.postServiceAction ?? 'Offer a Service',
+                      style: optionTitleStyle,
+                    ),
+                    subtitle: Text(
+                      l10n?.postServiceSubtitle ??
+                          'List your services and get matched with client requests',
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      context.push(AppRoutes.accountServices);
+                    },
+                  ),
                 ),
-                title: Text(
-                  l10n?.postServiceAction ?? 'Offer a Service',
-                  style: optionTitleStyle,
-                ),
-                subtitle: Text(
-                  l10n?.postServiceSubtitle ??
-                      'List your services and get matched with client requests',
-                ),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  context.push(AppRoutes.accountServices);
-                },
               ),
             ],
           ),
