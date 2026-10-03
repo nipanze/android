@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @navPositions.
   ///
   /// In en, this message translates to:
-  /// **'Positions'**
+  /// **'Activity'**
   String get navPositions;
 
   /// No description provided for @navAccount.
