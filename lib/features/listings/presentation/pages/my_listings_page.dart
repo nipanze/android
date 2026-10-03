@@ -533,8 +533,8 @@ class _ForexRequestCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.headlineSmall?.copyWith(
                                 color: theme.colorScheme.onSurface,
-                                fontSize: 19,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
                                 height: 1.05,
                               ),
                             ),
@@ -566,10 +566,11 @@ class _ForexRequestCard extends StatelessWidget {
                                 projectedAmount,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.labelMedium?.copyWith(
+                                style: theme.textTheme.headlineSmall?.copyWith(
                                   color: theme.colorScheme.onSurface,
-                                  fontSize: 13,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w700,
+                                  height: 1.05,
                                 ),
                               ),
                             ],
