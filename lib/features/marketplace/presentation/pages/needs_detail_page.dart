@@ -84,8 +84,14 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       showDragHandle: true,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
+        return _NeedsOfferSheetLifetime(
+          controllers: [
+            priceController,
+            timelineController,
+            messageController,
+            termsController,
+          ],
+          child: StatefulBuilder(builder: (ctx, setSheetState) {
             final price = int.tryParse(priceController.text.trim());
             final isOfferValid = price != null &&
                 price > 0 &&
@@ -132,7 +138,9 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                   Navigator.pop(sheetContext, true);
                 }
               } catch (e) {
-                setSheetState(() => _submittingOffer = false);
+                if (sheetContext.mounted) {
+                  setSheetState(() => _submittingOffer = false);
+                }
                 final errStr = e.toString();
                 final isGatingError = errStr.contains('P0203') ||
                     errStr.toLowerCase().contains('declare a capability');
@@ -577,15 +585,10 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                 ),
               ),
             );
-          },
+          }),
         );
       },
     );
-
-    priceController.dispose();
-    timelineController.dispose();
-    messageController.dispose();
-    termsController.dispose();
 
     if (submitted == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1100,6 +1103,33 @@ class _OfferSuggestion {
 
   final String label;
   final List<String> keywords;
+}
+
+class _NeedsOfferSheetLifetime extends StatefulWidget {
+  const _NeedsOfferSheetLifetime({
+    required this.controllers,
+    required this.child,
+  });
+
+  final List<TextEditingController> controllers;
+  final Widget child;
+
+  @override
+  State<_NeedsOfferSheetLifetime> createState() =>
+      _NeedsOfferSheetLifetimeState();
+}
+
+class _NeedsOfferSheetLifetimeState extends State<_NeedsOfferSheetLifetime> {
+  @override
+  void dispose() {
+    for (final controller in widget.controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _AssistantCheck extends StatelessWidget {

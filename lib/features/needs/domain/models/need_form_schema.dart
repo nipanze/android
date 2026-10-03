@@ -749,12 +749,12 @@ class NeedFormSchema {
       NeedFormField.text(
         'from_location',
         label: 'Pickup location',
-        hint: 'e.g. Kampala Industrial Area',
+        hint: 'e.g. Town A',
       ),
       NeedFormField.text(
         'to_location',
         label: 'Dropoff destination',
-        hint: 'e.g. Gulu Town',
+        hint: 'e.g. Town B',
       ),
       NeedFormField.text(
         'load_description',

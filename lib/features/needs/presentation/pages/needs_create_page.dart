@@ -636,6 +636,27 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
+  bool _isTransportLocationPairAt(List<NeedFormField> fields, int index) {
+    return _categorySlug == 'transport_logistics' &&
+        index + 1 < fields.length &&
+        fields[index].key == 'from_location' &&
+        fields[index + 1].key == 'to_location';
+  }
+
+  bool _isTransportLocationPairStart(
+    List<NeedFormField> fields,
+    NeedFormField field,
+  ) =>
+      _isTransportLocationPairAt(fields, fields.indexOf(field));
+
+  bool _isTransportLocationPairEnd(
+    List<NeedFormField> fields,
+    NeedFormField field,
+  ) {
+    final index = fields.indexOf(field);
+    return index > 0 && _isTransportLocationPairAt(fields, index - 1);
+  }
+
   Widget _buildUrgencyChips(AppLocalizations l10n) {
     return Wrap(
       children: _urgencies
@@ -1020,7 +1041,24 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   ),
                   const SizedBox(height: 8),
                   for (final field in dynamicFields) ...[
-                    if (field.type == NeedFieldType.boolean)
+                    if (_isTransportLocationPairStart(dynamicFields, field))
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildTextInputWithHelpers(field),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildTextInputWithHelpers(
+                              dynamicFields[dynamicFields.indexOf(field) + 1],
+                            ),
+                          ),
+                        ],
+                      )
+                    else if (_isTransportLocationPairEnd(dynamicFields, field))
+                      const SizedBox.shrink()
+                    else if (field.type == NeedFieldType.boolean)
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: Text(field.label),
@@ -1046,9 +1084,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               key: ValueKey(
                                 '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
                               ),
-                              initialValue: _dynamicControllers[field.key]
-                                          ?.text
-                                          .isEmpty ??
+                              initialValue:
+                                  _dynamicControllers[field.key]?.text.isEmpty ??
                                       true
                                   ? null
                                   : _dynamicControllers[field.key]?.text,
