@@ -196,6 +196,218 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return int.tryParse(_budgetController.text.replaceAll(',', '')) ?? 0;
   }
 
+  void _selectCategory(String slug) {
+    if (slug == _categorySlug) return;
+    setState(() {
+      _categorySlug = slug;
+      _initCategoryControllers();
+    });
+  }
+
+  void _applyPreset(NeedFormPreset preset) {
+    setState(() {
+      _titleController.text = preset.title;
+      _specificationController.text = preset.specification;
+      if (preset.budget != null) {
+        _budgetController.text = preset.budget.toString();
+      }
+      if (preset.urgency != null && _urgencies.contains(preset.urgency)) {
+        _urgency = preset.urgency!;
+      }
+      for (final entry in preset.details.entries) {
+        final field = _fieldByKey(entry.key);
+        if (field == null) continue;
+        if (field.type == NeedFieldType.boolean) {
+          _dynamicBooleans[entry.key] = entry.value.toLowerCase() == 'true';
+        } else {
+          _dynamicControllers[entry.key]?.text = entry.value;
+        }
+      }
+    });
+  }
+
+  NeedFormField? _fieldByKey(String key) {
+    for (final field in NeedFormSchema.fieldsForCategory(_categorySlug)) {
+      if (field.key == key) return field;
+    }
+    return null;
+  }
+
+  void _setFieldValue(NeedFormField field, String value) {
+    setState(() {
+      if (field.type == NeedFieldType.boolean) {
+        _dynamicBooleans[field.key] = value.toLowerCase() == 'true';
+      } else {
+        _dynamicControllers[field.key]?.text = value;
+      }
+    });
+  }
+
+  void _setBudgetPercent(double percent) {
+    final current = _budgetValue();
+    final base = current > 0 ? current : 100000;
+    _budgetController.text = (base * percent).round().toString();
+  }
+
+  void _adjustBudget(int delta) {
+    final current = _budgetValue();
+    final next = (current + delta).clamp(0, 1000000000);
+    _budgetController.text = next.toString();
+  }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+    );
+  }
+
+  Widget _microPill(
+    String label,
+    VoidCallback onTap, {
+    bool selected = false,
+    IconData? icon,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(right: 7, bottom: 7),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected
+                ? colorScheme.primary.withValues(alpha: 0.16)
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: selected
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 14,
+                  color: selected ? colorScheme.primary : null,
+                ),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  color: selected
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.82),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _horizontalPills(List<Widget> pills) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(children: pills),
+    );
+  }
+
+  Widget _buildCategoryPills(AppLocalizations l10n) {
+    return _horizontalPills(
+      _categories
+          .map(
+            (category) => _microPill(
+              '${category.icon} ${_categoryLocalizedName(l10n, category.slug)}',
+              () => _selectCategory(category.slug),
+              selected: category.slug == _categorySlug,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildStarterPresets() {
+    final presets = NeedFormSchema.presetsForCategory(_categorySlug);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionLabel('QUICK NEED HELPERS'),
+        const SizedBox(height: 7),
+        _horizontalPills(
+          presets
+              .map(
+                (preset) => _microPill(
+                  preset.label,
+                  () => _applyPreset(preset),
+                  icon: Icons.auto_awesome_rounded,
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptionPills(NeedFormField field) {
+    final selected = _dynamicControllers[field.key]?.text ?? '';
+    return Wrap(
+      children: field.options!
+          .map(
+            (option) => _microPill(
+              option,
+              () => _setFieldValue(field, option),
+              selected: selected == option,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildBudgetShortcuts(String currency) {
+    return Wrap(
+      children: [
+        _microPill('Lower 25%', () => _setBudgetPercent(0.75)),
+        _microPill('Fair target', () => _setBudgetPercent(1.0)),
+        _microPill('Add 25%', () => _setBudgetPercent(1.25)),
+        _microPill('+$currency 50k', () => _adjustBudget(50000)),
+        _microPill('-$currency 50k', () => _adjustBudget(-50000)),
+      ],
+    );
+  }
+
+  Widget _buildUrgencyChips(AppLocalizations l10n) {
+    return Wrap(
+      children: _urgencies
+          .map(
+            (urgency) => _microPill(
+              _urgencyLabel(l10n, urgency),
+              () => setState(() => _urgency = urgency),
+              selected: _urgency == urgency,
+              icon: urgency == 'Urgent'
+                  ? Icons.bolt_rounded
+                  : Icons.schedule_rounded,
+            ),
+          )
+          .toList(),
+    );
+  }
+
   String _categoryLocalizedName(AppLocalizations l10n, String slug) {
     final category = _categories.firstWhere(
       (item) => item.slug == slug,
@@ -423,6 +635,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
     final country = _countryInfo(authState);
     final currency = _currency(authState);
+    if (_location == null && country.regions.isNotEmpty) {
+      _location = country.regions.first;
+    }
     final selectedLocation = _location ?? country.regions.first;
     final formatter = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),
@@ -466,6 +681,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
+                  key: ValueKey('category-$_categorySlug'),
                   initialValue: _categorySlug,
                   decoration: InputDecoration(
                     label: _fieldLabel(
@@ -493,14 +709,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                       )
                       .toList(),
                   onChanged: (value) {
-                    if (value != null && value != _categorySlug) {
-                      setState(() {
-                        _categorySlug = value;
-                        _initCategoryControllers();
-                      });
-                    }
+                    if (value != null) _selectCategory(value);
                   },
                 ),
+                const SizedBox(height: 8),
+                _buildCategoryPills(l10n),
+                const SizedBox(height: 12),
+                _buildStarterPresets(),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleController,
@@ -583,36 +798,48 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     else if (field.options != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: DropdownButtonFormField<String>(
-                          initialValue:
-                              _dynamicControllers[field.key]?.text.isEmpty ??
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildOptionPills(field),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<String>(
+                              key: ValueKey(
+                                '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
+                              ),
+                              initialValue: _dynamicControllers[field.key]
+                                          ?.text
+                                          .isEmpty ??
                                       true
                                   ? null
                                   : _dynamicControllers[field.key]?.text,
-                          decoration: InputDecoration(
-                            label: _fieldLabel(field.label, field.guidance),
-                            hintText: field.hint,
-                            helperText: field.helperText,
-                            border: const OutlineInputBorder(),
-                          ),
-                          items: field.options!
-                              .map(
-                                (option) => DropdownMenuItem(
-                                  value: option,
-                                  child: Text(option),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            _dynamicControllers[field.key]?.text = value ?? '';
-                          },
-                          validator: (value) {
-                            if (field.isRequired &&
-                                (value == null || value.isEmpty)) {
-                              return 'Please fill in this requirement';
-                            }
-                            return null;
-                          },
+                              decoration: InputDecoration(
+                                label: _fieldLabel(field.label, field.guidance),
+                                hintText: field.hint,
+                                helperText: field.helperText,
+                                border: const OutlineInputBorder(),
+                              ),
+                              items: field.options!
+                                  .map(
+                                    (option) => DropdownMenuItem(
+                                      value: option,
+                                      child: Text(option),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                _dynamicControllers[field.key]?.text =
+                                    value ?? '';
+                              },
+                              validator: (value) {
+                                if (field.isRequired &&
+                                    (value == null || value.isEmpty)) {
+                                  return 'Please fill in this requirement';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ),
                       )
                     else
@@ -666,8 +893,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 6),
+                _buildBudgetShortcuts(currency),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
+                  key: ValueKey('location-$selectedLocation'),
                   initialValue: selectedLocation,
                   decoration: InputDecoration(
                     label: _fieldLabel(
@@ -720,6 +950,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 ],
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
+                  key: ValueKey('urgency-$_urgency'),
                   initialValue: _urgency,
                   decoration: InputDecoration(
                     label: _fieldLabel(
@@ -740,6 +971,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     () => _urgency = value ?? _urgencies.first,
                   ),
                 ),
+                const SizedBox(height: 6),
+                _buildUrgencyChips(l10n),
                 const SizedBox(height: 18),
                 Text(
                   l10n.needsBudgetPreview(

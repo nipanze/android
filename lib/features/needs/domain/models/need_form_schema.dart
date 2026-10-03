@@ -82,6 +82,24 @@ class NeedFormGuidance {
   final String specificationHelper;
 }
 
+class NeedFormPreset {
+  const NeedFormPreset({
+    required this.label,
+    required this.title,
+    required this.specification,
+    this.details = const {},
+    this.budget,
+    this.urgency,
+  });
+
+  final String label;
+  final String title;
+  final String specification;
+  final Map<String, String> details;
+  final int? budget;
+  final String? urgency;
+}
+
 class NeedFormSchema {
   static const Map<String, NeedFormGuidance> categoryGuidance = {
     'machinery_equipment': NeedFormGuidance(
@@ -175,6 +193,192 @@ class NeedFormSchema {
           specificationHelper:
               'Include quantities, dates, location, preferences, and the result you expect.',
         );
+  }
+
+  static const Map<String, List<NeedFormPreset>> categoryPresets = {
+    'education_training': [
+      NeedFormPreset(
+        label: 'Weekend tutor',
+        title: 'Find a weekend tutor',
+        specification:
+            'I need tutoring support for a learner and want a provider who can explain clearly, track progress, and recommend practice work.',
+        details: {
+          'training_type': 'Tutoring',
+          'preferred_format': 'In-person',
+          'max_travel_distance': '10 km',
+          'duration': '3 months',
+          'schedule': 'Weekends',
+        },
+        urgency: 'Within 30 days',
+      ),
+      NeedFormPreset(
+        label: 'Internship',
+        title: 'Find an internship placement',
+        specification:
+            'I need help finding a structured internship with supervision, practical tasks, and a clear start date.',
+        details: {
+          'training_type': 'Internship',
+          'training_level': 'Beginner',
+          'preferred_format': 'In-person',
+          'duration': '8 weeks',
+          'schedule': 'Full-time',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Online course',
+        title: 'Find an online skills course',
+        specification:
+            'I need a practical online course with guided lessons, assignments, and proof of completion.',
+        details: {
+          'training_type': 'Professional training',
+          'preferred_format': 'Online',
+          'max_travel_distance': 'Anywhere',
+          'schedule': 'Flexible',
+        },
+      ),
+    ],
+    'travel_international': [
+      NeedFormPreset(
+        label: 'Visa help',
+        title: 'Get visa application assistance',
+        specification:
+            'I need a verified travel provider to guide me through visa requirements, appointment steps, and supporting documents.',
+        details: {
+          'service_needed': 'Visa assistance',
+          'purpose': 'Tourism',
+          'visa_type': 'Tourist visa',
+        },
+        urgency: 'Within 30 days',
+      ),
+      NeedFormPreset(
+        label: 'Flight package',
+        title: 'Find flights and accommodation',
+        specification:
+            'I need help comparing flight options, accommodation, and an itinerary that fits my budget and travel dates.',
+        details: {
+          'service_needed': 'Flight ticket and hotel booking',
+          'travellers': '1',
+          'purpose': 'Tourism',
+          'flexible_dates': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Study abroad',
+        title: 'Plan a study abroad trip',
+        specification:
+            'I need support with school travel planning, admissions-related travel steps, accommodation, and arrival guidance.',
+        details: {
+          'purpose': 'Study',
+          'service_needed': 'Study abroad travel support',
+          'visa_type': 'Student visa',
+        },
+      ),
+    ],
+    'machinery_equipment': [
+      NeedFormPreset(
+        label: 'Equipment rental',
+        title: 'Rent equipment for a job site',
+        specification:
+            'I need reliable equipment for site work, delivered on time, with clear rental terms and maintenance support.',
+        details: {
+          'duration_days': '14',
+          'operator_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Generator',
+        title: 'Rent a generator',
+        specification:
+            'I need a generator with enough capacity for business use, including delivery, setup, and fuel guidance.',
+        details: {
+          'equipment_type': '50kVA Generator',
+          'duration_days': '7',
+          'operator_needed': 'false',
+        },
+      ),
+    ],
+    'professional_services': [
+      NeedFormPreset(
+        label: 'Accounting',
+        title: 'Find an accountant',
+        specification:
+            'I need a professional to review records, prepare required filings, and explain the final report clearly.',
+        details: {
+          'service_type': 'Accounting / tax support',
+          'deadline': 'End of this month',
+          'deliverable': 'Completed filing and summary report',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Legal docs',
+        title: 'Get legal document support',
+        specification:
+            'I need a qualified provider to prepare or review documents and explain risks before submission.',
+        details: {
+          'service_type': 'Legal document review',
+          'deadline': 'Within 2 weeks',
+          'deliverable': 'Reviewed documents and advice note',
+        },
+      ),
+    ],
+    'transport_logistics': [
+      NeedFormPreset(
+        label: 'Cargo move',
+        title: 'Move cargo between towns',
+        specification:
+            'I need safe transport for goods with clear pickup timing, delivery timing, and handling requirements.',
+        details: {
+          'load_description': 'Bulk cargo',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Delivery run',
+        title: 'Arrange a delivery run',
+        specification:
+            'I need a provider to collect items, confirm receipt, and deliver them safely to the destination.',
+        details: {
+          'load_description': 'Packaged items',
+        },
+      ),
+    ],
+    'specialized_products': [
+      NeedFormPreset(
+        label: 'Bulk purchase',
+        title: 'Source products in bulk',
+        specification:
+            'I need a supplier who can confirm product quality, quantity, price, and delivery timing before purchase.',
+        details: {
+          'quantity': '50 units',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Hard-to-find part',
+        title: 'Find a specialized spare part',
+        specification:
+            'I need help sourcing a specific part, confirming compatibility, and arranging delivery.',
+        details: {
+          'quantity': '1 unit',
+        },
+      ),
+    ],
+  };
+
+  static List<NeedFormPreset> presetsForCategory(String slug) {
+    return categoryPresets[slug] ??
+        const [
+          NeedFormPreset(
+            label: 'Standard request',
+            title: 'Find a provider for my need',
+            specification:
+                'I need a reliable provider who can understand the requirement, share options, and complete the work within the agreed timeline.',
+          ),
+          NeedFormPreset(
+            label: 'Compare quotes',
+            title: 'Compare provider quotes',
+            specification:
+                'I want providers to send clear quotes with price, timeline, deliverables, and any requirements from my side.',
+          ),
+        ];
   }
 
   static const Map<String, List<NeedFormField>> categoryFields = {
