@@ -348,8 +348,8 @@ class _DealCard extends StatelessWidget {
     if (isForex) {
       positionLabel = 'FOREX EXCHANGE';
       positionIcon = Icons.currency_exchange_rounded;
-      positionColor = const Color(0xFFC084FC); // Purple Accent
-      positionBgColor = Colors.purple.withValues(alpha: 0.15);
+      positionColor = AppColors.purple;
+      positionBgColor = AppColors.purple.withValues(alpha: 0.12);
     } else if (isBorrower) {
       positionLabel = 'BORROWING';
       positionIcon = Icons.south_west_rounded;
