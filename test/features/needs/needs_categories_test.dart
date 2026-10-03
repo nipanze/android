@@ -64,7 +64,6 @@ void main() {
         'training_level',
         'preferred_format',
         'preferred_location',
-        'location_preference',
         'max_travel_distance',
         'start_date',
         'duration',
@@ -77,10 +76,6 @@ void main() {
     expect(
       byKey['preferred_format']!.options,
       ['Online', 'In-person', 'Either'],
-    );
-    expect(
-      byKey['location_preference']!.options,
-      ['Near Campus', 'Near Home', 'Specific Area', 'Anywhere'],
     );
     expect(
       byKey['max_travel_distance']!.options,

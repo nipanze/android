@@ -75,12 +75,6 @@ class NeedFormSchema {
         hint: 'e.g. Near campus, home, or a specific area',
       ),
       NeedFormField.text(
-        'location_preference',
-        label: 'Location Preference',
-        hint: 'Choose near campus, near home, a specific area, or anywhere',
-        options: ['Near Campus', 'Near Home', 'Specific Area', 'Anywhere'],
-      ),
-      NeedFormField.text(
         'max_travel_distance',
         label: 'Maximum Travel Distance',
         hint: 'Choose a maximum distance',
