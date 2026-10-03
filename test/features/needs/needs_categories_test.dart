@@ -52,6 +52,18 @@ void main() {
     );
   });
 
+  test('all structured need categories have beginner-friendly form guidance',
+      () {
+    for (final categorySlug in NeedFormSchema.categoryFields.keys) {
+      final guidance = NeedFormSchema.categoryGuidance[categorySlug];
+
+      expect(guidance, isNotNull, reason: categorySlug);
+      expect(guidance!.titleHint, isNotEmpty, reason: categorySlug);
+      expect(guidance.specificationHint, isNotEmpty, reason: categorySlug);
+      expect(guidance.specificationHelper, isNotEmpty, reason: categorySlug);
+    }
+  });
+
   test('education requests include structured training and location fields',
       () {
     final fields = NeedFormSchema.fieldsForCategory('education_training');

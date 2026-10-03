@@ -50,7 +50,103 @@ class NeedFormField {
   final List<String>? options;
 }
 
+class NeedFormGuidance {
+  const NeedFormGuidance({
+    required this.titleHint,
+    required this.specificationHint,
+    required this.specificationHelper,
+  });
+
+  final String titleHint;
+  final String specificationHint;
+  final String specificationHelper;
+}
+
 class NeedFormSchema {
+  static const Map<String, NeedFormGuidance> categoryGuidance = {
+    'machinery_equipment': NeedFormGuidance(
+      titleHint: 'e.g. Rent a 20-tonne excavator for 2 weeks',
+      specificationHint: 'Describe the machine, work site, and rental period',
+      specificationHelper:
+          'Include the model or capacity, location, dates, and whether you need an operator.',
+    ),
+    'professional_services': NeedFormGuidance(
+      titleHint: 'e.g. Find an accountant for my small business',
+      specificationHint: 'Describe the task and the result you need',
+      specificationHelper:
+          'Explain the work, expected deliverable, deadline, and any qualifications or experience required.',
+    ),
+    'transport_logistics': NeedFormGuidance(
+      titleHint: 'e.g. Move 20 tonnes of maize from Gulu to Kampala',
+      specificationHint: 'Describe the cargo and the journey',
+      specificationHelper:
+          'Include pickup and drop-off points, cargo size or weight, preferred dates, and loading needs.',
+    ),
+    'specialized_products': NeedFormGuidance(
+      titleHint: 'e.g. Source 50 Epson printers for my office',
+      specificationHint: 'Name the product, quantity, and delivery location',
+      specificationHelper:
+          'Share the exact model or specifications, quantity, quality expectations, and latest delivery date.',
+    ),
+    'education_training': NeedFormGuidance(
+      titleHint: 'e.g. Find a weekend math tutor for Senior 4',
+      specificationHint:
+          'Describe the subject, level, and kind of support you need',
+      specificationHelper:
+          'Include your current level, preferred format or schedule, start date, and any goals.',
+    ),
+    'travel_international': NeedFormGuidance(
+      titleHint: 'e.g. Help plan a December trip to Sweden',
+      specificationHint:
+          'Describe your destination and the travel service you need',
+      specificationHelper:
+          'Include destination, travel dates, number of travellers, and services needed. Do not post passport numbers or private document details.',
+    ),
+    'construction_building': NeedFormGuidance(
+      titleHint: 'e.g. Find a contractor to replace my house roof',
+      specificationHint: 'Describe the work, property, and materials involved',
+      specificationHelper:
+          'Include the site location, approximate measurements, materials, and when the work should start.',
+    ),
+    'agriculture_agribusiness': NeedFormGuidance(
+      titleHint: 'e.g. Find a maize harvester for my farm',
+      specificationHint: 'Describe the farm need, quantity, and location',
+      specificationHelper:
+          'Include the crop or input, quantity or acreage, farm location, and when you need it.',
+    ),
+    'technology_digital': NeedFormGuidance(
+      titleHint: 'e.g. Build an online shop for my business',
+      specificationHint: 'Describe what you want built or fixed',
+      specificationHelper:
+          'List the main features, users or devices, expected deliverables, and preferred timeline.',
+    ),
+    'events_production': NeedFormGuidance(
+      titleHint: 'e.g. Find a caterer for a 200-guest gala',
+      specificationHint: 'Describe the event and the service you need',
+      specificationHelper:
+          'Include the event date, guest count, venue or town, and the services or equipment required.',
+    ),
+    'music_video': NeedFormGuidance(
+      titleHint: 'e.g. Find a videographer for a music video',
+      specificationHint:
+          'Describe the production and the people or services needed',
+      specificationHelper:
+          'Include the project type, shoot or performance date, location, and any style or deliverable requirements.',
+    ),
+    'weddings_celebrations': NeedFormGuidance(
+      titleHint: 'e.g. Book a photographer for a wedding in Entebbe',
+      specificationHint: 'Describe the celebration and the service you need',
+      specificationHelper:
+          'Include the occasion, date, venue or town, guest count, and any style or package preferences.',
+    ),
+    'energy_utilities': NeedFormGuidance(
+      titleHint: 'e.g. Install solar power at my poultry farm',
+      specificationHint: 'Describe the system and where it will be installed',
+      specificationHelper:
+          'Include the power or water needs, site location, system size if known, and whether installation is required.',
+    ),
+  };
+
   static const Map<String, List<NeedFormField>> categoryFields = {
     'education_training': [
       NeedFormField.text(

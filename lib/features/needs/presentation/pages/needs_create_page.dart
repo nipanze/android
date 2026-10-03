@@ -386,6 +386,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       Localizations.localeOf(context).toLanguageTag(),
     );
 
+    final guidance = NeedFormSchema.categoryGuidance[_categorySlug];
     final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
 
     return Scaffold(
@@ -450,9 +451,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: l10n.needsTitleLabel,
-                    hintText: _categorySlug == 'education_training'
-                        ? 'What are you looking for?'
-                        : l10n.needsTitleHint,
+                    hintText: guidance?.titleHint ?? l10n.needsTitleHint,
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -472,9 +471,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     labelText: _categorySlug == 'education_training'
                         ? 'Course / Subject / Skill'
                         : l10n.needsSpecificationLabel,
-                    hintText: _categorySlug == 'education_training'
-                        ? 'Describe the course, subject, or skill you need help with'
-                        : l10n.needsSpecificationHint,
+                    hintText: guidance?.specificationHint ??
+                        l10n.needsSpecificationHint,
+                    helperText: guidance?.specificationHelper,
                     alignLabelWithHint: true,
                     border: const OutlineInputBorder(),
                   ),
@@ -578,12 +577,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     labelText: _categorySlug == 'education_training'
                         ? 'Maximum Budget ($currency)'
                         : l10n.needsBudgetLabel(currency),
-                    hintText: _categorySlug == 'education_training'
-                        ? 'Enter 0 if you want providers to quote'
-                        : l10n.needsBudgetHint,
-                    helperText: _categorySlug == 'education_training'
-                        ? 'You can specify a maximum or enter 0 to invite offers'
-                        : l10n.needsBudgetHelper,
+                    hintText: l10n.needsBudgetHint,
+                    helperText: l10n.needsBudgetHelper,
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
