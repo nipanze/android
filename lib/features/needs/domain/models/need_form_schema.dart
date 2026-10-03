@@ -251,6 +251,38 @@ class NeedFormSchema {
         urgency: 'Within 30 days',
       ),
       NeedFormPreset(
+        label: 'Hajj package',
+        title: 'Find a Hajj travel package',
+        specification:
+            'I need a verified provider for a Hajj package including visa guidance, flights, accommodation, transport, and pilgrim support.',
+        details: {
+          'destination_country': 'Saudi Arabia',
+          'destination_city': 'Makkah and Madinah',
+          'travellers': '1',
+          'purpose': 'Hajj',
+          'service_needed': 'Hajj package',
+          'visa_type': 'Hajj visa',
+          'flexible_dates': 'true',
+        },
+        urgency: 'Within 30 days',
+      ),
+      NeedFormPreset(
+        label: 'Umrah package',
+        title: 'Find an Umrah travel package',
+        specification:
+            'I need an Umrah package with visa support, flights, hotel options near the holy sites, local transport, and clear pricing.',
+        details: {
+          'destination_country': 'Saudi Arabia',
+          'destination_city': 'Makkah and Madinah',
+          'travellers': '1',
+          'purpose': 'Umrah',
+          'service_needed': 'Umrah package',
+          'visa_type': 'Umrah visa',
+          'flexible_dates': 'true',
+        },
+        urgency: 'Within 30 days',
+      ),
+      NeedFormPreset(
         label: 'Flight package',
         title: 'Find flights and accommodation',
         specification:
@@ -358,6 +390,163 @@ class NeedFormSchema {
             'I need help sourcing a specific part, confirming compatibility, and arranging delivery.',
         details: {
           'quantity': '1 unit',
+        },
+      ),
+    ],
+    'construction_building': [
+      NeedFormPreset(
+        label: 'Roofing',
+        title: 'Find a roofing contractor',
+        specification:
+            'I need a contractor to inspect the site, quote materials and labour, and complete roofing work within the agreed timeline.',
+        details: {
+          'project_type': 'Residential roofing',
+          'project_scope': 'Roofing materials and labour',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Plumbing',
+        title: 'Find a plumbing contractor',
+        specification:
+            'I need a provider to inspect, quote, and complete plumbing work with clear materials and workmanship terms.',
+        details: {
+          'project_type': 'Plumbing work',
+          'project_scope': 'Materials, labour, and testing',
+        },
+      ),
+    ],
+    'agriculture_agribusiness': [
+      NeedFormPreset(
+        label: 'Farm inputs',
+        title: 'Source farm inputs',
+        specification:
+            'I need reliable farm inputs with confirmed quantity, quality, price, and delivery timing.',
+        details: {
+          'agri_item': 'Seeds / fertilizer / chemicals',
+          'volume_or_acres': 'For 5 acres',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Harvester',
+        title: 'Hire farm machinery',
+        specification:
+            'I need farm machinery for field work, including availability, operator terms, transport, and total cost.',
+        details: {
+          'agri_item': 'Combine harvester hire',
+          'volume_or_acres': '10 acres',
+        },
+      ),
+    ],
+    'technology_digital': [
+      NeedFormPreset(
+        label: 'Website',
+        title: 'Build a business website',
+        specification:
+            'I need a provider to design and launch a business website with mobile-friendly pages, contact options, and basic training.',
+        details: {
+          'tech_requirement': 'Business website',
+          'deliverables': 'Website, domain setup, contact form',
+          'timeline': '4 weeks',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Mobile app',
+        title: 'Build a mobile app',
+        specification:
+            'I need a team to build a mobile app with user accounts, core workflows, admin tools, testing, and launch support.',
+        details: {
+          'tech_requirement': 'Mobile app',
+          'deliverables': 'Android app, admin portal, launch support',
+          'timeline': '8 weeks',
+        },
+      ),
+    ],
+    'events_production': [
+      NeedFormPreset(
+        label: 'Catering',
+        title: 'Find event catering',
+        specification:
+            'I need catering for an event, including menu options, service staff, setup, and clear price per guest.',
+        details: {
+          'event_type': 'Event catering',
+          'venue_location': 'Kampala',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Sound & stage',
+        title: 'Book sound and stage equipment',
+        specification:
+            'I need sound, stage, lighting, setup, and technical support for an event.',
+        details: {
+          'event_type': 'Sound, stage, and lighting',
+          'venue_location': 'Kampala',
+        },
+      ),
+    ],
+    'music_video': [
+      NeedFormPreset(
+        label: 'Music video',
+        title: 'Find a music video team',
+        specification:
+            'I need a video team for concept planning, shooting, editing, and delivery of a finished music video.',
+        details: {
+          'production_type': 'Music video',
+          'location': 'Kampala',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Live session',
+        title: 'Record a live session',
+        specification:
+            'I need a provider for live session filming or recording, including setup, capture, editing, and final files.',
+        details: {
+          'production_type': 'Live session',
+          'location': 'Studio or venue',
+        },
+      ),
+    ],
+    'weddings_celebrations': [
+      NeedFormPreset(
+        label: 'Photography',
+        title: 'Book wedding photography',
+        specification:
+            'I need photography coverage for a celebration, including package options, editing, delivery time, and album details.',
+        details: {
+          'celebration_type': 'Wedding reception, 150 guests',
+          'venue_location': 'Entebbe',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Decor',
+        title: 'Find celebration decor',
+        specification:
+            'I need decor setup for a celebration, including theme options, flowers, seating, lighting, setup, and teardown.',
+        details: {
+          'celebration_type': 'Wedding / introduction ceremony',
+          'venue_location': 'Kampala',
+        },
+      ),
+    ],
+    'energy_utilities': [
+      NeedFormPreset(
+        label: 'Solar install',
+        title: 'Install a solar system',
+        specification:
+            'I need a provider to size, quote, install, and commission a solar power system for my site.',
+        details: {
+          'system_type': 'Solar power system',
+          'installation_site': 'Home or business site',
+          'installation_labor_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Water pump',
+        title: 'Install a water pump system',
+        specification:
+            'I need a provider to supply or install a water pump system with clear capacity, materials, and commissioning support.',
+        details: {
+          'system_type': 'Borehole / water pump system',
+          'installation_labor_needed': 'true',
         },
       ),
     ],

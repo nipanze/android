@@ -100,46 +100,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     if (mounted) setState(() {});
   }
 
-  void _showFieldInfo(String title, String body) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.info_outline_rounded),
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoTooltip(String title, String body) {
-    return GestureDetector(
-      onTap: () => _showFieldInfo(title, body),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Icon(
-          Icons.info_outline_rounded,
-          size: 15,
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.65),
-        ),
-      ),
-    );
-  }
-
-  Widget _fieldLabel(String label, String guidance) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 4,
-      children: [
-        Text(label),
-        _buildInfoTooltip(label, guidance),
-      ],
-    );
+  Widget _fieldLabel(String label, String _) {
+    return Text(label);
   }
 
   bool get _isReadyToPublish {
@@ -253,6 +215,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final current = _budgetValue();
     final next = (current + delta).clamp(0, 1000000000);
     _budgetController.text = next.toString();
+  }
+
+  void _adjustDynamicNumber(NeedFormField field, int delta) {
+    final controller = _dynamicControllers[field.key];
+    if (controller == null) return;
+    final current = int.tryParse(controller.text.replaceAll(',', '')) ?? 0;
+    final next = (current + delta).clamp(0, 1000000000);
+    setState(() => controller.text = next.toString());
   }
 
   Widget _sectionLabel(String text) {
@@ -388,6 +358,281 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         _microPill('+$currency 50k', () => _adjustBudget(50000)),
         _microPill('-$currency 50k', () => _adjustBudget(-50000)),
       ],
+    );
+  }
+
+  Widget _buildBudgetStepperSuffix() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove_circle_outline_rounded, size: 18),
+          color: Theme.of(context).colorScheme.primary,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          onPressed: () => _adjustBudget(-50000),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+          color: Theme.of(context).colorScheme.primary,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          onPressed: () => _adjustBudget(50000),
+        ),
+        const SizedBox(width: 2),
+      ],
+    );
+  }
+
+  List<String> _quickValuesForField(NeedFormField field) {
+    final category = _categorySlug;
+    return switch (field.key) {
+      'destination_country' => const [
+          'Saudi Arabia',
+          'UAE',
+          'Qatar',
+          'Turkey',
+          'India',
+          'China',
+          'United Kingdom',
+          'USA',
+        ],
+      'destination_city' => const [
+          'Makkah',
+          'Madinah',
+          'Dubai',
+          'Doha',
+          'Istanbul',
+          'Mumbai',
+          'London',
+          'Guangzhou',
+        ],
+      'departure_city' => const [
+          'Kampala',
+          'Entebbe',
+          'Nairobi',
+          'Kigali',
+          'Dar es Salaam',
+        ],
+      'purpose' => const [
+          'Hajj',
+          'Umrah',
+          'Tourism',
+          'Business',
+          'Study',
+          'Family visit',
+          'Medical',
+        ],
+      'service_needed' => const [
+          'Hajj package',
+          'Umrah package',
+          'Visa assistance',
+          'Flight ticket',
+          'Hotel booking',
+          'Full travel package',
+        ],
+      'visa_type' => const [
+          'Hajj visa',
+          'Umrah visa',
+          'Tourist visa',
+          'Business visa',
+          'Student visa',
+          'Transit visa',
+        ],
+      'nationality' => const ['Ugandan', 'Kenyan', 'Rwandan', 'Tanzanian'],
+      'travel_date' || 'return_date' || 'event_date' || 'shoot_date' => const [
+          'As soon as possible',
+          'This month',
+          'Next month',
+          'December 2026',
+          'Flexible',
+        ],
+      'duration_days' => const ['3', '7', '14', '30', '60'],
+      'travellers' => const ['1', '2', '3', '4', '5'],
+      'duration' => const ['2 weeks', '8 weeks', '3 months', '6 months'],
+      'schedule' => const ['Full-time', 'Part-time', 'Weekends', 'Flexible'],
+      'start_date' => const [
+          'As soon as possible',
+          'Next week',
+          'Next month',
+          'Flexible',
+        ],
+      'training_type' => const [
+          'Tutoring',
+          'Internship',
+          'Vocational training',
+          'Professional training',
+        ],
+      'training_level' => const [
+          'Beginner',
+          'Intermediate',
+          'Advanced',
+          'University',
+        ],
+      'preferred_location' => const [
+          'Near campus',
+          'At home',
+          'Provider location',
+          'Flexible',
+        ],
+      'deadline' || 'timeline' => const [
+          '1 week',
+          '2 weeks',
+          '1 month',
+          '6 weeks',
+          'Flexible',
+        ],
+      'quantity' => const ['1 unit', '10 units', '50 units', '100 units'],
+      'volume_or_acres' => const ['1 acre', '5 acres', '10 acres', '50 bags'],
+      'event_type' when category == 'events_production' => const [
+          'Catering',
+          'Sound & stage',
+          'Corporate event',
+          'Birthday',
+          'Graduation',
+        ],
+      'celebration_type' => const [
+          'Wedding, 150 guests',
+          'Introduction ceremony',
+          'Birthday, 50 guests',
+          'Graduation party',
+        ],
+      'venue_location' ||
+      'location' ||
+      'site_location' ||
+      'farm_location' ||
+      'delivery_location' ||
+      'installation_site' =>
+        const [
+          'Kampala',
+          'Entebbe',
+          'Mukono',
+          'Jinja',
+          'Mbarara',
+          'Gulu',
+        ],
+      'equipment_type' => const [
+          'Excavator',
+          'Generator',
+          'Truck',
+          'Concrete mixer',
+        ],
+      'service_type' => const [
+          'Accounting',
+          'Legal support',
+          'Tax filing',
+          'Business registration',
+        ],
+      'project_type' => const ['Roofing', 'Plumbing', 'Electrical', 'Painting'],
+      'agri_item' => const [
+          'Seeds',
+          'Fertilizer',
+          'Harvester hire',
+          'Irrigation equipment',
+        ],
+      'tech_requirement' => const [
+          'Website',
+          'Mobile app',
+          'POS system',
+          'CCTV setup',
+        ],
+      'production_type' => const [
+          'Music video',
+          'Live session',
+          'Short film',
+          'Event coverage',
+        ],
+      'system_type' => const [
+          'Solar system',
+          'Water pump',
+          'Borehole pump',
+          'Backup power',
+        ],
+      _ => const [],
+    };
+  }
+
+  Widget _buildFieldQuickValues(NeedFormField field) {
+    final values = _quickValuesForField(field);
+    if (values.isEmpty) return const SizedBox.shrink();
+    final selected = _dynamicControllers[field.key]?.text ?? '';
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Wrap(
+        children: values
+            .map(
+              (value) => _microPill(
+                value,
+                () => _setFieldValue(field, value),
+                selected: selected == value,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildStepperSuffix(NeedFormField field) {
+    final step = field.key == 'travellers' ? 1 : 1;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.remove_circle_outline_rounded, size: 18),
+          color: Theme.of(context).colorScheme.primary,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          onPressed: () => _adjustDynamicNumber(field, -step),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+          color: Theme.of(context).colorScheme.primary,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          onPressed: () => _adjustDynamicNumber(field, step),
+        ),
+        const SizedBox(width: 2),
+      ],
+    );
+  }
+
+  Widget _buildTextInputWithHelpers(NeedFormField field) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            controller: _dynamicControllers[field.key],
+            keyboardType: field.type == NeedFieldType.number
+                ? TextInputType.number
+                : TextInputType.text,
+            inputFormatters: field.type == NeedFieldType.number
+                ? [FilteringTextInputFormatter.digitsOnly]
+                : null,
+            decoration: InputDecoration(
+              label: _fieldLabel(field.label, field.guidance),
+              hintText: field.hint,
+              helperText: field.helperText,
+              suffixIcon: field.type == NeedFieldType.number
+                  ? _buildStepperSuffix(field)
+                  : null,
+              border: const OutlineInputBorder(),
+            ),
+            validator: (val) {
+              if (field.isRequired && (val == null || val.trim().isEmpty)) {
+                return 'Please fill in this requirement';
+              }
+              return null;
+            },
+          ),
+          _buildFieldQuickValues(field),
+        ],
+      ),
     );
   }
 
@@ -778,13 +1023,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     if (field.type == NeedFieldType.boolean)
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
-                        title: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(child: Text(field.label)),
-                            _buildInfoTooltip(field.label, field.guidance),
-                          ],
-                        ),
+                        title: Text(field.label),
                         subtitle: field.helperText == null
                             ? null
                             : Text(field.helperText!),
@@ -843,28 +1082,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                         ),
                       )
                     else
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: TextFormField(
-                          controller: _dynamicControllers[field.key],
-                          keyboardType: field.type == NeedFieldType.number
-                              ? TextInputType.number
-                              : TextInputType.text,
-                          decoration: InputDecoration(
-                            label: _fieldLabel(field.label, field.guidance),
-                            hintText: field.hint,
-                            helperText: field.helperText,
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (val) {
-                            if (field.isRequired &&
-                                (val == null || val.trim().isEmpty)) {
-                              return 'Please fill in this requirement';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
+                      _buildTextInputWithHelpers(field),
                   ],
                 ],
                 const SizedBox(height: 14),
@@ -881,6 +1099,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     ),
                     hintText: l10n.needsBudgetHint,
                     helperText: l10n.needsBudgetHelper,
+                    suffixIcon: _buildBudgetStepperSuffix(),
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
