@@ -128,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navRequest => 'Request';
 
   @override
-  String get navPositions => 'Positions';
+  String get navPositions => 'Activity';
 
   @override
   String get navAccount => 'Account';

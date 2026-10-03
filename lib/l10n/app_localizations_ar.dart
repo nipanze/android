@@ -127,7 +127,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navRequest => 'طلب';
 
   @override
-  String get navPositions => 'المراكز';
+  String get navPositions => 'النشاط';
 
   @override
   String get navAccount => 'الحساب';

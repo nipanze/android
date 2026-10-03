@@ -131,7 +131,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get navRequest => 'Saba';
 
   @override
-  String get navPositions => 'Imyanya';
+  String get navPositions => 'Ibikorwa';
 
   @override
   String get navAccount => 'Konti';

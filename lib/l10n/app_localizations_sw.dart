@@ -130,7 +130,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get navRequest => 'Omba';
 
   @override
-  String get navPositions => 'Nafasi';
+  String get navPositions => 'Shughuli';
 
   @override
   String get navAccount => 'Akaunti';

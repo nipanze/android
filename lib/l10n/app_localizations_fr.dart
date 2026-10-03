@@ -132,7 +132,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navRequest => 'Demander';
 
   @override
-  String get navPositions => 'Positions';
+  String get navPositions => 'Activité';
 
   @override
   String get navAccount => 'Compte';

@@ -66,7 +66,7 @@ class _PositionsViewState extends State<_PositionsView>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.navPositions,
+                      AppLocalizations.of(context)!.navActivity,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     BlocBuilder<PositionsCubit, PositionsState>(

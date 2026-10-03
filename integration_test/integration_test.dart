@@ -280,12 +280,12 @@ void main() {
     }
     expect(find.byType(TextFormField), findsWidgets);
 
-    print('[TEST] B08. Positions my requests check');
-    await _tapNav(tester, 'Positions');
+    print('[TEST] B08. Activity my requests check');
+    await _tapNav(tester, 'Activity');
     await _pump(tester, total: const Duration(seconds: 4));
     expect(find.text('My Requests'), findsWidgets);
 
-    print('[TEST] B09. Positions my offers check');
+    print('[TEST] B09. Activity my offers check');
     final myOffersTab = find.text('My Offers');
     if (myOffersTab.evaluate().isNotEmpty) {
       await tester.tap(myOffersTab.first);
@@ -326,8 +326,8 @@ void main() {
     }
 
     print(
-        '[TEST] C04-C05. Lender Positions check and withdraw offer cancel choice');
-    await _tapNav(tester, 'Positions');
+        '[TEST] C04-C05. Lender Activity check and withdraw offer cancel choice');
+    await _tapNav(tester, 'Activity');
     await _pump(tester, total: const Duration(seconds: 4));
 
     final lenderOffersTab = find.text('My Offers');
