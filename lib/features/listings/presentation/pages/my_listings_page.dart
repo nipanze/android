@@ -526,28 +526,18 @@ class _ForexRequestCard extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: leftWidth,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.currency_exchange_rounded,
-                                size: 18,
-                                color: accent,
+                          child: Flexible(
+                            child: Text(
+                              heldAmount,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w900,
+                                height: 1.05,
                               ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  heldAmount,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    color: accent,
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w900,
-                                    height: 1.05,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -568,7 +558,7 @@ class _ForexRequestCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: mutedColor.withValues(alpha: 0.8),
+                                  color: mutedColor,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -576,10 +566,10 @@ class _ForexRequestCard extends StatelessWidget {
                                 projectedAmount,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface,
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  color: accent,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
