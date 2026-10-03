@@ -416,7 +416,7 @@ class _ForexRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = const Color(0xFF06B6D4);
+    final accent = AppColors.purple;
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
     final borderColor =
@@ -506,9 +506,15 @@ class _ForexRequestCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.10),
+                  color: isDark
+                      ? AppColors.bg3Dark.withValues(alpha: 0.55)
+                      : AppColors.bg3Light,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: accent.withValues(alpha: 0.30)),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.10)
+                        : AppColors.borderLight,
+                  ),
                 ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -523,7 +529,7 @@ class _ForexRequestCard extends StatelessWidget {
                           child: Row(
                             children: [
                               Icon(
-                                Icons.account_balance_wallet_rounded,
+                                Icons.currency_exchange_rounded,
                                 size: 18,
                                 color: accent,
                               ),
@@ -557,12 +563,12 @@ class _ForexRequestCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text(
+                              Text(
                                 'Projected Money',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFB7D5FF),
+                                  color: mutedColor.withValues(alpha: 0.8),
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -570,10 +576,10 @@ class _ForexRequestCard extends StatelessWidget {
                                 projectedAmount,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF4FD6FF),
+                                  color: accent,
                                 ),
                               ),
                             ],
