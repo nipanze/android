@@ -52,6 +52,15 @@ void main() {
     );
   });
 
+  test('travel is gated behind provider verification and launches last', () {
+    final travel = NeedCategory.defaultCategories
+        .firstWhere((category) => category.slug == 'travel_international');
+
+    expect(travel.isActive, isFalse);
+    expect(travel.requiresProviderVerification, isTrue);
+    expect(travel.sortOrder, greaterThan(5));
+  });
+
   test('offline capability catalog includes creative and celebration services',
       () {
     final slugs = NeedCapability.defaults.map((capability) => capability.slug);
@@ -59,6 +68,9 @@ void main() {
     expect(
       slugs,
       containsAll([
+        'visa_assistance',
+        'travel_documentation',
+        'international_relocation',
         'music_video_models',
         'music_producers',
         'graduation_photography',

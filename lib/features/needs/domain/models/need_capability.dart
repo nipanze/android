@@ -57,6 +57,21 @@ class NeedCapability {
       name: 'Hajj & Umrah Travel',
     ),
     NeedCapability(
+      slug: 'travel_consultation',
+      categorySlug: 'travel_international',
+      name: 'Travel Consultation',
+    ),
+    NeedCapability(
+      slug: 'travel_documentation',
+      categorySlug: 'travel_international',
+      name: 'Travel Documentation',
+    ),
+    NeedCapability(
+      slug: 'international_relocation',
+      categorySlug: 'travel_international',
+      name: 'International Relocation',
+    ),
+    NeedCapability(
       slug: 'excavator_hire',
       categorySlug: 'machinery_equipment',
       name: 'Excavator Hire',

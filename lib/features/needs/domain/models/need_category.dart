@@ -9,6 +9,7 @@ class NeedCategory {
     this.baseDescription,
     this.sortOrder = 0,
     this.isActive = true,
+    this.providerVerificationRequired = false,
   });
 
   factory NeedCategory.fromMap(
@@ -22,16 +23,20 @@ class NeedCategory {
         countryLabel is Map ? countryLabel['name'] as String? : null;
     final countryDescription =
         countryLabel is Map ? countryLabel['description'] as String? : null;
+    final slug = map['slug'] as String? ?? '';
     return NeedCategory(
-      slug: map['slug'] as String,
-      name: countryName ?? map['name'] as String,
+      slug: slug,
+      name: countryName ?? map['name'] as String? ?? slug,
       icon: map['icon'] as String? ?? '🔎',
       description: countryDescription ?? map['description'] as String?,
       countryLabels: countryLabels,
-      baseName: map['name'] as String,
+      baseName: map['name'] as String?,
       baseDescription: map['description'] as String?,
       sortOrder: (map['sort_order'] as num?)?.toInt() ?? 0,
       isActive: map['is_active'] as bool? ?? true,
+      providerVerificationRequired:
+          map['provider_verification_required'] as bool? ??
+              slug == 'travel_international',
     );
   }
 
@@ -44,6 +49,10 @@ class NeedCategory {
   final String? baseDescription;
   final int sortOrder;
   final bool isActive;
+  final bool providerVerificationRequired;
+
+  bool get requiresProviderVerification =>
+      providerVerificationRequired || slug == 'travel_international';
 
   String nameForCountry(String? countryCode) {
     final labels = countryLabels[countryCode?.toUpperCase()];
@@ -60,13 +69,6 @@ class NeedCategory {
   }
 
   static const List<NeedCategory> defaultCategories = [
-    NeedCategory(
-      slug: 'travel_international',
-      name: 'Travel & International',
-      icon: '✈️',
-      sortOrder: 1,
-      isActive: true,
-    ),
     NeedCategory(
       slug: 'machinery_equipment',
       name: 'Machinery & Equipment',
@@ -94,6 +96,14 @@ class NeedCategory {
       icon: '🔎',
       sortOrder: 5,
       isActive: true,
+    ),
+    NeedCategory(
+      slug: 'travel_international',
+      name: 'Travel & International',
+      icon: '✈️',
+      sortOrder: 10,
+      isActive: false,
+      providerVerificationRequired: true,
     ),
     NeedCategory(
       slug: 'music_video',

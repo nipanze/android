@@ -48,19 +48,63 @@ class NeedFormSchema {
   static const Map<String, List<NeedFormField>> categoryFields = {
     'travel_international': [
       NeedFormField.text(
-        'destination',
-        label: 'Destination country / city',
-        hint: 'e.g. Dubai, UAE or London, UK',
+        'destination_country',
+        label: 'Destination country',
+        hint: 'e.g. UAE, Sweden, Saudi Arabia',
+      ),
+      NeedFormField.text(
+        'destination_city',
+        label: 'Destination city',
+        hint: 'e.g. Dubai, Stockholm, Jeddah',
       ),
       NeedFormField.text(
         'travel_date',
         label: 'Intended travel date or month',
         hint: 'e.g. December 2026',
       ),
+      NeedFormField.date(
+        'return_date',
+        label: 'Return date (if applicable)',
+        hint: 'e.g. 15 January 2027',
+      ),
       NeedFormField.number(
         'travellers',
         label: 'Number of travellers',
         hint: 'e.g. 1',
+      ),
+      NeedFormField.text(
+        'purpose',
+        label: 'Purpose of travel',
+        hint: 'e.g. Tourism, business, study, family visit',
+      ),
+      NeedFormField.text(
+        'service_needed',
+        label: 'Service needed',
+        hint: 'e.g. Visa assistance, flight ticket, Hajj / Umrah support',
+      ),
+      NeedFormField.text(
+        'visa_type',
+        label: 'Visa type',
+        hint: 'e.g. Tourist visa, business visa, transit visa',
+      ),
+      NeedFormField.text(
+        'nationality',
+        label: 'Traveller nationality',
+        hint: 'e.g. Ugandan, Kenyan',
+      ),
+      NeedFormField.text(
+        'departure_city',
+        label: 'Departure city',
+        hint: 'e.g. Kampala, Nairobi',
+      ),
+      NeedFormField.boolean(
+        'flexible_dates',
+        label: 'Flexible dates are acceptable',
+      ),
+      NeedFormField.text(
+        'additional_requirements',
+        label: 'Additional requirements',
+        hint: 'e.g. Hotel booking, passport renewal help, visa checklist',
       ),
     ],
     'machinery_equipment': [
