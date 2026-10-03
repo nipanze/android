@@ -503,6 +503,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: Text(field.label),
+                        subtitle: field.helperText == null
+                            ? null
+                            : Text(field.helperText!),
                         value: _dynamicBooleans[field.key] ?? false,
                         onChanged: (val) {
                           setState(() {
@@ -522,6 +525,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           decoration: InputDecoration(
                             labelText: field.label,
                             hintText: field.hint,
+                            helperText: field.helperText,
                             border: const OutlineInputBorder(),
                           ),
                           items: field.options!
@@ -555,6 +559,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           decoration: InputDecoration(
                             labelText: field.label,
                             hintText: field.hint,
+                            helperText: field.helperText,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (val) {

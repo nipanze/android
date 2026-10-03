@@ -64,6 +64,23 @@ void main() {
     }
   });
 
+  test('travel fields include actionable helpers and privacy guidance', () {
+    final fields = NeedFormSchema.fieldsForCategory('travel_international');
+    final byKey = {for (final field in fields) field.key: field};
+
+    expect(
+      byKey.values.every(
+        (field) => field.helperText != null && field.helperText!.isNotEmpty,
+      ),
+      isTrue,
+    );
+    expect(byKey['nationality']!.helperText, contains('passport numbers'));
+    expect(
+      byKey['additional_requirements']!.helperText,
+      contains('private document details'),
+    );
+  });
+
   test('education requests include structured training and location fields',
       () {
     final fields = NeedFormSchema.fieldsForCategory('education_training');

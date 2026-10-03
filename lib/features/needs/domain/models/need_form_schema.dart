@@ -5,6 +5,7 @@ class NeedFormField {
     required this.key,
     required this.label,
     required this.hint,
+    this.helperText,
     this.type = NeedFieldType.text,
     this.isRequired = true,
     this.options,
@@ -14,6 +15,7 @@ class NeedFormField {
     this.key, {
     required this.label,
     required this.hint,
+    this.helperText,
     this.isRequired = true,
     this.options,
   }) : type = NeedFieldType.text;
@@ -22,6 +24,7 @@ class NeedFormField {
     this.key, {
     required this.label,
     required this.hint,
+    this.helperText,
     this.isRequired = true,
     this.options,
   }) : type = NeedFieldType.number;
@@ -30,6 +33,7 @@ class NeedFormField {
     this.key, {
     required this.label,
     required this.hint,
+    this.helperText,
     this.isRequired = true,
     this.options,
   }) : type = NeedFieldType.date;
@@ -38,6 +42,7 @@ class NeedFormField {
     this.key, {
     required this.label,
     this.hint = '',
+    this.helperText,
     this.isRequired = false,
     this.options,
   }) : type = NeedFieldType.boolean;
@@ -45,6 +50,7 @@ class NeedFormField {
   final String key;
   final String label;
   final String hint;
+  final String? helperText;
   final NeedFieldType type;
   final bool isRequired;
   final List<String>? options;
@@ -214,60 +220,79 @@ class NeedFormSchema {
         'destination_country',
         label: 'Destination country',
         hint: 'e.g. UAE, Sweden, Saudi Arabia',
+        helperText: 'Enter each country if your trip has multiple stops.',
       ),
       NeedFormField.text(
         'destination_city',
         label: 'Destination city',
         hint: 'e.g. Dubai, Stockholm, Jeddah',
+        helperText: 'Add the city or area you plan to visit, if known.',
       ),
       NeedFormField.text(
         'travel_date',
         label: 'Intended travel date or month',
         hint: 'e.g. December 2026',
+        helperText:
+            'An approximate month is fine; select flexible dates below if needed.',
       ),
       NeedFormField.date(
         'return_date',
         label: 'Return date (if applicable)',
         hint: 'e.g. 15 January 2027',
+        helperText: 'Leave this blank if you are not sure of your return date.',
       ),
       NeedFormField.number(
         'travellers',
         label: 'Number of travellers',
         hint: 'e.g. 1',
+        helperText: 'Include everyone travelling, including children.',
       ),
       NeedFormField.text(
         'purpose',
         label: 'Purpose of travel',
         hint: 'e.g. Tourism, business, study, family visit',
+        helperText:
+            'This helps providers suggest relevant bookings and requirements.',
       ),
       NeedFormField.text(
         'service_needed',
         label: 'Service needed',
         hint: 'e.g. Visa assistance, flight ticket, Hajj / Umrah support',
+        helperText:
+            'List each service you need, such as tickets, accommodation, or itinerary help.',
       ),
       NeedFormField.text(
         'visa_type',
         label: 'Visa type',
         hint: 'e.g. Tourist visa, business visa, transit visa',
+        helperText:
+            'If you are unsure, describe your trip purpose instead of guessing.',
       ),
       NeedFormField.text(
         'nationality',
         label: 'Traveller nationality',
         hint: 'e.g. Ugandan, Kenyan',
+        helperText:
+            'Visa requirements can depend on nationality. Do not enter passport numbers.',
       ),
       NeedFormField.text(
         'departure_city',
         label: 'Departure city',
         hint: 'e.g. Kampala, Nairobi',
+        helperText: 'Enter the city you expect to start your journey from.',
       ),
       NeedFormField.boolean(
         'flexible_dates',
         label: 'Flexible dates are acceptable',
+        helperText:
+            'Turn this on if you can travel on nearby dates for better options.',
       ),
       NeedFormField.text(
         'additional_requirements',
         label: 'Additional requirements',
         hint: 'e.g. Hotel booking, passport renewal help, visa checklist',
+        helperText:
+            'Add preferences or constraints, but do not share private document details.',
       ),
     ],
     'machinery_equipment': [
