@@ -112,6 +112,16 @@ class NeedCapability {
       name: 'Travel Agency Services',
     ),
     NeedCapability(
+      slug: 'travel_consultation',
+      categorySlug: 'travel_international',
+      name: 'Travel Consultation',
+    ),
+    NeedCapability(
+      slug: 'travel_documentation',
+      categorySlug: 'travel_international',
+      name: 'Travel Documentation',
+    ),
+    NeedCapability(
       slug: 'hajj_umrah',
       categorySlug: 'travel_international',
       name: 'Hajj & Umrah Travel',

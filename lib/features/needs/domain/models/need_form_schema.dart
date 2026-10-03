@@ -7,6 +7,7 @@ class NeedFormField {
     required this.hint,
     this.type = NeedFieldType.text,
     this.isRequired = true,
+    this.options,
   });
 
   const NeedFormField.text(
@@ -14,6 +15,7 @@ class NeedFormField {
     required this.label,
     required this.hint,
     this.isRequired = true,
+    this.options,
   }) : type = NeedFieldType.text;
 
   const NeedFormField.number(
@@ -21,6 +23,7 @@ class NeedFormField {
     required this.label,
     required this.hint,
     this.isRequired = true,
+    this.options,
   }) : type = NeedFieldType.number;
 
   const NeedFormField.date(
@@ -28,6 +31,7 @@ class NeedFormField {
     required this.label,
     required this.hint,
     this.isRequired = true,
+    this.options,
   }) : type = NeedFieldType.date;
 
   const NeedFormField.boolean(
@@ -35,6 +39,7 @@ class NeedFormField {
     required this.label,
     this.hint = '',
     this.isRequired = false,
+    this.options,
   }) : type = NeedFieldType.boolean;
 
   final String key;
@@ -42,70 +47,76 @@ class NeedFormField {
   final String hint;
   final NeedFieldType type;
   final bool isRequired;
+  final List<String>? options;
 }
 
 class NeedFormSchema {
   static const Map<String, List<NeedFormField>> categoryFields = {
     'education_training': [
       NeedFormField.text(
-        'course_field',
-        label: 'Course / Field of Study',
-        hint: 'e.g. Computer Science, Nursing, Accounting',
+        'training_type',
+        label: 'Training Type',
+        hint: 'e.g. Internship, tutoring, professional or vocational training',
       ),
       NeedFormField.text(
-        'preferred_role',
-        label: 'Preferred Internship Role',
-        hint: 'e.g. Software Development Intern, Marketing Intern',
+        'training_level',
+        label: 'Training Level',
+        hint: 'e.g. Beginner, intermediate, advanced, university',
+      ),
+      NeedFormField.text(
+        'preferred_format',
+        label: 'Preferred Format',
+        hint: 'Choose online, in-person, or either',
+        options: ['Online', 'In-person', 'Either'],
       ),
       NeedFormField.text(
         'preferred_location',
         label: 'Preferred Location',
-        hint: 'e.g. Kampala, Kansanga, Mukono',
+        hint: 'e.g. Near campus, home, or a specific area',
       ),
       NeedFormField.text(
         'location_preference',
         label: 'Location Preference',
-        hint: 'Near Campus, Near Home, Specific Area, Anywhere',
+        hint: 'Choose near campus, near home, a specific area, or anywhere',
+        options: ['Near Campus', 'Near Home', 'Specific Area', 'Anywhere'],
       ),
       NeedFormField.text(
         'max_travel_distance',
         label: 'Maximum Travel Distance',
-        hint: 'e.g. 5 km, 10 km, Anywhere',
+        hint: 'Choose a maximum distance',
+        options: ['2 km', '5 km', '10 km', '20 km', 'Anywhere'],
       ),
       NeedFormField.text(
         'start_date',
         label: 'Start Date',
-        hint: 'e.g. June 2026',
+        hint: 'e.g. June 2026 or as soon as possible',
       ),
       NeedFormField.text(
         'duration',
         label: 'Duration',
-        hint: 'e.g. 8 weeks, 3 months',
+        hint: 'e.g. 8 weeks, 3 months, or flexible',
       ),
       NeedFormField.text(
         'schedule',
         label: 'Schedule',
-        hint: 'e.g. Full-time, Weekends, Flexible',
+        hint: 'e.g. Full-time, part-time, weekends, flexible',
       ),
       NeedFormField.text(
-        'max_budget',
-        label: 'Maximum Budget',
-        hint: 'e.g. Free / No placement fee, Up to UGX 300,000, Open to offers',
+        'required_qualifications',
+        label: 'Required Qualifications / Experience',
+        hint: 'e.g. Current university student, prior experience',
+        isRequired: false,
       ),
       NeedFormField.text(
-        'university_requirements',
-        label: 'University Requirements',
-        hint: 'e.g. Course credit, 8-week requirement, report submission',
-      ),
-      NeedFormField.text(
-        'skills_interests',
-        label: 'Skills / Interests',
-        hint: 'e.g. Web development, data analysis, design',
+        'specific_skills_topics',
+        label: 'Specific Skills / Topics',
+        hint: 'e.g. Software development, accounting, academic writing',
       ),
       NeedFormField.text(
         'additional_requirements',
         label: 'Additional Requirements',
-        hint: 'e.g. Remote-friendly, evening schedule, transport support',
+        hint: 'Anything else providers should know',
+        isRequired: false,
       ),
     ],
     'travel_international': [

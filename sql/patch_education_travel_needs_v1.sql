@@ -70,6 +70,8 @@ values
   ('visa_assistance', 'travel_international', 'Visa Assistance', true),
   ('flight_tickets', 'travel_international', 'Flight Tickets & Bookings', true),
   ('travel_agency_services', 'travel_international', 'Travel Agency Services', true),
+  ('travel_consultation', 'travel_international', 'Travel Consultation', true),
+  ('travel_documentation', 'travel_international', 'Travel Documentation', true),
   ('hajj_umrah', 'travel_international', 'Hajj & Umrah', true),
   ('hotel_accommodation', 'travel_international', 'Hotel & Accommodation', true),
   ('airport_transfers', 'travel_international', 'Airport Transfers', true),

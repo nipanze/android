@@ -52,11 +52,51 @@ void main() {
     );
   });
 
-  test('travel is gated behind provider verification and launches last', () {
+  test('education requests include structured training and location fields',
+      () {
+    final fields = NeedFormSchema.fieldsForCategory('education_training');
+    final byKey = {for (final field in fields) field.key: field};
+
+    expect(
+      byKey.keys,
+      containsAll([
+        'training_type',
+        'training_level',
+        'preferred_format',
+        'preferred_location',
+        'location_preference',
+        'max_travel_distance',
+        'start_date',
+        'duration',
+        'schedule',
+        'required_qualifications',
+        'specific_skills_topics',
+        'additional_requirements',
+      ]),
+    );
+    expect(
+      byKey['preferred_format']!.options,
+      ['Online', 'In-person', 'Either'],
+    );
+    expect(
+      byKey['location_preference']!.options,
+      ['Near Campus', 'Near Home', 'Specific Area', 'Anywhere'],
+    );
+    expect(
+      byKey['max_travel_distance']!.options,
+      ['2 km', '5 km', '10 km', '20 km', 'Anywhere'],
+    );
+  });
+
+  test('education and travel categories are active in the fallback catalog',
+      () {
+    final education = NeedCategory.defaultCategories
+        .firstWhere((category) => category.slug == 'education_training');
     final travel = NeedCategory.defaultCategories
         .firstWhere((category) => category.slug == 'travel_international');
 
-    expect(travel.isActive, isFalse);
+    expect(education.isActive, isTrue);
+    expect(travel.isActive, isTrue);
     expect(travel.requiresProviderVerification, isTrue);
     expect(travel.sortOrder, greaterThan(5));
   });

@@ -224,7 +224,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ),
               _previewRow(l10n.needsTitleLabel, _titleController.text.trim()),
               _previewRow(
-                l10n.needsSpecificationLabel,
+                _categorySlug == 'education_training'
+                    ? 'Course / Subject / Skill'
+                    : l10n.needsSpecificationLabel,
                 _specificationController.text.trim(),
               ),
               for (final field in dynamicFields)
@@ -235,7 +237,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                       : _dynamicControllers[field.key]?.text.trim() ?? '',
                 ),
               _previewRow(
-                l10n.needsBudgetLabel(_currency(authState)),
+                _categorySlug == 'education_training'
+                    ? 'Maximum Budget (${_currency(authState)})'
+                    : l10n.needsBudgetLabel(_currency(authState)),
                 NumberFormat.decimalPattern(
                   Localizations.localeOf(context).toLanguageTag(),
                 ).format(_budgetValue()),
@@ -446,7 +450,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: l10n.needsTitleLabel,
-                    hintText: l10n.needsTitleHint,
+                    hintText: _categorySlug == 'education_training'
+                        ? 'What are you looking for?'
+                        : l10n.needsTitleHint,
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -463,8 +469,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   maxLines: 6,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    labelText: l10n.needsSpecificationLabel,
-                    hintText: l10n.needsSpecificationHint,
+                    labelText: _categorySlug == 'education_training'
+                        ? 'Course / Subject / Skill'
+                        : l10n.needsSpecificationLabel,
+                    hintText: _categorySlug == 'education_training'
+                        ? 'Describe the course, subject, or skill you need help with'
+                        : l10n.needsSpecificationHint,
                     alignLabelWithHint: true,
                     border: const OutlineInputBorder(),
                   ),
@@ -501,6 +511,40 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           });
                         },
                       )
+                    else if (field.options != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: DropdownButtonFormField<String>(
+                          initialValue:
+                              _dynamicControllers[field.key]?.text.isEmpty ??
+                                      true
+                                  ? null
+                                  : _dynamicControllers[field.key]?.text,
+                          decoration: InputDecoration(
+                            labelText: field.label,
+                            hintText: field.hint,
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: field.options!
+                              .map(
+                                (option) => DropdownMenuItem(
+                                  value: option,
+                                  child: Text(option),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            _dynamicControllers[field.key]?.text = value ?? '';
+                          },
+                          validator: (value) {
+                            if (field.isRequired &&
+                                (value == null || value.isEmpty)) {
+                              return 'Please fill in this requirement';
+                            }
+                            return null;
+                          },
+                        ),
+                      )
                     else
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -531,9 +575,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
-                    labelText: l10n.needsBudgetLabel(currency),
-                    hintText: l10n.needsBudgetHint,
-                    helperText: l10n.needsBudgetHelper,
+                    labelText: _categorySlug == 'education_training'
+                        ? 'Maximum Budget ($currency)'
+                        : l10n.needsBudgetLabel(currency),
+                    hintText: _categorySlug == 'education_training'
+                        ? 'Enter 0 if you want providers to quote'
+                        : l10n.needsBudgetHint,
+                    helperText: _categorySlug == 'education_training'
+                        ? 'You can specify a maximum or enter 0 to invite offers'
+                        : l10n.needsBudgetHelper,
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
