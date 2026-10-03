@@ -416,7 +416,7 @@ class _MainListingArea extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 9),
+        const SizedBox(height: 12),
         Text(
           title,
           maxLines: 2,
@@ -428,7 +428,7 @@ class _MainListingArea extends StatelessWidget {
             color: theme.colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         // Neutral gray panel for amounts — no colorful border box
         Container(
           width: double.infinity,
