@@ -190,10 +190,10 @@ class ListingCard extends StatelessWidget {
                         ? l10n.marketplaceForex
                         : l10n.marketplaceLoan,
                 moduleIcon: isNeeds
-                    ? Icons.handshake_rounded
+                    ? Icons.search_rounded
                     : isForex
                         ? Icons.currency_exchange_rounded
-                        : Icons.widgets_rounded,
+                        : Icons.account_balance_wallet_outlined,
                 posted: _postedAgo(context, listing.listedAt),
                 title: title,
                 amount: amount,

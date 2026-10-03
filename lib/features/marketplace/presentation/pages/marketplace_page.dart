@@ -486,7 +486,7 @@ class _ModuleFilterRow extends StatelessWidget {
                       _FilterPill(
                         label:
                             AppLocalizations.of(context)!.marketplaceLoans,
-                        icon: Icons.payments_rounded,
+                        icon: Icons.account_balance_wallet_outlined,
                         selected: selected == MarketplaceModule.loan,
                         accentColor: AppColors.accent,
                         onTap: () => context
@@ -508,7 +508,7 @@ class _ModuleFilterRow extends StatelessWidget {
                       _FilterPill(
                         label:
                             AppLocalizations.of(context)!.marketplaceNeeds,
-                        icon: Icons.inventory_2_rounded,
+                        icon: Icons.search_rounded,
                         selected: selected == MarketplaceModule.needs,
                         accentColor: AppColors.warning,
                         onTap: () => context
