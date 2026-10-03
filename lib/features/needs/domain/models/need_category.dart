@@ -98,11 +98,22 @@ class NeedCategory {
       isActive: true,
     ),
     NeedCategory(
+      slug: 'education_training',
+      name: 'Education & Training',
+      icon: '🎓',
+      description:
+          'Education, internships, professional training, admissions, academic support, and skills development.',
+      sortOrder: 6,
+      isActive: true,
+    ),
+    NeedCategory(
       slug: 'travel_international',
       name: 'Travel & International',
       icon: '✈️',
+      description:
+          'Travel, visa assistance, flights, accommodation, Hajj & Umrah, study abroad, and international relocation services.',
       sortOrder: 10,
-      isActive: false,
+      isActive: true,
       providerVerificationRequired: true,
     ),
     NeedCategory(

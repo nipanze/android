@@ -42,6 +42,61 @@ class NeedCapability {
 
   static const List<NeedCapability> defaults = [
     NeedCapability(
+      slug: 'internship_placement',
+      categorySlug: 'education_training',
+      name: 'Internship Placement',
+    ),
+    NeedCapability(
+      slug: 'private_tutoring',
+      categorySlug: 'education_training',
+      name: 'Private Tutoring',
+    ),
+    NeedCapability(
+      slug: 'online_classes',
+      categorySlug: 'education_training',
+      name: 'Online Classes',
+    ),
+    NeedCapability(
+      slug: 'professional_training',
+      categorySlug: 'education_training',
+      name: 'Professional Training',
+    ),
+    NeedCapability(
+      slug: 'vocational_training',
+      categorySlug: 'education_training',
+      name: 'Vocational Training',
+    ),
+    NeedCapability(
+      slug: 'university_admissions',
+      categorySlug: 'education_training',
+      name: 'University Admissions',
+    ),
+    NeedCapability(
+      slug: 'study_abroad_guidance',
+      categorySlug: 'education_training',
+      name: 'Study Abroad Guidance',
+    ),
+    NeedCapability(
+      slug: 'academic_consulting',
+      categorySlug: 'education_training',
+      name: 'Academic Consulting',
+    ),
+    NeedCapability(
+      slug: 'exam_preparation',
+      categorySlug: 'education_training',
+      name: 'Exam Preparation',
+    ),
+    NeedCapability(
+      slug: 'language_training',
+      categorySlug: 'education_training',
+      name: 'Language Training',
+    ),
+    NeedCapability(
+      slug: 'computer_training',
+      categorySlug: 'education_training',
+      name: 'Computer Training',
+    ),
+    NeedCapability(
       slug: 'visa_assistance',
       categorySlug: 'travel_international',
       name: 'Visa Assistance',
@@ -52,19 +107,39 @@ class NeedCapability {
       name: 'Flight Tickets & Bookings',
     ),
     NeedCapability(
+      slug: 'travel_agency_services',
+      categorySlug: 'travel_international',
+      name: 'Travel Agency Services',
+    ),
+    NeedCapability(
       slug: 'hajj_umrah',
       categorySlug: 'travel_international',
       name: 'Hajj & Umrah Travel',
     ),
     NeedCapability(
-      slug: 'travel_consultation',
+      slug: 'hotel_accommodation',
       categorySlug: 'travel_international',
-      name: 'Travel Consultation',
+      name: 'Hotel & Accommodation',
     ),
     NeedCapability(
-      slug: 'travel_documentation',
+      slug: 'airport_transfers',
       categorySlug: 'travel_international',
-      name: 'Travel Documentation',
+      name: 'Airport Transfers',
+    ),
+    NeedCapability(
+      slug: 'travel_insurance',
+      categorySlug: 'travel_international',
+      name: 'Travel Insurance',
+    ),
+    NeedCapability(
+      slug: 'tour_packages',
+      categorySlug: 'travel_international',
+      name: 'Tour Packages',
+    ),
+    NeedCapability(
+      slug: 'study_abroad',
+      categorySlug: 'travel_international',
+      name: 'Study Abroad',
     ),
     NeedCapability(
       slug: 'international_relocation',
@@ -130,6 +205,56 @@ class NeedCapability {
       slug: 'electronic_hardware',
       categorySlug: 'specialized_products',
       name: 'Specialized Electronics & Parts',
+    ),
+    NeedCapability(
+      slug: 'it_internships',
+      categorySlug: 'education_training',
+      name: 'IT Internships',
+    ),
+    NeedCapability(
+      slug: 'software_development_internships',
+      categorySlug: 'education_training',
+      name: 'Software Development Internships',
+    ),
+    NeedCapability(
+      slug: 'it_support_internships',
+      categorySlug: 'education_training',
+      name: 'IT Support Internships',
+    ),
+    NeedCapability(
+      slug: 'accounting_internships',
+      categorySlug: 'education_training',
+      name: 'Accounting Internships',
+    ),
+    NeedCapability(
+      slug: 'engineering_internships',
+      categorySlug: 'education_training',
+      name: 'Engineering Internships',
+    ),
+    NeedCapability(
+      slug: 'marketing_internships',
+      categorySlug: 'education_training',
+      name: 'Marketing Internships',
+    ),
+    NeedCapability(
+      slug: 'business_internships',
+      categorySlug: 'education_training',
+      name: 'Business Internships',
+    ),
+    NeedCapability(
+      slug: 'health_nursing_placements',
+      categorySlug: 'education_training',
+      name: 'Health/Nursing Placements',
+    ),
+    NeedCapability(
+      slug: 'hospitality_internships',
+      categorySlug: 'education_training',
+      name: 'Hospitality Internships',
+    ),
+    NeedCapability(
+      slug: 'administrative_internships',
+      categorySlug: 'education_training',
+      name: 'Administrative Internships',
     ),
     NeedCapability(
       slug: 'music_video_models',

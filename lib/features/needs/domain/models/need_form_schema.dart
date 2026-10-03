@@ -46,6 +46,68 @@ class NeedFormField {
 
 class NeedFormSchema {
   static const Map<String, List<NeedFormField>> categoryFields = {
+    'education_training': [
+      NeedFormField.text(
+        'course_field',
+        label: 'Course / Field of Study',
+        hint: 'e.g. Computer Science, Nursing, Accounting',
+      ),
+      NeedFormField.text(
+        'preferred_role',
+        label: 'Preferred Internship Role',
+        hint: 'e.g. Software Development Intern, Marketing Intern',
+      ),
+      NeedFormField.text(
+        'preferred_location',
+        label: 'Preferred Location',
+        hint: 'e.g. Kampala, Kansanga, Mukono',
+      ),
+      NeedFormField.text(
+        'location_preference',
+        label: 'Location Preference',
+        hint: 'Near Campus, Near Home, Specific Area, Anywhere',
+      ),
+      NeedFormField.text(
+        'max_travel_distance',
+        label: 'Maximum Travel Distance',
+        hint: 'e.g. 5 km, 10 km, Anywhere',
+      ),
+      NeedFormField.text(
+        'start_date',
+        label: 'Start Date',
+        hint: 'e.g. June 2026',
+      ),
+      NeedFormField.text(
+        'duration',
+        label: 'Duration',
+        hint: 'e.g. 8 weeks, 3 months',
+      ),
+      NeedFormField.text(
+        'schedule',
+        label: 'Schedule',
+        hint: 'e.g. Full-time, Weekends, Flexible',
+      ),
+      NeedFormField.text(
+        'max_budget',
+        label: 'Maximum Budget',
+        hint: 'e.g. Free / No placement fee, Up to UGX 300,000, Open to offers',
+      ),
+      NeedFormField.text(
+        'university_requirements',
+        label: 'University Requirements',
+        hint: 'e.g. Course credit, 8-week requirement, report submission',
+      ),
+      NeedFormField.text(
+        'skills_interests',
+        label: 'Skills / Interests',
+        hint: 'e.g. Web development, data analysis, design',
+      ),
+      NeedFormField.text(
+        'additional_requirements',
+        label: 'Additional Requirements',
+        hint: 'e.g. Remote-friendly, evening schedule, transport support',
+      ),
+    ],
     'travel_international': [
       NeedFormField.text(
         'destination_country',
