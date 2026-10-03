@@ -2748,5 +2748,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get whatCanYouHelpWithSubtitle =>
-      'Dites-nous quels services, compétences ou ressources vous proposez...';
+      'Dites-nous ce que vous proposez et nous vous mettrons en relation avec les personnes qui le recherchent.';
+
+  @override
+  String get addYourServicesCta => 'Ajouter vos services';
+
+  @override
+  String get newCategoriesAvailable =>
+      'De nouvelles catégories sont disponibles';
+
+  @override
+  String newCategoriesAvailableSubtitle(Object categories) {
+    return 'Nous avons ajouté $categories. Vous pourriez y proposer quelque chose.';
+  }
+
+  @override
+  String get exploreNewCategoriesCta => 'Explorer les nouvelles catégories';
+
+  @override
+  String matchingNeedsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# nouvelles demandes correspondent à vos services.',
+      one: '# nouvelle demande correspond à vos services.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seeOpportunitiesCta => 'Voir les opportunités';
 }

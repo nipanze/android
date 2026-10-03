@@ -205,6 +205,75 @@ class NeedsRepository {
     }
   }
 
+  /// Returns active categories added since this account was created that the
+  /// user has not explored or added a capability for.
+  Future<List<NeedCategory>> getNewCategoriesForCurrentUser() async {
+    try {
+      final userId = currentViewerId;
+      if (userId == null) return const [];
+
+      final profile = await _client
+          .from(TableNames.profiles)
+          .select('created_at,country')
+          .eq('id', userId)
+          .maybeSingle();
+      final memberSince = DateTime.tryParse(
+        profile?['created_at'] as String? ?? '',
+      );
+      if (memberSince == null) return const [];
+
+      final countryCode = profile?['country'] as String?;
+      final rows = await _client
+          .from(TableNames.needCategories)
+          .select()
+          .eq('is_active', true)
+          .gt('created_at', memberSince.toIso8601String())
+          .order('sort_order', ascending: true);
+      final categories = (rows as List)
+          .map((row) => NeedCategory.fromMap(
+                Map<String, dynamic>.from(row as Map),
+                countryCode: countryCode,
+              ))
+          .toList();
+      if (categories.isEmpty) return const [];
+
+      final categorySlugs =
+          categories.map((category) => category.slug).toList();
+      final capabilityRows = await _client
+          .from(TableNames.providerCapabilities)
+          .select('need_capabilities!inner(category_slug)')
+          .eq('user_id', userId);
+      final capabilityCategories = (capabilityRows as List)
+          .map((row) => row['need_capabilities'])
+          .whereType<Map>()
+          .map((capability) => capability['category_slug'] as String?)
+          .whereType<String>()
+          .toSet();
+
+      final interestRows = await _client
+          .from(TableNames.userInterests)
+          .select('category_slug')
+          .eq('user_id', userId)
+          .inFilter('category_slug', categorySlugs);
+      final eventRows = await _client
+          .from(TableNames.userInterestEvents)
+          .select('category_slug')
+          .eq('user_id', userId)
+          .inFilter('category_slug', categorySlugs);
+      final exploredCategories = {
+        ...capabilityCategories,
+        ...(interestRows as List).map((row) => row['category_slug'] as String),
+        ...(eventRows as List).map((row) => row['category_slug'] as String),
+      };
+
+      return categories
+          .where((category) => !exploredCategories.contains(category.slug))
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   /// Add a self-declared capability
   Future<void> addCapability(String capabilitySlug) async {
     try {
@@ -253,6 +322,8 @@ class NeedsRepository {
         RpcNames.recordInterestEvent,
         params: {'p_category_slug': categorySlug, 'p_event': event},
       );
-    } catch (_) {}
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
   }
 }

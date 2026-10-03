@@ -32,6 +32,12 @@ Add to the end of the Overview section:
 
 Why not one generic "request" table: a loan, a currency exchange, and a visa-assistance need have different shapes. Force-fitting them makes all three worse. Three tables and three forms, with everything else shared.
 
+### Marketplace service discovery
+
+The Marketplace header is focused on browsing and keeps its notification bell, but no longer has a separate **Add Service** action. The bottom **Post** action remains the universal creation entry point for Loan Request, Forex Request, Need Request, and Offer a Service.
+
+Service discovery is contextual in the feed rather than a permanent posting prompt: users without capabilities are invited to add services; providers can be shown genuinely new, unexplored categories or active Needs matching their capabilities. The card is omitted when there is nothing relevant to surface and appears after a variable number of listings.
+
 ## 1.3 New section — "The Needs Layer" (insert after "The Unified Marketplace Model")
 
 ### The five launch categories

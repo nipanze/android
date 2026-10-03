@@ -145,6 +145,7 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-16`: Hardened user-facing error messages in key submit and loading flows so network/service failures do not expose terms like "backend" or raw exception strings. Added timeout-aware auth/profile lookup handling for slow mobile-data conditions.
 - `2026-08-16`: Documented app update policy: store minimum/latest supported build numbers in `system_settings`, show a dismissible update prompt for optional releases, and block old builds only when security, payment, contract, auth, or schema compatibility requires it.
 - `2026-08-16`: Confirmed `pubspec.yaml` already has `uses-material-design: true`; Material Icons build warnings are non-blocking if the APK builds and icons render. If warnings persist after upgrades, run `flutter clean`, `flutter pub get`, and rebuild.
+- `2026-10-03`: Removed the Marketplace header's Add Service button while retaining the notification bell and bottom Post chooser. Replaced the always-visible service prompt with a conditional feed card for new providers, unexplored newly added categories, or live Needs matching existing provider capabilities; the card is omitted when no relevant opportunity exists.
 
 ---
 
@@ -174,6 +175,7 @@ Completed items:
 - [x] Realtime feed updates
 - [x] Watchlist and Positions app surfaces
 - [x] Notifications page and event handling
+- [x] Contextual Marketplace service discovery; service posting remains available through the bottom Post chooser
 
 ### Stage 3 — Polish & Supporting Features
 

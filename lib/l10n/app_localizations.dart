@@ -4969,8 +4969,44 @@ abstract class AppLocalizations {
   /// No description provided for @whatCanYouHelpWithSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Tell us what services, skills or resources you offer...'**
+  /// **'Tell us what you offer and we\'ll match you with people looking for it.'**
   String get whatCanYouHelpWithSubtitle;
+
+  /// No description provided for @addYourServicesCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your services'**
+  String get addYourServicesCta;
+
+  /// No description provided for @newCategoriesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New categories are available'**
+  String get newCategoriesAvailable;
+
+  /// No description provided for @newCategoriesAvailableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve added {categories}. You might have something to offer there.'**
+  String newCategoriesAvailableSubtitle(Object categories);
+
+  /// No description provided for @exploreNewCategoriesCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore new categories'**
+  String get exploreNewCategoriesCta;
+
+  /// No description provided for @matchingNeedsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{# new request matches your services.} other{# new requests match your services.}}'**
+  String matchingNeedsSubtitle(int count);
+
+  /// No description provided for @seeOpportunitiesCta.
+  ///
+  /// In en, this message translates to:
+  /// **'See opportunities'**
+  String get seeOpportunitiesCta;
 }
 
 class _AppLocalizationsDelegate

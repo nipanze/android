@@ -2687,5 +2687,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get whatCanYouHelpWithSubtitle =>
-      'أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها...';
+      'أخبرنا بما تقدمه وسنوصلك بالأشخاص الذين يبحثون عنه.';
+
+  @override
+  String get addYourServicesCta => 'أضف خدماتك';
+
+  @override
+  String get newCategoriesAvailable => 'فئات جديدة متاحة';
+
+  @override
+  String newCategoriesAvailableSubtitle(Object categories) {
+    return 'أضفنا $categories. ربما لديك ما تقدمه ضمنها.';
+  }
+
+  @override
+  String get exploreNewCategoriesCta => 'استكشف الفئات الجديدة';
+
+  @override
+  String matchingNeedsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# طلب جديد يناسب خدماتك.',
+      many: '# طلبًا جديدًا يناسب خدماتك.',
+      few: '# طلبات جديدة تناسب خدماتك.',
+      two: 'طلبان جديدان يناسبان خدماتك.',
+      one: 'طلب جديد واحد يناسب خدماتك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seeOpportunitiesCta => 'اطّلع على الفرص';
 }

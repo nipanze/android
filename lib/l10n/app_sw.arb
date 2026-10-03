@@ -1252,5 +1252,23 @@
   "peopleLookingForServices": "Watu wanatafuta huduma unazotoa",
   "addYourServicesPrompt": "Je, unaweza kusaidia watu na huduma fulani?",
   "whatCanYouHelpWith": "Unaweza kusaidia watu na nini?",
-  "whatCanYouHelpWithSubtitle": "Tuambie huduma, ujuzi au rasilimali unazotoa..."
+  "whatCanYouHelpWithSubtitle": "Tuambie unachotoa nasi tutakuunganisha na wanaokitafuta.",
+  "addYourServicesCta": "Ongeza huduma zako",
+  "newCategoriesAvailable": "Kategoria mpya zinapatikana",
+  "newCategoriesAvailableSubtitle": "Tumeongeza {categories}. Huenda una kitu cha kutoa hapo.",
+  "@newCategoriesAvailableSubtitle": {
+    "placeholders": {
+      "categories": {}
+    }
+  },
+  "exploreNewCategoriesCta": "Gundua kategoria mpya",
+  "matchingNeedsSubtitle": "{count, plural, one{Ombi jipya # linalingana na huduma zako.} other{Maombi mapya # yanalingana na huduma zako.}}",
+  "@matchingNeedsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seeOpportunitiesCta": "Angalia fursa"
 }

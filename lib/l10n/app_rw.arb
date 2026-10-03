@@ -1252,5 +1252,23 @@
   "peopleLookingForServices": "Abantu barashaka serivisi utanga",
   "addYourServicesPrompt": "Ufite serivisi waza ufasha abantu?",
   "whatCanYouHelpWith": "Ni iki wafasha abandi?",
-  "whatCanYouHelpWithSubtitle": "Tubwire serivisi, ubuhanga cyangwa umutungo utanga..."
+  "whatCanYouHelpWithSubtitle": "Tubwire ibyo utanga tuzaguhuza n'ababikeneye.",
+  "addYourServicesCta": "Ongeraho serivisi zawe",
+  "newCategoriesAvailable": "Ibyiciro bishya birahari",
+  "newCategoriesAvailableSubtitle": "Twongeyeho {categories}. Ushobora kuba ufite icyo watanga muri byo.",
+  "@newCategoriesAvailableSubtitle": {
+    "placeholders": {
+      "categories": {}
+    }
+  },
+  "exploreNewCategoriesCta": "Reba ibyiciro bishya",
+  "matchingNeedsSubtitle": "{count, plural, one{Icyifuzo gishya # gihuye na serivisi zawe.} other{Ibyifuzo bishya # bihuye na serivisi zawe.}}",
+  "@matchingNeedsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seeOpportunitiesCta": "Reba amahirwe"
 }

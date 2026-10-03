@@ -1259,5 +1259,23 @@
   "peopleLookingForServices": "Des personnes recherchent ce que vous proposez",
   "addYourServicesPrompt": "Pouvez-vous aider les gens avec un service ?",
   "whatCanYouHelpWith": "En quoi pouvez-vous aider les autres ?",
-  "whatCanYouHelpWithSubtitle": "Dites-nous quels services, compétences ou ressources vous proposez..."
+  "whatCanYouHelpWithSubtitle": "Dites-nous ce que vous proposez et nous vous mettrons en relation avec les personnes qui le recherchent.",
+  "addYourServicesCta": "Ajouter vos services",
+  "newCategoriesAvailable": "De nouvelles catégories sont disponibles",
+  "newCategoriesAvailableSubtitle": "Nous avons ajouté {categories}. Vous pourriez y proposer quelque chose.",
+  "@newCategoriesAvailableSubtitle": {
+    "placeholders": {
+      "categories": {}
+    }
+  },
+  "exploreNewCategoriesCta": "Explorer les nouvelles catégories",
+  "matchingNeedsSubtitle": "{count, plural, one{# nouvelle demande correspond à vos services.} other{# nouvelles demandes correspondent à vos services.}}",
+  "@matchingNeedsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seeOpportunitiesCta": "Voir les opportunités"
 }

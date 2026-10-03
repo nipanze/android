@@ -2720,5 +2720,33 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get whatCanYouHelpWithSubtitle =>
-      'Tubwire serivisi, ubuhanga cyangwa umutungo utanga...';
+      'Tubwire ibyo utanga tuzaguhuza n\'ababikeneye.';
+
+  @override
+  String get addYourServicesCta => 'Ongeraho serivisi zawe';
+
+  @override
+  String get newCategoriesAvailable => 'Ibyiciro bishya birahari';
+
+  @override
+  String newCategoriesAvailableSubtitle(Object categories) {
+    return 'Twongeyeho $categories. Ushobora kuba ufite icyo watanga muri byo.';
+  }
+
+  @override
+  String get exploreNewCategoriesCta => 'Reba ibyiciro bishya';
+
+  @override
+  String matchingNeedsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ibyifuzo bishya # bihuye na serivisi zawe.',
+      one: 'Icyifuzo gishya # gihuye na serivisi zawe.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seeOpportunitiesCta => 'Reba amahirwe';
 }

@@ -1252,5 +1252,23 @@
   "peopleLookingForServices": "يبحث الأشخاص عما تقدمه",
   "addYourServicesPrompt": "هل يمكنك مساعدة الناس في تقديم خدمة؟",
   "whatCanYouHelpWith": "بماذا يمكنك مساعدة الناس؟",
-  "whatCanYouHelpWithSubtitle": "أخبرنا بالخدمات أو المهارات أو الموارد التي تقدمها..."
+  "whatCanYouHelpWithSubtitle": "أخبرنا بما تقدمه وسنوصلك بالأشخاص الذين يبحثون عنه.",
+  "addYourServicesCta": "أضف خدماتك",
+  "newCategoriesAvailable": "فئات جديدة متاحة",
+  "newCategoriesAvailableSubtitle": "أضفنا {categories}. ربما لديك ما تقدمه ضمنها.",
+  "@newCategoriesAvailableSubtitle": {
+    "placeholders": {
+      "categories": {}
+    }
+  },
+  "exploreNewCategoriesCta": "استكشف الفئات الجديدة",
+  "matchingNeedsSubtitle": "{count, plural, one{طلب جديد واحد يناسب خدماتك.} two{طلبان جديدان يناسبان خدماتك.} few{# طلبات جديدة تناسب خدماتك.} many{# طلبًا جديدًا يناسب خدماتك.} other{# طلب جديد يناسب خدماتك.}}",
+  "@matchingNeedsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seeOpportunitiesCta": "اطّلع على الفرص"
 }

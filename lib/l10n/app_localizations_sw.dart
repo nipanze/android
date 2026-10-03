@@ -2718,5 +2718,33 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get whatCanYouHelpWithSubtitle =>
-      'Tuambie huduma, ujuzi au rasilimali unazotoa...';
+      'Tuambie unachotoa nasi tutakuunganisha na wanaokitafuta.';
+
+  @override
+  String get addYourServicesCta => 'Ongeza huduma zako';
+
+  @override
+  String get newCategoriesAvailable => 'Kategoria mpya zinapatikana';
+
+  @override
+  String newCategoriesAvailableSubtitle(Object categories) {
+    return 'Tumeongeza $categories. Huenda una kitu cha kutoa hapo.';
+  }
+
+  @override
+  String get exploreNewCategoriesCta => 'Gundua kategoria mpya';
+
+  @override
+  String matchingNeedsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Maombi mapya # yanalingana na huduma zako.',
+      one: 'Ombi jipya # linalingana na huduma zako.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seeOpportunitiesCta => 'Angalia fursa';
 }
