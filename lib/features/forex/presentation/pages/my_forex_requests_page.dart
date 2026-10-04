@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../data/forex_repository.dart';
 
-class MyForexRequestsPage extends StatelessWidget {
+class MyForexRequestsPage extends StatefulWidget {
   const MyForexRequestsPage({super.key});
+
+  @override
+  State<MyForexRequestsPage> createState() => _MyForexRequestsPageState();
+}
+
+class _MyForexRequestsPageState extends State<MyForexRequestsPage> {
+  late Future<List<ForexListingModel>> _requestsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRequests();
+  }
+
+  void _loadRequests() {
+    _requestsFuture = getIt<ForexRepository>().getMyForexRequests();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +39,21 @@ class MyForexRequestsPage extends StatelessWidget {
             Icons.arrow_back_ios_new_rounded,
             size: 18,
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.marketplace),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.marketplace),
         ),
         title: Text(l10n?.myForexRequestsTitle ?? 'My forex requests'),
       ),
       body: FutureBuilder<List<ForexListingModel>>(
-        future: getIt<ForexRepository>().getMyForexRequests(),
+        future: _requestsFuture,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return ErrorState(
+              message: AppStrings.genericError,
+              onRetry: () => setState(_loadRequests),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }

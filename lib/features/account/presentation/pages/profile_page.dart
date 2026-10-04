@@ -564,12 +564,6 @@ class _ProfileViewState extends State<_ProfileView> {
               }
             }
           }
-          if (state is ProfileCubitError) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppColors.danger,
-            ));
-          }
         },
         builder: (context, state) {
           if (state is ProfileCubitLoading || state is ProfileCubitInitial) {

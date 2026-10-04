@@ -15,7 +15,10 @@ Future<bool> ensureOnlineForAction(BuildContext context) async {
     ..hideCurrentSnackBar()
     ..showSnackBar(
       const SnackBar(
-        content: Text('You’re offline · Connect to continue.'),
+        content: Text(
+          'You’re offline · Check your internet connection.',
+          textAlign: TextAlign.center,
+        ),
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),
@@ -348,7 +351,7 @@ class ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOffline = message.startsWith('You’re offline ·');
     final displayMessage = isOffline
-        ? 'Connect to the internet to load the latest data.'
+        ? 'Check your internet connection and try again.'
         : message;
     return Center(
       child: Padding(
@@ -359,13 +362,14 @@ class ErrorState extends StatelessWidget {
             Icon(
               isOffline ? Icons.wifi_off_rounded : Icons.error_outline,
               size: 48,
-              color: isOffline
-                  ? Theme.of(context).colorScheme.onSurfaceVariant
-                  : AppColors.danger,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 16),
-            Text(isOffline ? 'You’re offline' : 'Something went wrong',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              isOffline ? 'You’re offline' : 'Something went wrong',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(
               displayMessage,
