@@ -37,7 +37,7 @@ class _OfflineConnectionListenerState extends State<OfflineConnectionListener> {
           content: Text(
             isOnline
                 ? 'Connection restored · Updating…'
-                : 'You’re offline · Showing recently loaded data',
+                : 'You’re currently offline',
           ),
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
