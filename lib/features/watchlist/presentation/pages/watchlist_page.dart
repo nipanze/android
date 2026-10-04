@@ -1,6 +1,8 @@
 // lib/features/watchlist/presentation/pages/watchlist_page.dart
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -178,30 +180,55 @@ class _WatchlistView extends StatelessWidget {
                                   : '/forex/${listing.requestId}');
                             },
                             onRemove: () {
-                              context.read<WatchlistCubit>().remove(
-                                    listing.requestId,
-                                    forex: listing.forex != null,
-                                  );
-
+                              final cubit = context.read<WatchlistCubit>();
                               final scaffoldMessenger =
                                   ScaffoldMessenger.of(context);
                               scaffoldMessenger.clearSnackBars();
-                              scaffoldMessenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(AppLocalizations.of(context)!
-                                      .removedFromWatchlist),
-                                  duration: const Duration(milliseconds: 1200),
-                                  action: SnackBarAction(
-                                    label: AppLocalizations.of(context)!.undo,
-                                    textColor: AppColors.accent,
-                                    onPressed: () {
-                                      context
-                                          .read<WatchlistCubit>()
-                                          .add(listing);
-                                    },
+                              unawaited(() async {
+                                final removed = await cubit.remove(listing);
+                                if (!context.mounted) return;
+                                if (!removed) {
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppLocalizations.of(context)!
+                                            .watchlistError,
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                scaffoldMessenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!
+                                        .removedFromWatchlist),
+                                    duration: const Duration(seconds: 4),
+                                    action: SnackBarAction(
+                                      label: AppLocalizations.of(context)!.undo,
+                                      textColor: AppColors.accent,
+                                      onPressed: () {
+                                        unawaited(() async {
+                                          final restored =
+                                              await cubit.undoRemove(
+                                            listing,
+                                            index: index,
+                                          );
+                                          if (!restored && context.mounted) {
+                                            scaffoldMessenger.showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .watchlistError,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }());
+                                      },
+                                    ),
                                   ),
-                                ),
-                              );
+                                );
+                              }());
                             },
                           ),
                         );

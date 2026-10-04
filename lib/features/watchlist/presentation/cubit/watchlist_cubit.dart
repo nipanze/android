@@ -47,45 +47,81 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     );
   }
 
-  Future<void> remove(String requestId, {bool forex = false}) async {
+  Future<bool> remove(MarketplaceItem listing) async {
     try {
-      await _repository.remove(requestId, forex: forex);
+      await _repository.remove(listing.requestId, module: listing.module);
+      if (isClosed) return false;
       final current = state;
       if (current is WatchlistLoaded) {
         final updated = current.listings
-            .where((listing) => listing.requestId != requestId)
+            .where((item) => !_isSameListing(item, listing))
             .toList();
         emit(WatchlistLoaded(listings: updated));
       }
+      return true;
     } catch (e) {
-      emit(WatchlistError(userFacingErrorMessage(e)));
+      if (!isClosed) emit(WatchlistError(userFacingErrorMessage(e)));
+      return false;
     }
   }
 
-  Future<void> add(MarketplaceItem listing) async {
+  Future<bool> add(MarketplaceItem listing) async {
     try {
       await _repository.add(
         listing.requestId,
-        forex: listing.module == MarketplaceModule.forex,
+        module: listing.module,
       );
+      if (isClosed) return false;
       final current = state;
-      if (current is WatchlistLoaded &&
-          !current.listings
-              .any((item) => item.requestId == listing.requestId)) {
-        emit(WatchlistLoaded(listings: [...current.listings, listing]));
+      if (current is WatchlistLoaded) {
+        if (!current.listings.any((item) => _isSameListing(item, listing))) {
+          emit(WatchlistLoaded(listings: [...current.listings, listing]));
+        }
+      } else {
+        await load();
       }
+      return true;
     } catch (e) {
-      emit(WatchlistError(userFacingErrorMessage(e)));
+      if (!isClosed) emit(WatchlistError(userFacingErrorMessage(e)));
+      return false;
     }
   }
 
-  bool isWatched(String requestId) {
+  Future<bool> undoRemove(MarketplaceItem listing, {required int index}) async {
+    try {
+      await _repository.add(listing.requestId, module: listing.module);
+      if (isClosed) return false;
+      final current = state;
+      if (current is WatchlistLoaded &&
+          !current.listings.any((item) => _isSameListing(item, listing))) {
+        final updated = [...current.listings];
+        updated.insert(index.clamp(0, updated.length).toInt(), listing);
+        emit(WatchlistLoaded(listings: updated));
+      } else if (current is! WatchlistLoaded) {
+        await load();
+      }
+      return true;
+    } catch (e) {
+      if (!isClosed) emit(WatchlistError(userFacingErrorMessage(e)));
+      return false;
+    }
+  }
+
+  bool isWatched(
+    String requestId, {
+    MarketplaceModule module = MarketplaceModule.loan,
+  }) {
     final current = state;
     if (current is WatchlistLoaded) {
-      return current.listings.any((l) => l.requestId == requestId);
+      return current.listings.any(
+        (listing) => listing.requestId == requestId && listing.module == module,
+      );
     }
     return false;
   }
+
+  bool _isSameListing(MarketplaceItem first, MarketplaceItem second) =>
+      first.requestId == second.requestId && first.module == second.module;
 
   @override
   Future<void> close() {

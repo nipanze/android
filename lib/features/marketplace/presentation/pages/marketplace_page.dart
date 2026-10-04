@@ -1,6 +1,8 @@
 // lib/features/marketplace/presentation/pages/marketplace_page.dart
 // ignore_for_file: directives_ordering
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -325,8 +327,10 @@ class _MarketplaceView extends StatelessWidget {
                               builder: (context, _) {
                                 final watchlist =
                                     context.read<WatchlistCubit>();
-                                final isSaved =
-                                    watchlist.isWatched(listing.requestId);
+                                final isSaved = watchlist.isWatched(
+                                  listing.requestId,
+                                  module: listing.module,
+                                );
                                 return ListingCard(
                                   listing: listing,
                                   onTap: () => context.push(
@@ -339,12 +343,39 @@ class _MarketplaceView extends StatelessWidget {
                                   isSaved: isSaved,
                                   onWatchlistToggle: () {
                                     if (isSaved) {
-                                      watchlist.remove(
-                                        listing.requestId,
-                                        forex: listing.forex != null,
-                                      );
+                                      unawaited(() async {
+                                        final removed =
+                                            await watchlist.remove(listing);
+                                        if (!removed && context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                            ..clearSnackBars()
+                                            ..showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .watchlistError,
+                                                ),
+                                              ),
+                                            );
+                                        }
+                                      }());
                                     } else {
-                                      watchlist.add(listing);
+                                      unawaited(() async {
+                                        final added =
+                                            await watchlist.add(listing);
+                                        if (!added && context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                            ..clearSnackBars()
+                                            ..showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .watchlistError,
+                                                ),
+                                              ),
+                                            );
+                                        }
+                                      }());
                                     }
                                   },
                                 );

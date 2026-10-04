@@ -28,6 +28,20 @@ MarketplaceItem _loanItem(String id) {
   ));
 }
 
+MarketplaceItem _needsItem(String id) {
+  return MarketplaceItem.needs(NeedsListing(
+    requestId: id,
+    title: 'Need $id',
+    specification: 'Specification',
+    category: 'Specialized Products',
+    budget: 100000,
+    currency: 'UGX',
+    location: 'Kampala',
+    urgency: 'Flexible',
+    listedAt: DateTime.now(),
+  ));
+}
+
 void main() {
   late MockWatchlistRepository mockRepo;
 
@@ -62,8 +76,7 @@ void main() {
     blocTest<WatchlistCubit, WatchlistState>(
       'load emits Error when repository throws',
       build: () {
-        when(() => mockRepo.getWatchedListings())
-            .thenThrow(Exception('boom'));
+        when(() => mockRepo.getWatchedListings()).thenThrow(Exception('boom'));
         return WatchlistCubit(mockRepo);
       },
       act: (cubit) => cubit.load(),
@@ -80,13 +93,15 @@ void main() {
               _loanItem('req-1'),
               _loanItem('req-2'),
             ]);
-        when(() => mockRepo.remove('req-1', forex: any(named: 'forex')))
-            .thenAnswer((_) async {});
+        when(() => mockRepo.remove(
+              'req-1',
+              module: MarketplaceModule.loan,
+            )).thenAnswer((_) async {});
         return WatchlistCubit(mockRepo);
       },
       act: (cubit) async {
         await cubit.load();
-        await cubit.remove('req-1');
+        await cubit.remove(_loanItem('req-1'));
       },
       skip: 2,
       expect: () => [
@@ -101,8 +116,10 @@ void main() {
       build: () {
         when(() => mockRepo.getWatchedListings())
             .thenAnswer((_) async => [_loanItem('req-1')]);
-        when(() => mockRepo.add('req-2', forex: any(named: 'forex')))
-            .thenAnswer((_) async {});
+        when(() => mockRepo.add(
+              'req-2',
+              module: MarketplaceModule.loan,
+            )).thenAnswer((_) async {});
         return WatchlistCubit(mockRepo);
       },
       act: (cubit) async {
@@ -113,6 +130,76 @@ void main() {
       expect: () => [
         isA<WatchlistLoaded>()
             .having((s) => s.listings.length, 'listings count', 2),
+      ],
+    );
+
+    blocTest<WatchlistCubit, WatchlistState>(
+      'undo restores a removed listing at its original position',
+      build: () {
+        when(() => mockRepo.getWatchedListings()).thenAnswer((_) async => [
+              _loanItem('req-1'),
+              _loanItem('req-2'),
+              _loanItem('req-3'),
+            ]);
+        when(() => mockRepo.remove(
+              'req-2',
+              module: MarketplaceModule.loan,
+            )).thenAnswer((_) async {});
+        when(() => mockRepo.add(
+              'req-2',
+              module: MarketplaceModule.loan,
+            )).thenAnswer((_) async {});
+        return WatchlistCubit(mockRepo);
+      },
+      act: (cubit) async {
+        await cubit.load();
+        final listing = _loanItem('req-2');
+        await cubit.remove(listing);
+        await cubit.undoRemove(listing, index: 1);
+      },
+      skip: 2,
+      expect: () => [
+        isA<WatchlistLoaded>().having(
+          (state) =>
+              state.listings.map((listing) => listing.requestId).toList(),
+          'listings after removal',
+          ['req-1', 'req-3'],
+        ),
+        isA<WatchlistLoaded>().having(
+          (state) =>
+              state.listings.map((listing) => listing.requestId).toList(),
+          'listings after undo',
+          ['req-1', 'req-2', 'req-3'],
+        ),
+      ],
+    );
+
+    blocTest<WatchlistCubit, WatchlistState>(
+      'removing a Needs listing does not remove another module with the same id',
+      build: () {
+        when(() => mockRepo.getWatchedListings()).thenAnswer((_) async => [
+              _loanItem('shared-id'),
+              _needsItem('shared-id'),
+            ]);
+        when(() => mockRepo.remove(
+              'shared-id',
+              module: MarketplaceModule.needs,
+            )).thenAnswer((_) async {});
+        return WatchlistCubit(mockRepo);
+      },
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.remove(_needsItem('shared-id'));
+      },
+      skip: 2,
+      expect: () => [
+        isA<WatchlistLoaded>()
+            .having((state) => state.listings.length, 'remaining count', 1)
+            .having(
+              (state) => state.listings.single.module,
+              'remaining module',
+              MarketplaceModule.loan,
+            ),
       ],
     );
 
