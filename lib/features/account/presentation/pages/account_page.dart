@@ -1461,23 +1461,23 @@ class _ThemeToggleRow extends StatelessWidget {
               showSelectedIcon: false,
               style: SegmentedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 5),
               ),
               segments: const [
                 ButtonSegment(
                   value: ThemeMode.system,
                   tooltip: 'Automatic theme',
-                  icon: Icon(Icons.brightness_auto_outlined, size: 18),
+                  icon: Icon(Icons.brightness_auto_outlined, size: 14),
                 ),
                 ButtonSegment(
                   value: ThemeMode.light,
                   tooltip: 'Light theme',
-                  icon: Icon(Icons.light_mode_outlined, size: 18),
+                  icon: Icon(Icons.light_mode_outlined, size: 14),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
                   tooltip: 'Dark theme',
-                  icon: Icon(Icons.dark_mode_outlined, size: 18),
+                  icon: Icon(Icons.dark_mode_outlined, size: 14),
                 ),
               ],
               selected: {mode},
