@@ -50,7 +50,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _moduleFilter = module;
     _countryFilter = country;
     _viewerFeedKey = _resolveViewerFeedKey();
-    emit(const MarketplaceLoading());
+    if (state is! MarketplaceLoaded) {
+      emit(const MarketplaceLoading());
+    }
     try {
       final listings = await _repository.getListings(
           district: district, module: module, country: country);
@@ -62,6 +64,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _subscribeRealtime();
     } catch (e) {
       if (isClosed) return;
+      if (state is MarketplaceLoaded) return;
       emit(MarketplaceError(userFacingErrorMessage(e)));
     }
   }

@@ -139,6 +139,20 @@ void main() {
         ),
       ],
     );
+
+    blocTest<ProfileCubit, ProfileCubitState>(
+      'keeps the loaded profile visible when a refresh fails',
+      build: () {
+        repository.setError(Exception('offline'));
+        return ProfileCubit(repository);
+      },
+      seed: () => const ProfileCubitLoaded(_testProfile),
+      act: (cubit) => cubit.refresh(),
+      expect: () => <ProfileCubitState>[],
+      verify: (cubit) {
+        expect(cubit.state, isA<ProfileCubitLoaded>());
+      },
+    );
   });
 
   group('ProfileCubit.updateProfile()', () {

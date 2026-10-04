@@ -15,8 +15,11 @@ class ProfileRepository {
   ProfileRepository(this._client);
 
   final SupabaseClient _client;
+  final Map<String, UserProfile> _cachedProfiles = {};
 
   String get _uid => _client.auth.currentUser!.id;
+
+  void clearCachedProfiles() => _cachedProfiles.clear();
 
   /// Full profile from v_user_marketplace_activity joined with profiles.
   Future<UserProfile?> getProfile() async {
@@ -66,21 +69,22 @@ class ProfileRepository {
       final trust = results[2];
       final proTrust = results[3];
 
-      if (activity == null && profile == null) return null;
+      if (activity == null && profile == null) return _cachedProfiles[_uid];
 
       final email = _client.auth.currentUser?.email ?? '';
 
       final storedPhone = profile?['phone'] as String?;
       final storedCountry = profile?['country'] as String?;
-      final resolvedCountryCode = (storedCountry != null && storedCountry.isNotEmpty)
-          ? storedCountry
-          : (storedPhone != null && storedPhone.isNotEmpty
-              ? EastAfricaCountries.findByPhone(storedPhone).code
-              : 'UG');
+      final resolvedCountryCode =
+          (storedCountry != null && storedCountry.isNotEmpty)
+              ? storedCountry
+              : (storedPhone != null && storedPhone.isNotEmpty
+                  ? EastAfricaCountries.findByPhone(storedPhone).code
+                  : 'UG');
       final resolvedCurrency = profile?['income_currency'] as String? ??
           EastAfricaCountries.findByCode(resolvedCountryCode).currency;
 
-      return UserProfile(
+      final userProfile = UserProfile(
         id: _uid,
         email: email,
         fullName: profile?['full_name'] as String?,
@@ -144,7 +148,11 @@ class ProfileRepository {
             ? DateTime.tryParse(profile!['marketing_joined_at'] as String)
             : null,
       );
+      _cachedProfiles[_uid] = userProfile;
+      return userProfile;
     } catch (e) {
+      final cachedProfile = _cachedProfiles[_uid];
+      if (cachedProfile != null) return cachedProfile;
       throw parseSupabaseError(e);
     }
   }

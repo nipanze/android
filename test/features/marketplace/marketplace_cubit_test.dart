@@ -85,6 +85,33 @@ void main() {
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(
+      'keeps loaded listings visible when a refresh fails',
+      build: () {
+        var loadCount = 0;
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async {
+          if (loadCount++ == 0) return testListings;
+          throw Exception('offline');
+        });
+        return MarketplaceCubit(mockRepo);
+      },
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.refresh();
+      },
+      expect: () => [
+        isA<MarketplaceLoading>(),
+        isA<MarketplaceLoaded>()
+            .having((s) => s.listings.length, 'listings count', 2),
+      ],
+      verify: (cubit) {
+        expect((cubit.state as MarketplaceLoaded).listings.length, 2);
+      },
+    );
+
+    blocTest<MarketplaceCubit, MarketplaceState>(
       'applyProFilters emits proFilterActive then Loaded with intersected listings matching RPC results',
       build: () {
         when(() => mockRepo.getListings(

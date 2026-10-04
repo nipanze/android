@@ -18,7 +18,9 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
   final ProfileRepository _repository;
 
   Future<void> load() async {
-    emit(const ProfileCubitLoading());
+    if (state is! ProfileCubitLoaded) {
+      emit(const ProfileCubitLoading());
+    }
     try {
       // getProfile() returns UserProfile? — treat null as "profile not found"
       final profile = await _repository.getProfile();
@@ -29,6 +31,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       }
       emit(ProfileCubitLoaded(profile));
     } catch (e) {
+      if (state is ProfileCubitLoaded) return;
       emit(ProfileCubitError(userFacingErrorMessage(e)));
     }
   }
