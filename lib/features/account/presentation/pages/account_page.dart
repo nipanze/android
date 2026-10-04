@@ -176,9 +176,9 @@ class _AccountView extends StatelessWidget {
                       const SizedBox(height: 4),
 
                       // ── Your Services ────────────────────────────────────
-                      SectionHeader(
-                          AppLocalizations.of(context)!.yourServices
-                              .toUpperCase()),
+                      SectionHeader(AppLocalizations.of(context)!
+                          .yourServices
+                          .toUpperCase()),
                       const _YourServicesSection(),
                       const SizedBox(height: 8),
 
@@ -299,145 +299,153 @@ class _AccountView extends StatelessWidget {
             : EastAfricaCountries.uganda);
 
     showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetCtx) {
-        final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
-        final sheetBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
-        final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
-        final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (sheetCtx) {
+          final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
+          final sheetBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+          final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
+          final sheetDivider =
+              isDark ? AppColors.borderDark : AppColors.borderLight;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: sheetBg,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              width: 1,
+          return Container(
+            decoration: BoxDecoration(
+              color: sheetBg,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 1,
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  child: Text(
-                    AppLocalizations.of(sheetCtx)!.settingsTitle,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: sheetText,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Text(
+                      AppLocalizations.of(sheetCtx)!.settingsTitle,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: sheetText,
+                      ),
                     ),
                   ),
-                ),
-              Divider(height: 1, color: sheetDivider),
-              _ThemeToggleRow(),
-              Divider(height: 1, color: sheetDivider),
-              // Language row – switch app language dynamically
-              ValueListenableBuilder<Locale?>(
-                valueListenable: LanguageService.instance.notifier,
-                builder: (ctx, _, __) {
-                  final lang = LanguageService.instance.currentLanguage;
-                  return _ActionRow(
-                    icon: Icons.language_rounded,
-                    label: AppLocalizations.of(sheetCtx)!.selectLanguage,
-                    trailing: _SettingsBadge('${lang.flag} ${lang.nativeName}'),
+                  Divider(height: 1, color: sheetDivider),
+                  _ThemeToggleRow(),
+                  Divider(height: 1, color: sheetDivider),
+                  // Language row – switch app language dynamically
+                  ValueListenableBuilder<Locale?>(
+                    valueListenable: LanguageService.instance.notifier,
+                    builder: (ctx, _, __) {
+                      final lang = LanguageService.instance.currentLanguage;
+                      return _ActionRow(
+                        icon: Icons.language_rounded,
+                        label: AppLocalizations.of(sheetCtx)!.selectLanguage,
+                        trailing:
+                            _SettingsBadge('${lang.flag} ${lang.nativeName}'),
+                        onTap: () {
+                          Navigator.of(sheetCtx).pop();
+                          showLanguageSelectorSheet(context);
+                        },
+                      );
+                    },
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  // Subscription Currency row – locked to registered phone country code
+                  _ActionRow(
+                    icon: Icons.monetization_on_outlined,
+                    label:
+                        AppLocalizations.of(sheetCtx)?.subscriptionCurrency ??
+                            'Subscription Currency',
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SettingsBadge(
+                            '${userCountry.flag} ${userCountry.currency}'),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          size: 14,
+                          color: isDark
+                              ? AppColors.text3Dark
+                              : AppColors.text3Light,
+                        ),
+                      ],
+                    ),
                     onTap: () {
                       Navigator.of(sheetCtx).pop();
-                      showLanguageSelectorSheet(context);
+                      _showCurrencyLockedInfoDialog(context, userCountry);
                     },
-                  );
-                },
-              ),
-              Divider(height: 1, color: sheetDivider),
-              // Subscription Currency row – locked to registered phone country code
-              _ActionRow(
-                icon: Icons.monetization_on_outlined,
-                label: AppLocalizations.of(sheetCtx)?.subscriptionCurrency ??
-                    'Subscription Currency',
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _SettingsBadge(
-                        '${userCountry.flag} ${userCountry.currency}'),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.lock_outline_rounded,
-                      size: 14,
-                      color: isDark ? AppColors.text3Dark : AppColors.text3Light,
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  _ActionRow(
+                    icon: Icons.lock_outline_rounded,
+                    label:
+                        AppLocalizations.of(sheetCtx)?.security ?? 'Security',
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      _showSecuritySheet(context);
+                    },
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  _ActionRow(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    label: AppLocalizations.of(sheetCtx)!.contactUs,
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      _showContactDialog(context);
+                    },
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  _ActionRow(
+                    icon: Icons.groups_outlined,
+                    label: AppLocalizations.of(sheetCtx)!.community,
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      _showCommunityDialog(context);
+                    },
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  _ActionRow(
+                    icon: Icons.gavel_outlined,
+                    label: AppLocalizations.of(sheetCtx)!.legal,
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      _showLegalDialog(context);
+                    },
+                  ),
+                  Divider(height: 1, color: sheetDivider),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(sheetCtx).pop();
+                        _showSignOutConfirmation(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                          side: const BorderSide(color: AppColors.danger)),
+                      icon: const Icon(Icons.logout_rounded, size: 16),
+                      label: Text(AppLocalizations.of(sheetCtx)!.signOut),
                     ),
-                  ],
-                ),
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showCurrencyLockedInfoDialog(context, userCountry);
-                },
+                  ),
+                ],
               ),
-              Divider(height: 1, color: sheetDivider),
-              _ActionRow(
-                icon: Icons.lock_outline_rounded,
-                label: AppLocalizations.of(sheetCtx)?.security ?? 'Security',
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showSecuritySheet(context);
-                },
-              ),
-              Divider(height: 1, color: sheetDivider),
-              _ActionRow(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: AppLocalizations.of(sheetCtx)!.contactUs,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showContactDialog(context);
-                },
-              ),
-              Divider(height: 1, color: sheetDivider),
-              _ActionRow(
-                icon: Icons.groups_outlined,
-                label: AppLocalizations.of(sheetCtx)!.community,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showCommunityDialog(context);
-                },
-              ),
-              Divider(height: 1, color: sheetDivider),
-              _ActionRow(
-                icon: Icons.gavel_outlined,
-                label: AppLocalizations.of(sheetCtx)!.legal,
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _showLegalDialog(context);
-                },
-              ),
-              Divider(height: 1, color: sheetDivider),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(sheetCtx).pop();
-                    _showSignOutConfirmation(context);
-                  },
-                  style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.danger,
-                      side: const BorderSide(color: AppColors.danger)),
-                  icon: const Icon(Icons.logout_rounded, size: 16),
-                  label: Text(AppLocalizations.of(sheetCtx)!.signOut),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    });
+            ),
+          );
+        });
   }
 
   void _showCurrencyLockedInfoDialog(
@@ -616,7 +624,8 @@ class _AccountView extends StatelessWidget {
         final isDark = Theme.of(sheetCtx).brightness == Brightness.dark;
         final sheetBg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
         final sheetText = isDark ? AppColors.textDark : AppColors.textLight;
-        final sheetDivider = isDark ? AppColors.borderDark : AppColors.borderLight;
+        final sheetDivider =
+            isDark ? AppColors.borderDark : AppColors.borderLight;
 
         return Container(
           decoration: BoxDecoration(
@@ -637,7 +646,8 @@ class _AccountView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 8),
                       child: Text(
                         'Security',
                         style: TextStyle(
@@ -651,10 +661,14 @@ class _AccountView extends StatelessWidget {
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
                       secondary: const Icon(Icons.fingerprint_rounded),
-                      title: Text('App Lock', style: TextStyle(color: sheetText)),
+                      title:
+                          Text('App Lock', style: TextStyle(color: sheetText)),
                       subtitle: Text(
                         'Require biometrics or device PIN after cold start or 30 seconds in the background.',
-                        style: TextStyle(color: isDark ? AppColors.text2Dark : AppColors.text2Light),
+                        style: TextStyle(
+                            color: isDark
+                                ? AppColors.text2Dark
+                                : AppColors.text2Light),
                       ),
                       value: enabled,
                       onChanged: (value) async {
@@ -720,9 +734,9 @@ class _ProfileHeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryTextColor =
-      isDark ? AppColors.text2Dark : AppColors.text2Light;
+        isDark ? AppColors.text2Dark : AppColors.text2Light;
     final tertiaryTextColor =
-      isDark ? AppColors.text3Dark : AppColors.text3Light;
+        isDark ? AppColors.text3Dark : AppColors.text3Light;
     final isVerified = profile?.isKycApproved == true;
     return Material(
       color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
@@ -777,21 +791,21 @@ class _ProfileHeaderCard extends StatelessWidget {
                     // Email
                     Text(
                       profile?.email ?? '',
-                        style: TextStyle(fontSize: 11, color: secondaryTextColor),
+                      style: TextStyle(fontSize: 11, color: secondaryTextColor),
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     // Location
                     Row(children: [
-                        Icon(Icons.location_on_outlined,
+                      Icon(Icons.location_on_outlined,
                           size: 12, color: tertiaryTextColor),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           profile?.district ??
                               AppLocalizations.of(context)!.districtNotSet,
-                            style:
-                              TextStyle(fontSize: 11, color: secondaryTextColor),
+                          style: TextStyle(
+                              fontSize: 11, color: secondaryTextColor),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -801,21 +815,21 @@ class _ProfileHeaderCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Row(children: [
                         Icon(Icons.calendar_today_outlined,
-                          size: 11, color: tertiaryTextColor),
+                            size: 11, color: tertiaryTextColor),
                         const SizedBox(width: 4),
                         Text(
                           AppLocalizations.of(context)!.memberSince(
                               DateFormat('MMM yyyy')
                                   .format(profile!.memberSince!)),
-                            style:
-                              TextStyle(fontSize: 11, color: secondaryTextColor),
+                          style: TextStyle(
+                              fontSize: 11, color: secondaryTextColor),
                         ),
                       ]),
                     ],
                   ],
                 ),
               ),
-                Icon(Icons.chevron_right_rounded,
+              Icon(Icons.chevron_right_rounded,
                   size: 20, color: tertiaryTextColor),
             ],
           ),
@@ -946,9 +960,8 @@ class _YourServicesCard extends StatelessWidget {
 
     return BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
       builder: (context, state) {
-        final capabilities = state is CapabilitiesLoaded
-            ? state.capabilities
-            : const [];
+        final capabilities =
+            state is CapabilitiesLoaded ? state.capabilities : const [];
         final isLoading =
             state is CapabilitiesLoading || state is CapabilitiesInitial;
 
@@ -1004,7 +1017,8 @@ class _YourServicesCard extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             capabilities
-                                .map((capability) => capability.capabilityName ??
+                                .map((capability) =>
+                                    capability.capabilityName ??
                                     capability.capabilitySlug)
                                 .join(' · '),
                             maxLines: 1,
@@ -1012,7 +1026,8 @@ class _YourServicesCard extends StatelessWidget {
                             style: TextStyle(fontSize: 12, color: text2),
                           ),
                         ],
-                        if (!isLoading && capabilities.isEmpty &&
+                        if (!isLoading &&
+                            capabilities.isEmpty &&
                             state is! CapabilitiesError)
                           Align(
                             alignment: Alignment.centerLeft,
@@ -1032,8 +1047,7 @@ class _YourServicesCard extends StatelessWidget {
                     ),
                   ),
                   if (!isLoading)
-                    Icon(Icons.chevron_right_rounded,
-                        color: text2, size: 20),
+                    Icon(Icons.chevron_right_rounded, color: text2, size: 20),
                 ],
               ),
             ),
@@ -1079,11 +1093,11 @@ class _TrustPanel extends StatelessWidget {
                         size: 22, color: AppColors.accent),
                     const SizedBox(height: 4),
                     Text(l10n.trustScore,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: isDark
-                          ? AppColors.text2Dark
-                          : AppColors.text2Light),
+                        style: TextStyle(
+                            fontSize: 9,
+                            color: isDark
+                                ? AppColors.text2Dark
+                                : AppColors.text2Light),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 4),
                     Text(
@@ -1097,10 +1111,10 @@ class _TrustPanel extends StatelessWidget {
                     Text(
                       l10n.completeDealsToBuild,
                       style: TextStyle(
-                        fontSize: 8,
-                        color: isDark
-                          ? AppColors.text3Dark
-                          : AppColors.text3Light),
+                          fontSize: 8,
+                          color: isDark
+                              ? AppColors.text3Dark
+                              : AppColors.text3Light),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -1146,9 +1160,9 @@ class _TrustPanel extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
-                            color: isDark
-                              ? AppColors.text2Dark
-                              : AppColors.text2Light),
+                              color: isDark
+                                  ? AppColors.text2Dark
+                                  : AppColors.text2Light),
                         ),
                       ],
                     ),
@@ -1444,24 +1458,27 @@ class _ThemeToggleRow extends StatelessWidget {
               ),
             ),
             SegmentedButton<ThemeMode>(
+              showSelectedIcon: false,
               style: SegmentedButton.styleFrom(
-                textStyle:
-                    const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
                 visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
               ),
               segments: const [
                 ButtonSegment(
-                    value: ThemeMode.system,
-                    label: Text('Auto'),
-                    icon: Icon(Icons.brightness_auto_outlined, size: 14)),
+                  value: ThemeMode.system,
+                  tooltip: 'Automatic theme',
+                  icon: Icon(Icons.brightness_auto_outlined, size: 18),
+                ),
                 ButtonSegment(
-                    value: ThemeMode.light,
-                    label: Text('Light'),
-                    icon: Icon(Icons.light_mode_outlined, size: 14)),
+                  value: ThemeMode.light,
+                  tooltip: 'Light theme',
+                  icon: Icon(Icons.light_mode_outlined, size: 18),
+                ),
                 ButtonSegment(
-                    value: ThemeMode.dark,
-                    label: Text('Dark'),
-                    icon: Icon(Icons.dark_mode_outlined, size: 14)),
+                  value: ThemeMode.dark,
+                  tooltip: 'Dark theme',
+                  icon: Icon(Icons.dark_mode_outlined, size: 18),
+                ),
               ],
               selected: {mode},
               onSelectionChanged: (s) => ThemeService.instance.setMode(s.first),

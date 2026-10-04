@@ -35,8 +35,7 @@ class NeedCategory {
       sortOrder: (map['sort_order'] as num?)?.toInt() ?? 0,
       isActive: map['is_active'] as bool? ?? true,
       providerVerificationRequired:
-          map['provider_verification_required'] as bool? ??
-              slug == 'travel_international',
+          map['provider_verification_required'] as bool? ?? true,
     );
   }
 
@@ -52,7 +51,7 @@ class NeedCategory {
   final bool providerVerificationRequired;
 
   bool get requiresProviderVerification =>
-      providerVerificationRequired || slug == 'travel_international';
+      providerVerificationRequired;
 
   String nameForCountry(String? countryCode) {
     final labels = countryLabels[countryCode?.toUpperCase()];
