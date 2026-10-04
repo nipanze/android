@@ -83,20 +83,18 @@ class WatchlistRepository {
   List<String> _idsFor(List<dynamic> rows, String column) =>
       rows.map((row) => row[column] as String?).whereType<String>().toList();
 
-  /// Watch for changes to watched listings.
-  /// Polls for updates by refetching when watchlist table changes.
-  Stream<List<MarketplaceItem>> watchWatchedListings() {
+  /// Emits when the user's watchlist rows change.
+  Stream<void> watchWatchlistChanges() {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       return const Stream.empty();
     }
 
-    // Subscribe to watchlist changes and refetch listings
     return _client
         .from('watchlist')
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
-        .asyncMap((_) => getWatchedListings());
+        .map<void>((_) {});
   }
 
   Future<void> add(

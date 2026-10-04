@@ -207,6 +207,7 @@ class _WatchlistView extends StatelessWidget {
                                       label: AppLocalizations.of(context)!.undo,
                                       textColor: AppColors.accent,
                                       onPressed: () {
+                                        scaffoldMessenger.hideCurrentSnackBar();
                                         unawaited(() async {
                                           final restored =
                                               await cubit.undoRemove(

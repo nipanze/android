@@ -16,14 +16,16 @@ class WatchlistCubit extends Cubit<WatchlistState> {
   WatchlistCubit(this._repository) : super(const WatchlistInitial());
 
   final WatchlistRepository _repository;
-  StreamSubscription<List<MarketplaceItem>>? _realtimeSubscription;
+  StreamSubscription<void>? _realtimeSubscription;
+  int _watchlistRevision = 0;
 
   Future<void> load() async {
     if (isClosed) return;
+    final revision = _watchlistRevision;
     emit(const WatchlistLoading());
     try {
       final listings = await _repository.getWatchedListings();
-      if (isClosed) return;
+      if (isClosed || revision != _watchlistRevision) return;
       emit(WatchlistLoaded(listings: listings));
       _subscribeToRealtime();
     } catch (e) {
@@ -34,11 +36,8 @@ class WatchlistCubit extends Cubit<WatchlistState> {
 
   void _subscribeToRealtime() {
     _realtimeSubscription?.cancel();
-    _realtimeSubscription = _repository.watchWatchedListings().listen(
-      (listings) {
-        if (isClosed) return;
-        emit(WatchlistLoaded(listings: listings));
-      },
+    _realtimeSubscription = _repository.watchWatchlistChanges().listen(
+      (_) => unawaited(_refreshFromRealtime()),
       onError: (e) {
         if (!isClosed) {
           emit(WatchlistError(userFacingErrorMessage(e)));
@@ -47,7 +46,21 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     );
   }
 
+  Future<void> _refreshFromRealtime() async {
+    final revision = _watchlistRevision;
+    try {
+      final listings = await _repository.getWatchedListings();
+      if (isClosed || revision != _watchlistRevision) return;
+      emit(WatchlistLoaded(listings: listings));
+    } catch (e) {
+      if (!isClosed && revision == _watchlistRevision) {
+        emit(WatchlistError(userFacingErrorMessage(e)));
+      }
+    }
+  }
+
   Future<bool> remove(MarketplaceItem listing) async {
+    _watchlistRevision++;
     final previous = state;
     final previousListings =
         previous is WatchlistLoaded ? previous.listings : null;
@@ -65,6 +78,16 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     try {
       await _repository.remove(listing.requestId, module: listing.module);
       if (isClosed) return false;
+      final current = state;
+      if (current is WatchlistLoaded &&
+          current.listings.any((item) => _isSameListing(item, listing))) {
+        emit(WatchlistLoaded(
+          listings: current.listings
+              .where((item) => !_isSameListing(item, listing))
+              .toList(),
+        ));
+      }
+      _watchlistRevision++;
       return true;
     } catch (_) {
       if (!isClosed && previousListings != null && removedIndex >= 0) {
@@ -81,11 +104,13 @@ class WatchlistCubit extends Cubit<WatchlistState> {
           emit(WatchlistLoaded(listings: previousListings));
         }
       }
+      _watchlistRevision++;
       return false;
     }
   }
 
   Future<bool> add(MarketplaceItem listing) async {
+    _watchlistRevision++;
     try {
       await _repository.add(
         listing.requestId,
@@ -100,14 +125,17 @@ class WatchlistCubit extends Cubit<WatchlistState> {
       } else {
         await load();
       }
+      _watchlistRevision++;
       return true;
     } catch (e) {
       if (!isClosed) emit(WatchlistError(userFacingErrorMessage(e)));
+      _watchlistRevision++;
       return false;
     }
   }
 
   Future<bool> undoRemove(MarketplaceItem listing, {required int index}) async {
+    _watchlistRevision++;
     final previous = state;
     if (previous is WatchlistLoaded &&
         !previous.listings.any((item) => _isSameListing(item, listing))) {
@@ -119,14 +147,23 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     try {
       await _repository.add(listing.requestId, module: listing.module);
       if (isClosed) return false;
-      if (state is! WatchlistLoaded) {
+      final current = state;
+      if (current is WatchlistLoaded) {
+        if (!current.listings.any((item) => _isSameListing(item, listing))) {
+          final restored = [...current.listings];
+          restored.insert(index.clamp(0, restored.length).toInt(), listing);
+          emit(WatchlistLoaded(listings: restored));
+        }
+      } else {
         await load();
       }
+      _watchlistRevision++;
       return true;
     } catch (_) {
       if (!isClosed && previous is WatchlistLoaded) {
         emit(WatchlistLoaded(listings: previous.listings));
       }
+      _watchlistRevision++;
       return false;
     }
   }

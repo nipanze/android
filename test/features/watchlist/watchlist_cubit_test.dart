@@ -49,7 +49,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockWatchlistRepository();
-    when(() => mockRepo.watchWatchedListings())
+    when(() => mockRepo.watchWatchlistChanges())
         .thenAnswer((_) => const Stream.empty());
   });
 
@@ -148,6 +148,53 @@ void main() {
       );
 
       await cubit.close();
+    });
+
+    test('stale realtime refresh cannot overwrite a successful undo', () async {
+      final listing = _loanItem('req-1');
+      final otherListing = _loanItem('req-2');
+      final realtimeChanges = StreamController<void>();
+      final staleRefresh = Completer<List<MarketplaceItem>>();
+      final refreshStarted = Completer<void>();
+      var reads = 0;
+      when(() => mockRepo.watchWatchlistChanges())
+          .thenAnswer((_) => realtimeChanges.stream);
+      when(() => mockRepo.getWatchedListings()).thenAnswer((_) {
+        reads++;
+        if (reads == 1) return Future.value([listing, otherListing]);
+        refreshStarted.complete();
+        return staleRefresh.future;
+      });
+      when(() => mockRepo.remove(
+            'req-1',
+            module: MarketplaceModule.loan,
+          )).thenAnswer((_) async {});
+      when(() => mockRepo.add(
+            'req-1',
+            module: MarketplaceModule.loan,
+          )).thenAnswer((_) async {});
+      final cubit = WatchlistCubit(mockRepo);
+
+      await cubit.load();
+      await cubit.remove(listing);
+      realtimeChanges.add(null);
+      await refreshStarted.future;
+      await cubit.undoRemove(listing, index: 0);
+
+      staleRefresh.complete([otherListing]);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        (cubit.state as WatchlistLoaded)
+            .listings
+            .map((item) => item.requestId)
+            .toList(),
+        ['req-1', 'req-2'],
+      );
+
+      await cubit.close();
+      await realtimeChanges.close();
     });
 
     blocTest<WatchlistCubit, WatchlistState>(
