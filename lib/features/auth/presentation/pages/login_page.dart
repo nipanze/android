@@ -112,8 +112,7 @@ class _LoginPageState extends State<LoginPage>
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor =
         isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
-    final hintColor =
-        isDark ? const Color(0xFF4B5563) : const Color(0xFF94A3B8);
+    final hintColor = isDark ? AppColors.text3Dark : AppColors.text3Light;
     final dividerColor =
         isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
     const purpleColor = AppColors.accent;
