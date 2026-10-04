@@ -6,6 +6,7 @@ import '../../../../../../core/di/injection.dart';
 import '../../../../../../core/errors/app_exception.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../../../shared/widgets/shared_widgets.dart';
 import '../../../data/marketplace_repository.dart';
 import '../../../domain/models/loan_listing.dart';
 
@@ -316,6 +317,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!await ensureOnlineForAction(context)) return;
 
     if (_isPrincipalLoss || _isTargetDeficit) {
       final confirm = await _showLossWarningDialog();
@@ -366,8 +368,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
   void _adjustAmount(int delta) {
     final current = _parsedAmount;
     const step = 50000;
-    final next =
-        (current + (delta * step)).clamp(10000, widget.listing.requestedAmount * 2);
+    final next = (current + (delta * step))
+        .clamp(10000, widget.listing.requestedAmount * 2);
     setState(() {
       _amountController.text = next.toString();
       _installmentController.text = _suggestedInstallmentAmount.toString();
@@ -400,8 +402,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
     });
   }
 
-  double get _parsedLateFee =>
-      double.tryParse(_lateFeeController.text) ?? 0.0;
+  double get _parsedLateFee => double.tryParse(_lateFeeController.text) ?? 0.0;
 
   int get _lateFeeCurrencyValue =>
       (_parsedInstallment * (_parsedLateFee / 100)).ceil();
@@ -450,7 +451,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
             ),
           ),
           Expanded(
@@ -477,7 +481,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -573,7 +580,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
     // currentStep: 0 = Enter Terms, 1 = Preview, 2 = Sent
     const steps = ['Enter Terms', 'Preview', 'Sent'];
     final primary = Theme.of(context).colorScheme.primary;
-    final muted = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25);
+    final muted =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.25);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -625,8 +633,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                 steps[stepIdx],
                 style: TextStyle(
                   fontSize: 9,
-                  fontWeight:
-                      isActive ? FontWeight.bold : FontWeight.w400,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.w400,
                   color: isActive
                       ? primary
                       : Theme.of(context)
@@ -651,8 +658,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color:
-            Theme.of(context).colorScheme.surfaceContainerHigh,
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
             color: Theme.of(context)
@@ -667,13 +673,9 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
             radius: 18,
             backgroundColor: primary.withValues(alpha: 0.18),
             child: Text(
-              listing.title.isNotEmpty
-                  ? listing.title[0].toUpperCase()
-                  : '?',
+              listing.title.isNotEmpty ? listing.title[0].toUpperCase() : '?',
               style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: primary),
+                  fontSize: 14, fontWeight: FontWeight.bold, color: primary),
             ),
           ),
           const SizedBox(width: 10),
@@ -710,8 +712,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                     children: [
                       if (hasRating) ...[
                         Icon(Icons.star_rounded,
-                            size: 12,
-                            color: Colors.amber.shade600),
+                            size: 12, color: Colors.amber.shade600),
                         const SizedBox(width: 2),
                         Text(
                           listing.trustRatingAvg!.toStringAsFixed(1),
@@ -810,8 +811,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                   widget.listing.suggestedLateFeePct!.toStringAsFixed(0);
             }
             if (widget.listing.suggestedRepaymentFrequency != null) {
-              _repaymentFrequency =
-                  widget.listing.suggestedRepaymentFrequency!;
+              _repaymentFrequency = widget.listing.suggestedRepaymentFrequency!;
             }
             _installmentController.text =
                 _suggestedInstallmentAmount.toString();
@@ -820,21 +820,16 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           width: double.infinity,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 AppColors.accent.withValues(alpha: 0.12),
-                Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.08),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
               ],
             ),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-                color: AppColors.accent.withValues(alpha: 0.35)),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -966,10 +961,7 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
             .withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Theme.of(context)
-              .colorScheme
-              .primary
-              .withValues(alpha: 0.25),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
         ),
       ),
       child: Column(
@@ -977,9 +969,11 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('You Lend (Principal):', style: TextStyle(fontSize: 11.5)),
+              const Text('You Lend (Principal):',
+                  style: TextStyle(fontSize: 11.5)),
               Text('$currency ${_fmtAmount(_parsedAmount)}',
-                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(
+                      fontSize: 11.5, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 4),
@@ -995,7 +989,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
-                  color: _isPrincipalLoss ? AppColors.danger : AppColors.success,
+                  color:
+                      _isPrincipalLoss ? AppColors.danger : AppColors.success,
                 ),
               ),
             ],
@@ -1115,14 +1110,14 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                     _isPrincipalLoss
                         ? 'LOSS: -${widget.listing.currency} ${_fmtAmount(_parsedAmount - _totalRepayment)}'
                         : 'PROFIT: +${widget.listing.currency} ${_fmtAmount(_netProfit)}',
-                    color: _isPrincipalLoss
-                        ? AppColors.danger
-                        : AppColors.success,
+                    color:
+                        _isPrincipalLoss ? AppColors.danger : AppColors.success,
                     isBold: true,
                   ),
                   if (_expController.text.trim().isNotEmpty) ...[
                     const Divider(height: 16),
-                    _previewRow('Notes for Borrower', _expController.text.trim()),
+                    _previewRow(
+                        'Notes for Borrower', _expController.text.trim()),
                   ],
                 ],
               ),
@@ -1249,7 +1244,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                   ),
                   _buildQuickChips(chips: [
                     _microPill('50%', () {
-                      final val = (widget.listing.requestedAmount * 0.5).round();
+                      final val =
+                          (widget.listing.requestedAmount * 0.5).round();
                       setState(() {
                         _amountController.text = val.toString();
                         _installmentController.text =
@@ -1259,7 +1255,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                         selected: _parsedAmount ==
                             (widget.listing.requestedAmount * 0.5).round()),
                     _microPill('75%', () {
-                      final val = (widget.listing.requestedAmount * 0.75).round();
+                      final val =
+                          (widget.listing.requestedAmount * 0.75).round();
                       setState(() {
                         _amountController.text = val.toString();
                         _installmentController.text =
@@ -1275,7 +1272,9 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                         _installmentController.text =
                             _suggestedInstallmentAmount.toString();
                       });
-                    }, selected: _parsedAmount == widget.listing.requestedAmount),
+                    },
+                        selected:
+                            _parsedAmount == widget.listing.requestedAmount),
                   ]),
 
                   const SizedBox(height: 8),
@@ -1295,10 +1294,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                           Text(l10n?.interestRateLabel ?? 'Interest rate (%)'),
                           _buildInfoTooltip(
                             'What is Interest Rate?',
-                            'This is the extra % you earn on top of your principal. '  
-                            'E.g. if you lend UGX 100,000 at 10% interest, '
-                            'you get back UGX 110,000 in total.\n\n'
-                            'Higher rate = more profit, but borrower may not accept.',
+                            'This is the extra % you earn on top of your principal. '
+                                'E.g. if you lend UGX 100,000 at 10% interest, '
+                                'you get back UGX 110,000 in total.\n\n'
+                                'Higher rate = more profit, but borrower may not accept.',
                           ),
                         ],
                       ),
@@ -1349,10 +1348,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                           _buildInfoTooltip(
                             'What is Late Payment Fee?',
                             'This fee is charged only if the borrower pays an '
-                            'instalment after its due date.\n\n'
-                            'It is calculated as a % of the overdue instalment amount.\n\n'
-                            'E.g. a 5% late fee on a UGX 50,000 instalment = '
-                            'UGX 2,500 extra charge. This protects you against delays.',
+                                'instalment after its due date.\n\n'
+                                'It is calculated as a % of the overdue instalment amount.\n\n'
+                                'E.g. a 5% late fee on a UGX 50,000 instalment = '
+                                'UGX 2,500 extra charge. This protects you against delays.',
                           ),
                         ],
                       ),
@@ -1454,7 +1453,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                       labelText: l10n?.dueDayLabel ?? 'Due day / frequency',
                       prefixIcon: const Icon(Icons.today_outlined, size: 20),
                     ),
-                    hint: Text(l10n?.dueDayHint ?? 'Select due day (e.g. 5th of every month)'),
+                    hint: Text(l10n?.dueDayHint ??
+                        'Select due day (e.g. 5th of every month)'),
                     items: (_repaymentFrequency == 'weekly'
                             ? _weeklyDueDayOptions
                             : _repaymentFrequency == 'one_time'
@@ -1479,9 +1479,11 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                     decoration: InputDecoration(
                       labelText: l10n?.dueCutoffTimeLabel ??
                           'Due cutoff time (for late fee timing)',
-                      prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
+                      prefixIcon:
+                          const Icon(Icons.access_time_rounded, size: 20),
                     ),
-                    hint: Text(l10n?.dueCutoffTimeHint ?? 'Select due time (e.g. 5:00 PM)'),
+                    hint: Text(l10n?.dueCutoffTimeHint ??
+                        'Select due time (e.g. 5:00 PM)'),
                     items: _dueTimeOptions
                         .map((time) => DropdownMenuItem(
                               value: time,
@@ -1514,12 +1516,16 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                         : null,
                   ),
                   _buildQuickChips(chips: [
-                    _microPill('Fair Target (${_fmtAmount(_suggestedInstallmentAmount)})', () {
+                    _microPill(
+                        'Fair Target (${_fmtAmount(_suggestedInstallmentAmount)})',
+                        () {
                       setState(() {
                         _installmentController.text =
                             _suggestedInstallmentAmount.toString();
                       });
-                    }, selected: _parsedInstallment == _suggestedInstallmentAmount),
+                    },
+                        selected:
+                            _parsedInstallment == _suggestedInstallmentAmount),
                     _microPill('+10k', () => _adjustInstallment(1)),
                     _microPill('+50k', () => _adjustInstallment(5)),
                   ]),
@@ -1668,7 +1674,8 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
                           ],
                         ),
                         _buildPlainEnglishReturnCard(),
-                        if (_parsedInstallment != _suggestedInstallmentAmount) ...[
+                        if (_parsedInstallment !=
+                            _suggestedInstallmentAmount) ...[
                           const SizedBox(height: 10),
                           InkWell(
                             onTap: () {
@@ -1756,5 +1763,3 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
     );
   }
 }
-
-

@@ -1,4 +1,5 @@
 // lib/features/account/presentation/cubit/profile_cubit.dart
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/models/user_profile.dart';
 
@@ -13,9 +15,14 @@ part 'profile_cubit_state.dart';
 
 @injectable
 class ProfileCubit extends Cubit<ProfileCubitState> {
-  ProfileCubit(this._repository) : super(const ProfileCubitInitial());
+  ProfileCubit(this._repository) : super(const ProfileCubitInitial()) {
+    _connectionSubscription = OfflineService().onReconnected.listen((_) {
+      if (!isClosed) unawaited(refresh());
+    });
+  }
 
   final ProfileRepository _repository;
+  late final StreamSubscription<void> _connectionSubscription;
 
   Future<void> load() async {
     if (state is! ProfileCubitLoaded) {
@@ -121,5 +128,11 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       pendingAvatarBytes: null,
       pendingAvatarRemoved: removeExisting,
     ));
+  }
+
+  @override
+  Future<void> close() {
+    _connectionSubscription.cancel();
+    return super.close();
   }
 }

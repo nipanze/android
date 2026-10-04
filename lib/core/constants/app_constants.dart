@@ -106,8 +106,7 @@ class AppStrings {
 
   // Error messages (user-facing only — internal codes never shown)
   static const String genericError = 'Something went wrong. Please try again.';
-  static const String networkError =
-      'Check your internet connection and try again.';
+  static const String networkError = 'You’re offline · Connect to continue.';
   static const String sessionExpired =
       'Your session has expired. Please sign in again.';
   static const String kycRequired =

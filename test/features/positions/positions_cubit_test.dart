@@ -33,8 +33,7 @@ void main() {
     mockRepo = MockPositionsRepository();
     when(() => mockRepo.watchMyOffers())
         .thenAnswer((_) => const Stream.empty());
-    when(() => mockRepo.getMyDeals())
-        .thenAnswer((_) async => []);
+    when(() => mockRepo.getMyDeals()).thenAnswer((_) async => []);
   });
 
   group('PositionsCubit', () {
@@ -72,6 +71,30 @@ void main() {
     );
 
     blocTest<PositionsCubit, PositionsState>(
+      'keeps loaded activity visible when refresh fails',
+      build: () {
+        var loadCount = 0;
+        when(() => mockRepo.getMyOffers()).thenAnswer((_) async {
+          if (loadCount++ == 0) return [_offer('o-1')];
+          throw Exception('offline');
+        });
+        when(() => mockRepo.getMarketplaceActivity())
+            .thenAnswer((_) async => {'active_requests': 2});
+        when(() => mockRepo.getMyDeals()).thenAnswer((_) async => []);
+        return PositionsCubit(mockRepo);
+      },
+      act: (cubit) async {
+        await cubit.load();
+        await cubit.refresh();
+      },
+      expect: () => [
+        isA<PositionsLoading>(),
+        isA<PositionsLoaded>()
+            .having((s) => s.offers.length, 'offers count', 1),
+      ],
+    );
+
+    blocTest<PositionsCubit, PositionsState>(
       'withdrawOffer marks the offer withdrawn optimistically',
       build: () {
         when(() => mockRepo.getMyOffers())
@@ -88,8 +111,8 @@ void main() {
       skip: 2,
       expect: () => [
         isA<PositionsLoaded>()
-            .having((s) => s.offers.first.status,
-                'withdrawn status', OfferStatus.withdrawn)
+            .having((s) => s.offers.first.status, 'withdrawn status',
+                OfferStatus.withdrawn)
             .having((s) => s.offers.last.status, 'other untouched',
                 OfferStatus.pending),
       ],
@@ -112,12 +135,10 @@ void main() {
       },
       skip: 2,
       expect: () => [
-        isA<PositionsLoaded>()
-            .having((s) => s.offers.first.status, 'optimistic withdrawn',
-                OfferStatus.withdrawn),
-        isA<PositionsLoaded>()
-            .having((s) => s.offers.first.status, 'rolled back',
-                OfferStatus.pending),
+        isA<PositionsLoaded>().having((s) => s.offers.first.status,
+            'optimistic withdrawn', OfferStatus.withdrawn),
+        isA<PositionsLoaded>().having(
+            (s) => s.offers.first.status, 'rolled back', OfferStatus.pending),
         isA<PositionsError>(),
       ],
     );

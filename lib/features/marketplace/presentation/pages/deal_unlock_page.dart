@@ -119,6 +119,7 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
     );
 
     if (confirmed != true || !mounted) return;
+    if (!await ensureOnlineForAction(context)) return;
 
     setState(() => _unlocking = true);
     try {

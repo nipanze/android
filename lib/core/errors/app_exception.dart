@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
-import 'package:supabase_flutter/supabase_flutter.dart' as sb show AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' as sb
+    show AuthException;
 
 /// Typed exception hierarchy for Nipanze.
 /// All exceptions carry a user-friendly [message] — internal codes are never shown to users.
@@ -21,7 +22,9 @@ class AuthException extends AppException {
 }
 
 class NetworkException extends AppException {
-  const NetworkException([super.message = 'Check your internet connection.']);
+  const NetworkException([
+    super.message = 'You’re offline · Connect to continue.',
+  ]);
 }
 
 class DatabaseException extends AppException {
@@ -59,17 +62,19 @@ String userFacingErrorMessage(Object error) {
 /// Parses Supabase exceptions into user-friendly [AppException]s.
 /// Raw Supabase error codes and messages are NEVER returned to the UI.
 AppException parseSupabaseError(Object error) {
+  if (error is AppException) return error;
+
   // Treat low-level network/socket failures as NetworkException so UI shows a
   // clear, actionable message when the app cannot reach the service.
   try {
     if (error is SocketException) {
       return const NetworkException(
-        'We could not connect. Check your internet and try again.',
+        'You’re offline · Connect to continue.',
       );
     }
     if (error is TimeoutException) {
       return const NetworkException(
-        'The connection is taking too long. Try again on a stronger network.',
+        'You’re offline · Connect to continue.',
       );
     }
     final errStr = error.toString().toLowerCase();
@@ -81,7 +86,7 @@ AppException parseSupabaseError(Object error) {
         errStr.contains('xmlhttprequest error') ||
         errStr.contains('socketexception')) {
       return const NetworkException(
-        'We could not connect. Check your internet and try again.',
+        'You’re offline · Connect to continue.',
       );
     }
   } catch (_) {

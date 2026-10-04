@@ -229,3 +229,12 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 
 **Acceptance checks:** the patch is re-runnable; new catalog entries use the existing two catalog tables; multiple capabilities can be selected; matching offers use the existing `need_offers` flow; missing country overrides fall back to shared labels; Loans and Forex regression tests remain unchanged.
 
+## 11. Cached browsing during network interruptions
+
+- Use the existing `OfflineService`/`connectivity_plus` stream and network exception mapping to report connectivity transitions and failed requests.
+- Replace the persistent offline banner with brief SnackBars; refresh active Marketplace, Profile, Provider Services, and Activity data automatically when connectivity returns.
+- Retain the latest successful Marketplace/Profile response in memory and keep already-loaded Cubit state visible after failed refreshes. Preserve the existing retry state when there is no cached data.
+- Keep this limited to stale-data browsing; server mutations are not queued and remain subject to successful server requests. Clear Marketplace/Profile caches on sign-out.
+- No database changes or offline synchronization are introduced.
+
+**Acceptance checks:** existing loaded feed/profile/services/activity content stays visible after a failed refresh; first-load failures retain a retry option; connectivity feedback appears once per state transition; reconnection refreshes data; caches clear on sign-out.

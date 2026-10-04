@@ -11,6 +11,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
@@ -701,6 +702,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   }
 
   Future<void> _submit() async {
+    if (!await ensureOnlineForAction(context) || !mounted) return;
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
@@ -1063,8 +1065,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               key: ValueKey(
                                 '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
                               ),
-                              initialValue:
-                                  _dynamicControllers[field.key]?.text.isEmpty ??
+                              initialValue: _dynamicControllers[field.key]
+                                          ?.text
+                                          .isEmpty ??
                                       true
                                   ? null
                                   : _dynamicControllers[field.key]?.text,

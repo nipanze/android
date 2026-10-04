@@ -12,6 +12,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/currency_model.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/forex_repository.dart';
@@ -413,6 +414,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   }
 
   Future<void> _submit() async {
+    if (!await ensureOnlineForAction(context) || !mounted) return;
     if (!_formKey.currentState!.validate()) return;
     final l10n = AppLocalizations.of(context);
     final authState = context.read<AuthBloc>().state;

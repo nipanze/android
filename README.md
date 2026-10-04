@@ -369,3 +369,19 @@ Verification rules are stored dynamically in `verification_requirements` and eva
 ## 3.4 Standalone Database Migration
 
 - `sql/patch_central_verification_system.sql`: Contains the complete standalone schema, RLS policies, trigger guards on requests/offers/capabilities/unlocks, and admin RPCs.
+
+## Offline and cached browsing
+
+Marketplace listings and the signed-in user's profile are kept in a lightweight
+in-memory cache for the current app session. Activity and Provider Services
+keep their last loaded view visible while a refresh is unavailable. If a
+network request fails, the app retains loaded content and shows a brief
+“You’re offline · Showing recently loaded data” SnackBar rather than replacing
+the screen with a connection error. When connectivity returns, affected views
+refresh automatically and show “Connection restored · Updating…”.
+
+When no data has loaded yet, the screen offers an offline message and Retry.
+This is stale-data browsing only: changes, offers, contact reveals, payments,
+and other server-backed actions still require a successful server request and
+are never queued. Session caches are cleared after a successful sign-out; data
+is not persisted as an offline-first store.

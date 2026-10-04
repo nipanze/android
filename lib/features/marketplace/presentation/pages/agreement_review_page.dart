@@ -52,10 +52,13 @@ class _AgreementReviewPageState extends State<AgreementReviewPage> {
 
       ContactRevealData? contactData;
       if (agreement.isFullyLocked) {
-        try {
-          contactData = await _repo.unlockContact(agreement.id);
-        } catch (_) {
-          // Not unlocked yet or needs credit confirmation
+        if (!mounted) return;
+        if (await ensureOnlineForAction(context) && mounted) {
+          try {
+            contactData = await _repo.unlockContact(agreement.id);
+          } catch (_) {
+            // Not unlocked yet or needs credit confirmation
+          }
         }
       }
 

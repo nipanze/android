@@ -9,6 +9,7 @@ import '../../../../core/constants/country_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -164,6 +165,7 @@ class _FlutterwaveCheckoutSheetState extends State<FlutterwaveCheckoutSheet>
   // ─── Payment logic ──────────────────────────────────────────────────────────
 
   Future<void> _processPayment() async {
+    if (!await ensureOnlineForAction(context) || !mounted) return;
     final providerName = _getProviderName(AppLocalizations.of(context));
     if (_selectedMethod == PaymentMethod.mobileMoney &&
         _phoneController.text.trim().isEmpty) {

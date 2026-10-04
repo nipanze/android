@@ -7,6 +7,7 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -14,9 +15,14 @@ part 'marketplace_state.dart';
 
 @injectable
 class MarketplaceCubit extends Cubit<MarketplaceState> {
-  MarketplaceCubit(this._repository) : super(const MarketplaceInitial());
+  MarketplaceCubit(this._repository) : super(const MarketplaceInitial()) {
+    _connectionSubscription = OfflineService().onReconnected.listen((_) {
+      if (!isClosed) unawaited(refresh());
+    });
+  }
 
   final MarketplaceRepository _repository;
+  late final StreamSubscription<void> _connectionSubscription;
   final int _anonymousFeedSeed = Random().nextInt(0x7fffffff);
   StreamSubscription<List<MarketplaceItem>>? _realtimeSub;
   StreamSubscription<List<MarketplaceItem>>? _forexRealtimeSub;
@@ -227,6 +233,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Future<void> close() {
     _realtimeSub?.cancel();
     _forexRealtimeSub?.cancel();
+    _connectionSubscription.cancel();
     return super.close();
   }
 
@@ -251,7 +258,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       keys.addAll(
           (forexData as List).map((r) => 'forex:${r['request_id'] as String}'));
       return keys;
-    } catch (_) {
+    } catch (e) {
+      OfflineService().reportRequestFailure(e);
       return {};
     }
   }

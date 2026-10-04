@@ -8,6 +8,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/verification_gate_modal.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_offer.dart';
@@ -107,18 +108,25 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                 ? '${need.currency} ${currencyFormat.format(need.budget)}'
                 : 'Open to suitable proposals';
             final combinedText =
-                '${messageController.text} ${termsController.text}'.toLowerCase();
+                '${messageController.text} ${termsController.text}'
+                    .toLowerCase();
             final suggestions = _offerSuggestions(need.categorySlug);
             final strategyHint = switch (selectedStrategy) {
               'Fastest' => 'Make your earliest realistic delivery point clear.',
-              'Best Price' => 'Explain the value behind your price; your price is unchanged.',
-              'Best Value' => 'Clarify how price, quality, and service fit together.',
+              'Best Price' =>
+                'Explain the value behind your price; your price is unchanged.',
+              'Best Value' =>
+                'Clarify how price, quality, and service fit together.',
               _ => 'Review the details that help the requester compare offers.',
             };
 
             Future<void> submitOffer() async {
               if (!formKey.currentState!.validate()) {
                 setSheetState(() {});
+                return;
+              }
+              if (!await ensureOnlineForAction(sheetContext) ||
+                  !sheetContext.mounted) {
                 return;
               }
               setSheetState(() => _submittingOffer = true);
@@ -155,7 +163,9 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
                       content: Text(
-                        e is AppException ? e.message : 'Could not submit offer',
+                        e is AppException
+                            ? e.message
+                            : 'Could not submit offer',
                       ),
                       backgroundColor: AppColors.warning,
                     ),
@@ -215,7 +225,9 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                         messageController.text.trim(),
                                         context: ctx,
                                       ),
-                                      if (termsController.text.trim().isNotEmpty)
+                                      if (termsController.text
+                                          .trim()
+                                          .isNotEmpty)
                                         _offerPreviewSection(
                                           'Additional terms',
                                           termsController.text.trim(),
@@ -251,7 +263,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                             children: [
                                               Text(
                                                 "You're offering on",
-                                                style: theme.textTheme.labelMedium
+                                                style: theme
+                                                    .textTheme.labelMedium
                                                     ?.copyWith(
                                                   color: theme.colorScheme
                                                       .onSurfaceVariant,
@@ -269,7 +282,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                               const SizedBox(height: 3),
                                               Text(
                                                 '$budgetText · ${need.location} · ${need.timeRemaining ?? need.urgency}',
-                                                style: theme.textTheme.bodySmall,
+                                                style:
+                                                    theme.textTheme.bodySmall,
                                               ),
                                               if (need.specification
                                                   .trim()
@@ -277,7 +291,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                                 const SizedBox(height: 8),
                                                 Text(
                                                   need.specification.trim(),
-                                                  style: theme.textTheme.bodySmall
+                                                  style: theme
+                                                      .textTheme.bodySmall
                                                       ?.copyWith(height: 1.35),
                                                 ),
                                               ],
@@ -292,7 +307,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                             FilteringTextInputFormatter
                                                 .digitsOnly,
                                           ],
-                                          onChanged: (_) => setSheetState(() {}),
+                                          onChanged: (_) =>
+                                              setSheetState(() {}),
                                           decoration: InputDecoration(
                                             labelText:
                                                 'Offer Price (${need.currency})',
@@ -382,8 +398,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                                     child: Text(
                                                       field.errorText!,
                                                       style: TextStyle(
-                                                        color: theme.colorScheme
-                                                            .error,
+                                                        color: theme
+                                                            .colorScheme.error,
                                                         fontSize: 12,
                                                       ),
                                                     ),
@@ -397,7 +413,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                           maxLines: 5,
                                           textCapitalization:
                                               TextCapitalization.sentences,
-                                          onChanged: (_) => setSheetState(() {}),
+                                          onChanged: (_) =>
+                                              setSheetState(() {}),
                                           decoration: const InputDecoration(
                                             labelText:
                                                 'Proposal Details & Experience',
@@ -406,10 +423,12 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                             border: OutlineInputBorder(),
                                             alignLabelWithHint: true,
                                           ),
-                                          validator: (val) =>
-                                              (val ?? '').trim().length < 5
-                                                  ? 'Add at least 5 characters of offer details'
-                                                  : null,
+                                          validator: (val) => (val ?? '')
+                                                      .trim()
+                                                      .length <
+                                                  5
+                                              ? 'Add at least 5 characters of offer details'
+                                              : null,
                                         ),
                                         const SizedBox(height: 12),
                                         TextFormField(
@@ -418,7 +437,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                           maxLines: 4,
                                           textCapitalization:
                                               TextCapitalization.sentences,
-                                          onChanged: (_) => setSheetState(() {}),
+                                          onChanged: (_) =>
+                                              setSheetState(() {}),
                                           decoration: const InputDecoration(
                                             labelText:
                                                 'Additional Terms or Expectations',
@@ -444,14 +464,17 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                               ChoiceChip(
                                                 label: Text(switch (strategy) {
                                                   'Fastest' => '⚡ Fastest',
-                                                  'Best Price' => '💰 Best Price',
+                                                  'Best Price' =>
+                                                    '💰 Best Price',
                                                   _ => '⭐ Best Value',
                                                 }),
-                                                selected:
-                                                    selectedStrategy == strategy,
-                                                onSelected: (_) => setSheetState(
+                                                selected: selectedStrategy ==
+                                                    strategy,
+                                                onSelected: (_) =>
+                                                    setSheetState(
                                                   () => selectedStrategy =
-                                                      selectedStrategy == strategy
+                                                      selectedStrategy ==
+                                                              strategy
                                                           ? ''
                                                           : strategy,
                                                 ),
@@ -478,9 +501,10 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                           child: ExpansionTile(
                                             tilePadding: EdgeInsets.zero,
                                             childrenPadding:
-                                                const EdgeInsets.only(bottom: 8),
-                                            title: const Text(
-                                                '✨ Offer Assistant'),
+                                                const EdgeInsets.only(
+                                                    bottom: 8),
+                                            title:
+                                                const Text('✨ Offer Assistant'),
                                             subtitle: const Text(
                                               'A few details worth checking',
                                             ),
@@ -568,7 +592,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                 child: ElevatedButton(
                                   onPressed: !_submittingOffer && isOfferValid
                                       ? () {
-                                          if (formKey.currentState!.validate()) {
+                                          if (formKey.currentState!
+                                              .validate()) {
                                             setSheetState(
                                                 () => isPreview = true);
                                           }
@@ -614,49 +639,71 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
     ];
     final category = switch (categorySlug) {
       'machinery_equipment' => const <_OfferSuggestion>[
-          _OfferSuggestion('Specify equipment type or model', ['model', 'type']),
+          _OfferSuggestion(
+              'Specify equipment type or model', ['model', 'type']),
           _OfferSuggestion('Say whether an operator is included', ['operator']),
-          _OfferSuggestion('Clarify transport arrangements', ['transport', 'delivery']),
+          _OfferSuggestion(
+              'Clarify transport arrangements', ['transport', 'delivery']),
           _OfferSuggestion('Mention fuel responsibility', ['fuel']),
-          _OfferSuggestion('Confirm availability', ['available', 'availability']),
-          _OfferSuggestion('State operating period or hours', ['hours', 'period']),
-          _OfferSuggestion('Clarify maintenance responsibility', ['maintenance']),
+          _OfferSuggestion(
+              'Confirm availability', ['available', 'availability']),
+          _OfferSuggestion(
+              'State operating period or hours', ['hours', 'period']),
+          _OfferSuggestion(
+              'Clarify maintenance responsibility', ['maintenance']),
         ],
       'transport_logistics' => const <_OfferSuggestion>[
           _OfferSuggestion('Specify vehicle type', ['vehicle', 'truck', 'van']),
-          _OfferSuggestion('State load or capacity', ['capacity', 'tonne', 'load']),
+          _OfferSuggestion(
+              'State load or capacity', ['capacity', 'tonne', 'load']),
           _OfferSuggestion('Confirm pickup point', ['pickup', 'pick-up']),
           _OfferSuggestion('Confirm destination', ['destination', 'to ']),
           _OfferSuggestion('Clarify delivery timing', ['delivery', 'deliver']),
-          _OfferSuggestion('List what the price includes', ['included', 'includes']),
+          _OfferSuggestion(
+              'List what the price includes', ['included', 'includes']),
         ],
       'professional_services' => const <_OfferSuggestion>[
-          _OfferSuggestion('Mention relevant experience', ['experience', 'years']),
-          _OfferSuggestion('Add relevant qualifications', ['qualification', 'certified']),
-          _OfferSuggestion('Define deliverables', ['deliverable', 'report', 'files']),
+          _OfferSuggestion(
+              'Mention relevant experience', ['experience', 'years']),
+          _OfferSuggestion(
+              'Add relevant qualifications', ['qualification', 'certified']),
+          _OfferSuggestion(
+              'Define deliverables', ['deliverable', 'report', 'files']),
           _OfferSuggestion('Confirm timeline', ['timeline', 'days', 'weeks']),
-          _OfferSuggestion('Clarify what is included', ['included', 'includes']),
-          _OfferSuggestion('Reference previous work', ['previous work', 'portfolio']),
+          _OfferSuggestion(
+              'Clarify what is included', ['included', 'includes']),
+          _OfferSuggestion(
+              'Reference previous work', ['previous work', 'portfolio']),
         ],
       'specialized_products' => const <_OfferSuggestion>[
-          _OfferSuggestion('Specify product or brand', ['product', 'brand', 'model']),
+          _OfferSuggestion(
+              'Specify product or brand', ['product', 'brand', 'model']),
           _OfferSuggestion('State quantity', ['quantity', 'units', 'pieces']),
-          _OfferSuggestion('Break out unit price if useful', ['unit price', 'per unit']),
+          _OfferSuggestion(
+              'Break out unit price if useful', ['unit price', 'per unit']),
           _OfferSuggestion('Clarify delivery', ['delivery', 'delivered']),
-          _OfferSuggestion('Mention condition and availability', ['condition', 'available']),
+          _OfferSuggestion(
+              'Mention condition and availability', ['condition', 'available']),
         ],
       'travel_international' => const <_OfferSuggestion>[
-          _OfferSuggestion('Describe the service being provided', ['service', 'assistance']),
+          _OfferSuggestion(
+              'Describe the service being provided', ['service', 'assistance']),
           _OfferSuggestion('Specify destination', ['destination', 'travel to']),
           _OfferSuggestion('Clarify timeline', ['timeline', 'days', 'weeks']),
-          _OfferSuggestion('List third-party or government fees', ['government fee', 'third-party', 'visa fee']),
-          _OfferSuggestion('State refund or cancellation conditions', ['refund', 'cancellation']),
-          _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
+          _OfferSuggestion('List third-party or government fees',
+              ['government fee', 'third-party', 'visa fee']),
+          _OfferSuggestion('State refund or cancellation conditions',
+              ['refund', 'cancellation']),
+          _OfferSuggestion(
+              'Mention relevant experience', ['experience', 'previous']),
         ],
       _ => const <_OfferSuggestion>[
-          _OfferSuggestion('Clarify what is included', ['included', 'includes']),
-          _OfferSuggestion('Mention relevant experience', ['experience', 'previous']),
-          _OfferSuggestion('Confirm availability and timeline', ['available', 'timeline']),
+          _OfferSuggestion(
+              'Clarify what is included', ['included', 'includes']),
+          _OfferSuggestion(
+              'Mention relevant experience', ['experience', 'previous']),
+          _OfferSuggestion(
+              'Confirm availability and timeline', ['available', 'timeline']),
         ],
     };
     return [...category, ...common];
@@ -767,7 +814,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
+    if (!await ensureOnlineForAction(context) || !mounted) return;
 
     setState(() => _actionInProgress = true);
     try {
@@ -801,6 +849,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   }
 
   Future<void> _unlockContact(String offerId) async {
+    if (!await ensureOnlineForAction(context)) return;
     setState(() => _actionInProgress = true);
     try {
       await getIt<NeedsRepository>().unlockContact(offerId: offerId);
@@ -1348,7 +1397,8 @@ class _OfferCard extends StatelessWidget {
                     const SizedBox(width: 2),
                     const Text(
                       'Phone verified',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),

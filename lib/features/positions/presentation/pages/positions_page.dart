@@ -73,7 +73,8 @@ class _PositionsViewState extends State<_PositionsView>
                       builder: (context, state) {
                         final loaded = state is PositionsLoaded ? state : null;
                         final requests =
-                            (loaded?.activity?['active_listings'] as num?)?.toInt() ??
+                            (loaded?.activity?['active_listings'] as num?)
+                                    ?.toInt() ??
                                 0;
                         final offers = loaded?.offers
                                 .where((offer) =>
@@ -83,7 +84,7 @@ class _PositionsViewState extends State<_PositionsView>
                         final deals = loaded?.deals.length ?? 0;
 
                         return Text(
-                            '$requests Requests - $offers Offers - $deals Deals',
+                          '$requests Requests - $offers Offers - $deals Deals',
                           style: Theme.of(context).textTheme.bodySmall,
                         );
                       },
@@ -127,9 +128,9 @@ class _PositionsViewState extends State<_PositionsView>
             indicatorColor: AppColors.accent,
             labelColor: Theme.of(context).colorScheme.onSurface,
             unselectedLabelColor:
-              Theme.of(context).brightness == Brightness.dark
-                ? AppColors.text3Dark
-                : AppColors.text3Light,
+                Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.text3Dark
+                    : AppColors.text3Light,
             labelStyle:
                 const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             unselectedLabelStyle: const TextStyle(fontSize: 12),
@@ -240,9 +241,13 @@ class _LenderTab extends StatelessWidget {
               onPressed: () => Navigator.pop(dialogCtx),
               child: Text(AppLocalizations.of(context)!.keepOffer)),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dialogCtx);
-              context.read<PositionsCubit>().withdrawOffer(offer.offerId);
+              if (await ensureOnlineForAction(context) && context.mounted) {
+                await context
+                    .read<PositionsCubit>()
+                    .withdrawOffer(offer.offerId);
+              }
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
             child: Text(AppLocalizations.of(context)!.withdraw),
@@ -298,7 +303,8 @@ class _DealsTab extends StatelessWidget {
                 )),
           ],
           if (acceptedOffers.isNotEmpty) ...[
-            if (deals.isEmpty) SectionHeader(AppLocalizations.of(context)!.matchedAccepted),
+            if (deals.isEmpty)
+              SectionHeader(AppLocalizations.of(context)!.matchedAccepted),
             ...acceptedOffers.map((o) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: LenderOfferCard(offer: o, onWithdraw: () {}),
@@ -330,12 +336,21 @@ class _DealCard extends StatelessWidget {
 
     // Derive position (Borrowing / Lending / Forex Offering)
     final currentUid = Supabase.instance.client.auth.currentUser?.id;
-    final snapshot = map['agreement_snapshot'] as Map<String, dynamic>? ?? agreement.agreementSnapshot;
+    final snapshot = map['agreement_snapshot'] as Map<String, dynamic>? ??
+        agreement.agreementSnapshot;
 
-    final borrowerId = snapshot?['borrower_id'] as String? ?? map['borrower_id'] as String? ?? agreement.borrowerId;
-    final lenderId = snapshot?['lender_id'] as String? ?? map['lender_id'] as String? ?? agreement.lenderId;
-    final dealType = (snapshot?['deal_type'] as String? ?? map['deal_type'] as String? ?? '').toLowerCase();
-    final isForex = dealType == 'forex' || (snapshot?['is_forex'] == true) || (map['is_forex'] == true);
+    final borrowerId = snapshot?['borrower_id'] as String? ??
+        map['borrower_id'] as String? ??
+        agreement.borrowerId;
+    final lenderId = snapshot?['lender_id'] as String? ??
+        map['lender_id'] as String? ??
+        agreement.lenderId;
+    final dealType =
+        (snapshot?['deal_type'] as String? ?? map['deal_type'] as String? ?? '')
+            .toLowerCase();
+    final isForex = dealType == 'forex' ||
+        (snapshot?['is_forex'] == true) ||
+        (map['is_forex'] == true);
 
     final isBorrower = currentUid != null && borrowerId == currentUid;
     final isLender = currentUid != null && lenderId == currentUid;
@@ -458,7 +473,8 @@ class _DealCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.calendar_today_outlined,
-                  size: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                  size: 13,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
               const SizedBox(width: 4),
               Text(
                 '${agreement.repaymentPeriod} ${agreement.repaymentFrequency.displayName} payments',
@@ -500,7 +516,8 @@ class _DealCard extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    context.push('/marketplace/contact-details/${agreement.id}');
+                    context
+                        .push('/marketplace/contact-details/${agreement.id}');
                   },
                   icon: const Icon(Icons.phone_outlined, size: 14),
                   label: Text(

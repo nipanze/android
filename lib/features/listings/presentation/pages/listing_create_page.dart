@@ -11,6 +11,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/listing_repository.dart';
@@ -359,6 +360,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   }
 
   Future<void> _submit() async {
+    if (!await ensureOnlineForAction(context) || !mounted) return;
     final l10n = AppLocalizations.of(context);
     if (!_loanDetailsValid || !_repaymentValid) {
       _loanDetailsFormKey.currentState?.validate();

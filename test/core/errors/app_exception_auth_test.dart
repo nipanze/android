@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipanze/core/errors/app_exception.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
-import 'package:supabase_flutter/supabase_flutter.dart' as sb show AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart' as sb
+    show AuthException;
 
 void main() {
   group('parseSupabaseError - AuthException variants', () {
@@ -16,29 +17,29 @@ void main() {
     });
 
     test('email not confirmed maps to verification message', () {
-      final e = parseSupabaseError(
-          const sb.AuthException('Email not confirmed'));
+      final e =
+          parseSupabaseError(const sb.AuthException('Email not confirmed'));
       expect(e, isA<AuthException>());
       expect(e.message, contains('verify your email'));
     });
 
     test('user already registered maps to duplicate account message', () {
-      final e = parseSupabaseError(
-          const sb.AuthException('User already registered'));
+      final e =
+          parseSupabaseError(const sb.AuthException('User already registered'));
       expect(e, isA<AuthException>());
       expect(e.message, contains('already exists'));
     });
 
     test('rate limit maps to rate limit message', () {
-      final e = parseSupabaseError(
-          const sb.AuthException('Rate limit exceeded'));
+      final e =
+          parseSupabaseError(const sb.AuthException('Rate limit exceeded'));
       expect(e, isA<AuthException>());
       expect(e.message, contains('Too many attempts'));
     });
 
     test('generic auth error returns fallback message', () {
-      final e = parseSupabaseError(
-          const sb.AuthException('Some unknown auth error'));
+      final e =
+          parseSupabaseError(const sb.AuthException('Some unknown auth error'));
       expect(e, isA<AuthException>());
       expect(e.message, 'Authentication failed. Please try again.');
     });
@@ -55,13 +56,13 @@ void main() {
     test('SocketException maps to NetworkException', () {
       final e = parseSupabaseError(const SocketException('Connection refused'));
       expect(e, isA<NetworkException>());
-      expect(e.message, contains('internet'));
+      expect(e.message, 'You’re offline · Connect to continue.');
     });
 
     test('TimeoutException maps to NetworkException', () {
       final e = parseSupabaseError(TimeoutException('took too long'));
       expect(e, isA<NetworkException>());
-      expect(e.message, contains('taking too long'));
+      expect(e.message, 'You’re offline · Connect to continue.');
     });
 
     test('connection refused string maps to NetworkException', () {
@@ -86,7 +87,8 @@ void main() {
   });
 
   group('parseSupabaseError - Storage errors', () {
-    test('StorageException with policy violation maps to PermissionException', () {
+    test('StorageException with policy violation maps to PermissionException',
+        () {
       final e = parseSupabaseError(const StorageException(
         'new row violates row-level security policy',
         statusCode: '403',

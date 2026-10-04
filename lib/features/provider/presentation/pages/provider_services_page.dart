@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../domain/entities/provider_capability.dart';
@@ -51,17 +52,10 @@ class _ProviderServicesView extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is CapabilitiesError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: isDark ? AppColors.text2Dark : AppColors.text2Light,
-                  ),
-                ),
-              ),
+            return ErrorState(
+              message: state.message,
+              onRetry: () =>
+                  context.read<CapabilitiesCubit>().loadWithOpportunities(),
             );
           }
 

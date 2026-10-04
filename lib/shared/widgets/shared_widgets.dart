@@ -2,9 +2,26 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import '../../../core/services/offline_service.dart';
 import '../../../core/theme/app_theme.dart';
 export 'user_avatar.dart';
 
+Future<bool> ensureOnlineForAction(BuildContext context) async {
+  final isOnline = await OfflineService().isOnline;
+  if (!context.mounted) return false;
+  if (isOnline) return true;
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      const SnackBar(
+        content: Text('You’re offline · Connect to continue.'),
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  return false;
+}
 
 // ─── Risk Badge ────────────────────────────────────────────────────────────────
 
@@ -329,19 +346,29 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = message.startsWith('You’re offline ·');
+    final displayMessage = isOffline
+        ? 'Connect to the internet to load the latest data.'
+        : message;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+            Icon(
+              isOffline ? Icons.wifi_off_rounded : Icons.error_outline,
+              size: 48,
+              color: isOffline
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : AppColors.danger,
+            ),
             const SizedBox(height: 16),
-            Text('Something went wrong',
+            Text(isOffline ? 'You’re offline' : 'Something went wrong',
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
-              message,
+              displayMessage,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),

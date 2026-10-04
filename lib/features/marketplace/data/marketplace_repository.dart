@@ -4,20 +4,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../domain/models/loan_listing.dart';
 import '../domain/models/marketplace_item.dart';
 
 @lazySingleton
 class MarketplaceRepository {
-  MarketplaceRepository(this._client);
+  MarketplaceRepository(this._client) {
+    OfflineService().registerSessionCache(_cachedListings.clear);
+  }
 
   final SupabaseClient _client;
   final Map<String, List<MarketplaceItem>> _cachedListings = {};
 
   String? get currentViewerId => _client.auth.currentUser?.id;
-
-  void clearCachedListings() => _cachedListings.clear();
 
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
@@ -81,10 +82,14 @@ class MarketplaceRepository {
 
       items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
       _cachedListings[cacheKey] = List.unmodifiable(items);
+      OfflineService().reportRequestSuccess();
       return items;
     } catch (e) {
       final cachedListings = _cachedListings[cacheKey];
-      if (cachedListings != null) return cachedListings;
+      OfflineService().reportRequestFailure(e);
+      if (cachedListings != null && parseSupabaseError(e) is NetworkException) {
+        return cachedListings;
+      }
       throw parseSupabaseError(e);
     }
   }

@@ -9,17 +9,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 
 @lazySingleton
 class ProfileRepository {
-  ProfileRepository(this._client);
+  ProfileRepository(this._client) {
+    OfflineService().registerSessionCache(_cachedProfiles.clear);
+  }
 
   final SupabaseClient _client;
   final Map<String, UserProfile> _cachedProfiles = {};
 
   String get _uid => _client.auth.currentUser!.id;
-
-  void clearCachedProfiles() => _cachedProfiles.clear();
 
   /// Full profile from v_user_marketplace_activity joined with profiles.
   Future<UserProfile?> getProfile() async {
@@ -31,7 +32,10 @@ class ProfileRepository {
           .select()
           .eq('user_id', _uid)
           .maybeSingle()
-          .catchError((_) => null);
+          .catchError((Object error) {
+        OfflineService().reportRequestFailure(error);
+        return null;
+      });
 
       // Use SELECT * so the query never fails on missing columns — new fields
       // added in later patches (e.g. preferred_employment_types from v4.5)
@@ -41,21 +45,30 @@ class ProfileRepository {
           .select()
           .eq('id', _uid)
           .maybeSingle()
-          .catchError((_) => null);
+          .catchError((Object error) {
+        OfflineService().reportRequestFailure(error);
+        return null;
+      });
 
       final trustFuture = _client
           .from(ViewNames.trustProfilePublic)
           .select()
           .eq('user_id', _uid)
           .maybeSingle()
-          .catchError((_) => null);
+          .catchError((Object error) {
+        OfflineService().reportRequestFailure(error);
+        return null;
+      });
 
       final proTrustFuture = _client
           .from(ViewNames.trustProfilePro)
           .select()
           .eq('user_id', _uid)
           .maybeSingle()
-          .catchError((_) => null);
+          .catchError((Object error) {
+        OfflineService().reportRequestFailure(error);
+        return null;
+      });
 
       final results = await Future.wait([
         activityFuture,
@@ -69,7 +82,12 @@ class ProfileRepository {
       final trust = results[2];
       final proTrust = results[3];
 
-      if (activity == null && profile == null) return _cachedProfiles[_uid];
+      if (activity == null && profile == null) {
+        final cachedProfile = _cachedProfiles[_uid];
+        if (cachedProfile != null) return cachedProfile;
+        if (!OfflineService().currentIsOnline) throw const NetworkException();
+        return null;
+      }
 
       final email = _client.auth.currentUser?.email ?? '';
 
@@ -149,10 +167,14 @@ class ProfileRepository {
             : null,
       );
       _cachedProfiles[_uid] = userProfile;
+      OfflineService().reportRequestSuccess();
       return userProfile;
     } catch (e) {
       final cachedProfile = _cachedProfiles[_uid];
-      if (cachedProfile != null) return cachedProfile;
+      OfflineService().reportRequestFailure(e);
+      if (cachedProfile != null && parseSupabaseError(e) is NetworkException) {
+        return cachedProfile;
+      }
       throw parseSupabaseError(e);
     }
   }

@@ -150,6 +150,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   }
 
   Future<void> _acceptOffer(LoanOffer offer) async {
+    if (!await ensureOnlineForAction(context)) return;
     try {
       final agreementId = await _repo.acceptOffer(
         requestId: widget.requestId,
@@ -201,7 +202,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             authState.user.subscriptionPlan == SubscriptionPlan.pro);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final detailSurface =
-      isDark ? AppColors.bg2Dark : Theme.of(context).colorScheme.surface;
+        isDark ? AppColors.bg2Dark : Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       appBar: AppBar(
@@ -406,7 +407,6 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       embedded: true,
                     ),
                   ],
-
                 ],
               ),
             ),
@@ -1121,10 +1121,10 @@ class _FundedProgressBar extends StatelessWidget {
     // Lenders and participants see a generic "Active listing" label so they
     // cannot discover how many competing bids are in the book.
     final bidsLabel = isOwner
-      ? (offers.isEmpty
-        ? 'No offers yet'
-        : '${offers.length} offer${offers.length > 1 ? 's' : ''}')
-      : 'Active listing';
+        ? (offers.isEmpty
+            ? 'No offers yet'
+            : '${offers.length} offer${offers.length > 1 ? 's' : ''}')
+        : 'Active listing';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

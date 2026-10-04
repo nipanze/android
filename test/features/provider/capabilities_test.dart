@@ -23,7 +23,9 @@ import 'package:nipanze/features/provider/presentation/widgets/provider_verifica
 import 'package:nipanze/l10n/app_localizations.dart';
 
 class MockProviderRepository extends Mock implements IProviderRepository {}
+
 class MockNeedsRepository extends Mock implements NeedsRepository {}
+
 class MockProfileRepository extends Mock implements ProfileRepository {}
 
 void main() {
@@ -125,7 +127,8 @@ void main() {
       act: (cubit) => cubit.load(),
       expect: () => [
         isA<CapabilitiesLoading>(),
-        isA<CapabilitiesLoaded>().having((s) => s.capabilities.length, 'length', 1),
+        isA<CapabilitiesLoaded>()
+            .having((s) => s.capabilities.length, 'length', 1),
       ],
     );
 
@@ -148,10 +151,32 @@ void main() {
     );
 
     blocTest<CapabilitiesCubit, CapabilitiesState>(
+      'keeps loaded services visible when refresh fails',
+      build: () {
+        var loadCount = 0;
+        when(() => mockRepo.getProviderCapabilities()).thenAnswer((_) async {
+          if (loadCount++ == 0) return testCaps;
+          throw Exception('offline');
+        });
+        when(() => mockRepo.getProviderOpportunities())
+            .thenAnswer((_) async => testOpps);
+        return CapabilitiesCubit(mockRepo);
+      },
+      act: (cubit) async {
+        await cubit.loadWithOpportunities();
+        await cubit.loadWithOpportunities();
+      },
+      expect: () => [
+        isA<CapabilitiesLoading>(),
+        isA<CapabilitiesLoaded>()
+            .having((s) => s.capabilities.length, 'capability count', 1),
+      ],
+    );
+
+    blocTest<CapabilitiesCubit, CapabilitiesState>(
       'addCapabilities calls repo then reloads',
       build: () {
-        when(() => mockRepo.addCapabilities(any()))
-            .thenAnswer((_) async {});
+        when(() => mockRepo.addCapabilities(any())).thenAnswer((_) async {});
         when(() => mockRepo.getProviderCapabilities())
             .thenAnswer((_) async => testCaps);
         return CapabilitiesCubit(mockRepo);
@@ -165,8 +190,7 @@ void main() {
     blocTest<CapabilitiesCubit, CapabilitiesState>(
       'removeCapability calls repo then reloads',
       build: () {
-        when(() => mockRepo.removeCapability(any()))
-            .thenAnswer((_) async {});
+        when(() => mockRepo.removeCapability(any())).thenAnswer((_) async {});
         when(() => mockRepo.getProviderCapabilities())
             .thenAnswer((_) async => []);
         return CapabilitiesCubit(mockRepo);
@@ -186,7 +210,8 @@ void main() {
 
       getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
       getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
-      getIt.registerSingleton<CapabilitiesCubit>(CapabilitiesCubit(mockProviderRepo));
+      getIt.registerSingleton<CapabilitiesCubit>(
+          CapabilitiesCubit(mockProviderRepo));
       getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
 
       addTearDown(() {
@@ -197,12 +222,12 @@ void main() {
           .thenAnswer((_) async => const <ProviderCapability>[]);
       when(() => mockProviderRepo.getProviderOpportunities())
           .thenAnswer((_) async => const <ProviderOpportunity>[]);
-      when(() => mockProfileRepo.getProfile()).thenAnswer((_) async =>
-          const UserProfile(
-            id: 'u-1',
-            email: 'user@test.com',
-            accountStatus: 'active',
-          ));
+      when(() => mockProfileRepo.getProfile())
+          .thenAnswer((_) async => const UserProfile(
+                id: 'u-1',
+                email: 'user@test.com',
+                accountStatus: 'active',
+              ));
       when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
             NeedCategory(
               slug: 'machinery_equipment',
@@ -212,7 +237,8 @@ void main() {
               isActive: true,
             ),
           ]);
-      when(() => mockNeedsRepo.getCapabilities(categorySlug: any(named: 'categorySlug')))
+      when(() => mockNeedsRepo.getCapabilities(
+              categorySlug: any(named: 'categorySlug')))
           .thenAnswer((_) async => const [
                 NeedCapability(
                   slug: 'excavator_hire',
@@ -252,7 +278,8 @@ void main() {
       );
     }
 
-    testWidgets('ProviderVerificationChip renders verified state', (tester) async {
+    testWidgets('ProviderVerificationChip renders verified state',
+        (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
           level: ProviderVerificationLevel.providerVerified,
@@ -264,7 +291,8 @@ void main() {
       expect(find.text('Provider Verified'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip renders self-declared state', (tester) async {
+    testWidgets('ProviderVerificationChip renders self-declared state',
+        (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
           level: ProviderVerificationLevel.selfDeclared,
@@ -276,7 +304,8 @@ void main() {
       expect(find.text('Self-declared'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip renders phone verification', (tester) async {
+    testWidgets('ProviderVerificationChip renders phone verification',
+        (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
           level: ProviderVerificationLevel.selfDeclared,
@@ -289,7 +318,8 @@ void main() {
       expect(find.text('Phone verified'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip prioritizes identity verification', (tester) async {
+    testWidgets('ProviderVerificationChip prioritizes identity verification',
+        (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
           level: ProviderVerificationLevel.selfDeclared,
@@ -303,7 +333,8 @@ void main() {
       expect(find.text('Identity verified'), findsOneWidget);
     });
 
-    testWidgets('CapabilityBadge renders capability details and chip', (tester) async {
+    testWidgets('CapabilityBadge renders capability details and chip',
+        (tester) async {
       final cap = ProviderCapability(
         id: 'cap-1',
         userId: 'u-1',
@@ -330,7 +361,8 @@ void main() {
       expect(find.text('4 opportunities'), findsOneWidget);
     });
 
-    testWidgets('ProviderOpportunitiesSection renders opportunities', (tester) async {
+    testWidgets('ProviderOpportunitiesSection renders opportunities',
+        (tester) async {
       final opps = [
         const ProviderOpportunity(
           capabilitySlug: 'excavator_hire',
@@ -351,7 +383,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('People are looking for what you provide'), findsOneWidget);
+      expect(
+          find.text('People are looking for what you provide'), findsOneWidget);
       expect(find.text('Excavator Hire'), findsOneWidget);
       expect(find.text('3 opportunities'), findsOneWidget);
       expect(find.text('Heavy Haulage'), findsOneWidget);

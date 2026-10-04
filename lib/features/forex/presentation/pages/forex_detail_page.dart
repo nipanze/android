@@ -12,6 +12,7 @@ import '../../../../shared/models/forex_listing_model.dart';
 import '../../../../shared/models/forex_offer_model.dart';
 import '../../../../shared/widgets/safety_toolkit_sheet.dart';
 import '../../../../shared/widgets/send_rate_receive_panel.dart';
+import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -150,103 +151,108 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  // ── Background carveout card ───────────────────────────────
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Send → Rate → Receive panel
-                        SendRateReceivePanel(
-                          listing: listing,
-                          showBorder: false,
-                          prominent: true,
+                      // ── Background carveout card ───────────────────────────────
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-
-                        const SizedBox(height: 14),
-
-                        // Settlement preference
-                        Text(
-                          listing.settlementPreference,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // Trust badges
-                        TrustBadgeRow(
-                          ratingAvg: listing.trustRatingAvg,
-                          reviewCount: listing.trustReviewCount,
-                          completedDealsCount: listing.trustCompletedDealsCount,
-                          isRepeatParticipant: listing.trustIsRepeatParticipant,
-                          phoneVerified: listing.trustPhoneVerified,
-                          responseTimeBucket: listing.trustResponseTimeBucket,
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        // ── Offers header ────────────────────────────────────
-                        Row(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              l10n?.offersLabel ?? 'OFFERS',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    letterSpacing: 1.2,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.45),
-                                  ),
+                            // Send → Rate → Receive panel
+                            SendRateReceivePanel(
+                              listing: listing,
+                              showBorder: false,
+                              prominent: true,
                             ),
-                            if (isOwner) ...[
-                              const SizedBox(width: 6),
-                              Text(
-                                '${listing.numberOfOffers}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                            if (listing.rateCoverageTier != null) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '· ${listing.rateCoverageTier}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
+
+                            const SizedBox(height: 14),
+
+                            // Settlement preference
+                            Text(
+                              listing.settlementPreference,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            // Trust badges
+                            TrustBadgeRow(
+                              ratingAvg: listing.trustRatingAvg,
+                              reviewCount: listing.trustReviewCount,
+                              completedDealsCount:
+                                  listing.trustCompletedDealsCount,
+                              isRepeatParticipant:
+                                  listing.trustIsRepeatParticipant,
+                              phoneVerified: listing.trustPhoneVerified,
+                              responseTimeBucket:
+                                  listing.trustResponseTimeBucket,
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // ── Offers header ────────────────────────────────────
+                            Row(
+                              children: [
+                                Text(
+                                  l10n?.offersLabel ?? 'OFFERS',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        letterSpacing: 1.2,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.45),
+                                      ),
+                                ),
+                                if (isOwner) ...[
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${listing.numberOfOffers}',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                                if (listing.rateCoverageTier != null) ...[
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '· ${listing.rateCoverageTier}',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ],
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // ── Offer tiles ──────────────────────────────────────
+                            _OffersSection(
+                              listing: listing,
+                              offers: data.offers,
+                              authState: authState,
+                            ),
                           ],
                         ),
-
-                        const SizedBox(height: 8),
-
-                        // ── Offer tiles ──────────────────────────────────────
-                        _OffersSection(
-                          listing: listing,
-                          offers: data.offers,
-                          authState: authState,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // ── Make an Offer button (outside card, like loan detail) ──
-                  if (!isOwner)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _openOfferSheet,
-                        child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
                       ),
-                    ),
+
+                      const SizedBox(height: 16),
+
+                      // ── Make an Offer button (outside card, like loan detail) ──
+                      if (!isOwner)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _openOfferSheet,
+                            child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -642,6 +648,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   Future<void> _submit() async {
+    if (!await ensureOnlineForAction(context) || !mounted) return;
     final l10n = AppLocalizations.of(context);
     setState(() => _submitting = true);
     try {

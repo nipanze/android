@@ -5,17 +5,27 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 
 @LazySingleton(as: IProviderRepository)
 class ProviderRepository implements IProviderRepository {
-  ProviderRepository(this._client);
+  ProviderRepository(this._client) {
+    OfflineService().registerSessionCache(_clearCache);
+  }
 
   final SupabaseClient _client;
+  final Map<String, List<ProviderCapability>> _capabilityCache = {};
+  final Map<String, List<ProviderOpportunity>> _opportunityCache = {};
 
   String? get _uid => _client.auth.currentUser?.id;
+
+  void _clearCache() {
+    _capabilityCache.clear();
+    _opportunityCache.clear();
+  }
 
   @override
   Future<List<ProviderCapability>> getProviderCapabilities() async {
@@ -33,7 +43,7 @@ class ProviderRepository implements IProviderRepository {
           .eq('user_id', uid)
           .order('created_at');
 
-      return (data as List).map((e) {
+      final capabilities = (data as List).map((e) {
         final nc = e['need_capabilities'] as Map<String, dynamic>?;
         final cat =
             nc != null ? nc['need_categories'] as Map<String, dynamic>? : null;
@@ -45,7 +55,16 @@ class ProviderRepository implements IProviderRepository {
           'category_icon': cat?['icon'],
         });
       }).toList();
+      _capabilityCache[uid] = capabilities;
+      OfflineService().reportRequestSuccess();
+      return capabilities;
     } catch (e) {
+      OfflineService().reportRequestFailure(e);
+      final uid = _uid;
+      final cached = uid == null ? null : _capabilityCache[uid];
+      if (cached != null && parseSupabaseError(e) is NetworkException) {
+        return cached;
+      }
       throw parseSupabaseError(e);
     }
   }
@@ -116,10 +135,19 @@ class ProviderRepository implements IProviderRepository {
         RpcNames.getProviderOpportunities,
         params: {'p_user_id': uid},
       );
-      return (data as List)
+      final opportunities = (data as List)
           .map((e) => ProviderOpportunity.fromMap(e as Map<String, dynamic>))
           .toList();
-    } catch (_) {
+      _opportunityCache[uid] = opportunities;
+      OfflineService().reportRequestSuccess();
+      return opportunities;
+    } catch (e) {
+      OfflineService().reportRequestFailure(e);
+      final uid = _uid;
+      final cached = uid == null ? null : _opportunityCache[uid];
+      if (cached != null && parseSupabaseError(e) is NetworkException) {
+        return cached;
+      }
       return const [];
     }
   }

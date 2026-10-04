@@ -72,10 +72,13 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
 
       ContactRevealData? contactData;
       if (agreement.isFullyLocked) {
-        try {
-          contactData = await _agreementRepo.unlockContact(agreement.id);
-        } catch (_) {
-          // Contact not unlocked yet
+        if (!mounted) return;
+        if (await ensureOnlineForAction(context) && mounted) {
+          try {
+            contactData = await _agreementRepo.unlockContact(agreement.id);
+          } catch (_) {
+            // Contact not unlocked yet
+          }
         }
       }
 
@@ -143,6 +146,7 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
     );
 
     if (confirmed != true || !mounted) return;
+    if (!await ensureOnlineForAction(context)) return;
 
     setState(() => _unlocking = true);
     try {

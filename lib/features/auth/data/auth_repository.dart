@@ -6,24 +6,16 @@ import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../../../core/errors/app_exception.dart';
-import '../../account/data/profile_repository.dart';
-import '../../marketplace/data/marketplace_repository.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../referrals/data/referral_repository.dart';
 import '../domain/models/nipanze_user.dart';
 
 @lazySingleton
 class AuthRepository {
-  AuthRepository(
-    this._client,
-    this._referralRepository,
-    this._profileRepository,
-    this._marketplaceRepository,
-  );
+  AuthRepository(this._client, this._referralRepository);
 
   final SupabaseClient _client;
   final ReferralRepository _referralRepository;
-  final ProfileRepository _profileRepository;
-  final MarketplaceRepository _marketplaceRepository;
 
   Stream<NipanzeUser?> get authStateChanges {
     return _client.auth.onAuthStateChange.asyncMap((event) async {
@@ -105,8 +97,7 @@ class AuthRepository {
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();
-      _profileRepository.clearCachedProfiles();
-      _marketplaceRepository.clearCachedListings();
+      OfflineService().clearSessionCaches();
     } catch (e) {
       throw parseSupabaseError(e);
     }

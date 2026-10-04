@@ -10,7 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../features/notifications/presentation/cubit/notification_cubit.dart';
 import '../../../l10n/app_localizations.dart';
-import 'offline_banner.dart';
+import 'offline_connection_listener.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({super.key, required this.child});
@@ -52,7 +52,7 @@ class MainScaffold extends StatelessWidget {
       child: Scaffold(
         body: Column(
           children: [
-            const OfflineBanner(),
+            const OfflineConnectionListener(),
             Expanded(child: child),
           ],
         ),
