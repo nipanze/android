@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -110,6 +112,43 @@ void main() {
             .having((s) => s.listings.first.requestId, 'remaining', 'req-2'),
       ],
     );
+
+    test('remove is immediate and restores the listing if deletion fails',
+        () async {
+      final firstListing = _loanItem('req-1');
+      final secondListing = _loanItem('req-2');
+      final deletion = Completer<void>();
+      when(() => mockRepo.getWatchedListings())
+          .thenAnswer((_) async => [firstListing, secondListing]);
+      when(() => mockRepo.remove(
+            'req-1',
+            module: MarketplaceModule.loan,
+          )).thenAnswer((_) => deletion.future);
+      final cubit = WatchlistCubit(mockRepo);
+
+      await cubit.load();
+      final removeResult = cubit.remove(firstListing);
+      expect(
+        (cubit.state as WatchlistLoaded)
+            .listings
+            .map((listing) => listing.requestId)
+            .toList(),
+        ['req-2'],
+      );
+
+      deletion.completeError(StateError('delete failed'));
+      expect(await removeResult, isFalse);
+      expect(cubit.state, isA<WatchlistLoaded>());
+      expect(
+        (cubit.state as WatchlistLoaded)
+            .listings
+            .map((listing) => listing.requestId)
+            .toList(),
+        ['req-1', 'req-2'],
+      );
+
+      await cubit.close();
+    });
 
     blocTest<WatchlistCubit, WatchlistState>(
       'add appends the listing to loaded state',
