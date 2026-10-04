@@ -298,20 +298,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
-  Widget _buildCategoryPills(AppLocalizations l10n) {
-    return _horizontalPills(
-      _categories
-          .map(
-            (category) => _microPill(
-              '${category.icon} ${_categoryLocalizedName(l10n, category.slug)}',
-              () => _selectCategory(category.slug),
-              selected: category.slug == _categorySlug,
-            ),
-          )
-          .toList(),
-    );
-  }
-
   Widget _buildStarterPresets() {
     final presets = NeedFormSchema.presetsForCategory(_categorySlug);
     return Column(
@@ -978,8 +964,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     if (value != null) _selectCategory(value);
                   },
                 ),
-                const SizedBox(height: 8),
-                _buildCategoryPills(l10n),
                 const SizedBox(height: 12),
                 _buildStarterPresets(),
                 const SizedBox(height: 16),
