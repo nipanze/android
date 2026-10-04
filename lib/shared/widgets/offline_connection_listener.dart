@@ -41,7 +41,6 @@ class _OfflineConnectionListenerState extends State<OfflineConnectionListener> {
           ),
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.inverseSurface,
         ),
       );
   }
