@@ -106,11 +106,16 @@ class _LoginPageState extends State<LoginPage>
     final isDark = theme.brightness == Brightness.dark;
 
     final cardBg = isDark ? const Color(0xFF11131A) : const Color(0xFFF8FAFC);
-    final cardBorder = isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+    final inputBg = isDark ? AppColors.bg3Dark : const Color(0xFFF8FAFC);
+    final cardBorder =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
-    final hintColor = isDark ? const Color(0xFF4B5563) : const Color(0xFF94A3B8);
-    final dividerColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+    final subtitleColor =
+        isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
+    final hintColor =
+        isDark ? const Color(0xFF4B5563) : const Color(0xFF94A3B8);
+    final dividerColor =
+        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
     const purpleColor = AppColors.accent;
 
     return Scaffold(
@@ -126,7 +131,8 @@ class _LoginPageState extends State<LoginPage>
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -139,8 +145,9 @@ class _LoginPageState extends State<LoginPage>
                         IconButton(
                           icon: Icon(Icons.arrow_back_ios_new_rounded,
                               size: 20, color: titleColor),
-                          onPressed: () =>
-                              context.canPop() ? context.pop() : context.go(AppRoutes.welcome),
+                          onPressed: () => context.canPop()
+                              ? context.pop()
+                              : context.go(AppRoutes.welcome),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                         ),
@@ -148,11 +155,13 @@ class _LoginPageState extends State<LoginPage>
                         ValueListenableBuilder<Locale?>(
                           valueListenable: LanguageService.instance.notifier,
                           builder: (context, _, __) {
-                            final currentLang = LanguageService.instance.currentLanguage;
+                            final currentLang =
+                                LanguageService.instance.currentLanguage;
                             return GestureDetector(
                               onTap: () => showLanguageSelectorSheet(context),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: cardBg,
                                   borderRadius: BorderRadius.circular(20),
@@ -161,7 +170,8 @@ class _LoginPageState extends State<LoginPage>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(currentLang.flag, style: const TextStyle(fontSize: 14)),
+                                    Text(currentLang.flag,
+                                        style: const TextStyle(fontSize: 14)),
                                     const SizedBox(width: 4),
                                     Text(
                                       currentLang.code.toUpperCase(),
@@ -224,12 +234,15 @@ class _LoginPageState extends State<LoginPage>
 
                     // ── Input fields ──────────────────────────────────────
                     if (_usePhone)
-                      _buildPhoneField(cardBg, cardBorder, titleColor, subtitleColor, hintColor)
+                      _buildPhoneField(inputBg, cardBorder, titleColor,
+                          subtitleColor, hintColor)
                     else
-                      _buildEmailField(cardBg, cardBorder, titleColor, hintColor, l10n),
+                      _buildEmailField(
+                          inputBg, cardBorder, titleColor, hintColor, l10n),
                     const SizedBox(height: 12),
 
-                    _buildPasswordField(cardBg, cardBorder, titleColor, hintColor, l10n),
+                    _buildPasswordField(
+                        inputBg, cardBorder, titleColor, hintColor, l10n),
                     const SizedBox(height: 18),
 
                     // ── Remember me + Forgot ───────────────────────────────
@@ -253,8 +266,7 @@ class _LoginPageState extends State<LoginPage>
                         ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () =>
-                              context.push(AppRoutes.resetPassword),
+                          onTap: () => context.push(AppRoutes.resetPassword),
                           child: Text(
                             l10n.forgotPassword,
                             style: const TextStyle(
@@ -342,7 +354,8 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Tab bar ─────────────────────────────────────────────────────────────────
-  Widget _buildTabs(Color dividerColor, Color subtitleColor, Color purpleColor, AppLocalizations l10n) {
+  Widget _buildTabs(Color dividerColor, Color subtitleColor, Color purpleColor,
+      AppLocalizations l10n) {
     return Column(
       children: [
         Row(
@@ -390,16 +403,14 @@ class _LoginPageState extends State<LoginPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(icon,
-                      size: 16,
-                      color: active ? purpleColor : subtitleColor),
+                      size: 16, color: active ? purpleColor : subtitleColor),
                   const SizedBox(width: 6),
                   Text(
                     label,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      fontWeight:
-                          active ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                       color: active ? purpleColor : subtitleColor,
                     ),
                   ),
@@ -421,7 +432,8 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Phone field ──────────────────────────────────────────────────────────
-  Widget _buildPhoneField(Color cardBg, Color cardBorder, Color titleColor, Color subtitleColor, Color hintColor) {
+  Widget _buildPhoneField(Color cardBg, Color cardBorder, Color titleColor,
+      Color subtitleColor, Color hintColor) {
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
@@ -439,8 +451,7 @@ class _LoginPageState extends State<LoginPage>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_country.flag,
-                      style: const TextStyle(fontSize: 20)),
+                  Text(_country.flag, style: const TextStyle(fontSize: 20)),
                   const SizedBox(width: 6),
                   Text(
                     _country.dialCode,
@@ -508,7 +519,8 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Email field ───────────────────────────────────────────────────────────
-  Widget _buildEmailField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor, AppLocalizations l10n) {
+  Widget _buildEmailField(Color cardBg, Color cardBorder, Color titleColor,
+      Color hintColor, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
@@ -562,7 +574,8 @@ class _LoginPageState extends State<LoginPage>
   }
 
   // ── Password field ────────────────────────────────────────────────────────
-  Widget _buildPasswordField(Color cardBg, Color cardBorder, Color titleColor, Color hintColor, AppLocalizations l10n) {
+  Widget _buildPasswordField(Color cardBg, Color cardBorder, Color titleColor,
+      Color hintColor, AppLocalizations l10n) {
     final obscure = _usePhone ? _obscurePhone : _obscureEmail;
     final ctrl = _usePhone ? _phonePassCtrl : _emailPassCtrl;
 
@@ -575,8 +588,7 @@ class _LoginPageState extends State<LoginPage>
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
       child: Row(
         children: [
-          Icon(Icons.lock_outline_rounded,
-              size: 18, color: hintColor),
+          Icon(Icons.lock_outline_rounded, size: 18, color: hintColor),
           const SizedBox(width: 10),
           Expanded(
             child: TextFormField(
@@ -685,14 +697,12 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline,
-              color: AppColors.danger, size: 16),
+          const Icon(Icons.error_outline, color: AppColors.danger, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style:
-                  const TextStyle(color: AppColors.danger, fontSize: 12),
+              style: const TextStyle(color: AppColors.danger, fontSize: 12),
             ),
           ),
         ],
@@ -743,8 +753,7 @@ class _CountrySheetState extends State<_CountrySheet> {
         return Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -771,17 +780,14 @@ class _CountrySheetState extends State<_CountrySheet> {
                   onChanged: _filter,
                   decoration: InputDecoration(
                     hintText: 'Search country…',
-                    prefixIcon:
-                        const Icon(Icons.search_rounded, size: 18),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 18),
                     filled: true,
-                    fillColor:
-                        theme.colorScheme.surfaceContainerHighest,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     isDense: true,
                   ),
                 ),
@@ -794,13 +800,13 @@ class _CountrySheetState extends State<_CountrySheet> {
                   itemBuilder: (context, i) {
                     final c = _filtered[i];
                     return ListTile(
-                      leading: Text(c.flag,
-                          style: const TextStyle(fontSize: 26)),
+                      leading:
+                          Text(c.flag, style: const TextStyle(fontSize: 26)),
                       title: Text(c.name,
                           style: theme.textTheme.bodyMedium
                               ?.copyWith(fontWeight: FontWeight.w500)),
-                      subtitle: Text(c.dialCode,
-                          style: theme.textTheme.bodySmall),
+                      subtitle:
+                          Text(c.dialCode, style: theme.textTheme.bodySmall),
                       trailing: Text(c.currency,
                           style: theme.textTheme.labelSmall?.copyWith(
                               color: AppColors.accentDark,
