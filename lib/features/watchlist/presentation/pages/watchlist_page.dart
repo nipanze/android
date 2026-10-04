@@ -198,16 +198,20 @@ class _WatchlistView extends StatelessWidget {
                                   );
                                   return;
                                 }
-                                scaffoldMessenger.showSnackBar(
+                                const snackBarDuration = Duration(seconds: 3);
+                                late ScaffoldFeatureController<SnackBar,
+                                    SnackBarClosedReason> snackBarController;
+                                snackBarController =
+                                    scaffoldMessenger.showSnackBar(
                                   SnackBar(
                                     content: Text(AppLocalizations.of(context)!
                                         .removedFromWatchlist),
-                                    duration: const Duration(seconds: 4),
+                                    duration: snackBarDuration,
                                     action: SnackBarAction(
                                       label: AppLocalizations.of(context)!.undo,
                                       textColor: AppColors.accent,
                                       onPressed: () {
-                                        scaffoldMessenger.hideCurrentSnackBar();
+                                        snackBarController.close();
                                         unawaited(() async {
                                           final restored =
                                               await cubit.undoRemove(
@@ -229,6 +233,10 @@ class _WatchlistView extends StatelessWidget {
                                     ),
                                   ),
                                 );
+                                unawaited(() async {
+                                  await Future<void>.delayed(snackBarDuration);
+                                  snackBarController.close();
+                                }());
                               }());
                             },
                           ),

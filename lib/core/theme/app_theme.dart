@@ -148,6 +148,20 @@ class AppTheme {
         ),
       ),
 
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark ? AppColors.bg3Dark : AppColors.textLight,
+        contentTextStyle: TextStyle(
+          fontFamily: AppFonts.body,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: isDark ? AppColors.textDark : Colors.white,
+        ),
+        actionTextColor: AppColors.accentLight,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
