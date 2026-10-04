@@ -2749,4 +2749,191 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'Reba amahirwe';
+
+  @override
+  String get drivingSchoolService => 'Amashuri yo Gutwara Ibinyabiziga';
+
+  @override
+  String get drivingSchoolSubtitle =>
+      'Amasomo yo gutwara, abatangizi, kwitegura uruhushya rwo gutwara, no kwimenyereza.';
+
+  @override
+  String get licenceClassesLabel => 'Ibyiciro by\'Uruhushya';
+
+  @override
+  String get classALabel => 'Icyiciro A (Moto)';
+
+  @override
+  String get classBLabel => 'Icyiciro B (Imodoka Nto)';
+
+  @override
+  String get classCLabel => 'Icyiciro C (Amakamyo yo Hagati)';
+
+  @override
+  String get classDLabel => 'Icyiciro D (Bisi n\'Imodoka Nini)';
+
+  @override
+  String get classELabel => 'Icyiciro E (Ibinyabiziga bifite Remorque)';
+
+  @override
+  String get otherCustomLabel => 'Ikindi / Byihariye';
+
+  @override
+  String get transmissionLabel => 'Ubwoko bwa Vitesi';
+
+  @override
+  String get transmissionManual => 'Manwali (Manual)';
+
+  @override
+  String get transmissionAutomatic => 'Otomatike (Automatic)';
+
+  @override
+  String get transmissionBoth => 'Byombi';
+
+  @override
+  String get transmissionEither => 'Icyo ari cyo cyose';
+
+  @override
+  String get trainingTypeLabel => 'Ubwoko bw\'Amasomo';
+
+  @override
+  String get trainingLevelLabel => 'Urwego rw\'Amasomo';
+
+  @override
+  String get trainingBeginner => 'Umutangizi';
+
+  @override
+  String get trainingRefresher => 'Kuvugurura ubumenyi';
+
+  @override
+  String get trainingTestPrep => 'Kwitegura Ikizamini cy\'Uruhushya';
+
+  @override
+  String get vehicleTypesLabel => 'Ubwoko bw\'Ibinyabiziga';
+
+  @override
+  String get vehicleMotorcycle => 'Moto';
+
+  @override
+  String get vehicleCar => 'Imodoka';
+
+  @override
+  String get vehiclePickupVan => 'Pick-up / Vani';
+
+  @override
+  String get vehicleTruck => 'Ikamyo';
+
+  @override
+  String get vehicleBus => 'Bisi';
+
+  @override
+  String get vehicleOther => 'Ikindi';
+
+  @override
+  String get trainingOptionsLabel => 'Amahitamo y\'Amasomo';
+
+  @override
+  String get trainingPackageLabel => 'Paki y\'Amasomo';
+
+  @override
+  String get fullDrivingCourse => 'Amasomo yose yo gutwara';
+
+  @override
+  String get individualLessons => 'Amasomo ku muntu umwe';
+
+  @override
+  String get weekendTraining => 'Amasomo yo muri wikendi';
+
+  @override
+  String get eveningTraining => 'Amasomo yo ku mugoroba';
+
+  @override
+  String get intensiveTraining => 'Amasomo yihuse kandi acukumbuye';
+
+  @override
+  String get trainingLocationLabel => 'Ahantu h\'Amasomo';
+
+  @override
+  String get trainingCentre => 'Ikigo cy\'amasomo';
+
+  @override
+  String get customerLocation => 'Aho umukiriya aherereye';
+
+  @override
+  String get pickupDropoffLabel => 'Gutwara no Kugarura';
+
+  @override
+  String get pickupAvailable => 'Biraboneka';
+
+  @override
+  String get pickupNotAvailable => 'Ntibiboneka';
+
+  @override
+  String get pickupRequired => 'Birakenewe';
+
+  @override
+  String get pickupNotRequired => 'Ntibikenewe';
+
+  @override
+  String get pickupFlexible => 'Bihinduka';
+
+  @override
+  String get serviceAreaLabel => 'Akarere ka Serivisi';
+
+  @override
+  String get serviceAreaHint => 'Umujyi / akarere / ahantu ukorera';
+
+  @override
+  String get pricingLabel => 'Ibiciro';
+
+  @override
+  String get startingPriceLabel => 'Igiciro cy\'ifatizo';
+
+  @override
+  String get priceOnRequest => 'Igiciro ku busabe';
+
+  @override
+  String get preferredScheduleLabel => 'Gahunda Yifuzwa';
+
+  @override
+  String get scheduleWeekdays => 'Iminsi y\'akazi';
+
+  @override
+  String get scheduleWeekends => 'Muri wikendi';
+
+  @override
+  String get scheduleEvening => 'Ku mugoroba';
+
+  @override
+  String get scheduleFlexible => 'Bihinduka';
+
+  @override
+  String get preferredStartDateLabel => 'Itariki yo Gutangira Yifuzwa';
+
+  @override
+  String get trainingDurationLabel => 'Igihe cy\'Amasomo';
+
+  @override
+  String get trainingDurationHint =>
+      'urugero: ibyumweru 3, amasomo 10, cyangwa Bihinduka';
+
+  @override
+  String get additionalRequirementsLabel => 'Ibindi Bikenewe';
+
+  @override
+  String get additionalRequirementsHint =>
+      'urugero: Amasomo ya mu gitondo muri wikendi, umunyeshuri afite uruhushya rw\'agateganyo';
+
+  @override
+  String get drivingSchoolLicenceMismatchTitle =>
+      'Icyiciro cy\'Uruhushya Nticyahuye';
+
+  @override
+  String drivingSchoolLicenceMismatchMessage(String licenceClass) {
+    return 'Ubu busabe busaba amasomo yo mu cyiciro $licenceClass, kitari muri serivisi watangaje.';
+  }
+
+  @override
+  String get drivingSchoolCapabilityRequired =>
+      'Ugomba gutangaza serivisi y\'ishuri ryo gutwara mbere yo gutanga igiciro kuri ubu busabe.';
 }

@@ -2747,4 +2747,191 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'Angalia fursa';
+
+  @override
+  String get drivingSchoolService => 'Mafunzo ya Udereva / Chuo cha Udereva';
+
+  @override
+  String get drivingSchoolSubtitle =>
+      'Mafunzo ya udereva, masomo ya wanaoanza, maandalizi ya leseni, na mafunzo ya ukumbusho.';
+
+  @override
+  String get licenceClassesLabel => 'Madaraja ya Leseni';
+
+  @override
+  String get classALabel => 'Daraja A (Pikipiki)';
+
+  @override
+  String get classBLabel => 'Daraja B (Magari Madogo)';
+
+  @override
+  String get classCLabel => 'Daraja C (Malori ya Kati)';
+
+  @override
+  String get classDLabel => 'Daraja D (Mabasi / Magari Mazito)';
+
+  @override
+  String get classELabel => 'Daraja E (Trela / Trela za Kuburuta)';
+
+  @override
+  String get otherCustomLabel => 'Nyingine / Maalum';
+
+  @override
+  String get transmissionLabel => 'Mfumo wa Gia';
+
+  @override
+  String get transmissionManual => 'Mwenyewe (Manual)';
+
+  @override
+  String get transmissionAutomatic => 'Otomatiki (Automatic)';
+
+  @override
+  String get transmissionBoth => 'Zote Mbili';
+
+  @override
+  String get transmissionEither => 'Yoyote';
+
+  @override
+  String get trainingTypeLabel => 'Aina ya Mafunzo';
+
+  @override
+  String get trainingLevelLabel => 'Kiwango cha Mafunzo';
+
+  @override
+  String get trainingBeginner => 'Mwanafunzi Mpya';
+
+  @override
+  String get trainingRefresher => 'Ukumbusho / Uboreshaji';
+
+  @override
+  String get trainingTestPrep => 'Maandalizi ya Mtihani wa Leseni';
+
+  @override
+  String get vehicleTypesLabel => 'Aina za Vyombo vya Usafiri';
+
+  @override
+  String get vehicleMotorcycle => 'Pikipiki';
+
+  @override
+  String get vehicleCar => 'Gari';
+
+  @override
+  String get vehiclePickupVan => 'Pikapu / Van';
+
+  @override
+  String get vehicleTruck => 'Lori';
+
+  @override
+  String get vehicleBus => 'Basi';
+
+  @override
+  String get vehicleOther => 'Nyingine';
+
+  @override
+  String get trainingOptionsLabel => 'Chaguzi za Mafunzo';
+
+  @override
+  String get trainingPackageLabel => 'Kifurushi cha Mafunzo';
+
+  @override
+  String get fullDrivingCourse => 'Kozi kamili ya udereva';
+
+  @override
+  String get individualLessons => 'Masomo ya kibinafsi';
+
+  @override
+  String get weekendTraining => 'Mafunzo ya wikendi';
+
+  @override
+  String get eveningTraining => 'Mafunzo ya jioni';
+
+  @override
+  String get intensiveTraining => 'Mafunzo ya kina ya haraka';
+
+  @override
+  String get trainingLocationLabel => 'Mahali pa Mafunzo';
+
+  @override
+  String get trainingCentre => 'Kituo cha mafunzo';
+
+  @override
+  String get customerLocation => 'Eneo la mteja';
+
+  @override
+  String get pickupDropoffLabel => 'Kufuatwa / Kurudishwa';
+
+  @override
+  String get pickupAvailable => 'Inapatikana';
+
+  @override
+  String get pickupNotAvailable => 'Haipatikani';
+
+  @override
+  String get pickupRequired => 'Inahitajika';
+
+  @override
+  String get pickupNotRequired => 'Haihitajiki';
+
+  @override
+  String get pickupFlexible => 'Inayoweza kubadilika';
+
+  @override
+  String get serviceAreaLabel => 'Eneo la Huduma';
+
+  @override
+  String get serviceAreaHint => 'Jiji / wilaya / maeneo unayohudumia';
+
+  @override
+  String get pricingLabel => 'Bei';
+
+  @override
+  String get startingPriceLabel => 'Bei ya kuanzia';
+
+  @override
+  String get priceOnRequest => 'Bei kwa maombi';
+
+  @override
+  String get preferredScheduleLabel => 'Ratiba Inayopendekezwa';
+
+  @override
+  String get scheduleWeekdays => 'Siku za kazi';
+
+  @override
+  String get scheduleWeekends => 'Wikendi';
+
+  @override
+  String get scheduleEvening => 'Jioni';
+
+  @override
+  String get scheduleFlexible => 'Inayoweza kubadilika';
+
+  @override
+  String get preferredStartDateLabel => 'Tarehe Inayopendekezwa ya Kuanza';
+
+  @override
+  String get trainingDurationLabel => 'Muda wa Mafunzo';
+
+  @override
+  String get trainingDurationHint =>
+      'k.m. wiki 3, masomo 10, au Inayoweza kubadilika';
+
+  @override
+  String get additionalRequirementsLabel => 'Mahitaji ya Ziada';
+
+  @override
+  String get additionalRequirementsHint =>
+      'k.m. Masomo ya asubuhi wikendi, mwanafunzi ana leseni ya muda';
+
+  @override
+  String get drivingSchoolLicenceMismatchTitle =>
+      'Daraja la Leseni Halilingani';
+
+  @override
+  String drivingSchoolLicenceMismatchMessage(String licenceClass) {
+    return 'Ombi hili linahitaji mafunzo ya $licenceClass, ambayo hayapo kwenye huduma zako za mafunzo ya udereva.';
+  }
+
+  @override
+  String get drivingSchoolCapabilityRequired =>
+      'Lazima usajili huduma ya Mafunzo ya Udereva kabla ya kutoa ofa kwenye ombi hili.';
 }

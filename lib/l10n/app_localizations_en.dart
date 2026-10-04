@@ -2736,4 +2736,189 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'See opportunities';
+
+  @override
+  String get drivingSchoolService => 'Driving School / Driver Training';
+
+  @override
+  String get drivingSchoolSubtitle =>
+      'Driver training, learner lessons, permit preparation, and refresher courses.';
+
+  @override
+  String get licenceClassesLabel => 'Licence Classes';
+
+  @override
+  String get classALabel => 'Class A (Motorcycles)';
+
+  @override
+  String get classBLabel => 'Class B (Cars & Light Vehicles)';
+
+  @override
+  String get classCLabel => 'Class C (Medium Trucks)';
+
+  @override
+  String get classDLabel => 'Class D (Heavy Commercial / Buses)';
+
+  @override
+  String get classELabel => 'Class E (Articulated / Trailers)';
+
+  @override
+  String get otherCustomLabel => 'Other / Custom';
+
+  @override
+  String get transmissionLabel => 'Transmission';
+
+  @override
+  String get transmissionManual => 'Manual';
+
+  @override
+  String get transmissionAutomatic => 'Automatic';
+
+  @override
+  String get transmissionBoth => 'Both';
+
+  @override
+  String get transmissionEither => 'Either';
+
+  @override
+  String get trainingTypeLabel => 'Training Type';
+
+  @override
+  String get trainingLevelLabel => 'Training Level';
+
+  @override
+  String get trainingBeginner => 'Beginner';
+
+  @override
+  String get trainingRefresher => 'Refresher';
+
+  @override
+  String get trainingTestPrep => 'Test / Driving Permit Preparation';
+
+  @override
+  String get vehicleTypesLabel => 'Vehicle Types';
+
+  @override
+  String get vehicleMotorcycle => 'Motorcycle';
+
+  @override
+  String get vehicleCar => 'Car';
+
+  @override
+  String get vehiclePickupVan => 'Pickup / Van';
+
+  @override
+  String get vehicleTruck => 'Truck';
+
+  @override
+  String get vehicleBus => 'Bus';
+
+  @override
+  String get vehicleOther => 'Other';
+
+  @override
+  String get trainingOptionsLabel => 'Training Options';
+
+  @override
+  String get trainingPackageLabel => 'Training Package';
+
+  @override
+  String get fullDrivingCourse => 'Full driving course';
+
+  @override
+  String get individualLessons => 'Individual lessons';
+
+  @override
+  String get weekendTraining => 'Weekend training';
+
+  @override
+  String get eveningTraining => 'Evening training';
+
+  @override
+  String get intensiveTraining => 'Intensive training';
+
+  @override
+  String get trainingLocationLabel => 'Training Location';
+
+  @override
+  String get trainingCentre => 'Training centre';
+
+  @override
+  String get customerLocation => 'Customer location';
+
+  @override
+  String get pickupDropoffLabel => 'Pickup / Drop-off';
+
+  @override
+  String get pickupAvailable => 'Available';
+
+  @override
+  String get pickupNotAvailable => 'Not available';
+
+  @override
+  String get pickupRequired => 'Required';
+
+  @override
+  String get pickupNotRequired => 'Not required';
+
+  @override
+  String get pickupFlexible => 'Flexible';
+
+  @override
+  String get serviceAreaLabel => 'Service Area';
+
+  @override
+  String get serviceAreaHint => 'City / district / areas served';
+
+  @override
+  String get pricingLabel => 'Pricing';
+
+  @override
+  String get startingPriceLabel => 'Starting price';
+
+  @override
+  String get priceOnRequest => 'Price on request';
+
+  @override
+  String get preferredScheduleLabel => 'Preferred Schedule';
+
+  @override
+  String get scheduleWeekdays => 'Weekdays';
+
+  @override
+  String get scheduleWeekends => 'Weekends';
+
+  @override
+  String get scheduleEvening => 'Evening';
+
+  @override
+  String get scheduleFlexible => 'Flexible';
+
+  @override
+  String get preferredStartDateLabel => 'Preferred Start Date';
+
+  @override
+  String get trainingDurationLabel => 'Training Duration';
+
+  @override
+  String get trainingDurationHint => 'e.g. 3 weeks, 10 lessons, or Flexible';
+
+  @override
+  String get additionalRequirementsLabel => 'Additional Requirements';
+
+  @override
+  String get additionalRequirementsHint =>
+      'e.g. Weekend morning lessons, student has learner permit';
+
+  @override
+  String get drivingSchoolLicenceMismatchTitle => 'Licence Class Mismatch';
+
+  @override
+  String drivingSchoolLicenceMismatchMessage(String licenceClass) {
+    return 'This request requires $licenceClass training, which is not in your declared Driving School services.';
+  }
+
+  @override
+  String get drivingSchoolCapabilityRequired =>
+      'You must declare a Driving School service before submitting an offer on this request.';
 }

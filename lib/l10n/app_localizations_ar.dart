@@ -2719,4 +2719,189 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'اطّلع على الفرص';
+
+  @override
+  String get drivingSchoolService => 'مدرسة لتعليم القيادة / تدريب السائقين';
+
+  @override
+  String get drivingSchoolSubtitle =>
+      'تدريب على القيادة، دروس للمبتدئين، إعداد للحصول على رخصة القيادة، ودروس تجديدية.';
+
+  @override
+  String get licenceClassesLabel => 'فئات رخصة القيادة';
+
+  @override
+  String get classALabel => 'الفئة أ (دراجات نارية)';
+
+  @override
+  String get classBLabel => 'الفئة ب (سيارات ومركبات خفيفة)';
+
+  @override
+  String get classCLabel => 'الفئة ج (شاحنات متوسطة)';
+
+  @override
+  String get classDLabel => 'الفئة د (مركبات تجارية ثقيلة / حافلات)';
+
+  @override
+  String get classELabel => 'الفئة هـ (مركبات مقطورة)';
+
+  @override
+  String get otherCustomLabel => 'أخرى / مخصص';
+
+  @override
+  String get transmissionLabel => 'ناقل الحركة';
+
+  @override
+  String get transmissionManual => 'يدوي (عادي)';
+
+  @override
+  String get transmissionAutomatic => 'أوتوماتيكي';
+
+  @override
+  String get transmissionBoth => 'كلاهما';
+
+  @override
+  String get transmissionEither => 'أي منهما';
+
+  @override
+  String get trainingTypeLabel => 'نوع التدريب';
+
+  @override
+  String get trainingLevelLabel => 'مستوى التدريب';
+
+  @override
+  String get trainingBeginner => 'مبتدئ';
+
+  @override
+  String get trainingRefresher => 'تجديدي / تنشيطي';
+
+  @override
+  String get trainingTestPrep => 'إعداد لاختبار رخصة القيادة';
+
+  @override
+  String get vehicleTypesLabel => 'أنواع المركبات';
+
+  @override
+  String get vehicleMotorcycle => 'دراجة نارية';
+
+  @override
+  String get vehicleCar => 'سيارة';
+
+  @override
+  String get vehiclePickupVan => 'بيك آب / شاحنة صغيرة';
+
+  @override
+  String get vehicleTruck => 'شاحنة';
+
+  @override
+  String get vehicleBus => 'حافلة';
+
+  @override
+  String get vehicleOther => 'أخرى';
+
+  @override
+  String get trainingOptionsLabel => 'خيارات التدريب';
+
+  @override
+  String get trainingPackageLabel => 'باقة التدريب';
+
+  @override
+  String get fullDrivingCourse => 'دورة قيادة كاملة';
+
+  @override
+  String get individualLessons => 'دروس فردية';
+
+  @override
+  String get weekendTraining => 'تدريب في عطلة نهاية الأسبوع';
+
+  @override
+  String get eveningTraining => 'تدريب مسائي';
+
+  @override
+  String get intensiveTraining => 'تدريب مكثف';
+
+  @override
+  String get trainingLocationLabel => 'موقع التدريب';
+
+  @override
+  String get trainingCentre => 'مركز التدريب';
+
+  @override
+  String get customerLocation => 'موقع العميل';
+
+  @override
+  String get pickupDropoffLabel => 'خدمة التوصيل والاصطحاب';
+
+  @override
+  String get pickupAvailable => 'متاحة';
+
+  @override
+  String get pickupNotAvailable => 'غير متاحة';
+
+  @override
+  String get pickupRequired => 'مطلوبة';
+
+  @override
+  String get pickupNotRequired => 'غير مطلوبة';
+
+  @override
+  String get pickupFlexible => 'مرن';
+
+  @override
+  String get serviceAreaLabel => 'منطقة الخدمة';
+
+  @override
+  String get serviceAreaHint => 'المدينة / المنطقة / المناطق المخدومة';
+
+  @override
+  String get pricingLabel => 'التسعير';
+
+  @override
+  String get startingPriceLabel => 'السعر المبدئي';
+
+  @override
+  String get priceOnRequest => 'السعر عند الطلب';
+
+  @override
+  String get preferredScheduleLabel => 'الجدول المفضل';
+
+  @override
+  String get scheduleWeekdays => 'أيام الأسبوع';
+
+  @override
+  String get scheduleWeekends => 'عطلة نهاية الأسبوع';
+
+  @override
+  String get scheduleEvening => 'مساءً';
+
+  @override
+  String get scheduleFlexible => 'مرن';
+
+  @override
+  String get preferredStartDateLabel => 'تاريخ البدء المفضل';
+
+  @override
+  String get trainingDurationLabel => 'مدة التدريب';
+
+  @override
+  String get trainingDurationHint => 'مثال: 3 أسابيع، 10 دروس، أو مرن';
+
+  @override
+  String get additionalRequirementsLabel => 'متطلبات إضافية';
+
+  @override
+  String get additionalRequirementsHint =>
+      'مثال: دروس صباحية في عطلة نهاية الأسبوع، الطالب لديه تصريح تعلم';
+
+  @override
+  String get drivingSchoolLicenceMismatchTitle => 'عدم تطابق فئة رخصة القيادة';
+
+  @override
+  String drivingSchoolLicenceMismatchMessage(String licenceClass) {
+    return 'يتطلب هذا الطلب تدريبًا للفئة $licenceClass، وهي غير متوفرة ضمن خدمات مدرسة القيادة المعلنة لديك.';
+  }
+
+  @override
+  String get drivingSchoolCapabilityRequired =>
+      'يجب عليك تسجيل خدمة مدرسة لتعليم القيادة قبل تقديم عرض على هذا الطلب.';
 }
