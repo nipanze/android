@@ -466,6 +466,7 @@ class _ProfileViewState extends State<_ProfileView> {
   Future<void> _saveProfile(
       BuildContext context, AppLocalizations? l10n) async {
     if (!_formKey.currentState!.validate()) return;
+    if (!await ensureOnlineForAction(context)) return;
 
     final messenger = ScaffoldMessenger.of(context);
     final cubit = context.read<ProfileCubit>();

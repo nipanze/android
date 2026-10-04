@@ -53,7 +53,7 @@ class MainScaffold extends StatelessWidget {
         body: Stack(
           children: [
             Positioned.fill(child: child),
-            const Positioned.fill(child: OfflineConnectionListener()),
+            const OfflineConnectionListener(),
           ],
         ),
         bottomNavigationBar: Container(

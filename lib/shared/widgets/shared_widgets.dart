@@ -12,11 +12,11 @@ Future<bool> ensureOnlineForAction(BuildContext context) async {
   if (isOnline) return true;
 
   ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
+    ..clearSnackBars()
     ..showSnackBar(
       const SnackBar(
         content: Text(
-          'You’re offline · Check your internet connection.',
+          "You're currently offline.",
           textAlign: TextAlign.center,
         ),
         duration: Duration(seconds: 3),

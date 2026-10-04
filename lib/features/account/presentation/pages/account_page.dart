@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/services/app_lock_service.dart';
 import '../../../../core/services/language_service.dart';
@@ -50,7 +51,8 @@ class _AccountView extends StatelessWidget {
                       content:
                           Text(AppLocalizations.of(context)!.profileUpdated)));
                 }
-                if (state is ProfileCubitError) {
+                if (state is ProfileCubitError &&
+                    !isNetworkErrorMessage(state.message)) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(state.message),
                       backgroundColor: AppColors.danger));

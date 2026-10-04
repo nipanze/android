@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -145,7 +146,8 @@ class _PositionsViewState extends State<_PositionsView>
           Expanded(
             child: BlocConsumer<PositionsCubit, PositionsState>(
               listener: (context, state) {
-                if (state is PositionsError) {
+                if (state is PositionsError &&
+                    !isNetworkErrorMessage(state.message)) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(state.message),
                       backgroundColor: AppColors.danger));

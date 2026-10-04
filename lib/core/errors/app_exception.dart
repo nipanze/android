@@ -59,6 +59,14 @@ String userFacingErrorMessage(Object error) {
   return parseSupabaseError(error).message;
 }
 
+/// Returns true when [message] corresponds to a network/offline error.
+/// Used by UI layers to suppress duplicate SnackBars when the global
+/// [OfflineConnectionListener] has already shown an offline notification.
+bool isNetworkErrorMessage(String message) =>
+    message.contains('offline') ||
+    message.contains('Connect to continue') ||
+    message.contains('Check your internet');
+
 /// Parses Supabase exceptions into user-friendly [AppException]s.
 /// Raw Supabase error codes and messages are NEVER returned to the UI.
 AppException parseSupabaseError(Object error) {
