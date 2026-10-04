@@ -50,10 +50,10 @@ class MainScaffold extends StatelessWidget {
     return BlocProvider(
       create: (_) => getIt<NotificationCubit>()..load(),
       child: Scaffold(
-        body: Column(
+        body: Stack(
           children: [
-            const OfflineConnectionListener(),
-            Expanded(child: child),
+            Positioned.fill(child: child),
+            const Positioned.fill(child: OfflineConnectionListener()),
           ],
         ),
         bottomNavigationBar: Container(
