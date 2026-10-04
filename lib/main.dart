@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/bloc/app_bloc_observer.dart';
 import 'core/services/localization_fallback.dart';
+import 'core/services/offline_service.dart';
 import 'core/config/supabase_config.dart';
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
@@ -49,6 +50,12 @@ Future<void> initApp() async {
 
   // Dependency injection
   configureDependencies();
+
+  // Initialize connectivity detection before any cubit loads data.
+  // Without this, OfflineService._isOnline stays true (its default) until the
+  // OfflineConnectionListener widget calls initialize() later — too late to
+  // protect the first data fetch when the device is already offline.
+  await OfflineService().initialize();
 
   // BLoC observer for debugging
   Bloc.observer = AppBlocObserver();
