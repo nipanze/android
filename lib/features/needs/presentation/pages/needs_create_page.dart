@@ -395,13 +395,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'London',
           'Guangzhou',
         ],
-      'departure_city' => const [
-          'Kampala',
-          'Entebbe',
-          'Nairobi',
-          'Kigali',
-          'Dar es Salaam',
-        ],
+      'departure_city' => CountryLocations.localitiesFor(
+          _countryInfo(context.read<AuthBloc>().state),
+        ),
+      'nationality' => CountryLocations.nationalitiesFor(
+          _countryInfo(context.read<AuthBloc>().state),
+        ),
       'purpose' => const [
           'Hajj',
           'Umrah',
@@ -427,7 +426,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Student visa',
           'Transit visa',
         ],
-      'nationality' => const ['Ugandan', 'Kenyan', 'Rwandan', 'Tanzanian'],
       'travel_date' || 'return_date' || 'event_date' || 'shoot_date' => const [
           'As soon as possible',
           'This month',
@@ -490,15 +488,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       'site_location' ||
       'farm_location' ||
       'delivery_location' ||
-      'installation_site' =>
-        const [
-          'Kampala',
-          'Entebbe',
-          'Mukono',
-          'Jinja',
-          'Mbarara',
-          'Gulu',
-        ],
+      'installation_site' ||
+      'from_location' ||
+      'to_location' =>
+        CountryLocations.localitiesFor(
+          _countryInfo(context.read<AuthBloc>().state),
+        ),
       'equipment_type' => const [
           'Excavator',
           'Generator',

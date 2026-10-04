@@ -98,16 +98,17 @@ class ListingInfoBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.10),
+        color: AppColors.accent.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.42)),
       ),
       child: Text(
         text,
         style: const TextStyle(
           fontFamily: AppFonts.body,
           fontSize: 10.5,
-          color: AppColors.accentDark,
+          color: AppColors.accentLight,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -149,7 +150,7 @@ class ListingFormPanel extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
-                      .withValues(alpha: 0.48),
+                      .withValues(alpha: 0.72),
                   fontSize: 10,
                   letterSpacing: 0.6,
                 ),
@@ -416,9 +417,12 @@ class AffordabilityWarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (principal <= 0 || installmentAmount <= 0)
+    if (principal <= 0 || installmentAmount <= 0) {
       return const SizedBox.shrink();
-    if (totalRepayment >= principal) return const SizedBox.shrink();
+    }
+    if (totalRepayment >= principal) {
+      return const SizedBox.shrink();
+    }
 
     final shortfall = principal - totalRepayment;
 

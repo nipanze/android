@@ -1,9 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nipanze/core/constants/country_constants.dart';
 import 'package:nipanze/features/needs/domain/models/need_capability.dart';
 import 'package:nipanze/features/needs/domain/models/need_category.dart';
 import 'package:nipanze/features/needs/domain/models/need_form_schema.dart';
 
 void main() {
+  test('location and nationality suggestions follow country settings', () {
+    expect(
+      CountryLocations.localitiesFor(EastAfricaCountries.uganda),
+      containsAll(['Kampala', 'Entebbe', 'Mukono', 'Jinja']),
+    );
+    expect(
+      CountryLocations.localitiesFor(EastAfricaCountries.kenya),
+      containsAll(['Nairobi', 'Mombasa', 'Kisumu']),
+    );
+    expect(
+      CountryLocations.localitiesFor(EastAfricaCountries.kenya),
+      isNot(contains('Kampala')),
+    );
+
+    final ugandanNationalities =
+        CountryLocations.nationalitiesFor(EastAfricaCountries.uganda);
+    expect(ugandanNationalities.first, 'Ugandan');
+    expect(
+      ugandanNationalities,
+      containsAll(['Congolese (DRC)', 'South African', 'Nigerian']),
+    );
+
+    final southAfricanNationalities =
+        CountryLocations.nationalitiesFor(EastAfricaCountries.southAfrica);
+    expect(southAfricanNationalities.first, 'South African');
+    expect(southAfricanNationalities, contains('Nigerian'));
+  });
+
   test('category labels use the country override and shared fallback', () {
     final category = NeedCategory.fromMap(
       {

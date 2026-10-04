@@ -276,3 +276,97 @@ class EastAfricaCountries {
     return defaultCountry;
   }
 }
+
+class CountryLocations {
+  CountryLocations._();
+
+  static const Map<String, List<String>> _localitiesByCountry = {
+    'UG': ['Kampala', 'Entebbe', 'Mukono', 'Jinja', 'Mbarara', 'Gulu'],
+    'KE': ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Kiambu'],
+    'TZ': [
+      'Dar es Salaam',
+      'Dodoma',
+      'Arusha',
+      'Mwanza',
+      'Zanzibar City',
+      'Mbeya',
+    ],
+    'RW': ['Kigali', 'Musanze', 'Huye', 'Rubavu', 'Rusizi', 'Rwamagana'],
+    'NG': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Enugu'],
+    'ZA': [
+      'Johannesburg',
+      'Cape Town',
+      'Durban',
+      'Pretoria',
+      'Gqeberha',
+      'Bloemfontein',
+    ],
+    'EG': ['Cairo', 'Alexandria', 'Giza', 'Luxor', 'Aswan', 'Port Said'],
+    'CD': [
+      'Kinshasa',
+      'Lubumbashi',
+      'Goma',
+      'Kisangani',
+      'Bukavu',
+      'Mbuji-Mayi',
+    ],
+    'BI': [
+      'Bujumbura',
+      'Gitega',
+      'Ngozi',
+      'Rumonge',
+      'Muyinga',
+      'Ruyigi',
+    ],
+    'SS': ['Juba', 'Wau', 'Malakal', 'Bor', 'Yei', 'Aweil'],
+    'SO': [
+      'Mogadishu',
+      'Hargeisa',
+      'Bosaso',
+      'Kismayo',
+      'Baidoa',
+      'Garowe',
+    ],
+  };
+
+  static const Map<String, String> _nationalityByCountry = {
+    'UG': 'Ugandan',
+    'KE': 'Kenyan',
+    'TZ': 'Tanzanian',
+    'RW': 'Rwandan',
+    'NG': 'Nigerian',
+    'ZA': 'South African',
+    'EG': 'Egyptian',
+    'CD': 'Congolese (DRC)',
+    'BI': 'Burundian',
+    'SS': 'South Sudanese',
+    'SO': 'Somali',
+  };
+
+  static const List<String> _nationalities = [
+    'Ugandan',
+    'Kenyan',
+    'Tanzanian',
+    'Rwandan',
+    'Nigerian',
+    'South African',
+    'Egyptian',
+    'Congolese (DRC)',
+    'Burundian',
+    'South Sudanese',
+    'Somali',
+  ];
+
+  static List<String> localitiesFor(CountryInfo country) =>
+      _localitiesByCountry[country.code] ?? country.regions;
+
+  static List<String> nationalitiesFor(CountryInfo country) {
+    final countryNationality =
+        _nationalityByCountry[country.code] ?? country.name;
+    return [
+      countryNationality,
+      ..._nationalities
+          .where((nationality) => nationality != countryNationality),
+    ];
+  }
+}
