@@ -51,6 +51,7 @@ class MainScaffold extends StatelessWidget {
       create: (_) => getIt<NotificationCubit>()..load(),
       child: Scaffold(
         body: Stack(
+          fit: StackFit.expand,
           children: [
             Positioned.fill(child: child),
             const OfflineConnectionListener(),
