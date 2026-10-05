@@ -52,7 +52,7 @@ class _OfflineConnectionListenerState
         ..showSnackBar(
           const SnackBar(
             content: Text(
-              "You're offline · Showing recently loaded data",
+              'You are offline',
               textAlign: TextAlign.center,
             ),
             duration: Duration(seconds: 4),
@@ -69,7 +69,7 @@ class _OfflineConnectionListenerState
         ..showSnackBar(
           const SnackBar(
             content: Text(
-              "Connection restored · Updating…",
+              'Connection restored · Updating…',
               textAlign: TextAlign.center,
             ),
             duration: Duration(seconds: 3),

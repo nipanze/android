@@ -75,7 +75,6 @@ class MarketplaceLoaded extends MarketplaceState {
   const MarketplaceLoaded({
     required this.listings,
     required this.activeFilter,
-    this.isOffline = false,
     this.moduleFilter,
     this.proFilterCriteria = const ProFilterCriteria(),
     this.proFilterActive = false,
@@ -83,7 +82,6 @@ class MarketplaceLoaded extends MarketplaceState {
 
   final List<MarketplaceItem> listings;
   final String activeFilter;
-  final bool isOffline;
   final MarketplaceModule? moduleFilter;
 
   /// Current Pro filter criteria (always present; `.isActive` tells you
@@ -96,7 +94,6 @@ class MarketplaceLoaded extends MarketplaceState {
   MarketplaceLoaded copyWith({
     List<MarketplaceItem>? listings,
     String? activeFilter,
-    bool? isOffline,
     MarketplaceModule? moduleFilter,
     ProFilterCriteria? proFilterCriteria,
     bool? proFilterActive,
@@ -104,7 +101,6 @@ class MarketplaceLoaded extends MarketplaceState {
     return MarketplaceLoaded(
       listings: listings ?? this.listings,
       activeFilter: activeFilter ?? this.activeFilter,
-      isOffline: isOffline ?? this.isOffline,
       moduleFilter: moduleFilter ?? this.moduleFilter,
       proFilterCriteria: proFilterCriteria ?? this.proFilterCriteria,
       proFilterActive: proFilterActive ?? this.proFilterActive,
@@ -115,7 +111,6 @@ class MarketplaceLoaded extends MarketplaceState {
   List<Object?> get props => [
         listings,
         activeFilter,
-        isOffline,
         moduleFilter,
         proFilterCriteria,
         proFilterActive

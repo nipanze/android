@@ -11,12 +11,9 @@ import '../domain/models/marketplace_item.dart';
 
 @lazySingleton
 class MarketplaceRepository {
-  MarketplaceRepository(this._client) {
-    OfflineService().registerSessionCache(_cachedListings.clear);
-  }
+  MarketplaceRepository(this._client);
 
   final SupabaseClient _client;
-  final Map<String, List<MarketplaceItem>> _cachedListings = {};
 
   String? get currentViewerId => _client.auth.currentUser?.id;
 
@@ -29,8 +26,6 @@ class MarketplaceRepository {
     MarketplaceModule? module,
     String? country,
   }) async {
-    final cacheKey = '${district ?? ''}|${module?.name ?? ''}|${country ?? ''}|'
-        '$closingSoon';
     try {
       final items = <MarketplaceItem>[];
 
@@ -81,15 +76,10 @@ class MarketplaceRepository {
       }
 
       items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
-      _cachedListings[cacheKey] = List.unmodifiable(items);
       OfflineService().reportRequestSuccess();
       return items;
     } catch (e) {
-      final cachedListings = _cachedListings[cacheKey];
       OfflineService().reportRequestFailure(e);
-      if (cachedListings != null && parseSupabaseError(e) is NetworkException) {
-        return cachedListings;
-      }
       throw parseSupabaseError(e);
     }
   }

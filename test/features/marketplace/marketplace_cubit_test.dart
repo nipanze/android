@@ -2,8 +2,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nipanze/core/errors/app_exception.dart';
-import 'package:nipanze/core/services/offline_service.dart';
 import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart';
@@ -52,7 +50,6 @@ void main() {
   ];
 
   setUp(() {
-    MarketplaceCubit.clearSessionCache();
     mockRepo = MockMarketplaceRepository();
     when(() => mockRepo.currentViewerId).thenReturn('viewer-default');
     when(() => mockRepo.watchListings(module: any(named: 'module')))
@@ -88,7 +85,7 @@ void main() {
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(
-      'keeps loaded listings visible when a refresh fails',
+      'shows an error instead of stale listings when a refresh fails',
       build: () {
         var loadCount = 0;
         when(() => mockRepo.getListings(
@@ -106,36 +103,11 @@ void main() {
       },
       expect: () => [
         isA<MarketplaceLoading>(),
-        isA<MarketplaceLoaded>()
-            .having((s) => s.listings.length, 'listings count', 2),
-        isA<MarketplaceLoaded>()
-            .having((s) => s.listings.length, 'offline listings count', 2)
-            .having((s) => s.isOffline, 'offline status', true),
+        isA<MarketplaceLoaded>(),
+        isA<MarketplaceLoading>(),
+        isA<MarketplaceError>(),
       ],
-      verify: (cubit) {
-        expect((cubit.state as MarketplaceLoaded).listings.length, 2);
-      },
     );
-
-    test('marks cached results offline when the repository returns them',
-        () async {
-      when(() => mockRepo.getListings(
-            district: any(named: 'district'),
-            module: any(named: 'module'),
-          )).thenAnswer((_) async => testListings);
-
-      final offlineService = OfflineService();
-      offlineService.reportRequestFailure(const NetworkException());
-      final cubit = MarketplaceCubit(mockRepo);
-      try {
-        await cubit.load();
-        expect(cubit.state, isA<MarketplaceLoaded>());
-        expect((cubit.state as MarketplaceLoaded).isOffline, isTrue);
-      } finally {
-        await cubit.close();
-        offlineService.reportRequestSuccess();
-      }
-    });
 
     blocTest<MarketplaceCubit, MarketplaceState>(
       'applyProFilters emits proFilterActive then Loaded with intersected listings matching RPC results',

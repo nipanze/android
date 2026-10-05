@@ -203,8 +203,6 @@ class _MarketplaceView extends StatelessWidget {
             _ModuleFilterRow(
               onProFilterTap: () => _onProFilterTap(context),
             ),
-            // ── Offline banner (stale cached data being shown) ───────────
-            const _OfflineBanner(),
             // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
@@ -396,44 +394,6 @@ class _MarketplaceView extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Offline banner ────────────────────────────────────────────────────────────
-
-class _OfflineBanner extends StatelessWidget {
-  const _OfflineBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocSelector<MarketplaceCubit, MarketplaceState, bool>(
-      selector: (state) => state is MarketplaceLoaded && state.isOffline,
-      builder: (context, offline) {
-        if (!offline) return const SizedBox.shrink();
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(18, 0, 18, 6),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.warning.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.cloud_off_rounded,
-                  size: 14, color: AppColors.warning),
-              SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  "You're offline · Showing recently loaded data",
-                  style: TextStyle(fontSize: 11.5, color: AppColors.warning),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

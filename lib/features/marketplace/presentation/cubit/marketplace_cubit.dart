@@ -16,20 +16,10 @@ part 'marketplace_state.dart';
 @injectable
 class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceCubit(this._repository) : super(const MarketplaceInitial()) {
-    OfflineService().registerSessionCache(clearSessionCache);
     _connectionSubscription = OfflineService().onReconnected.listen((_) {
       if (!isClosed) unawaited(refresh());
     });
   }
-
-  // ── Session cache (static: survives new cubit instances) ─────────────────
-
-  /// Last successfully loaded listings per feed key. In-memory only, cleared
-  /// on sign-out. Never persisted to disk.
-  static final Map<String, List<MarketplaceItem>> _sessionCache = {};
-
-  /// Call after a successful sign-out.
-  static void clearSessionCache() => _sessionCache.clear();
 
   final MarketplaceRepository _repository;
   late final StreamSubscription<void> _connectionSubscription;
@@ -41,10 +31,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceModule? _moduleFilter;
   String? _viewerFeedKey;
   String? _countryFilter;
-
-  /// True while the displayed listings come from cache because the last
-  /// network request failed.
-  bool _isOffline = false;
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
@@ -60,9 +46,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   /// Cached allowed request IDs from the last successful Pro filter RPC execution.
   Set<String>? _cachedProFilteredIds;
 
-  String get _cacheKey =>
-      '${_moduleFilter?.name ?? 'all'}|${_countryFilter ?? ''}|${_districtFilter ?? ''}';
-
   // ── Public interface ──────────────────────────────────────────────────────
 
   Future<void> load(
@@ -73,25 +56,13 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _countryFilter = country;
     _viewerFeedKey = _resolveViewerFeedKey();
 
-    final key = _cacheKey;
-    final cached = _sessionCache[key];
-    if (cached != null) {
-      // Show last known data immediately, then refresh in the background.
-      _allListings = cached;
-      _emitLoaded();
-    } else if (state is! MarketplaceLoaded) {
-      emit(const MarketplaceLoading());
-    }
+    emit(const MarketplaceLoading());
 
     try {
       final listings = await _repository.getListings(
           district: district, module: module, country: country);
       if (isClosed) return;
       _allListings = listings;
-      _sessionCache[key] = listings;
-      // The repository may satisfy this request from its own cache when the
-      // network is unavailable, so a successful return does not imply fresh data.
-      _isOffline = !OfflineService().currentIsOnline;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
       if (isClosed) return;
       _emitLoaded();
@@ -99,14 +70,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     } catch (e) {
       if (isClosed) return;
       OfflineService().reportRequestFailure(e);
-      if (_sessionCache.containsKey(key)) {
-        // Keep showing the cached posts and flag them as stale.
-        _isOffline = true;
-        _emitLoaded();
-        return;
-      }
-      // Nothing cached for this feed: show error + Retry (never a stale list
-      // from a different module filter).
       emit(MarketplaceError(userFacingErrorMessage(e)));
     }
   }
@@ -223,7 +186,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       moduleFilter: _moduleFilter,
       proFilterCriteria: _proFilter,
       proFilterActive: false,
-      isOffline: _isOffline,
     ));
   }
 
