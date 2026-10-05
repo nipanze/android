@@ -2,6 +2,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:nipanze/core/errors/app_exception.dart';
+import 'package:nipanze/core/services/offline_service.dart';
 import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart';
@@ -114,6 +116,26 @@ void main() {
         expect((cubit.state as MarketplaceLoaded).listings.length, 2);
       },
     );
+
+    test('marks cached results offline when the repository returns them',
+        () async {
+      when(() => mockRepo.getListings(
+            district: any(named: 'district'),
+            module: any(named: 'module'),
+          )).thenAnswer((_) async => testListings);
+
+      final offlineService = OfflineService();
+      offlineService.reportRequestFailure(const NetworkException());
+      final cubit = MarketplaceCubit(mockRepo);
+      try {
+        await cubit.load();
+        expect(cubit.state, isA<MarketplaceLoaded>());
+        expect((cubit.state as MarketplaceLoaded).isOffline, isTrue);
+      } finally {
+        await cubit.close();
+        offlineService.reportRequestSuccess();
+      }
+    });
 
     blocTest<MarketplaceCubit, MarketplaceState>(
       'applyProFilters emits proFilterActive then Loaded with intersected listings matching RPC results',

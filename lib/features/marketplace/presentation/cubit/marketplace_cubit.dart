@@ -89,7 +89,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       if (isClosed) return;
       _allListings = listings;
       _sessionCache[key] = listings;
-      _isOffline = false;
+      // The repository may satisfy this request from its own cache when the
+      // network is unavailable, so a successful return does not imply fresh data.
+      _isOffline = !OfflineService().currentIsOnline;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
       if (isClosed) return;
       _emitLoaded();
