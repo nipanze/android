@@ -50,6 +50,7 @@ void main() {
   ];
 
   setUp(() {
+    MarketplaceCubit.clearSessionCache();
     mockRepo = MockMarketplaceRepository();
     when(() => mockRepo.currentViewerId).thenReturn('viewer-default');
     when(() => mockRepo.watchListings(module: any(named: 'module')))
@@ -85,7 +86,7 @@ void main() {
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(
-      'shows an error instead of stale listings when a refresh fails',
+      'keeps the last successful feed visible when a refresh fails',
       build: () {
         var loadCount = 0;
         when(() => mockRepo.getListings(
@@ -103,10 +104,13 @@ void main() {
       },
       expect: () => [
         isA<MarketplaceLoading>(),
-        isA<MarketplaceLoaded>(),
-        isA<MarketplaceLoading>(),
-        isA<MarketplaceError>(),
+        isA<MarketplaceLoaded>()
+            .having((s) => s.listings.length, 'listings count', 2),
       ],
+      verify: (cubit) {
+        expect(cubit.state, isA<MarketplaceLoaded>());
+        expect((cubit.state as MarketplaceLoaded).listings.length, 2);
+      },
     );
 
     blocTest<MarketplaceCubit, MarketplaceState>(

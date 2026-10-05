@@ -16,10 +16,15 @@ part 'marketplace_state.dart';
 @injectable
 class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceCubit(this._repository) : super(const MarketplaceInitial()) {
+    OfflineService().registerSessionCache(clearSessionCache);
     _connectionSubscription = OfflineService().onReconnected.listen((_) {
       if (!isClosed) unawaited(refresh());
     });
   }
+
+  static final Map<String, List<MarketplaceItem>> _sessionCache = {};
+
+  static void clearSessionCache() => _sessionCache.clear();
 
   final MarketplaceRepository _repository;
   late final StreamSubscription<void> _connectionSubscription;
@@ -46,6 +51,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   /// Cached allowed request IDs from the last successful Pro filter RPC execution.
   Set<String>? _cachedProFilteredIds;
 
+  String get _cacheKey =>
+      '${_moduleFilter?.name ?? 'all'}|${_countryFilter ?? ''}|${_districtFilter ?? ''}';
+
   // ── Public interface ──────────────────────────────────────────────────────
 
   Future<void> load(
@@ -56,13 +64,21 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _countryFilter = country;
     _viewerFeedKey = _resolveViewerFeedKey();
 
-    emit(const MarketplaceLoading());
+    final key = _cacheKey;
+    final cached = _sessionCache[key];
+    if (cached != null) {
+      _allListings = cached;
+      _emitLoaded();
+    } else if (state is! MarketplaceLoaded) {
+      emit(const MarketplaceLoading());
+    }
 
     try {
       final listings = await _repository.getListings(
           district: district, module: module, country: country);
       if (isClosed) return;
       _allListings = listings;
+      _sessionCache[key] = listings;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
       if (isClosed) return;
       _emitLoaded();
@@ -70,6 +86,11 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     } catch (e) {
       if (isClosed) return;
       OfflineService().reportRequestFailure(e);
+      if (_sessionCache.containsKey(key)) {
+        _allListings = _sessionCache[key]!;
+        _emitLoaded();
+        return;
+      }
       emit(MarketplaceError(userFacingErrorMessage(e)));
     }
   }
