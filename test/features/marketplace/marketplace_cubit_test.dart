@@ -50,6 +50,7 @@ void main() {
   ];
 
   setUp(() {
+    MarketplaceCubit.clearSessionCache();
     mockRepo = MockMarketplaceRepository();
     when(() => mockRepo.currentViewerId).thenReturn('viewer-default');
     when(() => mockRepo.watchListings(module: any(named: 'module')))
@@ -105,6 +106,9 @@ void main() {
         isA<MarketplaceLoading>(),
         isA<MarketplaceLoaded>()
             .having((s) => s.listings.length, 'listings count', 2),
+        isA<MarketplaceLoaded>()
+            .having((s) => s.listings.length, 'offline listings count', 2)
+            .having((s) => s.isOffline, 'offline status', true),
       ],
       verify: (cubit) {
         expect((cubit.state as MarketplaceLoaded).listings.length, 2);
