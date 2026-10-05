@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nipanze/core/di/injection.dart';
 import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
@@ -74,24 +75,6 @@ void main() {
     getIt.reset();
   });
 
-  Widget buildTestableWidget(Widget child) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthBloc>.value(value: mockAuthBloc),
-      ],
-      child: MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: child,
-      ),
-    );
-  }
-
   testWidgets('WatchlistPage inside MainScaffold renders correctly without layout or ParentData errors', (tester) async {
     when(() => mockWatchlistRepo.getWatchedListings()).thenAnswer((_) async => [
       MarketplaceItem.loan(LoanListing(
@@ -113,14 +96,41 @@ void main() {
       )),
     ]);
 
+    final router = GoRouter(
+      initialLocation: '/watchlist',
+      routes: [
+        ShellRoute(
+          builder: (_, __, child) => MainScaffold(child: child),
+          routes: [
+            GoRoute(
+              path: '/watchlist',
+              builder: (_, __) => const WatchlistPage(),
+            ),
+          ],
+        ),
+      ],
+    );
+
     await tester.pumpWidget(
-      buildTestableWidget(
-        const MainScaffold(
-          child: WatchlistPage(),
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>.value(value: mockAuthBloc),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pump(const Duration(milliseconds: 200));
 
     expect(find.text('Watchlist'), findsWidgets);
     expect(find.text('Business Expansion Loan'), findsOneWidget);
