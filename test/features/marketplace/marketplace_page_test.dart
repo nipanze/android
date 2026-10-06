@@ -154,7 +154,12 @@ void main() {
     expect(find.text('Needs'), findsOneWidget);
     expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
     expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+    expect(find.text('0 active listings'), findsOneWidget);
     expect(find.text('No listings found'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.text('0 active listings')).style?.fontWeight,
+      FontWeight.w800,
+    );
 
     final cubit = tester.element(find.text('Loans')).read<MarketplaceCubit>();
     for (final (label, module) in [
@@ -166,6 +171,7 @@ void main() {
       await tester.tap(find.text(label));
       await tester.pump(const Duration(milliseconds: 200));
       expect((cubit.state as MarketplaceLoaded).moduleFilter, module);
+      expect(find.text('0 active listings'), findsOneWidget);
     }
     expect(tester.takeException(), isNull);
   });
@@ -182,6 +188,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Business loan'), findsOneWidget);
+    expect(find.text('1 active listing'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

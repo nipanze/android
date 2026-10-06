@@ -141,7 +141,13 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String listingsLive(int count) {
-    return '$count urutonde · Imbona-nkubone';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count amatangazo akora',
+      one: '$count itangazo rikora',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -42,7 +42,7 @@
   "navPositions": "Activity",
   "navAccount": "Account",
   "marketplaceTitle": "Nipanze",
-  "listingsLive": "{count} listings · live",
+  "listingsLive": "{count, plural, one{{count} active listing} other{{count} active listings}}",
   "@listingsLive": {
     "placeholders": {
       "count": {

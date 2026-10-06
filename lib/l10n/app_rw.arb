@@ -42,7 +42,7 @@
   "navPositions": "Ibikorwa",
   "navAccount": "Konti",
   "marketplaceTitle": "Nipanze",
-  "listingsLive": "{count} urutonde · Imbona-nkubone",
+  "listingsLive": "{count, plural, one{{count} itangazo rikora} other{{count} amatangazo akora}}",
   "@listingsLive": {
     "placeholders": {
       "count": {

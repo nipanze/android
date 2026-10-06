@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @listingsLive.
   ///
   /// In en, this message translates to:
-  /// **'{count} listings · live'**
+  /// **'{count, plural, one{{count} active listing} other{{count} active listings}}'**
   String listingsLive(int count);
 
   /// No description provided for @filtered.

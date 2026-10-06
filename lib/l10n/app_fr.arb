@@ -42,7 +42,7 @@
   "navPositions": "Activité",
   "navAccount": "Compte",
   "marketplaceTitle": "Nipanze",
-  "listingsLive": "{count} offres · en direct",
+  "listingsLive": "{count, plural, one{{count} annonce active} other{{count} annonces actives}}",
   "@listingsLive": {
     "placeholders": {
       "count": {

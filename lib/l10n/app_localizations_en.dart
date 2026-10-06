@@ -138,7 +138,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String listingsLive(int count) {
-    return '$count listings · live';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active listings',
+      one: '$count active listing',
+    );
+    return '$_temp0';
   }
 
   @override

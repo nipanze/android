@@ -42,7 +42,7 @@
   "navPositions": "Shughuli",
   "navAccount": "Akaunti",
   "marketplaceTitle": "Nipanze",
-  "listingsLive": "{count} orodha · mubashara",
+  "listingsLive": "{count, plural, one{{count} orodha inayopatikana} other{{count} orodha zinazopatikana}}",
   "@listingsLive": {
     "placeholders": {
       "count": {

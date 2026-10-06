@@ -42,7 +42,7 @@
   "navPositions": "النشاط",
   "navAccount": "الحساب",
   "marketplaceTitle": "Nipanze",
-  "listingsLive": "{count} عروض · مباشر",
+  "listingsLive": "{count, plural, zero{{count} إعلان نشط} one{{count} إعلان نشط} two{{count} إعلانان نشطان} few{{count} إعلانات نشطة} many{{count} إعلانًا نشطًا} other{{count} إعلان نشط}}",
   "@listingsLive": {
     "placeholders": {
       "count": {

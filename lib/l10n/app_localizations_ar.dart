@@ -137,7 +137,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String listingsLive(int count) {
-    return '$count عروض · مباشر';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count إعلان نشط',
+      many: '$count إعلانًا نشطًا',
+      few: '$count إعلانات نشطة',
+      two: '$count إعلانان نشطان',
+      one: '$count إعلان نشط',
+      zero: '$count إعلان نشط',
+    );
+    return '$_temp0';
   }
 
   @override
