@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/services/offline_service.dart';
 import '../../marketplace/domain/models/marketplace_item.dart';
 import '../domain/models/need_capability.dart';
 import '../domain/models/need_category.dart';
@@ -10,7 +11,13 @@ import '../domain/models/need_offer.dart';
 
 @lazySingleton
 class NeedsRepository {
-  NeedsRepository(this._client);
+  NeedsRepository(this._client) {
+    OfflineService().registerSessionCache(_clearForYouCache);
+  }
+
+  static final Map<String, List<NeedsListing>> _sessionForYouNeeds = {};
+
+  void _clearForYouCache() => _sessionForYouNeeds.clear();
 
   final SupabaseClient _client;
 
@@ -287,28 +294,56 @@ class NeedsRepository {
     }
   }
 
-  /// Get personalized 'For You' needs
+  /// Get personalized 'For You' needs.
+  ///
+  /// If the network is offline or the RPC fails, return the last successful
+  /// fallback results from the session cache so the user keeps seeing recently
+  /// loaded content instead of an empty screen.
   Future<List<NeedsListing>> getForYouNeeds(
       {String country = 'UG', int limit = 10}) async {
+    final cached = _sessionForYouNeeds[country];
+    if (cached != null && cached.isNotEmpty) {
+      return List<NeedsListing>.from(cached);
+    }
+
     try {
       final data = await _client.rpc(
         RpcNames.getForYouNeeds,
         params: {'p_country': country, 'p_limit': limit},
       );
-      return (data as List)
+      final listings = (data as List)
           .map((e) => NeedsListing.fromMap(e as Map<String, dynamic>))
           .toList();
-    } catch (_) {
+      _sessionForYouNeeds[country] = listings;
+      OfflineService().reportRequestSuccess();
+      return listings;
+    } catch (error) {
+      OfflineService().reportRequestFailure(error);
+      final fallback = _sessionForYouNeeds[country];
+      if (fallback != null && fallback.isNotEmpty) {
+        return List<NeedsListing>.from(fallback);
+      }
+
       try {
-        final fallback = await _client
+        final fallbackRows = await _client
             .from('v_needs_listings')
             .select()
             .order('listed_at', ascending: false)
             .limit(limit);
-        return (fallback as List)
+        final listings = (fallbackRows as List)
             .map((e) => NeedsListing.fromMap(e as Map<String, dynamic>))
             .toList();
-      } catch (_) {
+        if (listings.isNotEmpty) {
+          _sessionForYouNeeds[country] = listings;
+          OfflineService().reportRequestSuccess();
+        }
+        return listings;
+      } catch (fallbackError) {
+        OfflineService().reportRequestFailure(fallbackError);
+        final lastKnown = _sessionForYouNeeds[country];
+        if (lastKnown != null && lastKnown.isNotEmpty) {
+          return List<NeedsListing>.from(lastKnown);
+        }
         return const [];
       }
     }
