@@ -77,6 +77,18 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       final listings = await _repository.getListings(
           district: district, module: module, country: country);
       if (isClosed) return;
+
+      final previousListings = _sessionCache[key];
+      if (listings.isEmpty && previousListings != null && previousListings.isNotEmpty) {
+        _allListings = previousListings;
+        _sessionCache[key] = previousListings;
+        _myOfferRequestIds = await _fetchMyOfferRequestIds();
+        if (isClosed) return;
+        _emitLoaded();
+        _subscribeRealtime();
+        return;
+      }
+
       _allListings = listings;
       _sessionCache[key] = listings;
       _myOfferRequestIds = await _fetchMyOfferRequestIds();
