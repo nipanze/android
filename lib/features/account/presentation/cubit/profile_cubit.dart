@@ -33,12 +33,22 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       final profile = await _repository.getProfile();
       if (profile == null) {
         if (state is ProfileCubitLoaded) return;
+        final cachedProfile = _repository.cachedProfile;
+        if (cachedProfile != null) {
+          emit(ProfileCubitLoaded(cachedProfile));
+          return;
+        }
         emit(const ProfileCubitError(
             'Profile not found. Please contact support.'));
         return;
       }
       emit(ProfileCubitLoaded(profile));
     } catch (e) {
+      final cachedProfile = _repository.cachedProfile;
+      if (cachedProfile != null && parseSupabaseError(e) is NetworkException) {
+        emit(ProfileCubitLoaded(cachedProfile));
+        return;
+      }
       if (state is ProfileCubitLoaded) return;
       emit(ProfileCubitError(userFacingErrorMessage(e)));
     }

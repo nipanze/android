@@ -74,6 +74,13 @@ class _AccountView extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
+              if (state is ProfileCubitError) {
+                return ErrorState(
+                  message: state.message,
+                  onRetry: () => context.read<ProfileCubit>().refresh(),
+                );
+              }
+
               final profile =
                   state is ProfileCubitLoaded ? state.profile : null;
               final authState = context.read<AuthBloc>().state;

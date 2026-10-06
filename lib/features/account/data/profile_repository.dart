@@ -20,6 +20,8 @@ class ProfileRepository {
   final SupabaseClient _client;
   final Map<String, UserProfile> _cachedProfiles = {};
 
+  UserProfile? get cachedProfile => _uid.isEmpty ? null : _cachedProfiles[_uid];
+
   String get _uid => _client.auth.currentUser!.id;
 
   /// Full profile from v_user_marketplace_activity joined with profiles.

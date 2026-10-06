@@ -51,12 +51,29 @@ class _OfflineConnectionListenerState
         ..clearSnackBars()
         ..showSnackBar(
           const SnackBar(
-            content: Text(
-              'You are offline',
-              textAlign: TextAlign.center,
-            ),
+            backgroundColor: Color(0xFF0F172A),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            content: Row(
+              children: [
+                Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'You are offline',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
     } else {

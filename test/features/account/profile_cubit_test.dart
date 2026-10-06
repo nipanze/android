@@ -16,6 +16,9 @@ class MockProfileRepository implements ProfileRepository {
   void setError(Object error) => _error = error;
 
   @override
+  UserProfile? get cachedProfile => null;
+
+  @override
   Future<UserProfile?> getProfile() async {
     if (_error != null) throw _error!;
     return _profile;
