@@ -8,12 +8,12 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../features/marketplace/domain/models/loan_listing.dart';
 import '../../../../features/marketplace/domain/models/marketplace_item.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
+import '../../../../shared/widgets/post_choice_sheet.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../marketplace/presentation/widgets/listing_card.dart';
 import '../../domain/models/my_listing.dart';
@@ -344,11 +344,11 @@ class _EmptyRequestState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.request_page_outlined,
-      title: AppLocalizations.of(context)!.noLoanRequests,
-      subtitle: AppLocalizations.of(context)!.noLoanRequestsSubtitle,
+      title: AppLocalizations.of(context)!.noRequests,
+      subtitle: AppLocalizations.of(context)!.noRequestsSubtitle,
       action: ElevatedButton(
-        onPressed: () => context.go(AppRoutes.listingCreate),
-        child: Text(AppLocalizations.of(context)!.createLoanRequest),
+        onPressed: () => showPostChoiceSheet(context),
+        child: Text(AppLocalizations.of(context)!.createRequest),
       ),
     );
   }
@@ -449,7 +449,8 @@ class _ForexRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
                       color: accent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(7),
@@ -458,7 +459,8 @@ class _ForexRequestCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.currency_exchange_rounded, size: 12, color: accent),
+                        Icon(Icons.currency_exchange_rounded,
+                            size: 12, color: accent),
                         const SizedBox(width: 4),
                         Text(
                           'Forex',
@@ -492,7 +494,8 @@ class _ForexRequestCard extends StatelessWidget {
                   IconButton(
                     onPressed: onDelete,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                    constraints:
+                        const BoxConstraints(minWidth: 24, minHeight: 24),
                     icon: const Icon(
                       Icons.delete_outline_rounded,
                       size: 18,
@@ -506,7 +509,8 @@ class _ForexRequestCard extends StatelessWidget {
               const SizedBox(height: 9),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: isDark
                       ? AppColors.bg3Dark.withValues(alpha: 0.55)

@@ -377,14 +377,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noLoanRequests => 'No loan requests yet';
+  String get noRequests => 'No requests yet';
 
   @override
-  String get noLoanRequestsSubtitle =>
-      'Post a request and Providers will compete to offer you the best rate.';
+  String get noRequestsSubtitle =>
+      'Post a request and receive offers from Providers who can help.';
 
   @override
-  String get createLoanRequest => 'Create a loan request';
+  String get createRequest => 'Create a request';
 
   @override
   String get cancelListing => 'Cancel listing?';
@@ -2690,13 +2690,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postChoiceTitle => 'What do you want to post?';
 
   @override
-  String get postLoanAction => 'Loan Request';
+  String get postLoanAction => 'Loan';
 
   @override
-  String get postForexAction => 'Forex Request';
+  String get postLoanSubtitle => 'Create a loan request';
 
   @override
-  String get postNeedAction => 'Need Request';
+  String get postForexAction => 'Forex';
+
+  @override
+  String get postForexSubtitle => 'Create a currency exchange request';
+
+  @override
+  String get postNeedAction => 'Need';
+
+  @override
+  String get postNeedSubtitle => 'Create a Need';
 
   @override
   String get forYouTitle => 'For You';

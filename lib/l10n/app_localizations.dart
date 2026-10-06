@@ -758,23 +758,23 @@ abstract class AppLocalizations {
   /// **'Closed · {count}'**
   String sectionClosed(int count);
 
-  /// No description provided for @noLoanRequests.
+  /// No description provided for @noRequests.
   ///
   /// In en, this message translates to:
-  /// **'No loan requests yet'**
-  String get noLoanRequests;
+  /// **'No requests yet'**
+  String get noRequests;
 
-  /// No description provided for @noLoanRequestsSubtitle.
+  /// No description provided for @noRequestsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Post a request and Providers will compete to offer you the best rate.'**
-  String get noLoanRequestsSubtitle;
+  /// **'Post a request and receive offers from Providers who can help.'**
+  String get noRequestsSubtitle;
 
-  /// No description provided for @createLoanRequest.
+  /// No description provided for @createRequest.
   ///
   /// In en, this message translates to:
-  /// **'Create a loan request'**
-  String get createLoanRequest;
+  /// **'Create a request'**
+  String get createRequest;
 
   /// No description provided for @cancelListing.
   ///
@@ -4927,20 +4927,38 @@ abstract class AppLocalizations {
   /// No description provided for @postLoanAction.
   ///
   /// In en, this message translates to:
-  /// **'Loan Request'**
+  /// **'Loan'**
   String get postLoanAction;
+
+  /// No description provided for @postLoanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a loan request'**
+  String get postLoanSubtitle;
 
   /// No description provided for @postForexAction.
   ///
   /// In en, this message translates to:
-  /// **'Forex Request'**
+  /// **'Forex'**
   String get postForexAction;
+
+  /// No description provided for @postForexSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a currency exchange request'**
+  String get postForexSubtitle;
 
   /// No description provided for @postNeedAction.
   ///
   /// In en, this message translates to:
-  /// **'Need Request'**
+  /// **'Need'**
   String get postNeedAction;
+
+  /// No description provided for @postNeedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Need'**
+  String get postNeedSubtitle;
 
   /// No description provided for @forYouTitle.
   ///

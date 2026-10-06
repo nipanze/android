@@ -381,14 +381,14 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get noLoanRequests => 'Aucune demande de prêt pour l\'instant';
+  String get noRequests => 'Aucune demande pour l\'instant';
 
   @override
-  String get noLoanRequestsSubtitle =>
-      'Postez une demande et les prêteurs se disputeront pour vous offrir le meilleur taux.';
+  String get noRequestsSubtitle =>
+      'Publiez une demande et recevez des offres de prestataires qui peuvent vous aider.';
 
   @override
-  String get createLoanRequest => 'Créer une demande de prêt';
+  String get createRequest => 'Créer une demande';
 
   @override
   String get cancelListing => 'Annuler l\'annonce ?';
@@ -2730,13 +2730,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postChoiceTitle => 'Que souhaitez-vous publier ?';
 
   @override
-  String get postLoanAction => 'Demande de prêt';
+  String get postLoanAction => 'Prêt';
 
   @override
-  String get postForexAction => 'Demande Forex';
+  String get postLoanSubtitle => 'Créer une demande de prêt';
 
   @override
-  String get postNeedAction => 'Demande de besoin';
+  String get postForexAction => 'Forex';
+
+  @override
+  String get postForexSubtitle => 'Créer une demande de change de devises';
+
+  @override
+  String get postNeedAction => 'Besoin';
+
+  @override
+  String get postNeedSubtitle => 'Créer un besoin';
 
   @override
   String get forYouTitle => 'Pour vous';

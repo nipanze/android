@@ -191,9 +191,9 @@
       }
     }
   },
-  "noLoanRequests": "Nta zimusaba z'inguzanyo zirahari",
-  "noLoanRequestsSubtitle": "Tanga izimusaba kandi abakopesheje bazashindana kukugezaho igipimo gikwiye.",
-  "createLoanRequest": "Kora izimusaba y'inguzanyo",
+  "noRequests": "Nta busabe burahari",
+  "noRequestsSubtitle": "Tanga ubusabe wakire ibyifuzo by'Abatanga Serivisi bashobora kugufasha.",
+  "createRequest": "Tanga ubusabe",
   "cancelListing": "Kuraho inguzanyo?",
   "cancelListingConfirm": "Iki kizakuraho \"{title}\" ku isoko. Ibirego byose bicomeje bizavanwa.",
   "@cancelListingConfirm": {
@@ -1245,9 +1245,12 @@
   "navPost": "Ohereza",
   "navActivity": "Ibikorwa",
   "postChoiceTitle": "Urashaka kohereza iki?",
-  "postLoanAction": "Gusaba Inguzanyo",
-  "postForexAction": "Gusaba Forex",
-  "postNeedAction": "Gusaba Icyo Ukeneye",
+  "postLoanAction": "Inguzanyo",
+  "postLoanSubtitle": "Kora ubusabe bw'inguzanyo",
+  "postForexAction": "Forex",
+  "postForexSubtitle": "Kora ubusabe bwo kuvunja amafaranga",
+  "postNeedAction": "Icyo ukeneye",
+  "postNeedSubtitle": "Tanga icyo ukeneye",
   "forYouTitle": "Ibyakugenewe",
   "peopleLookingForServices": "Abantu barashaka serivisi utanga",
   "addYourServicesPrompt": "Ufite serivisi waza ufasha abantu?",

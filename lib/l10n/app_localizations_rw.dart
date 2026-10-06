@@ -380,14 +380,14 @@ class AppLocalizationsRw extends AppLocalizations {
   }
 
   @override
-  String get noLoanRequests => 'Nta zimusaba z\'inguzanyo zirahari';
+  String get noRequests => 'Nta busabe burahari';
 
   @override
-  String get noLoanRequestsSubtitle =>
-      'Tanga izimusaba kandi abakopesheje bazashindana kukugezaho igipimo gikwiye.';
+  String get noRequestsSubtitle =>
+      'Tanga ubusabe wakire ibyifuzo by\'Abatanga Serivisi bashobora kugufasha.';
 
   @override
-  String get createLoanRequest => 'Kora izimusaba y\'inguzanyo';
+  String get createRequest => 'Tanga ubusabe';
 
   @override
   String get cancelListing => 'Kuraho inguzanyo?';
@@ -2704,13 +2704,22 @@ class AppLocalizationsRw extends AppLocalizations {
   String get postChoiceTitle => 'Urashaka kohereza iki?';
 
   @override
-  String get postLoanAction => 'Gusaba Inguzanyo';
+  String get postLoanAction => 'Inguzanyo';
 
   @override
-  String get postForexAction => 'Gusaba Forex';
+  String get postLoanSubtitle => 'Kora ubusabe bw\'inguzanyo';
 
   @override
-  String get postNeedAction => 'Gusaba Icyo Ukeneye';
+  String get postForexAction => 'Forex';
+
+  @override
+  String get postForexSubtitle => 'Kora ubusabe bwo kuvunja amafaranga';
+
+  @override
+  String get postNeedAction => 'Icyo ukeneye';
+
+  @override
+  String get postNeedSubtitle => 'Tanga icyo ukeneye';
 
   @override
   String get forYouTitle => 'Ibyakugenewe';

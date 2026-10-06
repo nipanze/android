@@ -191,9 +191,9 @@
       }
     }
   },
-  "noLoanRequests": "لا توجد طلبات قرض بعد",
-  "noLoanRequestsSubtitle": "انشر طلباً وسيتنافس المقرضون لتقديم أفضل سعر.",
-  "createLoanRequest": "إنشاء طلب قرض",
+  "noRequests": "لا توجد طلبات بعد",
+  "noRequestsSubtitle": "انشر طلباً واستقبل عروضاً من مقدمي الخدمات القادرين على مساعدتك.",
+  "createRequest": "إنشاء طلب",
   "cancelListing": "إلغاء الإعلان؟",
   "cancelListingConfirm": "سيؤدي هذا إلى إزالة \"{title}\" من السوق. سيتم رفض جميع العروض المعلقة.",
   "@cancelListingConfirm": {
@@ -1245,9 +1245,12 @@
   "navPost": "نشر",
   "navActivity": "النشاط",
   "postChoiceTitle": "ماذا تريد أن تنشر؟",
-  "postLoanAction": "طلب قرض",
-  "postForexAction": "طلب فوركس",
-  "postNeedAction": "طلب احتياج",
+  "postLoanAction": "قرض",
+  "postLoanSubtitle": "إنشاء طلب قرض",
+  "postForexAction": "فوركس",
+  "postForexSubtitle": "إنشاء طلب لتبادل العملات",
+  "postNeedAction": "احتياج",
+  "postNeedSubtitle": "إنشاء احتياج",
   "forYouTitle": "لك خصيصاً",
   "peopleLookingForServices": "يبحث الأشخاص عما تقدمه",
   "addYourServicesPrompt": "هل يمكنك مساعدة الناس في تقديم خدمة؟",

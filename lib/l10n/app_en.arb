@@ -196,9 +196,9 @@
       }
     }
   },
-  "noLoanRequests": "No loan requests yet",
-  "noLoanRequestsSubtitle": "Post a request and Providers will compete to offer you the best rate.",
-  "createLoanRequest": "Create a loan request",
+  "noRequests": "No requests yet",
+  "noRequestsSubtitle": "Post a request and receive offers from Providers who can help.",
+  "createRequest": "Create a request",
   "cancelListing": "Cancel listing?",
   "cancelListingConfirm": "This will remove \"{title}\" from the marketplace. Any pending offers will be rejected. This cannot be undone.",
   "@cancelListingConfirm": {
@@ -1308,9 +1308,12 @@
   "navPost": "Post",
   "navActivity": "Activity",
   "postChoiceTitle": "What do you want to post?",
-  "postLoanAction": "Loan Request",
-  "postForexAction": "Forex Request",
-  "postNeedAction": "Need Request",
+  "postLoanAction": "Loan",
+  "postLoanSubtitle": "Create a loan request",
+  "postForexAction": "Forex",
+  "postForexSubtitle": "Create a currency exchange request",
+  "postNeedAction": "Need",
+  "postNeedSubtitle": "Create a Need",
   "forYouTitle": "For You",
   "peopleLookingForServices": "People are looking for what you provide",
   "addYourServicesPrompt": "Can you help people with something?",

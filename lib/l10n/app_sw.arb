@@ -191,9 +191,9 @@
       }
     }
   },
-  "noLoanRequests": "Hakuna maombi ya mkopo bado",
-  "noLoanRequestsSubtitle": "Tuma ombi na wakopeshaji watashindana kukupa kiwango bora.",
-  "createLoanRequest": "Unda ombi la mkopo",
+  "noRequests": "Bado hakuna maombi",
+  "noRequestsSubtitle": "Tuma ombi na upokee matoleo kutoka kwa Watoa Huduma wanaoweza kukusaidia.",
+  "createRequest": "Tuma ombi",
   "cancelListing": "Futa orodha?",
   "cancelListingConfirm": "Hii itaondoa \"{title}\" kutoka sokoni. Maombi yote yanayosubiri yatakataliwa.",
   "@cancelListingConfirm": {
@@ -1245,9 +1245,12 @@
   "navPost": "Tuma",
   "navActivity": "Shughuli",
   "postChoiceTitle": "Ungependa kutuma nini?",
-  "postLoanAction": "Ombi la Mkopo",
-  "postForexAction": "Ombi la Forex",
-  "postNeedAction": "Ombi la Hitaji",
+  "postLoanAction": "Mkopo",
+  "postLoanSubtitle": "Unda ombi la mkopo",
+  "postForexAction": "Forex",
+  "postForexSubtitle": "Unda ombi la kubadilisha sarafu",
+  "postNeedAction": "Hitaji",
+  "postNeedSubtitle": "Unda hitaji",
   "forYouTitle": "Kwa Ajili Yako",
   "peopleLookingForServices": "Watu wanatafuta huduma unazotoa",
   "addYourServicesPrompt": "Je, unaweza kusaidia watu na huduma fulani?",

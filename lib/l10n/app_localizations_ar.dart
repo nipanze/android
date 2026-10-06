@@ -380,14 +380,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get noLoanRequests => 'لا توجد طلبات قرض بعد';
+  String get noRequests => 'لا توجد طلبات بعد';
 
   @override
-  String get noLoanRequestsSubtitle =>
-      'انشر طلباً وسيتنافس المقرضون لتقديم أفضل سعر.';
+  String get noRequestsSubtitle =>
+      'انشر طلباً واستقبل عروضاً من مقدمي الخدمات القادرين على مساعدتك.';
 
   @override
-  String get createLoanRequest => 'إنشاء طلب قرض';
+  String get createRequest => 'إنشاء طلب';
 
   @override
   String get cancelListing => 'إلغاء الإعلان؟';
@@ -2675,13 +2675,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get postChoiceTitle => 'ماذا تريد أن تنشر؟';
 
   @override
-  String get postLoanAction => 'طلب قرض';
+  String get postLoanAction => 'قرض';
 
   @override
-  String get postForexAction => 'طلب فوركس';
+  String get postLoanSubtitle => 'إنشاء طلب قرض';
 
   @override
-  String get postNeedAction => 'طلب احتياج';
+  String get postForexAction => 'فوركس';
+
+  @override
+  String get postForexSubtitle => 'إنشاء طلب لتبادل العملات';
+
+  @override
+  String get postNeedAction => 'احتياج';
+
+  @override
+  String get postNeedSubtitle => 'إنشاء احتياج';
 
   @override
   String get forYouTitle => 'لك خصيصاً';

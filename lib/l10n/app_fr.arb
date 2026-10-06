@@ -191,9 +191,9 @@
       }
     }
   },
-  "noLoanRequests": "Aucune demande de prêt pour l'instant",
-  "noLoanRequestsSubtitle": "Postez une demande et les prêteurs se disputeront pour vous offrir le meilleur taux.",
-  "createLoanRequest": "Créer une demande de prêt",
+  "noRequests": "Aucune demande pour l'instant",
+  "noRequestsSubtitle": "Publiez une demande et recevez des offres de prestataires qui peuvent vous aider.",
+  "createRequest": "Créer une demande",
   "cancelListing": "Annuler l'annonce ?",
   "cancelListingConfirm": "Cela supprimera \"{title}\" du marché. Toutes les offres en attente seront rejetées.",
   "@cancelListingConfirm": {
@@ -1252,9 +1252,12 @@
   "navPost": "Publier",
   "navActivity": "Activité",
   "postChoiceTitle": "Que souhaitez-vous publier ?",
-  "postLoanAction": "Demande de prêt",
-  "postForexAction": "Demande Forex",
-  "postNeedAction": "Demande de besoin",
+  "postLoanAction": "Prêt",
+  "postLoanSubtitle": "Créer une demande de prêt",
+  "postForexAction": "Forex",
+  "postForexSubtitle": "Créer une demande de change de devises",
+  "postNeedAction": "Besoin",
+  "postNeedSubtitle": "Créer un besoin",
   "forYouTitle": "Pour vous",
   "peopleLookingForServices": "Des personnes recherchent ce que vous proposez",
   "addYourServicesPrompt": "Pouvez-vous aider les gens avec un service ?",

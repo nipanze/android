@@ -379,14 +379,14 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get noLoanRequests => 'Hakuna maombi ya mkopo bado';
+  String get noRequests => 'Bado hakuna maombi';
 
   @override
-  String get noLoanRequestsSubtitle =>
-      'Tuma ombi na wakopeshaji watashindana kukupa kiwango bora.';
+  String get noRequestsSubtitle =>
+      'Tuma ombi na upokee matoleo kutoka kwa Watoa Huduma wanaoweza kukusaidia.';
 
   @override
-  String get createLoanRequest => 'Unda ombi la mkopo';
+  String get createRequest => 'Tuma ombi';
 
   @override
   String get cancelListing => 'Futa orodha?';
@@ -2701,13 +2701,22 @@ class AppLocalizationsSw extends AppLocalizations {
   String get postChoiceTitle => 'Ungependa kutuma nini?';
 
   @override
-  String get postLoanAction => 'Ombi la Mkopo';
+  String get postLoanAction => 'Mkopo';
 
   @override
-  String get postForexAction => 'Ombi la Forex';
+  String get postLoanSubtitle => 'Unda ombi la mkopo';
 
   @override
-  String get postNeedAction => 'Ombi la Hitaji';
+  String get postForexAction => 'Forex';
+
+  @override
+  String get postForexSubtitle => 'Unda ombi la kubadilisha sarafu';
+
+  @override
+  String get postNeedAction => 'Hitaji';
+
+  @override
+  String get postNeedSubtitle => 'Unda hitaji';
 
   @override
   String get forYouTitle => 'Kwa Ajili Yako';
