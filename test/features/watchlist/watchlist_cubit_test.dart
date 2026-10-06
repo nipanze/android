@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:nipanze/core/errors/app_exception.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart';
 import 'package:nipanze/features/watchlist/data/watchlist_repository.dart';
@@ -137,7 +138,7 @@ void main() {
       );
 
       deletion.completeError(StateError('delete failed'));
-      expect(await removeResult, isFalse);
+      expect(await removeResult, WatchlistActionResult.failure);
       expect(cubit.state, isA<WatchlistLoaded>());
       expect(
         (cubit.state as WatchlistLoaded)
@@ -146,6 +147,23 @@ void main() {
             .toList(),
         ['req-1', 'req-2'],
       );
+
+      await cubit.close();
+    });
+
+    test('remove identifies offline failures for UI feedback', () async {
+      final listing = _loanItem('req-1');
+      when(() => mockRepo.getWatchedListings())
+          .thenAnswer((_) async => [listing]);
+      when(() => mockRepo.remove(
+            'req-1',
+            module: MarketplaceModule.loan,
+          )).thenThrow(const NetworkException());
+      final cubit = WatchlistCubit(mockRepo);
+
+      await cubit.load();
+      expect(await cubit.remove(listing), WatchlistActionResult.offline);
+      expect(cubit.state, isA<WatchlistLoaded>());
 
       await cubit.close();
     });

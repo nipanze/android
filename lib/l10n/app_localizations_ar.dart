@@ -336,7 +336,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'العروض التي تضعها على إعلانات السوق ستظهر هنا.';
 
   @override
-  String get browseMarketplaceBtn => 'تصفح السوق';
+  String get browseMarketplaceBtn => 'تصفح';
 
   @override
   String get activeOffers => 'العروض النشطة';

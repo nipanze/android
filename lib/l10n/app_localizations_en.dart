@@ -330,10 +330,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noOffersSubtitle =>
-      'Offers you place on marketplace listings will appear here.';
+      'Offers you place on listings will appear here.';
 
   @override
-  String get browseMarketplaceBtn => 'Browse Marketplace';
+  String get browseMarketplaceBtn => 'Browse';
 
   @override
   String get activeOffers => 'Active Offers';

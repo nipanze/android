@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nipanze/core/di/injection.dart';
+import 'package:nipanze/core/errors/app_exception.dart';
 import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
 import 'package:nipanze/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
@@ -17,7 +18,9 @@ import 'package:nipanze/l10n/app_localizations.dart';
 import 'package:nipanze/shared/widgets/main_scaffold.dart';
 
 class MockWatchlistRepository extends Mock implements WatchlistRepository {}
+
 class MockAuthBloc extends Mock implements AuthBloc {}
+
 class MockNotificationCubit extends Mock implements NotificationCubit {}
 
 void main() {
@@ -52,8 +55,10 @@ void main() {
     );
     when(() => mockAuthBloc.stream).thenAnswer((_) => const Stream.empty());
 
-    when(() => mockNotificationCubit.state).thenReturn(const NotificationInitial());
-    when(() => mockNotificationCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(() => mockNotificationCubit.state)
+        .thenReturn(const NotificationInitial());
+    when(() => mockNotificationCubit.stream)
+        .thenAnswer((_) => const Stream.empty());
     when(() => mockNotificationCubit.load()).thenAnswer((_) async {});
 
     if (getIt.isRegistered<WatchlistCubit>()) {
@@ -67,7 +72,8 @@ void main() {
     }
 
     getIt.registerLazySingleton<WatchlistRepository>(() => mockWatchlistRepo);
-    getIt.registerFactory<WatchlistCubit>(() => WatchlistCubit(mockWatchlistRepo));
+    getIt.registerFactory<WatchlistCubit>(
+        () => WatchlistCubit(mockWatchlistRepo));
     getIt.registerLazySingleton<NotificationCubit>(() => mockNotificationCubit);
   });
 
@@ -75,26 +81,28 @@ void main() {
     getIt.reset();
   });
 
-  testWidgets('WatchlistPage inside MainScaffold renders correctly without layout or ParentData errors', (tester) async {
+  testWidgets(
+      'WatchlistPage inside MainScaffold renders correctly without layout or ParentData errors',
+      (tester) async {
     when(() => mockWatchlistRepo.getWatchedListings()).thenAnswer((_) async => [
-      MarketplaceItem.loan(LoanListing(
-        requestId: 'req-1',
-        title: 'Business Expansion Loan',
-        purpose: 'Inventory',
-        district: 'Kampala',
-        country: 'UG',
-        durationMonths: 6,
-        requestedAmount: 5000000,
-        incomeSource: 'Retail',
-        preferredRepaymentPlan: 'Monthly',
-        repaymentAmountPerPeriod: 900000,
-        repaymentTimeline: '6 months',
-        status: 'active',
-        listedAt: DateTime.now(),
-        expiresAt: DateTime.now().add(const Duration(days: 5)),
-        numberOfOffers: 2,
-      )),
-    ]);
+          MarketplaceItem.loan(LoanListing(
+            requestId: 'req-1',
+            title: 'Business Expansion Loan',
+            purpose: 'Inventory',
+            district: 'Kampala',
+            country: 'UG',
+            durationMonths: 6,
+            requestedAmount: 5000000,
+            incomeSource: 'Retail',
+            preferredRepaymentPlan: 'Monthly',
+            repaymentAmountPerPeriod: 900000,
+            repaymentTimeline: '6 months',
+            status: 'active',
+            listedAt: DateTime.now(),
+            expiresAt: DateTime.now().add(const Duration(days: 5)),
+            numberOfOffers: 2,
+          )),
+        ]);
 
     final router = GoRouter(
       initialLocation: '/watchlist',
@@ -134,6 +142,53 @@ void main() {
 
     expect(find.text('Watchlist'), findsWidgets);
     expect(find.text('Business Expansion Loan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shows the offline state when watchlist loading fails offline',
+      (tester) async {
+    when(() => mockWatchlistRepo.getWatchedListings())
+        .thenThrow(const NetworkException());
+
+    final router = GoRouter(
+      initialLocation: '/watchlist',
+      routes: [
+        ShellRoute(
+          builder: (_, __, child) => MainScaffold(child: child),
+          routes: [
+            GoRoute(
+              path: '/watchlist',
+              builder: (_, __) => const WatchlistPage(),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>.value(value: mockAuthBloc),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('You’re offline'), findsOneWidget);
+    expect(find.text('Check your internet connection and try again.'),
+        findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+    expect(find.text('Error loading watchlist'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

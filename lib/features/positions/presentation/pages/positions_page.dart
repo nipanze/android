@@ -194,7 +194,7 @@ class _LenderTab extends StatelessWidget {
         title: AppLocalizations.of(context)!.noOffersYet,
         subtitle: AppLocalizations.of(context)!.noOffersSubtitle,
         action: ElevatedButton(
-            onPressed: () => context.go('/marketplace'),
+            onPressed: () => context.go('/home'),
             child: Text(AppLocalizations.of(context)!.browseMarketplaceBtn)),
       );
     }
@@ -288,7 +288,7 @@ class _DealsTab extends StatelessWidget {
         title: AppLocalizations.of(context)!.noDealsYet,
         subtitle: AppLocalizations.of(context)!.noDealsSubtitle,
         action: ElevatedButton(
-            onPressed: () => context.go('/marketplace'),
+            onPressed: () => context.go('/home'),
             child: Text(AppLocalizations.of(context)!.browseMarketplaceBtn)),
       );
     }

@@ -335,7 +335,7 @@ class AppLocalizationsSw extends AppLocalizations {
       'Mapendekezo unayotoa kwenye orodha za soko yataonekana hapa.';
 
   @override
-  String get browseMarketplaceBtn => 'Vinjari Soko';
+  String get browseMarketplaceBtn => 'Vinjari';
 
   @override
   String get activeOffers => 'Mapendekezo Yanayoendelea';

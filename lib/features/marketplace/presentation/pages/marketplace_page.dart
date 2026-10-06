@@ -346,7 +346,9 @@ class _MarketplaceView extends StatelessWidget {
                                       unawaited(() async {
                                         final removed =
                                             await watchlist.remove(listing);
-                                        if (!removed && context.mounted) {
+                                        if (removed ==
+                                                WatchlistActionResult.failure &&
+                                            context.mounted) {
                                           ScaffoldMessenger.of(context)
                                             ..clearSnackBars()
                                             ..showSnackBar(
@@ -363,7 +365,9 @@ class _MarketplaceView extends StatelessWidget {
                                       unawaited(() async {
                                         final added =
                                             await watchlist.add(listing);
-                                        if (!added && context.mounted) {
+                                        if (added ==
+                                                WatchlistActionResult.failure &&
+                                            context.mounted) {
                                           ScaffoldMessenger.of(context)
                                             ..clearSnackBars()
                                             ..showSnackBar(

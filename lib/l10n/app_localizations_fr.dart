@@ -337,7 +337,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les offres que vous placez sur les annonces apparaîtront ici.';
 
   @override
-  String get browseMarketplaceBtn => 'Parcourir le marché';
+  String get browseMarketplaceBtn => 'Parcourir';
 
   @override
   String get activeOffers => 'Offres Actives';

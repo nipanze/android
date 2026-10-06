@@ -336,7 +336,7 @@ class AppLocalizationsRw extends AppLocalizations {
       'Ibirego utanga ku nguzanyo z\'isoko bizagaragara hano.';
 
   @override
-  String get browseMarketplaceBtn => 'Shakisha Isoko';
+  String get browseMarketplaceBtn => 'Shakisha';
 
   @override
   String get activeOffers => 'Ibirego Bikomeje';

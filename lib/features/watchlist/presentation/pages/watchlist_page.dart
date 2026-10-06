@@ -120,29 +120,9 @@ class _WatchlistView extends StatelessWidget {
                   }
 
                   if (state is WatchlistError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline_rounded,
-                            size: 48,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            AppLocalizations.of(context)!.watchlistError,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () =>
-                                context.read<WatchlistCubit>().load(),
-                            child: Text(AppLocalizations.of(context)!.tryAgain),
-                          ),
-                        ],
-                      ),
+                    return ErrorState(
+                      message: state.message,
+                      onRetry: () => context.read<WatchlistCubit>().load(),
                     );
                   }
 
@@ -185,9 +165,9 @@ class _WatchlistView extends StatelessWidget {
                                   ScaffoldMessenger.of(context);
                               scaffoldMessenger.clearSnackBars();
                               unawaited(() async {
-                                final removed = await cubit.remove(listing);
+                                final result = await cubit.remove(listing);
                                 if (!context.mounted) return;
-                                if (!removed) {
+                                if (result == WatchlistActionResult.failure) {
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -218,7 +198,10 @@ class _WatchlistView extends StatelessWidget {
                                             listing,
                                             index: index,
                                           );
-                                          if (!restored && context.mounted) {
+                                          if (restored ==
+                                                  WatchlistActionResult
+                                                      .failure &&
+                                              context.mounted) {
                                             scaffoldMessenger.showSnackBar(
                                               SnackBar(
                                                 content: Text(

@@ -11,6 +11,8 @@ import '../../data/watchlist_repository.dart';
 
 part 'watchlist_state.dart';
 
+enum WatchlistActionResult { success, offline, failure }
+
 @injectable
 class WatchlistCubit extends Cubit<WatchlistState> {
   WatchlistCubit(this._repository) : super(const WatchlistInitial());
@@ -59,7 +61,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
     }
   }
 
-  Future<bool> remove(MarketplaceItem listing) async {
+  Future<WatchlistActionResult> remove(MarketplaceItem listing) async {
     _watchlistRevision++;
     final previous = state;
     final previousListings =
@@ -77,7 +79,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
 
     try {
       await _repository.remove(listing.requestId, module: listing.module);
-      if (isClosed) return false;
+      if (isClosed) return WatchlistActionResult.failure;
       final current = state;
       if (current is WatchlistLoaded &&
           current.listings.any((item) => _isSameListing(item, listing))) {
@@ -88,8 +90,8 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         ));
       }
       _watchlistRevision++;
-      return true;
-    } catch (_) {
+      return WatchlistActionResult.success;
+    } catch (e) {
       if (!isClosed && previousListings != null && removedIndex >= 0) {
         final current = state;
         if (current is WatchlistLoaded &&
@@ -105,18 +107,18 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         }
       }
       _watchlistRevision++;
-      return false;
+      return _failureResult(e);
     }
   }
 
-  Future<bool> add(MarketplaceItem listing) async {
+  Future<WatchlistActionResult> add(MarketplaceItem listing) async {
     _watchlistRevision++;
     try {
       await _repository.add(
         listing.requestId,
         module: listing.module,
       );
-      if (isClosed) return false;
+      if (isClosed) return WatchlistActionResult.failure;
       final current = state;
       if (current is WatchlistLoaded) {
         if (!current.listings.any((item) => _isSameListing(item, listing))) {
@@ -126,15 +128,18 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         await load();
       }
       _watchlistRevision++;
-      return true;
+      return WatchlistActionResult.success;
     } catch (e) {
       if (!isClosed) emit(WatchlistError(userFacingErrorMessage(e)));
       _watchlistRevision++;
-      return false;
+      return _failureResult(e);
     }
   }
 
-  Future<bool> undoRemove(MarketplaceItem listing, {required int index}) async {
+  Future<WatchlistActionResult> undoRemove(
+    MarketplaceItem listing, {
+    required int index,
+  }) async {
     _watchlistRevision++;
     final previous = state;
     if (previous is WatchlistLoaded &&
@@ -146,7 +151,7 @@ class WatchlistCubit extends Cubit<WatchlistState> {
 
     try {
       await _repository.add(listing.requestId, module: listing.module);
-      if (isClosed) return false;
+      if (isClosed) return WatchlistActionResult.failure;
       final current = state;
       if (current is WatchlistLoaded) {
         if (!current.listings.any((item) => _isSameListing(item, listing))) {
@@ -158,15 +163,20 @@ class WatchlistCubit extends Cubit<WatchlistState> {
         await load();
       }
       _watchlistRevision++;
-      return true;
-    } catch (_) {
+      return WatchlistActionResult.success;
+    } catch (e) {
       if (!isClosed && previous is WatchlistLoaded) {
         emit(WatchlistLoaded(listings: previous.listings));
       }
       _watchlistRevision++;
-      return false;
+      return _failureResult(e);
     }
   }
+
+  WatchlistActionResult _failureResult(Object error) =>
+      parseSupabaseError(error) is NetworkException
+          ? WatchlistActionResult.offline
+          : WatchlistActionResult.failure;
 
   bool isWatched(
     String requestId, {

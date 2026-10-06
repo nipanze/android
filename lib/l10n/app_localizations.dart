@@ -683,13 +683,13 @@ abstract class AppLocalizations {
   /// No description provided for @noOffersSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Offers you place on marketplace listings will appear here.'**
+  /// **'Offers you place on listings will appear here.'**
   String get noOffersSubtitle;
 
   /// No description provided for @browseMarketplaceBtn.
   ///
   /// In en, this message translates to:
-  /// **'Browse Marketplace'**
+  /// **'Browse'**
   String get browseMarketplaceBtn;
 
   /// No description provided for @activeOffers.
