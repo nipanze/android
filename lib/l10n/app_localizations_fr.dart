@@ -138,7 +138,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navAccount => 'Compte';
 
   @override
-  String get marketplaceTitle => 'Marché';
+  String get marketplaceTitle => 'Nipanze';
 
   @override
   String listingsLive(int count) {

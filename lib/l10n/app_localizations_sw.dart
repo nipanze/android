@@ -136,7 +136,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get navAccount => 'Akaunti';
 
   @override
-  String get marketplaceTitle => 'Soko la Mikopo';
+  String get marketplaceTitle => 'Nipanze';
 
   @override
   String listingsLive(int count) {

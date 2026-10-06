@@ -147,8 +147,26 @@ void main() {
     await pumpPage(tester);
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Marketplace'), findsOneWidget);
+    expect(find.text('Nipanze'), findsOneWidget);
+    expect(find.text('For You'), findsOneWidget);
+    expect(find.text('Loans'), findsOneWidget);
+    expect(find.text('Forex'), findsOneWidget);
+    expect(find.text('Needs'), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
     expect(find.text('No listings found'), findsOneWidget);
+
+    final cubit = tester.element(find.text('Loans')).read<MarketplaceCubit>();
+    for (final (label, module) in [
+      ('Loans', MarketplaceModule.loan),
+      ('Forex', MarketplaceModule.forex),
+      ('Needs', MarketplaceModule.needs),
+      ('For You', null),
+    ]) {
+      await tester.tap(find.text(label));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect((cubit.state as MarketplaceLoaded).moduleFilter, module);
+    }
     expect(tester.takeException(), isNull);
   });
 
@@ -213,6 +231,9 @@ void main() {
     expect(tester.getSize(find.byType(ListView)).height, greaterThan(0));
     expect(find.text('Business loan'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Watchlist'), findsOneWidget);
+    expect(find.text('Activity'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     router.dispose();

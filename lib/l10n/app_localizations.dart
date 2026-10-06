@@ -353,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @marketplaceTitle.
   ///
   /// In en, this message translates to:
-  /// **'Marketplace'**
+  /// **'Nipanze'**
   String get marketplaceTitle;
 
   /// No description provided for @listingsLive.
