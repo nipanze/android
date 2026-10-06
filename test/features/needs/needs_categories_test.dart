@@ -216,4 +216,68 @@ void main() {
       ]),
     );
   });
+
+  group('Driving School & Driver Training taxonomy & matching', () {
+    test('Driving School appears under Professional Services and NOT Transport & Logistics', () {
+      final professionalServicesCapabilities = NeedCapability.defaults
+          .where((c) => c.categorySlug == 'professional_services')
+          .toList();
+      final transportLogisticsCapabilities = NeedCapability.defaults
+          .where((c) => c.categorySlug == 'transport_logistics')
+          .toList();
+
+      expect(
+        professionalServicesCapabilities.map((c) => c.slug),
+        contains('driving_school'),
+        reason: 'Driving School must be listed under Professional Services',
+      );
+      expect(
+        transportLogisticsCapabilities.map((c) => c.slug),
+        isNot(contains('driving_school')),
+        reason: 'Driving School must NOT be listed under Transport & Logistics',
+      );
+
+      final drivingSchoolCap = professionalServicesCapabilities
+          .firstWhere((c) => c.slug == 'driving_school');
+      expect(drivingSchoolCap.categorySlug, 'professional_services');
+      expect(drivingSchoolCap.nameForCountry('UG'), 'Driving School / Driver Training');
+      expect(drivingSchoolCap.nameForCountry('KE'), 'Driving School & Driver Training');
+    });
+
+    test('Professional Services form presets and quick values include Driving School', () {
+      final presets = NeedFormSchema.presetsForCategory('professional_services');
+      expect(
+        presets.map((p) => p.label),
+        contains('Driving school'),
+      );
+
+      final drivingPreset = presets.firstWhere((p) => p.label == 'Driving school');
+      expect(drivingPreset.details['service_type'], 'Driving School & Driver Training');
+    });
+
+    test('existing providers with driving_school capability retain it under Professional Services', () {
+      final map = {
+        'id': 'cap-driving-1',
+        'user_id': 'u-provider-1',
+        'capability_slug': 'driving_school',
+        'verification_level': 'provider_verified',
+        'created_at': '2026-10-01T12:00:00Z',
+        'capability_name': 'Driving School / Driver Training',
+        'category_slug': 'professional_services',
+        'category_name': 'Professional Services',
+        'category_icon': '🧑‍💼',
+      };
+      final cap = NeedCapability.fromMap({
+        'slug': 'driving_school',
+        'category_slug': 'professional_services',
+        'name': 'Driving School / Driver Training',
+      });
+
+      expect(cap.slug, 'driving_school');
+      expect(cap.categorySlug, 'professional_services');
+      expect(map['capability_slug'], 'driving_school');
+      expect(map['category_slug'], 'professional_services');
+      expect(map['category_name'], 'Professional Services');
+    });
+  });
 }

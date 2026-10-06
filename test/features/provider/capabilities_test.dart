@@ -390,5 +390,34 @@ void main() {
       expect(find.text('Heavy Haulage'), findsOneWidget);
       expect(find.text('2 opportunities'), findsOneWidget);
     });
+
+    testWidgets('CapabilityBadge renders Driving School under Professional Services',
+        (tester) async {
+      final cap = ProviderCapability(
+        id: 'cap-driving-1',
+        userId: 'u-1',
+        capabilitySlug: 'driving_school',
+        verificationLevel: ProviderVerificationLevel.providerVerified,
+        createdAt: DateTime.now(),
+        capabilityName: 'Driving School / Driver Training',
+        categorySlug: 'professional_services',
+        categoryName: 'Professional Services',
+        categoryIcon: '🧑‍💼',
+      );
+
+      await tester.pumpWidget(createLocalizedWidget(
+        CapabilityBadge(
+          capability: cap,
+          opportunityCount: 5,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Driving School / Driver Training'), findsOneWidget);
+      expect(find.text('Professional Services'), findsOneWidget);
+      expect(find.text('🧑‍💼'), findsOneWidget);
+      expect(find.text('Provider Verified'), findsOneWidget);
+      expect(find.text('5 opportunities'), findsOneWidget);
+    });
   });
 }

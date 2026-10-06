@@ -352,6 +352,17 @@ class NeedFormSchema {
           'deliverable': 'Reviewed documents and advice note',
         },
       ),
+      NeedFormPreset(
+        label: 'Driving school',
+        title: 'Find a driving school / instructor',
+        specification:
+            'I need driving lessons and driver training with a certified instructor to prepare for driving licensing.',
+        details: {
+          'service_type': 'Driving School & Driver Training',
+          'deadline': 'This month',
+          'deliverable': 'Driver training lessons and test preparation',
+        },
+      ),
     ],
     'transport_logistics': [
       NeedFormPreset(

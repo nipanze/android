@@ -187,6 +187,19 @@ class NeedCapability {
       name: 'Engineering Consulting',
     ),
     NeedCapability(
+      slug: 'driving_school',
+      categorySlug: 'professional_services',
+      name: 'Driving School / Driver Training',
+      countryLabels: {
+        'UG': {'name': 'Driving School / Driver Training'},
+        'KE': {'name': 'Driving School & Driver Training'},
+        'TZ': {'name': 'Mafunzo ya Udereva / Chuo cha Udereva'},
+        'RW': {'name': 'Amashuri yo Gutwara Ibinyabiziga'},
+        'SS': {'name': 'Driving School / Driver Training'},
+        'BI': {'name': 'Auto-École / Formation des Conducteurs'},
+      },
+    ),
+    NeedCapability(
       slug: 'heavy_haulage',
       categorySlug: 'transport_logistics',
       name: 'Heavy Freight & Bulk Haulage',

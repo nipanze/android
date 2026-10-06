@@ -67,6 +67,8 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 ### Provider capabilities (what you can help people with)
 
 - **Multi-select, per capability.** Someone can provide *Visa Assistance* and *Excavator Hire* at the same time. Each capability is its own row (`provider_capabilities`), not a single "profession".
+- **Professional Services** includes specialist services performed for the requester, such as Accounting, Legal Support, Tax Filing, Business Registration, Marketing & Promotion, and **Driving School & Driver Training** (driver training and instructor services).
+- **Transport & Logistics** focuses on moving goods, equipment, cargo, and bulk transport (Bulk Delivery, Cargo Transport, Cold Chain, Courier, Heavy Haulage, Moving Services, Truck Hire, Vehicle Transport).
 - **Marketing & Promotion** remains in Professional & Business Services and expands to specific options such as TikTok Promotion, Content Creation, and Influencer Marketing. `I Have an Audience` optionally stores platforms, follower/member count, location, and interest in that capability row's `metadata`.
 - **Music & Video** and **Weddings & Celebrations** are additional groups in the same Needs capability catalog. They cover performers and production teams, graduation and wedding photography/video, styling, outfits, event suppliers, planning, and social celebrations.
 - These are opportunities for providers of any gender. They include creative, beauty, styling, performance, and event work that can especially resonate with women without creating a women-only marketplace or separate provider mode.

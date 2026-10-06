@@ -506,6 +506,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Legal support',
           'Tax filing',
           'Business registration',
+          'Driving School & Driver Training',
         ],
       'project_type' => const ['Roofing', 'Plumbing', 'Electrical', 'Painting'],
       'agri_item' => const [

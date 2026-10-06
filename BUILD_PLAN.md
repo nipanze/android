@@ -143,6 +143,7 @@ select category_slug, count(*) from needs_requests group by 1;
 ### Phase 7 — Category and market enablement (S, ongoing)
 - Enablement = `need_categories.is_active` AND `system_settings.needs_enabled_<slug>` for the country.
 - Launch order: **Machinery, Professional Services, Transport, Products**. Travel & International last, and only offerable by `provider_verified` capabilities (add a validate-trigger clause for that category).
+- Taxonomy: **Driving School & Driver Training** (`driving_school`) is classified under **Professional Services** (`professional_services`) as a professional training/service performed for the requester, keeping **Transport & Logistics** focused on physical movement of goods, freight, cargo, and equipment.
 - Per-category, per-market compliance review recorded in BUILD_PLAN before flipping each flag.
 
 ### Phase 8 — Nav change (S)
