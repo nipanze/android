@@ -32,6 +32,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       // getProfile() returns UserProfile? — treat null as "profile not found"
       final profile = await _repository.getProfile();
       if (profile == null) {
+        if (state is ProfileCubitLoaded) return;
         emit(const ProfileCubitError(
             'Profile not found. Please contact support.'));
         return;
@@ -106,6 +107,7 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
       ));
     } catch (e) {
       emit(current);
+      if (parseSupabaseError(e) is NetworkException) return;
       emit(ProfileCubitError(userFacingErrorMessage(e)));
     }
   }

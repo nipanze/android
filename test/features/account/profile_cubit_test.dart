@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nipanze/core/errors/app_exception.dart';
 import 'package:nipanze/features/account/data/profile_repository.dart';
 import 'package:nipanze/features/account/domain/models/user_profile.dart';
 import 'package:nipanze/features/account/presentation/cubit/profile_cubit.dart';
@@ -153,6 +154,20 @@ void main() {
         expect(cubit.state, isA<ProfileCubitLoaded>());
       },
     );
+
+    blocTest<ProfileCubit, ProfileCubitState>(
+      'keeps the loaded profile when a refresh returns null',
+      build: () {
+        repository.setProfile(null);
+        return ProfileCubit(repository);
+      },
+      seed: () => const ProfileCubitLoaded(_testProfile),
+      act: (cubit) => cubit.refresh(),
+      expect: () => <ProfileCubitState>[],
+      verify: (cubit) {
+        expect(cubit.state, isA<ProfileCubitLoaded>());
+      },
+    );
   });
 
   group('ProfileCubit.updateProfile()', () {
@@ -208,6 +223,30 @@ void main() {
           isNotEmpty,
         ),
       ],
+    );
+
+    blocTest<ProfileCubit, ProfileCubitState>(
+      'keeps the loaded profile when a save fails offline',
+      build: () {
+        repository.setProfile(_testProfile);
+        return ProfileCubit(repository);
+      },
+      seed: () => const ProfileCubitLoaded(_testProfile),
+      act: (cubit) {
+        repository.setError(const NetworkException());
+        return cubit.updateProfile(fullName: 'New Name');
+      },
+      expect: () => [
+        isA<ProfileCubitSaving>(),
+        isA<ProfileCubitLoaded>().having(
+          (s) => s.profile.fullName,
+          'fullName',
+          'James Okello',
+        ),
+      ],
+      verify: (cubit) {
+        expect(cubit.state, isA<ProfileCubitLoaded>());
+      },
     );
 
     blocTest<ProfileCubit, ProfileCubitState>(
