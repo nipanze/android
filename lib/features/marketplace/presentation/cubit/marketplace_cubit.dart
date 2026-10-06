@@ -26,6 +26,40 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   static void clearSessionCache() => _sessionCache.clear();
 
+  static List<MarketplaceItem>? _fallbackCachedFor({
+    String? district,
+    MarketplaceModule? module,
+    String? country,
+  }) {
+    final key = '${module?.name ?? 'all'}|${country ?? ''}|${district ?? ''}';
+    final direct = _sessionCache[key];
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    final allKey = 'all|${country ?? ''}|${district ?? ''}';
+    final allCached = _sessionCache[allKey];
+    if (allCached != null && allCached.isNotEmpty) {
+      if (module == null) {
+        return List<MarketplaceItem>.from(allCached);
+      }
+      final filtered = allCached
+          .where((listing) => listing.module == module)
+          .toList();
+      if (filtered.isNotEmpty) return filtered;
+    }
+
+    if (module == null) {
+      final combined = <MarketplaceItem>[];
+      for (final candidate in MarketplaceModule.values) {
+        final sampled = _sessionCache[
+            '${candidate.name}|${country ?? ''}|${district ?? ''}'];
+        if (sampled != null) combined.addAll(sampled);
+      }
+      if (combined.isNotEmpty) return combined;
+    }
+
+    return null;
+  }
+
   final MarketplaceRepository _repository;
   late final StreamSubscription<void> _connectionSubscription;
   final int _anonymousFeedSeed = Random().nextInt(0x7fffffff);
@@ -66,8 +100,16 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
     final key = _cacheKey;
     final cached = _sessionCache[key];
+    final fallback = _fallbackCachedFor(
+      district: district,
+      module: module,
+      country: country,
+    );
     if (cached != null) {
       _allListings = cached;
+      _emitLoaded();
+    } else if (fallback != null) {
+      _allListings = fallback;
       _emitLoaded();
     } else if (state is! MarketplaceLoaded) {
       emit(const MarketplaceLoading());
@@ -98,8 +140,18 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     } catch (e) {
       if (isClosed) return;
       OfflineService().reportRequestFailure(e);
+      final fallback = _fallbackCachedFor(
+        district: district,
+        module: module,
+        country: country,
+      );
       if (_sessionCache.containsKey(key)) {
         _allListings = _sessionCache[key]!;
+        _emitLoaded();
+        return;
+      }
+      if (fallback != null) {
+        _allListings = fallback;
         _emitLoaded();
         return;
       }
