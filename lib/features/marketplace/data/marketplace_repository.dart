@@ -11,11 +11,24 @@ import '../domain/models/marketplace_item.dart';
 
 @lazySingleton
 class MarketplaceRepository {
-  MarketplaceRepository(this._client);
+  MarketplaceRepository(this._client) {
+    OfflineService().registerSessionCache(_clearSessionCache);
+  }
+
+  static final Map<String, List<MarketplaceItem>> _sessionCache = {};
+
+  static void _clearSessionCache() => _sessionCache.clear();
 
   final SupabaseClient _client;
 
   String? get currentViewerId => _client.auth.currentUser?.id;
+
+  String _cacheKey({
+    String? district,
+    MarketplaceModule? module,
+    String? country,
+  }) =>
+      '${module?.name ?? 'all'}|${country ?? ''}|${district ?? ''}';
 
   /// Fetch active listings from the anonymised view.
   /// borrower_id is NEVER present in this view.
@@ -26,6 +39,12 @@ class MarketplaceRepository {
     MarketplaceModule? module,
     String? country,
   }) async {
+    final cacheKey = _cacheKey(district: district, module: module, country: country);
+    final cached = _sessionCache[cacheKey];
+    if (cached != null && cached.isNotEmpty) {
+      return List<MarketplaceItem>.from(cached);
+    }
+
     try {
       final items = <MarketplaceItem>[];
 
@@ -77,9 +96,16 @@ class MarketplaceRepository {
 
       items.sort((a, b) => b.listedAt.compareTo(a.listedAt));
       OfflineService().reportRequestSuccess();
+      if (items.isNotEmpty) {
+        _sessionCache[cacheKey] = items;
+      }
       return items;
     } catch (e) {
       OfflineService().reportRequestFailure(e);
+      final lastKnown = _sessionCache[cacheKey];
+      if (lastKnown != null && lastKnown.isNotEmpty) {
+        return List<MarketplaceItem>.from(lastKnown);
+      }
       throw parseSupabaseError(e);
     }
   }
