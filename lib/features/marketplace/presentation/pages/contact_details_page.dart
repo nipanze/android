@@ -179,10 +179,11 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       );
     } catch (e) {
       if (!mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('Error unlocking contact: ${userFacingErrorMessage(e)}'),
+          content: Text('Error unlocking contact: $message'),
           backgroundColor: AppColors.danger,
         ),
       );

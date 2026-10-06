@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -483,9 +484,11 @@ class _ProfileViewState extends State<_ProfileView> {
         finalAvatarUrl = await repo.uploadAvatarBytes(pendingBytes, 'jpg');
       } catch (uploadErr) {
         if (mounted) {
+          final message = userFacingErrorMessage(uploadErr);
+          if (isNetworkErrorMessage(message)) return;
           messenger.showSnackBar(SnackBar(
-            content: Text(l10n?.avatarUploadFailed(uploadErr.toString()) ??
-                'Avatar upload failed: $uploadErr'),
+            content: Text(l10n?.avatarUploadFailed(message) ??
+                'Avatar upload failed: $message'),
             backgroundColor: AppColors.danger,
           ));
         }
@@ -720,7 +723,6 @@ class _ProfileViewState extends State<_ProfileView> {
                     validator: _validateEmail,
                   ),
                   const SizedBox(height: 14),
-
 
 
                   // ── WhatsApp-Style Merged Country & Phone Field ───────────

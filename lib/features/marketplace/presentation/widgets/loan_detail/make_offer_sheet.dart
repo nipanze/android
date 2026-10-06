@@ -355,8 +355,10 @@ class MakeOfferSheetState extends State<MakeOfferSheet> {
       }
     } catch (e) {
       if (mounted) {
+        final message = userFacingErrorMessage(e);
+        if (isNetworkErrorMessage(message)) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(userFacingErrorMessage(e)),
+          content: Text(message),
           backgroundColor: AppColors.danger,
         ));
       }

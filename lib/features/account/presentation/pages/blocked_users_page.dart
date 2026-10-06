@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/user_avatar.dart';
@@ -36,7 +37,8 @@ class _BlockedUsersView extends StatelessWidget {
               SnackBar(content: Text(l10n.userUnblocked)),
             );
           }
-          if (state is BlockedUsersError) {
+          if (state is BlockedUsersError &&
+              !isNetworkErrorMessage(state.message)) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),

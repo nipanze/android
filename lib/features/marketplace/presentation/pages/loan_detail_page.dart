@@ -163,8 +163,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
       context.go('/marketplace/agreement/$agreementId');
     } catch (e) {
       if (!mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(userFacingErrorMessage(e)),
+        content: Text(message),
         backgroundColor: AppColors.danger,
       ));
     }

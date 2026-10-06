@@ -161,9 +161,11 @@ class _DealUnlockPageState extends State<DealUnlockPage> {
       );
     } catch (e) {
       if (!mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error unlocking contact: $e'),
+          content: Text('Error unlocking contact: $message'),
           backgroundColor: AppColors.danger,
           duration: const Duration(seconds: 6),
         ),

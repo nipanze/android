@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../features/marketplace/domain/models/loan_listing.dart';
@@ -38,7 +39,8 @@ class _MyListingsView extends StatelessWidget {
     return Scaffold(
       body: BlocConsumer<MyListingsCubit, MyListingsState>(
         listener: (context, state) {
-          if (state is MyListingsError) {
+          if (state is MyListingsError &&
+              !isNetworkErrorMessage(state.message)) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.message),
               backgroundColor: AppColors.danger,

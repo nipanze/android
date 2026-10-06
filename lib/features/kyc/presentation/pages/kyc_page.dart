@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -47,7 +48,7 @@ class _KycView extends StatelessWidget {
           if (state is KycLoaded && state.kyc != null) {
             context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
           }
-          if (state is KycError) {
+          if (state is KycError && !isNetworkErrorMessage(state.message)) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.message),
               backgroundColor: AppColors.danger,
@@ -366,9 +367,11 @@ class _KycView extends StatelessWidget {
       );
     } catch (e) {
       if (!context.mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not update profile picture: $e'),
+          content: Text('Could not update profile picture: $message'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -385,9 +388,11 @@ class _KycView extends StatelessWidget {
       );
     } catch (e) {
       if (!context.mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not remove profile picture: $e'),
+          content: Text('Could not remove profile picture: $message'),
           backgroundColor: AppColors.danger,
         ),
       );

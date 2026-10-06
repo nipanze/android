@@ -168,9 +168,11 @@ class LenderOfferCard extends StatelessWidget {
       }
     } catch (e) {
       if (!context.mounted) return;
+      final message = userFacingErrorMessage(e);
+      if (isNetworkErrorMessage(message)) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(userFacingErrorMessage(e)),
+          content: Text(message),
           backgroundColor: AppColors.danger,
         ),
       );
