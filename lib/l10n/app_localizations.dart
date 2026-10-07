@@ -2645,7 +2645,7 @@ abstract class AppLocalizations {
   /// No description provided for @listingDetailTitle.
   ///
   /// In en, this message translates to:
-  /// **'Listing detail'**
+  /// **'Loan Request'**
   String get listingDetailTitle;
 
   /// No description provided for @offersLabel.

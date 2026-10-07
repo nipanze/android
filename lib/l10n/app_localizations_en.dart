@@ -1417,7 +1417,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noForexRequestsYet => 'No forex requests yet.';
 
   @override
-  String get listingDetailTitle => 'Listing detail';
+  String get listingDetailTitle => 'Loan Request';
 
   @override
   String get offersLabel => 'OFFERS';

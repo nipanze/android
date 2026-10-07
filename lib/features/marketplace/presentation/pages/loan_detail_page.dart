@@ -221,7 +221,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               : context.go(AppRoutes.marketplace),
         ),
         title: Text(AppLocalizations.of(context)?.listingDetailTitle ??
-            'Listing detail'),
+            'Loan Request'),
         actions: [
           IconButton(
             tooltip: 'Safety Toolkit',
