@@ -12,12 +12,17 @@ void showPostChoiceSheet(BuildContext context) {
     fontWeight: FontWeight.w600,
   );
 
+  final bottomInset = MediaQuery.of(context).padding.bottom + 64;
+
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
+    useSafeArea: true,
+    isScrollControlled: true,
     builder: (sheetContext) => SafeArea(
+      top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomInset),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
