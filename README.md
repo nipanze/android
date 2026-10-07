@@ -387,3 +387,17 @@ This is stale-data browsing only: changes, offers, contact reveals, payments,
 and other server-backed actions still require a successful server request and
 are never queued. Session caches are cleared after a successful sign-out; data
 is not persisted as an offline-first store.
+
+---
+
+# PART 4 — UNIFIED PROVIDER SERVICES & FINANCIAL CAPABILITIES
+
+## 4.1 Single Source for Provider Capabilities
+Provider Services is the single place where a user declares what they provide across all marketplace modules (Needs, Loans, Forex):
+- **Financial Services Category (`financial_services`)**: Includes `loan_services`, `forex_currency_exchange`, `bank_loan_agent`, `sacco_microfinance`, `financial_advisory`, and `other_financial_services`.
+- **Multi-Category Capabilities**: Users can hold capabilities across multiple categories simultaneously (e.g. Loan Services + Forex / Currency Exchange + Business Consulting + Excavator Hire).
+- **Service vs Professional Identity Separation**:
+  - **Service**: What the provider offers (e.g., Loan Services, Forex / Currency Exchange).
+  - **Professional Identity / Metadata**: Who they represent (Organisation/Bank name, Role, Professional Tag visibility, and Institution Matching permissions stored in capability metadata).
+- **Edit Profile Cleanup**: Income type, employer name, and monthly income are collected contextually in loan requests rather than general profile editing. Bank and professional agent blocks are moved into Provider Services capability metadata.
+- **Standalone Database Patch**: `sql/patch_provider_financial_services_v1.sql`.

@@ -29,6 +29,15 @@ const _marketingCapabilitySlugs = {
   _audienceCapabilitySlug,
 };
 
+const _financialCategorySlug = 'financial_services';
+const _bankLoanAgentSlug = 'bank_loan_agent';
+const _financialMetadataSlugs = {
+  'bank_loan_agent',
+  'loan_services',
+  'forex_currency_exchange',
+  'sacco_microfinance',
+};
+
 class ProviderCapabilitySelection {
   const ProviderCapabilitySelection({
     required this.slugs,
@@ -105,6 +114,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final _audienceCountController = TextEditingController();
   final _audienceLocationController = TextEditingController();
   final _audienceInterestController = TextEditingController();
+  // Financial services metadata
+  final _institutionController = TextEditingController();
+  final _roleController = TextEditingController();
+  bool _showProfessionalTag = true;
+  bool _allowInstitutionMatching = false;
   bool _showMarketing = false;
   bool _loading = true;
 
@@ -133,26 +147,46 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     _audienceCountController.dispose();
     _audienceLocationController.dispose();
     _audienceInterestController.dispose();
+    _institutionController.dispose();
+    _roleController.dispose();
     super.dispose();
   }
 
   ProviderCapabilitySelection _selection() {
     final slugs = _selected.toList();
-    if (!_selected.contains(_audienceCapabilitySlug)) {
-      return ProviderCapabilitySelection(slugs: slugs);
+    final metadataBySlug = <String, Map<String, dynamic>>{};
+
+    if (_selected.contains(_audienceCapabilitySlug)) {
+      metadataBySlug[_audienceCapabilitySlug] = {
+        'audience_platforms': _audiencePlatforms.toList(),
+        'audience_followers_count': int.tryParse(
+          _audienceCountController.text.trim(),
+        ),
+        'audience_main_location': _audienceLocationController.text.trim(),
+        'audience_main_interest': _audienceInterestController.text.trim(),
+      };
     }
+
+    // Include financial metadata for each selected financial capability
+    final financialSelected = _selected.intersection(_financialMetadataSlugs);
+    if (financialSelected.isNotEmpty) {
+      final institution = _institutionController.text.trim();
+      final role = _roleController.text.trim();
+      if (institution.isNotEmpty || role.isNotEmpty) {
+        for (final slug in financialSelected) {
+          metadataBySlug[slug] = {
+            if (institution.isNotEmpty) 'institution': institution,
+            if (role.isNotEmpty) 'role': role,
+            'show_professional_tag': _showProfessionalTag,
+            'allow_institution_matching': _allowInstitutionMatching,
+          };
+        }
+      }
+    }
+
     return ProviderCapabilitySelection(
       slugs: slugs,
-      metadataBySlug: {
-        _audienceCapabilitySlug: {
-          'audience_platforms': _audiencePlatforms.toList(),
-          'audience_followers_count': int.tryParse(
-            _audienceCountController.text.trim(),
-          ),
-          'audience_main_location': _audienceLocationController.text.trim(),
-          'audience_main_interest': _audienceInterestController.text.trim(),
-        },
-      },
+      metadataBySlug: metadataBySlug,
     );
   }
 
@@ -357,22 +391,48 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                   }
                                 }),
                               )
-                            : _CapabilityList(
-                                capabilities: _categoryCapabilities,
-                                existingSlugs: widget.existingSlugs,
-                                selected: _selected,
-                                scrollController: scrollController,
-                                onMarketingTap: _openMarketing,
-                                onToggle: (slug) {
-                                  setState(() {
-                                    if (_selected.contains(slug)) {
-                                      _selected.remove(slug);
-                                    } else {
-                                      _selected.add(slug);
-                                    }
-                                  });
-                                },
-                              ),
+                            : _selectedCategory?.slug == _financialCategorySlug
+                                ? _FinancialCapabilityList(
+                                    capabilities: _categoryCapabilities,
+                                    existingSlugs: widget.existingSlugs,
+                                    selected: _selected,
+                                    institutionController: _institutionController,
+                                    roleController: _roleController,
+                                    showProfessionalTag: _showProfessionalTag,
+                                    allowInstitutionMatching:
+                                        _allowInstitutionMatching,
+                                    scrollController: scrollController,
+                                    onToggle: (slug) {
+                                      setState(() {
+                                        if (_selected.contains(slug)) {
+                                          _selected.remove(slug);
+                                        } else {
+                                          _selected.add(slug);
+                                        }
+                                      });
+                                    },
+                                    onProfessionalTagChanged: (v) =>
+                                        setState(() => _showProfessionalTag = v),
+                                    onInstitutionMatchingChanged: (v) =>
+                                        setState(
+                                            () => _allowInstitutionMatching = v),
+                                  )
+                                : _CapabilityList(
+                                    capabilities: _categoryCapabilities,
+                                    existingSlugs: widget.existingSlugs,
+                                    selected: _selected,
+                                    scrollController: scrollController,
+                                    onMarketingTap: _openMarketing,
+                                    onToggle: (slug) {
+                                      setState(() {
+                                        if (_selected.contains(slug)) {
+                                          _selected.remove(slug);
+                                        } else {
+                                          _selected.add(slug);
+                                        }
+                                      });
+                                    },
+                                  ),
               ),
             ],
           ),
@@ -500,6 +560,149 @@ class _CapabilityList extends StatelessWidget {
           onTap: alreadyOwned ? null : () => onToggle(cap.slug),
         );
       },
+    );
+  }
+}
+
+class _FinancialCapabilityList extends StatelessWidget {
+  const _FinancialCapabilityList({
+    required this.capabilities,
+    required this.existingSlugs,
+    required this.selected,
+    required this.institutionController,
+    required this.roleController,
+    required this.showProfessionalTag,
+    required this.allowInstitutionMatching,
+    required this.scrollController,
+    required this.onToggle,
+    required this.onProfessionalTagChanged,
+    required this.onInstitutionMatchingChanged,
+  });
+
+  final List<NeedCapability> capabilities;
+  final Set<String> existingSlugs;
+  final Set<String> selected;
+  final TextEditingController institutionController;
+  final TextEditingController roleController;
+  final bool showProfessionalTag;
+  final bool allowInstitutionMatching;
+  final ScrollController scrollController;
+  final void Function(String) onToggle;
+  final void Function(bool) onProfessionalTagChanged;
+  final void Function(bool) onInstitutionMatchingChanged;
+
+  bool get _hasFinancialSelected =>
+      selected.intersection(_financialMetadataSlugs).isNotEmpty ||
+      existingSlugs.intersection(_financialMetadataSlugs).isNotEmpty;
+
+  bool get _hasBankAgent =>
+      selected.contains(_bankLoanAgentSlug) ||
+      existingSlugs.contains(_bankLoanAgentSlug);
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+
+    return ListView(
+      controller: scrollController,
+      children: [
+        for (final cap in capabilities)
+          Builder(builder: (context) {
+            final alreadyOwned = existingSlugs.contains(cap.slug);
+            final isSelected = selected.contains(cap.slug);
+            return Column(
+              children: [
+                ListTile(
+                  enabled: !alreadyOwned,
+                  leading: alreadyOwned
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.success, size: 22)
+                      : Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => onToggle(cap.slug),
+                          activeColor: AppColors.accent,
+                        ),
+                  title: Text(
+                    cap.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: alreadyOwned ? text2 : null,
+                    ),
+                  ),
+                  onTap: alreadyOwned ? null : () => onToggle(cap.slug),
+                ),
+                Divider(height: 1, color: border),
+              ],
+            );
+          }),
+        // Contextual fields shown when any financial capability is selected
+        if (_hasFinancialSelected)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Your Organisation (optional)',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Add your institution and role so requesters know who you represent.',
+                  style: TextStyle(fontSize: 12, color: text2),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: institutionController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Institution / Bank / Organisation',
+                    hintText: 'e.g. Equity Bank, Hans Finance, ABC Forex',
+                    prefixIcon:
+                        Icon(Icons.account_balance_outlined, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: roleController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Your Role (optional)',
+                    hintText: 'e.g. Independent Loan Provider, Bank Agent',
+                    prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_hasBankAgent)
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Allow institution matching'),
+                    subtitle: Text(
+                      'Let borrowers from your institution find your offers.',
+                      style: TextStyle(fontSize: 12, color: text2),
+                    ),
+                    value: allowInstitutionMatching,
+                    onChanged: onInstitutionMatchingChanged,
+                  ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Show professional tag'),
+                  subtitle: Text(
+                    'Display your institution and role label on offers.',
+                    style: TextStyle(fontSize: 12, color: text2),
+                  ),
+                  value: showProfessionalTag,
+                  onChanged: onProfessionalTagChanged,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

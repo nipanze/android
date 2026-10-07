@@ -98,6 +98,11 @@ class CapabilityBadge extends StatelessWidget {
                   const SizedBox(height: 8),
                   _DeclaredAudience(capability: capability, l10n: l10n),
                 ],
+                if (capability.metadata['institution'] != null ||
+                    capability.metadata['role'] != null) ...[
+                  const SizedBox(height: 6),
+                  _DeclaredOrganisation(capability: capability),
+                ],
               ],
             ),
           ),
@@ -155,6 +160,40 @@ class _DeclaredAudience extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _DeclaredOrganisation extends StatelessWidget {
+  const _DeclaredOrganisation({required this.capability});
+
+  final ProviderCapability capability;
+
+  @override
+  Widget build(BuildContext context) {
+    final metadata = capability.metadata;
+    final institution = metadata['institution']?.toString();
+    final role = metadata['role']?.toString();
+    final parts = <String>[
+      if (institution != null && institution.isNotEmpty) institution,
+      if (role != null && role.isNotEmpty) role,
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        const Icon(Icons.business_outlined, size: 13, color: AppColors.accent),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            parts.join(' · '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

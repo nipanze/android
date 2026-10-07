@@ -38,42 +38,14 @@ class _ProfileViewState extends State<_ProfileView> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _employerController = TextEditingController();
-  final _incomeController = TextEditingController();
-  final _preferredBankController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   CountryInfo _selectedCountry = EastAfricaCountries.defaultCountry;
   String? _district;
-  String? _employmentType;
-  String? _institutionType;
-  bool _isBankAgent = false;
-  bool _showProfessionalTag = true;
-  bool _allowInstitutionMatching = false;
   bool _populated = false;
   bool _hasChanges = false;
 
   String _userInitials = 'U';
-
-  static const _employmentTypes = [
-    'employed',
-    'government_employee',
-    'self_employed',
-    'small_business_owner',
-    'business_owner',
-    'student',
-    'other',
-  ];
-
-  static const _institutionOptions = [
-    '',
-    'bank',
-    'sacco',
-    'mfi',
-    'credit_company',
-    'forex_exchange',
-    'company',
-  ];
 
   @override
   void initState() {
@@ -81,7 +53,6 @@ class _ProfileViewState extends State<_ProfileView> {
     _nameController.addListener(() {
       if (_populated) setState(() => _hasChanges = true);
     });
-    _emailController.addListener(_markChanged);
   }
 
   @override
@@ -89,9 +60,6 @@ class _ProfileViewState extends State<_ProfileView> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _employerController.dispose();
-    _incomeController.dispose();
-    _preferredBankController.dispose();
     super.dispose();
   }
 
@@ -100,15 +68,6 @@ class _ProfileViewState extends State<_ProfileView> {
     final p = state.profile;
     _nameController.text = p.fullName ?? '';
     _emailController.text = p.email;
-    _employerController.text = p.employerName ?? '';
-    _incomeController.text = p.monthlyIncomeUgx == null
-        ? ''
-        : NumberFormat('#,##0').format(p.monthlyIncomeUgx);
-    _preferredBankController.text = p.preferredBank ?? '';
-    _institutionType = p.institutionType;
-    _isBankAgent = p.isBankAgent;
-    _showProfessionalTag = p.showProfessionalTag;
-    _allowInstitutionMatching = p.allowInstitutionMatching;
     _userInitials = p.initials;
 
     // Use the stored country code from the profile; fall back to phone
@@ -136,9 +95,6 @@ class _ProfileViewState extends State<_ProfileView> {
     } else {
       _district = null;
     }
-
-    _employmentType =
-        _employmentTypes.contains(p.employmentType) ? p.employmentType : null;
 
     _populated = true;
     _hasChanges = false;
@@ -415,55 +371,6 @@ class _ProfileViewState extends State<_ProfileView> {
   bool get _isReadyToSave =>
       _hasChanges && _nameController.text.trim().isNotEmpty;
 
-
-
-  String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-    if (email.isEmpty) return null;
-    final validShape = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
-    if (!validShape) return 'Enter a valid email';
-    return null;
-  }
-
-  String _employmentLabel(AppLocalizations? l10n, String value) {
-    switch (value) {
-      case 'government_employee':
-        return l10n?.empGovEmployee ?? 'Government employee';
-      case 'employed':
-        return l10n?.empEmployedPrivate ?? 'Employed (private)';
-      case 'self_employed':
-        return l10n?.empSelfEmployed ?? 'Self-employed';
-      case 'small_business_owner':
-        return l10n?.empSmallBusinessOwner ?? 'Small business owner';
-      case 'business_owner':
-        return l10n?.empBusinessOwner ?? 'Business owner';
-      case 'student':
-        return l10n?.empStudent ?? 'Student';
-      default:
-        return l10n?.empOther ?? 'Other';
-    }
-  }
-
-  String _institutionLabel(AppLocalizations? l10n, String value) {
-    switch (value) {
-      case 'bank':
-        return l10n?.institutionTypeBank ?? 'Bank';
-      case 'sacco':
-        return l10n?.institutionTypeSacco ?? 'SACCO';
-      case 'mfi':
-        return l10n?.institutionTypeMfi ?? 'Microfinance (MFI)';
-      case 'credit_company':
-        return l10n?.institutionTypeCreditCompany ?? 'Credit Company';
-      case 'forex_exchange':
-        return l10n?.institutionTypeForex ?? 'Forex exchange';
-      case 'company':
-        return l10n?.institutionTypeCompany ?? 'Company';
-      default:
-        return l10n?.individualPersonalAccountLabel ??
-            'Individual / Personal account';
-    }
-  }
-
   Future<void> _saveProfile(
       BuildContext context, AppLocalizations? l10n) async {
     if (!_formKey.currentState!.validate()) return;
@@ -496,10 +403,6 @@ class _ProfileViewState extends State<_ProfileView> {
       }
     }
 
-    final incomeText = _incomeController.text.trim();
-    final monthlyIncome = incomeText.isEmpty
-        ? null
-        : int.tryParse(incomeText.replaceAll(',', ''));
     final fullPhone = _formatFullPhoneNumber();
 
     if (!mounted) return;
@@ -512,14 +415,6 @@ class _ProfileViewState extends State<_ProfileView> {
       country: _selectedCountry.code,
       incomeCurrency: _selectedCountry.currency,
       district: _district ?? '',
-      employmentType: _employmentType ?? '',
-      employerName: _employerController.text.trim(),
-      monthlyIncome: monthlyIncome,
-      preferredBank: _preferredBankController.text.trim(),
-      institutionType: _institutionType ?? '',
-      isBankAgent: _isBankAgent,
-      showProfessionalTag: _showProfessionalTag,
-      allowInstitutionMatching: _allowInstitutionMatching,
     );
   }
 
@@ -710,21 +605,6 @@ class _ProfileViewState extends State<_ProfileView> {
                   ),
                   const SizedBox(height: 14),
 
-                  TextFormField(
-                    controller: _emailController,
-                    enabled: false,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: l10n?.email ?? 'Email',
-                      prefixIcon: const Icon(Icons.mail_outline, size: 20),
-                      helperText:
-                          'Email updates are disabled during testing.',
-                    ),
-                    validator: _validateEmail,
-                  ),
-                  const SizedBox(height: 14),
-
-
                   // ── WhatsApp-Style Merged Country & Phone Field ───────────
                   TextFormField(
                     controller: _phoneController,
@@ -797,163 +677,6 @@ class _ProfileViewState extends State<_ProfileView> {
                         .toList(),
                     onChanged: (v) {
                       setState(() => _district = v);
-                      _markChanged();
-                    },
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── Income Type Dropdown ──────────────────────────────────
-                  DropdownButtonFormField<String>(
-                    initialValue: _employmentType,
-                    decoration: InputDecoration(
-                      labelText: l10n?.incomeTypeLabel ?? 'Income type',
-                      prefixIcon:
-                          const Icon(Icons.work_outline_rounded, size: 20),
-                    ),
-                    hint: Text(l10n?.selectIncomeType ?? 'Select income type'),
-                    items: _employmentTypes
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(_employmentLabel(l10n, e)),
-                            ))
-                        .toList(),
-                    onChanged: (v) {
-                      setState(() => _employmentType = v);
-                      _markChanged();
-                    },
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── Employer Name ──────────────────────────────────────────
-                  TextFormField(
-                    controller: _employerController,
-                    decoration: InputDecoration(
-                      labelText: l10n?.employerBusinessOptionalLabel ??
-                          'Employer / Business name (optional)',
-                      prefixIcon: const Icon(Icons.business_outlined, size: 20),
-                    ),
-                    onChanged: (_) => _markChanged(),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── Monthly Income (Currency Scalable) ────────────────────
-                  TextFormField(
-                    controller: _incomeController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: l10n?.monthlyIncomeWithCurrency(
-                            _selectedCountry.currency,
-                          ) ??
-                          'Monthly income (${_selectedCountry.currency})',
-                      hintText: 'e.g. 1,500,000',
-                      prefixIcon: const Icon(Icons.currency_exchange_outlined,
-                          size: 20),
-                    ),
-                    onChanged: (_) => _markChanged(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ── Bank & Professional Tag Section ───────────────────────
-                  Text(
-                    l10n?.bankProfessionalTagLabel ?? 'Bank & Professional Tag',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Preferred / Deposit Bank Field
-                  TextFormField(
-                    controller: _preferredBankController,
-                    decoration: InputDecoration(
-                      labelText: l10n?.preferredDepositBankLabel ??
-                          'Preferred or deposit bank (optional)',
-                      hintText: l10n?.preferredDepositBankHint ??
-                          'e.g. Equity Bank, Bank of Kigali, Stanbic, KCB',
-                      prefixIcon: const Icon(
-                        Icons.account_balance_outlined,
-                        size: 20,
-                      ),
-                    ),
-                    onChanged: (_) => _markChanged(),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Institution Type Dropdown
-                  DropdownButtonFormField<String>(
-                    initialValue: _institutionType ?? '',
-                    decoration: InputDecoration(
-                      labelText:
-                          l10n?.accountRepresentsLabel ?? 'Account represents',
-                      prefixIcon: const Icon(
-                        Icons.business_center_outlined,
-                        size: 20,
-                      ),
-                    ),
-                    items: _institutionOptions
-                        .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(_institutionLabel(l10n, e)),
-                            ))
-                        .toList(),
-                    onChanged: (v) {
-                      setState(() => _institutionType =
-                          (v == null || v.isEmpty) ? null : v);
-                      _markChanged();
-                    },
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Is Bank Agent Switch
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n?.bankLoanAgentLabel ?? 'I am a bank loan agent',
-                    ),
-                    subtitle: Text(
-                      l10n?.bankLoanAgentSubtitle ??
-                          'Shows a bank-agent tag to Pro users seeking bank loans.',
-                    ),
-                    value: _isBankAgent,
-                    onChanged: (v) {
-                      setState(() => _isBankAgent = v);
-                      _markChanged();
-                    },
-                  ),
-
-                  // Allow Institution Matching Switch (Free for all requesters)
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n?.allowInstitutionMatchingLabel ??
-                          'Allow institution matching',
-                    ),
-                    subtitle: Text(
-                      l10n?.allowInstitutionMatchingSubtitle ??
-                          'Let verified agents from your bank or institution discover your loan requests for tailored offers.',
-                    ),
-                    value: _allowInstitutionMatching,
-                    onChanged: (v) {
-                      setState(() => _allowInstitutionMatching = v);
-                      _markChanged();
-                    },
-                  ),
-
-                  // Show Professional Tag Switch
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n?.showProfessionalTagLabel ??
-                          'Show my professional tag',
-                    ),
-                    subtitle: Text(
-                      l10n?.showProfessionalTagSubtitle ??
-                          'Turn off to hide bank, forex company, SACCO, or agent labels on offers.',
-                    ),
-                    value: _showProfessionalTag,
-                    onChanged: (v) {
-                      setState(() => _showProfessionalTag = v);
                       _markChanged();
                     },
                   ),
