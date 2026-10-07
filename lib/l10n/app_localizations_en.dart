@@ -2508,6 +2508,60 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tell people what you can help them with.';
 
   @override
+  String get financialServicesCategory => 'Financial Services';
+
+  @override
+  String get financialServicesDesc =>
+      'Loan services, forex exchange, bank agents, SACCO, microfinance, and financial advisory.';
+
+  @override
+  String get loanServicesCapability => 'Loan Services';
+
+  @override
+  String get forexCurrencyExchangeCapability => 'Forex / Currency Exchange';
+
+  @override
+  String get bankLoanAgentCapability => 'Bank Loan Agent';
+
+  @override
+  String get saccoMicrofinanceCapability => 'SACCO / Microfinance Services';
+
+  @override
+  String get financialAdvisoryCapability => 'Financial Advisory';
+
+  @override
+  String get otherFinancialServicesCapability => 'Other Financial Services';
+
+  @override
+  String get organisationOptional => 'Your Organisation (optional)';
+
+  @override
+  String get organisationHint => 'e.g. Equity Bank, Hans Finance, ABC Forex';
+
+  @override
+  String get organisationLabel => 'Institution / Bank / Organisation';
+
+  @override
+  String get roleOptional => 'Your Role (optional)';
+
+  @override
+  String get roleHint => 'e.g. Independent Loan Provider, Bank Agent';
+
+  @override
+  String get showProfessionalTagProvider => 'Show professional tag';
+
+  @override
+  String get showProfessionalTagProviderSubtitle =>
+      'Display your institution and role label on offers.';
+
+  @override
+  String get allowInstitutionMatchingProvider => 'Allow institution matching';
+
+  @override
+  String get allowInstitutionMatchingProviderSubtitle =>
+      'Let borrowers from your institution find your offers.';
+
+  @override
   String servicesCount(int count) {
     return '$count services';
   }

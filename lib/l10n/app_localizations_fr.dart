@@ -2546,6 +2546,61 @@ class AppLocalizationsFr extends AppLocalizations {
       'Dites aux gens en quoi vous pouvez les aider.';
 
   @override
+  String get financialServicesCategory => 'Services Financiers';
+
+  @override
+  String get financialServicesDesc =>
+      'Services de prêt, forex, agents bancaires, SACCO, microfinance et conseil financier.';
+
+  @override
+  String get loanServicesCapability => 'Services de Prêt';
+
+  @override
+  String get forexCurrencyExchangeCapability => 'Forex / Échange de Devises';
+
+  @override
+  String get bankLoanAgentCapability => 'Agent de Prêt Bancaire';
+
+  @override
+  String get saccoMicrofinanceCapability => 'SACCO / Services de Microfinance';
+
+  @override
+  String get financialAdvisoryCapability => 'Conseil Financier';
+
+  @override
+  String get otherFinancialServicesCapability => 'Autres Services Financiers';
+
+  @override
+  String get organisationOptional => 'Votre organisation (optionnel)';
+
+  @override
+  String get organisationHint => 'ex. Equity Bank, Hans Finance, ABC Forex';
+
+  @override
+  String get organisationLabel => 'Institution / Banque / Organisation';
+
+  @override
+  String get roleOptional => 'Votre rôle (optionnel)';
+
+  @override
+  String get roleHint => 'ex. Prestataire de prêt indépendant, Agent bancaire';
+
+  @override
+  String get showProfessionalTagProvider => 'Afficher le tag professionnel';
+
+  @override
+  String get showProfessionalTagProviderSubtitle =>
+      'Afficher votre institution et votre rôle sur les offres.';
+
+  @override
+  String get allowInstitutionMatchingProvider =>
+      'Autoriser la correspondance d\'institution';
+
+  @override
+  String get allowInstitutionMatchingProviderSubtitle =>
+      'Permettre aux emprunteurs de votre institution de trouver vos offres.';
+
+  @override
   String servicesCount(int count) {
     return '$count services';
   }

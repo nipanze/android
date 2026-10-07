@@ -2493,6 +2493,60 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerServicesSubtitle => 'أخبر الناس بما يمكنك مساعدتهم فيه.';
 
   @override
+  String get financialServicesCategory => 'الخدمات المالية';
+
+  @override
+  String get financialServicesDesc =>
+      'خدمات القروض، الفوركس، وكلاء البنوك، SACCO، التمويل الأصغر، والاستشارات المالية.';
+
+  @override
+  String get loanServicesCapability => 'خدمات القروض';
+
+  @override
+  String get forexCurrencyExchangeCapability => 'فوركس / تبادل العملات';
+
+  @override
+  String get bankLoanAgentCapability => 'وكيل قروض بنكية';
+
+  @override
+  String get saccoMicrofinanceCapability => 'SACCO / خدمات التمويل الأصغر';
+
+  @override
+  String get financialAdvisoryCapability => 'الاستشارات المالية';
+
+  @override
+  String get otherFinancialServicesCapability => 'خدمات مالية أخرى';
+
+  @override
+  String get organisationOptional => 'مؤسستك (اختياري)';
+
+  @override
+  String get organisationHint => 'مثال: Equity Bank, Hans Finance, ABC Forex';
+
+  @override
+  String get organisationLabel => 'المؤسسة / البنك / المنظمة';
+
+  @override
+  String get roleOptional => 'دورك (اختياري)';
+
+  @override
+  String get roleHint => 'مثال: مزود قروض مستقل، وكيل بنكي';
+
+  @override
+  String get showProfessionalTagProvider => 'إظهار العلامة المهنية';
+
+  @override
+  String get showProfessionalTagProviderSubtitle =>
+      'عرض مؤسستك ودورك على العروض.';
+
+  @override
+  String get allowInstitutionMatchingProvider => 'السماح بمطابقة المؤسسة';
+
+  @override
+  String get allowInstitutionMatchingProviderSubtitle =>
+      'السماح للمقترضين من مؤسستك بإيجاد عروضك.';
+
+  @override
   String servicesCount(int count) {
     return '$count خدمة';
   }

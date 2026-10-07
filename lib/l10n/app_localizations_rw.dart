@@ -2522,6 +2522,62 @@ class AppLocalizationsRw extends AppLocalizations {
       'Bwira abantu icyo ushobora kubafashamo.';
 
   @override
+  String get financialServicesCategory => 'Serivisi z\'Imari';
+
+  @override
+  String get financialServicesDesc =>
+      'Serivisi z\'inguzanyo, forex, abaganga ba banki, SACCO, microfinance n\'inama z\'imari.';
+
+  @override
+  String get loanServicesCapability => 'Serivisi z\'Inguzanyo';
+
+  @override
+  String get forexCurrencyExchangeCapability => 'Forex / Guhindura Inkunga';
+
+  @override
+  String get bankLoanAgentCapability => 'Umuganga w\'Inguzanyo ya Banki';
+
+  @override
+  String get saccoMicrofinanceCapability => 'SACCO / Serivisi za Microfinance';
+
+  @override
+  String get financialAdvisoryCapability => 'Inama z\'Imari';
+
+  @override
+  String get otherFinancialServicesCapability => 'Serivisi Zindi z\'Imari';
+
+  @override
+  String get organisationOptional => 'Umuryango wawe (ntibisabwa)';
+
+  @override
+  String get organisationHint =>
+      'urugero: Equity Bank, Hans Finance, ABC Forex';
+
+  @override
+  String get organisationLabel => 'Ikigo / Banki / Umuryango';
+
+  @override
+  String get roleOptional => 'Inshingano zawe (ntibisabwa)';
+
+  @override
+  String get roleHint =>
+      'urugero: Utanga Inguzanyo Ku Giti Cye, Umuganga wa Banki';
+
+  @override
+  String get showProfessionalTagProvider => 'Erekana ikimenyetso cy\'inzobere';
+
+  @override
+  String get showProfessionalTagProviderSubtitle =>
+      'Erekana ikigo n\'inshingano zawe ku bitangwa.';
+
+  @override
+  String get allowInstitutionMatchingProvider => 'Emera guhuza n\'ikigo';
+
+  @override
+  String get allowInstitutionMatchingProviderSubtitle =>
+      'Reka abasaba inguzanyo baturuka mu kigo cyawe kubona ibitangwa byawe.';
+
+  @override
   String servicesCount(int count) {
     return 'Serivisi $count';
   }

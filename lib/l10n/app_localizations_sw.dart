@@ -2521,6 +2521,61 @@ class AppLocalizationsSw extends AppLocalizations {
       'Waambie watu unachoweza kuwasaidia nacho.';
 
   @override
+  String get financialServicesCategory => 'Huduma za Kifedha';
+
+  @override
+  String get financialServicesDesc =>
+      'Huduma za mkopo, forex, mawakala wa benki, SACCO, microfinance, na ushauri wa kifedha.';
+
+  @override
+  String get loanServicesCapability => 'Huduma za Mkopo';
+
+  @override
+  String get forexCurrencyExchangeCapability => 'Forex / Kubadilishana Sarafu';
+
+  @override
+  String get bankLoanAgentCapability => 'Wakala wa Mkopo wa Benki';
+
+  @override
+  String get saccoMicrofinanceCapability => 'SACCO / Huduma za Microfinance';
+
+  @override
+  String get financialAdvisoryCapability => 'Ushauri wa Kifedha';
+
+  @override
+  String get otherFinancialServicesCapability => 'Huduma Nyingine za Kifedha';
+
+  @override
+  String get organisationOptional => 'Shirika lako (hiari)';
+
+  @override
+  String get organisationHint => 'mfano. Equity Bank, Hans Finance, ABC Forex';
+
+  @override
+  String get organisationLabel => 'Taasisi / Benki / Shirika';
+
+  @override
+  String get roleOptional => 'Jukumu lako (hiari)';
+
+  @override
+  String get roleHint => 'mfano. Mtoa Mkopo Binafsi, Wakala wa Benki';
+
+  @override
+  String get showProfessionalTagProvider => 'Onyesha lebo ya kitaalamu';
+
+  @override
+  String get showProfessionalTagProviderSubtitle =>
+      'Onyesha lebo ya taasisi na jukumu kwenye matoleo.';
+
+  @override
+  String get allowInstitutionMatchingProvider =>
+      'Ruhusu kulinganishwa na taasisi';
+
+  @override
+  String get allowInstitutionMatchingProviderSubtitle =>
+      'Waache wakopaji kutoka taasisi yako kupata matoleo yako.';
+
+  @override
   String servicesCount(int count) {
     return 'Huduma $count';
   }
