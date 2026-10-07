@@ -12,37 +12,61 @@ void showPostChoiceSheet(BuildContext context) {
     fontWeight: FontWeight.w600,
   );
 
-  final bottomInset = MediaQuery.of(context).padding.bottom + 64;
-
   showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
-    useSafeArea: true,
     isScrollControlled: true,
-    builder: (sheetContext) => SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomInset),
+    useSafeArea: false,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Material(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(28),
+          bottom: Radius.circular(28),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 56,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
                 child: Text(
                   l10n?.postChoiceTitle ?? 'What do you want to post?',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
+                    fontSize: 26,
                   ),
                 ),
               ),
               const SizedBox(height: 4),
               ListTile(
-                leading: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: AppColors.accent,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                leading: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: AppColors.accent,
+                    size: 22,
+                  ),
                 ),
                 title: Text(
                   l10n?.postLoanAction ?? 'Loan',
@@ -57,9 +81,19 @@ void showPostChoiceSheet(BuildContext context) {
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.currency_exchange_rounded,
-                  color: AppColors.success,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                leading: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.currency_exchange_rounded,
+                    color: AppColors.success,
+                    size: 22,
+                  ),
                 ),
                 title: Text(
                   l10n?.postForexAction ?? 'Forex',
@@ -75,9 +109,19 @@ void showPostChoiceSheet(BuildContext context) {
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.search_rounded,
-                  color: Color(0xFFF59E0B),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                leading: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFFF59E0B),
+                    size: 22,
+                  ),
                 ),
                 title: Text(
                   l10n?.postNeedAction ?? 'Need',
@@ -93,7 +137,7 @@ void showPostChoiceSheet(BuildContext context) {
               ),
               const SizedBox(height: 8),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Material(
                   color: Color.alphaBlend(
                     theme.colorScheme.onSurface.withValues(alpha: 0.05),
@@ -102,9 +146,19 @@ void showPostChoiceSheet(BuildContext context) {
                   borderRadius: BorderRadius.circular(10),
                   clipBehavior: Clip.antiAlias,
                   child: ListTile(
-                    leading: const Icon(
-                      Icons.business_center_outlined,
-                      color: Color(0xFF3B82F6),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+                    leading: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.business_center_outlined,
+                        color: Color(0xFF3B82F6),
+                        size: 22,
+                      ),
                     ),
                     title: Text(
                       l10n?.postServiceAction ?? 'Offer a Service',

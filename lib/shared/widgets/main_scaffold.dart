@@ -14,9 +14,14 @@ import 'offline_connection_listener.dart';
 import 'post_choice_sheet.dart';
 
 class MainScaffold extends StatelessWidget {
-  const MainScaffold({super.key, required this.child});
+  const MainScaffold({
+    super.key,
+    required this.child,
+    required this.shellNavigatorKey,
+  });
 
   final Widget child;
+  final GlobalKey<NavigatorState> shellNavigatorKey;
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
@@ -93,7 +98,14 @@ class MainScaffold extends StatelessWidget {
                   // 3. Center + Button (TikTok-style prominent button, NO text)
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => showPostChoiceSheet(context),
+                      onTap: () {
+                        final shellContext =
+                            shellNavigatorKey.currentState?.overlay?.context;
+                        if (shellContext == null) {
+                          throw StateError('Shell navigator is not mounted.');
+                        }
+                        showPostChoiceSheet(shellContext);
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: Center(
                         child: Container(

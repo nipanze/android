@@ -76,6 +76,8 @@ class AppRouter {
   AppRouter({required this.authBloc});
 
   final AuthBloc authBloc;
+  final GlobalKey<NavigatorState> _shellNavigatorKey =
+      GlobalKey<NavigatorState>();
 
   late final GoRouter router = GoRouter(
     initialLocation: AppRoutes.home,
@@ -124,7 +126,11 @@ class AppRouter {
 
       // ── Shell routes (bottom nav) ───────────────────────────────────
       ShellRoute(
-        builder: (context, state, child) => MainScaffold(child: child),
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) => MainScaffold(
+          shellNavigatorKey: _shellNavigatorKey,
+          child: child,
+        ),
         routes: [
           GoRoute(
             path: AppRoutes.home,
