@@ -23,25 +23,14 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
-    with SingleTickerProviderStateMixin {
-  bool _usePhone = true;
-
-  // phone
+class _LoginPageState extends State<LoginPage> {
   late CountryInfo _country;
   final _phoneCtrl = TextEditingController();
-  final _phonePassCtrl = TextEditingController(text: 'Test1234!');
-  bool _obscurePhone = true;
-
-  // email
-  final _emailCtrl = TextEditingController();
-  final _emailPassCtrl = TextEditingController(text: 'Test1234!');
-  bool _obscureEmail = true;
+  final _passwordCtrl = TextEditingController(text: 'Test1234!');
+  bool _obscurePassword = true;
 
   bool _rememberMe = false;
   final _formKey = GlobalKey<FormState>();
-
-  late final TabController _tabCtrl;
 
   @override
   void initState() {
@@ -49,44 +38,29 @@ class _LoginPageState extends State<LoginPage>
     _country = EastAfricaCountries.findByLocale(
       WidgetsBinding.instance.platformDispatcher.locale,
     );
-    _tabCtrl = TabController(length: 2, vsync: this);
-    for (final c in [_phoneCtrl, _phonePassCtrl, _emailCtrl, _emailPassCtrl]) {
+    for (final c in [_phoneCtrl, _passwordCtrl]) {
       c.addListener(() => setState(() {}));
     }
   }
 
   @override
   void dispose() {
-    _tabCtrl.dispose();
     _phoneCtrl.dispose();
-    _phonePassCtrl.dispose();
-    _emailCtrl.dispose();
-    _emailPassCtrl.dispose();
+    _passwordCtrl.dispose();
     super.dispose();
   }
 
   bool get _canSubmit {
-    if (_usePhone) {
-      return _phoneCtrl.text.trim().length >= 7 &&
-          _phonePassCtrl.text.isNotEmpty;
-    }
-    return _emailCtrl.text.trim().contains('@') &&
-        _emailPassCtrl.text.isNotEmpty;
+    return _phoneCtrl.text.trim().length >= 7 &&
+        _passwordCtrl.text.isNotEmpty;
   }
 
   void _submit() {
     if (!_canSubmit || !(_formKey.currentState?.validate() ?? false)) return;
-    if (_usePhone) {
-      context.read<AuthBloc>().add(AuthPhoneSignInRequested(
-            phone: '${_country.dialCode}${_phoneCtrl.text.trim()}',
-            password: _phonePassCtrl.text,
-          ));
-    } else {
-      context.read<AuthBloc>().add(AuthSignInRequested(
-            email: _emailCtrl.text.trim(),
-            password: _emailPassCtrl.text,
-          ));
-    }
+    context.read<AuthBloc>().add(AuthPhoneSignInRequested(
+          phone: '${_country.dialCode}${_phoneCtrl.text.trim()}',
+          password: _passwordCtrl.text,
+        ));
   }
 
   Future<void> _pickCountry() async {
@@ -113,8 +87,6 @@ class _LoginPageState extends State<LoginPage>
     final subtitleColor =
         isDark ? const Color(0xFFADADB8) : const Color(0xFF475569);
     final hintColor = isDark ? AppColors.text3Dark : AppColors.text3Light;
-    final dividerColor =
-        isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
     const purpleColor = AppColors.accent;
 
     return Scaffold(
@@ -221,10 +193,6 @@ class _LoginPageState extends State<LoginPage>
                     ),
                     const SizedBox(height: 32),
 
-                    // ── Phone / Email tabs ─────────────────────────────────
-                    _buildTabs(dividerColor, subtitleColor, purpleColor, l10n),
-                    const SizedBox(height: 28),
-
                     // ── Error banner ──────────────────────────────────────
                     if (errorMsg != null) ...[
                       _ErrorBanner(message: errorMsg),
@@ -232,12 +200,8 @@ class _LoginPageState extends State<LoginPage>
                     ],
 
                     // ── Input fields ──────────────────────────────────────
-                    if (_usePhone)
-                      _buildPhoneField(inputBg, cardBorder, titleColor,
-                          subtitleColor, hintColor)
-                    else
-                      _buildEmailField(
-                          inputBg, cardBorder, titleColor, hintColor, l10n),
+                    _buildPhoneField(inputBg, cardBorder, titleColor,
+                        subtitleColor, hintColor),
                     const SizedBox(height: 12),
 
                     _buildPasswordField(
@@ -352,84 +316,6 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  // ── Tab bar ─────────────────────────────────────────────────────────────────
-  Widget _buildTabs(Color dividerColor, Color subtitleColor, Color purpleColor,
-      AppLocalizations l10n) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            _buildTab(
-              icon: Icons.smartphone_rounded,
-              label: l10n.phone,
-              active: _usePhone,
-              subtitleColor: subtitleColor,
-              purpleColor: purpleColor,
-              onTap: () => setState(() => _usePhone = true),
-            ),
-            _buildTab(
-              icon: Icons.email_outlined,
-              label: l10n.email,
-              active: !_usePhone,
-              subtitleColor: subtitleColor,
-              purpleColor: purpleColor,
-              onTap: () => setState(() => _usePhone = false),
-            ),
-          ],
-        ),
-        Divider(height: 1, thickness: 1, color: dividerColor),
-      ],
-    );
-  }
-
-  Widget _buildTab({
-    required IconData icon,
-    required String label,
-    required bool active,
-    required Color subtitleColor,
-    required Color purpleColor,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon,
-                      size: 16, color: active ? purpleColor : subtitleColor),
-                  const SizedBox(width: 6),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                      color: active ? purpleColor : subtitleColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: 2,
-              decoration: BoxDecoration(
-                color: active ? purpleColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ── Phone field ──────────────────────────────────────────────────────────
   Widget _buildPhoneField(Color cardBg, Color cardBorder, Color titleColor,
       Color subtitleColor, Color hintColor) {
@@ -517,67 +403,9 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  // ── Email field ───────────────────────────────────────────────────────────
-  Widget _buildEmailField(Color cardBg, Color cardBorder, Color titleColor,
-      Color hintColor, AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cardBorder),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-      child: Row(
-        children: [
-          Icon(Icons.email_outlined, size: 18, color: hintColor),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextFormField(
-              key: const Key('email_field'),
-              controller: _emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: titleColor,
-              ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                filled: false,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                hintText: l10n.email,
-                hintStyle: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  color: hintColor,
-                ),
-              ),
-              validator: (v) {
-                if (v == null || !v.trim().contains('@')) {
-                  return 'Enter a valid email';
-                }
-                return null;
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ── Password field ────────────────────────────────────────────────────────
   Widget _buildPasswordField(Color cardBg, Color cardBorder, Color titleColor,
       Color hintColor, AppLocalizations l10n) {
-    final obscure = _usePhone ? _obscurePhone : _obscureEmail;
-    final ctrl = _usePhone ? _phonePassCtrl : _emailPassCtrl;
-
     return Container(
       decoration: BoxDecoration(
         color: cardBg,
@@ -592,8 +420,8 @@ class _LoginPageState extends State<LoginPage>
           Expanded(
             child: TextFormField(
               key: const Key('password_field'),
-              controller: ctrl,
-              obscureText: obscure,
+              controller: _passwordCtrl,
+              obscureText: _obscurePassword,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
               style: TextStyle(
@@ -624,14 +452,10 @@ class _LoginPageState extends State<LoginPage>
           ),
           GestureDetector(
             onTap: () {
-              if (_usePhone) {
-                setState(() => _obscurePhone = !_obscurePhone);
-              } else {
-                setState(() => _obscureEmail = !_obscureEmail);
-              }
+              setState(() => _obscurePassword = !_obscurePassword);
             },
             child: Icon(
-              obscure
+              _obscurePassword
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
               size: 18,
