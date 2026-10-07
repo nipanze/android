@@ -214,6 +214,7 @@ String _capabilityDisplayName(
   AppLocalizations l10n,
 ) =>
     switch (slug) {
+      // Marketing
       'marketing_services' => l10n.marketingAndPromotion,
       'social_media_marketing' => l10n.socialMediaMarketing,
       'tiktok_promotion' => l10n.tiktokPromotion,
@@ -230,6 +231,14 @@ String _capabilityDisplayName(
       'brand_promotion' => l10n.brandPromotion,
       'other_marketing_services' => l10n.otherMarketingServices,
       'i_have_an_audience' => l10n.iHaveAnAudience,
+      // Financial Services
+      'bank_loan_agent' => l10n.bankLoanAgentCapability,
+      'money_lender_private_lender' => l10n.moneyLenderPrivateLenderCapability,
+      'financial_advisory' => l10n.financialAdvisoryCapability,
+      'forex_currency_exchange' => l10n.forexCurrencyExchangeCapability,
+      'loan_services' => l10n.loanServicesCapability,
+      'sacco_microfinance' => l10n.saccoMicrofinanceCapability,
+      'other_financial_services' => l10n.otherFinancialServicesCapability,
       _ => fallback,
     };
 

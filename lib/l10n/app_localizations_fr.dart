@@ -2553,25 +2553,33 @@ class AppLocalizationsFr extends AppLocalizations {
       'Services de prêt, forex, agents bancaires, SACCO, microfinance et conseil financier.';
 
   @override
-  String get loanServicesCapability => 'Services de Prêt';
+  String get bankLoanAgentCapability => 'Agent de Prêt Bancaire';
+
+  @override
+  String get moneyLenderPrivateLenderCapability =>
+      'Prêteur d\'Argent / Prêteur Privé';
+
+  @override
+  String get financialAdvisoryCapability => 'Conseil Financier';
 
   @override
   String get forexCurrencyExchangeCapability => 'Forex / Échange de Devises';
 
   @override
-  String get bankLoanAgentCapability => 'Agent de Prêt Bancaire';
+  String get loanServicesCapability => 'Services de Prêt';
 
   @override
   String get saccoMicrofinanceCapability => 'SACCO / Services de Microfinance';
-
-  @override
-  String get financialAdvisoryCapability => 'Conseil Financier';
 
   @override
   String get otherFinancialServicesCapability => 'Autres Services Financiers';
 
   @override
   String get organisationOptional => 'Votre organisation (optionnel)';
+
+  @override
+  String get organisationSubtitle =>
+      'Ajoutez votre institution, entreprise ou organisation et votre rôle afin que les demandeurs sachent qui vous représentez.';
 
   @override
   String get organisationHint => 'ex. Equity Bank, Hans Finance, ABC Forex';
@@ -2590,15 +2598,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get showProfessionalTagProviderSubtitle =>
-      'Afficher votre institution et votre rôle sur les offres.';
+      'Affichez vos services, institution et libellé de rôle sur les offres.';
 
   @override
   String get allowInstitutionMatchingProvider =>
-      'Autoriser la correspondance d\'institution';
+      'Autoriser la correspondance intelligente';
 
   @override
   String get allowInstitutionMatchingProviderSubtitle =>
-      'Permettre aux emprunteurs de votre institution de trouver vos offres.';
+      'Laissez les demandes pertinentes trouver vos offres.';
+
+  @override
+  String get allowSmartMatchingProvider =>
+      'Autoriser la correspondance intelligente';
+
+  @override
+  String get allowSmartMatchingProviderSubtitle =>
+      'Laissez les demandes pertinentes trouver vos offres.';
 
   @override
   String servicesCount(int count) {

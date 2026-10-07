@@ -2515,25 +2515,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Loan services, forex exchange, bank agents, SACCO, microfinance, and financial advisory.';
 
   @override
-  String get loanServicesCapability => 'Loan Services';
+  String get bankLoanAgentCapability => 'Bank Loan Agent';
+
+  @override
+  String get moneyLenderPrivateLenderCapability =>
+      'Money Lender / Private Lender';
+
+  @override
+  String get financialAdvisoryCapability => 'Financial Advisory';
 
   @override
   String get forexCurrencyExchangeCapability => 'Forex / Currency Exchange';
 
   @override
-  String get bankLoanAgentCapability => 'Bank Loan Agent';
+  String get loanServicesCapability => 'Loan Services';
 
   @override
   String get saccoMicrofinanceCapability => 'SACCO / Microfinance Services';
-
-  @override
-  String get financialAdvisoryCapability => 'Financial Advisory';
 
   @override
   String get otherFinancialServicesCapability => 'Other Financial Services';
 
   @override
   String get organisationOptional => 'Your Organisation (optional)';
+
+  @override
+  String get organisationSubtitle =>
+      'Add your institution, business or organisation and your role so requesters know who you represent.';
 
   @override
   String get organisationHint => 'e.g. Equity Bank, Hans Finance, ABC Forex';
@@ -2552,14 +2560,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showProfessionalTagProviderSubtitle =>
-      'Display your institution and role label on offers.';
+      'Display your services, institution and role label on offers.';
 
   @override
-  String get allowInstitutionMatchingProvider => 'Allow institution matching';
+  String get allowInstitutionMatchingProvider => 'Allow smart matching';
 
   @override
   String get allowInstitutionMatchingProviderSubtitle =>
-      'Let borrowers from your institution find your offers.';
+      'Let relevant requests find your offers.';
+
+  @override
+  String get allowSmartMatchingProvider => 'Allow smart matching';
+
+  @override
+  String get allowSmartMatchingProviderSubtitle =>
+      'Let relevant requests find your offers.';
 
   @override
   String servicesCount(int count) {

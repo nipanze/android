@@ -127,6 +127,20 @@ class _ProviderServicesView extends StatelessWidget {
     final existingSlugs = loaded is CapabilitiesLoaded
         ? loaded.capabilities.map((c) => c.capabilitySlug).toSet()
         : <String>{};
+    final existingFinancialMetadata = loaded is CapabilitiesLoaded
+        ? loaded.capabilities
+            .where((cap) => const {
+                  'bank_loan_agent',
+                  'money_lender_private_lender',
+                  'financial_advisory',
+                  'forex_currency_exchange',
+                  'loan_services',
+                  'sacco_microfinance',
+                  'other_financial_services',
+                }.contains(cap.capabilitySlug))
+            .firstOrNull
+            ?.metadata
+        : null;
 
     final needsRepo = getIt<NeedsRepository>();
     final selection = await AddServiceSheet.show(
@@ -138,6 +152,7 @@ class _ProviderServicesView extends StatelessWidget {
               .firstOrNull
               ?.metadata
           : null,
+      existingFinancialMetadata: existingFinancialMetadata,
       needsRepository: needsRepo,
     );
     if (selection != null &&

@@ -30,13 +30,24 @@ const _marketingCapabilitySlugs = {
 };
 
 const _financialCategorySlug = 'financial_services';
-const _bankLoanAgentSlug = 'bank_loan_agent';
 const _financialMetadataSlugs = {
   'bank_loan_agent',
-  'loan_services',
+  'money_lender_private_lender',
+  'financial_advisory',
   'forex_currency_exchange',
+  'loan_services',
   'sacco_microfinance',
+  'other_financial_services',
 };
+const _financialOrderedSlugs = [
+  'bank_loan_agent',
+  'money_lender_private_lender',
+  'financial_advisory',
+  'forex_currency_exchange',
+  'loan_services',
+  'sacco_microfinance',
+  'other_financial_services',
+];
 
 class ProviderCapabilitySelection {
   const ProviderCapabilitySelection({
@@ -55,12 +66,14 @@ class AddServiceSheet extends StatefulWidget {
     super.key,
     required this.existingSlugs,
     this.existingAudienceMetadata,
+    this.existingFinancialMetadata,
     this.preselectedCategorySlug,
     required this.needsRepository,
   });
 
   final Set<String> existingSlugs;
   final Map<String, dynamic>? existingAudienceMetadata;
+  final Map<String, dynamic>? existingFinancialMetadata;
   final String? preselectedCategorySlug;
   final NeedsRepository needsRepository;
 
@@ -68,6 +81,7 @@ class AddServiceSheet extends StatefulWidget {
     BuildContext context, {
     required Set<String> existingSlugs,
     Map<String, dynamic>? existingAudienceMetadata,
+    Map<String, dynamic>? existingFinancialMetadata,
     required NeedsRepository needsRepository,
     String? preselectedCategorySlug,
   }) {
@@ -90,6 +104,7 @@ class AddServiceSheet extends StatefulWidget {
             child: AddServiceSheet(
               existingSlugs: existingSlugs,
               existingAudienceMetadata: existingAudienceMetadata,
+              existingFinancialMetadata: existingFinancialMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
               needsRepository: needsRepository,
             ),
@@ -139,6 +154,17 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _audienceInterestController.text =
           audience?['audience_main_interest']?.toString() ?? '';
     }
+
+    final financial = widget.existingFinancialMetadata;
+    if (financial != null) {
+      _institutionController.text = financial['institution']?.toString() ?? '';
+      _roleController.text = financial['role']?.toString() ?? '';
+      _showProfessionalTag =
+          financial['show_professional_tag'] as bool? ?? true;
+      _allowInstitutionMatching =
+          financial['allow_institution_matching'] as bool? ?? false;
+    }
+
     _loadCategories();
   }
 
@@ -172,15 +198,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     if (financialSelected.isNotEmpty) {
       final institution = _institutionController.text.trim();
       final role = _roleController.text.trim();
-      if (institution.isNotEmpty || role.isNotEmpty) {
-        for (final slug in financialSelected) {
-          metadataBySlug[slug] = {
-            if (institution.isNotEmpty) 'institution': institution,
-            if (role.isNotEmpty) 'role': role,
-            'show_professional_tag': _showProfessionalTag,
-            'allow_institution_matching': _allowInstitutionMatching,
-          };
-        }
+      for (final slug in financialSelected) {
+        metadataBySlug[slug] = {
+          if (institution.isNotEmpty) 'institution': institution,
+          if (role.isNotEmpty) 'role': role,
+          'show_professional_tag': _showProfessionalTag,
+          'allow_institution_matching': _allowInstitutionMatching,
+        };
       }
     }
 
@@ -238,6 +262,16 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           ),
         );
       }
+    } else if (cat.slug == _financialCategorySlug) {
+      filteredCaps = caps.toList()
+        ..sort((a, b) {
+          final idxA = _financialOrderedSlugs.indexOf(a.slug);
+          final idxB = _financialOrderedSlugs.indexOf(b.slug);
+          if (idxA != -1 && idxB != -1) return idxA.compareTo(idxB);
+          if (idxA != -1) return -1;
+          if (idxB != -1) return 1;
+          return a.name.compareTo(b.name);
+        });
     } else {
       filteredCaps = caps;
     }
@@ -595,12 +629,9 @@ class _FinancialCapabilityList extends StatelessWidget {
       selected.intersection(_financialMetadataSlugs).isNotEmpty ||
       existingSlugs.intersection(_financialMetadataSlugs).isNotEmpty;
 
-  bool get _hasBankAgent =>
-      selected.contains(_bankLoanAgentSlug) ||
-      existingSlugs.contains(_bankLoanAgentSlug);
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
@@ -612,6 +643,7 @@ class _FinancialCapabilityList extends StatelessWidget {
           Builder(builder: (context) {
             final alreadyOwned = existingSlugs.contains(cap.slug);
             final isSelected = selected.contains(cap.slug);
+            final name = _financialCapabilityName(cap.slug, cap.name, l10n);
             return Column(
               children: [
                 ListTile(
@@ -625,7 +657,7 @@ class _FinancialCapabilityList extends StatelessWidget {
                           activeColor: AppColors.accent,
                         ),
                   title: Text(
-                    cap.name,
+                    name,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: alreadyOwned ? text2 : null,
@@ -645,54 +677,53 @@ class _FinancialCapabilityList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Your Organisation (optional)',
+                  l10n.organisationOptional,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Add your institution and role so requesters know who you represent.',
+                  l10n.organisationSubtitle,
                   style: TextStyle(fontSize: 12, color: text2),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: institutionController,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'Institution / Bank / Organisation',
-                    hintText: 'e.g. Equity Bank, Hans Finance, ABC Forex',
+                  decoration: InputDecoration(
+                    labelText: l10n.organisationLabel,
+                    hintText: l10n.organisationHint,
                     prefixIcon:
-                        Icon(Icons.account_balance_outlined, size: 20),
+                        const Icon(Icons.account_balance_outlined, size: 20),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: roleController,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    labelText: 'Your Role (optional)',
-                    hintText: 'e.g. Independent Loan Provider, Bank Agent',
-                    prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                  decoration: InputDecoration(
+                    labelText: l10n.roleOptional,
+                    hintText: l10n.roleHint,
+                    prefixIcon: const Icon(Icons.badge_outlined, size: 20),
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (_hasBankAgent)
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Allow institution matching'),
-                    subtitle: Text(
-                      'Let borrowers from your institution find your offers.',
-                      style: TextStyle(fontSize: 12, color: text2),
-                    ),
-                    value: allowInstitutionMatching,
-                    onChanged: onInstitutionMatchingChanged,
-                  ),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Show professional tag'),
+                  title: Text(l10n.allowSmartMatchingProvider),
                   subtitle: Text(
-                    'Display your institution and role label on offers.',
+                    l10n.allowSmartMatchingProviderSubtitle,
+                    style: TextStyle(fontSize: 12, color: text2),
+                  ),
+                  value: allowInstitutionMatching,
+                  onChanged: onInstitutionMatchingChanged,
+                ),
+                SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.showProfessionalTagProvider),
+                  subtitle: Text(
+                    l10n.showProfessionalTagProviderSubtitle,
                     style: TextStyle(fontSize: 12, color: text2),
                   ),
                   value: showProfessionalTag,
@@ -706,6 +737,22 @@ class _FinancialCapabilityList extends StatelessWidget {
     );
   }
 }
+
+String _financialCapabilityName(
+  String slug,
+  String fallback,
+  AppLocalizations l10n,
+) =>
+    switch (slug) {
+      'bank_loan_agent' => l10n.bankLoanAgentCapability,
+      'money_lender_private_lender' => l10n.moneyLenderPrivateLenderCapability,
+      'financial_advisory' => l10n.financialAdvisoryCapability,
+      'forex_currency_exchange' => l10n.forexCurrencyExchangeCapability,
+      'loan_services' => l10n.loanServicesCapability,
+      'sacco_microfinance' => l10n.saccoMicrofinanceCapability,
+      'other_financial_services' => l10n.otherFinancialServicesCapability,
+      _ => fallback,
+    };
 
 class _MarketingCapabilityList extends StatelessWidget {
   const _MarketingCapabilityList({

@@ -2500,25 +2500,32 @@ class AppLocalizationsAr extends AppLocalizations {
       'خدمات القروض، الفوركس، وكلاء البنوك، SACCO، التمويل الأصغر، والاستشارات المالية.';
 
   @override
-  String get loanServicesCapability => 'خدمات القروض';
+  String get bankLoanAgentCapability => 'وكيل قروض بنكية';
+
+  @override
+  String get moneyLenderPrivateLenderCapability => 'مقرض أموال / مقرض خاص';
+
+  @override
+  String get financialAdvisoryCapability => 'الاستشارات المالية';
 
   @override
   String get forexCurrencyExchangeCapability => 'فوركس / تبادل العملات';
 
   @override
-  String get bankLoanAgentCapability => 'وكيل قروض بنكية';
+  String get loanServicesCapability => 'خدمات القروض';
 
   @override
   String get saccoMicrofinanceCapability => 'SACCO / خدمات التمويل الأصغر';
-
-  @override
-  String get financialAdvisoryCapability => 'الاستشارات المالية';
 
   @override
   String get otherFinancialServicesCapability => 'خدمات مالية أخرى';
 
   @override
   String get organisationOptional => 'مؤسستك (اختياري)';
+
+  @override
+  String get organisationSubtitle =>
+      'أضف مؤسستك أو عملك التجاري أو منظمتك وصفتك ليعرف مقدمو الطلبات من تمثل.';
 
   @override
   String get organisationHint => 'مثال: Equity Bank, Hans Finance, ABC Forex';
@@ -2537,14 +2544,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get showProfessionalTagProviderSubtitle =>
-      'عرض مؤسستك ودورك على العروض.';
+      'عرض خدماتك ومؤسستك وصفة دورك على العروض.';
 
   @override
-  String get allowInstitutionMatchingProvider => 'السماح بمطابقة المؤسسة';
+  String get allowInstitutionMatchingProvider => 'السماح بالمطابقة الذكية';
 
   @override
   String get allowInstitutionMatchingProviderSubtitle =>
-      'السماح للمقترضين من مؤسستك بإيجاد عروضك.';
+      'دع الطلبات ذات الصلة تجد عروضك.';
+
+  @override
+  String get allowSmartMatchingProvider => 'السماح بالمطابقة الذكية';
+
+  @override
+  String get allowSmartMatchingProviderSubtitle =>
+      'دع الطلبات ذات الصلة تجد عروضك.';
 
   @override
   String servicesCount(int count) {

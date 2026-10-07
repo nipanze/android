@@ -4606,11 +4606,23 @@ abstract class AppLocalizations {
   /// **'Loan services, forex exchange, bank agents, SACCO, microfinance, and financial advisory.'**
   String get financialServicesDesc;
 
-  /// No description provided for @loanServicesCapability.
+  /// No description provided for @bankLoanAgentCapability.
   ///
   /// In en, this message translates to:
-  /// **'Loan Services'**
-  String get loanServicesCapability;
+  /// **'Bank Loan Agent'**
+  String get bankLoanAgentCapability;
+
+  /// No description provided for @moneyLenderPrivateLenderCapability.
+  ///
+  /// In en, this message translates to:
+  /// **'Money Lender / Private Lender'**
+  String get moneyLenderPrivateLenderCapability;
+
+  /// No description provided for @financialAdvisoryCapability.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Advisory'**
+  String get financialAdvisoryCapability;
 
   /// No description provided for @forexCurrencyExchangeCapability.
   ///
@@ -4618,23 +4630,17 @@ abstract class AppLocalizations {
   /// **'Forex / Currency Exchange'**
   String get forexCurrencyExchangeCapability;
 
-  /// No description provided for @bankLoanAgentCapability.
+  /// No description provided for @loanServicesCapability.
   ///
   /// In en, this message translates to:
-  /// **'Bank Loan Agent'**
-  String get bankLoanAgentCapability;
+  /// **'Loan Services'**
+  String get loanServicesCapability;
 
   /// No description provided for @saccoMicrofinanceCapability.
   ///
   /// In en, this message translates to:
   /// **'SACCO / Microfinance Services'**
   String get saccoMicrofinanceCapability;
-
-  /// No description provided for @financialAdvisoryCapability.
-  ///
-  /// In en, this message translates to:
-  /// **'Financial Advisory'**
-  String get financialAdvisoryCapability;
 
   /// No description provided for @otherFinancialServicesCapability.
   ///
@@ -4647,6 +4653,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Organisation (optional)'**
   String get organisationOptional;
+
+  /// No description provided for @organisationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your institution, business or organisation and your role so requesters know who you represent.'**
+  String get organisationSubtitle;
 
   /// No description provided for @organisationHint.
   ///
@@ -4681,20 +4693,32 @@ abstract class AppLocalizations {
   /// No description provided for @showProfessionalTagProviderSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Display your institution and role label on offers.'**
+  /// **'Display your services, institution and role label on offers.'**
   String get showProfessionalTagProviderSubtitle;
 
   /// No description provided for @allowInstitutionMatchingProvider.
   ///
   /// In en, this message translates to:
-  /// **'Allow institution matching'**
+  /// **'Allow smart matching'**
   String get allowInstitutionMatchingProvider;
 
   /// No description provided for @allowInstitutionMatchingProviderSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Let borrowers from your institution find your offers.'**
+  /// **'Let relevant requests find your offers.'**
   String get allowInstitutionMatchingProviderSubtitle;
+
+  /// No description provided for @allowSmartMatchingProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow smart matching'**
+  String get allowSmartMatchingProvider;
+
+  /// No description provided for @allowSmartMatchingProviderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let relevant requests find your offers.'**
+  String get allowSmartMatchingProviderSubtitle;
 
   /// Number of capabilities the user has selected
   ///

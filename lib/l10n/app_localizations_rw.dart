@@ -2529,25 +2529,33 @@ class AppLocalizationsRw extends AppLocalizations {
       'Serivisi z\'inguzanyo, forex, abaganga ba banki, SACCO, microfinance n\'inama z\'imari.';
 
   @override
-  String get loanServicesCapability => 'Serivisi z\'Inguzanyo';
+  String get bankLoanAgentCapability => 'Umuganga w\'Inguzanyo ya Banki';
+
+  @override
+  String get moneyLenderPrivateLenderCapability =>
+      'Umuterankunga ku Giti cye / Umuha w\'Inguzanyo';
+
+  @override
+  String get financialAdvisoryCapability => 'Inama z\'Imari';
 
   @override
   String get forexCurrencyExchangeCapability => 'Forex / Guhindura Inkunga';
 
   @override
-  String get bankLoanAgentCapability => 'Umuganga w\'Inguzanyo ya Banki';
+  String get loanServicesCapability => 'Serivisi z\'Inguzanyo';
 
   @override
   String get saccoMicrofinanceCapability => 'SACCO / Serivisi za Microfinance';
-
-  @override
-  String get financialAdvisoryCapability => 'Inama z\'Imari';
 
   @override
   String get otherFinancialServicesCapability => 'Serivisi Zindi z\'Imari';
 
   @override
   String get organisationOptional => 'Umuryango wawe (ntibisabwa)';
+
+  @override
+  String get organisationSubtitle =>
+      'Ongeraho ikigo, ubucuruzi cyangwa umuryango wawe n\'inshingano zawe kugira ngo abasaba bamenye uwo uhagarariye.';
 
   @override
   String get organisationHint =>
@@ -2568,14 +2576,22 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get showProfessionalTagProviderSubtitle =>
-      'Erekana ikigo n\'inshingano zawe ku bitangwa.';
+      'Erekana serivisi, ikigo n\'inshingano zawe ku bitangwa.';
 
   @override
-  String get allowInstitutionMatchingProvider => 'Emera guhuza n\'ikigo';
+  String get allowInstitutionMatchingProvider =>
+      'Emera guhuza mu buryo bw\'ubwenge';
 
   @override
   String get allowInstitutionMatchingProviderSubtitle =>
-      'Reka abasaba inguzanyo baturuka mu kigo cyawe kubona ibitangwa byawe.';
+      'Reka ubusabe bujyanye bubone ibyo utanga.';
+
+  @override
+  String get allowSmartMatchingProvider => 'Emera guhuza mu buryo bw\'ubwenge';
+
+  @override
+  String get allowSmartMatchingProviderSubtitle =>
+      'Reka ubusabe bujyanye bubone ibyo utanga.';
 
   @override
   String servicesCount(int count) {

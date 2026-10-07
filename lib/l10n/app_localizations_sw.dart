@@ -2528,25 +2528,33 @@ class AppLocalizationsSw extends AppLocalizations {
       'Huduma za mkopo, forex, mawakala wa benki, SACCO, microfinance, na ushauri wa kifedha.';
 
   @override
-  String get loanServicesCapability => 'Huduma za Mkopo';
+  String get bankLoanAgentCapability => 'Wakala wa Mkopo wa Benki';
+
+  @override
+  String get moneyLenderPrivateLenderCapability =>
+      'Mkopeshaji wa Pesa / Mkopeshaji Binafsi';
+
+  @override
+  String get financialAdvisoryCapability => 'Ushauri wa Kifedha';
 
   @override
   String get forexCurrencyExchangeCapability => 'Forex / Kubadilishana Sarafu';
 
   @override
-  String get bankLoanAgentCapability => 'Wakala wa Mkopo wa Benki';
+  String get loanServicesCapability => 'Huduma za Mkopo';
 
   @override
   String get saccoMicrofinanceCapability => 'SACCO / Huduma za Microfinance';
-
-  @override
-  String get financialAdvisoryCapability => 'Ushauri wa Kifedha';
 
   @override
   String get otherFinancialServicesCapability => 'Huduma Nyingine za Kifedha';
 
   @override
   String get organisationOptional => 'Shirika lako (hiari)';
+
+  @override
+  String get organisationSubtitle =>
+      'Ongeza taasisi, biashara au shirika lako na jukumu lako ili waombaji wajue unawakilisha nani.';
 
   @override
   String get organisationHint => 'mfano. Equity Bank, Hans Finance, ABC Forex';
@@ -2565,15 +2573,21 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get showProfessionalTagProviderSubtitle =>
-      'Onyesha lebo ya taasisi na jukumu kwenye matoleo.';
+      'Onyesha huduma zako, taasisi na lebo ya jukumu kwenye matoleo.';
 
   @override
-  String get allowInstitutionMatchingProvider =>
-      'Ruhusu kulinganishwa na taasisi';
+  String get allowInstitutionMatchingProvider => 'Ruhusu ulinganishaji mahiri';
 
   @override
   String get allowInstitutionMatchingProviderSubtitle =>
-      'Waache wakopaji kutoka taasisi yako kupata matoleo yako.';
+      'Acha maombi yanayofaa yapate matoleo yako.';
+
+  @override
+  String get allowSmartMatchingProvider => 'Ruhusu ulinganishaji mahiri';
+
+  @override
+  String get allowSmartMatchingProviderSubtitle =>
+      'Acha maombi yanayofaa yapate matoleo yako.';
 
   @override
   String servicesCount(int count) {
