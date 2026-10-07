@@ -98,7 +98,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   int _step = 0; // 0 = category, 1 = capability
   NeedCategory? _selectedCategory;
   List<NeedCategory> _categories = [];
-  List<NeedCapability> _capabilities = [];
+  List<NeedCapability> _categoryCapabilities = [];
+  List<NeedCapability> _marketingCapabilities = [];
   final Set<String> _selected = {};
   final Set<String> _audiencePlatforms = {};
   final _audienceCountController = TextEditingController();
@@ -181,13 +182,34 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   Future<void> _selectCategory(NeedCategory cat) async {
     setState(() {
       _selectedCategory = cat;
+      _showMarketing = false;
       _loading = true;
     });
     final caps =
         await widget.needsRepository.getCapabilities(categorySlug: cat.slug);
     if (!mounted) return;
+
+    List<NeedCapability> filteredCaps;
+    if (cat.slug == 'professional_services') {
+      filteredCaps = caps
+          .where((capability) =>
+              !_marketingCapabilitySlugs.contains(capability.slug))
+          .toList();
+      if (!filteredCaps.any((c) => c.slug == _marketingServicesSlug)) {
+        filteredCaps.add(
+          const NeedCapability(
+            slug: _marketingServicesSlug,
+            categorySlug: 'professional_services',
+            name: 'Marketing & Promotion',
+          ),
+        );
+      }
+    } else {
+      filteredCaps = caps;
+    }
+
     setState(() {
-      _capabilities = caps;
+      _categoryCapabilities = filteredCaps;
       _loading = false;
       _step = 1;
     });
@@ -203,7 +225,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     );
     if (!mounted) return;
     setState(() {
-      _capabilities = caps
+      _marketingCapabilities = caps
           .where((capability) =>
               _marketingCapabilitySlugs.contains(capability.slug))
           .toList()
@@ -309,7 +331,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                           )
                         : _showMarketing
                             ? _MarketingCapabilityList(
-                                capabilities: _capabilities,
+                                capabilities: _marketingCapabilities,
                                 existingSlugs: widget.existingSlugs,
                                 selected: _selected,
                                 audiencePlatforms: _audiencePlatforms,
@@ -336,7 +358,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                 }),
                               )
                             : _CapabilityList(
-                                capabilities: _capabilities,
+                                capabilities: _categoryCapabilities,
                                 existingSlugs: widget.existingSlugs,
                                 selected: _selected,
                                 scrollController: scrollController,
@@ -513,7 +535,8 @@ class _MarketingCapabilityList extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-    final audienceSelected = selected.contains(_audienceCapabilitySlug);
+    final audienceSelected = selected.contains(_audienceCapabilitySlug) ||
+        existingSlugs.contains(_audienceCapabilitySlug);
     final platforms = <(String, String)>[
       ('tiktok', l10n.audiencePlatformTikTok),
       ('instagram', l10n.audiencePlatformInstagram),

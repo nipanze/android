@@ -267,6 +267,120 @@ void main() {
 
       expect(find.text('Machinery & Equipment'), findsNothing);
     });
+
+    testWidgets(
+        'Professional Services hides marketing sub-items and navigates to Marketing & Promotion without repetition',
+        (tester) async {
+      final mockProviderRepo = MockProviderRepository();
+      final mockNeedsRepo = MockNeedsRepository();
+      final mockProfileRepo = MockProfileRepository();
+
+      getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
+      getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
+      getIt.registerSingleton<CapabilitiesCubit>(
+          CapabilitiesCubit(mockProviderRepo));
+      getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
+
+      addTearDown(() {
+        getIt.reset();
+      });
+
+      when(() => mockProviderRepo.getProviderCapabilities())
+          .thenAnswer((_) async => const <ProviderCapability>[]);
+      when(() => mockProviderRepo.getProviderOpportunities())
+          .thenAnswer((_) async => const <ProviderOpportunity>[]);
+      when(() => mockProfileRepo.getProfile())
+          .thenAnswer((_) async => const UserProfile(
+                id: 'u-1',
+                email: 'user@test.com',
+                accountStatus: 'active',
+              ));
+      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+            NeedCategory(
+              slug: 'professional_services',
+              name: 'Professional & Business Services',
+              icon: '🧑‍💼',
+              sortOrder: 2,
+              isActive: true,
+            ),
+          ]);
+      when(() => mockNeedsRepo.getCapabilities(
+              categorySlug: any(named: 'categorySlug')))
+          .thenAnswer((_) async => const [
+                NeedCapability(
+                  slug: 'company_registration',
+                  categorySlug: 'professional_services',
+                  name: 'Company Registration',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'legal_services',
+                  categorySlug: 'professional_services',
+                  name: 'Legal Services',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'marketing_services',
+                  categorySlug: 'professional_services',
+                  name: 'Marketing & Promotion',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'advertising_campaigns',
+                  categorySlug: 'professional_services',
+                  name: 'Advertising Campaigns',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'tiktok_promotion',
+                  categorySlug: 'professional_services',
+                  name: 'TikTok Promotion',
+                  isActive: true,
+                ),
+              ]);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProviderServicesPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Service'));
+      await tester.pumpAndSettle();
+
+      // Tap Professional Services category
+      await tester.tap(find.text('Professional & Business Services'));
+      await tester.pumpAndSettle();
+
+      // Should see Company Registration, Legal Services, and Marketing & Promotion
+      expect(find.text('Company Registration'), findsOneWidget);
+      expect(find.text('Legal Services'), findsOneWidget);
+      expect(find.text('Marketing & Promotion'), findsOneWidget);
+
+      // Should NOT see individual marketing sub-items directly in the top-level list
+      expect(find.text('Advertising Campaigns'), findsNothing);
+      expect(find.text('TikTok Promotion'), findsNothing);
+
+      // Tap Marketing & Promotion to enter sub-category
+      await tester.tap(find.text('Marketing & Promotion'));
+      await tester.pumpAndSettle();
+
+      // Inside Marketing & Promotion, sub-items are shown
+      expect(find.text('Advertising Campaigns'), findsOneWidget);
+      expect(find.text('TikTok Promotion'), findsOneWidget);
+
+      // Tap back arrow to return to Professional & Business Services
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.pumpAndSettle();
+
+      // Header and content should be back to Professional & Business Services
+      expect(find.text('Professional & Business Services'), findsOneWidget);
+      expect(find.text('Company Registration'), findsOneWidget);
+      expect(find.text('Advertising Campaigns'), findsNothing);
+    });
   });
 
   group('Provider Widgets', () {

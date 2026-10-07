@@ -177,14 +177,119 @@ class NeedCapability {
       name: 'Company Registration & Legal',
     ),
     NeedCapability(
+      slug: 'legal_services',
+      categorySlug: 'professional_services',
+      name: 'Legal Services',
+    ),
+    NeedCapability(
       slug: 'accounting_tax',
       categorySlug: 'professional_services',
       name: 'Accounting & Tax Advisory',
     ),
     NeedCapability(
+      slug: 'business_consulting',
+      categorySlug: 'professional_services',
+      name: 'Business Consulting',
+    ),
+    NeedCapability(
+      slug: 'hr_services',
+      categorySlug: 'professional_services',
+      name: 'HR Services',
+    ),
+    NeedCapability(
+      slug: 'marketing_services',
+      categorySlug: 'professional_services',
+      name: 'Marketing & Promotion',
+    ),
+    NeedCapability(
       slug: 'engineering_consulting',
       categorySlug: 'professional_services',
       name: 'Engineering Consulting',
+    ),
+    NeedCapability(
+      slug: 'architecture_services',
+      categorySlug: 'professional_services',
+      name: 'Architecture',
+    ),
+    NeedCapability(
+      slug: 'other_professional',
+      categorySlug: 'professional_services',
+      name: 'Other Professional Services',
+    ),
+    NeedCapability(
+      slug: 'social_media_marketing',
+      categorySlug: 'professional_services',
+      name: 'Social Media Marketing',
+    ),
+    NeedCapability(
+      slug: 'tiktok_promotion',
+      categorySlug: 'professional_services',
+      name: 'TikTok Promotion',
+    ),
+    NeedCapability(
+      slug: 'instagram_promotion',
+      categorySlug: 'professional_services',
+      name: 'Instagram Promotion',
+    ),
+    NeedCapability(
+      slug: 'youtube_promotion',
+      categorySlug: 'professional_services',
+      name: 'YouTube Promotion',
+    ),
+    NeedCapability(
+      slug: 'facebook_promotion',
+      categorySlug: 'professional_services',
+      name: 'Facebook Promotion',
+    ),
+    NeedCapability(
+      slug: 'influencer_marketing',
+      categorySlug: 'professional_services',
+      name: 'Influencer Marketing',
+    ),
+    NeedCapability(
+      slug: 'content_creation',
+      categorySlug: 'professional_services',
+      name: 'Content Creation',
+    ),
+    NeedCapability(
+      slug: 'product_reviews',
+      categorySlug: 'professional_services',
+      name: 'Product Reviews',
+    ),
+    NeedCapability(
+      slug: 'event_promotion',
+      categorySlug: 'professional_services',
+      name: 'Event Promotion',
+    ),
+    NeedCapability(
+      slug: 'whatsapp_community_promotion',
+      categorySlug: 'professional_services',
+      name: 'WhatsApp / Community Promotion',
+    ),
+    NeedCapability(
+      slug: 'affiliate_marketing',
+      categorySlug: 'professional_services',
+      name: 'Affiliate Marketing',
+    ),
+    NeedCapability(
+      slug: 'advertising_campaigns',
+      categorySlug: 'professional_services',
+      name: 'Advertising Campaigns',
+    ),
+    NeedCapability(
+      slug: 'brand_promotion',
+      categorySlug: 'professional_services',
+      name: 'Brand Promotion',
+    ),
+    NeedCapability(
+      slug: 'other_marketing_services',
+      categorySlug: 'professional_services',
+      name: 'Other Marketing Services',
+    ),
+    NeedCapability(
+      slug: 'i_have_an_audience',
+      categorySlug: 'professional_services',
+      name: 'I Have an Audience',
     ),
     NeedCapability(
       slug: 'driving_school',

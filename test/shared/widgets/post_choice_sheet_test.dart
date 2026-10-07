@@ -46,6 +46,12 @@ void main() {
             body: Center(child: Text('Need creation')),
           ),
         ),
+        GoRoute(
+          path: '/account/services',
+          builder: (context, state) => const Scaffold(
+            body: Center(child: Text('Provider Services')),
+          ),
+        ),
       ],
     );
 
@@ -76,6 +82,7 @@ void main() {
       ('Create a loan request', 'Loan creation'),
       ('Create a currency exchange request', 'Forex creation'),
       ('Create a Need', 'Need creation'),
+      ('Offer a Service', 'Provider Services'),
     ]) {
       router.go('/activity');
       await tester.pumpAndSettle();
