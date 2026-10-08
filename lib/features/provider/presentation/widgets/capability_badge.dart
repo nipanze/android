@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../needs/domain/models/need_capability.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
 import 'provider_verification_chip.dart';
 
@@ -30,14 +32,26 @@ class CapabilityBadge extends StatelessWidget {
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final localeCode = Localizations.localeOf(context).languageCode;
 
     final icon = capability.categoryIcon ?? '🔧';
+    final capabilityFallback = NeedCapability(
+      slug: capability.capabilitySlug,
+      categorySlug: capability.categorySlug ?? '',
+      name: capability.capabilityName ?? capability.capabilitySlug,
+    ).localizedName(localeCode);
     final name = _capabilityDisplayName(
       capability.capabilitySlug,
-      capability.capabilityName ?? capability.capabilitySlug,
+      capabilityFallback,
       l10n,
     );
-    final category = capability.categoryName ?? '';
+    final category = capability.categorySlug == null
+        ? capability.categoryName ?? ''
+        : NeedCategory(
+            slug: capability.categorySlug!,
+            name: capability.categoryName ?? capability.categorySlug!,
+            icon: icon,
+          ).localizedName(localeCode);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

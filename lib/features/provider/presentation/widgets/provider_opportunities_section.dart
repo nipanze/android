@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../needs/domain/models/need_capability.dart';
 import '../../domain/entities/provider_opportunity.dart';
 
 class ProviderOpportunitiesSection extends StatelessWidget {
@@ -83,8 +84,13 @@ class _OpportunityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final localeCode = Localizations.localeOf(context).languageCode;
     final icon = opportunity.categoryIcon ?? '🔧';
-    final name = opportunity.capabilityName ?? opportunity.capabilitySlug;
+    final name = NeedCapability(
+      slug: opportunity.capabilitySlug,
+      categorySlug: opportunity.categorySlug ?? '',
+      name: opportunity.capabilityName ?? opportunity.capabilitySlug,
+    ).localizedName(localeCode);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 

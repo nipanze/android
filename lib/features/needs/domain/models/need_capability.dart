@@ -1,3 +1,5 @@
+import 'need_catalog_localizations.dart';
+
 class NeedCapability {
   const NeedCapability({
     required this.slug,
@@ -52,12 +54,12 @@ class NeedCapability {
           'engineering_consulting': 'Ubuhanga / Injeniyeri',
           'architecture_services': 'Ubwubatsi',
           'other_professional': 'Ibindi serivisi z\'umwuga',
-          'marketing_services': 'Marketing & Promotion',
+          'marketing_services': 'Kwamamaza no kumenyekanisha',
           'social_media_marketing': 'Kumenyekanisha ku mbuga nkoranyabizikora',
-          'tiktok_promotion': 'Tiktok Promotion',
-          'instagram_promotion': 'Instagram Promotion',
-          'youtube_promotion': 'YouTube Promotion',
-          'facebook_promotion': 'Facebook Promotion',
+          'tiktok_promotion': 'Kwamamaza kuri TikTok',
+          'instagram_promotion': 'Kwamamaza kuri Instagram',
+          'youtube_promotion': 'Kwamamaza kuri YouTube',
+          'facebook_promotion': 'Kwamamaza kuri Facebook',
           'influencer_marketing': 'Marketing ya Influencer',
           'content_creation': 'Kurema ibitungo by\'ubutumwa',
           'product_reviews': 'Isuzuma ry\'ibicuruzwa',
@@ -84,7 +86,7 @@ class NeedCapability {
           'business_consulting': 'Conseil aux entreprises',
           'hr_services': 'Services RH',
           'engineering_consulting': 'Ingénierie',
-          'architecture_services': 'Architecture',
+          'architecture_services': 'Services d’architecture',
           'other_professional': 'Autres services professionnels',
           'marketing_services': 'Marketing et promotion',
           'social_media_marketing': 'Marketing des réseaux sociaux',
@@ -182,7 +184,10 @@ class NeedCapability {
       _ => const <String, String>{},
     };
 
-    return map[slug] ?? baseName ?? name;
+    return map[slug] ??
+        NeedCatalogLocalizations.capabilityName(localeCode, slug) ??
+        baseName ??
+        name;
   }
 
   static const List<NeedCapability> defaults = [

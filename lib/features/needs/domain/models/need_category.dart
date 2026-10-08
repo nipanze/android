@@ -1,3 +1,5 @@
+import 'need_catalog_localizations.dart';
+
 class NeedCategory {
   const NeedCategory({
     required this.slug,
@@ -112,7 +114,16 @@ class NeedCategory {
       _ => const <String, String>{},
     };
 
-    return map[slug] ?? baseName ?? name;
+    return map[slug] ??
+        NeedCatalogLocalizations.categoryName(localeCode, slug) ??
+        baseName ??
+        name;
+  }
+
+  String? localizedDescription(String? localeCode) {
+    return NeedCatalogLocalizations.categoryDescription(localeCode, slug) ??
+        baseDescription ??
+        description;
   }
 
   static const List<NeedCategory> defaultCategories = [

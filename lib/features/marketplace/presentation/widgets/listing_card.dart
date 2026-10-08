@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/forex_listing_model.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../domain/models/marketplace_item.dart';
 
 class ListingCard extends StatelessWidget {
@@ -47,7 +48,7 @@ class ListingCard extends StatelessWidget {
         ? const Color(0xFFF59E0B)
         : isForex
             ? const Color(0xFF06B6D4)
-        : AppColors.accent;
+            : AppColors.accent;
     // Neutral card surface — premium fintech look
     final surfaceColor = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -156,9 +157,7 @@ class ListingCard extends StatelessWidget {
     final description = needs?.specification ??
         loan?.purpose ??
         _forexDescription(forex, context);
-    final location = needs?.location ??
-        loan?.district ??
-        _forexLocation(forex);
+    final location = needs?.location ?? loan?.district ?? _forexLocation(forex);
     final isVerified = needs?.trustIsVerified ??
         loan?.trustIsVerified ??
         forex?.trustIsVerified ??
@@ -186,7 +185,7 @@ class ListingCard extends StatelessWidget {
               final main = _MainListingArea(
                 accent: accent,
                 moduleLabel: isNeeds
-                    ? '${needs.categoryIcon} ${needs.category}'
+                    ? '${needs.categoryIcon} ${NeedCategory(slug: needs.categorySlug, name: needs.category, icon: needs.categoryIcon).localizedName(Localizations.localeOf(context).languageCode)}'
                     : isForex
                         ? l10n.marketplaceForex
                         : l10n.marketplaceLoan,
@@ -216,8 +215,7 @@ class ListingCard extends StatelessWidget {
                   if (needs != null) '${needs.numberOfOffers} offers',
                   if (needs != null) needs.timeRemaining ?? needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
-                  if (forex != null)
-                    _forexSettlementLabel(forex),
+                  if (forex != null) _forexSettlementLabel(forex),
                   if (forex != null &&
                       forex.preferredRate != null &&
                       forex.preferredRate! > 0)
@@ -300,14 +298,14 @@ class _MoreActionsButton extends StatelessWidget {
         height: 20,
         child: Icon(
           showDeleteAction
-            ? Icons.delete_outline_rounded
-            : (isSaved ? Icons.star_rounded : Icons.star_border_rounded),
+              ? Icons.delete_outline_rounded
+              : (isSaved ? Icons.star_rounded : Icons.star_border_rounded),
           size: 18,
           color: showDeleteAction
-            ? AppColors.danger
-            : (isSaved
-                ? AppColors.warning
-                : (isDark ? AppColors.text3Dark : AppColors.text3Light)),
+              ? AppColors.danger
+              : (isSaved
+                  ? AppColors.warning
+                  : (isDark ? AppColors.text3Dark : AppColors.text3Light)),
         ),
       ),
     );
@@ -366,7 +364,10 @@ class _MainListingArea extends StatelessWidget {
     if (value.contains('equity') || value.contains('bank')) {
       return Icons.account_balance_rounded;
     }
-    if (value.contains('mpesa') || value.contains('m-pesa') || value.contains('airtel') || value.contains('mobile')) {
+    if (value.contains('mpesa') ||
+        value.contains('m-pesa') ||
+        value.contains('airtel') ||
+        value.contains('mobile')) {
       return Icons.phone_iphone_rounded;
     }
     if (value.contains('person') || value.contains('cash')) {

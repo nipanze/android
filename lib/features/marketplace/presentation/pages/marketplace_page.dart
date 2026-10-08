@@ -565,6 +565,10 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
         }
 
         final l10n = AppLocalizations.of(context)!;
+        final localeCode = Localizations.localeOf(context).languageCode;
+        final localizedPromptCategories = prompt.categories
+            .map((category) => category.localizedName(localeCode))
+            .toList();
         final title = switch (prompt.kind) {
           _DiscoveryPromptKind.addServices => l10n.whatCanYouHelpWith,
           _DiscoveryPromptKind.newCategories => l10n.newCategoriesAvailable,
@@ -574,7 +578,7 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
           _DiscoveryPromptKind.addServices => l10n.whatCanYouHelpWithSubtitle,
           _DiscoveryPromptKind.newCategories =>
             l10n.newCategoriesAvailableSubtitle(
-              prompt.categories.map((category) => category.name).join(', '),
+              localizedPromptCategories.join(', '),
             ),
           _DiscoveryPromptKind.opportunities =>
             l10n.matchingNeedsSubtitle(prompt.matchingRequestCount),
@@ -585,10 +589,7 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
           _DiscoveryPromptKind.opportunities => l10n.seeOpportunitiesCta,
         };
         final categoryNames = prompt.kind == _DiscoveryPromptKind.opportunities
-            ? prompt.categories
-                .map((category) => category.name)
-                .take(3)
-                .join(' · ')
+            ? localizedPromptCategories.take(3).join(' · ')
             : '';
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(

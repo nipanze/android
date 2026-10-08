@@ -364,7 +364,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             ? l10n.chooseCategory
                             : _showMarketing
                                 ? l10n.marketingAndPromotion
-                                : (_selectedCategory?.localizedName(localeCode) ??
+                                : (_selectedCategory
+                                        ?.localizedName(localeCode) ??
                                     l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
@@ -431,7 +432,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                     capabilities: _categoryCapabilities,
                                     existingSlugs: widget.existingSlugs,
                                     selected: _selected,
-                                    institutionController: _institutionController,
+                                    institutionController:
+                                        _institutionController,
                                     roleController: _roleController,
                                     showProfessionalTag: _showProfessionalTag,
                                     allowInstitutionMatching:
@@ -446,11 +448,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                         }
                                       });
                                     },
-                                    onProfessionalTagChanged: (v) =>
-                                        setState(() => _showProfessionalTag = v),
+                                    onProfessionalTagChanged: (v) => setState(
+                                        () => _showProfessionalTag = v),
                                     onInstitutionMatchingChanged: (v) =>
-                                        setState(
-                                            () => _allowInstitutionMatching = v),
+                                        setState(() =>
+                                            _allowInstitutionMatching = v),
                                   )
                                 : _CapabilityList(
                                     capabilities: _categoryCapabilities,
@@ -501,6 +503,7 @@ class _CategoryList extends StatelessWidget {
       separatorBuilder: (_, __) => Divider(height: 1, color: border),
       itemBuilder: (_, i) {
         final cat = categories[i];
+        final description = cat.localizedDescription(localeCode);
         return ListTile(
           leading: Container(
             width: 40,
@@ -514,10 +517,10 @@ class _CategoryList extends StatelessWidget {
           ),
           title: Text(cat.localizedName(localeCode),
               style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: cat.description == null || cat.description!.isEmpty
+          subtitle: description == null || description.isEmpty
               ? null
               : Text(
-                  cat.description!,
+                  description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

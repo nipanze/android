@@ -68,7 +68,8 @@ void main() {
     expect(capability.nameForCountry('KE'), 'DJs / MCs');
   });
 
-  test('service labels follow the app locale when no country override exists', () {
+  test('service labels follow the app locale when no country override exists',
+      () {
     final category = NeedCategory.defaultCategories
         .firstWhere((category) => category.slug == 'professional_services');
     final capability = NeedCapability.defaults
@@ -78,6 +79,144 @@ void main() {
     expect(category.localizedName('fr'), 'Services professionnels');
     expect(capability.localizedName('rw'), 'Iyandikisha ry\'ikorporasiyo');
     expect(capability.localizedName('en'), 'Company Registration & Legal');
+  });
+
+  test('all service categories respond to every supported app language', () {
+    const categories = [
+      NeedCategory(
+        slug: 'machinery_equipment',
+        name: 'Machinery & Equipment',
+        icon: '🚜',
+      ),
+      NeedCategory(
+        slug: 'professional_services',
+        name: 'Professional & Business Services',
+        icon: '🧑‍💼',
+      ),
+      NeedCategory(
+        slug: 'transport_logistics',
+        name: 'Transport & Logistics',
+        icon: '🚚',
+      ),
+      NeedCategory(
+        slug: 'specialized_products',
+        name: 'Specialized Products & Procurement',
+        icon: '🔎',
+      ),
+      NeedCategory(
+        slug: 'construction_building',
+        name: 'Construction & Building',
+        icon: '🏗️',
+      ),
+      NeedCategory(
+        slug: 'agriculture_agribusiness',
+        name: 'Agriculture & Agribusiness',
+        icon: '🌾',
+      ),
+      NeedCategory(
+        slug: 'technology_digital',
+        name: 'Technology & Digital',
+        icon: '💻',
+      ),
+      NeedCategory(
+        slug: 'events_production',
+        name: 'Events & Production',
+        icon: '🎉',
+      ),
+      NeedCategory(
+        slug: 'energy_utilities',
+        name: 'Energy & Utilities',
+        icon: '⚡',
+      ),
+      NeedCategory(
+        slug: 'education_training',
+        name: 'Education & Training',
+        icon: '🎓',
+      ),
+      NeedCategory(
+        slug: 'travel_international',
+        name: 'Travel & International',
+        icon: '✈️',
+      ),
+      NeedCategory(
+        slug: 'music_video',
+        name: 'Music & Video',
+        icon: '🎬',
+      ),
+      NeedCategory(
+        slug: 'weddings_celebrations',
+        name: 'Weddings & Celebrations',
+        icon: '🎉',
+      ),
+    ];
+
+    for (final category in categories) {
+      for (final locale in ['rw', 'fr', 'sw', 'ar']) {
+        expect(
+          category.localizedName(locale),
+          isNot(category.name),
+          reason: '${category.slug} should be translated for $locale',
+        );
+      }
+    }
+  });
+
+  test('category descriptions respond to every supported app language', () {
+    for (final category in NeedCategory.defaultCategories) {
+      if (category.description == null) continue;
+
+      for (final locale in ['rw', 'fr', 'sw', 'ar']) {
+        expect(
+          category.localizedDescription(locale),
+          isNot(category.description),
+          reason:
+              '${category.slug} description should be translated for $locale',
+        );
+      }
+    }
+  });
+
+  test('all fallback service capabilities respond to every supported language',
+      () {
+    for (final capability in NeedCapability.defaults) {
+      for (final locale in ['rw', 'fr', 'sw', 'ar']) {
+        expect(
+          capability.localizedName(locale),
+          isNot(capability.name),
+          reason: '${capability.slug} should be translated for $locale',
+        );
+      }
+    }
+  });
+
+  test('Events & Production subcategories respond to every app language', () {
+    const eventCapabilities = {
+      'catering_services': 'Catering',
+      'event_equipment': 'Event Equipment',
+      'event_planning': 'Event Planning',
+      'lighting_hire': 'Lighting',
+      'mc_services': 'MCs',
+      'other_events': 'Other Events',
+      'photography_services': 'Photography',
+      'sound_systems': 'Sound Systems',
+      'tent_hire': 'Tents',
+      'videography_services': 'Videography',
+    };
+
+    for (final entry in eventCapabilities.entries) {
+      final capability = NeedCapability(
+        slug: entry.key,
+        categorySlug: 'events_production',
+        name: entry.value,
+      );
+      for (final locale in ['rw', 'fr', 'sw', 'ar']) {
+        expect(
+          capability.localizedName(locale),
+          isNot(entry.value),
+          reason: '${entry.key} should be translated for $locale',
+        );
+      }
+    }
   });
 
   test('creative and celebration categories have structured request fields',

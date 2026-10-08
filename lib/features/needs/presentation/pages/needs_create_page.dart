@@ -663,19 +663,19 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       (item) => item.slug == slug,
       orElse: () => NeedCategory.findBySlug(slug),
     );
+    final localizedName = category.localizedName(
+      Localizations.localeOf(context).languageCode,
+    );
+    if (localizedName != category.baseName && localizedName != category.name) {
+      return localizedName;
+    }
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated &&
         category.countryLabels
             .containsKey(authState.user.country.toUpperCase())) {
       return category.nameForCountry(authState.user.country);
     }
-    return switch (slug) {
-      'travel_international' => 'Travel & International',
-      'machinery_equipment' => 'Machinery & Equipment',
-      'professional_services' => 'Professional Services',
-      'transport_logistics' => 'Transport & Logistics',
-      _ => category.name,
-    };
+    return localizedName;
   }
 
   String _urgencyLabel(AppLocalizations l10n, String value) {

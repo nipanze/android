@@ -12,6 +12,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/verification_gate_modal.dart';
 import '../../../needs/data/needs_repository.dart';
+import '../../../needs/domain/models/need_capability.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../../needs/domain/models/need_offer.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../../provider/presentation/pages/add_service_sheet.dart';
@@ -957,7 +959,13 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                                   style: const TextStyle(fontSize: 13)),
                               const SizedBox(width: 4),
                               Text(
-                                need.category,
+                                NeedCategory(
+                                  slug: need.categorySlug,
+                                  name: need.category,
+                                  icon: need.categoryIcon,
+                                ).localizedName(
+                                  Localizations.localeOf(context).languageCode,
+                                ),
                                 style: const TextStyle(
                                   color: Color(0xFFF59E0B),
                                   fontSize: 11.5,
@@ -1109,7 +1117,13 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                         offer: entry.value,
                         index: entry.key + 1,
                         capabilityName: need.capabilitySlug != null
-                            ? _formatKey(need.capabilitySlug!)
+                            ? NeedCapability(
+                                slug: need.capabilitySlug!,
+                                categorySlug: need.categorySlug,
+                                name: _formatKey(need.capabilitySlug!),
+                              ).localizedName(
+                                Localizations.localeOf(context).languageCode,
+                              )
                             : null,
                         onAccept: _actionInProgress
                             ? null
