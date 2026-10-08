@@ -96,6 +96,8 @@
   "proAdvancedFilters": "Filtres Pro avancés",
   "today": "Aujourd'hui",
   "weekAgo": "Il y a 1 semaine",
+  "postServiceAction": "Proposer un service",
+  "postServiceSubtitle": "Présentez vos services et trouvez des clients qui en ont besoin",
   "daysAgo": "Il y a {count} jours",
   "@daysAgo": {
     "placeholders": {

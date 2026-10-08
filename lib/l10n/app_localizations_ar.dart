@@ -232,11 +232,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get declareServiceNow => 'Add Service & Continue';
 
   @override
-  String get postServiceAction => 'Offer a Service';
+  String get postServiceAction => 'قدّم خدمة';
 
   @override
   String get postServiceSubtitle =>
-      'List your services and get matched with client requests';
+      'اعرض خدماتك وتواصل مع العملاء الباحثين عنها';
 
   @override
   String get viewDetails => 'عرض التفاصيل';

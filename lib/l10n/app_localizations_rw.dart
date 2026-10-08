@@ -232,11 +232,11 @@ class AppLocalizationsRw extends AppLocalizations {
   String get declareServiceNow => 'Add Service & Continue';
 
   @override
-  String get postServiceAction => 'Offer a Service';
+  String get postServiceAction => 'Tanga serivisi';
 
   @override
   String get postServiceSubtitle =>
-      'List your services and get matched with client requests';
+      'Shyira ku rutonde serivisi utanga, uhuze n\'abakiriya bazishaka';
 
   @override
   String get viewDetails => 'Reba ibisobanuro';

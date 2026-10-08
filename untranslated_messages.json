@@ -2,32 +2,24 @@
   "ar": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow",
-    "postServiceAction",
-    "postServiceSubtitle"
+    "declareServiceNow"
   ],
 
   "fr": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow",
-    "postServiceAction",
-    "postServiceSubtitle"
+    "declareServiceNow"
   ],
 
   "rw": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow",
-    "postServiceAction",
-    "postServiceSubtitle"
+    "declareServiceNow"
   ],
 
   "sw": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow",
-    "postServiceAction",
-    "postServiceSubtitle"
+    "declareServiceNow"
   ]
 }

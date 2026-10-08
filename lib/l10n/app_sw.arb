@@ -96,6 +96,8 @@
   "proAdvancedFilters": "Vichujio vya juu vya Pro",
   "today": "Leo",
   "weekAgo": "Wiki 1 iliyopita",
+  "postServiceAction": "Toa Huduma",
+  "postServiceSubtitle": "Orodhesha huduma zako na ulinganishwe na maombi ya wateja",
   "daysAgo": "Siku {count} zilizopita",
   "@daysAgo": {
     "placeholders": {

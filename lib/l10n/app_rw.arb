@@ -96,6 +96,8 @@
   "proAdvancedFilters": "Amayunguruzo ya Pro yisumbuye",
   "today": "Uyu munsi",
   "weekAgo": "Icyumweru 1 gishize",
+  "postServiceAction": "Tanga serivisi",
+  "postServiceSubtitle": "Shyira ku rutonde serivisi utanga, uhuze n'abakiriya bazishaka",
   "daysAgo": "Iminsi {count} ishize",
   "@daysAgo": {
     "placeholders": {

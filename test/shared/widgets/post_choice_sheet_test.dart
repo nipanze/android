@@ -6,13 +6,13 @@ import 'package:nipanze/l10n/app_localizations.dart';
 import 'package:nipanze/shared/widgets/post_choice_sheet.dart';
 
 void main() {
-  late GoRouter router;
+  GoRouter? router;
 
   Future<void> pumpApp(
     WidgetTester tester, {
     Locale locale = const Locale('en'),
   }) async {
-    router = GoRouter(
+    final appRouter = GoRouter(
       initialLocation: '/activity',
       routes: [
         GoRoute(
@@ -54,10 +54,11 @@ void main() {
         ),
       ],
     );
+    router = appRouter;
 
     await tester.pumpWidget(
       MaterialApp.router(
-        routerConfig: router,
+        routerConfig: appRouter,
         locale: locale,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -72,7 +73,8 @@ void main() {
   }
 
   tearDown(() {
-    router.dispose();
+    router?.dispose();
+    router = null;
   });
 
   testWidgets('chooser routes the full module option tiles', (tester) async {
@@ -84,7 +86,7 @@ void main() {
       ('Create a Need', 'Need creation'),
       ('Offer a Service', 'Provider Services'),
     ]) {
-      router.go('/activity');
+      router!.go('/activity');
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Open chooser'));
@@ -104,7 +106,7 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
-    expect(router.routeInformationProvider.value.uri.path, '/activity');
+    expect(router!.routeInformationProvider.value.uri.path, '/activity');
     expect(find.text('Open chooser'), findsOneWidget);
   });
 
@@ -116,5 +118,39 @@ void main() {
     expect(find.text('Que souhaitez-vous publier ?'), findsOneWidget);
     expect(find.text('Prêt'), findsOneWidget);
     expect(find.text('Créer une demande de prêt'), findsOneWidget);
+    expect(find.text('Proposer un service'), findsOneWidget);
+    expect(
+      find.text(
+          'Présentez vos services et trouvez des clients qui en ont besoin'),
+      findsOneWidget,
+    );
+  });
+
+  test('service posting choice is translated for all app languages', () async {
+    const translations = {
+      'rw': (
+        'Tanga serivisi',
+        'Shyira ku rutonde serivisi utanga, uhuze n\'abakiriya bazishaka',
+      ),
+      'sw': (
+        'Toa Huduma',
+        'Orodhesha huduma zako na ulinganishwe na maombi ya wateja',
+      ),
+      'fr': (
+        'Proposer un service',
+        'Présentez vos services et trouvez des clients qui en ont besoin',
+      ),
+      'ar': (
+        'قدّم خدمة',
+        'اعرض خدماتك وتواصل مع العملاء الباحثين عنها',
+      ),
+    };
+
+    for (final entry in translations.entries) {
+      final l10n = await AppLocalizations.delegate.load(Locale(entry.key));
+
+      expect(l10n.postServiceAction, entry.value.$1, reason: entry.key);
+      expect(l10n.postServiceSubtitle, entry.value.$2, reason: entry.key);
+    }
   });
 }

@@ -233,11 +233,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get declareServiceNow => 'Add Service & Continue';
 
   @override
-  String get postServiceAction => 'Offer a Service';
+  String get postServiceAction => 'Proposer un service';
 
   @override
   String get postServiceSubtitle =>
-      'List your services and get matched with client requests';
+      'Présentez vos services et trouvez des clients qui en ont besoin';
 
   @override
   String get viewDetails => 'Voir détails';

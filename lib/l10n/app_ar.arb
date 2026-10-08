@@ -96,6 +96,8 @@
   "proAdvancedFilters": "فلاتر Pro المتقدمة",
   "today": "اليوم",
   "weekAgo": "منذ أسبوع واحد",
+  "postServiceAction": "قدّم خدمة",
+  "postServiceSubtitle": "اعرض خدماتك وتواصل مع العملاء الباحثين عنها",
   "daysAgo": "منذ {count} أيام",
   "@daysAgo": {
     "placeholders": {

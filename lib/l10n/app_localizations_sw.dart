@@ -231,11 +231,11 @@ class AppLocalizationsSw extends AppLocalizations {
   String get declareServiceNow => 'Add Service & Continue';
 
   @override
-  String get postServiceAction => 'Offer a Service';
+  String get postServiceAction => 'Toa Huduma';
 
   @override
   String get postServiceSubtitle =>
-      'List your services and get matched with client requests';
+      'Orodhesha huduma zako na ulinganishwe na maombi ya wateja';
 
   @override
   String get viewDetails => 'Tazama maelezo';
