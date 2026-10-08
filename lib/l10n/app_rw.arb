@@ -778,6 +778,28 @@
   "myForexRequestsTitle": "Ubusabe bwanjye bwa forex",
   "noForexRequestsYet": "Nta ubusabe bwa forex buhari.",
   "listingDetailTitle": "Ibikubiye mu busabe",
+  "needDetailTitle": "Ibisobanuro by'ubusabe",
+  "termLabel": "Igihe",
+  "loanTypeLabel": "Ubwoko bw'inguzanyo",
+  "aboutRequest": "IBYEREKEYE UBUSABE",
+  "notSpecified": "Ntabwo byasobanuwe",
+  "verifiedRequester": "Usaba wemejwe",
+  "timelineLabel": "Igihe ntarengwa",
+  "trustLabel": "Icyizere",
+  "categoryDetailsLabel": "IBISOBANURO BY'ICYICIRO",
+  "aboutNeedLabel": "IBYEREKEYE UBUSABE",
+  "forexHoldLabel": "Mfite",
+  "forexNeedLabel": "Nkeneye",
+  "nearbyLabel": "Hafi",
+  "flexibleLabel": "Byoroshye",
+  "offersCount": "Ibiciro {count}",
+  "@offersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offersLabel": "AMATANGA",
   "loanRequestTitle": "Ubusabe bw'inguzanyo",
   "makeAnOffer": "Tanga igiciro",

@@ -1414,6 +1414,53 @@ class AppLocalizationsAr extends AppLocalizations {
   String get listingDetailTitle => 'تفاصيل الإعلان';
 
   @override
+  String get needDetailTitle => 'تفاصيل الطلب';
+
+  @override
+  String get termLabel => 'المدة';
+
+  @override
+  String get loanTypeLabel => 'نوع القرض';
+
+  @override
+  String get aboutRequest => 'حول الطلب';
+
+  @override
+  String get notSpecified => 'غير محدد';
+
+  @override
+  String get verifiedRequester => 'مقدم طلب موثّق';
+
+  @override
+  String get timelineLabel => 'الجدول الزمني';
+
+  @override
+  String get trustLabel => 'الثقة';
+
+  @override
+  String get categoryDetailsLabel => 'تفاصيل الفئة';
+
+  @override
+  String get aboutNeedLabel => 'حول الحاجة';
+
+  @override
+  String get forexHoldLabel => 'لدي';
+
+  @override
+  String get forexNeedLabel => 'أحتاج';
+
+  @override
+  String get nearbyLabel => 'بالقرب';
+
+  @override
+  String get flexibleLabel => 'مرن';
+
+  @override
+  String offersCount(int count) {
+    return '$count عروض';
+  }
+
+  @override
   String get offersLabel => 'العروض';
 
   @override

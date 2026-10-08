@@ -778,6 +778,28 @@
   "myForexRequestsTitle": "Maombi yangu ya forex",
   "noForexRequestsYet": "Hujawa na maombi ya forex.",
   "listingDetailTitle": "Maelezo ya ombi",
+  "needDetailTitle": "Maelezo ya hitaji",
+  "termLabel": "Muda",
+  "loanTypeLabel": "Aina ya mkopo",
+  "aboutRequest": "KUHUSU OMBI",
+  "notSpecified": "Haijabainishwa",
+  "verifiedRequester": "Mwombaji aliyethibitishwa",
+  "timelineLabel": "Muda wa utekelezaji",
+  "trustLabel": "Uaminifu",
+  "categoryDetailsLabel": "MAELEZO YA KATEGORIA",
+  "aboutNeedLabel": "KUHUSU HITAJI",
+  "forexHoldLabel": "Ninacho",
+  "forexNeedLabel": "Ninachohitaji",
+  "nearbyLabel": "Karibu",
+  "flexibleLabel": "Rahisi",
+  "offersCount": "Bei {count}",
+  "@offersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offersLabel": "ORODHA ZA BEI",
   "loanRequestTitle": "Ombi la mkopo",
   "makeAnOffer": "Toa bei",

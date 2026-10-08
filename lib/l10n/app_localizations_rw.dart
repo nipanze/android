@@ -1427,6 +1427,53 @@ class AppLocalizationsRw extends AppLocalizations {
   String get listingDetailTitle => 'Ibikubiye mu busabe';
 
   @override
+  String get needDetailTitle => 'Ibisobanuro by\'ubusabe';
+
+  @override
+  String get termLabel => 'Igihe';
+
+  @override
+  String get loanTypeLabel => 'Ubwoko bw\'inguzanyo';
+
+  @override
+  String get aboutRequest => 'IBYEREKEYE UBUSABE';
+
+  @override
+  String get notSpecified => 'Ntabwo byasobanuwe';
+
+  @override
+  String get verifiedRequester => 'Usaba wemejwe';
+
+  @override
+  String get timelineLabel => 'Igihe ntarengwa';
+
+  @override
+  String get trustLabel => 'Icyizere';
+
+  @override
+  String get categoryDetailsLabel => 'IBISOBANURO BY\'ICYICIRO';
+
+  @override
+  String get aboutNeedLabel => 'IBYEREKEYE UBUSABE';
+
+  @override
+  String get forexHoldLabel => 'Mfite';
+
+  @override
+  String get forexNeedLabel => 'Nkeneye';
+
+  @override
+  String get nearbyLabel => 'Hafi';
+
+  @override
+  String get flexibleLabel => 'Byoroshye';
+
+  @override
+  String offersCount(int count) {
+    return 'Ibiciro $count';
+  }
+
+  @override
   String get offersLabel => 'AMATANGA';
 
   @override

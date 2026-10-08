@@ -1420,6 +1420,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listingDetailTitle => 'Loan Request';
 
   @override
+  String get needDetailTitle => 'Need details';
+
+  @override
+  String get termLabel => 'Term';
+
+  @override
+  String get loanTypeLabel => 'Loan type';
+
+  @override
+  String get aboutRequest => 'About the request';
+
+  @override
+  String get notSpecified => 'Not specified';
+
+  @override
+  String get verifiedRequester => 'Verified requester';
+
+  @override
+  String get timelineLabel => 'Timeline';
+
+  @override
+  String get trustLabel => 'Trust';
+
+  @override
+  String get categoryDetailsLabel => 'CATEGORY DETAILS';
+
+  @override
+  String get aboutNeedLabel => 'ABOUT THE NEED';
+
+  @override
+  String get forexHoldLabel => 'I hold';
+
+  @override
+  String get forexNeedLabel => 'I need';
+
+  @override
+  String get nearbyLabel => 'Nearby';
+
+  @override
+  String get flexibleLabel => 'Flexible';
+
+  @override
+  String offersCount(int count) {
+    return '$count offers';
+  }
+
+  @override
   String get offersLabel => 'OFFERS';
 
   @override

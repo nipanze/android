@@ -700,6 +700,28 @@
   "myForexRequestsTitle": "My forex requests",
   "noForexRequestsYet": "No forex requests yet.",
   "listingDetailTitle": "Loan Request",
+  "needDetailTitle": "Need details",
+  "termLabel": "Term",
+  "loanTypeLabel": "Loan type",
+  "aboutRequest": "About the request",
+  "notSpecified": "Not specified",
+  "verifiedRequester": "Verified requester",
+  "timelineLabel": "Timeline",
+  "trustLabel": "Trust",
+  "categoryDetailsLabel": "CATEGORY DETAILS",
+  "aboutNeedLabel": "ABOUT THE NEED",
+  "forexHoldLabel": "I hold",
+  "forexNeedLabel": "I need",
+  "nearbyLabel": "Nearby",
+  "flexibleLabel": "Flexible",
+  "offersCount": "{count} offers",
+  "@offersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offersLabel": "OFFERS",
   "loanRequestTitle": "Loan request",
   "makeAnOffer": "Make an offer",

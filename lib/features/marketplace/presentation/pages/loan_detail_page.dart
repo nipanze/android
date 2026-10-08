@@ -220,8 +220,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               ? context.pop()
               : context.go(AppRoutes.marketplace),
         ),
-        title: Text(AppLocalizations.of(context)?.listingDetailTitle ??
-            'Loan Request'),
+        title: Text(
+            AppLocalizations.of(context)?.listingDetailTitle ?? 'Loan Request'),
         actions: [
           IconButton(
             tooltip: 'Safety Toolkit',
@@ -324,7 +324,9 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              listing.timeRemainingLabel,
+                              listing.isExpired
+                                  ? (l10n?.expiredLabel ?? 'Expired')
+                                  : listing.timeRemainingLabel,
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
@@ -355,13 +357,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     children: [
                       _LoanFact(
                         icon: Icons.calendar_month_rounded,
-                        label: 'Term',
+                        label: l10n?.termLabel ?? 'Term',
                         value:
                             '${listing.durationMonths} ${l10n?.months ?? 'months'}',
                       ),
                       _LoanFact(
                         icon: Icons.location_on_rounded,
-                        label: 'Location',
+                        label: l10n?.locationLabel ?? 'Location',
                         value: listing.district,
                       ),
                       _LoanFact(
@@ -369,11 +371,11 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                         label: l10n?.collateralLabel ?? 'Collateral',
                         value: listing.hasCollateral
                             ? (l10n?.securedCollateralLabel ?? 'Secured')
-                            : 'Not specified',
+                            : (l10n?.notSpecified ?? 'Not specified'),
                       ),
                       _LoanFact(
                         icon: Icons.category_rounded,
-                        label: 'Loan type',
+                        label: l10n?.loanTypeLabel ?? 'Loan type',
                         value: listing.title,
                       ),
                     ],
@@ -384,7 +386,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   if (listing.purpose.trim().isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _DescriptionSection(
-                      title: 'About the request',
+                      title: l10n?.aboutRequest ?? 'About the request',
                       body: listing.purpose,
                     ),
                   ],

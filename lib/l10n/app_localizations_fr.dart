@@ -1442,6 +1442,53 @@ class AppLocalizationsFr extends AppLocalizations {
   String get listingDetailTitle => 'Détail de l\'annonce';
 
   @override
+  String get needDetailTitle => 'Détails du besoin';
+
+  @override
+  String get termLabel => 'Durée';
+
+  @override
+  String get loanTypeLabel => 'Type de prêt';
+
+  @override
+  String get aboutRequest => 'À PROPOS DE LA DEMANDE';
+
+  @override
+  String get notSpecified => 'Non précisé';
+
+  @override
+  String get verifiedRequester => 'Demandeur vérifié';
+
+  @override
+  String get timelineLabel => 'Échéance';
+
+  @override
+  String get trustLabel => 'Confiance';
+
+  @override
+  String get categoryDetailsLabel => 'DÉTAILS DE LA CATÉGORIE';
+
+  @override
+  String get aboutNeedLabel => 'À PROPOS DU BESOIN';
+
+  @override
+  String get forexHoldLabel => 'Je détiens';
+
+  @override
+  String get forexNeedLabel => 'Je recherche';
+
+  @override
+  String get nearbyLabel => 'À proximité';
+
+  @override
+  String get flexibleLabel => 'Flexible';
+
+  @override
+  String offersCount(int count) {
+    return '$count offres';
+  }
+
+  @override
   String get offersLabel => 'OFFRES';
 
   @override

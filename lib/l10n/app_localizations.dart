@@ -2648,6 +2648,96 @@ abstract class AppLocalizations {
   /// **'Loan Request'**
   String get listingDetailTitle;
 
+  /// No description provided for @needDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need details'**
+  String get needDetailTitle;
+
+  /// No description provided for @termLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Term'**
+  String get termLabel;
+
+  /// No description provided for @loanTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan type'**
+  String get loanTypeLabel;
+
+  /// No description provided for @aboutRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'About the request'**
+  String get aboutRequest;
+
+  /// No description provided for @notSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get notSpecified;
+
+  /// No description provided for @verifiedRequester.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified requester'**
+  String get verifiedRequester;
+
+  /// No description provided for @timelineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get timelineLabel;
+
+  /// No description provided for @trustLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust'**
+  String get trustLabel;
+
+  /// No description provided for @categoryDetailsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY DETAILS'**
+  String get categoryDetailsLabel;
+
+  /// No description provided for @aboutNeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ABOUT THE NEED'**
+  String get aboutNeedLabel;
+
+  /// No description provided for @forexHoldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'I hold'**
+  String get forexHoldLabel;
+
+  /// No description provided for @forexNeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'I need'**
+  String get forexNeedLabel;
+
+  /// No description provided for @nearbyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby'**
+  String get nearbyLabel;
+
+  /// No description provided for @flexibleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible'**
+  String get flexibleLabel;
+
+  /// No description provided for @offersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} offers'**
+  String offersCount(int count);
+
   /// No description provided for @offersLabel.
   ///
   /// In en, this message translates to:

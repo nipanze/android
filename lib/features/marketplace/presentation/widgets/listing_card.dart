@@ -76,7 +76,7 @@ class ListingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'I hold',
+                      l10n.forexHoldLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: mutedColor,
                         fontWeight: FontWeight.w600,
@@ -112,7 +112,7 @@ class ListingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'I need',
+                      l10n.forexNeedLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: mutedColor,
                         fontWeight: FontWeight.w600,
@@ -157,7 +157,8 @@ class ListingCard extends StatelessWidget {
     final description = needs?.specification ??
         loan?.purpose ??
         _forexDescription(forex, context);
-    final location = needs?.location ?? loan?.district ?? _forexLocation(forex);
+    final location =
+        needs?.location ?? loan?.district ?? _forexLocation(forex, context);
     final isVerified = needs?.trustIsVerified ??
         loan?.trustIsVerified ??
         forex?.trustIsVerified ??
@@ -212,10 +213,10 @@ class ListingCard extends StatelessWidget {
                 showForexRatePanel: false,
                 projectedMoney: '',
                 attributes: [
-                  if (needs != null) '${needs.numberOfOffers} offers',
+                  if (needs != null) l10n.offersCount(needs.numberOfOffers),
                   if (needs != null) needs.timeRemaining ?? needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
-                  if (forex != null) _forexSettlementLabel(forex),
+                  if (forex != null) _forexSettlementLabel(forex, context),
                   if (forex != null &&
                       forex.preferredRate != null &&
                       forex.preferredRate! > 0)
@@ -241,17 +242,28 @@ class ListingCard extends StatelessWidget {
     return '';
   }
 
-  String _forexSettlementLabel(dynamic forex) {
-    return ForexListingModel.settlementLabelFromPreference(
+  String _forexSettlementLabel(dynamic forex, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final label = ForexListingModel.settlementLabelFromPreference(
       forex.settlementPreference,
     );
+    return switch (label) {
+      'Bank' => l10n.bankLabel,
+      'Mobile Money' => l10n.forexSettlementMobileMoney,
+      'In person' => l10n.forexSettlementInPerson,
+      'Flexible' => l10n.flexibleLabel,
+      _ => label,
+    };
   }
 
-  String _forexLocation(dynamic forex) {
-    return ForexListingModel.locationFromSettlement(
+  String _forexLocation(dynamic forex, BuildContext context) {
+    final location = ForexListingModel.locationFromSettlement(
       forex.settlementPreference,
       forex.district,
     );
+    return location == 'Nearby'
+        ? AppLocalizations.of(context)!.nearbyLabel
+        : location;
   }
 
   String _postedAgo(BuildContext context, DateTime listedAt) {
@@ -460,9 +472,9 @@ class _MainListingArea extends StatelessWidget {
               color: mutedColor,
             ),
             if (verified && isLoan)
-              const _MetaIcon(
+              _MetaIcon(
                 icon: Icons.shield_rounded,
-                label: 'Secured',
+                label: AppLocalizations.of(context)!.securedCollateralLabel,
                 color: AppColors.success,
               ),
             for (final attribute in attributes)

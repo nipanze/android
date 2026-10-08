@@ -778,6 +778,28 @@
   "myForexRequestsTitle": "طلبات العملات الخاصة بي",
   "noForexRequestsYet": "لا توجد طلبات عملات حتى الآن.",
   "listingDetailTitle": "تفاصيل الإعلان",
+  "needDetailTitle": "تفاصيل الطلب",
+  "termLabel": "المدة",
+  "loanTypeLabel": "نوع القرض",
+  "aboutRequest": "حول الطلب",
+  "notSpecified": "غير محدد",
+  "verifiedRequester": "مقدم طلب موثّق",
+  "timelineLabel": "الجدول الزمني",
+  "trustLabel": "الثقة",
+  "categoryDetailsLabel": "تفاصيل الفئة",
+  "aboutNeedLabel": "حول الحاجة",
+  "forexHoldLabel": "لدي",
+  "forexNeedLabel": "أحتاج",
+  "nearbyLabel": "بالقرب",
+  "flexibleLabel": "مرن",
+  "offersCount": "{count} عروض",
+  "@offersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "offersLabel": "العروض",
   "loanRequestTitle": "طلب قرض",
   "makeAnOffer": "قدّم عرضاً",

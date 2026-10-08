@@ -1431,6 +1431,53 @@ class AppLocalizationsSw extends AppLocalizations {
   String get listingDetailTitle => 'Maelezo ya ombi';
 
   @override
+  String get needDetailTitle => 'Maelezo ya hitaji';
+
+  @override
+  String get termLabel => 'Muda';
+
+  @override
+  String get loanTypeLabel => 'Aina ya mkopo';
+
+  @override
+  String get aboutRequest => 'KUHUSU OMBI';
+
+  @override
+  String get notSpecified => 'Haijabainishwa';
+
+  @override
+  String get verifiedRequester => 'Mwombaji aliyethibitishwa';
+
+  @override
+  String get timelineLabel => 'Muda wa utekelezaji';
+
+  @override
+  String get trustLabel => 'Uaminifu';
+
+  @override
+  String get categoryDetailsLabel => 'MAELEZO YA KATEGORIA';
+
+  @override
+  String get aboutNeedLabel => 'KUHUSU HITAJI';
+
+  @override
+  String get forexHoldLabel => 'Ninacho';
+
+  @override
+  String get forexNeedLabel => 'Ninachohitaji';
+
+  @override
+  String get nearbyLabel => 'Karibu';
+
+  @override
+  String get flexibleLabel => 'Rahisi';
+
+  @override
+  String offersCount(int count) {
+    return 'Bei $count';
+  }
+
+  @override
   String get offersLabel => 'ORODHA ZA BEI';
 
   @override

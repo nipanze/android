@@ -904,6 +904,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
         }
 
         final need = snapshot.data!;
+        final l10n = AppLocalizations.of(context)!;
         final hasAlreadyOffered = _offers.any((o) => o.isOwnOffer);
         final acceptedOffer = _offers.cast<NeedOffer?>().firstWhere(
               (o) => o?.status == 'accepted',
@@ -916,7 +917,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
               icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               onPressed: () => Navigator.of(context).maybePop(),
             ),
-            title: const Text('Need details'),
+            title: Text(l10n.needDetailTitle),
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 32),
@@ -1003,32 +1004,32 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                       children: [
                         _NeedFact(
                           icon: Icons.location_on_rounded,
-                          label: 'Location',
+                          label: l10n.locationLabel,
                           value: need.location,
                         ),
                         _NeedFact(
                           icon: Icons.local_offer_rounded,
-                          label: 'Offers',
-                          value: '${need.numberOfOffers} offers',
+                          label: l10n.offersLabel,
+                          value: l10n.offersCount(need.numberOfOffers),
                         ),
                         if (need.timeRemaining != null)
                           _NeedFact(
                             icon: Icons.schedule_rounded,
-                            label: 'Timeline',
+                            label: l10n.timelineLabel,
                             value: need.timeRemaining!,
                           ),
                         if (need.trustIsVerified)
-                          const _NeedFact(
+                          _NeedFact(
                             icon: Icons.verified_user_rounded,
-                            label: 'Trust',
-                            value: 'Verified requester',
+                            label: l10n.trustLabel,
+                            value: l10n.verifiedRequester,
                           ),
                       ],
                     ),
                     if (need.details.isNotEmpty) ...[
                       const SizedBox(height: 20),
                       Text(
-                        'CATEGORY DETAILS',
+                        l10n.categoryDetailsLabel,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: const Color(0xFFF59E0B),
                           fontWeight: FontWeight.w800,
@@ -1057,7 +1058,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                     if (need.specification.trim().isNotEmpty) ...[
                       const SizedBox(height: 20),
                       Text(
-                        'ABOUT THE NEED',
+                        l10n.aboutNeedLabel,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w800,
@@ -1138,7 +1139,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
               if (!hasAlreadyOffered && acceptedOffer == null)
                 ElevatedButton.icon(
                   icon: const Icon(Icons.handshake_rounded),
-                  label: const Text('Make an Offer on this Need'),
+                  label: Text(l10n.makeAnOffer),
                   onPressed: () => _showMakeOfferSheet(need),
                 ),
             ],
