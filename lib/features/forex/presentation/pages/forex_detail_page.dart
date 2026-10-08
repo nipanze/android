@@ -696,7 +696,7 @@ class _MakeOfferSheetState extends State<_MakeOfferSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.72,
+        initialChildSize: 0.5,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
