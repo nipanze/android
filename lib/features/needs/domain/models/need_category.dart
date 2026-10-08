@@ -66,6 +66,55 @@ class NeedCategory {
     return baseDescription ?? description;
   }
 
+  String localizedName(String? localeCode) {
+    final code = localeCode?.toLowerCase();
+    final map = switch (code) {
+      'rw' => {
+          'professional_services': 'Serivisi z\'Ubucuruzi',
+          'machinery_equipment': 'Imashini n\'Ibikoresho',
+          'transport_logistics': 'Ibikorwa by\'ubuhahirane',
+          'specialized_products': 'Ibicuruzwa byihariye',
+          'education_training': 'Amashuri n\'Amasomo',
+          'travel_international': 'Ingendo n\'Ububanyi',
+          'music_video': 'Umuziki na Videwo',
+          'weddings_celebrations': 'Ubukwe n\'Amatariki',
+        },
+      'fr' => {
+          'professional_services': 'Services professionnels',
+          'machinery_equipment': 'Machinerie et équipements',
+          'transport_logistics': 'Transport et logistique',
+          'specialized_products': 'Produits spécialisés',
+          'education_training': 'Éducation et formation',
+          'travel_international': 'Voyages et international',
+          'music_video': 'Musique et vidéo',
+          'weddings_celebrations': 'Mariages et célébrations',
+        },
+      'sw' => {
+          'professional_services': 'Huduma za kitaalamu',
+          'machinery_equipment': 'Mashine na vifaa',
+          'transport_logistics': 'Usafirishaji na vifaa',
+          'specialized_products': 'Bidhaa maalum',
+          'education_training': 'Elimu na mafunzo',
+          'travel_international': 'Usafiri na kimataifa',
+          'music_video': 'Muziki na video',
+          'weddings_celebrations': 'Harusi na sherehe',
+        },
+      'ar' => {
+          'professional_services': 'الخدمات المهنية',
+          'machinery_equipment': 'الآلات والمعدات',
+          'transport_logistics': 'النقل والخدمات اللوجستية',
+          'specialized_products': 'المنتجات المتخصصة',
+          'education_training': 'التعليم والتدريب',
+          'travel_international': 'السفر والدولي',
+          'music_video': 'الموسيقى والفيديو',
+          'weddings_celebrations': 'الزفاف والاحتفالات',
+        },
+      _ => const <String, String>{},
+    };
+
+    return map[slug] ?? baseName ?? name;
+  }
+
   static const List<NeedCategory> defaultCategories = [
     NeedCategory(
       slug: 'machinery_equipment',

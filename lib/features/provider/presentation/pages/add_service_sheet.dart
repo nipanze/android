@@ -315,6 +315,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final localeCode = Localizations.localeOf(context).languageCode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -363,7 +364,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             ? l10n.chooseCategory
                             : _showMarketing
                                 ? l10n.marketingAndPromotion
-                                : (_selectedCategory?.name ??
+                                : (_selectedCategory?.localizedName(localeCode) ??
                                     l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
@@ -492,6 +493,7 @@ class _CategoryList extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final bg3 = isDark ? AppColors.bg3Dark : AppColors.bg3Light;
+    final localeCode = Localizations.localeOf(context).languageCode;
 
     return ListView.separated(
       controller: scrollController,
@@ -510,7 +512,7 @@ class _CategoryList extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
           ),
-          title: Text(cat.name,
+          title: Text(cat.localizedName(localeCode),
               style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: cat.description == null || cat.description!.isEmpty
               ? null
@@ -553,6 +555,7 @@ class _CapabilityList extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final localeCode = Localizations.localeOf(context).languageCode;
 
     return ListView.separated(
       controller: scrollController,
@@ -585,7 +588,7 @@ class _CapabilityList extends StatelessWidget {
                   activeColor: AppColors.accent,
                 ),
           title: Text(
-            cap.name,
+            cap.localizedName(localeCode),
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: alreadyOwned ? text2 : null,
@@ -643,7 +646,8 @@ class _FinancialCapabilityList extends StatelessWidget {
           Builder(builder: (context) {
             final alreadyOwned = existingSlugs.contains(cap.slug);
             final isSelected = selected.contains(cap.slug);
-            final name = _financialCapabilityName(cap.slug, cap.name, l10n);
+            final localeCode = Localizations.localeOf(context).languageCode;
+            final name = cap.localizedName(localeCode);
             return Column(
               children: [
                 ListTile(
@@ -803,7 +807,8 @@ class _MarketingCapabilityList extends StatelessWidget {
           Builder(builder: (context) {
             final alreadyOwned = existingSlugs.contains(capability.slug);
             final isSelected = selected.contains(capability.slug);
-            final name = _marketingCapabilityName(capability.slug, l10n);
+            final localeCode = Localizations.localeOf(context).languageCode;
+            final name = capability.localizedName(localeCode);
             return Column(
               children: [
                 ListTile(

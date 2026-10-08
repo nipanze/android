@@ -68,6 +68,18 @@ void main() {
     expect(capability.nameForCountry('KE'), 'DJs / MCs');
   });
 
+  test('service labels follow the app locale when no country override exists', () {
+    final category = NeedCategory.defaultCategories
+        .firstWhere((category) => category.slug == 'professional_services');
+    final capability = NeedCapability.defaults
+        .firstWhere((capability) => capability.slug == 'company_registration');
+
+    expect(category.localizedName('rw'), 'Serivisi z\'Ubucuruzi');
+    expect(category.localizedName('fr'), 'Services professionnels');
+    expect(capability.localizedName('rw'), 'Iyandikisha ry\'ikorporasiyo');
+    expect(capability.localizedName('en'), 'Company Registration & Legal');
+  });
+
   test('creative and celebration categories have structured request fields',
       () {
     expect(
