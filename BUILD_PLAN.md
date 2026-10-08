@@ -239,3 +239,13 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - No database changes or offline synchronization are introduced.
 
 **Acceptance checks:** existing loaded feed/profile/services/activity content stays visible after a failed refresh; first-load failures retain a retry option; connectivity feedback appears once per state transition; reconnection refreshes data; caches clear on sign-out.
+
+## 12. Loan-only borrower information and non-financial Needs categories
+
+- Keep `financial_services` out of the active Needs category and capability catalogs without deleting historical category, capability, or request rows. Filter the retired slug in the Needs client, disable its reference rows, and reject new Needs inserts/category changes using the standalone migration.
+- Do not add a Financial Profile, Income Profile, or Banking Profile to Account, onboarding, or general profile editing.
+- Store reusable employment status, employer/business name, government employee status, monthly income range, other income source, and preferred bank in the dedicated `public.borrower_information` table. RLS permits authenticated users to read and update only their own row. Do not join this table into any public marketplace view.
+- Collect and pre-fill these values only in Post → Loan. Saving loan-specific details (amount, purpose, repayment period, collateral, and request requirements) remains specific to each request.
+- Migration: `sql/20261008_private_borrower_information.sql`. Never add this change to `sql/patch.sql`.
+
+**Acceptance checks:** Financial Services is absent from the Needs picker and rejected for new Needs requests; old rows remain intact; the private borrower row is inaccessible to anon/other users; first and subsequent Loan Requests can enter, reuse, edit, and update borrower information; public Loan/Forex/Needs listing payloads do not include these fields; Account, Forex, Loans marketplace, and existing Needs behavior otherwise remain intact.

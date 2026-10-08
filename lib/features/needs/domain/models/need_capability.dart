@@ -559,40 +559,5 @@ class NeedCapability {
       categorySlug: 'weddings_celebrations',
       name: 'Other Social Celebrations',
     ),
-    NeedCapability(
-      slug: 'bank_loan_agent',
-      categorySlug: 'financial_services',
-      name: 'Bank Loan Agent',
-    ),
-    NeedCapability(
-      slug: 'money_lender_private_lender',
-      categorySlug: 'financial_services',
-      name: 'Money Lender / Private Lender',
-    ),
-    NeedCapability(
-      slug: 'financial_advisory',
-      categorySlug: 'financial_services',
-      name: 'Financial Advisory',
-    ),
-    NeedCapability(
-      slug: 'forex_currency_exchange',
-      categorySlug: 'financial_services',
-      name: 'Forex / Currency Exchange',
-    ),
-    NeedCapability(
-      slug: 'loan_services',
-      categorySlug: 'financial_services',
-      name: 'Loan Services',
-    ),
-    NeedCapability(
-      slug: 'sacco_microfinance',
-      categorySlug: 'financial_services',
-      name: 'SACCO / Microfinance Services',
-    ),
-    NeedCapability(
-      slug: 'other_financial_services',
-      categorySlug: 'financial_services',
-      name: 'Other Financial Services',
-    ),
   ];
 }

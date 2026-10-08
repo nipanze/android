@@ -47,10 +47,12 @@ class NeedsRepository {
           .from(TableNames.needCategories)
           .select()
           .eq('is_active', true)
+          .neq('slug', 'financial_services')
           .order('sort_order', ascending: true);
 
       return (data as List)
           .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
+          .where((category) => category.slug != 'financial_services')
           .toList();
     } catch (_) {
       return NeedCategory.defaultCategories;
@@ -59,6 +61,7 @@ class NeedsRepository {
 
   /// Fetch capabilities for a category
   Future<List<NeedCapability>> getCapabilities({String? categorySlug}) async {
+    if (categorySlug == 'financial_services') return const [];
     try {
       final countryCode = await _getCountryCode();
       var query = _client.from(TableNames.needCapabilities).select();
@@ -71,6 +74,8 @@ class NeedsRepository {
 
       return (data as List)
           .map((e) => NeedCapability.fromMap(e, countryCode: countryCode))
+          .where(
+              (capability) => capability.categorySlug != 'financial_services')
           .toList();
     } catch (_) {
       if (categorySlug != null) {
@@ -96,6 +101,11 @@ class NeedsRepository {
     required String urgency,
     required String country,
   }) async {
+    if (categorySlug == 'financial_services') {
+      throw const ValidationException(
+        'Financial services requests belong in Loans or Forex, not Needs.',
+      );
+    }
     try {
       final data = await _client
           .from(TableNames.needsRequests)

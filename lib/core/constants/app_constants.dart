@@ -7,6 +7,7 @@ class TableNames {
   static const String subscriptions = 'subscriptions';
   static const String kycVerifications = 'kyc_verifications';
   static const String loanRequests = 'loan_requests';
+  static const String borrowerInformation = 'borrower_information';
   static const String loanOffers = 'loan_offers';
   static const String forexRequests = 'forex_requests';
   static const String forexOffers = 'forex_offers';

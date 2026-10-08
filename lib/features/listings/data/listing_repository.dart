@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../domain/models/borrower_information.dart';
 import '../domain/models/my_listing.dart';
 
 @lazySingleton
@@ -12,6 +13,31 @@ class ListingRepository {
   final SupabaseClient _client;
 
   String get _uid => _client.auth.currentUser!.id;
+
+  Future<BorrowerInformation?> getBorrowerInformation() async {
+    try {
+      final data = await _client
+          .from(TableNames.borrowerInformation)
+          .select()
+          .eq('user_id', _uid)
+          .maybeSingle();
+      return data == null ? null : BorrowerInformation.fromMap(data);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> saveBorrowerInformation(
+    BorrowerInformation information,
+  ) async {
+    try {
+      await _client
+          .from(TableNames.borrowerInformation)
+          .upsert(information.toMap(_uid), onConflict: 'user_id');
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
 
   /// Fetch all loan requests belonging to the current borrower.
   Future<List<MyListing>> getMyListings() async {

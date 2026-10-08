@@ -39,7 +39,8 @@ class MarketplaceRepository {
     MarketplaceModule? module,
     String? country,
   }) async {
-    final cacheKey = _cacheKey(district: district, module: module, country: country);
+    final cacheKey =
+        _cacheKey(district: district, module: module, country: country);
     final cached = _sessionCache[cacheKey];
     if (cached != null && cached.isNotEmpty) {
       return List<MarketplaceItem>.from(cached);
@@ -122,11 +123,14 @@ class MarketplaceRepository {
 
         return LoanListing.fromMap(data);
       } catch (_) {
-        final data = await _client
-            .from(TableNames.loanRequests)
-            .select()
-            .eq('id', requestId)
-            .single();
+        final data = await _client.from(TableNames.loanRequests).select('''
+              id, title, purpose, district, country, duration_months,
+              requested_amount, preferred_repayment_plan,
+              repayment_amount_per_period, repayment_timeline,
+              suggested_interest_rate_pct, suggested_late_fee_pct,
+              suggested_repayment_frequency, suggested_installment_amount,
+              terms_locked_at, status, number_of_offers, listed_at, expires_at
+            ''').eq('id', requestId).single();
 
         return LoanListing.fromMap(data);
       }

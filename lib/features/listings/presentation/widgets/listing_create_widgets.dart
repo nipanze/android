@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../domain/models/repayment_calculator.dart';
 
 /// Formats an integer amount with comma thousands separators.
 String fmtAmount(int n) {
@@ -260,11 +261,10 @@ class LiveRepaymentMathPanel extends StatelessWidget {
       );
     }
 
-    final int periods = switch (repaymentPlan) {
-      'weekly' => durationMonths * 4,
-      'one_time' => 1,
-      _ => durationMonths,
-    };
+    final int periods = RepaymentCalculator.paymentCount(
+      durationMonths: durationMonths,
+      repaymentPlan: repaymentPlan!,
+    );
 
     final int totalPayback =
         installmentAmount > 0 ? installmentAmount * periods : 0;

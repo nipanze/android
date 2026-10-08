@@ -50,8 +50,7 @@ class NeedCategory {
   final bool isActive;
   final bool providerVerificationRequired;
 
-  bool get requiresProviderVerification =>
-      providerVerificationRequired;
+  bool get requiresProviderVerification => providerVerificationRequired;
 
   String nameForCountry(String? countryCode) {
     final labels = countryLabels[countryCode?.toUpperCase()];
@@ -68,14 +67,6 @@ class NeedCategory {
   }
 
   static const List<NeedCategory> defaultCategories = [
-    NeedCategory(
-      slug: 'financial_services',
-      name: 'Financial Services',
-      icon: '💰',
-      description: 'Loan services, forex exchange, bank agents, SACCO, microfinance, and financial advisory.',
-      sortOrder: 1,
-      isActive: true,
-    ),
     NeedCategory(
       slug: 'machinery_equipment',
       name: 'Machinery & Equipment',

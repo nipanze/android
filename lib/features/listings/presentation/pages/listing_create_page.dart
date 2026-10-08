@@ -15,6 +15,8 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/listing_repository.dart';
+import '../../domain/models/borrower_information.dart';
+import '../../domain/models/repayment_calculator.dart';
 import '../widgets/listing_create_widgets.dart';
 
 // ─── Purpose options ──────────────────────────────────────────────────────────
@@ -33,6 +35,25 @@ const _purposes = [
   'Water & Sanitation',
   'Wedding / Event',
   'Other',
+];
+
+const _employmentStatuses = [
+  ('government_employed', 'Government employed'),
+  ('private_sector', 'Private sector'),
+  ('self_employed', 'Self-employed'),
+  ('business_owner', 'Business owner'),
+  ('student', 'Student'),
+  ('unemployed', 'Unemployed'),
+  ('other', 'Other'),
+];
+
+const _monthlyIncomeRanges = [
+  'no_regular_income',
+  'under_500k',
+  '500k_1m',
+  '1m_2m',
+  '2m_3m',
+  'over_3m',
 ];
 
 const _repaymentPlans = [
@@ -83,7 +104,7 @@ class ListingCreatePage extends StatefulWidget {
 
 class _ListingCreatePageState extends State<ListingCreatePage> {
   final _pageController = PageController();
-  int _step = 0; // 0 = loan details, 1 = repayment context, 2 = review
+  int _step = 0;
 
   // Step 1 fields
   final _titleController = TextEditingController();
@@ -109,6 +130,19 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   String? _suggestedRepaymentPlan;
   String? _selectedDueDay;
   String? _selectedDueTime;
+
+  // Step 3: reusable borrower information, requested only in the Loan flow.
+  final _employerBusinessNameController = TextEditingController();
+  final _otherIncomeSourceController = TextEditingController();
+  final _preferredBankController = TextEditingController();
+  final _borrowerInformationFormKey = GlobalKey<FormState>();
+  String? _employmentStatus;
+  bool? _isGovernmentEmployee;
+  String? _monthlyIncomeRange;
+  String? _incomeRangeCurrency;
+  BorrowerInformation? _savedBorrowerInformation;
+  bool _borrowerInformationLoading = true;
+  String? _borrowerInformationLoadError;
 
   void _updateRepaymentTimeline() {
     final parts = <String>[];
@@ -155,10 +189,95 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       _incomeSourceController,
       _repaymentAmountController,
       _repaymentTimelineController,
+      _employerBusinessNameController,
+      _otherIncomeSourceController,
+      _preferredBankController,
     ]) {
       controller.addListener(_refreshButtonState);
     }
     _loadLimits();
+    _loadBorrowerInformation();
+  }
+
+  Future<void> _loadBorrowerInformation() async {
+    try {
+      final information =
+          await getIt<ListingRepository>().getBorrowerInformation();
+      if (!mounted) return;
+      _savedBorrowerInformation = information;
+      if (information != null) {
+        _applyBorrowerInformation(information);
+      }
+      setState(() {
+        _borrowerInformationLoading = false;
+        _borrowerInformationLoadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _borrowerInformationLoading = false;
+        _borrowerInformationLoadError = parseSupabaseError(e).message;
+      });
+    }
+  }
+
+  void _applyBorrowerInformation(BorrowerInformation information) {
+    _employmentStatus = information.employmentStatus;
+    _employerBusinessNameController.text =
+        information.employerBusinessName ?? '';
+    _isGovernmentEmployee = information.isGovernmentEmployee;
+    _monthlyIncomeRange = information.monthlyIncomeRange;
+    _incomeRangeCurrency = information.incomeCurrency;
+    _otherIncomeSourceController.text = information.otherIncomeSource ?? '';
+    _preferredBankController.text = information.preferredBank ?? '';
+  }
+
+  void _useSavedBorrowerInformation() {
+    final information = _savedBorrowerInformation;
+    if (information == null) return;
+    _applyBorrowerInformation(information);
+    setState(() {});
+  }
+
+  Future<void> _retryBorrowerInformationLoad() async {
+    setState(() {
+      _borrowerInformationLoading = true;
+      _borrowerInformationLoadError = null;
+    });
+    await _loadBorrowerInformation();
+  }
+
+  BorrowerInformation get _borrowerInformation => BorrowerInformation(
+        employmentStatus: _employmentStatus!,
+        employerBusinessName: _employerBusinessNameController.text,
+        isGovernmentEmployee: _isGovernmentEmployee!,
+        monthlyIncomeRange: _monthlyIncomeRange!,
+        incomeCurrency: _incomeRangeCurrency ?? _currencyCode,
+        otherIncomeSource: _otherIncomeSourceController.text,
+        preferredBank: _preferredBankController.text,
+      );
+
+  bool get _borrowerInformationReady {
+    final status = _employmentStatus;
+    final requiresEmployer = status == 'government_employed' ||
+        status == 'private_sector' ||
+        status == 'self_employed' ||
+        status == 'business_owner';
+    final expectedGovernmentEmployee = status == 'government_employed';
+    return !_borrowerInformationLoading &&
+        status != null &&
+        _isGovernmentEmployee != null &&
+        (status == 'other' ||
+            _isGovernmentEmployee == expectedGovernmentEmployee) &&
+        _monthlyIncomeRange != null &&
+        (!requiresEmployer ||
+            _employerBusinessNameController.text.trim().isNotEmpty);
+  }
+
+  bool get _borrowerInformationValid {
+    final formValid = _borrowerInformationFormKey.currentState?.validate() ??
+        _borrowerInformationReady;
+    return formValid && _borrowerInformationReady;
   }
 
   Future<void> _loadLimits() async {
@@ -180,6 +299,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       _incomeSourceController,
       _repaymentAmountController,
       _repaymentTimelineController,
+      _employerBusinessNameController,
+      _otherIncomeSourceController,
+      _preferredBankController,
     ]) {
       controller.removeListener(_refreshButtonState);
     }
@@ -194,6 +316,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     _incomeSourceController.dispose();
     _repaymentAmountController.dispose();
     _repaymentTimelineController.dispose();
+    _employerBusinessNameController.dispose();
+    _otherIncomeSourceController.dispose();
+    _preferredBankController.dispose();
     _suggestedInterestController.dispose();
     _suggestedLateFeeController.dispose();
     _suggestedInstallmentController.dispose();
@@ -236,12 +361,46 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   bool get _currentStepReady => switch (_step) {
         0 => _loanDetailsReady,
         1 => _repaymentReady,
-        _ => _loanDetailsReady && _repaymentReady,
+        2 => _borrowerInformationReady,
+        _ => _loanDetailsReady && _repaymentReady && _borrowerInformationReady,
       };
 
   String get _purposeValue => _selectedPurpose == 'Other'
       ? (_customPurpose ?? '')
       : (_selectedPurpose ?? '');
+
+  int? get _suggestedPrincipalInstallment =>
+      RepaymentCalculator.principalInstallment(
+        principal: int.tryParse(_amountController.text) ?? 0,
+        durationMonths: int.tryParse(_durationController.text) ?? 0,
+        repaymentPlan: _preferredRepaymentPlan,
+      );
+
+  int? get _monthlyPrincipalEstimate =>
+      RepaymentCalculator.principalInstallment(
+        principal: int.tryParse(_amountController.text) ?? 0,
+        durationMonths: int.tryParse(_durationController.text) ?? 0,
+        repaymentPlan: 'monthly',
+      );
+
+  List<int> get _quickLoanAmounts {
+    final minimum = _limits.minLoanAmount;
+    final maximum = _limits.maxLoanAmount;
+    if (minimum <= 0 || maximum < minimum) return const [];
+    return {
+      minimum,
+      (minimum > maximum ~/ 5 ? maximum : minimum * 5),
+      (minimum > maximum ~/ 10 ? maximum : minimum * 10),
+    }.toList()
+      ..sort();
+  }
+
+  void _applySuggestedInstallment() {
+    final suggestion = _suggestedPrincipalInstallment;
+    if (suggestion != null) {
+      _repaymentAmountController.text = suggestion.toString();
+    }
+  }
 
   bool get _loanDetailsValid {
     // currentState may be null when PageView has disposed the page (step 3 view).
@@ -298,7 +457,11 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       }
       return;
     }
-    if (_step >= 2) return;
+    if (_step == 2 && !_borrowerInformationValid) {
+      _borrowerInformationFormKey.currentState?.validate();
+      return;
+    }
+    if (_step >= 3) return;
     setState(() => _step += 1);
     _pageController.nextPage(
         duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -319,11 +482,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final currency = _currencyCode;
     final principal = int.tryParse(_amountController.text) ?? 0;
     final installment = int.tryParse(_repaymentAmountController.text) ?? 0;
-    final periods = switch (_preferredRepaymentPlan) {
-      'weekly' => (int.tryParse(_durationController.text) ?? 0) * 4,
-      'one_time' => 1,
-      _ => int.tryParse(_durationController.text) ?? 0,
-    };
+    final periods = _preferredRepaymentPlan == null
+        ? 0
+        : RepaymentCalculator.paymentCount(
+            durationMonths: int.tryParse(_durationController.text) ?? 0,
+            repaymentPlan: _preferredRepaymentPlan!,
+          );
     final totalRepayment = installment * periods;
 
     if (principal <= 0 || totalRepayment >= principal) return true;
@@ -362,9 +526,10 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   Future<void> _submit() async {
     if (!await ensureOnlineForAction(context) || !mounted) return;
     final l10n = AppLocalizations.of(context);
-    if (!_loanDetailsValid || !_repaymentValid) {
+    if (!_loanDetailsValid || !_repaymentValid || !_borrowerInformationValid) {
       _loanDetailsFormKey.currentState?.validate();
       _repaymentFormKey.currentState?.validate();
+      _borrowerInformationFormKey.currentState?.validate();
       if (!mounted) return;
 
       if (!_loanDetailsValid) {
@@ -380,6 +545,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         _showGate(
           l10n?.validationRepaymentPlanContinue ??
               'Please fix your repayment details before publishing.',
+        );
+      } else if (!_borrowerInformationValid) {
+        _pageController.jumpToPage(2);
+        setState(() => _step = 2);
+        _showGate(
+          'Please complete your employment and income information.',
         );
       }
       return;
@@ -412,7 +583,9 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     final collateralLocation = _collateralLocationController.text.trim();
     setState(() => _submitting = true);
     try {
-      await getIt<ListingRepository>().createListing(
+      final listingRepository = getIt<ListingRepository>();
+      await listingRepository.saveBorrowerInformation(_borrowerInformation);
+      await listingRepository.createListing(
         title: _titleController.text.trim(),
         purpose: _purposeValue.trim(),
         requestedAmount: int.parse(_amountController.text),
@@ -524,18 +697,23 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
               title: _titleForStep(),
               subtitle: l10n?.stepCounter(
                     _step + 1,
-                    3,
+                    4,
                     _subtitleForStep(),
                   ) ??
-                  'Step ${_step + 1} of 3 · ${_subtitleForStep()}',
-              progress: (_step + 1) / 3,
+                  'Step ${_step + 1} of 4 · ${_subtitleForStep()}',
+              progress: (_step + 1) / 4,
               onBack: _step > 0 ? _back : null,
             ),
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: [_buildStep1(), _buildStep2(), _buildStep3()],
+                children: [
+                  _buildStep1(),
+                  _buildStep2(),
+                  _buildStep3(),
+                  _buildStep4(),
+                ],
               ),
             ),
           ],
@@ -551,6 +729,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       case 1:
         return l10n?.stepIncomeRepayment ?? 'Income & repayment';
       case 2:
+        return 'Employment & banking';
+      case 3:
         return l10n?.stepReviewPublish ?? 'Review & publish';
       default:
         return l10n?.requestALoan ?? 'Request a loan';
@@ -588,6 +768,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
       case 1:
         return l10n?.subtitleRepaymentContext ?? 'repayment context';
       case 2:
+        return 'borrower information';
+      case 3:
         return l10n?.subtitleReview ?? 'review';
       default:
         return l10n?.subtitleLoanDetails ?? 'loan details';
@@ -709,6 +891,31 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     ? (l10n?.validationPurposeRequired ?? 'Select a purpose')
                     : null,
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Quick purpose',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  'Business expansion',
+                  'Education / School fees',
+                  'Emergency medical',
+                  'Inventory / Stock',
+                  'Transport / Vehicle',
+                ].map((purpose) {
+                  return ActionChip(
+                    label: Text(_getLocalizedPurpose(purpose)),
+                    onPressed: () => setState(() {
+                      _selectedPurpose = purpose;
+                      _customPurpose = null;
+                    }),
+                  );
+                }).toList(),
+              ),
               if (_selectedPurpose == 'Other') ...[
                 const SizedBox(height: 12),
                 TextFormField(
@@ -800,6 +1007,60 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Quick amount',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: _quickLoanAmounts.map((amount) {
+                  return ActionChip(
+                    label: Text('$currency ${fmtAmount(amount)}'),
+                    onPressed: () => setState(
+                      () => _amountController.text = amount.toString(),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Quick duration',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [3, 6, 12, 24, 36, 60].map((months) {
+                  return ActionChip(
+                    label: Text('$months months'),
+                    onPressed: () => setState(
+                      () => _durationController.text = months.toString(),
+                    ),
+                  );
+                }).toList(),
+              ),
+              if (_monthlyPrincipalEstimate case final estimate?) ...[
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Monthly principal-only guide: $currency '
+                    '${fmtAmount(estimate)} × '
+                    '${int.tryParse(_durationController.text)} months. '
+                    'Interest and fees are not included.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -987,6 +1248,29 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   return null;
                 },
               ),
+              const SizedBox(height: 6),
+              Text(
+                'Quick-fill income source',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  'Monthly salary',
+                  'Business income',
+                  'Farming income',
+                  'Rental income',
+                  'Contract work',
+                ].map((source) {
+                  return ActionChip(
+                    label: Text(source),
+                    onPressed: () =>
+                        setState(() => _incomeSourceController.text = source),
+                  );
+                }).toList(),
+              ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _preferredRepaymentPlan,
@@ -1042,6 +1326,27 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _suggestedPrincipalInstallment == null
+                      ? null
+                      : _applySuggestedInstallment,
+                  icon: const Icon(Icons.calculate_outlined),
+                  label: Text(
+                    _suggestedPrincipalInstallment == null
+                        ? 'Enter amount, duration, and repayment plan to calculate'
+                        : 'Calculate for me · $currency '
+                            '${fmtAmount(_suggestedPrincipalInstallment!)} per payment',
+                  ),
+                ),
+              ),
+              Text(
+                'Estimate divides the requested principal across the selected '
+                'payments. Interest and fees are not included.',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -1123,11 +1428,12 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             final principal = int.tryParse(_amountController.text) ?? 0;
             final installment =
                 int.tryParse(_repaymentAmountController.text) ?? 0;
-            final periods = switch (_preferredRepaymentPlan) {
-              'weekly' => (int.tryParse(_durationController.text) ?? 0) * 4,
-              'one_time' => 1,
-              _ => int.tryParse(_durationController.text) ?? 0,
-            };
+            final periods = _preferredRepaymentPlan == null
+                ? 0
+                : RepaymentCalculator.paymentCount(
+                    durationMonths: int.tryParse(_durationController.text) ?? 0,
+                    repaymentPlan: _preferredRepaymentPlan!,
+                  );
             final totalRepayment = installment * periods;
             if (installment <= 0 || principal <= 0)
               return const SizedBox.shrink();
@@ -1152,22 +1458,6 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             installmentAmount:
                 int.tryParse(_repaymentAmountController.text) ?? 0,
           ),
-          // ── Payment schedule timeline ─────────────────────────────────────
-          if (_preferredRepaymentPlan != null &&
-              _selectedDueDay != null &&
-              (int.tryParse(_repaymentAmountController.text) ?? 0) > 0 &&
-              (int.tryParse(_durationController.text) ?? 0) > 0) ...[
-            const SizedBox(height: 10),
-            RepaymentScheduleTimeline(
-              durationMonths: int.tryParse(_durationController.text) ?? 0,
-              repaymentPlan: _preferredRepaymentPlan!,
-              installmentAmount:
-                  int.tryParse(_repaymentAmountController.text) ?? 0,
-              currency: currency,
-              selectedDueDay: _selectedDueDay,
-              selectedDueTime: _selectedDueTime,
-            ),
-          ],
           const SizedBox(height: 10),
           ListingFormPanel(
             title: l10n?.panelPreferredTerms ?? 'Preferred terms',
@@ -1188,12 +1478,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                           // Recalculate installment suggestion based on interest
                           final principal =
                               int.tryParse(_amountController.text) ?? 0;
-                          final periods = switch (_preferredRepaymentPlan) {
-                            'weekly' =>
-                              (int.tryParse(_durationController.text) ?? 0) * 4,
-                            'one_time' => 1,
-                            _ => int.tryParse(_durationController.text) ?? 0,
-                          };
+                          final periods = _preferredRepaymentPlan == null
+                              ? 0
+                              : RepaymentCalculator.paymentCount(
+                                  durationMonths:
+                                      int.tryParse(_durationController.text) ??
+                                          0,
+                                  repaymentPlan: _preferredRepaymentPlan!,
+                                );
                           if (principal > 0 && periods > 0) {
                             final target = principal +
                                 (principal * (interest / 100)).ceil();
@@ -1318,9 +1610,238 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     );
   }
 
-  // ─── Step 3: Review & publish ───────────────────────────────────────────────
+  // ─── Step 3: Reusable borrower information ──────────────────────────────────
 
   Widget _buildStep3() {
+    final currency = _currencyCode;
+    final employerRequired = _employmentStatus == 'government_employed' ||
+        _employmentStatus == 'private_sector' ||
+        _employmentStatus == 'business_owner';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Form(
+        key: _borrowerInformationFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This information is private and used only for your loan requests. '
+              'It is not added to your public listing or general profile.',
+            ),
+            if (_borrowerInformationLoading) ...[
+              const SizedBox(height: 16),
+              const Center(child: CircularProgressIndicator()),
+            ],
+            if (_borrowerInformationLoadError != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Could not load your saved information: '
+                      '$_borrowerInformationLoadError',
+                    ),
+                    TextButton(
+                      onPressed: _retryBorrowerInformationLoad,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (_savedBorrowerInformation case final saved?) ...[
+              const SizedBox(height: 14),
+              ListingFormPanel(
+                title: 'Your saved information',
+                children: [
+                  Text(
+                    [
+                      'Employment status: '
+                          '${_employmentStatusLabel(saved.employmentStatus)}',
+                      if (saved.employerBusinessName?.isNotEmpty == true)
+                        'Employer / business: ${saved.employerBusinessName}',
+                      'Government employee: '
+                          '${saved.isGovernmentEmployee ? "Yes" : "No"}',
+                      'Monthly income range: '
+                          '${_incomeRangeLabel(saved.monthlyIncomeRange, saved.incomeCurrency)}',
+                      if (saved.preferredBank?.isNotEmpty == true)
+                        'Preferred bank: ${saved.preferredBank}',
+                    ].join('\n'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: _useSavedBorrowerInformation,
+                      icon: const Icon(Icons.restore_rounded),
+                      label: const Text('Use saved information'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 14),
+            ListingFormPanel(
+              title: 'Employment & income',
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: _employmentStatus,
+                  decoration: const InputDecoration(
+                    labelText: 'Employment status',
+                  ),
+                  items: _employmentStatuses
+                      .map(
+                        (status) => DropdownMenuItem(
+                          value: status.$1,
+                          child: Text(status.$2),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(() {
+                    _employmentStatus = value;
+                    if (value == 'government_employed') {
+                      _isGovernmentEmployee = true;
+                    } else if (value == 'private_sector' ||
+                        value == 'self_employed' ||
+                        value == 'business_owner' ||
+                        value == 'student' ||
+                        value == 'unemployed' ||
+                        value == 'other') {
+                      _isGovernmentEmployee = false;
+                    }
+                  }),
+                  validator: (value) =>
+                      value == null ? 'Select your employment status' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _employerBusinessNameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: employerRequired
+                        ? 'Employer / business name'
+                        : 'Employer / business name (optional)',
+                  ),
+                  validator: (value) {
+                    if (employerRequired && (value?.trim().isEmpty ?? true)) {
+                      return 'Enter your employer or business name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<bool>(
+                  initialValue: _isGovernmentEmployee,
+                  decoration: const InputDecoration(
+                    labelText: 'Government employee',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: true, child: Text('Yes')),
+                    DropdownMenuItem(value: false, child: Text('No')),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _isGovernmentEmployee = value),
+                  validator: (value) {
+                    if (value == null) return 'Select Yes or No';
+                    if (_employmentStatus != 'other' &&
+                        value != (_employmentStatus == 'government_employed')) {
+                      return 'Make this match your employment status';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _monthlyIncomeRange,
+                  decoration: const InputDecoration(
+                    labelText: 'Monthly income range',
+                  ),
+                  items: _monthlyIncomeRanges
+                      .map(
+                        (range) => DropdownMenuItem(
+                          value: range,
+                          child: Text(
+                            _incomeRangeLabel(
+                              range,
+                              _incomeRangeCurrency ?? currency,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(() {
+                    _monthlyIncomeRange = value;
+                    _incomeRangeCurrency = currency;
+                  }),
+                  validator: (value) =>
+                      value == null ? 'Select a monthly income range' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _otherIncomeSourceController,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Other income source (optional)',
+                    hintText: 'e.g. Farming, rent, or side business',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ListingFormPanel(
+              title: 'Banking',
+              children: [
+                TextFormField(
+                  controller: _preferredBankController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Preferred bank (optional)',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Changes to this information are saved for your next Loan Request '
+              'when you publish this one.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _employmentStatusLabel(String value) => _employmentStatuses
+      .firstWhere(
+        (status) => status.$1 == value,
+        orElse: () => (value, value),
+      )
+      .$2;
+
+  String _incomeRangeLabel(String value, String currency) {
+    return switch (value) {
+      'no_regular_income' => 'No regular income',
+      'under_500k' => 'Under $currency 500,000',
+      '500k_1m' => '$currency 500,000–1,000,000',
+      '1m_2m' => '$currency 1,000,000–2,000,000',
+      '2m_3m' => '$currency 2,000,000–3,000,000',
+      'over_3m' => 'Over $currency 3,000,000',
+      _ => value,
+    };
+  }
+
+  // ─── Step 4: Review & publish ───────────────────────────────────────────────
+
+  Widget _buildStep4() {
     final l10n = AppLocalizations.of(context);
     final amount = int.tryParse(_amountController.text) ?? 0;
     final duration = _durationController.text;
@@ -1471,22 +1992,6 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
           installmentAmount: repaymentAmount,
         ),
 
-        // ── Payment schedule preview ──────────────────────────────────────────
-        if (_preferredRepaymentPlan != null &&
-            _selectedDueDay != null &&
-            repaymentAmount > 0 &&
-            (int.tryParse(_durationController.text) ?? 0) > 0) ...[
-          const SizedBox(height: 10),
-          RepaymentScheduleTimeline(
-            durationMonths: int.tryParse(_durationController.text) ?? 0,
-            repaymentPlan: _preferredRepaymentPlan!,
-            installmentAmount: repaymentAmount,
-            currency: currency,
-            selectedDueDay: _selectedDueDay,
-            selectedDueTime: _selectedDueTime,
-          ),
-        ],
-
         const SizedBox(height: 16),
 
         // Non-custodial note
@@ -1533,7 +2038,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
             ),
             onPressed: _submitting || !_currentStepReady
                 ? null
-                : (_step < 2 ? _next : _submit),
+                : (_step < 3 ? _next : _submit),
             child: _submitting
                 ? const SizedBox(
                     height: 20,
@@ -1541,7 +2046,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
                 : Text(
-                    _step < 2
+                    _step < 3
                         ? (l10n?.btnContinue ?? 'Continue')
                         : (l10n?.btnPublishToMarketplace ??
                             'Publish to marketplace'),

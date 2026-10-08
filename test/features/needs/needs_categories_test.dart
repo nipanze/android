@@ -195,6 +195,23 @@ void main() {
     expect(travel.sortOrder, greaterThan(5));
   });
 
+  test('financial services is not an active Needs category or capability', () {
+    expect(
+      NeedCategory.defaultCategories.map((category) => category.slug),
+      isNot(contains('financial_services')),
+    );
+    expect(
+      NeedCategory.defaultCategories
+          .map((category) => category.name.toLowerCase()),
+      isNot(contains('financial services')),
+    );
+    expect(
+      NeedCapability.defaults.where(
+          (capability) => capability.categorySlug == 'financial_services'),
+      isEmpty,
+    );
+  });
+
   test('offline capability catalog includes creative and celebration services',
       () {
     final slugs = NeedCapability.defaults.map((capability) => capability.slug);
@@ -218,7 +235,9 @@ void main() {
   });
 
   group('Driving School & Driver Training taxonomy & matching', () {
-    test('Driving School appears under Professional Services and NOT Transport & Logistics', () {
+    test(
+        'Driving School appears under Professional Services and NOT Transport & Logistics',
+        () {
       final professionalServicesCapabilities = NeedCapability.defaults
           .where((c) => c.categorySlug == 'professional_services')
           .toList();
@@ -240,22 +259,31 @@ void main() {
       final drivingSchoolCap = professionalServicesCapabilities
           .firstWhere((c) => c.slug == 'driving_school');
       expect(drivingSchoolCap.categorySlug, 'professional_services');
-      expect(drivingSchoolCap.nameForCountry('UG'), 'Driving School / Driver Training');
-      expect(drivingSchoolCap.nameForCountry('KE'), 'Driving School & Driver Training');
+      expect(drivingSchoolCap.nameForCountry('UG'),
+          'Driving School / Driver Training');
+      expect(drivingSchoolCap.nameForCountry('KE'),
+          'Driving School & Driver Training');
     });
 
-    test('Professional Services form presets and quick values include Driving School', () {
-      final presets = NeedFormSchema.presetsForCategory('professional_services');
+    test(
+        'Professional Services form presets and quick values include Driving School',
+        () {
+      final presets =
+          NeedFormSchema.presetsForCategory('professional_services');
       expect(
         presets.map((p) => p.label),
         contains('Driving school'),
       );
 
-      final drivingPreset = presets.firstWhere((p) => p.label == 'Driving school');
-      expect(drivingPreset.details['service_type'], 'Driving School & Driver Training');
+      final drivingPreset =
+          presets.firstWhere((p) => p.label == 'Driving school');
+      expect(drivingPreset.details['service_type'],
+          'Driving School & Driver Training');
     });
 
-    test('existing providers with driving_school capability retain it under Professional Services', () {
+    test(
+        'existing providers with driving_school capability retain it under Professional Services',
+        () {
       final map = {
         'id': 'cap-driving-1',
         'user_id': 'u-provider-1',

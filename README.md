@@ -394,10 +394,19 @@ is not persisted as an offline-first store.
 
 ## 4.1 Single Source for Provider Capabilities
 Provider Services is the single place where a user declares what they provide across all marketplace modules (Needs, Loans, Forex):
-- **Financial Services Category (`financial_services`)**: Includes `loan_services`, `forex_currency_exchange`, `bank_loan_agent`, `sacco_microfinance`, `financial_advisory`, and `other_financial_services`.
+- **Provider Services financial capabilities** remain in Provider Services only; `financial_services` is not an active Needs category. Loans and Forex continue as standalone modules.
 - **Multi-Category Capabilities**: Users can hold capabilities across multiple categories simultaneously (e.g. Loan Services + Forex / Currency Exchange + Business Consulting + Excavator Hire).
 - **Service vs Professional Identity Separation**:
   - **Service**: What the provider offers (e.g., Loan Services, Forex / Currency Exchange).
   - **Professional Identity / Metadata**: Who they represent (Organisation/Bank name, Role, Professional Tag visibility, and Institution Matching permissions stored in capability metadata).
 - **Edit Profile Cleanup**: Income type, employer name, and monthly income are collected contextually in loan requests rather than general profile editing. Bank and professional agent blocks are moved into Provider Services capability metadata.
 - **Standalone Database Patch**: `sql/patch_provider_financial_services_v1.sql`.
+
+## 4.2 Loan-only borrower information
+
+- The Needs picker contains only active non-financial categories. Historical `financial_services` category and capability rows are retained but disabled by `sql/20261008_private_borrower_information.sql`; inserts or category changes cannot create financial Needs requests.
+- Nipanze does not add a Financial Profile, Income Profile, or Banking Profile to Account, onboarding, or general profile editing.
+- Employment status, employer/business name, government employee status, monthly income range and its currency, other income source, and preferred bank are collected inside Post → Loan only. Reusable values live in `public.borrower_information`, separate from `profiles` and all request/listing tables.
+- The table grants access only to the authenticated owner through RLS. It is not joined into public marketplace views or included in a Loan, Forex, Needs, Offer, or public-profile payload.
+- Future Loan Requests load the saved values into the loan form. The user can restore the saved values, edit them for the current request, and the edited values are saved for later Loan Requests. Loan amount, purpose, repayment terms, collateral, and other request details are still entered for each loan.
+- Apply the standalone SQL patch before using the updated Loan Request flow. Do not edit the monolithic `sql/patch.sql`.
