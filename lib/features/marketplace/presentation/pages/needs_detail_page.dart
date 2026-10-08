@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/localization_fallback.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -99,7 +100,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                 timelineController.text.trim().isNotEmpty &&
                 messageController.text.trim().length >= 5;
             final currencyFormat = NumberFormat.decimalPattern(
-              Localizations.localeOf(ctx).toLanguageTag(),
+              intlLocaleName(Localizations.localeOf(ctx)),
             );
             final priceText = price == null
                 ? ''

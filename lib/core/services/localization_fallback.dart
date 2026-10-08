@@ -8,6 +8,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+/// Returns a locale supported by `intl` for number and date formatting.
+String intlLocaleName(Locale locale) {
+  // `intl` has no Kinyarwanda (`rw`) data; use English formatting instead.
+  if (locale.languageCode == 'rw') return 'en';
+  return locale.toString();
+}
+
 /// Falls back to English material localizations for unsupported locales.
 class SafeMaterialLocalizationsDelegate
     extends LocalizationsDelegate<MaterialLocalizations> {

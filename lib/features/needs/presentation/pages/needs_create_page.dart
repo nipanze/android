@@ -8,6 +8,7 @@ import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/localization_fallback.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
@@ -745,7 +746,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     ? 'Maximum Budget (${_currency(authState)})'
                     : l10n.needsBudgetLabel(_currency(authState)),
                 NumberFormat.decimalPattern(
-                  Localizations.localeOf(context).toLanguageTag(),
+                  intlLocaleName(Localizations.localeOf(context)),
                 ).format(_budgetValue()),
               ),
               _previewRow(
@@ -890,7 +891,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     }
     final selectedLocation = _location ?? country.regions.first;
     final formatter = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toLanguageTag(),
+      intlLocaleName(Localizations.localeOf(context)),
     );
 
     final guidance = NeedFormSchema.guidanceForCategory(_categorySlug);
