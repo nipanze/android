@@ -10,6 +10,8 @@ import '../domain/models/user_discovery_plan.dart';
 class DiscoveryRepository {
   DiscoveryRepository(this._client);
 
+  static const _viewCooldown = Duration(hours: 18);
+
   final SupabaseClient _client;
 
   String? get _uid => _client.auth.currentUser?.id;
@@ -60,6 +62,9 @@ class DiscoveryRepository {
         } else if (action == 'mute' &&
             (mutedUntil == null || mutedUntil.isAfter(now))) {
           unavailable.add(templateId);
+        } else if (action == 'view' &&
+            (dismissedUntil == null || dismissedUntil.isAfter(now))) {
+          unavailable.add(templateId);
         } else if ((action == 'dismiss' || action == 'skip') &&
             (dismissedUntil == null || dismissedUntil.isAfter(now))) {
           unavailable.add(templateId);
@@ -71,7 +76,10 @@ class DiscoveryRepository {
       }
 
       for (final template in templates) {
-        if (!unavailable.contains(template.id)) return template;
+        if (!unavailable.contains(template.id)) {
+          await _recordView(template.id);
+          return template;
+        }
       }
       return null;
     } catch (e) {
@@ -193,6 +201,18 @@ class DiscoveryRepository {
       });
     } catch (e) {
       throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> _recordView(String templateId) async {
+    try {
+      await recordInteraction(
+        templateId: templateId,
+        action: 'view',
+        dismissFor: _viewCooldown,
+      );
+    } catch (_) {
+      // Discovery impressions should not block the card itself.
     }
   }
 

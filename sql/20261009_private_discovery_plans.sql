@@ -83,6 +83,7 @@ create table if not exists public.user_discovery_interactions (
   user_id uuid not null references auth.users(id) on delete cascade,
   template_id uuid not null references public.discovery_question_templates(id) on delete cascade,
   action text not null check (action in (
+    'view',
     'answer',
     'save',
     'skip',
@@ -96,6 +97,19 @@ create table if not exists public.user_discovery_interactions (
   updated_at timestamptz not null default now(),
   constraint user_discovery_interactions_answer_object check (jsonb_typeof(answer) = 'object')
 );
+
+alter table if exists public.user_discovery_interactions
+  drop constraint if exists user_discovery_interactions_action_check;
+alter table if exists public.user_discovery_interactions
+  add constraint user_discovery_interactions_action_check
+  check (action in (
+    'view',
+    'answer',
+    'save',
+    'skip',
+    'dismiss',
+    'mute'
+  ));
 
 create index if not exists idx_user_discovery_interactions_user
   on public.user_discovery_interactions(user_id, created_at desc);
