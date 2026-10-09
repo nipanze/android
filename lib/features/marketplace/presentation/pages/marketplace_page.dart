@@ -10,11 +10,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../discovery/data/discovery_repository.dart';
 import '../../../discovery/presentation/widgets/discovery_card.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
@@ -30,7 +32,14 @@ import '../widgets/pro_filters_sheet.dart';
 import '../widgets/pro_required_sheet.dart';
 
 class MarketplacePage extends StatelessWidget {
-  const MarketplacePage({super.key});
+  const MarketplacePage({
+    super.key,
+    this.initialModule,
+    this.interestCategorySlugs = const {},
+  });
+
+  final MarketplaceModule? initialModule;
+  final Set<String> interestCategorySlugs;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +52,28 @@ class MarketplacePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => getIt<MarketplaceCubit>()..load(country: userCountry),
+          create: (_) {
+            final cubit = getIt<MarketplaceCubit>();
+            unawaited(cubit.load(
+              country: userCountry,
+              module: initialModule,
+              interestCategorySlugs: interestCategorySlugs,
+            ));
+            if (initialModule == null && interestCategorySlugs.isEmpty) {
+              unawaited(() async {
+                try {
+                  final preferences = await getIt<DiscoveryRepository>()
+                      .getSavedInterestCategories();
+                  if (!cubit.isClosed) {
+                    cubit.setPersonalizationCategories(preferences);
+                  }
+                } catch (error) {
+                  OfflineService().reportRequestFailure(error);
+                }
+              }());
+            }
+            return cubit;
+          },
         ),
         BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
       ],
@@ -281,9 +311,26 @@ class _MarketplaceView extends StatelessWidget {
                                 icon: Icons.show_chart_rounded,
                                 title: AppLocalizations.of(context)!
                                     .noListingsFound,
-                                subtitle: AppLocalizations.of(context)!
-                                    .noListingsSubtitle,
+                                subtitle: state.moduleFilter ==
+                                            MarketplaceModule.needs &&
+                                        state.interestCategorySlugs.isNotEmpty
+                                    ? 'Your interests are saved for future recommendations.'
+                                    : AppLocalizations.of(context)!
+                                        .noListingsSubtitle,
                               ),
+                              if (state.moduleFilter ==
+                                      MarketplaceModule.needs &&
+                                  state.interestCategorySlugs.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                Center(
+                                  child: FilledButton.icon(
+                                    onPressed: () =>
+                                        context.push(AppRoutes.needsCreate),
+                                    icon: const Icon(Icons.add_rounded),
+                                    label: const Text('Create a Need'),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         );

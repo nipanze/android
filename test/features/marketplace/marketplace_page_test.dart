@@ -111,6 +111,8 @@ void main() {
     when(() =>
             discoveryRepository.getNextTemplate(country: any(named: 'country')))
         .thenAnswer((_) async => null);
+    when(() => discoveryRepository.getSavedInterestCategories())
+        .thenAnswer((_) async => {});
 
     getIt.registerFactory<MarketplaceCubit>(
       () => MarketplaceCubit(marketplaceRepository),

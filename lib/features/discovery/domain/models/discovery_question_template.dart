@@ -74,6 +74,7 @@ class DiscoveryAnswerOption {
   const DiscoveryAnswerOption({
     required this.value,
     required this.label,
+    this.categorySlug,
     this.savePlan = false,
   });
 
@@ -81,11 +82,13 @@ class DiscoveryAnswerOption {
     return DiscoveryAnswerOption(
       value: map['value'] as String? ?? '',
       label: map['label'] as String? ?? '',
+      categorySlug: map['category_slug'] as String?,
       savePlan: map['save_plan'] as bool? ?? false,
     );
   }
 
   final String value;
   final String label;
+  final String? categorySlug;
   final bool savePlan;
 }

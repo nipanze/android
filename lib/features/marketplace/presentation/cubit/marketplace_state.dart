@@ -78,6 +78,7 @@ class MarketplaceLoaded extends MarketplaceState {
     this.moduleFilter,
     this.proFilterCriteria = const ProFilterCriteria(),
     this.proFilterActive = false,
+    this.interestCategorySlugs = const {},
   });
 
   final List<MarketplaceItem> listings;
@@ -90,6 +91,7 @@ class MarketplaceLoaded extends MarketplaceState {
 
   /// True while the Pro filter RPC result is being applied to the feed.
   final bool proFilterActive;
+  final Set<String> interestCategorySlugs;
 
   MarketplaceLoaded copyWith({
     List<MarketplaceItem>? listings,
@@ -97,6 +99,7 @@ class MarketplaceLoaded extends MarketplaceState {
     MarketplaceModule? moduleFilter,
     ProFilterCriteria? proFilterCriteria,
     bool? proFilterActive,
+    Set<String>? interestCategorySlugs,
   }) {
     return MarketplaceLoaded(
       listings: listings ?? this.listings,
@@ -104,6 +107,8 @@ class MarketplaceLoaded extends MarketplaceState {
       moduleFilter: moduleFilter ?? this.moduleFilter,
       proFilterCriteria: proFilterCriteria ?? this.proFilterCriteria,
       proFilterActive: proFilterActive ?? this.proFilterActive,
+      interestCategorySlugs:
+          interestCategorySlugs ?? this.interestCategorySlugs,
     );
   }
 
@@ -113,7 +118,8 @@ class MarketplaceLoaded extends MarketplaceState {
         activeFilter,
         moduleFilter,
         proFilterCriteria,
-        proFilterActive
+        proFilterActive,
+        interestCategorySlugs
       ];
 }
 

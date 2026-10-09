@@ -257,6 +257,10 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - Added a reusable Flutter discovery card in `lib/features/discovery/` and inserted it into the Marketplace/Home feed without interrupting listing browsing.
 - Added Account -> Plans & interests for reviewing, editing, and deleting private saved plans.
 - Seeded starter templates for travel, education/career, business needs, and financial interests. Financial answers remain private discovery signals and do not create Needs posts.
+- Updated the business discovery template to multi-select Equipment, Logistics, Services, and Procurement; choices use the existing owner-scoped `user_interests` table.
+- The Explore route passes category filters into the real marketplace feed, while saved categories improve For You ranking without hiding unrelated listings.
+- Empty filtered results point to the existing Need creation flow; interest selection never publishes a request or asks for notification permission.
+- Skip and menu dismissal retain cooldowns, interest-save failures are surfaced, and internal prompt-generation wording was removed from the Need composer UI.
 - Publishing remains explicit: discovery answers can save a private plan only; no listing is automatically created.
 
 **Acceptance checks:** users can skip/dismiss/mute questions; saved plans remain private under RLS; plans can be edited/deleted from Account; existing Loans, Forex, Needs, provider services, contact reveal, and watchlist flows remain unchanged.

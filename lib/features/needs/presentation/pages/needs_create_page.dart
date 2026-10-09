@@ -305,7 +305,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('PROMPT IDEAS - TAP TO FILL'),
+        _sectionLabel('Quick suggestions'),
         const SizedBox(height: 7),
         _horizontalPills(
           presets

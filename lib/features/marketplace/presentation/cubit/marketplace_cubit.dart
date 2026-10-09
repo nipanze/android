@@ -41,9 +41,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       if (module == null) {
         return List<MarketplaceItem>.from(allCached);
       }
-      final filtered = allCached
-          .where((listing) => listing.module == module)
-          .toList();
+      final filtered =
+          allCached.where((listing) => listing.module == module).toList();
       if (filtered.isNotEmpty) return filtered;
     }
 
@@ -70,6 +69,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceModule? _moduleFilter;
   String? _viewerFeedKey;
   String? _countryFilter;
+  Set<String> _interestCategorySlugs = {};
+  Set<String> _personalizationCategorySlugs = {};
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
@@ -85,17 +86,27 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   /// Cached allowed request IDs from the last successful Pro filter RPC execution.
   Set<String>? _cachedProFilteredIds;
 
-  String get _cacheKey =>
-      '${_moduleFilter?.name ?? 'all'}|${_countryFilter ?? ''}|${_districtFilter ?? ''}';
+  String get _cacheKey {
+    final interests = _interestCategorySlugs.toList()..sort();
+    return '${_moduleFilter?.name ?? 'all'}|${_countryFilter ?? ''}|${_districtFilter ?? ''}|${interests.join(',')}';
+  }
 
   // ── Public interface ──────────────────────────────────────────────────────
 
   Future<void> load(
-      {String? district, MarketplaceModule? module, String? country}) async {
+      {String? district,
+      MarketplaceModule? module,
+      String? country,
+      Set<String> interestCategorySlugs = const {},
+      Set<String>? personalizationCategorySlugs}) async {
     if (isClosed) return;
     _districtFilter = district;
     _moduleFilter = module;
     _countryFilter = country;
+    _interestCategorySlugs = {...interestCategorySlugs};
+    if (personalizationCategorySlugs != null) {
+      _personalizationCategorySlugs = {...personalizationCategorySlugs};
+    }
     _viewerFeedKey = _resolveViewerFeedKey();
 
     final key = _cacheKey;
@@ -121,7 +132,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       if (isClosed) return;
 
       final previousListings = _sessionCache[key];
-      if (listings.isEmpty && previousListings != null && previousListings.isNotEmpty) {
+      if (listings.isEmpty &&
+          previousListings != null &&
+          previousListings.isNotEmpty) {
         _allListings = previousListings;
         _sessionCache[key] = previousListings;
         _myOfferRequestIds = await _fetchMyOfferRequestIds();
@@ -162,7 +175,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Future<void> refresh() => load(
       district: _districtFilter,
       module: _moduleFilter,
-      country: _countryFilter);
+      country: _countryFilter,
+      interestCategorySlugs: _interestCategorySlugs,
+      personalizationCategorySlugs: _personalizationCategorySlugs);
 
   Future<void> setModuleFilter(MarketplaceModule? module) async {
     if (isClosed) return;
@@ -173,7 +188,11 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       _cachedProFilteredIds = null;
     }
     await load(
-        district: _districtFilter, module: module, country: _countryFilter);
+        district: _districtFilter,
+        module: module,
+        country: _countryFilter,
+        interestCategorySlugs: const {},
+        personalizationCategorySlugs: _personalizationCategorySlugs);
     if (_proFilter.isActive) {
       await applyProFilters(_proFilter);
     }
@@ -255,10 +274,27 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     _emitLoaded();
   }
 
+  Future<void> applyInterestFilters(Set<String> categorySlugs) async {
+    await load(
+      district: _districtFilter,
+      module: MarketplaceModule.needs,
+      country: _countryFilter,
+      interestCategorySlugs: categorySlugs,
+    );
+  }
+
+  void setPersonalizationCategories(Set<String> categorySlugs) {
+    if (isClosed) return;
+    _personalizationCategorySlugs = {...categorySlugs};
+    if (state is MarketplaceLoaded) _emitLoaded();
+  }
+
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _emitLoaded({List<MarketplaceItem>? overrideListings}) {
-    final visibleListings = (overrideListings ?? _allListings)
+    final interestFiltered =
+        _applyInterestFilter(overrideListings ?? _allListings);
+    final visibleListings = interestFiltered
         .where((l) => !_myOfferRequestIds.contains(_offerKey(l)))
         .toList();
     final rankedListings = _rankPersonalized(visibleListings);
@@ -271,7 +307,17 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       moduleFilter: _moduleFilter,
       proFilterCriteria: _proFilter,
       proFilterActive: false,
+      interestCategorySlugs: _interestCategorySlugs,
     ));
+  }
+
+  List<MarketplaceItem> _applyInterestFilter(List<MarketplaceItem> listings) {
+    if (_interestCategorySlugs.isEmpty) return listings;
+    return listings
+        .where((listing) =>
+            listing.needs != null &&
+            _interestCategorySlugs.contains(listing.needs!.categorySlug))
+        .toList();
   }
 
   void _subscribeRealtime() {
@@ -419,9 +465,19 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
     final trust = _trustScore(item);
     final fit = _listingFitScore(item);
+    final interestFit = item.needs != null &&
+            _personalizationCategorySlugs.contains(item.needs!.categorySlug)
+        ? 28.0
+        : 0.0;
     final jitter = _personalizedJitter(item) * 24;
 
-    return freshness + urgency + offerCoverage + trust + fit + jitter;
+    return freshness +
+        urgency +
+        offerCoverage +
+        trust +
+        fit +
+        interestFit +
+        jitter;
   }
 
   double _trustScore(MarketplaceItem item) {

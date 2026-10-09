@@ -199,6 +199,7 @@ insert into public.discovery_question_templates (
   category,
   need_category_slug,
   plan_type,
+  answer_type,
   options,
   follow_up_rules,
   country_codes,
@@ -213,6 +214,7 @@ insert into public.discovery_question_templates (
     'travel',
     'travel_international',
     'travel',
+    'single_select',
     '[
       {"value": "yes", "label": "Yes", "save_plan": true},
       {"value": "later", "label": "Maybe later"},
@@ -231,6 +233,7 @@ insert into public.discovery_question_templates (
     'education',
     'education_training',
     'education_career',
+    'single_select',
     '[
       {"value": "yes", "label": "Yes", "save_plan": true},
       {"value": "not_now", "label": "Not now"}
@@ -248,13 +251,14 @@ insert into public.discovery_question_templates (
     'business',
     'professional_services',
     'business',
+    'multi_select',
     '[
-      {"value": "equipment", "label": "Equipment", "save_plan": true},
-      {"value": "logistics", "label": "Logistics", "save_plan": true},
-      {"value": "services", "label": "Services", "save_plan": true},
-      {"value": "skip", "label": "Skip"}
+      {"value": "equipment", "label": "Equipment", "category_slug": "machinery_equipment"},
+      {"value": "logistics", "label": "Logistics", "category_slug": "transport_logistics"},
+      {"value": "services", "label": "Services", "category_slug": "professional_services"},
+      {"value": "procurement", "label": "Procurement", "category_slug": "specialized_products"}
     ]'::jsonb,
-    '{"equipment": ["preferred_location", "timeframe"], "logistics": ["preferred_location", "timeframe"], "services": ["preferred_location", "timeframe"]}'::jsonb,
+    '{"equipment": ["preferred_location", "timeframe"], "logistics": ["preferred_location", "timeframe"], "services": ["preferred_location", "timeframe"], "procurement": ["preferred_location", "timeframe"]}'::jsonb,
     array['UG','KE','TZ','RW','NG','ZA','EG'],
     30,
     'Discover opportunities',
@@ -267,6 +271,7 @@ insert into public.discovery_question_templates (
     'financial',
     null,
     'financial',
+    'single_select',
     '[
       {"value": "loans", "label": "Loans", "save_plan": true},
       {"value": "forex", "label": "Forex", "save_plan": true},
@@ -286,6 +291,7 @@ set
   category = excluded.category,
   need_category_slug = excluded.need_category_slug,
   plan_type = excluded.plan_type,
+  answer_type = excluded.answer_type,
   options = excluded.options,
   follow_up_rules = excluded.follow_up_rules,
   country_codes = excluded.country_codes,

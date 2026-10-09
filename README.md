@@ -137,6 +137,10 @@ Feed ranking = explicit weight + recent behavior. Muted categories are excluded 
 
 **Provider Opportunities** appears on Home only if the user has at least one active capability: "People are looking for what you provide: 3 Travel, 2 Machinery." One account, both experiences, no separate provider mode.
 
+### Context-aware discovery questions
+
+The optional For You discovery card offers multi-select interest categories. Choices are stored privately in the existing `user_interests` table under its owner-only RLS policy; they are not Need posts, provider offers, or notification subscriptions. “Explore opportunities” opens the real Needs feed filtered to selected categories, or the available Needs feed when no category is selected. A zero-result filter offers the existing Need creation flow and confirms that preferences remain saved. Skipping or dismissing a question hides it without affecting the marketplace feed.
+
 ### Suggested bottom navigation (proposal — changes current nav)
 
 Current: `Markets · Watchlist · Request · Activity · Account`

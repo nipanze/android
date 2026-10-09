@@ -1,5 +1,3 @@
-import '../../features/provider/presentation/pages/provider_services_page.dart';
-import '../../features/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,7 +5,6 @@ import '../../features/account/presentation/pages/account_page.dart';
 import '../../features/account/presentation/pages/blocked_users_page.dart';
 import '../../features/account/presentation/pages/profile_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
-import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -18,9 +15,11 @@ import '../../features/discovery/presentation/pages/saved_plans_page.dart';
 import '../../features/forex/presentation/pages/forex_create_page.dart';
 import '../../features/forex/presentation/pages/forex_detail_page.dart';
 import '../../features/forex/presentation/pages/my_forex_requests_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
 import '../../features/listings/presentation/pages/my_listings_page.dart';
+import '../../features/marketplace/domain/models/marketplace_item.dart';
 import '../../features/marketplace/presentation/pages/agreement_review_page.dart';
 import '../../features/marketplace/presentation/pages/contact_details_page.dart';
 import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
@@ -29,7 +28,9 @@ import '../../features/marketplace/presentation/pages/needs_detail_page.dart';
 import '../../features/marketplace/presentation/pages/proposed_deal_page.dart';
 import '../../features/needs/presentation/pages/needs_create_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
+import '../../features/provider/presentation/pages/provider_services_page.dart';
 import '../../features/referrals/presentation/pages/referrals_page.dart';
 import '../../features/watchlist/presentation/pages/watchlist_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
@@ -147,7 +148,27 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.marketplace,
             name: 'marketplace',
-            pageBuilder: (_, state) => _fade(state, const MarketplacePage()),
+            pageBuilder: (_, state) {
+              final initialModule =
+                  switch (state.uri.queryParameters['module']) {
+                'loan' => MarketplaceModule.loan,
+                'forex' => MarketplaceModule.forex,
+                'needs' => MarketplaceModule.needs,
+                _ => null,
+              };
+              final interests = (state.uri.queryParameters['interests'] ?? '')
+                  .split(',')
+                  .map((slug) => slug.trim())
+                  .where((slug) => slug.isNotEmpty)
+                  .toSet();
+              return _fade(
+                state,
+                MarketplacePage(
+                  initialModule: initialModule,
+                  interestCategorySlugs: interests,
+                ),
+              );
+            },
             routes: [
               GoRoute(
                 path: ':requestId',

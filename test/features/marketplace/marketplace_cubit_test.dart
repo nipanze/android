@@ -48,6 +48,32 @@ void main() {
       numberOfOffers: 2,
     )),
   ];
+  final testNeeds = [
+    MarketplaceItem.needs(NeedsListing(
+      requestId: 'need-equipment',
+      title: 'Equipment request',
+      specification: 'Equipment needed',
+      category: 'Machinery & Equipment',
+      categorySlug: 'machinery_equipment',
+      budget: 100000,
+      currency: 'UGX',
+      location: 'Kampala',
+      urgency: 'Flexible',
+      listedAt: DateTime.utc(2026, 1, 1),
+    )),
+    MarketplaceItem.needs(NeedsListing(
+      requestId: 'need-services',
+      title: 'Business service request',
+      specification: 'Service needed',
+      category: 'Professional Services',
+      categorySlug: 'professional_services',
+      budget: 100000,
+      currency: 'UGX',
+      location: 'Kampala',
+      urgency: 'Flexible',
+      listedAt: DateTime.utc(2026, 1, 1),
+    )),
+  ];
 
   setUp(() {
     MarketplaceCubit.clearSessionCache();
@@ -84,6 +110,48 @@ void main() {
             .having((s) => s.listings.length, 'listings count', 2),
       ],
     );
+
+    blocTest<MarketplaceCubit, MarketplaceState>(
+      'filters Needs to selected interest categories',
+      build: () {
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => testNeeds);
+        return MarketplaceCubit(mockRepo);
+      },
+      act: (cubit) => cubit.load(
+        module: MarketplaceModule.needs,
+        interestCategorySlugs: {'machinery_equipment'},
+      ),
+      skip: 1,
+      expect: () => [
+        isA<MarketplaceLoaded>()
+            .having((state) => state.listings.length, 'matching Needs', 1)
+            .having((state) => state.listings.first.requestId,
+                'matching request', 'need-equipment')
+            .having((state) => state.interestCategorySlugs,
+                'selected categories', {'machinery_equipment'}),
+      ],
+    );
+
+    test('saved interests rank relevant Needs higher without filtering others',
+        () async {
+      when(() => mockRepo.getListings(
+            district: any(named: 'district'),
+            module: any(named: 'module'),
+          )).thenAnswer((_) async => testNeeds);
+      final cubit = MarketplaceCubit(mockRepo);
+
+      await cubit.load();
+      cubit.setPersonalizationCategories({'machinery_equipment'});
+
+      final listings = (cubit.state as MarketplaceLoaded).listings;
+      expect(listings, hasLength(2));
+      expect(listings.first.requestId, 'need-equipment');
+      expect(listings.map((item) => item.requestId), contains('need-services'));
+      await cubit.close();
+    });
 
     blocTest<MarketplaceCubit, MarketplaceState>(
       'keeps the last successful feed visible when a refresh fails',

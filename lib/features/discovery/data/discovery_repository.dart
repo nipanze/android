@@ -204,6 +204,64 @@ class DiscoveryRepository {
     }
   }
 
+  Future<Set<String>> getSavedInterestCategories() async {
+    final uid = _uid;
+    if (uid == null) return const {};
+
+    try {
+      final rows = await _client
+          .from(TableNames.userInterests)
+          .select('category_slug, kind')
+          .eq('user_id', uid);
+      return (rows as List)
+          .map((row) => Map<String, dynamic>.from(row as Map))
+          .where((row) => row['kind'] != 'mute')
+          .map((row) => row['category_slug'] as String?)
+          .whereType<String>()
+          .toSet();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> saveInterestCategories(Set<String> categorySlugs) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not signed in');
+    if (categorySlugs.isEmpty) return;
+
+    try {
+      await _client.from(TableNames.userInterests).upsert(
+        [
+          for (final categorySlug in categorySlugs)
+            {
+              'user_id': uid,
+              'category_slug': categorySlug,
+              'kind': 'explicit',
+            },
+        ],
+        onConflict: 'user_id,category_slug',
+      );
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> removeInterestCategories(Set<String> categorySlugs) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not signed in');
+    if (categorySlugs.isEmpty) return;
+
+    try {
+      await _client
+          .from(TableNames.userInterests)
+          .delete()
+          .eq('user_id', uid)
+          .inFilter('category_slug', categorySlugs.toList());
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   Future<void> _recordView(String templateId) async {
     try {
       await recordInteraction(
