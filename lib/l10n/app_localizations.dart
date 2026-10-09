@@ -5241,6 +5241,348 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See opportunities'**
   String get seeOpportunitiesCta;
+
+  /// No description provided for @discoveryQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick question'**
+  String get discoveryQuestionTitle;
+
+  /// No description provided for @discoveryBusinessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning something ahead?'**
+  String get discoveryBusinessTitle;
+
+  /// No description provided for @discoveryBusinessQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you need equipment, logistics, procurement, or business services soon?'**
+  String get discoveryBusinessQuestion;
+
+  /// No description provided for @discoveryTravelQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you planning travel in the next few months?'**
+  String get discoveryTravelQuestion;
+
+  /// No description provided for @discoveryEducationQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Would internship or professional development opportunities be useful to you?'**
+  String get discoveryEducationQuestion;
+
+  /// No description provided for @discoveryFinancialQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you interested in loans, financing, or Forex opportunities?'**
+  String get discoveryFinancialQuestion;
+
+  /// No description provided for @discoveryEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get discoveryEquipment;
+
+  /// No description provided for @discoveryLogistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Logistics'**
+  String get discoveryLogistics;
+
+  /// No description provided for @discoveryServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get discoveryServices;
+
+  /// No description provided for @discoveryProcurement.
+  ///
+  /// In en, this message translates to:
+  /// **'Procurement'**
+  String get discoveryProcurement;
+
+  /// No description provided for @discoveryYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get discoveryYes;
+
+  /// No description provided for @discoveryLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe later'**
+  String get discoveryLater;
+
+  /// No description provided for @discoveryNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get discoveryNotNow;
+
+  /// No description provided for @discoveryNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get discoveryNo;
+
+  /// No description provided for @discoveryLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans'**
+  String get discoveryLoans;
+
+  /// No description provided for @discoveryForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex'**
+  String get discoveryForex;
+
+  /// No description provided for @discoveryBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get discoveryBoth;
+
+  /// No description provided for @discoveryTravelCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore travel help'**
+  String get discoveryTravelCta;
+
+  /// No description provided for @discoveryEducationCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore education'**
+  String get discoveryEducationCta;
+
+  /// No description provided for @discoveryBusinessCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore opportunities'**
+  String get discoveryBusinessCta;
+
+  /// No description provided for @discoveryFinancialCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Open marketplace'**
+  String get discoveryFinancialCta;
+
+  /// No description provided for @discoveryOptionsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery options'**
+  String get discoveryOptionsTooltip;
+
+  /// No description provided for @discoveryHideQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this question'**
+  String get discoveryHideQuestion;
+
+  /// No description provided for @discoveryFewerQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Show fewer like this'**
+  String get discoveryFewerQuestions;
+
+  /// No description provided for @discoverySkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get discoverySkip;
+
+  /// No description provided for @discoveryExploreOpportunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore opportunities'**
+  String get discoveryExploreOpportunities;
+
+  /// No description provided for @savedPlansTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans & interests'**
+  String get savedPlansTitle;
+
+  /// No description provided for @savedPlansEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved plans yet'**
+  String get savedPlansEmptyTitle;
+
+  /// No description provided for @savedPlansEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Private plans and interests you save from discovery questions will appear here.'**
+  String get savedPlansEmptySubtitle;
+
+  /// No description provided for @savedPlanActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan actions'**
+  String get savedPlanActions;
+
+  /// No description provided for @savedPlanEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get savedPlanEdit;
+
+  /// No description provided for @savedPlanDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get savedPlanDelete;
+
+  /// No description provided for @savedPlanReminderSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder set'**
+  String get savedPlanReminderSet;
+
+  /// No description provided for @savedPlanUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {date}'**
+  String savedPlanUpdated(String date);
+
+  /// No description provided for @savedPlanTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get savedPlanTravel;
+
+  /// No description provided for @savedPlanEducationCareer.
+  ///
+  /// In en, this message translates to:
+  /// **'Education & career'**
+  String get savedPlanEducationCareer;
+
+  /// No description provided for @savedPlanBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get savedPlanBusiness;
+
+  /// No description provided for @savedPlanFinancial.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial'**
+  String get savedPlanFinancial;
+
+  /// No description provided for @savedPlanGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get savedPlanGeneral;
+
+  /// No description provided for @savedPlanNoDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'No details added yet'**
+  String get savedPlanNoDetails;
+
+  /// No description provided for @savedPlanDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete plan?'**
+  String get savedPlanDeleteTitle;
+
+  /// No description provided for @savedPlanDeleteConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the private saved plan from your account.'**
+  String get savedPlanDeleteConfirmation;
+
+  /// No description provided for @savedPlanCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get savedPlanCancel;
+
+  /// No description provided for @savedPlanEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit plan'**
+  String get savedPlanEditTitle;
+
+  /// No description provided for @savedPlanName.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan name'**
+  String get savedPlanName;
+
+  /// No description provided for @savedPlanDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get savedPlanDestination;
+
+  /// No description provided for @savedPlanPreferredLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred location'**
+  String get savedPlanPreferredLocation;
+
+  /// No description provided for @savedPlanTimeframe.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate timeframe'**
+  String get savedPlanTimeframe;
+
+  /// No description provided for @savedPlanAddDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expected date'**
+  String get savedPlanAddDate;
+
+  /// No description provided for @savedPlanReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get savedPlanReminder;
+
+  /// No description provided for @savedPlanNoReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder'**
+  String get savedPlanNoReminder;
+
+  /// No description provided for @savedPlanOneWeekBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'One week before'**
+  String get savedPlanOneWeekBefore;
+
+  /// No description provided for @savedPlanOneMonthBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'One month before'**
+  String get savedPlanOneMonthBefore;
+
+  /// No description provided for @savedPlanSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get savedPlanSave;
+
+  /// No description provided for @savedPlanStartingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting location'**
+  String get savedPlanStartingLocation;
+
+  /// No description provided for @savedPlanAssistanceNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistance needed'**
+  String get savedPlanAssistanceNeeded;
+
+  /// No description provided for @savedPlanWhatWouldHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'What would be useful?'**
+  String get savedPlanWhatWouldHelp;
 }
 
 class _AppLocalizationsDelegate

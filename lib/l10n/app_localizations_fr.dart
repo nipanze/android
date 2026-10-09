@@ -2911,4 +2911,184 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'Voir les opportunités';
+
+  @override
+  String get discoveryQuestionTitle => 'Une petite question';
+
+  @override
+  String get discoveryBusinessTitle => 'Vous préparez quelque chose ?';
+
+  @override
+  String get discoveryBusinessQuestion =>
+      'Avez-vous bientôt besoin d\'équipement, de logistique, d\'approvisionnement ou de services aux entreprises ?';
+
+  @override
+  String get discoveryTravelQuestion =>
+      'Prévoyez-vous de voyager dans les prochains mois ?';
+
+  @override
+  String get discoveryEducationQuestion =>
+      'Des stages ou des possibilités de développement professionnel vous seraient-ils utiles ?';
+
+  @override
+  String get discoveryFinancialQuestion =>
+      'Les prêts, le financement ou les offres Forex vous intéressent-ils ?';
+
+  @override
+  String get discoveryEquipment => 'Équipement';
+
+  @override
+  String get discoveryLogistics => 'Logistique';
+
+  @override
+  String get discoveryServices => 'Services';
+
+  @override
+  String get discoveryProcurement => 'Approvisionnement';
+
+  @override
+  String get discoveryYes => 'Oui';
+
+  @override
+  String get discoveryLater => 'Peut-être plus tard';
+
+  @override
+  String get discoveryNotNow => 'Pas maintenant';
+
+  @override
+  String get discoveryNo => 'Non';
+
+  @override
+  String get discoveryLoans => 'Prêts';
+
+  @override
+  String get discoveryForex => 'Forex';
+
+  @override
+  String get discoveryBoth => 'Les deux';
+
+  @override
+  String get discoveryTravelCta => 'Découvrir l\'aide au voyage';
+
+  @override
+  String get discoveryEducationCta => 'Découvrir les possibilités de formation';
+
+  @override
+  String get discoveryBusinessCta => 'Explorer les possibilités';
+
+  @override
+  String get discoveryFinancialCta => 'Ouvrir la marketplace';
+
+  @override
+  String get discoveryOptionsTooltip => 'Options de découverte';
+
+  @override
+  String get discoveryHideQuestion => 'Masquer cette question';
+
+  @override
+  String get discoveryFewerQuestions =>
+      'Afficher moins de questions similaires';
+
+  @override
+  String get discoverySkip => 'Passer';
+
+  @override
+  String get discoveryExploreOpportunities => 'Explorer les possibilités';
+
+  @override
+  String get savedPlansTitle => 'Projets et centres d’intérêt';
+
+  @override
+  String get savedPlansEmptyTitle => 'Aucun projet enregistré';
+
+  @override
+  String get savedPlansEmptySubtitle =>
+      'Les projets et centres d’intérêt privés enregistrés à partir des questions de découverte apparaîtront ici.';
+
+  @override
+  String get savedPlanActions => 'Actions du projet';
+
+  @override
+  String get savedPlanEdit => 'Modifier';
+
+  @override
+  String get savedPlanDelete => 'Supprimer';
+
+  @override
+  String get savedPlanReminderSet => 'Rappel activé';
+
+  @override
+  String savedPlanUpdated(String date) {
+    return 'Mis à jour le $date';
+  }
+
+  @override
+  String get savedPlanTravel => 'Voyage';
+
+  @override
+  String get savedPlanEducationCareer => 'Études et carrière';
+
+  @override
+  String get savedPlanBusiness => 'Entreprise';
+
+  @override
+  String get savedPlanFinancial => 'Finances';
+
+  @override
+  String get savedPlanGeneral => 'Général';
+
+  @override
+  String get savedPlanNoDetails => 'Aucun détail ajouté';
+
+  @override
+  String get savedPlanDeleteTitle => 'Supprimer le projet ?';
+
+  @override
+  String get savedPlanDeleteConfirmation =>
+      'Ce projet privé sera supprimé de votre compte.';
+
+  @override
+  String get savedPlanCancel => 'Annuler';
+
+  @override
+  String get savedPlanEditTitle => 'Modifier le projet';
+
+  @override
+  String get savedPlanName => 'Nom du projet';
+
+  @override
+  String get savedPlanDestination => 'Destination';
+
+  @override
+  String get savedPlanPreferredLocation => 'Lieu souhaité';
+
+  @override
+  String get savedPlanTimeframe => 'Période approximative';
+
+  @override
+  String get savedPlanAddDate => 'Ajouter une date prévue';
+
+  @override
+  String get savedPlanReminder => 'Rappel';
+
+  @override
+  String get savedPlanNoReminder => 'Aucun rappel';
+
+  @override
+  String get savedPlanOneWeekBefore => 'Une semaine avant';
+
+  @override
+  String get savedPlanOneMonthBefore => 'Un mois avant';
+
+  @override
+  String get savedPlanSave => 'Enregistrer';
+
+  @override
+  String get savedPlanStartingLocation => 'Lieu de départ';
+
+  @override
+  String get savedPlanAssistanceNeeded => 'Aide nécessaire';
+
+  @override
+  String get savedPlanWhatWouldHelp => 'Qu’est-ce qui vous serait utile ?';
 }

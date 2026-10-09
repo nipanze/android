@@ -2883,4 +2883,183 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'Reba amahirwe';
+
+  @override
+  String get discoveryQuestionTitle => 'Ikibazo kigufi';
+
+  @override
+  String get discoveryBusinessTitle => 'Hari icyo uteganya mu gihe kizaza?';
+
+  @override
+  String get discoveryBusinessQuestion =>
+      'Ese vuba aha uzakenera ibikoresho, ubwikorezi, kugura ibicuruzwa cyangwa serivisi z\'ubucuruzi?';
+
+  @override
+  String get discoveryTravelQuestion =>
+      'Ese uteganya gukora urugendo mu mezi make ari imbere?';
+
+  @override
+  String get discoveryEducationQuestion =>
+      'Ese amahirwe yo kwimenyereza umwuga cyangwa kwiteza imbere mu kazi yakugirira akamaro?';
+
+  @override
+  String get discoveryFinancialQuestion =>
+      'Ese ushimishijwe n\'inguzanyo, inkunga y\'amafaranga cyangwa amahirwe ya Forex?';
+
+  @override
+  String get discoveryEquipment => 'Ibikoresho';
+
+  @override
+  String get discoveryLogistics => 'Ubwikorezi';
+
+  @override
+  String get discoveryServices => 'Serivisi';
+
+  @override
+  String get discoveryProcurement => 'Kugura ibicuruzwa';
+
+  @override
+  String get discoveryYes => 'Yego';
+
+  @override
+  String get discoveryLater => 'Wenda nyuma';
+
+  @override
+  String get discoveryNotNow => 'Si ubu';
+
+  @override
+  String get discoveryNo => 'Oya';
+
+  @override
+  String get discoveryLoans => 'Inguzanyo';
+
+  @override
+  String get discoveryForex => 'Forex';
+
+  @override
+  String get discoveryBoth => 'Byombi';
+
+  @override
+  String get discoveryTravelCta => 'Shaka ubufasha bw\'urugendo';
+
+  @override
+  String get discoveryEducationCta => 'Shaka amahirwe y\'uburezi';
+
+  @override
+  String get discoveryBusinessCta => 'Shakisha amahirwe';
+
+  @override
+  String get discoveryFinancialCta => 'Fungura isoko';
+
+  @override
+  String get discoveryOptionsTooltip => 'Amahitamo yo gushakisha';
+
+  @override
+  String get discoveryHideQuestion => 'Hisha iki kibazo';
+
+  @override
+  String get discoveryFewerQuestions => 'Erekana ibibazo bike bisa n\'iki';
+
+  @override
+  String get discoverySkip => 'Simbuka';
+
+  @override
+  String get discoveryExploreOpportunities => 'Shakisha amahirwe';
+
+  @override
+  String get savedPlansTitle => 'Imigambi n\'ibyo ukunda';
+
+  @override
+  String get savedPlansEmptyTitle => 'Nta migambi wabika';
+
+  @override
+  String get savedPlansEmptySubtitle =>
+      'Imigambi n\'ibyo ukunda bibitswe mu ibanga bivuye mu bibazo byo gushakisha bizagaragara hano.';
+
+  @override
+  String get savedPlanActions => 'Ibikorwa by\'umugambi';
+
+  @override
+  String get savedPlanEdit => 'Hindura';
+
+  @override
+  String get savedPlanDelete => 'Siba';
+
+  @override
+  String get savedPlanReminderSet => 'Kwibutswa byashyizweho';
+
+  @override
+  String savedPlanUpdated(String date) {
+    return 'Byavuguruwe $date';
+  }
+
+  @override
+  String get savedPlanTravel => 'Urugendo';
+
+  @override
+  String get savedPlanEducationCareer => 'Uburezi n\'umwuga';
+
+  @override
+  String get savedPlanBusiness => 'Ubucuruzi';
+
+  @override
+  String get savedPlanFinancial => 'Imari';
+
+  @override
+  String get savedPlanGeneral => 'Rusange';
+
+  @override
+  String get savedPlanNoDetails => 'Nta bisobanuro byongeweho';
+
+  @override
+  String get savedPlanDeleteTitle => 'Siba uyu mugambi?';
+
+  @override
+  String get savedPlanDeleteConfirmation =>
+      'Uyu mugambi wabitswe mu ibanga uzavanwa kuri konti yawe.';
+
+  @override
+  String get savedPlanCancel => 'Hagarika';
+
+  @override
+  String get savedPlanEditTitle => 'Hindura umugambi';
+
+  @override
+  String get savedPlanName => 'Izina ry\'umugambi';
+
+  @override
+  String get savedPlanDestination => 'Aho ujya';
+
+  @override
+  String get savedPlanPreferredLocation => 'Ahantu ukunda';
+
+  @override
+  String get savedPlanTimeframe => 'Igihe giteganyijwe';
+
+  @override
+  String get savedPlanAddDate => 'Ongeraho itariki uteganya';
+
+  @override
+  String get savedPlanReminder => 'Kwibutswa';
+
+  @override
+  String get savedPlanNoReminder => 'Nta kwibutswa';
+
+  @override
+  String get savedPlanOneWeekBefore => 'Icyumweru kimwe mbere';
+
+  @override
+  String get savedPlanOneMonthBefore => 'Ukwezi kumwe mbere';
+
+  @override
+  String get savedPlanSave => 'Bika';
+
+  @override
+  String get savedPlanStartingLocation => 'Aho uhera';
+
+  @override
+  String get savedPlanAssistanceNeeded => 'Ubufasha ukeneye';
+
+  @override
+  String get savedPlanWhatWouldHelp => 'Ni iki cyakugirira akamaro?';
 }

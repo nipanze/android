@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/models/user_discovery_plan.dart';
@@ -26,8 +27,9 @@ class _SavedPlansView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Plans & interests')),
+      appBar: AppBar(title: Text(l10n.savedPlansTitle)),
       body: SafeArea(
         child: BlocConsumer<DiscoveryCubit, DiscoveryState>(
           listener: (context, state) {
@@ -50,11 +52,10 @@ class _SavedPlansView extends StatelessWidget {
             final plans =
                 state is DiscoveryPlansLoaded ? state.plans : const [];
             if (plans.isEmpty) {
-              return const EmptyState(
+              return EmptyState(
                 icon: Icons.event_note_outlined,
-                title: 'No saved plans yet',
-                subtitle:
-                    'Private plans and interests you save from discovery questions will appear here.',
+                title: l10n.savedPlansEmptyTitle,
+                subtitle: l10n.savedPlansEmptySubtitle,
               );
             }
 
@@ -81,6 +82,7 @@ class _PlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final muted = isDark ? AppColors.text3Dark : AppColors.text3Light;
     final icon = switch (plan.planType) {
@@ -111,7 +113,7 @@ class _PlanTile extends StatelessWidget {
                   ),
                 ),
                 PopupMenuButton<String>(
-                  tooltip: 'Plan actions',
+                  tooltip: l10n.savedPlanActions,
                   onSelected: (value) {
                     if (value == 'edit') {
                       _showEditSheet(context);
@@ -119,16 +121,24 @@ class _PlanTile extends StatelessWidget {
                       _confirmDelete(context);
                     }
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(l10n.savedPlanEdit),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(l10n.savedPlanDelete),
+                    ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
-              plan.summary,
+              plan.summary == 'No details added yet'
+                  ? l10n.savedPlanNoDetails
+                  : plan.summary,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: muted,
                     height: 1.35,
@@ -139,12 +149,14 @@ class _PlanTile extends StatelessWidget {
               spacing: 8,
               runSpacing: 6,
               children: [
-                _MetaChip(label: _planTypeLabel(plan.planType)),
+                _MetaChip(label: _planTypeLabel(l10n, plan.planType)),
                 if (plan.reminderPreference != 'none')
-                  const _MetaChip(label: 'Reminder set'),
+                  _MetaChip(label: l10n.savedPlanReminderSet),
                 _MetaChip(
-                  label:
-                      'Updated ${DateFormat.MMMd().format(plan.updatedAt.toLocal())}',
+                  label: l10n.savedPlanUpdated(
+                    DateFormat.MMMd(l10n.localeName)
+                        .format(plan.updatedAt.toLocal()),
+                  ),
                 ),
               ],
             ),
@@ -177,17 +189,18 @@ class _PlanTile extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete plan?'),
-        content: const Text(
-            'This removes the private saved plan from your account.'),
+        title: Text(AppLocalizations.of(context)!.savedPlanDeleteTitle),
+        content: Text(
+          AppLocalizations.of(context)!.savedPlanDeleteConfirmation,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.savedPlanCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.savedPlanDelete),
           ),
         ],
       ),
@@ -197,12 +210,12 @@ class _PlanTile extends StatelessWidget {
     }
   }
 
-  String _planTypeLabel(String value) => switch (value) {
-        'travel' => 'Travel',
-        'education_career' => 'Education & career',
-        'business' => 'Business',
-        'financial' => 'Financial',
-        _ => 'General',
+  String _planTypeLabel(AppLocalizations l10n, String value) => switch (value) {
+        'travel' => l10n.savedPlanTravel,
+        'education_career' => l10n.savedPlanEducationCareer,
+        'business' => l10n.savedPlanBusiness,
+        'financial' => l10n.savedPlanFinancial,
+        _ => l10n.savedPlanGeneral,
       };
 }
 
@@ -273,6 +286,7 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(18, 0, 18, bottom + 18),
@@ -282,7 +296,7 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Edit plan',
+              l10n.savedPlanEditTitle,
               style: Theme.of(context)
                   .textTheme
                   .titleLarge
@@ -292,48 +306,52 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
             TextField(
               controller: _titleController,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(labelText: 'Plan name'),
+              decoration: InputDecoration(labelText: l10n.savedPlanName),
             ),
             const SizedBox(height: 10),
             if (widget.plan.planType == 'travel') ...[
               TextField(
                 controller: _destinationController,
-                decoration: const InputDecoration(labelText: 'Destination'),
+                decoration:
+                    InputDecoration(labelText: l10n.savedPlanDestination),
               ),
               const SizedBox(height: 10),
             ],
             TextField(
               controller: _locationController,
-              decoration:
-                  const InputDecoration(labelText: 'Preferred location'),
+              decoration: InputDecoration(
+                labelText: l10n.savedPlanPreferredLocation,
+              ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _timeframeController,
-              decoration:
-                  const InputDecoration(labelText: 'Approximate timeframe'),
+              decoration: InputDecoration(labelText: l10n.savedPlanTimeframe),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: _pickDate,
               icon: const Icon(Icons.event_outlined, size: 18),
               label: Text(_expectedDate == null
-                  ? 'Add expected date'
+                  ? l10n.savedPlanAddDate
                   : _formatDate(_expectedDate!)),
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               initialValue: _reminder,
-              decoration: const InputDecoration(labelText: 'Reminder'),
-              items: const [
-                DropdownMenuItem(value: 'none', child: Text('No reminder')),
+              decoration: InputDecoration(labelText: l10n.savedPlanReminder),
+              items: [
+                DropdownMenuItem(
+                  value: 'none',
+                  child: Text(l10n.savedPlanNoReminder),
+                ),
                 DropdownMenuItem(
                   value: 'one_week_before',
-                  child: Text('One week before'),
+                  child: Text(l10n.savedPlanOneWeekBefore),
                 ),
                 DropdownMenuItem(
                   value: 'one_month_before',
-                  child: Text('One month before'),
+                  child: Text(l10n.savedPlanOneMonthBefore),
                 ),
               ],
               onChanged: (value) {
@@ -346,7 +364,7 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(l10n.savedPlanCancel),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -355,7 +373,7 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
                     onPressed: _titleController.text.trim().isEmpty
                         ? null
                         : () => Navigator.of(context).pop(_result()),
-                    child: const Text('Save'),
+                    child: Text(l10n.savedPlanSave),
                   ),
                 ),
               ],
@@ -386,8 +404,9 @@ class _EditPlanSheetState extends State<_EditPlanSheet> {
         reminderPreference: _reminder,
       );
 
-  String _formatDate(DateTime date) =>
-      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime date) => DateFormat.yMMMd(
+        AppLocalizations.of(context)!.localeName,
+      ).format(date);
 }
 
 class _PlanEditResult {

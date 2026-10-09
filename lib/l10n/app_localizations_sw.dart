@@ -2878,4 +2878,183 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'Angalia fursa';
+
+  @override
+  String get discoveryQuestionTitle => 'Swali fupi';
+
+  @override
+  String get discoveryBusinessTitle => 'Unapanga jambo la baadaye?';
+
+  @override
+  String get discoveryBusinessQuestion =>
+      'Je, utahitaji vifaa, usafirishaji, manunuzi au huduma za biashara hivi karibuni?';
+
+  @override
+  String get discoveryTravelQuestion =>
+      'Je, unapanga kusafiri katika miezi michache ijayo?';
+
+  @override
+  String get discoveryEducationQuestion =>
+      'Je, nafasi za mafunzo kazini au maendeleo ya kitaaluma zitakusaidia?';
+
+  @override
+  String get discoveryFinancialQuestion =>
+      'Je, unapendezwa na mikopo, ufadhili au fursa za Forex?';
+
+  @override
+  String get discoveryEquipment => 'Vifaa';
+
+  @override
+  String get discoveryLogistics => 'Usafirishaji';
+
+  @override
+  String get discoveryServices => 'Huduma';
+
+  @override
+  String get discoveryProcurement => 'Ununuzi';
+
+  @override
+  String get discoveryYes => 'Ndiyo';
+
+  @override
+  String get discoveryLater => 'Labda baadaye';
+
+  @override
+  String get discoveryNotNow => 'Si sasa';
+
+  @override
+  String get discoveryNo => 'Hapana';
+
+  @override
+  String get discoveryLoans => 'Mikopo';
+
+  @override
+  String get discoveryForex => 'Forex';
+
+  @override
+  String get discoveryBoth => 'Vyote viwili';
+
+  @override
+  String get discoveryTravelCta => 'Tafuta msaada wa safari';
+
+  @override
+  String get discoveryEducationCta => 'Tafuta fursa za elimu';
+
+  @override
+  String get discoveryBusinessCta => 'Chunguza fursa';
+
+  @override
+  String get discoveryFinancialCta => 'Fungua soko';
+
+  @override
+  String get discoveryOptionsTooltip => 'Chaguo za ugunduzi';
+
+  @override
+  String get discoveryHideQuestion => 'Ficha swali hili';
+
+  @override
+  String get discoveryFewerQuestions => 'Onyesha maswali machache kama hili';
+
+  @override
+  String get discoverySkip => 'Ruka';
+
+  @override
+  String get discoveryExploreOpportunities => 'Chunguza fursa';
+
+  @override
+  String get savedPlansTitle => 'Mipango na mambo yanayokuvutia';
+
+  @override
+  String get savedPlansEmptyTitle => 'Bado hakuna mipango iliyohifadhiwa';
+
+  @override
+  String get savedPlansEmptySubtitle =>
+      'Mipango na mambo yanayokuvutia yaliyohifadhiwa kwa faragha kutoka kwenye maswali ya ugunduzi yataonekana hapa.';
+
+  @override
+  String get savedPlanActions => 'Vitendo vya mpango';
+
+  @override
+  String get savedPlanEdit => 'Hariri';
+
+  @override
+  String get savedPlanDelete => 'Futa';
+
+  @override
+  String get savedPlanReminderSet => 'Kikumbusho kimewekwa';
+
+  @override
+  String savedPlanUpdated(String date) {
+    return 'Imesasishwa $date';
+  }
+
+  @override
+  String get savedPlanTravel => 'Safari';
+
+  @override
+  String get savedPlanEducationCareer => 'Elimu na taaluma';
+
+  @override
+  String get savedPlanBusiness => 'Biashara';
+
+  @override
+  String get savedPlanFinancial => 'Fedha';
+
+  @override
+  String get savedPlanGeneral => 'Jumla';
+
+  @override
+  String get savedPlanNoDetails => 'Bado hakuna maelezo';
+
+  @override
+  String get savedPlanDeleteTitle => 'Ufute mpango?';
+
+  @override
+  String get savedPlanDeleteConfirmation =>
+      'Mpango huu wa faragha utaondolewa kwenye akaunti yako.';
+
+  @override
+  String get savedPlanCancel => 'Ghairi';
+
+  @override
+  String get savedPlanEditTitle => 'Hariri mpango';
+
+  @override
+  String get savedPlanName => 'Jina la mpango';
+
+  @override
+  String get savedPlanDestination => 'Unakoenda';
+
+  @override
+  String get savedPlanPreferredLocation => 'Mahali unapopendelea';
+
+  @override
+  String get savedPlanTimeframe => 'Muda unaokadiriwa';
+
+  @override
+  String get savedPlanAddDate => 'Ongeza tarehe inayotarajiwa';
+
+  @override
+  String get savedPlanReminder => 'Kikumbusho';
+
+  @override
+  String get savedPlanNoReminder => 'Hakuna kikumbusho';
+
+  @override
+  String get savedPlanOneWeekBefore => 'Wiki moja kabla';
+
+  @override
+  String get savedPlanOneMonthBefore => 'Mwezi mmoja kabla';
+
+  @override
+  String get savedPlanSave => 'Hifadhi';
+
+  @override
+  String get savedPlanStartingLocation => 'Mahali pa kuanzia';
+
+  @override
+  String get savedPlanAssistanceNeeded => 'Msaada unaohitajika';
+
+  @override
+  String get savedPlanWhatWouldHelp => 'Ni nini kingekusaidia?';
 }

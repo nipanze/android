@@ -2853,4 +2853,183 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'اطّلع على الفرص';
+
+  @override
+  String get discoveryQuestionTitle => 'سؤال سريع';
+
+  @override
+  String get discoveryBusinessTitle => 'هل تخطط لشيء في المستقبل؟';
+
+  @override
+  String get discoveryBusinessQuestion =>
+      'هل ستحتاج قريبًا إلى معدات أو خدمات لوجستية أو مشتريات أو خدمات للأعمال؟';
+
+  @override
+  String get discoveryTravelQuestion =>
+      'هل تخطط للسفر خلال الأشهر القليلة المقبلة؟';
+
+  @override
+  String get discoveryEducationQuestion =>
+      'هل ستفيدك فرص التدريب الداخلي أو التطوير المهني؟';
+
+  @override
+  String get discoveryFinancialQuestion =>
+      'هل تهتم بالقروض أو التمويل أو فرص الفوركس؟';
+
+  @override
+  String get discoveryEquipment => 'المعدات';
+
+  @override
+  String get discoveryLogistics => 'الخدمات اللوجستية';
+
+  @override
+  String get discoveryServices => 'الخدمات';
+
+  @override
+  String get discoveryProcurement => 'المشتريات';
+
+  @override
+  String get discoveryYes => 'نعم';
+
+  @override
+  String get discoveryLater => 'ربما لاحقًا';
+
+  @override
+  String get discoveryNotNow => 'ليس الآن';
+
+  @override
+  String get discoveryNo => 'لا';
+
+  @override
+  String get discoveryLoans => 'القروض';
+
+  @override
+  String get discoveryForex => 'الفوركس';
+
+  @override
+  String get discoveryBoth => 'كلاهما';
+
+  @override
+  String get discoveryTravelCta => 'استكشف خدمات السفر';
+
+  @override
+  String get discoveryEducationCta => 'استكشف فرص التعليم';
+
+  @override
+  String get discoveryBusinessCta => 'استكشف الفرص';
+
+  @override
+  String get discoveryFinancialCta => 'افتح السوق';
+
+  @override
+  String get discoveryOptionsTooltip => 'خيارات الاستكشاف';
+
+  @override
+  String get discoveryHideQuestion => 'إخفاء هذا السؤال';
+
+  @override
+  String get discoveryFewerQuestions => 'عرض أسئلة مشابهة أقل';
+
+  @override
+  String get discoverySkip => 'تخطي';
+
+  @override
+  String get discoveryExploreOpportunities => 'استكشف الفرص';
+
+  @override
+  String get savedPlansTitle => 'الخطط والاهتمامات';
+
+  @override
+  String get savedPlansEmptyTitle => 'لا توجد خطط محفوظة بعد';
+
+  @override
+  String get savedPlansEmptySubtitle =>
+      'ستظهر هنا الخطط والاهتمامات الخاصة التي تحفظها من أسئلة الاستكشاف.';
+
+  @override
+  String get savedPlanActions => 'إجراءات الخطة';
+
+  @override
+  String get savedPlanEdit => 'تعديل';
+
+  @override
+  String get savedPlanDelete => 'حذف';
+
+  @override
+  String get savedPlanReminderSet => 'تم ضبط التذكير';
+
+  @override
+  String savedPlanUpdated(String date) {
+    return 'تم التحديث $date';
+  }
+
+  @override
+  String get savedPlanTravel => 'السفر';
+
+  @override
+  String get savedPlanEducationCareer => 'التعليم والمسار المهني';
+
+  @override
+  String get savedPlanBusiness => 'الأعمال';
+
+  @override
+  String get savedPlanFinancial => 'المالية';
+
+  @override
+  String get savedPlanGeneral => 'عام';
+
+  @override
+  String get savedPlanNoDetails => 'لم تتم إضافة تفاصيل';
+
+  @override
+  String get savedPlanDeleteTitle => 'حذف الخطة؟';
+
+  @override
+  String get savedPlanDeleteConfirmation =>
+      'سيؤدي هذا إلى إزالة الخطة الخاصة المحفوظة من حسابك.';
+
+  @override
+  String get savedPlanCancel => 'إلغاء';
+
+  @override
+  String get savedPlanEditTitle => 'تعديل الخطة';
+
+  @override
+  String get savedPlanName => 'اسم الخطة';
+
+  @override
+  String get savedPlanDestination => 'الوجهة';
+
+  @override
+  String get savedPlanPreferredLocation => 'الموقع المفضل';
+
+  @override
+  String get savedPlanTimeframe => 'الإطار الزمني التقريبي';
+
+  @override
+  String get savedPlanAddDate => 'إضافة التاريخ المتوقع';
+
+  @override
+  String get savedPlanReminder => 'تذكير';
+
+  @override
+  String get savedPlanNoReminder => 'بدون تذكير';
+
+  @override
+  String get savedPlanOneWeekBefore => 'قبل أسبوع';
+
+  @override
+  String get savedPlanOneMonthBefore => 'قبل شهر';
+
+  @override
+  String get savedPlanSave => 'حفظ';
+
+  @override
+  String get savedPlanStartingLocation => 'موقع الانطلاق';
+
+  @override
+  String get savedPlanAssistanceNeeded => 'المساعدة المطلوبة';
+
+  @override
+  String get savedPlanWhatWouldHelp => 'ما الذي قد يفيدك؟';
 }

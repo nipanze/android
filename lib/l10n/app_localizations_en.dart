@@ -2867,4 +2867,183 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeOpportunitiesCta => 'See opportunities';
+
+  @override
+  String get discoveryQuestionTitle => 'A quick question';
+
+  @override
+  String get discoveryBusinessTitle => 'Planning something ahead?';
+
+  @override
+  String get discoveryBusinessQuestion =>
+      'Do you need equipment, logistics, procurement, or business services soon?';
+
+  @override
+  String get discoveryTravelQuestion =>
+      'Are you planning travel in the next few months?';
+
+  @override
+  String get discoveryEducationQuestion =>
+      'Would internship or professional development opportunities be useful to you?';
+
+  @override
+  String get discoveryFinancialQuestion =>
+      'Are you interested in loans, financing, or Forex opportunities?';
+
+  @override
+  String get discoveryEquipment => 'Equipment';
+
+  @override
+  String get discoveryLogistics => 'Logistics';
+
+  @override
+  String get discoveryServices => 'Services';
+
+  @override
+  String get discoveryProcurement => 'Procurement';
+
+  @override
+  String get discoveryYes => 'Yes';
+
+  @override
+  String get discoveryLater => 'Maybe later';
+
+  @override
+  String get discoveryNotNow => 'Not now';
+
+  @override
+  String get discoveryNo => 'No';
+
+  @override
+  String get discoveryLoans => 'Loans';
+
+  @override
+  String get discoveryForex => 'Forex';
+
+  @override
+  String get discoveryBoth => 'Both';
+
+  @override
+  String get discoveryTravelCta => 'Explore travel help';
+
+  @override
+  String get discoveryEducationCta => 'Explore education';
+
+  @override
+  String get discoveryBusinessCta => 'Explore opportunities';
+
+  @override
+  String get discoveryFinancialCta => 'Open marketplace';
+
+  @override
+  String get discoveryOptionsTooltip => 'Discovery options';
+
+  @override
+  String get discoveryHideQuestion => 'Hide this question';
+
+  @override
+  String get discoveryFewerQuestions => 'Show fewer like this';
+
+  @override
+  String get discoverySkip => 'Skip';
+
+  @override
+  String get discoveryExploreOpportunities => 'Explore opportunities';
+
+  @override
+  String get savedPlansTitle => 'Plans & interests';
+
+  @override
+  String get savedPlansEmptyTitle => 'No saved plans yet';
+
+  @override
+  String get savedPlansEmptySubtitle =>
+      'Private plans and interests you save from discovery questions will appear here.';
+
+  @override
+  String get savedPlanActions => 'Plan actions';
+
+  @override
+  String get savedPlanEdit => 'Edit';
+
+  @override
+  String get savedPlanDelete => 'Delete';
+
+  @override
+  String get savedPlanReminderSet => 'Reminder set';
+
+  @override
+  String savedPlanUpdated(String date) {
+    return 'Updated $date';
+  }
+
+  @override
+  String get savedPlanTravel => 'Travel';
+
+  @override
+  String get savedPlanEducationCareer => 'Education & career';
+
+  @override
+  String get savedPlanBusiness => 'Business';
+
+  @override
+  String get savedPlanFinancial => 'Financial';
+
+  @override
+  String get savedPlanGeneral => 'General';
+
+  @override
+  String get savedPlanNoDetails => 'No details added yet';
+
+  @override
+  String get savedPlanDeleteTitle => 'Delete plan?';
+
+  @override
+  String get savedPlanDeleteConfirmation =>
+      'This removes the private saved plan from your account.';
+
+  @override
+  String get savedPlanCancel => 'Cancel';
+
+  @override
+  String get savedPlanEditTitle => 'Edit plan';
+
+  @override
+  String get savedPlanName => 'Plan name';
+
+  @override
+  String get savedPlanDestination => 'Destination';
+
+  @override
+  String get savedPlanPreferredLocation => 'Preferred location';
+
+  @override
+  String get savedPlanTimeframe => 'Approximate timeframe';
+
+  @override
+  String get savedPlanAddDate => 'Add expected date';
+
+  @override
+  String get savedPlanReminder => 'Reminder';
+
+  @override
+  String get savedPlanNoReminder => 'No reminder';
+
+  @override
+  String get savedPlanOneWeekBefore => 'One week before';
+
+  @override
+  String get savedPlanOneMonthBefore => 'One month before';
+
+  @override
+  String get savedPlanSave => 'Save';
+
+  @override
+  String get savedPlanStartingLocation => 'Starting location';
+
+  @override
+  String get savedPlanAssistanceNeeded => 'Assistance needed';
+
+  @override
+  String get savedPlanWhatWouldHelp => 'What would be useful?';
 }

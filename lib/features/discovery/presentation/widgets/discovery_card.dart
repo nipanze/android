@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/models/discovery_question_template.dart';
@@ -62,6 +63,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
 
         final template = state.template!;
         _syncSavedSelections(template);
+        final l10n = AppLocalizations.of(context)!;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final surface = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
         final border = isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -102,7 +104,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          template.title,
+                          _localizedTitle(l10n, template),
                           style: Theme.of(context)
                               .textTheme
                               .titleSmall
@@ -110,7 +112,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          template.question,
+                          _localizedQuestion(l10n, template),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: muted,
@@ -121,7 +123,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                     ),
                   ),
                   PopupMenuButton<String>(
-                    tooltip: 'Discovery options',
+                    tooltip: l10n.discoveryOptionsTooltip,
                     icon: const Icon(Icons.more_horiz_rounded, size: 20),
                     onSelected: (value) {
                       final cubit = context.read<DiscoveryCubit>();
@@ -135,14 +137,14 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                         ));
                       }
                     },
-                    itemBuilder: (_) => const [
+                    itemBuilder: (_) => [
                       PopupMenuItem(
                         value: 'dismiss',
-                        child: Text('Hide this question'),
+                        child: Text(l10n.discoveryHideQuestion),
                       ),
                       PopupMenuItem(
                         value: 'mute',
-                        child: Text('Show fewer like this'),
+                        child: Text(l10n.discoveryFewerQuestions),
                       ),
                     ],
                   ),
@@ -156,6 +158,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                   for (final option in options)
                     _AnswerButton(
                       option: option,
+                      label: _localizedOption(l10n, option),
                       selected: _selectedValues.contains(option.value),
                       onPressed: () => _toggleInterest(template, option),
                     ),
@@ -172,13 +175,13 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                             .skipTemplate(template.id),
                       )),
                       icon: const Icon(Icons.close_rounded, size: 16),
-                      label: const Text('Skip'),
+                      label: Text(l10n.discoverySkip),
                     ),
                     const Spacer(),
                     TextButton.icon(
                       onPressed: () => _explore(template),
                       icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      label: Text(template.ctaLabel ?? 'Explore opportunities'),
+                      label: Text(_localizedCta(l10n, template)),
                     ),
                   ],
                 ),
@@ -337,16 +340,74 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
       _ => option.savePlan ? template.needCategorySlug : null,
     };
   }
+
+  String _localizedTitle(
+    AppLocalizations l10n,
+    DiscoveryQuestionTemplate template,
+  ) =>
+      switch (template.slug) {
+        'business_equipment_basic' => l10n.discoveryBusinessTitle,
+        'travel_planning_basic' ||
+        'internship_interest_basic' ||
+        'financial_interest_basic' =>
+          l10n.discoveryQuestionTitle,
+        _ => template.title,
+      };
+
+  String _localizedQuestion(
+    AppLocalizations l10n,
+    DiscoveryQuestionTemplate template,
+  ) =>
+      switch (template.slug) {
+        'business_equipment_basic' => l10n.discoveryBusinessQuestion,
+        'travel_planning_basic' => l10n.discoveryTravelQuestion,
+        'internship_interest_basic' => l10n.discoveryEducationQuestion,
+        'financial_interest_basic' => l10n.discoveryFinancialQuestion,
+        _ => template.question,
+      };
+
+  String _localizedCta(
+    AppLocalizations l10n,
+    DiscoveryQuestionTemplate template,
+  ) =>
+      switch (template.slug) {
+        'business_equipment_basic' => l10n.discoveryBusinessCta,
+        'travel_planning_basic' => l10n.discoveryTravelCta,
+        'internship_interest_basic' => l10n.discoveryEducationCta,
+        'financial_interest_basic' => l10n.discoveryFinancialCta,
+        _ => template.ctaLabel ?? l10n.discoveryExploreOpportunities,
+      };
+
+  String _localizedOption(
+    AppLocalizations l10n,
+    DiscoveryAnswerOption option,
+  ) =>
+      switch (option.value) {
+        'equipment' => l10n.discoveryEquipment,
+        'logistics' => l10n.discoveryLogistics,
+        'services' => l10n.discoveryServices,
+        'procurement' => l10n.discoveryProcurement,
+        'yes' => l10n.discoveryYes,
+        'later' => l10n.discoveryLater,
+        'not_now' => l10n.discoveryNotNow,
+        'no' => l10n.discoveryNo,
+        'loans' => l10n.discoveryLoans,
+        'forex' => l10n.discoveryForex,
+        'both' => l10n.discoveryBoth,
+        _ => option.label,
+      };
 }
 
 class _AnswerButton extends StatelessWidget {
   const _AnswerButton({
     required this.option,
+    required this.label,
     required this.selected,
     required this.onPressed,
   });
 
   final DiscoveryAnswerOption option;
+  final String label;
   final bool selected;
   final VoidCallback onPressed;
 
@@ -366,7 +427,7 @@ class _AnswerButton extends StatelessWidget {
         minimumSize: const Size(0, 36),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      child: Text(option.label),
+      child: Text(label),
     );
   }
 }
