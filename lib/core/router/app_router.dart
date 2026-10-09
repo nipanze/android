@@ -14,6 +14,7 @@ import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/verify_email_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
+import '../../features/discovery/presentation/pages/saved_plans_page.dart';
 import '../../features/forex/presentation/pages/forex_create_page.dart';
 import '../../features/forex/presentation/pages/forex_detail_page.dart';
 import '../../features/forex/presentation/pages/my_forex_requests_page.dart';
@@ -66,6 +67,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String account = '/account';
   static const String accountServices = '/account/services';
+  static const String accountPlans = '/account/plans';
   static const String blockedUsers = '/account/blocked-users';
   static const String admin = '/admin';
   static const String pricing = '/pricing';
@@ -278,6 +280,11 @@ class AppRouter {
         path: AppRoutes.accountServices,
         name: 'accountServices',
         pageBuilder: (_, state) => _slide(state, const ProviderServicesPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.accountPlans,
+        name: 'accountPlans',
+        pageBuilder: (_, state) => _slide(state, const SavedPlansPage()),
       ),
       GoRoute(
         path: AppRoutes.profile,

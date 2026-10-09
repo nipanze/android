@@ -15,6 +15,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../discovery/presentation/widgets/discovery_card.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
@@ -268,6 +269,8 @@ class _MarketplaceView extends StatelessWidget {
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
+                              DiscoveryCard(country: country),
+                              const SizedBox(height: 8),
                               _MarketplaceDiscoveryCard(
                                 country: country,
                                 hideOpportunities: state.moduleFilter ==
@@ -312,11 +315,17 @@ class _MarketplaceView extends StatelessWidget {
                               const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             if (index == discoveryIndex) {
-                              return _MarketplaceDiscoveryCard(
+                              return Column(
                                 key: const ValueKey('marketplace-discovery'),
-                                country: country,
-                                hideOpportunities: state.moduleFilter ==
-                                    MarketplaceModule.needs,
+                                children: [
+                                  DiscoveryCard(country: country),
+                                  const SizedBox(height: 8),
+                                  _MarketplaceDiscoveryCard(
+                                    country: country,
+                                    hideOpportunities: state.moduleFilter ==
+                                        MarketplaceModule.needs,
+                                  ),
+                                ],
                               );
                             }
 
@@ -418,7 +427,6 @@ class _DiscoveryPrompt {
 
 class _MarketplaceDiscoveryCard extends StatefulWidget {
   const _MarketplaceDiscoveryCard({
-    super.key,
     required this.country,
     required this.hideOpportunities,
   });

@@ -410,3 +410,12 @@ Provider Services is the single place where a user declares what they provide ac
 - The table grants access only to the authenticated owner through RLS. It is not joined into public marketplace views or included in a Loan, Forex, Needs, Offer, or public-profile payload.
 - Future Loan Requests load the saved values into the loan form. The user can restore the saved values, edit them for the current request, and the edited values are saved for later Loan Requests. Loan amount, purpose, repayment terms, collateral, and other request details are still entered for each loan.
 - Apply the standalone SQL patch before using the updated Loan Request flow. Do not edit the monolithic `sql/patch.sql`.
+
+## 4.3 Private discovery plans and quick questions
+
+- Lightweight discovery questions are driven by `discovery_question_templates` and shown as compact cards in the Home/Marketplace feed.
+- Answers can save a private plan in `user_discovery_plans`; plans are owner-only under RLS and are not exposed in public listings, provider feeds, or profiles.
+- `user_discovery_interactions` stores skip, dismiss, mute, answer, and save actions so the app can apply conservative cooldowns.
+- Account -> Plans & interests lets users review, edit, and delete saved plans.
+- The initial templates cover travel, education/career, business needs, and financial interests. Financial interests stay separate from Loans and Forex publishing flows.
+- Migration: `sql/20261009_private_discovery_plans.sql`. Do not edit `sql/patch.sql`.

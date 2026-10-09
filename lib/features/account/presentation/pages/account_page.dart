@@ -184,6 +184,16 @@ class _AccountView extends StatelessWidget {
                           onTap: () => _showTrustExplainer(context)),
                       const SizedBox(height: 4),
 
+                      const SectionHeader('Plans & interests'),
+                      Card(
+                        child: _ActionRow(
+                          icon: Icons.event_note_outlined,
+                          label: 'Review saved discovery plans',
+                          onTap: () => context.push(AppRoutes.accountPlans),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
                       // ── Your Services ────────────────────────────────────
                       SectionHeader(AppLocalizations.of(context)!
                           .yourServices

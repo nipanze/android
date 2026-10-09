@@ -104,11 +104,16 @@ void main() {
           )),
         ]);
 
+    final shellNavigatorKey = GlobalKey<NavigatorState>();
     final router = GoRouter(
       initialLocation: '/watchlist',
       routes: [
         ShellRoute(
-          builder: (_, __, child) => MainScaffold(child: child),
+          navigatorKey: shellNavigatorKey,
+          builder: (_, __, child) => MainScaffold(
+            shellNavigatorKey: shellNavigatorKey,
+            child: child,
+          ),
           routes: [
             GoRoute(
               path: '/watchlist',
@@ -150,11 +155,16 @@ void main() {
     when(() => mockWatchlistRepo.getWatchedListings())
         .thenThrow(const NetworkException());
 
+    final shellNavigatorKey = GlobalKey<NavigatorState>();
     final router = GoRouter(
       initialLocation: '/watchlist',
       routes: [
         ShellRoute(
-          builder: (_, __, child) => MainScaffold(child: child),
+          navigatorKey: shellNavigatorKey,
+          builder: (_, __, child) => MainScaffold(
+            shellNavigatorKey: shellNavigatorKey,
+            child: child,
+          ),
           routes: [
             GoRoute(
               path: '/watchlist',

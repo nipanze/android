@@ -21,6 +21,10 @@ class TableNames {
   static const String providerCapabilities = 'provider_capabilities';
   static const String userInterests = 'user_interests';
   static const String userInterestEvents = 'user_interest_events';
+  static const String discoveryQuestionTemplates =
+      'discovery_question_templates';
+  static const String userDiscoveryPlans = 'user_discovery_plans';
+  static const String userDiscoveryInteractions = 'user_discovery_interactions';
   static const String agreements = 'agreements';
   static const String watchlist = 'watchlist';
   static const String contactReveals = 'contact_reveals';

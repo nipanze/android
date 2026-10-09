@@ -249,3 +249,14 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - Migration: `sql/20261008_private_borrower_information.sql`. Never add this change to `sql/patch.sql`.
 
 **Acceptance checks:** Financial Services is absent from the Needs picker and rejected for new Needs requests; old rows remain intact; the private borrower row is inaccessible to anon/other users; first and subsequent Loan Requests can enter, reuse, edit, and update borrower information; public Loan/Forex/Needs listing payloads do not include these fields; Account, Forex, Loans marketplace, and existing Needs behavior otherwise remain intact.
+
+## 13. Stage 4.12 — Private Discovery Plans & Quick Questions
+
+- Added standalone migration `sql/20261009_private_discovery_plans.sql` for `discovery_question_templates`, `user_discovery_plans`, and `user_discovery_interactions`.
+- Templates are authenticated-readable and admin-managed through RLS. User plans and interaction history are private to the owner.
+- Added a reusable Flutter discovery card in `lib/features/discovery/` and inserted it into the Marketplace/Home feed without interrupting listing browsing.
+- Added Account -> Plans & interests for reviewing, editing, and deleting private saved plans.
+- Seeded starter templates for travel, education/career, business needs, and financial interests. Financial answers remain private discovery signals and do not create Needs posts.
+- Publishing remains explicit: discovery answers can save a private plan only; no listing is automatically created.
+
+**Acceptance checks:** users can skip/dismiss/mute questions; saved plans remain private under RLS; plans can be edited/deleted from Account; existing Loans, Forex, Needs, provider services, contact reveal, and watchlist flows remain unchanged.

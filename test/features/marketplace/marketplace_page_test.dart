@@ -8,6 +8,7 @@ import 'package:nipanze/core/di/injection.dart';
 import 'package:nipanze/features/auth/data/auth_repository.dart';
 import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
 import 'package:nipanze/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:nipanze/features/discovery/data/discovery_repository.dart';
 import 'package:nipanze/features/marketplace/data/marketplace_repository.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
 import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart';
@@ -32,12 +33,15 @@ class MockNotificationRepository extends Mock
 
 class MockProviderRepository extends Mock implements IProviderRepository {}
 
+class MockDiscoveryRepository extends Mock implements DiscoveryRepository {}
+
 void main() {
   late MockAuthRepository authRepository;
   late MockMarketplaceRepository marketplaceRepository;
   late MockWatchlistRepository watchlistRepository;
   late MockNotificationRepository notificationRepository;
   late MockProviderRepository providerRepository;
+  late MockDiscoveryRepository discoveryRepository;
   late AuthBloc authBloc;
   late NotificationCubit notificationCubit;
 
@@ -69,6 +73,7 @@ void main() {
     watchlistRepository = MockWatchlistRepository();
     notificationRepository = MockNotificationRepository();
     providerRepository = MockProviderRepository();
+    discoveryRepository = MockDiscoveryRepository();
     when(() => authRepository.authStateChanges)
         .thenAnswer((_) => const Stream.empty());
     when(() => authRepository.currentUser).thenReturn(null);
@@ -103,6 +108,9 @@ void main() {
         .thenAnswer((_) => const Stream.empty());
     when(() => providerRepository.getProviderCapabilities())
         .thenAnswer((_) async => []);
+    when(() =>
+            discoveryRepository.getNextTemplate(country: any(named: 'country')))
+        .thenAnswer((_) async => null);
 
     getIt.registerFactory<MarketplaceCubit>(
       () => MarketplaceCubit(marketplaceRepository),
@@ -112,6 +120,7 @@ void main() {
     );
     getIt.registerFactory<NotificationCubit>(() => notificationCubit);
     getIt.registerFactory<IProviderRepository>(() => providerRepository);
+    getIt.registerLazySingleton<DiscoveryRepository>(() => discoveryRepository);
   });
 
   tearDown(() async {
@@ -200,11 +209,16 @@ void main() {
           country: any(named: 'country'),
         )).thenAnswer((_) async => [listing]);
 
+    final shellNavigatorKey = GlobalKey<NavigatorState>();
     final router = GoRouter(
       initialLocation: '/marketplace',
       routes: [
         ShellRoute(
-          builder: (_, __, child) => MainScaffold(child: child),
+          navigatorKey: shellNavigatorKey,
+          builder: (_, __, child) => MainScaffold(
+            shellNavigatorKey: shellNavigatorKey,
+            child: child,
+          ),
           routes: [
             GoRoute(
               path: '/marketplace',
