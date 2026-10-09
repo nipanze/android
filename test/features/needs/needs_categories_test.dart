@@ -268,6 +268,19 @@ void main() {
       expect(guidance!.titleHint, isNotEmpty, reason: categorySlug);
       expect(guidance.specificationHint, isNotEmpty, reason: categorySlug);
       expect(guidance.specificationHelper, isNotEmpty, reason: categorySlug);
+      final presets = NeedFormSchema.presetsForCategory(categorySlug);
+      expect(presets, isNotEmpty, reason: '$categorySlug needs quick helpers');
+      expect(
+        presets.map((preset) => preset.label),
+        isNot(contains('Standard request')),
+        reason: '$categorySlug should have category-specific quick helpers',
+      );
+      for (final preset in presets) {
+        expect(preset.title, isNotEmpty,
+            reason: '$categorySlug/${preset.label}');
+        expect(preset.specification, isNotEmpty,
+            reason: '$categorySlug/${preset.label}');
+      }
       for (final field in NeedFormSchema.fieldsForCategory(categorySlug)) {
         expect(field.guidance, isNotEmpty,
             reason: '$categorySlug/${field.key}');

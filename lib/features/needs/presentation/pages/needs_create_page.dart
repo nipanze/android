@@ -305,7 +305,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('QUICK NEED HELPERS'),
+        _sectionLabel('PROMPT IDEAS - TAP TO FILL'),
         const SizedBox(height: 7),
         _horizontalPills(
           presets
@@ -964,8 +964,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   },
                 ),
                 const SizedBox(height: 12),
-                _buildStarterPresets(),
-                const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleController,
                   textCapitalization: TextCapitalization.sentences,
@@ -984,6 +982,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 8),
+                _buildStarterPresets(),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _specificationController,
