@@ -246,13 +246,13 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - Do not add a Financial Profile, Income Profile, or Banking Profile to Account, onboarding, or general profile editing.
 - Store reusable employment status, employer/business name, government employee status, monthly income range, other income source, and preferred bank in the dedicated `public.borrower_information` table. RLS permits authenticated users to read and update only their own row. Do not join this table into any public marketplace view.
 - Collect and pre-fill these values only in Post → Loan. Saving loan-specific details (amount, purpose, repayment period, collateral, and request requirements) remains specific to each request.
-- Migration: `sql/20261008_private_borrower_information.sql`. Never add this change to `sql/patch.sql`.
+- Consolidated in `sql/patch.sql` and `sql/merged.sql`.
 
 **Acceptance checks:** Financial Services is absent from the Needs picker and rejected for new Needs requests; old rows remain intact; the private borrower row is inaccessible to anon/other users; first and subsequent Loan Requests can enter, reuse, edit, and update borrower information; public Loan/Forex/Needs listing payloads do not include these fields; Account, Forex, Loans marketplace, and existing Needs behavior otherwise remain intact.
 
 ## 13. Stage 4.12 — Private Discovery Plans & Quick Questions
 
-- Added standalone migration `sql/20261009_private_discovery_plans.sql` for `discovery_question_templates`, `user_discovery_plans`, and `user_discovery_interactions`.
+- Consolidated migration in `sql/patch.sql` and `sql/merged.sql` for `discovery_question_templates`, `user_discovery_plans`, and `user_discovery_interactions`.
 - Templates are authenticated-readable and admin-managed through RLS. User plans and interaction history are private to the owner.
 - Added a reusable Flutter discovery card in `lib/features/discovery/` and inserted it into the Marketplace/Home feed without interrupting listing browsing.
 - Added Account -> Plans & interests for reviewing, editing, and deleting private saved plans.

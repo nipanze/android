@@ -404,16 +404,16 @@ Provider Services is the single place where a user declares what they provide ac
   - **Service**: What the provider offers (e.g., Loan Services, Forex / Currency Exchange).
   - **Professional Identity / Metadata**: Who they represent (Organisation/Bank name, Role, Professional Tag visibility, and Institution Matching permissions stored in capability metadata).
 - **Edit Profile Cleanup**: Income type, employer name, and monthly income are collected contextually in loan requests rather than general profile editing. Bank and professional agent blocks are moved into Provider Services capability metadata.
-- **Standalone Database Patch**: `sql/patch_provider_financial_services_v1.sql`.
+- **Database Patch**: Consolidated into `sql/patch.sql` and `sql/merged.sql`.
 
 ## 4.2 Loan-only borrower information
 
-- The Needs picker contains only active non-financial categories. Historical `financial_services` category and capability rows are retained but disabled by `sql/20261008_private_borrower_information.sql`; inserts or category changes cannot create financial Needs requests.
+- The Needs picker contains only active non-financial categories. Historical `financial_services` category and capability rows are retained but disabled; inserts or category changes cannot create financial Needs requests.
 - Nipanze does not add a Financial Profile, Income Profile, or Banking Profile to Account, onboarding, or general profile editing.
 - Employment status, employer/business name, government employee status, monthly income range and its currency, other income source, and preferred bank are collected inside Post → Loan only. Reusable values live in `public.borrower_information`, separate from `profiles` and all request/listing tables.
 - The table grants access only to the authenticated owner through RLS. It is not joined into public marketplace views or included in a Loan, Forex, Needs, Offer, or public-profile payload.
 - Future Loan Requests load the saved values into the loan form. The user can restore the saved values, edit them for the current request, and the edited values are saved for later Loan Requests. Loan amount, purpose, repayment terms, collateral, and other request details are still entered for each loan.
-- Apply the standalone SQL patch before using the updated Loan Request flow. Do not edit the monolithic `sql/patch.sql`.
+- Database changes are consolidated in `sql/patch.sql` and `sql/merged.sql`.
 
 ## 4.3 Private discovery plans and quick questions
 
@@ -422,4 +422,4 @@ Provider Services is the single place where a user declares what they provide ac
 - `user_discovery_interactions` stores skip, dismiss, mute, answer, and save actions so the app can apply conservative cooldowns.
 - Account -> Plans & interests lets users review, edit, and delete saved plans.
 - The initial templates cover travel, education/career, business needs, and financial interests. Financial interests stay separate from Loans and Forex publishing flows.
-- Migration: `sql/20261009_private_discovery_plans.sql`. Do not edit `sql/patch.sql`.
+- Database changes are consolidated in `sql/patch.sql` and `sql/merged.sql`.

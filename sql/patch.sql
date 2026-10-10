@@ -7913,3 +7913,3601 @@ grant select on public.v_needs_listings to anon, authenticated;
 -- END MERGED SECTION: 20260916_enable_needs_request_posting.sql
 -- ============================================================
 
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_needs_layer.sql
+-- ============================================================
+
+-- ============================================================
+-- Standalone SQL Patch: patch_needs_layer.sql
+-- Description: Adds the Needs Layer (Stage 4.8) — Categories,
+-- Capabilities, Extended Needs Requests, Need Offers, Contact Reveals,
+-- Provider Capabilities with verification levels, Interests,
+-- Views, Triggers, and Atomic RPCs.
+-- ============================================================
+
+-- 1. DROP OLD VIEW FIRST (to allow modifying column types)
+drop view if exists public.v_needs_listings cascade;
+
+-- 2. BASE TABLE MODIFICATIONS & PRIVACY FIX
+alter table if exists public.needs_requests
+  alter column budget type bigint,
+  add column if not exists category_slug text default 'specialized_products',
+  add column if not exists capability_slug text,
+  add column if not exists details jsonb default '{}'::jsonb,
+  add column if not exists number_of_offers integer not null default 0,
+  add column if not exists expires_at timestamptz default (now() + interval '30 days'),
+  add column if not exists terms_locked_at timestamptz,
+  add column if not exists contracted_at timestamptz,
+  add column if not exists cancelled_at timestamptz,
+  add column if not exists views_count integer not null default 0;
+
+-- Ensure status constraint is valid
+alter table if exists public.needs_requests drop constraint if exists chk_needs_requests_status;
+alter table if exists public.needs_requests
+  add constraint chk_needs_requests_status
+  check (status in ('active', 'matched', 'expired', 'cancelled'));
+
+-- 3. REFERENCE TABLES: need_categories & need_capabilities
+create table if not exists public.need_categories (
+  slug text primary key,
+  name text not null,
+  icon text not null,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.need_categories (slug, name, icon, sort_order, is_active)
+values
+  ('travel_international', 'Travel & International', '✈️', 1, false),
+  ('machinery_equipment', 'Machinery & Equipment', '🚜', 2, true),
+  ('professional_services', 'Professional Services', '🧑‍💼', 3, true),
+  ('transport_logistics', 'Transport & Logistics', '🚚', 4, true),
+  ('specialized_products', 'Specialized Products & Procurement', '🔎', 5, true)
+on conflict (slug) do update set
+  name = excluded.name,
+  icon = excluded.icon,
+  sort_order = excluded.sort_order;
+
+create table if not exists public.need_capabilities (
+  slug text primary key,
+  category_slug text not null references public.need_categories(slug) on delete cascade,
+  name text not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  ('visa_assistance', 'travel_international', 'Visa Assistance', true),
+  ('flight_tickets', 'travel_international', 'Flight Tickets & Bookings', true),
+  ('hajj_umrah', 'travel_international', 'Hajj & Umrah Travel', true),
+  ('excavator_hire', 'machinery_equipment', 'Excavator Hire', true),
+  ('tractor_hire', 'machinery_equipment', 'Tractor & Farm Machinery', true),
+  ('generator_hire', 'machinery_equipment', 'Industrial Generators', true),
+  ('company_registration', 'professional_services', 'Company Registration & Legal', true),
+  ('accounting_tax', 'professional_services', 'Accounting & Tax Advisory', true),
+  ('engineering_consulting', 'professional_services', 'Engineering Consulting', true),
+  ('heavy_haulage', 'transport_logistics', 'Heavy Freight & Bulk Haulage', true),
+  ('courier_delivery', 'transport_logistics', 'Courier & Express Delivery', true),
+  ('cold_chain_transport', 'transport_logistics', 'Cold Chain & Refrigerated', true),
+  ('bulk_procurement', 'specialized_products', 'Bulk Industrial Procurement', true),
+  ('medical_supplies', 'specialized_products', 'Medical & Lab Supplies', true),
+  ('electronic_hardware', 'specialized_products', 'Specialized Electronics & Parts', true)
+on conflict (slug) do update set
+  name = excluded.name,
+  category_slug = excluded.category_slug;
+
+-- Foreign key from needs_requests to need_categories
+alter table if exists public.needs_requests drop constraint if exists fk_needs_requests_category_slug;
+alter table if exists public.needs_requests
+  add constraint fk_needs_requests_category_slug
+  foreign key (category_slug) references public.need_categories(slug)
+  on update cascade on delete set default;
+
+-- 4. PROVIDER CAPABILITIES & PROGRESSIVE VERIFICATION
+create table if not exists public.provider_capabilities (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  capability_slug text not null references public.need_capabilities(slug) on delete cascade,
+  verification_level text not null default 'self_declared' check (verification_level in ('self_declared', 'provider_verified')),
+  evidence_url text,
+  verified_by uuid references auth.users(id) on delete set null,
+  verified_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique(user_id, capability_slug)
+);
+
+create index if not exists idx_provider_capabilities_user on public.provider_capabilities(user_id);
+create index if not exists idx_provider_capabilities_capability on public.provider_capabilities(capability_slug);
+
+-- Trigger: enforce verification level cannot be elevated by non-admin
+create or replace function private.trg_enforce_provider_capability_verification()
+returns trigger language plpgsql security definer as $$
+declare
+  v_is_admin boolean := false;
+begin
+  begin
+    v_is_admin := exists (
+      select 1 from public.profiles
+      where id = auth.uid() and is_admin = true
+    );
+  exception when others then
+    v_is_admin := false;
+  end;
+
+  if not v_is_admin then
+    NEW.verification_level := 'self_declared';
+    NEW.verified_by := null;
+    NEW.verified_at := null;
+  else
+    if NEW.verification_level = 'provider_verified' and (OLD is null or OLD.verification_level <> 'provider_verified') then
+      NEW.verified_by := auth.uid();
+      NEW.verified_at := coalesce(NEW.verified_at, now());
+    end if;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_provider_capability_verification on public.provider_capabilities;
+create trigger trg_provider_capability_verification
+  before insert or update on public.provider_capabilities
+  for each row execute function private.trg_enforce_provider_capability_verification();
+
+-- 5. NEED OFFERS TABLE
+create table if not exists public.need_offers (
+  id uuid primary key default gen_random_uuid(),
+  need_id uuid not null references public.needs_requests(request_id) on delete cascade,
+  offer_maker_id uuid not null references auth.users(id) on delete cascade,
+  price bigint not null check (price >= 0),
+  currency text not null default 'UGX',
+  timeline_text text not null default '',
+  message text not null default '',
+  terms_locked_at timestamptz,
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'rejected', 'withdrawn', 'expired')),
+  offered_at timestamptz not null default now(),
+  accepted_at timestamptz,
+  withdrawn_at timestamptz,
+  expires_at timestamptz default (now() + interval '14 days'),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(need_id, offer_maker_id)
+);
+
+create index if not exists idx_need_offers_need_id on public.need_offers(need_id);
+create index if not exists idx_need_offers_maker on public.need_offers(offer_maker_id);
+
+-- 6. NEED CONTACT REVEALS
+create table if not exists public.need_contact_reveals (
+  id uuid primary key default gen_random_uuid(),
+  need_id uuid not null references public.needs_requests(request_id) on delete cascade,
+  offer_id uuid not null references public.need_offers(id) on delete cascade,
+  requester_id uuid not null references auth.users(id),
+  provider_id uuid not null references auth.users(id),
+  unlocked_by uuid not null references auth.users(id),
+  unlocked_at timestamptz not null default now(),
+  unique(offer_id)
+);
+
+create index if not exists idx_need_contact_reveals_need on public.need_contact_reveals(need_id);
+create index if not exists idx_need_contact_reveals_parties on public.need_contact_reveals(requester_id, provider_id);
+
+-- 7. USER INTERESTS & INTEREST EVENTS
+create table if not exists public.user_interests (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category_slug text not null references public.need_categories(slug) on delete cascade,
+  kind text not null default 'explicit' check (kind in ('explicit', 'follow', 'mute')),
+  created_at timestamptz not null default now(),
+  primary key (user_id, category_slug)
+);
+
+create table if not exists public.user_interest_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category_slug text not null references public.need_categories(slug) on delete cascade,
+  event text not null check (event in ('view', 'watchlist', 'post', 'offer')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_user_interest_events_user on public.user_interest_events(user_id, created_at desc);
+
+-- 8. SYSTEM SETTINGS FOR NEEDS
+insert into public.system_settings (setting_key, setting_value, setting_type, category, description, is_public)
+values
+  ('needs_free_offers_per_month', '3', 'number', 'needs', 'Free subscription plan monthly offer cap on Needs', false),
+  ('max_active_needs_free', '3', 'number', 'needs', 'Max active Needs for free plan', false),
+  ('max_active_needs_lender', '8', 'number', 'needs', 'Max active Needs for lender plan', false),
+  ('max_active_needs_pro', '20', 'number', 'needs', 'Max active Needs for pro plan', false),
+  ('needs_default_duration_machinery_equipment_days', '14', 'number', 'marketplace', 'Default days for Machinery & Equipment needs requests', true),
+  ('needs_default_duration_professional_services_days', '14', 'number', 'marketplace', 'Default days for Professional Services needs requests', true),
+  ('needs_default_duration_transport_logistics_days', '7', 'number', 'marketplace', 'Default days for Transport & Logistics needs requests', true),
+  ('needs_default_duration_specialized_products_days', '14', 'number', 'marketplace', 'Default days for Specialized Products & Procurement needs requests', true),
+  ('needs_default_duration_travel_international_days', '14', 'number', 'marketplace', 'Default days for Travel & International needs requests', true)
+on conflict (setting_key, coalesce(country, '__global__')) do nothing;
+
+-- 9. BACKFILL EXISTING SAMPLE REQUESTS
+update public.needs_requests
+set category_slug = case
+  when lower(title) ~ 'pump|mill|oven|mixer|fridge|machine|tank|generator|huller|sheller|freezer|chiller' then 'machinery_equipment'
+  when lower(title) ~ 'truck|van|delivery|transport|haulage|cement' then 'transport_logistics'
+  when lower(title) ~ 'visa|flight|travel|hajj|umrah|passport' then 'travel_international'
+  when lower(title) ~ 'registration|audit|legal|lawyer|accounting|consulting|tax' then 'professional_services'
+  when lower(category) ~ 'business equipment|home & energy|agriculture|community|technology' then 'machinery_equipment'
+  when lower(category) ~ 'education|health' then 'professional_services'
+  when lower(category) ~ 'transport' then 'transport_logistics'
+  else 'specialized_products'
+end,
+expires_at = coalesce(expires_at, now() + interval '30 days')
+where category_slug is null or category_slug = 'specialized_products';
+
+-- 10. REBUILD v_needs_listings (Excludes requester_id from public read, joins trust)
+create or replace view public.v_needs_listings as
+select
+  nr.request_id,
+  nr.title,
+  nr.specification,
+  nr.category_slug,
+  nc.name as category,
+  nc.icon as category_icon,
+  nr.capability_slug,
+  nr.details,
+  nr.budget,
+  nr.currency,
+  nr.location,
+  nr.country,
+  nr.urgency,
+  nr.status,
+  nr.number_of_offers,
+  case
+    when nr.number_of_offers = 0 then 'no_offers'
+    when nr.number_of_offers between 1 and 2 then 'low_coverage'
+    when nr.number_of_offers between 3 and 5 then 'good_coverage'
+    else 'high_coverage'
+  end as offer_coverage_tier,
+  nr.expires_at,
+  case
+    when nr.expires_at <= now() then 'Expired'
+    when nr.expires_at - now() < interval '1 day' then
+      concat(extract(hour from (nr.expires_at - now()))::int, 'h left')
+    else
+      concat(extract(day from (nr.expires_at - now()))::int, 'd left')
+  end as time_remaining,
+  nr.listed_at,
+  nr.created_at,
+  coalesce(k.status = 'approved', nr.trust_is_verified) as trust_is_verified,
+  coalesce(p.phone_verified_at is not null, false) as trust_phone_verified,
+  ta.rating_avg as trust_rating_avg,
+  ta.review_count as trust_review_count,
+  ta.completed_deals_count as trust_completed_deals_count,
+  coalesce(ta.completed_deals_count > 1, false) as trust_is_repeat_participant
+from public.needs_requests nr
+left join public.need_categories nc on nc.slug = nr.category_slug
+left join public.profiles p on p.id = nr.requester_id
+left join public.kyc_verifications k on k.user_id = nr.requester_id
+left join public.trust_aggregates ta on ta.user_id = nr.requester_id
+where nr.status = 'active'
+  and (nr.expires_at is null or nr.expires_at > now())
+  and (
+    auth.uid() is null
+    or (
+      nr.requester_id is distinct from auth.uid()
+      and not exists (
+        select 1 from public.user_blocks ub
+        where (
+          (ub.blocker_id = auth.uid() and ub.blocked_id = nr.requester_id)
+          or (ub.blocker_id = nr.requester_id and ub.blocked_id = auth.uid())
+        )
+        and ub.created_at <= nr.listed_at::timestamp
+      )
+    )
+  );
+
+create or replace view public.v_provider_badges as
+select
+  pc.user_id,
+  pc.capability_slug,
+  nc.name as capability_name,
+  nc.category_slug,
+  cat.name as category_name,
+  cat.icon as category_icon,
+  pc.verification_level,
+  coalesce(k.status = 'approved', false) as kyc_verified,
+  p.phone_verified_at is not null as phone_verified
+from public.provider_capabilities pc
+join public.need_capabilities nc on nc.slug = pc.capability_slug
+join public.need_categories cat on cat.slug = nc.category_slug
+join public.profiles p on p.id = pc.user_id
+left join public.kyc_verifications k on k.user_id = pc.user_id;
+
+-- 11. ROW LEVEL SECURITY & PRIVACY POLICIES
+
+-- Privacy fix on needs_requests: drop old anon-read policy then revoke direct anon select
+drop policy if exists "Anyone can read active needs requests" on public.needs_requests;
+revoke select on public.needs_requests from anon;
+
+alter table public.needs_requests enable row level security;
+alter table public.need_categories enable row level security;
+alter table public.need_capabilities enable row level security;
+alter table public.provider_capabilities enable row level security;
+alter table public.need_offers enable row level security;
+alter table public.need_contact_reveals enable row level security;
+alter table public.user_interests enable row level security;
+alter table public.user_interest_events enable row level security;
+
+-- Policies for need_categories & need_capabilities: public read
+drop policy if exists "Categories are viewable by everyone" on public.need_categories;
+create policy "Categories are viewable by everyone" on public.need_categories for select using (true);
+
+drop policy if exists "Capabilities are viewable by everyone" on public.need_capabilities;
+create policy "Capabilities are viewable by everyone" on public.need_capabilities for select using (true);
+
+-- Policies for needs_requests
+drop policy if exists "Owner or admin can view own needs base rows" on public.needs_requests;
+create policy "Owner or admin can view own needs base rows" on public.needs_requests
+  for select to authenticated
+  using (requester_id = auth.uid() or exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+drop policy if exists "Authenticated users can create own needs requests" on public.needs_requests;
+create policy "Authenticated users can create own needs requests" on public.needs_requests
+  for insert to authenticated
+  with check (requester_id = auth.uid());
+
+drop policy if exists "Users can update own needs requests" on public.needs_requests;
+create policy "Users can update own needs requests" on public.needs_requests
+  for update to authenticated
+  using (requester_id = auth.uid())
+  with check (requester_id = auth.uid());
+
+-- Policies for provider_capabilities
+drop policy if exists "Provider capabilities viewable by all" on public.provider_capabilities;
+create policy "Provider capabilities viewable by all" on public.provider_capabilities
+  for select using (true);
+
+drop policy if exists "Users manage own provider capabilities" on public.provider_capabilities;
+create policy "Users manage own provider capabilities" on public.provider_capabilities
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "Users update own provider capabilities" on public.provider_capabilities;
+create policy "Users update own provider capabilities" on public.provider_capabilities
+  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "Users delete own provider capabilities" on public.provider_capabilities;
+create policy "Users delete own provider capabilities" on public.provider_capabilities
+  for delete to authenticated using (user_id = auth.uid());
+
+-- Policies for need_offers
+drop policy if exists "Participants and admins can view need offers" on public.need_offers;
+create policy "Participants and admins can view need offers" on public.need_offers
+  for select to authenticated
+  using (
+    offer_maker_id = auth.uid()
+    or exists (select 1 from public.needs_requests nr where nr.request_id = need_offers.need_id and nr.requester_id = auth.uid())
+    or exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
+
+drop policy if exists "Providers can submit need offers" on public.need_offers;
+create policy "Providers can submit need offers" on public.need_offers
+  for insert to authenticated with check (offer_maker_id = auth.uid());
+
+drop policy if exists "Providers can update own pending need offers" on public.need_offers;
+create policy "Providers can update own pending need offers" on public.need_offers
+  for update to authenticated using (offer_maker_id = auth.uid()) with check (offer_maker_id = auth.uid());
+
+-- Policies for need_contact_reveals
+drop policy if exists "Deal participants can view contact reveal" on public.need_contact_reveals;
+create policy "Deal participants can view contact reveal" on public.need_contact_reveals
+  for select to authenticated
+  using (requester_id = auth.uid() or provider_id = auth.uid() or exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+-- Policies for user_interests & user_interest_events
+drop policy if exists "Users manage own interests" on public.user_interests;
+create policy "Users manage own interests" on public.user_interests
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "Users manage own interest events" on public.user_interest_events;
+create policy "Users manage own interest events" on public.user_interest_events
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- 12. TRIGGERS ON need_offers (Offer Validation & Sync Offer Count)
+
+create or replace function private.trg_validate_need_offer()
+returns trigger language plpgsql security definer as $$
+declare
+  v_need record;
+  v_plan text;
+  v_offer_count_month int;
+  v_free_offer_cap int := 3;
+  v_has_capability boolean := false;
+begin
+  -- Fetch need request
+  select * into v_need from public.needs_requests where request_id = NEW.need_id;
+  if not found then
+    raise exception 'Need request not found' using errcode = 'P0201';
+  end if;
+
+  if v_need.status <> 'active' or (v_need.expires_at is not null and v_need.expires_at <= now()) then
+    raise exception 'Cannot offer on inactive or expired need request' using errcode = 'P0202';
+  end if;
+
+  if v_need.requester_id = NEW.offer_maker_id then
+    raise exception 'Cannot make an offer on your own need request' using errcode = 'P0205';
+  end if;
+
+  -- Check capability: must have matching capability in the category or specific capability
+  if v_need.capability_slug is not null then
+    select exists (
+      select 1 from public.provider_capabilities
+      where user_id = NEW.offer_maker_id and capability_slug = v_need.capability_slug
+    ) into v_has_capability;
+  else
+    select exists (
+      select 1 from public.provider_capabilities pc
+      join public.need_capabilities nc on nc.slug = pc.capability_slug
+      where pc.user_id = NEW.offer_maker_id and nc.category_slug = v_need.category_slug
+    ) into v_has_capability;
+  end if;
+
+  if not v_has_capability then
+    raise exception 'You must declare a capability in this category before making offers' using errcode = 'P0203';
+  end if;
+
+  -- Subscription plan check for monthly cap
+  select subscription_plan into v_plan from public.profiles where id = NEW.offer_maker_id;
+  if coalesce(v_plan, 'free') = 'free' then
+    select coalesce(nullif(setting_value, '')::int, 3) into v_free_offer_cap
+    from public.system_settings where setting_key = 'needs_free_offers_per_month';
+
+    select count(*) into v_offer_count_month
+    from public.need_offers
+    where offer_maker_id = NEW.offer_maker_id
+      and created_at >= date_trunc('month', now());
+
+    if v_offer_count_month >= v_free_offer_cap then
+      raise exception 'Free plan limit of % offers/month reached. Upgrade to make unlimited offers.', v_free_offer_cap using errcode = 'P0204';
+    end if;
+  end if;
+
+  NEW.terms_locked_at := now();
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_validate_need_offer on public.need_offers;
+create trigger trg_validate_need_offer
+  before insert on public.need_offers
+  for each row execute function private.trg_validate_need_offer();
+
+-- Sync offer count on needs_requests
+create or replace function private.trg_sync_need_offer_count()
+returns trigger language plpgsql security definer as $$
+declare
+  v_need_id uuid;
+begin
+  v_need_id := coalesce(NEW.need_id, OLD.need_id);
+  update public.needs_requests
+  set number_of_offers = (
+    select count(*) from public.need_offers
+    where need_id = v_need_id and status in ('pending', 'accepted')
+  )
+  where request_id = v_need_id;
+  return null;
+end;
+$$;
+
+drop trigger if exists trg_sync_need_offer_count on public.need_offers;
+create trigger trg_sync_need_offer_count
+  after insert or update or delete on public.need_offers
+  for each row execute function private.trg_sync_need_offer_count();
+
+-- 13. RPCS: ACCEPT OFFER, UNLOCK CONTACT, PUBLIC OFFERS, FOR YOU, PROVIDER OPPORTUNITIES
+
+-- Public offers RPC (selective transparency)
+create or replace function public.get_public_need_offers(p_need_id uuid)
+returns table (
+  id uuid,
+  public_offer_id text,
+  price bigint,
+  currency text,
+  timeline_text text,
+  message text,
+  status text,
+  offered_at timestamptz,
+  is_own_offer boolean,
+  provider_verification_level text,
+  provider_rating_avg numeric,
+  provider_review_count int,
+  provider_completed_deals int,
+  provider_phone_verified boolean
+) language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+  v_is_requester boolean := false;
+  v_is_admin boolean := false;
+  v_has_offered boolean := false;
+begin
+  select exists (
+    select 1 from public.needs_requests
+    where request_id = p_need_id and requester_id = v_caller
+  ) into v_is_requester;
+
+  select exists (
+    select 1 from public.profiles
+    where id = v_caller and is_admin = true
+  ) into v_is_admin;
+
+  select exists (
+    select 1 from public.need_offers
+    where need_id = p_need_id and offer_maker_id = v_caller and status in ('pending', 'accepted')
+  ) into v_has_offered;
+
+  -- Only requester, admin, or providers who have submitted an offer can see individual offers
+  if not (v_is_requester or v_is_admin or v_has_offered) then
+    return;
+  end if;
+
+  return query
+  select
+    case when (v_is_requester or v_is_admin or o.offer_maker_id = v_caller) then o.id else null::uuid end as id,
+    'public-offer-' || dense_rank() over (order by o.price asc, o.offered_at asc)::text as public_offer_id,
+    o.price,
+    o.currency,
+    o.timeline_text,
+    case when (v_is_requester or v_is_admin or o.offer_maker_id = v_caller) then o.message else 'Offer details available to requester' end as message,
+    o.status,
+    o.offered_at,
+    (o.offer_maker_id = v_caller) as is_own_offer,
+    coalesce(pc.verification_level, 'self_declared') as provider_verification_level,
+    ta.rating_avg as provider_rating_avg,
+    coalesce(ta.review_count, 0) as provider_review_count,
+    coalesce(ta.completed_deals_count, 0) as provider_completed_deals,
+    coalesce(p.phone_verified_at is not null, false) as provider_phone_verified
+  from public.need_offers o
+  join public.needs_requests nr on nr.request_id = o.need_id
+  left join public.profiles p on p.id = o.offer_maker_id
+  left join public.trust_aggregates ta on ta.user_id = o.offer_maker_id
+  left join public.provider_capabilities pc on pc.user_id = o.offer_maker_id
+    and pc.capability_slug in (
+      select nc.slug from public.need_capabilities nc where nc.category_slug = nr.category_slug
+    )
+  where o.need_id = p_need_id
+    and o.status in ('pending', 'accepted')
+  order by o.price asc, o.offered_at asc;
+end;
+$$;
+
+-- Accept Offer RPC
+create or replace function public.accept_need_offer(p_need_id uuid, p_offer_id uuid)
+returns uuid language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+  v_need record;
+  v_offer record;
+  v_reveal_id uuid;
+begin
+  if v_caller is null then
+    raise exception 'Authentication required' using errcode = 'P0001';
+  end if;
+
+  select * into v_need from public.needs_requests where request_id = p_need_id for update;
+  if not found or v_need.requester_id <> v_caller then
+    raise exception 'Need request not found or not authorized' using errcode = 'P0201';
+  end if;
+
+  if v_need.status <> 'active' then
+    raise exception 'Need request is not active' using errcode = 'P0202';
+  end if;
+
+  select * into v_offer from public.need_offers where id = p_offer_id and need_id = p_need_id for update;
+  if not found or v_offer.status <> 'pending' then
+    raise exception 'Offer is not pending' using errcode = 'P0206';
+  end if;
+
+  -- 1. Accept target offer
+  update public.need_offers
+  set status = 'accepted', accepted_at = now(), updated_at = now()
+  where id = p_offer_id;
+
+  -- 2. Reject remaining offers
+  update public.need_offers
+  set status = 'rejected', updated_at = now()
+  where need_id = p_need_id and id <> p_offer_id and status = 'pending';
+
+  -- 3. Update need request status to matched
+  update public.needs_requests
+  set status = 'matched', contracted_at = now()
+  where request_id = p_need_id;
+
+  -- 4. Create contact reveal record
+  insert into public.need_contact_reveals (
+    need_id, offer_id, requester_id, provider_id, unlocked_by, unlocked_at
+  ) values (
+    p_need_id, p_offer_id, v_caller, v_offer.offer_maker_id, v_caller, now()
+  ) returning id into v_reveal_id;
+
+  return v_reveal_id;
+end;
+$$;
+
+-- Unlock Need Contact RPC (Multi-Party Safe: either participant can unlock)
+create or replace function public.unlock_need_contact(p_offer_id uuid)
+returns uuid language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+  v_offer record;
+  v_need record;
+  v_reveal_id uuid;
+begin
+  if v_caller is null then
+    raise exception 'Authentication required' using errcode = 'P0001';
+  end if;
+
+  select * into v_offer from public.need_offers where id = p_offer_id;
+  if not found or v_offer.status <> 'accepted' then
+    raise exception 'Accepted offer not found' using errcode = 'P0207';
+  end if;
+
+  select * into v_need from public.needs_requests where request_id = v_offer.need_id;
+  if not found then
+    raise exception 'Need request not found' using errcode = 'P0201';
+  end if;
+
+  if v_caller <> v_need.requester_id and v_caller <> v_offer.offer_maker_id then
+    raise exception 'Only deal participants can unlock contact' using errcode = 'P0003';
+  end if;
+
+  insert into public.need_contact_reveals (
+    need_id, offer_id, requester_id, provider_id, unlocked_by, unlocked_at
+  ) values (
+    v_need.request_id, p_offer_id, v_need.requester_id, v_offer.offer_maker_id, v_caller, now()
+  ) on conflict (offer_id) do update set unlocked_at = excluded.unlocked_at
+  returning id into v_reveal_id;
+
+  return v_reveal_id;
+end;
+$$;
+
+-- Get Provider Opportunities RPC
+create or replace function public.get_provider_opportunities(p_limit int default 10)
+returns table (
+  category_slug text,
+  category_name text,
+  category_icon text,
+  open_needs_count bigint,
+  latest_need_title text,
+  latest_need_budget bigint,
+  latest_need_currency text,
+  latest_need_location text
+) language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+begin
+  if v_caller is null then
+    return;
+  end if;
+
+  return query
+  with user_caps as (
+    select distinct nc.category_slug
+    from public.provider_capabilities pc
+    join public.need_capabilities nc on nc.slug = pc.capability_slug
+    where pc.user_id = v_caller
+  ),
+  active_needs as (
+    select
+      nr.category_slug,
+      count(*) as cnt,
+      max(nr.listed_at) as max_listed
+    from public.needs_requests nr
+    where nr.status = 'active'
+      and nr.category_slug in (select uc.category_slug from user_caps uc)
+      and nr.requester_id is distinct from v_caller
+      and (nr.expires_at is null or nr.expires_at > now())
+    group by nr.category_slug
+  )
+  select
+    an.category_slug,
+    cat.name as category_name,
+    cat.icon as category_icon,
+    an.cnt as open_needs_count,
+    latest.title as latest_need_title,
+    latest.budget as latest_need_budget,
+    latest.currency as latest_need_currency,
+    latest.location as latest_need_location
+  from active_needs an
+  join public.need_categories cat on cat.slug = an.category_slug
+  cross join lateral (
+    select nr.title, nr.budget, nr.currency, nr.location
+    from public.needs_requests nr
+    where nr.category_slug = an.category_slug
+      and nr.status = 'active'
+      and nr.requester_id is distinct from v_caller
+    order by nr.listed_at desc
+    limit 1
+  ) latest
+  limit p_limit;
+end;
+$$;
+
+-- Get For You Needs RPC
+create or replace function public.get_for_you_needs(p_country text default 'UG', p_limit int default 20)
+returns setof public.v_needs_listings language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+begin
+  return query
+  select vl.*
+  from public.v_needs_listings vl
+  where vl.country = p_country
+    and not exists (
+      select 1 from public.user_interests ui
+      where ui.user_id = v_caller
+        and ui.category_slug = vl.category_slug
+        and ui.kind = 'mute'
+    )
+  order by
+    case
+      when exists (
+        select 1 from public.user_interests ui
+        where ui.user_id = v_caller and ui.category_slug = vl.category_slug and ui.kind in ('explicit', 'follow')
+      ) then 100
+      else 0
+    end desc,
+    vl.listed_at desc
+  limit p_limit;
+end;
+$$;
+
+-- Record Interest Event RPC
+create or replace function public.record_interest_event(p_category_slug text, p_event text)
+returns void language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+begin
+  if v_caller is null then return; end if;
+
+  insert into public.user_interest_events (user_id, category_slug, event, created_at)
+  values (v_caller, p_category_slug, p_event, now());
+end;
+$$;
+
+-- Grants
+grant select on public.need_categories to anon, authenticated;
+grant select on public.need_capabilities to anon, authenticated;
+grant select on public.v_needs_listings to anon, authenticated;
+grant select on public.v_provider_badges to anon, authenticated;
+grant select, insert, update, delete on public.provider_capabilities to authenticated;
+grant select, insert, update on public.need_offers to authenticated;
+grant select, insert, update on public.need_contact_reveals to authenticated;
+grant select, insert, update, delete on public.user_interests to authenticated;
+grant select, insert on public.user_interest_events to authenticated;
+
+grant execute on function public.get_public_need_offers(uuid) to authenticated;
+grant execute on function public.accept_need_offer(uuid, uuid) to authenticated;
+grant execute on function public.unlock_need_contact(uuid) to authenticated;
+grant execute on function public.get_provider_opportunities(int) to authenticated;
+grant execute on function public.get_for_you_needs(text, int) to anon, authenticated;
+grant execute on function public.record_interest_event(text, text) to authenticated;
+
+-- ============================================================
+-- END MERGED SECTION: patch_needs_layer.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_seed_needs_layer.sql
+-- ============================================================
+
+-- ============================================================
+-- Standalone SQL Patch: patch_seed_needs_layer.sql
+-- Description: Test capabilities, seed provider relations, and sample
+-- need interactions for Stage 4.8 verification.
+-- ============================================================
+
+-- Ensure test seed providers have capabilities
+insert into public.provider_capabilities (user_id, capability_slug, verification_level)
+select p.id, c.slug, 'self_declared'
+from public.profiles p
+cross join (
+  select 'excavator_hire' as slug union all
+  select 'company_registration' union all
+  select 'heavy_haulage' union all
+  select 'bulk_procurement'
+) c
+where p.id in (
+  select id from public.profiles limit 3
+)
+on conflict (user_id, capability_slug) do nothing;
+
+-- ============================================================
+-- END MERGED SECTION: patch_seed_needs_layer.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_provider_capabilities_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- Standalone SQL Patch: patch_provider_capabilities_v1.sql
+-- Description: Provider Services / Provider Capabilities (Stage 4.8 / Phase 4)
+-- Enforces:
+-- 1. provider_capabilities schema with metadata and unique index.
+-- 2. Security trigger: Only admins can elevate verification_level to 'provider_verified'.
+-- 3. Capability-gated offers validation trigger on need_offers with code 'P0203'.
+-- 4. Atomic get_provider_opportunities RPC grouping by capability.
+-- 5. Admin capability review RPC and moderation queries.
+-- ============================================================
+
+-- 1. BASE TABLE: provider_capabilities
+create table if not exists public.provider_capabilities (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  capability_slug text not null references public.need_capabilities(slug) on delete cascade,
+  verification_level text not null default 'self_declared' check (verification_level in ('self_declared', 'provider_verified')),
+  evidence_url text,
+  metadata jsonb not null default '{}'::jsonb,
+  verified_by uuid references auth.users(id) on delete set null,
+  verified_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique(user_id, capability_slug)
+);
+
+-- Ensure metadata column exists if table was created earlier without it
+alter table if exists public.provider_capabilities
+  add column if not exists metadata jsonb not null default '{}'::jsonb;
+
+-- Indexes
+create index if not exists idx_provider_capabilities_user on public.provider_capabilities(user_id);
+create index if not exists idx_provider_capabilities_capability on public.provider_capabilities(capability_slug);
+create index if not exists idx_provider_capabilities_level on public.provider_capabilities(verification_level);
+
+-- 2. TRIGGER: Enforce progressive verification level
+-- Users can NEVER elevate themselves to 'provider_verified'. Only an admin can approve.
+drop function if exists private.trg_enforce_provider_capability_verification() cascade;
+create or replace function private.trg_enforce_provider_capability_verification()
+returns trigger language plpgsql security definer as $$
+declare
+  v_is_admin boolean := false;
+begin
+  begin
+    v_is_admin := exists (
+      select 1 from public.profiles
+      where id = auth.uid() and is_admin = true
+    );
+  exception when others then
+    v_is_admin := false;
+  end;
+
+  if not v_is_admin then
+    -- Non-admin cannot set verification_level to provider_verified
+    NEW.verification_level := 'self_declared';
+    NEW.verified_by := null;
+    NEW.verified_at := null;
+  else
+    if NEW.verification_level = 'provider_verified' and (OLD is null or OLD.verification_level <> 'provider_verified') then
+      NEW.verified_by := coalesce(NEW.verified_by, auth.uid());
+      NEW.verified_at := coalesce(NEW.verified_at, now());
+    end if;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_provider_capability_verification on public.provider_capabilities;
+create trigger trg_provider_capability_verification
+  before insert or update on public.provider_capabilities
+  for each row execute function private.trg_enforce_provider_capability_verification();
+
+-- 3. ROW LEVEL SECURITY POLICIES
+alter table public.provider_capabilities enable row level security;
+
+drop policy if exists "Provider capabilities viewable by all" on public.provider_capabilities;
+create policy "Provider capabilities viewable by all" on public.provider_capabilities
+  for select using (true);
+
+drop policy if exists "Users manage own provider capabilities" on public.provider_capabilities;
+create policy "Users manage own provider capabilities" on public.provider_capabilities
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "Users update own provider capabilities" on public.provider_capabilities;
+create policy "Users update own provider capabilities" on public.provider_capabilities
+  for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "Users delete own provider capabilities" on public.provider_capabilities;
+create policy "Users delete own provider capabilities" on public.provider_capabilities
+  for delete to authenticated using (user_id = auth.uid());
+
+drop policy if exists "Admins update all provider capabilities" on public.provider_capabilities;
+create policy "Admins update all provider capabilities" on public.provider_capabilities
+  for update to authenticated
+  using (exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+-- 4. SERVER-SIDE OFFER VALIDATION TRIGGER (Capability Gating: P0203)
+drop function if exists private.trg_validate_need_offer() cascade;
+create or replace function private.trg_validate_need_offer()
+returns trigger language plpgsql security definer as $$
+declare
+  v_need record;
+  v_plan text;
+  v_offer_count_month int;
+  v_free_offer_cap int := 3;
+  v_has_capability boolean := false;
+begin
+  -- Fetch need request
+  select * into v_need from public.needs_requests where request_id = NEW.need_id;
+  if not found then
+    raise exception 'Need request not found' using errcode = 'P0201';
+  end if;
+
+  if v_need.status <> 'active' or (v_need.expires_at is not null and v_need.expires_at <= now()) then
+    raise exception 'Cannot offer on inactive or expired need request' using errcode = 'P0202';
+  end if;
+
+  if v_need.requester_id = NEW.offer_maker_id then
+    raise exception 'Cannot make an offer on your own need request' using errcode = 'P0205';
+  end if;
+
+  -- Capability gating: user MUST have declared a matching capability
+  if v_need.capability_slug is not null then
+    select exists (
+      select 1 from public.provider_capabilities
+      where user_id = NEW.offer_maker_id and capability_slug = v_need.capability_slug
+    ) into v_has_capability;
+  else
+    select exists (
+      select 1 from public.provider_capabilities pc
+      join public.need_capabilities nc on nc.slug = pc.capability_slug
+      where pc.user_id = NEW.offer_maker_id and nc.category_slug = v_need.category_slug
+    ) into v_has_capability;
+  end if;
+
+  if not v_has_capability then
+    raise exception 'You must declare a capability in this category before making offers' using errcode = 'P0203';
+  end if;
+
+  -- Subscription plan check for monthly cap
+  select subscription_plan into v_plan from public.profiles where id = NEW.offer_maker_id;
+  if coalesce(v_plan, 'free') = 'free' then
+    select coalesce(nullif(setting_value, '')::int, 3) into v_free_offer_cap
+    from public.system_settings where setting_key = 'needs_free_offers_per_month';
+
+    select count(*) into v_offer_count_month
+    from public.need_offers
+    where offer_maker_id = NEW.offer_maker_id
+      and created_at >= date_trunc('month', now());
+
+    if v_offer_count_month >= v_free_offer_cap then
+      raise exception 'Free plan limit of % offers/month reached. Upgrade to make unlimited offers.', v_free_offer_cap using errcode = 'P0204';
+    end if;
+  end if;
+
+  NEW.terms_locked_at := coalesce(NEW.terms_locked_at, now());
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_validate_need_offer on public.need_offers;
+create trigger trg_validate_need_offer
+  before insert on public.need_offers
+  for each row execute function private.trg_validate_need_offer();
+
+-- 5. RPC: get_provider_opportunities
+-- Finds active Needs that match the caller's declared capabilities.
+drop function if exists public.get_provider_opportunities cascade;
+drop function if exists public.get_provider_opportunities(int) cascade;
+drop function if exists public.get_provider_opportunities(uuid, int) cascade;
+create or replace function public.get_provider_opportunities(p_user_id uuid default null, p_limit int default 20)
+returns table (
+  capability_slug text,
+  capability_name text,
+  category_slug text,
+  category_name text,
+  category_icon text,
+  open_needs_count bigint,
+  latest_need_id uuid,
+  latest_need_title text,
+  latest_need_budget bigint,
+  latest_need_currency text,
+  latest_need_location text,
+  latest_need_created_at timestamptz
+) language plpgsql security definer as $$
+declare
+  v_caller uuid := coalesce(p_user_id, auth.uid());
+begin
+  if v_caller is null then
+    return;
+  end if;
+
+  return query
+  with user_caps as (
+    select
+      pc.capability_slug,
+      nc.name as capability_name,
+      nc.category_slug,
+      cat.name as category_name,
+      cat.icon as category_icon
+    from public.provider_capabilities pc
+    join public.need_capabilities nc on nc.slug = pc.capability_slug
+    join public.need_categories cat on cat.slug = nc.category_slug
+    where pc.user_id = v_caller
+  ),
+  matching_needs as (
+    select
+      uc.capability_slug,
+      nr.request_id,
+      nr.title,
+      nr.budget,
+      nr.currency,
+      nr.location,
+      nr.listed_at
+    from user_caps uc
+    join public.needs_requests nr
+      on (nr.capability_slug = uc.capability_slug or (nr.capability_slug is null and nr.category_slug = uc.category_slug))
+    where nr.status = 'active'
+      and nr.requester_id is distinct from v_caller
+      and (nr.expires_at is null or nr.expires_at > now())
+      and not exists (
+        select 1 from public.need_offers nof
+        where nof.need_id = nr.request_id and nof.offer_maker_id = v_caller
+      )
+  ),
+  capability_counts as (
+    select
+      mn.capability_slug,
+      count(*) as cnt,
+      max(mn.listed_at) as max_listed
+    from matching_needs mn
+    group by mn.capability_slug
+  )
+  select
+    uc.capability_slug,
+    uc.capability_name,
+    uc.category_slug,
+    uc.category_name,
+    uc.category_icon,
+    cc.cnt as open_needs_count,
+    latest.request_id as latest_need_id,
+    latest.title as latest_need_title,
+    latest.budget as latest_need_budget,
+    latest.currency as latest_need_currency,
+    latest.location as latest_need_location,
+    latest.listed_at as latest_need_created_at
+  from capability_counts cc
+  join user_caps uc on uc.capability_slug = cc.capability_slug
+  cross join lateral (
+    select mn.request_id, mn.title, mn.budget, mn.currency, mn.location, mn.listed_at
+    from matching_needs mn
+    where mn.capability_slug = cc.capability_slug
+    order by mn.listed_at desc
+    limit 1
+  ) latest
+  order by cc.cnt desc, latest.listed_at desc
+  limit p_limit;
+end;
+$$;
+
+-- 6. ADMIN RPCs: Moderation of Provider Capabilities
+drop function if exists public.admin_get_provider_capabilities cascade;
+create or replace function public.admin_get_provider_capabilities(
+  p_filter_level text default null,
+  p_limit int default 50
+)
+returns table (
+  capability_id uuid,
+  user_id uuid,
+  user_name text,
+  user_email text,
+  user_phone text,
+  phone_verified boolean,
+  kyc_status text,
+  rating_avg numeric,
+  completed_deals_count integer,
+  capability_slug text,
+  capability_name text,
+  category_slug text,
+  category_name text,
+  category_icon text,
+  verification_level text,
+  evidence_url text,
+  metadata jsonb,
+  verified_by uuid,
+  verified_at timestamptz,
+  created_at timestamptz
+) language plpgsql security definer as $$
+begin
+  -- Validate caller is admin
+  if not exists (select 1 from public.profiles where id = auth.uid() and is_admin = true) then
+    raise exception 'Unauthorized: Admin access required' using errcode = '42501';
+  end if;
+
+  return query
+  select
+    pc.id as capability_id,
+    pc.user_id,
+    p.full_name as user_name,
+    p.email as user_email,
+    p.phone as user_phone,
+    (p.phone_verified_at is not null) as phone_verified,
+    coalesce(p.kyc_status, 'none') as kyc_status,
+    p.rating_avg,
+    coalesce(p.completed_deals_count, 0) as completed_deals_count,
+    pc.capability_slug,
+    nc.name as capability_name,
+    nc.category_slug,
+    cat.name as category_name,
+    cat.icon as category_icon,
+    pc.verification_level,
+    pc.evidence_url,
+    pc.metadata,
+    pc.verified_by,
+    pc.verified_at,
+    pc.created_at
+  from public.provider_capabilities pc
+  join public.profiles p on p.id = pc.user_id
+  join public.need_capabilities nc on nc.slug = pc.capability_slug
+  join public.need_categories cat on cat.slug = nc.category_slug
+  where (p_filter_level is null or pc.verification_level = p_filter_level)
+  order by
+    case when pc.verification_level = 'self_declared' then 0 else 1 end,
+    pc.created_at desc
+  limit p_limit;
+end;
+$$;
+
+drop function if exists public.admin_review_provider_capability cascade;
+create or replace function public.admin_review_provider_capability(
+  p_capability_id uuid,
+  p_action text,
+  p_rejection_reason text default null
+)
+returns boolean language plpgsql security definer as $$
+declare
+  v_admin uuid := auth.uid();
+  v_is_admin boolean := false;
+  v_old_level text;
+  v_user_id uuid;
+begin
+  select exists (
+    select 1 from public.profiles where id = v_admin and is_admin = true
+  ) into v_is_admin;
+
+  if not v_is_admin then
+    raise exception 'Unauthorized: Admin access required' using errcode = '42501';
+  end if;
+
+  select verification_level, user_id into v_old_level, v_user_id
+  from public.provider_capabilities
+  where id = p_capability_id;
+
+  if not found then
+    raise exception 'Provider capability not found' using errcode = 'P0210';
+  end if;
+
+  if p_action = 'approve' then
+    update public.provider_capabilities
+    set
+      verification_level = 'provider_verified',
+      verified_by = v_admin,
+      verified_at = now()
+    where id = p_capability_id;
+
+    insert into public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    values (
+      v_admin,
+      'admin_action',
+      'provider_capabilities',
+      p_capability_id,
+      'approve_capability',
+      jsonb_build_object('verification_level', 'provider_verified', 'approved_by', v_admin)
+    );
+    return true;
+  elsif p_action = 'reject' then
+    update public.provider_capabilities
+    set
+      verification_level = 'self_declared',
+      verified_by = null,
+      verified_at = null,
+      metadata = jsonb_set(
+        coalesce(metadata, '{}'::jsonb),
+        '{last_rejection}',
+        jsonb_build_object('rejected_at', now(), 'reason', coalesce(p_rejection_reason, ''))
+      )
+    where id = p_capability_id;
+
+    insert into public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+    values (
+      v_admin,
+      'admin_action',
+      'provider_capabilities',
+      p_capability_id,
+      'reject_capability',
+      jsonb_build_object('reason', p_rejection_reason, 'rejected_by', v_admin)
+    );
+    return true;
+  else
+    raise exception 'Invalid action: must be approve or reject' using errcode = '22023';
+  end if;
+end;
+$$;
+
+-- Permissions
+grant select, insert, update, delete on public.provider_capabilities to authenticated;
+grant execute on function public.get_provider_opportunities to authenticated;
+grant execute on function public.admin_get_provider_capabilities to authenticated;
+grant execute on function public.admin_review_provider_capability to authenticated;
+
+-- ============================================================
+-- END MERGED SECTION: patch_provider_capabilities_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_needs_categories_v2.sql
+-- ============================================================
+
+-- =============================================================================
+-- Standalone SQL Patch: patch_needs_categories_v2.sql
+-- Created: 2026-10-01
+-- Purpose: Expand Needs category system from 5 to 10 categories with
+--          full starter capabilities (~75 entries) across all categories.
+--          Also adds description column to need_categories and sort_order
+--          correction so categories appear in the intended display order.
+-- Safe to re-run: all inserts use ON CONFLICT DO UPDATE
+-- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 1. Add optional description column to need_categories (idempotent)
+-- ---------------------------------------------------------------------------
+alter table public.need_categories
+  add column if not exists description text;
+
+-- ---------------------------------------------------------------------------
+-- 2. Upsert all 10 main categories
+--    Sort order follows the spec. is_active flags reflect phased launch:
+--    Phase 1 (immediate): machinery, professional, transport, specialized
+--    Phase 2 (soon):      construction, agriculture, technology, events, energy
+--    High-trust (later):  travel_international
+-- ---------------------------------------------------------------------------
+insert into public.need_categories (slug, name, icon, sort_order, description, is_active)
+values
+  ('machinery_equipment',       'Machinery & Equipment',                 '🚜', 1,
+   'Hire or source heavy machinery, industrial equipment, and generators.',
+   true),
+  ('professional_services',     'Professional & Business Services',      '🧑‍💼', 2,
+   'Find lawyers, accountants, consultants, engineers, and business professionals.',
+   true),
+  ('transport_logistics',       'Transport & Logistics',                 '🚚', 3,
+   'Heavy haulage, cargo, courier, moving, and bulk delivery services.',
+   true),
+  ('specialized_products',      'Specialized Products & Procurement',    '🔎', 4,
+   'Bulk procurement, imported goods, industrial parts, and hard-to-find items.',
+   true),
+  ('construction_building',     'Construction & Building',               '🏗️', 5,
+   'Contractors, materials, roofing, plumbing, electrical, and civil works.',
+   false),
+  ('agriculture_agribusiness',  'Agriculture & Agribusiness',            '🌾', 6,
+   'Farm machinery, seeds, livestock, irrigation, and produce buyers.',
+   false),
+  ('technology_digital',        'Technology & Digital',                  '💻', 7,
+   'Software, websites, mobile apps, IT support, networking, and digital marketing.',
+   false),
+  ('events_production',         'Events & Production',                   '🎉', 8,
+   'Event planning, tents, sound, lighting, photography, catering, and MCs.',
+   false),
+  ('energy_utilities',          'Energy & Utilities',                    '⚡', 9,
+   'Solar systems, generators, batteries, electrical installation, and water systems.',
+   false),
+  ('travel_international',      'Travel & International',                '✈️', 10,
+   'Visa assistance, flight tickets, Hajj/Umrah, travel packages, and airport transfers.',
+   false)
+on conflict (slug) do update set
+  name        = excluded.name,
+  icon        = excluded.icon,
+  sort_order  = excluded.sort_order,
+  description = excluded.description,
+  is_active   = excluded.is_active;
+
+-- ---------------------------------------------------------------------------
+-- 3. Upsert full starter capabilities for all 10 categories
+-- ---------------------------------------------------------------------------
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  -- ── Machinery & Equipment ─────────────────────────────────────────────
+  ('excavator_hire',            'machinery_equipment',       'Excavator Hire',          true),
+  ('tractor_hire',              'machinery_equipment',       'Tractor Hire',             true),
+  ('crane_hire',                'machinery_equipment',       'Crane Hire',               true),
+  ('loader_hire',               'machinery_equipment',       'Loader Hire',              true),
+  ('grader_hire',               'machinery_equipment',       'Grader Hire',              true),
+  ('generator_hire',            'machinery_equipment',       'Generator Hire',           true),
+  ('agricultural_equipment',    'machinery_equipment',       'Agricultural Equipment',   true),
+  ('industrial_equipment',      'machinery_equipment',       'Industrial Equipment',     true),
+  ('other_machinery',           'machinery_equipment',       'Other Machinery',          true),
+
+  -- ── Professional & Business Services ─────────────────────────────────
+  ('company_registration',      'professional_services',     'Company Registration',     true),
+  ('legal_services',            'professional_services',     'Legal Services',           true),
+  ('accounting_tax',            'professional_services',     'Accounting & Tax',         true),
+  ('business_consulting',       'professional_services',     'Business Consulting',      true),
+  ('hr_services',               'professional_services',     'HR Services',              true),
+  ('marketing_services',        'professional_services',     'Marketing',                true),
+  ('engineering_consulting',    'professional_services',     'Engineering',              true),
+  ('architecture_services',     'professional_services',     'Architecture',             true),
+  ('other_professional',        'professional_services',     'Other Professional Services', true),
+
+  -- ── Transport & Logistics ─────────────────────────────────────────────
+  ('heavy_haulage',             'transport_logistics',       'Heavy Haulage',            true),
+  ('truck_hire',                'transport_logistics',       'Truck Hire',               true),
+  ('cargo_transport',           'transport_logistics',       'Cargo Transport',          true),
+  ('courier_delivery',          'transport_logistics',       'Courier',                  true),
+  ('moving_services',           'transport_logistics',       'Moving Services',          true),
+  ('vehicle_transport',         'transport_logistics',       'Vehicle Transport',        true),
+  ('bulk_delivery',             'transport_logistics',       'Bulk Delivery',            true),
+  ('other_logistics',           'transport_logistics',       'Other Logistics',          true),
+
+  -- ── Specialized Products & Procurement ───────────────────────────────
+  ('bulk_procurement',          'specialized_products',      'Bulk Procurement',         true),
+  ('imported_products',         'specialized_products',      'Imported Products',        true),
+  ('industrial_parts',          'specialized_products',      'Industrial Parts',         true),
+  ('spare_parts',               'specialized_products',      'Spare Parts',              true),
+  ('electronics_procurement',   'specialized_products',      'Electronics Procurement',  true),
+  ('hard_to_find_products',     'specialized_products',      'Hard-to-Find Products',    true),
+  ('equipment_sourcing',        'specialized_products',      'Equipment Sourcing',       true),
+  ('other_procurement',         'specialized_products',      'Other Procurement',        true),
+
+  -- ── Construction & Building ───────────────────────────────────────────
+  ('building_contractors',      'construction_building',     'Building Contractors',     true),
+  ('construction_materials',    'construction_building',     'Construction Materials',   true),
+  ('roofing_services',          'construction_building',     'Roofing',                  true),
+  ('plumbing_services',         'construction_building',     'Plumbing',                 true),
+  ('electrical_works',          'construction_building',     'Electrical Works',         true),
+  ('concrete_works',            'construction_building',     'Concrete',                 true),
+  ('surveying_services',        'construction_building',     'Surveying',                true),
+  ('excavation_works',          'construction_building',     'Excavation',               true),
+  ('other_construction',        'construction_building',     'Other Construction',       true),
+
+  -- ── Agriculture & Agribusiness ────────────────────────────────────────
+  ('farm_machinery',            'agriculture_agribusiness',  'Farm Machinery',           true),
+  ('seeds_inputs',              'agriculture_agribusiness',  'Seeds & Inputs',           true),
+  ('livestock_sourcing',        'agriculture_agribusiness',  'Livestock Sourcing',       true),
+  ('irrigation_services',       'agriculture_agribusiness',  'Irrigation',               true),
+  ('produce_buyers',            'agriculture_agribusiness',  'Produce Buyers',           true),
+  ('farm_services',             'agriculture_agribusiness',  'Farm Services',            true),
+  ('agricultural_transport',    'agriculture_agribusiness',  'Agricultural Transport',   true),
+  ('other_agriculture',         'agriculture_agribusiness',  'Other Agriculture',        true),
+
+  -- ── Technology & Digital ──────────────────────────────────────────────
+  ('software_development',      'technology_digital',        'Software Development',     true),
+  ('website_development',       'technology_digital',        'Website Development',      true),
+  ('mobile_app_development',    'technology_digital',        'Mobile App Development',   true),
+  ('it_support',                'technology_digital',        'IT Support',               true),
+  ('networking_services',       'technology_digital',        'Networking',               true),
+  ('cybersecurity_services',    'technology_digital',        'Cybersecurity',            true),
+  ('digital_marketing',         'technology_digital',        'Digital Marketing',        true),
+  ('automation_services',       'technology_digital',        'Automation',               true),
+  ('other_technology',          'technology_digital',        'Other Technology',         true),
+
+  -- ── Events & Production ───────────────────────────────────────────────
+  ('event_planning',            'events_production',         'Event Planning',           true),
+  ('tent_hire',                 'events_production',         'Tents',                    true),
+  ('sound_systems',             'events_production',         'Sound Systems',            true),
+  ('lighting_hire',             'events_production',         'Lighting',                 true),
+  ('photography_services',      'events_production',         'Photography',              true),
+  ('videography_services',      'events_production',         'Videography',              true),
+  ('mc_services',               'events_production',         'MCs',                      true),
+  ('catering_services',         'events_production',         'Catering',                 true),
+  ('event_equipment',           'events_production',         'Event Equipment',          true),
+  ('other_events',              'events_production',         'Other Events',             true),
+
+  -- ── Energy & Utilities ────────────────────────────────────────────────
+  ('solar_systems',             'energy_utilities',          'Solar Systems',            true),
+  ('generator_supply',          'energy_utilities',          'Generators',               true),
+  ('battery_supply',            'energy_utilities',          'Batteries',                true),
+  ('electrical_installation',   'energy_utilities',          'Electrical Installation',  true),
+  ('water_systems',             'energy_utilities',          'Water Systems',            true),
+  ('borehole_drilling',         'energy_utilities',          'Boreholes',                true),
+  ('backup_power',              'energy_utilities',          'Backup Power',             true),
+  ('energy_consulting',         'energy_utilities',          'Energy Consulting',        true),
+  ('other_energy',              'energy_utilities',          'Other Energy Services',    true),
+
+  -- ── Travel & International ────────────────────────────────────────────
+  ('visa_assistance',           'travel_international',      'Visa Assistance',          true),
+  ('flight_tickets',            'travel_international',      'Flight Tickets',           true),
+  ('hajj_umrah',                'travel_international',      'Hajj & Umrah',             true),
+  ('travel_packages',           'travel_international',      'Travel Packages',          true),
+  ('accommodation',             'travel_international',      'Accommodation',            true),
+  ('airport_transfers',         'travel_international',      'Airport Transfers',        true),
+  ('travel_documentation',      'travel_international',      'Travel Documentation',     true),
+  ('other_travel',              'travel_international',      'Other Travel Services',    true)
+
+on conflict (slug) do update set
+  name          = excluded.name,
+  category_slug = excluded.category_slug,
+  is_active     = excluded.is_active;
+
+-- ---------------------------------------------------------------------------
+-- 4. Refresh the offer validation trigger to include category-level fallback
+--    A provider satisfies a Need if:
+--      (a) the Need has a specific capability_slug AND the provider holds it, OR
+--      (b) the Need only specifies a category_slug AND the provider holds ANY
+--          capability in that category.
+--    This replaces the function defined in patch_provider_capabilities_v1.sql
+-- ---------------------------------------------------------------------------
+drop function if exists private.trg_validate_need_offer() cascade;
+
+create or replace function private.trg_validate_need_offer()
+returns trigger
+language plpgsql
+security definer
+as $$
+declare
+  v_need public.needs_requests%rowtype;
+begin
+  -- Load the target need
+  select * into v_need
+  from public.needs_requests
+  where id = NEW.need_id;
+
+  if not found then
+    raise exception 'P0201: Need not found';
+  end if;
+
+  -- Block offers on non-open needs
+  if v_need.status <> 'open' then
+    raise exception 'P0202: Need is no longer open for offers';
+  end if;
+
+  -- Block self-offers
+  if v_need.requester_id = NEW.offer_maker_id then
+    raise exception 'P0200: Cannot make an offer on your own Need';
+  end if;
+
+  -- Capability gate ─────────────────────────────────────────────────────────
+  if v_need.capability_slug is not null then
+    -- Need requires a specific capability
+    if not exists (
+      select 1
+      from public.provider_capabilities
+      where user_id       = NEW.offer_maker_id
+        and capability_slug = v_need.capability_slug
+    ) then
+      raise exception 'P0203: You do not have the required capability to offer on this Need';
+    end if;
+
+  elsif v_need.category_slug is not null then
+    -- Need only specifies a category — provider must hold at least one
+    -- capability within that category
+    if not exists (
+      select 1
+      from public.provider_capabilities pc
+      join public.need_capabilities nc on nc.slug = pc.capability_slug
+      where pc.user_id        = NEW.offer_maker_id
+        and nc.category_slug  = v_need.category_slug
+    ) then
+      raise exception 'P0203: You do not have any capability in this category to offer on this Need';
+    end if;
+  end if;
+  -- ──────────────────────────────────────────────────────────────────────────
+
+  return NEW;
+end;
+$$;
+
+-- Re-attach trigger
+drop trigger if exists trg_validate_need_offer on public.need_offers;
+create trigger trg_validate_need_offer
+  before insert on public.need_offers
+  for each row execute function private.trg_validate_need_offer();
+
+-- ---------------------------------------------------------------------------
+-- 5. Grants (idempotent)
+-- ---------------------------------------------------------------------------
+grant select on public.need_categories   to anon, authenticated;
+grant select on public.need_capabilities to anon, authenticated;
+
+-- =============================================================================
+-- End of patch_needs_categories_v2.sql
+-- =============================================================================
+
+-- ============================================================
+-- END MERGED SECTION: patch_needs_categories_v2.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_provider_notifications_v1.sql
+-- ============================================================
+
+-- =============================================================
+-- Patch: Provider Opportunity Notifications
+-- File:  sql/patch_provider_notifications_v1.sql
+-- Desc:  When a new need/request is created, notify every
+--        provider whose declared capabilities match the
+--        request's category or specific capability slug.
+-- =============================================================
+
+-- 1. Trigger function ─────────────────────────────────────────
+
+CREATE OR REPLACE FUNCTION private.trg_notify_matching_providers_on_need_request()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, private
+AS $$
+DECLARE
+  v_capability_slug  TEXT;
+  v_category_slug    TEXT;
+  v_title            TEXT;
+  v_provider_id      UUID;
+BEGIN
+  -- Pull relevant fields from the inserted row
+  v_capability_slug := NEW.capability_slug;   -- may be NULL
+  v_category_slug   := NEW.category_slug;     -- always present
+  v_title           := COALESCE(NEW.title, 'New opportunity');
+
+  -- Loop over every provider who has at least one matching capability
+  FOR v_provider_id IN
+    SELECT DISTINCT pc.provider_id
+    FROM   public.provider_capabilities pc
+    JOIN   public.need_capabilities     nc ON nc.slug = pc.capability_slug
+    WHERE
+      -- Match on the specific capability if given, otherwise match by category
+      (
+        (v_capability_slug IS NOT NULL AND pc.capability_slug = v_capability_slug)
+        OR
+        (v_capability_slug IS NULL     AND nc.category_slug   = v_category_slug)
+      )
+      -- Don't notify the requester themselves (if they're also a provider)
+      AND pc.provider_id <> NEW.requester_id
+  LOOP
+    INSERT INTO public.notifications (
+      user_id,
+      type,
+      title,
+      body,
+      data,
+      is_read,
+      created_at
+    ) VALUES (
+      v_provider_id,
+      'new_opportunity',
+      'New Opportunity',
+      v_title,
+      jsonb_build_object(
+        'need_id',         NEW.id,
+        'category_slug',   v_category_slug,
+        'capability_slug', v_capability_slug
+      ),
+      false,
+      NOW()
+    );
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
+
+-- 2. Attach trigger to needs_requests ─────────────────────────
+
+DROP TRIGGER IF EXISTS trg_notify_matching_providers ON public.needs_requests;
+
+CREATE TRIGGER trg_notify_matching_providers
+  AFTER INSERT ON public.needs_requests
+  FOR EACH ROW
+  EXECUTE FUNCTION private.trg_notify_matching_providers_on_need_request();
+
+-- 3. Grant execute to the authenticated role ──────────────────
+-- (the function runs as SECURITY DEFINER so the caller only
+--  needs INSERT on needs_requests, which is already granted)
+
+COMMENT ON FUNCTION private.trg_notify_matching_providers_on_need_request()
+  IS 'Notifies providers whose declared capabilities match a newly posted need request.';
+
+-- ============================================================
+-- END MERGED SECTION: patch_provider_notifications_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_central_verification_system.sql
+-- ============================================================
+
+-- ============================================================
+-- Standalone SQL Patch: patch_central_verification_system.sql
+-- Description: Central Platform-Level Verification Requirements System
+-- Extends the existing Identity Verification (KYC) system to all marketplace
+-- activities (Loan, Forex, Needs, Offers, Service capabilities, Contact reveals,
+-- and Deals).
+--
+-- Features:
+-- 1. Table: verification_requirements (hierarchical: capability -> category -> activity -> global)
+-- 2. Constraints, indexes, and RLS policies (admin-configurable).
+-- 3. Seed default verification requirements for all marketplace actions & categories.
+-- 4. Server-side security functions & triggers:
+--    - private.is_identity_verified(user_id)
+--    - private.require_identity_verified(user_id)
+--    - private.check_verification_requirement(user_id, activity, category, capability)
+--    - public.can_perform_marketplace_activity(...) RPC
+-- 5. Strict server-side enforcement triggers & RPC guards for:
+--    - Loan Requests (loan_requests)
+--    - Forex Requests (forex_requests)
+--    - Need Requests (needs_requests)
+--    - Loan Offers (loan_offers)
+--    - Forex Offers (forex_offers)
+--    - Need Offers (need_offers)
+--    - Provider Capabilities (provider_capabilities)
+--    - Offer Acceptance (accept_offer, accept_forex_offer, accept_need_offer)
+--    - Contact Reveals / Deal Unlocks (reveal_contact, unlock_forex_contact, unlock_need_contact)
+-- 6. Admin RPCs for managing requirements & reviewing provider capabilities.
+-- ============================================================
+
+-- 1. BASE TABLE: verification_requirements
+create table if not exists public.verification_requirements (
+  id uuid primary key default gen_random_uuid(),
+  scope_type text not null check (scope_type in ('global', 'activity', 'category', 'capability')),
+  scope_id text not null default 'global',
+  identity_required boolean not null default true,
+  phone_required boolean not null default false,
+  provider_verification_required boolean not null default false,
+  evidence_requirements jsonb not null default '[]'::jsonb,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(scope_type, scope_id)
+);
+
+create index if not exists idx_verification_reqs_lookup 
+  on public.verification_requirements(scope_type, scope_id) 
+  where is_active = true;
+
+-- 2. ROW LEVEL SECURITY
+alter table public.verification_requirements enable row level security;
+
+drop policy if exists "Verification requirements viewable by all" on public.verification_requirements;
+create policy "Verification requirements viewable by all" on public.verification_requirements
+  for select using (true);
+
+drop policy if exists "Admins insert verification requirements" on public.verification_requirements;
+create policy "Admins insert verification requirements" on public.verification_requirements
+  for insert to authenticated
+  with check (exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+drop policy if exists "Admins update verification requirements" on public.verification_requirements;
+create policy "Admins update verification requirements" on public.verification_requirements
+  for update to authenticated
+  using (exists (select 1 from public.profiles where id = auth.uid() and is_admin = true))
+  with check (exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+drop policy if exists "Admins delete verification requirements" on public.verification_requirements;
+create policy "Admins delete verification requirements" on public.verification_requirements
+  for delete to authenticated
+  using (exists (select 1 from public.profiles where id = auth.uid() and is_admin = true));
+
+-- 3. SEED DEFAULT REQUIREMENTS
+-- A. Global default
+insert into public.verification_requirements (scope_type, scope_id, identity_required, phone_required, provider_verification_required, evidence_requirements, is_active)
+values
+  ('global', 'global', true, false, false, '[]'::jsonb, true)
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required;
+
+-- B. Activity level
+insert into public.verification_requirements (scope_type, scope_id, identity_required, phone_required, provider_verification_required, evidence_requirements, is_active)
+values
+  ('activity', 'loan_request', true, false, false, '[]'::jsonb, true),
+  ('activity', 'forex_request', true, false, false, '[]'::jsonb, true),
+  ('activity', 'need_request', true, false, false, '[]'::jsonb, true),
+  ('activity', 'loan_offer', true, false, false, '[]'::jsonb, true),
+  ('activity', 'forex_offer', true, false, false, '[]'::jsonb, true),
+  ('activity', 'need_offer', true, false, false, '[]'::jsonb, true),
+  ('activity', 'service_offer', true, false, false, '[]'::jsonb, true),
+  ('activity', 'accept_offer', true, false, false, '[]'::jsonb, true),
+  ('activity', 'reveal_contact', true, false, false, '[]'::jsonb, true)
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required;
+
+-- C. Category level
+insert into public.verification_requirements (scope_type, scope_id, identity_required, phone_required, provider_verification_required, evidence_requirements, is_active)
+values
+  ('category', 'travel_international', true, false, true, '["Travel Agency License / Registration", "Tax Compliance Certificate"]'::jsonb, true),
+  ('category', 'machinery_equipment', true, false, false, '[]'::jsonb, true),
+  ('category', 'professional_services', true, false, false, '[]'::jsonb, true),
+  ('category', 'transport_logistics', true, false, false, '[]'::jsonb, true),
+  ('category', 'specialized_products', true, false, false, '[]'::jsonb, true)
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required,
+  evidence_requirements = excluded.evidence_requirements;
+
+-- D. Capability level (specialized high-compliance capabilities)
+insert into public.verification_requirements (scope_type, scope_id, identity_required, phone_required, provider_verification_required, evidence_requirements, is_active)
+values
+  ('capability', 'visa_assistance', true, false, true, '["Licensed Travel Agent / Consular Accreditation"]'::jsonb, true),
+  ('capability', 'hajj_umrah', true, false, true, '["Hajj Bureau Accreditation / Ministry of Foreign Affairs Registration"]'::jsonb, true),
+  ('capability', 'accounting_tax', true, false, false, '[]'::jsonb, true),
+  ('capability', 'engineering_consulting', true, false, false, '[]'::jsonb, true),
+  ('capability', 'excavator_hire', true, false, false, '[]'::jsonb, true),
+  ('capability', 'tractor_hire', true, false, false, '[]'::jsonb, true),
+  ('capability', 'heavy_haulage', true, false, false, '[]'::jsonb, true)
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required,
+  evidence_requirements = excluded.evidence_requirements;
+
+-- 4. SERVER-SIDE VERIFICATION HELPER FUNCTIONS
+
+-- Helper: Check if user is identity verified
+create or replace function private.is_identity_verified(p_user_id uuid)
+returns boolean language plpgsql security definer as $$
+declare
+  v_verified boolean := false;
+begin
+  if p_user_id is null then
+    return false;
+  end if;
+
+  select exists (
+    select 1 from public.kyc_verifications
+    where user_id = p_user_id
+      and status = 'approved'
+      and (expires_at is null or expires_at > now())
+  ) into v_verified;
+
+  if not v_verified then
+    select (coalesce(kyc_status, '') = 'approved') into v_verified
+    from public.profiles
+    where id = p_user_id;
+  end if;
+
+  return coalesce(v_verified, false);
+end;
+$$;
+
+-- Helper: Strict identity assertion
+create or replace function private.require_identity_verified(p_user_id uuid)
+returns void language plpgsql security definer as $$
+begin
+  if not private.is_identity_verified(p_user_id) then
+    raise exception 'Identity verification required. Please complete KYC before performing this marketplace activity.'
+      using errcode = 'P0211';
+  end if;
+end;
+$$;
+
+-- Helper: Check verification requirement against hierarchy (Capability -> Category -> Activity -> Global)
+create or replace function private.check_verification_requirement(
+  p_user_id uuid,
+  p_activity text,
+  p_category_slug text default null,
+  p_capability_slug text default null
+)
+returns jsonb language plpgsql security definer as $$
+declare
+  v_req record;
+  v_identity_ok boolean := false;
+  v_phone_ok boolean := false;
+  v_provider_ok boolean := true;
+  v_reason text := null;
+  v_missing text[] := array[]::text[];
+begin
+  if p_user_id is null then
+    return jsonb_build_object(
+      'allowed', false,
+      'reason', 'authentication_required',
+      'missing_requirements', array['authentication']
+    );
+  end if;
+
+  -- 1. Find the most specific active rule
+  if p_capability_slug is not null then
+    select * into v_req from public.verification_requirements
+    where scope_type = 'capability' and scope_id = p_capability_slug and is_active = true;
+  end if;
+
+  if v_req.id is null and p_category_slug is not null then
+    select * into v_req from public.verification_requirements
+    where scope_type = 'category' and scope_id = p_category_slug and is_active = true;
+  end if;
+
+  if v_req.id is null and p_activity is not null then
+    select * into v_req from public.verification_requirements
+    where scope_type = 'activity' and scope_id = p_activity and is_active = true;
+  end if;
+
+  if v_req.id is null then
+    select * into v_req from public.verification_requirements
+    where scope_type = 'global' and is_active = true limit 1;
+  end if;
+
+  -- Defaults if no rule found
+  if v_req.id is null then
+    v_req.identity_required := true;
+    v_req.phone_required := false;
+    v_req.provider_verification_required := false;
+  end if;
+
+  -- 2. Verify identity requirement
+  v_identity_ok := private.is_identity_verified(p_user_id);
+  if v_req.identity_required and not v_identity_ok then
+    v_missing := array_append(v_missing, 'identity_verification_required');
+    v_reason := coalesce(v_reason, 'identity_verification_required');
+  end if;
+
+  -- 3. Verify phone requirement
+  if v_req.phone_required then
+    select (phone_verified_at is not null) into v_phone_ok
+    from public.profiles where id = p_user_id;
+    if not coalesce(v_phone_ok, false) then
+      v_missing := array_append(v_missing, 'phone_verification_required');
+      v_reason := coalesce(v_reason, 'phone_verification_required');
+    end if;
+  end if;
+
+  -- 4. Verify provider verification requirement
+  if v_req.provider_verification_required then
+    if p_capability_slug is not null then
+      select (verification_level = 'provider_verified') into v_provider_ok
+      from public.provider_capabilities
+      where user_id = p_user_id and capability_slug = p_capability_slug;
+    elsif p_category_slug is not null then
+      select exists (
+        select 1 from public.provider_capabilities pc
+        join public.need_capabilities nc on nc.slug = pc.capability_slug
+        where pc.user_id = p_user_id
+          and nc.category_slug = p_category_slug
+          and pc.verification_level = 'provider_verified'
+      ) into v_provider_ok;
+    else
+      v_provider_ok := false;
+    end if;
+
+    if not coalesce(v_provider_ok, false) then
+      v_missing := array_append(v_missing, 'provider_verification_required');
+      v_reason := coalesce(v_reason, 'provider_verification_required');
+    end if;
+  end if;
+
+  return jsonb_build_object(
+    'allowed', (array_length(v_missing, 1) is null),
+    'reason', v_reason,
+    'missing_requirements', to_jsonb(v_missing),
+    'scope_type', v_req.scope_type,
+    'scope_id', v_req.scope_id,
+    'identity_required', v_req.identity_required,
+    'phone_required', v_req.phone_required,
+    'provider_verification_required', v_req.provider_verification_required,
+    'evidence_requirements', v_req.evidence_requirements
+  );
+end;
+$$;
+
+-- Public RPC: can_perform_marketplace_activity
+create or replace function public.can_perform_marketplace_activity(
+  p_activity text,
+  p_category_slug text default null,
+  p_capability_slug text default null
+)
+returns jsonb language plpgsql security definer as $$
+begin
+  return private.check_verification_requirement(
+    auth.uid(),
+    p_activity,
+    p_category_slug,
+    p_capability_slug
+  );
+end;
+$$;
+
+grant execute on function public.can_perform_marketplace_activity to authenticated, anon;
+
+-- 5. SERVER-SIDE ENFORCEMENT TRIGGERS & RPC WRAPPERS
+
+-- A. Loan Request Enforcement
+create or replace function private.trg_enforce_loan_request_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.borrower_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_loan_request_identity on public.loan_requests;
+create trigger trg_enforce_loan_request_identity
+  before insert on public.loan_requests
+  for each row execute function private.trg_enforce_loan_request_identity();
+
+-- B. Forex Request Enforcement
+create or replace function private.trg_enforce_forex_request_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.requester_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_forex_request_identity on public.forex_requests;
+create trigger trg_enforce_forex_request_identity
+  before insert on public.forex_requests
+  for each row execute function private.trg_enforce_forex_request_identity();
+
+-- C. Need Request Enforcement
+create or replace function private.trg_enforce_need_request_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.requester_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_need_request_identity on public.needs_requests;
+create trigger trg_enforce_need_request_identity
+  before insert on public.needs_requests
+  for each row execute function private.trg_enforce_need_request_identity();
+
+-- D. Loan Offer Enforcement
+create or replace function private.trg_enforce_loan_offer_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.lender_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_loan_offer_identity on public.loan_offers;
+create trigger trg_enforce_loan_offer_identity
+  before insert on public.loan_offers
+  for each row execute function private.trg_enforce_loan_offer_identity();
+
+-- E. Forex Offer Enforcement
+create or replace function private.trg_enforce_forex_offer_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.offerer_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_forex_offer_identity on public.forex_offers;
+create trigger trg_enforce_forex_offer_identity
+  before insert on public.forex_offers
+  for each row execute function private.trg_enforce_forex_offer_identity();
+
+-- F. Provider Capabilities Enforcement (Identity verified to declare capability)
+create or replace function private.trg_enforce_provider_capability_identity()
+returns trigger language plpgsql security definer as $$
+begin
+  perform private.require_identity_verified(NEW.user_id);
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_enforce_provider_capability_identity on public.provider_capabilities;
+create trigger trg_enforce_provider_capability_identity
+  before insert on public.provider_capabilities
+  for each row execute function private.trg_enforce_provider_capability_identity();
+
+-- G. Enhanced Need Offer Trigger: Enforces Identity + Provider Verification
+create or replace function private.trg_validate_need_offer()
+returns trigger language plpgsql security definer as $$
+declare
+  v_need record;
+  v_plan text;
+  v_offer_count_month int;
+  v_free_offer_cap int := 3;
+  v_has_capability boolean := false;
+  v_check jsonb;
+begin
+  -- 1. Check Identity Verification
+  perform private.require_identity_verified(NEW.offer_maker_id);
+
+  -- 2. Fetch need request
+  select * into v_need from public.needs_requests where request_id = NEW.need_id;
+  if not found then
+    raise exception 'Need request not found' using errcode = 'P0201';
+  end if;
+
+  if v_need.status <> 'active' or (v_need.expires_at is not null and v_need.expires_at <= now()) then
+    raise exception 'Cannot offer on inactive or expired need request' using errcode = 'P0202';
+  end if;
+
+  if v_need.requester_id = NEW.offer_maker_id then
+    raise exception 'Cannot make an offer on your own need request' using errcode = 'P0205';
+  end if;
+
+  -- 3. Check Category/Capability verification requirement
+  v_check := private.check_verification_requirement(
+    NEW.offer_maker_id,
+    'need_offer',
+    v_need.category_slug,
+    v_need.capability_slug
+  );
+
+  if not (v_check->>'allowed')::boolean then
+    raise exception 'Cannot make offer: %', v_check->>'reason' using errcode = 'P0203';
+  end if;
+
+  -- 4. Capability gating: user MUST have declared a matching capability
+  if v_need.capability_slug is not null then
+    select exists (
+      select 1 from public.provider_capabilities
+      where user_id = NEW.offer_maker_id and capability_slug = v_need.capability_slug
+    ) into v_has_capability;
+  else
+    select exists (
+      select 1 from public.provider_capabilities pc
+      join public.need_capabilities nc on nc.slug = pc.capability_slug
+      where pc.user_id = NEW.offer_maker_id and nc.category_slug = v_need.category_slug
+    ) into v_has_capability;
+  end if;
+
+  if not v_has_capability then
+    raise exception 'You must declare a capability in this category before making offers' using errcode = 'P0203';
+  end if;
+
+  -- 5. Subscription plan check for monthly cap
+  select subscription_plan into v_plan from public.profiles where id = NEW.offer_maker_id;
+  if coalesce(v_plan, 'free') = 'free' then
+    select coalesce(nullif(setting_value, '')::int, 3) into v_free_offer_cap
+    from public.system_settings where setting_key = 'needs_free_offers_per_month';
+
+    select count(*) into v_offer_count_month
+    from public.need_offers
+    where offer_maker_id = NEW.offer_maker_id
+      and created_at >= date_trunc('month', now());
+
+    if v_offer_count_month >= v_free_offer_cap then
+      raise exception 'Free plan limit of % offers/month reached. Upgrade to make unlimited offers.', v_free_offer_cap using errcode = 'P0204';
+    end if;
+  end if;
+
+  NEW.terms_locked_at := coalesce(NEW.terms_locked_at, now());
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_validate_need_offer on public.need_offers;
+create trigger trg_validate_need_offer
+  before insert on public.need_offers
+  for each row execute function private.trg_validate_need_offer();
+
+-- H. Offer Acceptance Enforcement
+-- Check identity in accept_offer
+create or replace function private.accept_offer_internal(
+    p_request_id   UUID,
+    p_offer_id     UUID,
+    p_borrower_id  UUID,
+    p_caller_id    UUID
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, private
+AS $$
+DECLARE
+    v_request   public.loan_requests%ROWTYPE;
+    v_offer     public.loan_offers%ROWTYPE;
+    v_agreement public.agreements%ROWTYPE;
+    v_deal_id   UUID;
+    v_snapshot  JSONB;
+BEGIN
+    IF p_caller_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required.' USING ERRCODE = 'P0001';
+    END IF;
+
+    IF p_caller_id <> p_borrower_id THEN
+        RAISE EXCEPTION 'Caller is not the borrower of this request.' USING ERRCODE = 'P0003';
+    END IF;
+
+    -- Identity verification gate
+    PERFORM private.require_identity_verified(p_caller_id);
+
+    SELECT * INTO v_request FROM public.loan_requests WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Loan request % not found.', p_request_id USING ERRCODE = 'P0002';
+    END IF;
+
+    IF v_request.borrower_id <> p_borrower_id THEN
+        RAISE EXCEPTION 'Borrower % does not own request %.', p_borrower_id, p_request_id USING ERRCODE = 'P0003';
+    END IF;
+
+    IF v_request.status <> 'active' THEN
+        RAISE EXCEPTION 'Loan request is not active (current status: %).', v_request.status USING ERRCODE = 'P0004';
+    END IF;
+
+    SELECT * INTO v_offer FROM public.loan_offers WHERE id = p_offer_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Loan offer % not found.', p_offer_id USING ERRCODE = 'P0002';
+    END IF;
+
+    IF v_offer.request_id <> p_request_id THEN
+        RAISE EXCEPTION 'Offer % does not belong to request %.', p_offer_id, p_request_id USING ERRCODE = 'P0005';
+    END IF;
+
+    IF v_offer.status <> 'pending' THEN
+        RAISE EXCEPTION 'Loan offer is not pending (current status: %).', v_offer.status USING ERRCODE = 'P0006';
+    END IF;
+
+    -- Accept target offer
+    UPDATE public.loan_offers SET status = 'accepted', responded_at = NOW() WHERE id = p_offer_id;
+
+    -- Reject all other pending offers
+    UPDATE public.loan_offers SET status = 'rejected', responded_at = NOW()
+    WHERE request_id = p_request_id AND id <> p_offer_id AND status = 'pending';
+
+    -- Set request to contracted
+    UPDATE public.loan_requests SET status = 'contracted' WHERE id = p_request_id;
+
+    -- Create Agreement Snapshot
+    v_snapshot := jsonb_build_object(
+        'request_id',               p_request_id,
+        'offer_id',                 p_offer_id,
+        'borrower_id',              p_borrower_id,
+        'lender_id',                v_offer.lender_id,
+        'loan_amount',              v_offer.offered_amount,
+        'interest_rate',            v_offer.interest_rate,
+        'currency',                 v_request.currency,
+        'repayment_period_months',  v_offer.repayment_period_months,
+        'repayment_frequency',      v_offer.repayment_frequency,
+        'late_fee_percentage',      v_offer.late_fee_percentage,
+        'contract_terms',           v_offer.contract_terms,
+        'accepted_at',              NOW()
+    );
+
+    INSERT INTO public.agreements (
+        request_id, offer_id, borrower_id, lender_id,
+        loan_amount, interest_rate, currency,
+        repayment_period_months, repayment_frequency,
+        late_fee_percentage, contract_terms,
+        status, borrower_locked, lender_locked, agreement_snapshot
+    ) VALUES (
+        p_request_id, p_offer_id, p_borrower_id, v_offer.lender_id,
+        v_offer.offered_amount, v_offer.interest_rate, v_request.currency,
+        v_offer.repayment_period_months, v_offer.repayment_frequency,
+        v_offer.late_fee_percentage, v_offer.contract_terms,
+        'locked', TRUE, TRUE, v_snapshot
+    )
+    RETURNING id INTO v_deal_id;
+
+    RETURN v_deal_id;
+END;
+$$;
+
+-- Check identity in accept_forex_offer
+create or replace function private.accept_forex_offer_internal(
+    p_request_id    UUID,
+    p_offer_id      UUID,
+    p_requester_id  UUID,
+    p_caller_id     UUID
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, private
+AS $$
+DECLARE
+    v_request   public.forex_requests%ROWTYPE;
+    v_offer     public.forex_offers%ROWTYPE;
+    v_deal_id   UUID;
+    v_snapshot  JSONB;
+BEGIN
+    IF p_caller_id IS NULL THEN
+        RAISE EXCEPTION 'Authentication required.' USING ERRCODE = 'P0001';
+    END IF;
+
+    IF p_caller_id <> p_requester_id THEN
+        RAISE EXCEPTION 'Caller is not the requester of this forex request.' USING ERRCODE = 'P0003';
+    END IF;
+
+    -- Identity verification gate
+    PERFORM private.require_identity_verified(p_caller_id);
+
+    SELECT * INTO v_request FROM public.forex_requests WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Forex request % not found.', p_request_id USING ERRCODE = 'P0002';
+    END IF;
+
+    IF v_request.requester_id <> p_requester_id THEN
+        RAISE EXCEPTION 'Requester % does not own forex request %.', p_requester_id, p_request_id USING ERRCODE = 'P0003';
+    END IF;
+
+    IF v_request.status <> 'active' THEN
+        RAISE EXCEPTION 'Forex request is not active (current status: %).', v_request.status USING ERRCODE = 'P0004';
+    END IF;
+
+    SELECT * INTO v_offer FROM public.forex_offers WHERE id = p_offer_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Forex offer % not found.', p_offer_id USING ERRCODE = 'P0002';
+    END IF;
+
+    IF v_offer.request_id <> p_request_id THEN
+        RAISE EXCEPTION 'Offer % does not belong to request %.', p_offer_id, p_request_id USING ERRCODE = 'P0005';
+    END IF;
+
+    IF v_offer.status <> 'pending' THEN
+        RAISE EXCEPTION 'Forex offer is not pending (current status: %).', v_offer.status USING ERRCODE = 'P0006';
+    END IF;
+
+    UPDATE public.forex_offers SET status = 'accepted', responded_at = NOW() WHERE id = p_offer_id;
+    UPDATE public.forex_offers SET status = 'rejected', responded_at = NOW()
+    WHERE request_id = p_request_id AND id <> p_offer_id AND status = 'pending';
+    UPDATE public.forex_requests SET status = 'contracted' WHERE id = p_request_id;
+
+    v_snapshot := jsonb_build_object(
+        'is_forex',                 TRUE,
+        'deal_type',                'forex',
+        'request_id',               p_request_id,
+        'offer_id',                 p_offer_id,
+        'requester_id',             p_requester_id,
+        'offerer_id',               v_offer.offerer_id,
+        'source_currency',          v_request.source_currency,
+        'target_currency',          v_request.target_currency,
+        'amount_source',            v_offer.amount_available,
+        'rate_offered',             v_offer.rate_offered,
+        'accepted_at',              NOW()
+    );
+
+    INSERT INTO public.agreements (
+        request_id, offer_id, borrower_id, lender_id,
+        loan_amount, interest_rate, currency,
+        repayment_period_months, repayment_frequency,
+        late_fee_percentage, contract_terms,
+        status, borrower_locked, lender_locked, agreement_snapshot
+    ) VALUES (
+        p_request_id, p_offer_id, p_requester_id, v_offer.offerer_id,
+        v_offer.amount_available, 0, v_request.source_currency,
+        1, 'one_time', 0, coalesce(v_offer.terms, 'Forex agreement'),
+        'locked', TRUE, TRUE, v_snapshot
+    )
+    RETURNING id INTO v_deal_id;
+
+    RETURN v_deal_id;
+END;
+$$;
+
+-- Check identity in accept_need_offer
+create or replace function public.accept_need_offer(p_need_id uuid, p_offer_id uuid)
+returns uuid language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+  v_need record;
+  v_offer record;
+  v_reveal_id uuid;
+begin
+  if v_caller is null then
+    raise exception 'Authentication required' using errcode = 'P0001';
+  end if;
+
+  -- Identity verification gate
+  perform private.require_identity_verified(v_caller);
+
+  select * into v_need from public.needs_requests where request_id = p_need_id for update;
+  if not found or v_need.requester_id <> v_caller then
+    raise exception 'Need request not found or not authorized' using errcode = 'P0201';
+  end if;
+
+  if v_need.status <> 'active' then
+    raise exception 'Need request is not active' using errcode = 'P0202';
+  end if;
+
+  select * into v_offer from public.need_offers where id = p_offer_id and need_id = p_need_id for update;
+  if not found or v_offer.status <> 'pending' then
+    raise exception 'Offer is not pending' using errcode = 'P0206';
+  end if;
+
+  -- 1. Accept target offer
+  update public.need_offers
+  set status = 'accepted', accepted_at = now(), updated_at = now()
+  where id = p_offer_id;
+
+  -- 2. Reject remaining offers
+  update public.need_offers
+  set status = 'rejected', updated_at = now()
+  where need_id = p_need_id and id <> p_offer_id and status = 'pending';
+
+  -- 3. Update need request status to matched
+  update public.needs_requests
+  set status = 'matched', contracted_at = now()
+  where request_id = p_need_id;
+
+  -- 4. Create contact reveal record
+  insert into public.need_contact_reveals (
+    need_id, offer_id, requester_id, provider_id, unlocked_by, unlocked_at
+  ) values (
+    p_need_id, p_offer_id, v_caller, v_offer.offer_maker_id, v_caller, now()
+  ) returning id into v_reveal_id;
+
+  return v_reveal_id;
+end;
+$$;
+
+-- I. Contact Reveal Enforcement (Multi-party + Identity check)
+create or replace function public.unlock_need_contact(p_offer_id uuid)
+returns uuid language plpgsql security definer as $$
+declare
+  v_caller uuid := auth.uid();
+  v_offer record;
+  v_need record;
+  v_reveal_id uuid;
+begin
+  if v_caller is null then
+    raise exception 'Authentication required' using errcode = 'P0001';
+  end if;
+
+  -- Identity verification gate
+  perform private.require_identity_verified(v_caller);
+
+  select * into v_offer from public.need_offers where id = p_offer_id;
+  if not found or v_offer.status <> 'accepted' then
+    raise exception 'Accepted offer not found' using errcode = 'P0207';
+  end if;
+
+  select * into v_need from public.needs_requests where request_id = v_offer.need_id;
+  if not found then
+    raise exception 'Need request not found' using errcode = 'P0201';
+  end if;
+
+  if v_caller <> v_need.requester_id and v_caller <> v_offer.offer_maker_id then
+    raise exception 'Only deal participants can unlock contact' using errcode = 'P0003';
+  end if;
+
+  insert into public.need_contact_reveals (
+    need_id, offer_id, requester_id, provider_id, unlocked_by, unlocked_at
+  ) values (
+    v_need.request_id, p_offer_id, v_need.requester_id, v_offer.offer_maker_id, v_caller, now()
+  ) on conflict (offer_id) do update set unlocked_at = excluded.unlocked_at
+  returning id into v_reveal_id;
+
+  return v_reveal_id;
+end;
+$$;
+
+-- 6. ADMIN RPCs: Requirements Configuration
+create or replace function public.admin_get_verification_requirements()
+returns setof public.verification_requirements language plpgsql security definer as $$
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and is_admin = true) then
+    raise exception 'Unauthorized: Admin access required' using errcode = '42501';
+  end if;
+
+  return query
+  select * from public.verification_requirements
+  order by
+    case scope_type
+      when 'global' then 1
+      when 'activity' then 2
+      when 'category' then 3
+      when 'capability' then 4
+      else 5
+    end,
+    scope_id;
+end;
+$$;
+
+create or replace function public.admin_update_verification_requirement(
+  p_id uuid,
+  p_identity_required boolean,
+  p_phone_required boolean,
+  p_provider_verification_required boolean,
+  p_evidence_requirements jsonb default '[]'::jsonb,
+  p_is_active boolean default true
+)
+returns boolean language plpgsql security definer as $$
+declare
+  v_admin uuid := auth.uid();
+begin
+  if not exists (select 1 from public.profiles where id = v_admin and is_admin = true) then
+    raise exception 'Unauthorized: Admin access required' using errcode = '42501';
+  end if;
+
+  update public.verification_requirements
+  set
+    identity_required = p_identity_required,
+    phone_required = p_phone_required,
+    provider_verification_required = p_provider_verification_required,
+    evidence_requirements = coalesce(p_evidence_requirements, '[]'::jsonb),
+    is_active = p_is_active,
+    updated_at = now()
+  where id = p_id;
+
+  insert into public.audit_logs (user_id, event_type, entity_type, entity_id, action, new_values)
+  values (
+    v_admin,
+    'admin_action',
+    'verification_requirements',
+    p_id,
+    'update_verification_requirement',
+    jsonb_build_object(
+      'identity_required', p_identity_required,
+      'phone_required', p_phone_required,
+      'provider_verification_required', p_provider_verification_required,
+      'is_active', p_is_active
+    )
+  );
+
+  return true;
+end;
+$$;
+
+grant execute on function public.admin_get_verification_requirements to authenticated;
+grant execute on function public.admin_update_verification_requirement to authenticated;
+
+-- ============================================================
+-- END MERGED SECTION: patch_central_verification_system.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_marketing_promotion_capabilities.sql
+-- ============================================================
+
+-- Provider Services: expand the existing Marketing capability.
+-- Existing provider rows keep the marketing_services slug, so current users
+-- remain mapped to Marketing & Promotion without changing their capabilities.
+
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  ('marketing_services', 'professional_services', 'Marketing & Promotion', true),
+  ('social_media_marketing', 'professional_services', 'Social Media Marketing', true),
+  ('tiktok_promotion', 'professional_services', 'TikTok Promotion', true),
+  ('instagram_promotion', 'professional_services', 'Instagram Promotion', true),
+  ('youtube_promotion', 'professional_services', 'YouTube Promotion', true),
+  ('facebook_promotion', 'professional_services', 'Facebook Promotion', true),
+  ('influencer_marketing', 'professional_services', 'Influencer Marketing', true),
+  ('content_creation', 'professional_services', 'Content Creation', true),
+  ('product_reviews', 'professional_services', 'Product Reviews', true),
+  ('event_promotion', 'professional_services', 'Event Promotion', true),
+  ('whatsapp_community_promotion', 'professional_services', 'WhatsApp / Community Promotion', true),
+  ('affiliate_marketing', 'professional_services', 'Affiliate Marketing', true),
+  ('advertising_campaigns', 'professional_services', 'Advertising Campaigns', true),
+  ('brand_promotion', 'professional_services', 'Brand Promotion', true),
+  ('other_marketing_services', 'professional_services', 'Other Marketing Services', true),
+  ('i_have_an_audience', 'professional_services', 'I Have an Audience', true)
+on conflict (slug) do update set
+  category_slug = excluded.category_slug,
+  name = excluded.name,
+  is_active = excluded.is_active;
+
+-- Audience declarations are stored in provider_capabilities.metadata for the
+-- i_have_an_audience row; verification remains governed by the existing
+-- provider-capability verification trigger and is never changed by this patch.
+
+-- ============================================================
+-- END MERGED SECTION: patch_marketing_promotion_capabilities.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_education_travel_needs_v1.sql
+-- ============================================================
+
+-- =============================================================================
+-- Standalone SQL Patch: patch_education_travel_needs_v1.sql
+-- Created: 2026-10-03
+-- Purpose: Add the Education & Training and Travel & International Need
+--          categories plus the corresponding capability rows.
+-- Safe to re-run: inserts use ON CONFLICT DO UPDATE.
+-- =============================================================================
+
+-- 1) Add/update the new Need categories
+insert into public.need_categories (slug, name, icon, sort_order, description, is_active)
+values
+  (
+    'education_training',
+    'Education & Training',
+    '🎓',
+    6,
+    'Education, internships, professional training, admissions, academic support, and skills development.',
+    true
+  ),
+  (
+    'travel_international',
+    'Travel & International',
+    '✈️',
+    10,
+    'Travel, visa assistance, flights, accommodation, Hajj & Umrah, study abroad, and international relocation services.',
+    true
+  )
+on conflict (slug) do update
+set
+  name = excluded.name,
+  icon = excluded.icon,
+  sort_order = excluded.sort_order,
+  description = excluded.description,
+  is_active = excluded.is_active;
+
+-- 2) Add/update Education & Training capability rows
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  ('internship_placement', 'education_training', 'Internship Placement', true),
+  ('private_tutoring', 'education_training', 'Private Tutoring', true),
+  ('online_classes', 'education_training', 'Online Classes', true),
+  ('professional_training', 'education_training', 'Professional Training', true),
+  ('vocational_training', 'education_training', 'Vocational Training', true),
+  ('university_admissions', 'education_training', 'University Admissions', true),
+  ('study_abroad_guidance', 'education_training', 'Study Abroad Guidance', true),
+  ('academic_consulting', 'education_training', 'Academic Consulting', true),
+  ('exam_preparation', 'education_training', 'Exam Preparation', true),
+  ('language_training', 'education_training', 'Language Training', true),
+  ('computer_training', 'education_training', 'Computer Training', true),
+
+  ('it_internships', 'education_training', 'IT Internships', true),
+  ('software_development_internships', 'education_training', 'Software Development Internships', true),
+  ('it_support_internships', 'education_training', 'IT Support Internships', true),
+  ('accounting_internships', 'education_training', 'Accounting Internships', true),
+  ('engineering_internships', 'education_training', 'Engineering Internships', true),
+  ('marketing_internships', 'education_training', 'Marketing Internships', true),
+  ('business_internships', 'education_training', 'Business Internships', true),
+  ('health_nursing_placements', 'education_training', 'Health/Nursing Placements', true),
+  ('hospitality_internships', 'education_training', 'Hospitality Internships', true),
+  ('administrative_internships', 'education_training', 'Administrative Internships', true)
+on conflict (slug) do update
+set
+  category_slug = excluded.category_slug,
+  name = excluded.name,
+  is_active = excluded.is_active;
+
+-- 3) Add/update Travel & International capability rows
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  ('visa_assistance', 'travel_international', 'Visa Assistance', true),
+  ('flight_tickets', 'travel_international', 'Flight Tickets & Bookings', true),
+  ('travel_agency_services', 'travel_international', 'Travel Agency Services', true),
+  ('travel_consultation', 'travel_international', 'Travel Consultation', true),
+  ('travel_documentation', 'travel_international', 'Travel Documentation', true),
+  ('hajj_umrah', 'travel_international', 'Hajj & Umrah', true),
+  ('hotel_accommodation', 'travel_international', 'Hotel & Accommodation', true),
+  ('airport_transfers', 'travel_international', 'Airport Transfers', true),
+  ('travel_insurance', 'travel_international', 'Travel Insurance', true),
+  ('tour_packages', 'travel_international', 'Tour Packages', true),
+  ('study_abroad', 'travel_international', 'Study Abroad', true),
+  ('international_relocation', 'travel_international', 'International Relocation', true)
+on conflict (slug) do update
+set
+  category_slug = excluded.category_slug,
+  name = excluded.name,
+  is_active = excluded.is_active;
+
+-- 4) Optional: High-trust verification requirements for travel-related items
+insert into public.verification_requirements (
+  scope_type,
+  scope_id,
+  identity_required,
+  phone_required,
+  provider_verification_required,
+  evidence_requirements,
+  is_active
+)
+values
+  (
+    'category',
+    'travel_international',
+    true,
+    false,
+    true,
+    '["Travel Agency License / Registration", "Tax Compliance Certificate"]'::jsonb,
+    true
+  ),
+  (
+    'capability',
+    'visa_assistance',
+    true,
+    false,
+    true,
+    '["Licensed Travel Agent / Consular Accreditation"]'::jsonb,
+    true
+  )
+on conflict (scope_type, scope_id) do update
+set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required,
+  evidence_requirements = excluded.evidence_requirements,
+  is_active = excluded.is_active;
+
+-- ============================================================
+-- END MERGED SECTION: patch_education_travel_needs_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261004_watchlist_needs_support.sql
+-- ============================================================
+
+-- Run this patch in the Supabase SQL Editor after needs_requests exists.
+-- Extends watchlist support to Marketplace Needs listings.
+
+BEGIN;
+
+ALTER TABLE public.watchlist
+  ADD COLUMN IF NOT EXISTS needs_request_id UUID
+  REFERENCES public.needs_requests(request_id) ON DELETE CASCADE;
+
+ALTER TABLE public.watchlist
+  DROP CONSTRAINT IF EXISTS chk_wl_one_target;
+
+ALTER TABLE public.watchlist
+  ADD CONSTRAINT chk_wl_one_target CHECK (
+    (request_id IS NOT NULL AND forex_request_id IS NULL AND needs_request_id IS NULL) OR
+    (request_id IS NULL AND forex_request_id IS NOT NULL AND needs_request_id IS NULL) OR
+    (request_id IS NULL AND forex_request_id IS NULL AND needs_request_id IS NOT NULL)
+  );
+
+-- Full unique indexes allow PostgREST upsert conflict targets to be inferred.
+CREATE UNIQUE INDEX IF NOT EXISTS uidx_wl_user_forex_request_full
+  ON public.watchlist (user_id, forex_request_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uidx_wl_user_needs_request
+  ON public.watchlist (user_id, needs_request_id);
+
+COMMIT;
+
+-- ============================================================
+-- END MERGED SECTION: 20261004_watchlist_needs_support.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261004_provider_verification_all_categories.sql
+-- ============================================================
+
+-- =============================================================================
+-- Patch: Provider verification requirements for all Provider Services categories
+-- Created: 2026-10-04
+-- Purpose:
+--   1. Add provider_verification_required to need_categories when missing.
+--   2. Mark every existing Need category as eligible for provider verification.
+--   3. Seed/update central verification_requirements so need_offer checks can
+--      require provider_verified capabilities across all Provider Services
+--      categories, not just Travel & International.
+-- Safe to re-run: yes.
+-- =============================================================================
+
+alter table public.need_categories
+  add column if not exists provider_verification_required boolean not null default true;
+
+update public.need_categories
+set provider_verification_required = true;
+
+insert into public.verification_requirements (
+  scope_type,
+  scope_id,
+  identity_required,
+  phone_required,
+  provider_verification_required,
+  evidence_requirements,
+  is_active
+)
+select
+  'category',
+  category.slug,
+  true,
+  false,
+  true,
+  case category.slug
+    when 'travel_international' then
+      '["Travel Agency License / Registration", "Tax Compliance Certificate"]'::jsonb
+    when 'machinery_equipment' then
+      '["Equipment ownership or hire agreement", "Equipment photos / fleet list", "Operator certification where applicable"]'::jsonb
+    when 'professional_services' then
+      '["Professional license / registration", "Portfolio or work references", "Business registration where applicable"]'::jsonb
+    when 'transport_logistics' then
+      '["Vehicle or fleet documents", "Driving / operating license", "Insurance or transport permit where applicable"]'::jsonb
+    when 'specialized_products' then
+      '["Supplier or business registration", "Product catalog / invoices", "Compliance certificate where applicable"]'::jsonb
+    when 'education_training' then
+      '["Academic or training credentials", "Institution / tutor registration where applicable", "Portfolio or references"]'::jsonb
+    when 'music_video' then
+      '["Portfolio or showreel", "Professional references", "Equipment / studio proof where applicable"]'::jsonb
+    when 'weddings_celebrations' then
+      '["Portfolio or event references", "Business registration where applicable", "Venue / supplier proof where applicable"]'::jsonb
+    when 'construction_building' then
+      '["Contractor registration or trade license", "Portfolio / site references", "Safety or engineering certification where applicable"]'::jsonb
+    when 'agriculture_agribusiness' then
+      '["Farm or business registration", "Product / equipment proof", "Relevant permits where applicable"]'::jsonb
+    when 'technology_digital' then
+      '["Portfolio or project references", "Business registration where applicable", "Technical certification where applicable"]'::jsonb
+    when 'events_production' then
+      '["Portfolio or event references", "Equipment proof", "Business registration where applicable"]'::jsonb
+    when 'energy_utilities' then
+      '["Technical license or certification", "Product / installation references", "Safety compliance where applicable"]'::jsonb
+    else
+      '["Business registration or professional proof", "Portfolio or references"]'::jsonb
+  end,
+  true
+from public.need_categories category
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required,
+  evidence_requirements = excluded.evidence_requirements,
+  is_active = excluded.is_active,
+  updated_at = now();
+
+-- Verification check: should return zero rows after this patch.
+select category.slug as missing_provider_verification_requirement
+from public.need_categories category
+left join public.verification_requirements requirement
+  on requirement.scope_type = 'category'
+ and requirement.scope_id = category.slug
+ and requirement.is_active = true
+ and requirement.provider_verification_required = true
+where coalesce(category.provider_verification_required, false) is not true
+   or requirement.id is null;
+
+-- ============================================================
+-- END MERGED SECTION: 20261004_provider_verification_all_categories.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_creative_events_capabilities.sql
+-- ============================================================
+
+-- =============================================================================
+-- Standalone SQL Patch: patch_creative_events_capabilities.sql
+-- Purpose: Expand the existing Needs catalog with Music & Video and
+--          Weddings & Celebrations capabilities. No marketplace/provider
+--          tables or offer flows are introduced.
+-- Safe to re-run: catalog rows are upserted by their existing slugs.
+-- =============================================================================
+
+-- Optional ISO country-code keyed label overrides. Each value may contain
+-- {"name": "...", "description": "..."}; clients fall back to the base
+-- name/description when there is no country-specific override.
+alter table public.need_categories
+  add column if not exists country_labels jsonb not null default '{}'::jsonb;
+
+alter table public.need_capabilities
+  add column if not exists country_labels jsonb not null default '{}'::jsonb;
+
+-- These groups use the same Need -> Offer -> Accept -> Contact Reveal flow.
+insert into public.need_categories
+  (slug, name, icon, sort_order, description, country_labels, is_active)
+values
+  ('music_video', 'Music & Video', '🎬', 11,
+   'Performers and production professionals for music, film, and video projects.', '{}'::jsonb, true),
+  ('weddings_celebrations', 'Weddings & Celebrations', '🎉', 12,
+   'Creative and event services for graduations, weddings, and social celebrations.', '{}'::jsonb, true)
+on conflict (slug) do update set
+  name = excluded.name,
+  icon = excluded.icon,
+  sort_order = excluded.sort_order,
+  description = excluded.description;
+
+insert into public.need_capabilities
+  (slug, category_slug, name, country_labels, is_active)
+values
+  ('music_video_models', 'music_video', 'Music Video Models / Video Vixens', '{}'::jsonb, true),
+  ('dancers', 'music_video', 'Dancers', '{}'::jsonb, true),
+  ('actors_actresses', 'music_video', 'Actors / Actresses', '{}'::jsonb, true),
+  ('background_extras', 'music_video', 'Background Extras', '{}'::jsonb, true),
+  ('singers_vocalists', 'music_video', 'Singers / Vocalists', '{}'::jsonb, true),
+  ('songwriters', 'music_video', 'Songwriters', '{}'::jsonb, true),
+  ('music_producers', 'music_video', 'Music Producers', '{}'::jsonb, true),
+  ('recording_studios', 'music_video', 'Recording Studios', '{}'::jsonb, true),
+  ('mixing_mastering', 'music_video', 'Mixing & Mastering', '{}'::jsonb, true),
+  ('videographers', 'music_video', 'Videographers', '{}'::jsonb, true),
+  ('video_editors', 'music_video', 'Video Editors', '{}'::jsonb, true),
+  ('photographers', 'music_video', 'Photographers', '{}'::jsonb, true),
+  ('music_video_makeup', 'music_video', 'Makeup Artists', '{}'::jsonb, true),
+  ('music_video_stylists', 'music_video', 'Stylists', '{}'::jsonb, true),
+  ('graduation_photography', 'weddings_celebrations', 'Graduation Photography', '{}'::jsonb, true),
+  ('graduation_videography', 'weddings_celebrations', 'Graduation Videography', '{}'::jsonb, true),
+  ('wedding_photography', 'weddings_celebrations', 'Wedding Photography', '{}'::jsonb, true),
+  ('wedding_videography', 'weddings_celebrations', 'Wedding Videography', '{}'::jsonb, true),
+  ('celebration_makeup', 'weddings_celebrations', 'Makeup Artists', '{}'::jsonb, true),
+  ('hair_styling', 'weddings_celebrations', 'Hair Stylists', '{}'::jsonb, true),
+  ('bridal_styling', 'weddings_celebrations', 'Bridal Styling', '{}'::jsonb, true),
+  ('dresses_bridesmaid_outfits', 'weddings_celebrations', 'Wedding Dresses / Bridesmaid Outfits', '{}'::jsonb, true),
+  ('event_decoration', 'weddings_celebrations', 'Decoration', '{}'::jsonb, true),
+  ('celebration_catering', 'weddings_celebrations', 'Catering', '{}'::jsonb, true),
+  ('celebration_cakes', 'weddings_celebrations', 'Cakes', '{}'::jsonb, true),
+  ('celebration_mc_dj', 'weddings_celebrations', 'DJs / MCs', '{}'::jsonb, true),
+  ('celebration_singers_dancers', 'weddings_celebrations', 'Singers / Dancers', '{}'::jsonb, true),
+  ('wedding_event_planning', 'weddings_celebrations', 'Event Planning', '{}'::jsonb, true),
+  ('event_transport', 'weddings_celebrations', 'Event Transport', '{}'::jsonb, true),
+  ('engagement_planning', 'weddings_celebrations', 'Engagements', '{}'::jsonb, true),
+  ('bridal_shower_planning', 'weddings_celebrations', 'Bridal Showers', '{}'::jsonb, true),
+  ('baby_shower_planning', 'weddings_celebrations', 'Baby Showers', '{}'::jsonb, true),
+  ('birthday_celebrations', 'weddings_celebrations', 'Birthdays', '{}'::jsonb, true),
+  ('anniversary_celebrations', 'weddings_celebrations', 'Anniversaries', '{}'::jsonb, true),
+  ('other_social_celebrations', 'weddings_celebrations', 'Other Social Celebrations', '{}'::jsonb, true)
+on conflict (slug) do update set
+  category_slug = excluded.category_slug,
+  name = excluded.name;
+
+-- Example country-specific category terminology:
+-- update public.need_categories
+-- set country_labels = jsonb_set(country_labels, '{KE}',
+--   '{"name":"Celebrations & Events"}'::jsonb, true)
+-- where slug = 'weddings_celebrations';
+
+grant select on public.need_categories to anon, authenticated;
+grant select on public.need_capabilities to anon, authenticated;
+
+-- ============================================================
+-- END MERGED SECTION: patch_creative_events_capabilities.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261005_driving_school_capability.sql
+-- ============================================================
+
+-- =============================================================================
+-- Driving School / Driver Training capability
+-- Adds the capability to Transport & Logistics and validates declared
+-- licence-class and transmission metadata on matching need offers.
+-- Safe to re-run: catalog and verification rows are upserted by their keys.
+-- =============================================================================
+
+begin;
+
+insert into public.need_capabilities
+  (slug, category_slug, name, is_active, country_labels)
+values (
+  'driving_school',
+  'transport_logistics',
+  'Driving School / Driver Training',
+  true,
+  '{
+    "UG": {"name": "Driving School / Driver Training"},
+    "KE": {"name": "Driving School & Driver Training"},
+    "TZ": {"name": "Mafunzo ya Udereva / Chuo cha Udereva"},
+    "RW": {"name": "Amashuri yo Gutwara Ibinyabiziga"},
+    "SS": {"name": "Driving School / Driver Training"},
+    "BI": {"name": "Auto-École / Formation des Conducteurs"}
+  }'::jsonb
+)
+on conflict (slug) do update set
+  category_slug = excluded.category_slug,
+  name = excluded.name,
+  is_active = excluded.is_active,
+  country_labels = excluded.country_labels;
+
+insert into public.verification_requirements (
+  scope_type,
+  scope_id,
+  identity_required,
+  phone_required,
+  provider_verification_required,
+  evidence_requirements,
+  is_active
+)
+values (
+  'capability',
+  'driving_school',
+  true,
+  false,
+  true,
+  '[
+    "Driving school license / accreditation",
+    "Driving instructor license or certification",
+    "Training vehicle registration, roadworthiness, and insurance where applicable"
+  ]'::jsonb,
+  true
+)
+on conflict (scope_type, scope_id) do update set
+  identity_required = excluded.identity_required,
+  phone_required = excluded.phone_required,
+  provider_verification_required = excluded.provider_verification_required,
+  evidence_requirements = excluded.evidence_requirements,
+  is_active = excluded.is_active;
+
+create or replace function private.trg_validate_driving_school_need_offer()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_need record;
+  v_provider_metadata jsonb;
+  v_requested_class text;
+  v_requested_transmission text;
+  v_provider_transmission text;
+  v_provider_classes jsonb;
+  v_class_matched boolean;
+begin
+  select nr.category_slug, nr.capability_slug, nr.details
+  into v_need
+  from public.needs_requests nr
+  where nr.request_id = new.need_id;
+
+  -- The existing offer-validation trigger reports a missing request.
+  if not found or v_need.capability_slug is distinct from 'driving_school' then
+    return new;
+  end if;
+
+  select pc.metadata
+  into v_provider_metadata
+  from public.provider_capabilities pc
+  where pc.user_id = new.offer_maker_id
+    and pc.capability_slug = 'driving_school';
+
+  -- The existing offer-validation trigger reports a missing capability.
+  if not found then
+    return new;
+  end if;
+
+  v_requested_class := coalesce(
+    nullif(btrim(v_need.details->>'licence_class'), ''),
+    nullif(btrim(v_need.details->>'license_class'), '')
+  );
+  v_requested_transmission := nullif(
+    btrim(v_need.details->>'transmission'),
+    ''
+  );
+  v_provider_classes := coalesce(
+    v_provider_metadata->'licence_classes',
+    v_provider_metadata->'license_classes'
+  );
+  v_provider_transmission := nullif(
+    btrim(v_provider_metadata->>'transmission'),
+    ''
+  );
+
+  if v_requested_class is not null
+     and lower(v_requested_class) not in ('either', 'any') then
+    select exists (
+      select 1
+      from jsonb_array_elements_text(
+        case
+          when jsonb_typeof(v_provider_classes) = 'array'
+            then v_provider_classes
+          else '[]'::jsonb
+        end
+      ) as declared(class_name)
+      where lower(btrim(regexp_replace(
+              regexp_replace(declared.class_name, '\s*\([^)]*\)\s*$', '', 'i'),
+              '^class\s+', '', 'i'
+            ))) =
+            lower(btrim(regexp_replace(
+              regexp_replace(v_requested_class, '\s*\([^)]*\)\s*$', '', 'i'),
+              '^class\s+', '', 'i'
+            )))
+    ) into v_class_matched;
+
+    if not v_class_matched then
+      raise exception
+        'Your Driving School service does not cover the requested licence class (%)',
+        v_requested_class
+        using errcode = 'P0203';
+    end if;
+  end if;
+
+  if v_requested_transmission is not null
+     and lower(v_requested_transmission) not in ('either', 'any')
+     and v_provider_transmission is not null
+     and lower(v_provider_transmission) not in ('both', 'either', 'any')
+     and lower(v_provider_transmission) <> lower(v_requested_transmission) then
+    raise exception
+      'Your Driving School service transmission (%) does not match the requested transmission (%)',
+      v_provider_transmission,
+      v_requested_transmission
+      using errcode = 'P0203';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_validate_need_offer_driving_school
+  on public.need_offers;
+create trigger trg_validate_need_offer_driving_school
+  before insert on public.need_offers
+  for each row
+  execute function private.trg_validate_driving_school_need_offer();
+
+grant select on public.need_capabilities to anon, authenticated;
+
+commit;
+
+-- ============================================================
+-- END MERGED SECTION: 20261005_driving_school_capability.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261006_move_driving_school_to_professional_services.sql
+-- ============================================================
+
+-- =============================================================================
+-- Standalone SQL Patch: 20261006_move_driving_school_to_professional_services.sql
+-- Move "Driving School / Driver Training" from Transport & Logistics (transport_logistics)
+-- to Professional Services (professional_services).
+-- =============================================================================
+
+begin;
+
+-- 1. Update the need_capabilities catalog entry
+update public.need_capabilities
+set category_slug = 'professional_services'
+where slug = 'driving_school';
+
+-- Ensure the row exists with category_slug = 'professional_services'
+insert into public.need_capabilities
+  (slug, category_slug, name, is_active, country_labels)
+values (
+  'driving_school',
+  'professional_services',
+  'Driving School / Driver Training',
+  true,
+  '{
+    "UG": {"name": "Driving School / Driver Training"},
+    "KE": {"name": "Driving School & Driver Training"},
+    "TZ": {"name": "Mafunzo ya Udereva / Chuo cha Udereva"},
+    "RW": {"name": "Amashuri yo Gutwara Ibinyabiziga"},
+    "SS": {"name": "Driving School / Driver Training"},
+    "BI": {"name": "Auto-École / Formation des Conducteurs"}
+  }'::jsonb
+)
+on conflict (slug) do update set
+  category_slug = 'professional_services',
+  name = excluded.name,
+  is_active = excluded.is_active,
+  country_labels = excluded.country_labels;
+
+-- 2. Update existing needs_requests that were filed with capability_slug = 'driving_school'
+update public.needs_requests
+set category_slug = 'professional_services',
+    category = coalesce(
+      (select name from public.need_categories where slug = 'professional_services'),
+      'Professional Services'
+    )
+where capability_slug = 'driving_school'
+  and category_slug = 'transport_logistics';
+
+commit;
+
+-- ============================================================
+-- END MERGED SECTION: 20261006_move_driving_school_to_professional_services.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_provider_financial_services_v1.sql
+-- ============================================================
+
+-- Standalone SQL Patch: patch_provider_financial_services_v1.sql
+-- Purpose: Add the 'financial_services' category and its 6 capabilities
+--          to the need_categories and need_capabilities reference tables.
+--          These capabilities reuse the existing provider_capabilities architecture.
+--          No new tables are created.
+
+-- 1. Insert 'financial_services' category
+insert into public.need_categories (slug, name, icon, description, sort_order, is_active, provider_verification_required)
+values (
+  'financial_services',
+  'Financial Services',
+  '💰',
+  'Loan services, forex exchange, bank agents, SACCO, microfinance, and financial advisory.',
+  1,
+  true,
+  false
+)
+on conflict (slug) do update
+  set
+    name = excluded.name,
+    icon = excluded.icon,
+    description = excluded.description,
+    sort_order = excluded.sort_order,
+    is_active = excluded.is_active;
+
+-- 2. Insert the 6 financial capabilities
+insert into public.need_capabilities (slug, category_slug, name, is_active)
+values
+  ('loan_services',            'financial_services', 'Loan Services',                  true),
+  ('forex_currency_exchange',  'financial_services', 'Forex / Currency Exchange',       true),
+  ('bank_loan_agent',          'financial_services', 'Bank Loan Agent',                 true),
+  ('sacco_microfinance',       'financial_services', 'SACCO / Microfinance Services',   true),
+  ('financial_advisory',       'financial_services', 'Financial Advisory',              true),
+  ('other_financial_services', 'financial_services', 'Other Financial Services',        true)
+on conflict (slug) do update
+  set
+    name = excluded.name,
+    category_slug = excluded.category_slug,
+    is_active = excluded.is_active;
+
+-- Done. Existing provider_capabilities RLS policies, indexes, and grants cover these
+-- new capability slugs automatically.
+
+-- ============================================================
+-- END MERGED SECTION: patch_provider_financial_services_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_add_money_lender_capability.sql
+-- ============================================================
+
+-- =============================================================================
+-- Standalone SQL Patch: patch_add_money_lender_capability.sql
+-- Purpose : Add the 'money_lender_private_lender' provider capability so that
+--           individual money lenders (who lend their own capital and do NOT
+--           represent a bank, SACCO, or other institution) have a proper
+--           capability/service to select in the Provider Services screen.
+--
+-- Context : The 6 existing financial capabilities were seeded by
+--           patch_provider_financial_services_v1.sql.  This patch adds the 7th.
+--           No existing rows are modified.
+--
+-- Apply to: Supabase → SQL Editor (or via migration tool).
+--           Safe to run multiple times (idempotent via ON CONFLICT DO UPDATE).
+-- =============================================================================
+
+insert into public.need_capabilities
+  (slug, category_slug, name, is_active)
+values
+  ('money_lender_private_lender', 'financial_services', 'Money Lender / Private Lender', true)
+on conflict (slug) do update
+  set name          = excluded.name,
+      category_slug = excluded.category_slug,
+      is_active     = excluded.is_active;
+
+-- ============================================================
+-- END MERGED SECTION: patch_add_money_lender_capability.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261008_private_borrower_information.sql
+-- ============================================================
+
+-- Keep reusable borrower details out of general profiles and marketplace rows.
+-- Re-runnable; historical Needs category rows are retained but disabled.
+
+CREATE TABLE IF NOT EXISTS public.borrower_information (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    employment_status TEXT NOT NULL
+        CHECK (employment_status IN (
+            'government_employed',
+            'private_sector',
+            'self_employed',
+            'business_owner',
+            'student',
+            'unemployed',
+            'other'
+        )),
+    employer_business_name TEXT,
+    is_government_employee BOOLEAN NOT NULL,
+    monthly_income_range TEXT NOT NULL
+        CHECK (monthly_income_range IN (
+            'no_regular_income',
+            'under_500k',
+            '500k_1m',
+            '1m_2m',
+            '2m_3m',
+            'over_3m'
+        )),
+    income_currency VARCHAR(3) NOT NULL
+        CHECK (income_currency ~ '^[A-Z]{3}$'),
+    other_income_source TEXT,
+    preferred_bank TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE public.borrower_information IS
+    'Private reusable borrower information. Owner-only RLS; never join into public marketplace views.';
+
+ALTER TABLE public.borrower_information ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "borrower_information: owner read"
+    ON public.borrower_information;
+CREATE POLICY "borrower_information: owner read"
+    ON public.borrower_information FOR SELECT TO authenticated
+    USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "borrower_information: owner insert"
+    ON public.borrower_information;
+CREATE POLICY "borrower_information: owner insert"
+    ON public.borrower_information FOR INSERT TO authenticated
+    WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "borrower_information: owner update"
+    ON public.borrower_information;
+CREATE POLICY "borrower_information: owner update"
+    ON public.borrower_information FOR UPDATE TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
+
+REVOKE ALL ON TABLE public.borrower_information FROM PUBLIC, anon;
+GRANT SELECT, INSERT, UPDATE
+    ON TABLE public.borrower_information TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.set_borrower_information_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+    NEW.updated_at := NOW();
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_borrower_information_updated_at
+    ON public.borrower_information;
+CREATE TRIGGER trg_borrower_information_updated_at
+    BEFORE UPDATE ON public.borrower_information
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_borrower_information_updated_at();
+
+-- Keep existing requests and category references for history; only disable
+-- the retired financial category and its capabilities for new Needs flows.
+UPDATE public.need_categories
+SET is_active = FALSE
+WHERE slug = 'financial_services';
+
+UPDATE public.need_capabilities
+SET is_active = FALSE
+WHERE category_slug = 'financial_services';
+
+CREATE OR REPLACE FUNCTION public.reject_financial_needs_category()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+    IF NEW.category_slug = 'financial_services' THEN
+        RAISE EXCEPTION 'Financial services requests belong in Loans or Forex, not Needs.'
+            USING ERRCODE = '23514';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_reject_financial_needs_category
+    ON public.needs_requests;
+CREATE TRIGGER trg_reject_financial_needs_category
+    BEFORE INSERT OR UPDATE OF category_slug ON public.needs_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION public.reject_financial_needs_category();
+
+-- ============================================================
+-- END MERGED SECTION: 20261008_private_borrower_information.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261009_private_discovery_plans.sql
+-- ============================================================
+
+-- Standalone SQL Patch: 20261009_private_discovery_plans.sql
+-- Purpose: Private discovery plans, configurable question templates, and
+-- per-user frequency controls for the lightweight Nipanze discovery engine.
+-- Do not merge this into sql/patch.sql.
+
+create table if not exists public.discovery_question_templates (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  title text not null,
+  question text not null,
+  category text not null,
+  need_category_slug text references public.need_categories(slug) on delete set null,
+  plan_type text not null check (plan_type in (
+    'travel',
+    'education_career',
+    'business',
+    'financial',
+    'general'
+  )),
+  answer_type text not null default 'single_select' check (answer_type in (
+    'single_select',
+    'multi_select'
+  )),
+  options jsonb not null default '[]'::jsonb,
+  follow_up_rules jsonb not null default '{}'::jsonb,
+  country_codes text[],
+  priority int not null default 100,
+  active_from timestamptz,
+  active_until timestamptz,
+  cta_label text,
+  deep_link text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint discovery_template_options_array check (jsonb_typeof(options) = 'array'),
+  constraint discovery_template_followups_object check (jsonb_typeof(follow_up_rules) = 'object')
+);
+
+create index if not exists idx_discovery_templates_active
+  on public.discovery_question_templates(is_active, priority, active_from, active_until);
+create index if not exists idx_discovery_templates_category
+  on public.discovery_question_templates(category, need_category_slug);
+
+create table if not exists public.user_discovery_plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  template_id uuid references public.discovery_question_templates(id) on delete set null,
+  category text not null,
+  need_category_slug text references public.need_categories(slug) on delete set null,
+  plan_type text not null check (plan_type in (
+    'travel',
+    'education_career',
+    'business',
+    'financial',
+    'general'
+  )),
+  title text not null,
+  answers jsonb not null default '{}'::jsonb,
+  destination text,
+  preferred_location text,
+  expected_date date,
+  timeframe text,
+  reminder_preference text not null default 'none' check (reminder_preference in (
+    'none',
+    'one_week_before',
+    'one_month_before'
+  )),
+  expires_at timestamptz,
+  review_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint user_discovery_plans_answers_object check (jsonb_typeof(answers) = 'object')
+);
+
+create index if not exists idx_user_discovery_plans_user
+  on public.user_discovery_plans(user_id, updated_at desc);
+create index if not exists idx_user_discovery_plans_review
+  on public.user_discovery_plans(user_id, review_at)
+  where review_at is not null;
+
+create table if not exists public.user_discovery_interactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  template_id uuid not null references public.discovery_question_templates(id) on delete cascade,
+  action text not null check (action in (
+    'view',
+    'answer',
+    'save',
+    'skip',
+    'dismiss',
+    'mute'
+  )),
+  answer jsonb not null default '{}'::jsonb,
+  dismissed_until timestamptz,
+  muted_until timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint user_discovery_interactions_answer_object check (jsonb_typeof(answer) = 'object')
+);
+
+alter table if exists public.user_discovery_interactions
+  drop constraint if exists user_discovery_interactions_action_check;
+alter table if exists public.user_discovery_interactions
+  add constraint user_discovery_interactions_action_check
+  check (action in (
+    'view',
+    'answer',
+    'save',
+    'skip',
+    'dismiss',
+    'mute'
+  ));
+
+create index if not exists idx_user_discovery_interactions_user
+  on public.user_discovery_interactions(user_id, created_at desc);
+create index if not exists idx_user_discovery_interactions_template
+  on public.user_discovery_interactions(user_id, template_id, action, created_at desc);
+
+create or replace function public.touch_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_discovery_question_templates_updated_at
+  on public.discovery_question_templates;
+create trigger trg_discovery_question_templates_updated_at
+  before update on public.discovery_question_templates
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists trg_user_discovery_plans_updated_at
+  on public.user_discovery_plans;
+create trigger trg_user_discovery_plans_updated_at
+  before update on public.user_discovery_plans
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists trg_user_discovery_interactions_updated_at
+  on public.user_discovery_interactions;
+create trigger trg_user_discovery_interactions_updated_at
+  before update on public.user_discovery_interactions
+  for each row execute function public.touch_updated_at();
+
+alter table public.discovery_question_templates enable row level security;
+alter table public.user_discovery_plans enable row level security;
+alter table public.user_discovery_interactions enable row level security;
+
+drop policy if exists "Discovery templates readable by authenticated users"
+  on public.discovery_question_templates;
+create policy "Discovery templates readable by authenticated users"
+  on public.discovery_question_templates
+  for select to authenticated
+  using (
+    is_active = true
+    and (active_from is null or active_from <= now())
+    and (active_until is null or active_until >= now())
+  );
+
+drop policy if exists "Admins manage discovery templates"
+  on public.discovery_question_templates;
+create policy "Admins manage discovery templates"
+  on public.discovery_question_templates
+  for all to authenticated
+  using (private.is_admin())
+  with check (private.is_admin());
+
+drop policy if exists "Users manage own discovery plans"
+  on public.user_discovery_plans;
+create policy "Users manage own discovery plans"
+  on public.user_discovery_plans
+  for all to authenticated
+  using (user_id = auth.uid() or private.is_admin())
+  with check (user_id = auth.uid() or private.is_admin());
+
+drop policy if exists "Users manage own discovery interactions"
+  on public.user_discovery_interactions;
+create policy "Users manage own discovery interactions"
+  on public.user_discovery_interactions
+  for all to authenticated
+  using (user_id = auth.uid() or private.is_admin())
+  with check (user_id = auth.uid() or private.is_admin());
+
+grant select on public.discovery_question_templates to authenticated;
+grant insert, update, delete on public.discovery_question_templates to authenticated;
+grant select, insert, update, delete on public.user_discovery_plans to authenticated;
+grant select, insert, update, delete on public.user_discovery_interactions to authenticated;
+
+insert into public.need_categories (slug, name, icon, sort_order, is_active)
+values
+  ('travel_international', 'Travel & International', '✈️', 10, true),
+  ('education_training', 'Education & Training', '🎓', 20, true)
+on conflict (slug) do nothing;
+
+insert into public.discovery_question_templates (
+  slug,
+  title,
+  question,
+  category,
+  need_category_slug,
+  plan_type,
+  answer_type,
+  options,
+  follow_up_rules,
+  country_codes,
+  priority,
+  cta_label,
+  deep_link
+) values
+  (
+    'travel_planning_basic',
+    'A quick question',
+    'Are you planning travel in the next few months?',
+    'travel',
+    'travel_international',
+    'travel',
+    'single_select',
+    '[
+      {"value": "yes", "label": "Yes", "save_plan": true},
+      {"value": "later", "label": "Maybe later"},
+      {"value": "no", "label": "No"}
+    ]'::jsonb,
+    '{"yes": ["destination", "timeframe", "assistance_needed"]}'::jsonb,
+    array['UG','KE','TZ','RW','NG','ZA','EG'],
+    10,
+    'Explore travel help',
+    '/marketplace'
+  ),
+  (
+    'internship_interest_basic',
+    'A quick question',
+    'Would internship or professional development opportunities be useful to you?',
+    'education',
+    'education_training',
+    'education_career',
+    'single_select',
+    '[
+      {"value": "yes", "label": "Yes", "save_plan": true},
+      {"value": "not_now", "label": "Not now"}
+    ]'::jsonb,
+    '{"yes": ["industry", "preferred_location", "timeframe"]}'::jsonb,
+    array['UG','KE','TZ','RW','NG','ZA','EG'],
+    20,
+    'Explore education',
+    '/marketplace'
+  ),
+  (
+    'business_equipment_basic',
+    'Planning something ahead?',
+    'Do you need equipment, logistics, procurement or business services soon?',
+    'business',
+    'professional_services',
+    'business',
+    'multi_select',
+    '[
+      {"value": "equipment", "label": "Equipment", "category_slug": "machinery_equipment"},
+      {"value": "logistics", "label": "Logistics", "category_slug": "transport_logistics"},
+      {"value": "services", "label": "Services", "category_slug": "professional_services"},
+      {"value": "procurement", "label": "Procurement", "category_slug": "specialized_products"}
+    ]'::jsonb,
+    '{"equipment": ["preferred_location", "timeframe"], "logistics": ["preferred_location", "timeframe"], "services": ["preferred_location", "timeframe"], "procurement": ["preferred_location", "timeframe"]}'::jsonb,
+    array['UG','KE','TZ','RW','NG','ZA','EG'],
+    30,
+    'Discover opportunities',
+    '/marketplace'
+  ),
+  (
+    'financial_interest_basic',
+    'Would this be useful to you?',
+    'Are you interested in loans, financing or Forex opportunities?',
+    'financial',
+    null,
+    'financial',
+    'single_select',
+    '[
+      {"value": "loans", "label": "Loans", "save_plan": true},
+      {"value": "forex", "label": "Forex", "save_plan": true},
+      {"value": "both", "label": "Both", "save_plan": true},
+      {"value": "no", "label": "No"}
+    ]'::jsonb,
+    '{"loans": ["timeframe"], "forex": ["timeframe"], "both": ["timeframe"]}'::jsonb,
+    array['UG','KE','TZ','RW','NG','ZA','EG'],
+    40,
+    'Open marketplace',
+    '/marketplace'
+  )
+on conflict (slug) do update
+set
+  title = excluded.title,
+  question = excluded.question,
+  category = excluded.category,
+  need_category_slug = excluded.need_category_slug,
+  plan_type = excluded.plan_type,
+  answer_type = excluded.answer_type,
+  options = excluded.options,
+  follow_up_rules = excluded.follow_up_rules,
+  country_codes = excluded.country_codes,
+  priority = excluded.priority,
+  cta_label = excluded.cta_label,
+  deep_link = excluded.deep_link,
+  is_active = true,
+  updated_at = now();
+
+-- ============================================================
+-- END MERGED SECTION: 20261009_private_discovery_plans.sql
+-- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: patch_post_duration_defaults_v1.sql
+-- ============================================================
+
+-- ============================================================
+-- Standalone patch: post duration defaults and expiry configuration
+-- Description: Aligns loan, forex, and needs lifecycle defaults with the
+-- current marketplace configuration model and keeps values in
+-- system_settings so they can be overridden by market or plan.
+-- Idempotent: safe to re-run with UPSERT semantics.
+-- ============================================================
+
+INSERT INTO public.system_settings (
+  setting_key,
+  setting_value,
+  setting_type,
+  category,
+  description,
+  is_public
+)
+VALUES
+  ('listing_duration_days', '30', 'number', 'marketplace', 'Default days a loan request stays active before expiry', TRUE),
+  ('forex_listing_duration_days', '7', 'number', 'marketplace', 'Default days a forex request stays active before expiry', TRUE),
+  ('needs_default_duration_machinery_equipment_days', '14', 'number', 'marketplace', 'Default days for Machinery & Equipment needs requests', TRUE),
+  ('needs_default_duration_professional_services_days', '14', 'number', 'marketplace', 'Default days for Professional Services needs requests', TRUE),
+  ('needs_default_duration_transport_logistics_days', '7', 'number', 'marketplace', 'Default days for Transport & Logistics needs requests', TRUE),
+  ('needs_default_duration_specialized_products_days', '14', 'number', 'marketplace', 'Default days for Specialized Products & Procurement needs requests', TRUE),
+  ('needs_default_duration_travel_international_days', '14', 'number', 'marketplace', 'Default days for Travel & International needs requests', TRUE)
+ON CONFLICT (setting_key, COALESCE(country, '__global__')) DO UPDATE SET
+  setting_value = EXCLUDED.setting_value,
+  setting_type = EXCLUDED.setting_type,
+  category = EXCLUDED.category,
+  description = EXCLUDED.description,
+  is_public = EXCLUDED.is_public,
+  updated_at = NOW();
+
+-- ============================================================
+-- END MERGED SECTION: patch_post_duration_defaults_v1.sql
+-- ============================================================
