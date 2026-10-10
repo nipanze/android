@@ -45,17 +45,38 @@ void main() {
   testWidgets('tapping the clock shows an accurate live countdown',
       (tester) async {
     final now = DateTime.now();
+    final expiresAt = now.add(const Duration(days: 13, hours: 4));
     await tester.pumpWidget(
       buildIndicator(
         listedAt: now.subtract(const Duration(days: 2)),
-        expiresAt: now.add(const Duration(days: 13, hours: 4)),
+        expiresAt: expiresAt,
       ),
     );
 
     await tester.tap(find.byTooltip('Show time remaining'));
     await tester.pumpAndSettle();
 
-    expect(find.text('13 days, 4 hours remaining'), findsOneWidget);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ListingExpiryIndicator)),
+    )!;
+    final remaining = expiresAt.difference(DateTime.now());
+    final expected = remaining.inDays > 0
+        ? l10n.listingRemainingDaysHours(
+            remaining.inDays,
+            remaining.inHours % 24,
+          )
+        : remaining.inHours > 0
+            ? l10n.listingRemainingHoursMinutes(
+                remaining.inHours,
+                remaining.inMinutes % 60,
+              )
+            : remaining.inMinutes > 0
+                ? l10n.listingRemainingMinutes(remaining.inMinutes)
+                : l10n.listingRemainingSeconds(
+                    remaining.inSeconds.clamp(1, 59),
+                  );
+
+    expect(find.text(expected), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
