@@ -69,42 +69,55 @@ class _ListingExpiryIndicatorState extends State<ListingExpiryIndicator> {
         : (remaining.inMilliseconds.clamp(0, total.inMilliseconds) /
                 total.inMilliseconds)
             .toDouble();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final mutedColor =
+        isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
     final color = remaining.isNegative
         ? AppColors.danger
         : remaining.inHours < 6
             ? AppColors.danger
             : remaining.inHours < 24
                 ? AppColors.warning
-                : AppColors.accent;
+                : mutedColor;
     final l10n = AppLocalizations.of(context)!;
 
-    return IconButton(
-      tooltip: l10n.listingExpiryTooltip,
-      onPressed: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (_) => _ListingExpirySheet(expiresAt: expiresAt),
-      ),
-      icon: SizedBox(
-        width: 30,
-        height: 30,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox.expand(
-              child: CircularProgressIndicator(
-                value: progress,
-                strokeWidth: 2,
-                color: color,
-                backgroundColor: color.withValues(alpha: 0.16),
+    return Tooltip(
+      message: l10n.listingExpiryTooltip,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => _ListingExpirySheet(expiresAt: expiresAt),
+        ),
+        child: SizedBox(
+          width: 16,
+          height: 16,
+          child: Center(
+            child: SizedBox(
+              width: 14,
+              height: 14,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox.expand(
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 1.1,
+                      color: color,
+                      backgroundColor: color.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 8,
+                    color: color,
+                  ),
+                ],
               ),
             ),
-            Icon(
-              Icons.schedule_rounded,
-              size: 16,
-              color: color,
-            ),
-          ],
+          ),
         ),
       ),
     );

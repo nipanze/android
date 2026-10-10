@@ -12,7 +12,7 @@ import 'package:nipanze/l10n/app_localizations.dart';
 class MockAuthBloc extends Mock implements AuthBloc {}
 
 void main() {
-  testWidgets('card metadata is compact and loan term is not expiry metadata',
+  testWidgets('card keeps original compact metadata with expiry replacing age',
       (tester) async {
     final authBloc = MockAuthBloc();
     when(() => authBloc.state).thenReturn(const AuthAuthenticated(
@@ -74,10 +74,10 @@ void main() {
       ),
     );
     final securedRect = tester.getRect(find.text('Secured'));
-    final offersRect = tester.getRect(find.text('3 offers'));
+    final termRect = tester.getRect(find.text('12 months'));
 
-    expect((securedRect.center.dy - offersRect.center.dy).abs(), lessThan(2));
-    expect(find.text('12 months'), findsNothing);
+    expect((securedRect.center.dy - termRect.center.dy).abs(), lessThan(2));
+    expect(find.text('3 offers'), findsNothing);
     expect(find.textContaining('ago'), findsNothing);
     expect(find.text('Today'), findsNothing);
     await tester.tap(find.byIcon(Icons.star_border_rounded));

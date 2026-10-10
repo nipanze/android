@@ -44,7 +44,11 @@ class ListingCard extends StatelessWidget {
     final needs = listing.needs;
     final isForex = forex != null;
     final isNeeds = needs != null;
-    const accent = AppColors.accent;
+    final accent = isNeeds
+        ? const Color(0xFFF59E0B)
+        : isForex
+            ? const Color(0xFF06B6D4)
+            : AppColors.accent;
     final surfaceColor = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     final mutedColor =
@@ -55,7 +59,7 @@ class ListingCard extends StatelessWidget {
     final amount = needs != null
         ? (needs.budget > 0
             ? '${needs.currency} ${_fmtAmount(context, needs.budget)}'
-            : l10n.openToOffers)
+            : l10n.marketplaceNeeded)
         : loan != null
             ? '${loan.currency} ${_fmtAmount(context, loan.requestedAmount)}'
             : '${forex!.currencyHeld} ${_fmtAmount(context, forex.amount)}';
@@ -96,7 +100,7 @@ class ListingCard extends StatelessWidget {
                 child: Icon(
                   Icons.swap_horiz_rounded,
                   size: 18,
-                  color: AppColors.accent,
+                  color: Color(0xFF06B6D4),
                 ),
               ),
               Expanded(
@@ -136,7 +140,9 @@ class ListingCard extends StatelessWidget {
             style: theme.textTheme.headlineSmall?.copyWith(
               color: needs != null && needs.budget > 0
                   ? theme.colorScheme.onSurface
-                  : AppColors.accent,
+                  : needs != null
+                      ? AppColors.warning
+                      : AppColors.accent,
               fontSize: 18,
               fontWeight: FontWeight.w700,
               fontFamily: AppFonts.heading,
@@ -148,6 +154,10 @@ class ListingCard extends StatelessWidget {
         _forexDescription(forex, context);
     final location =
         needs?.location ?? loan?.district ?? _forexLocation(forex, context);
+    final isVerified = needs?.trustIsVerified ??
+        loan?.trustIsVerified ??
+        forex?.trustIsVerified ??
+        false;
     final authState = context.watch<AuthBloc>().state;
     final canSeeCollateral = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
@@ -160,7 +170,7 @@ class ListingCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 6, 6, 9),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: BorderRadius.circular(12),
@@ -171,13 +181,7 @@ class ListingCard extends StatelessWidget {
               final main = _MainListingArea(
                 accent: accent,
                 moduleLabel: isNeeds
-                    ? NeedCategory(
-                        slug: needs.categorySlug,
-                        name: needs.category,
-                        icon: needs.categoryIcon,
-                      ).localizedName(
-                        Localizations.localeOf(context).languageCode,
-                      )
+                    ? '${needs.categoryIcon} ${NeedCategory(slug: needs.categorySlug, name: needs.category, icon: needs.categoryIcon).localizedName(Localizations.localeOf(context).languageCode)}'
                     : isForex
                         ? l10n.marketplaceForex
                         : l10n.marketplaceLoan,
@@ -195,7 +199,7 @@ class ListingCard extends StatelessWidget {
                 amountWidget: amountWidget,
                 isLoan: loan != null,
                 location: location,
-                verified: loan?.hasCollateral == true,
+                verified: isVerified,
                 mutedColor: mutedColor,
                 description: description,
                 isSaved: isSaved,
@@ -205,18 +209,14 @@ class ListingCard extends StatelessWidget {
                 onMoreAction: onMoreAction,
                 showDeleteAction: showDeleteAction,
                 attributes: [
-                  l10n.offersCount(
-                    loan?.numberOfOffers ??
-                        forex?.numberOfOffers ??
-                        needs!.numberOfOffers,
-                  ),
-                  if (needs != null && needs.urgency.trim().isNotEmpty)
-                    needs.urgency,
+                  if (needs != null) l10n.offersCount(needs.numberOfOffers),
+                  if (needs != null) needs.urgency,
+                  if (loan != null) '${loan.durationMonths} ${l10n.months}',
                   if (forex != null) _forexSettlementLabel(forex, context),
                   if (forex != null &&
                       forex.preferredRate != null &&
                       forex.preferredRate! > 0)
-                    'Rate: 1 ${forex.currencyHeld} = ${forex.preferredRate!.toStringAsFixed(2)} ${forex.currencyNeeded}',
+                    forex.preferredRate!.toStringAsFixed(2),
                   if (showCollateral && loan.collateralPreview != null)
                     loan.collateralPreview!,
                 ],
@@ -289,23 +289,23 @@ class _MoreActionsButton extends StatelessWidget {
     final action = onMoreAction ?? onWatchlistToggle;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return IconButton(
-      tooltip: showDeleteAction
-          ? (moreActionLabel ?? '')
-          : isSaved
-              ? AppLocalizations.of(context)!.removeFromWatchlist
-              : AppLocalizations.of(context)!.saveToWatchlist,
-      onPressed: action,
-      icon: Icon(
-        showDeleteAction
-            ? Icons.delete_outline_rounded
-            : (isSaved ? Icons.star_rounded : Icons.star_border_rounded),
-        size: 19,
-        color: showDeleteAction
-            ? AppColors.danger
-            : (isSaved
-                ? AppColors.warning
-                : (isDark ? AppColors.text3Dark : AppColors.text3Light)),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: action,
+      child: SizedBox(
+        width: 20,
+        height: 20,
+        child: Icon(
+          showDeleteAction
+              ? Icons.delete_outline_rounded
+              : (isSaved ? Icons.star_rounded : Icons.star_border_rounded),
+          size: 18,
+          color: showDeleteAction
+              ? AppColors.danger
+              : (isSaved
+                  ? AppColors.warning
+                  : (isDark ? AppColors.text3Dark : AppColors.text3Light)),
+        ),
       ),
     );
   }
@@ -354,6 +354,7 @@ class _MainListingArea extends StatelessWidget {
 
   IconData _attributeIcon(String attribute) {
     final value = attribute.toLowerCase();
+    if (value.contains('offer')) return Icons.chat_bubble_outline_rounded;
     if (value.contains('equity') || value.contains('bank')) {
       return Icons.account_balance_rounded;
     }
@@ -369,11 +370,10 @@ class _MainListingArea extends StatelessWidget {
     if (value.contains('rate') || value.contains('.')) {
       return Icons.swap_horiz_rounded;
     }
-    if (value.contains('offer')) return Icons.chat_bubble_outline_rounded;
     if (value.contains('urgent') || value.contains('flexible')) {
       return Icons.hourglass_bottom_rounded;
     }
-    return Icons.info_outline_rounded;
+    return Icons.calendar_month_rounded;
   }
 
   @override
@@ -384,15 +384,23 @@ class _MainListingArea extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
-              child: _ModuleBadge(
-                label: moduleLabel,
-                icon: moduleIcon,
-                color: accent,
+              child: Wrap(
+                spacing: 9,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _ModuleBadge(
+                    label: moduleLabel,
+                    icon: moduleIcon,
+                    color: accent,
+                  ),
+                  expiryIndicator,
+                ],
               ),
             ),
-            expiryIndicator,
             if (showMoreActions)
               _MoreActionsButton(
                 isSaved: isSaved,
@@ -403,22 +411,22 @@ class _MainListingArea extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 12),
         Text(
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 15.5,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             height: 1.12,
             color: theme.colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isDark
                 ? AppColors.bg3Dark.withValues(alpha: 0.6)
@@ -432,18 +440,17 @@ class _MainListingArea extends StatelessWidget {
           ),
           child: amountWidget,
         ),
-        const SizedBox(height: 7),
+        const SizedBox(height: 8),
         Wrap(
-          spacing: 10,
-          runSpacing: 5,
+          spacing: 12,
+          runSpacing: 6,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            if (location.trim().isNotEmpty)
-              _MetaIcon(
-                icon: Icons.location_on_rounded,
-                label: location,
-                color: mutedColor,
-              ),
+            _MetaIcon(
+              icon: Icons.location_on_rounded,
+              label: location,
+              color: mutedColor,
+            ),
             if (verified && isLoan)
               _MetaIcon(
                 icon: Icons.shield_rounded,
@@ -459,7 +466,7 @@ class _MainListingArea extends StatelessWidget {
           ],
         ),
         if (description.trim().isNotEmpty) ...[
-          const SizedBox(height: 5),
+          const SizedBox(height: 7),
           Text(
             description,
             maxLines: 2,
