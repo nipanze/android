@@ -3032,4 +3032,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get savedPlanWhatWouldHelp => 'ما الذي قد يفيدك؟';
+
+  @override
+  String postDurationActiveDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'نشط لمدة $days يوم.',
+      many: 'نشط لمدة $days يوماً.',
+      few: 'نشط لمدة $days أيام.',
+      two: 'نشط لمدة يومين.',
+      one: 'نشط لمدة يوم واحد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String postDurationFullNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'سيكون طلبك نشطاً لمدة $days يوم.',
+      many: 'سيكون طلبك نشطاً لمدة $days يوماً.',
+      few: 'سيكون طلبك نشطاً لمدة $days أيام.',
+      two: 'سيكون طلبك نشطاً لمدة يومين.',
+      one: 'سيكون طلبك نشطاً لمدة يوم واحد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postDurationNotice =>
+      'ستنتهي صلاحية طلبك تلقائياً بعد هذه الفترة.';
 }

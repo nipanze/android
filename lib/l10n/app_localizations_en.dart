@@ -3046,4 +3046,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedPlanWhatWouldHelp => 'What would be useful?';
+
+  @override
+  String postDurationActiveDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Active for $days days.',
+      one: 'Active for 1 day.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String postDurationFullNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Your request will be active for $days days.',
+      one: 'Your request will be active for 1 day.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postDurationNotice =>
+      'Your request will automatically expire after this period.';
 }

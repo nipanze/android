@@ -11,6 +11,8 @@
 BEGIN;
 
 SET LOCAL lock_timeout = '10s';
+CREATE SCHEMA IF NOT EXISTS private;
+SET search_path = public, private;
 
 DO $preflight$
 DECLARE
@@ -85,17 +87,18 @@ BEGIN
         v_expected.setting_key, v_expected.days;
     END IF;
   END LOOP;
-END
+END;
 $preflight$;
 
-CREATE TEMP TABLE expiry_duration_v1 (
+DROP TABLE IF EXISTS private.expiry_duration_v1;
+CREATE TABLE private.expiry_duration_v1 (
   market text NOT NULL,
   category_slug text,
   setting_key text NOT NULL,
   days integer NOT NULL
-) ON COMMIT DROP;
+);
 
-INSERT INTO expiry_duration_v1 (market, category_slug, setting_key, days)
+INSERT INTO private.expiry_duration_v1 (market, category_slug, setting_key, days)
 SELECT x.market, x.category_slug, x.setting_key, s.setting_value::integer
 FROM (VALUES
   ('Loans', NULL::text, 'listing_duration_days'),
@@ -113,7 +116,8 @@ JOIN public.system_settings s
 LOCK TABLE public.loan_requests, public.forex_requests, public.needs_requests
   IN SHARE ROW EXCLUSIVE MODE;
 
-CREATE TEMP TABLE expiry_terminal_before_v1 AS
+DROP TABLE IF EXISTS private.expiry_terminal_before_v1;
+CREATE TABLE private.expiry_terminal_before_v1 AS
 SELECT 'Loans' AS market, status::text AS status, count(*) AS posts
 FROM public.loan_requests
 WHERE status::text NOT IN ('active', 'expired')
@@ -136,7 +140,7 @@ SELECT 'Loans' AS market, status::text AS status, count(*) AS posts,
        count(*) FILTER (WHERE listed_at IS NULL) AS missing_listed_at,
        count(*) FILTER (WHERE status::text = 'active'
                          AND listed_at + make_interval(days => (
-                           SELECT days FROM expiry_duration_v1 WHERE market = 'Loans'
+                           SELECT days FROM private.expiry_duration_v1 WHERE market = 'Loans'
                          )) <= transaction_timestamp())
          AS overdue_at_approved_duration,
        count(*) FILTER (WHERE borrower_id::text LIKE '10000000-%') AS likely_seed_posts
@@ -148,7 +152,7 @@ SELECT 'Forex', status::text, count(*),
        count(*) FILTER (WHERE listed_at IS NULL),
        count(*) FILTER (WHERE status::text = 'active'
                          AND listed_at + make_interval(days => (
-                           SELECT days FROM expiry_duration_v1 WHERE market = 'Forex'
+                           SELECT days FROM private.expiry_duration_v1 WHERE market = 'Forex'
                          )) <= transaction_timestamp()),
        count(*) FILTER (WHERE requester_id::text LIKE '10000000-%')
 FROM public.forex_requests
@@ -159,7 +163,7 @@ SELECT 'Needs', status::text, count(*),
        count(*) FILTER (WHERE listed_at IS NULL),
        count(*) FILTER (WHERE status::text = 'active'
                          AND EXISTS (
-                           SELECT 1 FROM expiry_duration_v1 d
+                           SELECT 1 FROM private.expiry_duration_v1 d
                            WHERE d.market = 'Needs'
                              AND d.category_slug = needs_requests.category_slug
                              AND needs_requests.listed_at + make_interval(days => d.days)
@@ -234,14 +238,14 @@ WHERE listed_at IS NULL;
 
 SELECT 'Loans' AS market, count(*) AS active_expiry_mismatches
 FROM public.loan_requests lr
-JOIN expiry_duration_v1 d ON d.market = 'Loans'
+JOIN private.expiry_duration_v1 d ON d.market = 'Loans'
 WHERE lr.status::text = 'active'
   AND lr.listed_at IS NOT NULL
   AND lr.expires_at IS DISTINCT FROM lr.listed_at + make_interval(days => d.days)
 UNION ALL
 SELECT 'Forex', count(*)
 FROM public.forex_requests fr
-JOIN expiry_duration_v1 d ON d.market = 'Forex'
+JOIN private.expiry_duration_v1 d ON d.market = 'Forex'
 WHERE fr.status::text = 'active'
   AND fr.listed_at IS NOT NULL
   AND fr.expires_at IS DISTINCT FROM fr.listed_at + make_interval(days => d.days)
@@ -251,7 +255,7 @@ FROM public.needs_requests nr
 WHERE nr.status::text = 'active'
   AND nr.listed_at IS NOT NULL
   AND NOT EXISTS (
-    SELECT 1 FROM expiry_duration_v1 d
+    SELECT 1 FROM private.expiry_duration_v1 d
     WHERE d.market = 'Needs' AND d.category_slug = nr.category_slug
       AND nr.expires_at IS NOT DISTINCT FROM nr.listed_at + make_interval(days => d.days)
   )
@@ -306,7 +310,7 @@ BEGIN
 
   NEW.expires_at := NEW.listed_at + make_interval(days => v_days);
   RETURN NEW;
-END
+END;
 $function$;
 
 DROP TRIGGER IF EXISTS trg_set_needs_listing_expiry ON public.needs_requests;
@@ -353,7 +357,7 @@ BEGIN
   END IF;
 
   RETURN NEW;
-END
+END;
 $function$;
 
 DROP TRIGGER IF EXISTS trg_guard_offer_listing_expiry_v1 ON public.loan_offers;
@@ -386,7 +390,7 @@ BEGIN
       USING ERRCODE = 'P0001';
   END IF;
   RETURN NEW;
-END
+END;
 $function$;
 
 DROP TRIGGER IF EXISTS trg_guard_listing_acceptance_expiry_v1 ON public.loan_requests;
@@ -435,7 +439,7 @@ BEGIN
   GET DIAGNOSTICS needs_posts_expired = ROW_COUNT;
 
   RETURN NEXT;
-END
+END;
 $function$;
 
 REVOKE ALL ON FUNCTION private.expire_marketplace_posts_v1()
@@ -452,8 +456,8 @@ DECLARE
   v_forex_updates integer;
   v_needs_updates integer;
 BEGIN
-  SELECT days INTO v_loan_days FROM expiry_duration_v1 WHERE market = 'Loans';
-  SELECT days INTO v_forex_days FROM expiry_duration_v1 WHERE market = 'Forex';
+  SELECT days INTO v_loan_days FROM private.expiry_duration_v1 WHERE market = 'Loans';
+  SELECT days INTO v_forex_days FROM private.expiry_duration_v1 WHERE market = 'Forex';
 
   UPDATE public.loan_requests lr
   SET expires_at = lr.listed_at + make_interval(days => v_loan_days)
@@ -471,7 +475,7 @@ BEGIN
 
   UPDATE public.needs_requests nr
   SET expires_at = nr.listed_at + make_interval(days => d.days)
-  FROM expiry_duration_v1 d
+  FROM private.expiry_duration_v1 d
   WHERE d.market = 'Needs'
     AND d.category_slug = nr.category_slug
     AND nr.status::text = 'active'
@@ -486,7 +490,7 @@ BEGIN
     v_loan_updates, v_forex_updates, v_needs_updates;
   RAISE NOTICE 'Newly expired active posts: Loans %, Forex %, Needs %.',
     v_loan_expired, v_forex_expired, v_needs_expired;
-END
+END;
 $backfill$;
 
 -- Install or refresh the periodic lifecycle sweep when pg_cron is available.
@@ -514,7 +518,7 @@ BEGIN
   ELSE
     RAISE NOTICE 'pg_cron is not installed: posts remain hidden and offer/acceptance-guarded at expiry, but automatic status transitions require scheduling private.expire_marketplace_posts_v1().';
   END IF;
-END
+END;
 $schedule$;
 
 -- After-migration audit and invariants.
@@ -541,14 +545,14 @@ SELECT market, count(*) AS active_posts_with_invalid_expiry
 FROM (
   SELECT 'Loans' AS market
   FROM public.loan_requests lr
-  JOIN expiry_duration_v1 d ON d.market = 'Loans'
+  JOIN private.expiry_duration_v1 d ON d.market = 'Loans'
   WHERE lr.status::text = 'active'
     AND (lr.listed_at IS NULL
          OR lr.expires_at IS DISTINCT FROM lr.listed_at + make_interval(days => d.days))
   UNION ALL
   SELECT 'Forex'
   FROM public.forex_requests fr
-  JOIN expiry_duration_v1 d ON d.market = 'Forex'
+  JOIN private.expiry_duration_v1 d ON d.market = 'Forex'
   WHERE fr.status::text = 'active'
     AND (fr.listed_at IS NULL
          OR fr.expires_at IS DISTINCT FROM fr.listed_at + make_interval(days => d.days))
@@ -557,7 +561,7 @@ FROM (
   FROM public.needs_requests nr
   WHERE nr.status::text = 'active'
     AND NOT EXISTS (
-      SELECT 1 FROM expiry_duration_v1 d
+      SELECT 1 FROM private.expiry_duration_v1 d
       WHERE d.market = 'Needs' AND d.category_slug = nr.category_slug
         AND nr.listed_at IS NOT NULL
         AND nr.expires_at IS NOT DISTINCT FROM nr.listed_at + make_interval(days => d.days)
@@ -570,7 +574,7 @@ SELECT before_count.market, before_count.status,
        before_count.posts AS terminal_posts_before,
        COALESCE(after_count.posts, 0) AS terminal_posts_after,
        before_count.posts = COALESCE(after_count.posts, 0) AS unchanged
-FROM expiry_terminal_before_v1 before_count
+FROM private.expiry_terminal_before_v1 before_count
 LEFT JOIN (
   SELECT 'Loans' AS market, status::text AS status, count(*) AS posts
   FROM public.loan_requests WHERE status::text NOT IN ('active', 'expired') GROUP BY status
@@ -628,7 +632,10 @@ SELECT
 DO $no_deletes$
 BEGIN
   RAISE NOTICE 'No posts, offers, reviews, or audit records were deleted or reset.';
-END
+END;
 $no_deletes$;
+
+-- Leave the scratch audit tables in private for SQL-editor reruns and
+-- post-run inspection. The next run recreates them from current settings/data.
 
 COMMIT;

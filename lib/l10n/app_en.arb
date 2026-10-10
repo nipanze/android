@@ -1443,5 +1443,27 @@
   "savedPlanSave": "Save",
   "savedPlanStartingLocation": "Starting location",
   "savedPlanAssistanceNeeded": "Assistance needed",
-  "savedPlanWhatWouldHelp": "What would be useful?"
+  "savedPlanWhatWouldHelp": "What would be useful?",
+  "postDurationActiveDays": "{days, plural, =1{Active for 1 day.} other{Active for {days} days.}}",
+  "@postDurationActiveDays": {
+    "description": "Compact post duration badge label",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "postDurationFullNotice": "{days, plural, =1{Your request will be active for 1 day.} other{Your request will be active for {days} days.}}",
+  "@postDurationFullNotice": {
+    "description": "Full post duration statement",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "postDurationNotice": "Your request will automatically expire after this period.",
+  "@postDurationNotice": {
+    "description": "Supporting note that requests automatically expire"
+  }
 }

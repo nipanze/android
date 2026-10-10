@@ -5583,6 +5583,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'What would be useful?'**
   String get savedPlanWhatWouldHelp;
+
+  /// Compact post duration badge label
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{Active for 1 day.} other{Active for {days} days.}}'**
+  String postDurationActiveDays(int days);
+
+  /// Full post duration statement
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{Your request will be active for 1 day.} other{Your request will be active for {days} days.}}'**
+  String postDurationFullNotice(int days);
+
+  /// Supporting note that requests automatically expire
+  ///
+  /// In en, this message translates to:
+  /// **'Your request will automatically expire after this period.'**
+  String get postDurationNotice;
 }
 
 class _AppLocalizationsDelegate

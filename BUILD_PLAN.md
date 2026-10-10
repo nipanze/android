@@ -302,3 +302,57 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 **Manual review:** production IDs/counts are unknown until the migration is run. Inspect every skipped `financial_services`/unknown Needs category and every row reported with a null listing timestamp before deciding whether an explicit correction is justified. Review the sample/development IDs listed by the audit rather than treating seed data as live user inventory.
 
 **Notifications:** no expiry-reminder sender was found in repository SQL/functions. This migration sends none. The normal deployed reminder worker, if external to this repository, must check active status, due two-day timing, and an unnotified expiry cycle; it must not remind matched, cancelled, or expired posts.
+
+## 15. Stage 4.13 — Post Duration Info Card (Flutter UI)
+
+### Overview
+
+Displays a compact, professional "active duration" label on every request-creation screen so users know how long their post will stay live before it automatically expires. The feature is purely informational — it reads the duration from the existing `PlatformLimits` / `system_settings` source of truth and displays it; the actual expiry is still enforced server-side by `trg_fn_set_listing_expiry()` (patched in Stage 14).
+
+### Duration Source of Truth
+
+| Post type | Setting key | Default |
+|---|---|---:|
+| Loan request | `listing_duration_days` | 30 days |
+| Forex request | `forex_listing_duration_days` | 7 days |
+| Machinery & Equipment Need | `needs_default_duration_machinery_equipment_days` | 14 days |
+| Professional Services Need | `needs_default_duration_professional_services_days` | 14 days |
+| Transport & Logistics Need | `needs_default_duration_transport_logistics_days` | 7 days |
+| Specialized Products Need | `needs_default_duration_specialized_products_days` | 14 days |
+| Travel & International Need | `needs_default_duration_travel_international_days` | 14 days |
+
+All values come from `SystemSettingsRepository.getLimits()` → `PlatformLimits`. No duration value is hardcoded on any creation screen.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `lib/shared/widgets/post_duration_info_card.dart` | **New** — reusable `PostDurationInfoCard(durationDays, compact)` widget |
+| `lib/features/listings/presentation/pages/listing_create_page.dart` | Show card above buttons on step 3 (final review) |
+| `lib/features/forex/presentation/pages/forex_create_page.dart` | Load `PlatformLimits`; show card above submit button and in preview dialog |
+| `lib/features/needs/presentation/pages/needs_create_page.dart` | Load `PlatformLimits`; show card above submit button (updates when category changes) and in preview dialog |
+| `lib/l10n/app_en.arb` + `_sw`, `_fr`, `_rw`, `_ar` | Added `postDurationActiveDays`, `postDurationFullNotice`, `postDurationNotice` in all 5 locales |
+| `lib/l10n/app_localizations*.dart` | Regenerated via `flutter gen-l10n` |
+| `test/shared/widgets/post_duration_info_card_test.dart` | **New** — widget tests for all durations, compact mode, dark/light, all 5 locales, edge cases |
+| `test/features/settings/platform_limits_test.dart` | **New** — unit tests for `PlatformLimits.durationForNeedsCategory` and `listingDurationDays` / `forexListingDurationDays` |
+
+### Widget Design
+
+- Clock icon (`Icons.schedule_rounded`) in a primary-colour tinted circle
+- Bold text: `"Your request will be active for N days."` (localised)
+- Smaller text: `"Your request will automatically expire after this period."` (hidden in compact mode)
+- Uses `Theme.of(context)` tokens — adapts to light and dark mode
+- No hardcoded colours; no extra dialogs or screens
+
+### No Database Changes
+
+This stage introduces no new database columns, tables, or migrations. All expiry enforcement remains in `trg_fn_set_listing_expiry()` (patched in Stage 14).
+
+### Acceptance Checks
+
+- Loan creation step 4 shows "Active for 30 days"; Forex shows "Active for 7 days"; Needs shows the category-specific duration.
+- Changing the Needs category updates the label immediately (reactive via `setState`).
+- The displayed duration matches the server-side `system_settings` values.
+- Widget and unit tests pass (`flutter test`).
+- `flutter analyze` reports zero warnings.
+- All 5 locales (en, sw, fr, rw, ar) and both themes (light, dark) render without overflow or exceptions.

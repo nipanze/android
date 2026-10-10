@@ -3062,4 +3062,30 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get savedPlanWhatWouldHelp => 'Ni iki cyakugirira akamaro?';
+
+  @override
+  String postDurationActiveDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Bikora mu minsi $days.',
+      one: 'Bikora mu munsi 1.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String postDurationFullNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Ubusabe bwawe buzakora mu minsi $days.',
+      one: 'Ubusabe bwawe buzakora mu munsi 1.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postDurationNotice =>
+      'Ubusabe bwawe buzarangira mu buryo bwikora nyuma y\'iki gihe.';
 }

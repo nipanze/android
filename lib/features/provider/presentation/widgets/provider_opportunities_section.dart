@@ -1,9 +1,7 @@
 // lib/features/provider/presentation/widgets/provider_opportunities_section.dart
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../needs/domain/models/need_capability.dart';
@@ -91,9 +89,6 @@ class _OpportunityRow extends StatelessWidget {
       categorySlug: opportunity.categorySlug ?? '',
       name: opportunity.capabilityName ?? opportunity.capabilitySlug,
     ).localizedName(localeCode);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(

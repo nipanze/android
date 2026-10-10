@@ -12,8 +12,10 @@ import '../../../../core/services/localization_fallback.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
+import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../settings/data/system_settings_repository.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
 import '../../domain/models/need_form_schema.dart';
@@ -40,6 +42,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String _urgency = 'Within 30 days';
   String? _location;
   bool _submitting = false;
+  PlatformLimits _limits = PlatformLimits.defaults;
 
   static const _urgencies = [
     'Urgent',
@@ -57,6 +60,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _customLocationController.addListener(_refresh);
     _initCategoryControllers();
     _loadCategories();
+    _loadLimits();
+  }
+
+  Future<void> _loadLimits() async {
+    try {
+      final limits = await getIt<SystemSettingsRepository>().getLimits();
+      if (!mounted) return;
+      setState(() => _limits = limits);
+    } catch (_) {}
   }
 
   Future<void> _loadCategories() async {
@@ -757,6 +769,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 l10n.needsUrgencyLabel,
                 _urgencyLabel(l10n, _urgency),
               ),
+              _previewRow(
+                l10n.reviewDuration,
+                l10n.postDurationActiveDays(
+                  _limits.durationForNeedsCategory(_categorySlug),
+                ),
+              ),
             ],
           ),
         ),
@@ -1230,20 +1248,29 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PostDurationInfoCard(
+              durationDays: _limits.durationForNeedsCategory(_categorySlug),
             ),
-          ),
-          onPressed: _submitting || !_isReadyToPublish ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(l10n.needsPreviewBtn),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _submitting || !_isReadyToPublish ? null : _submit,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(l10n.needsPreviewBtn),
+            ),
+          ],
         ),
       ),
     );

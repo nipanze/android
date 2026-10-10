@@ -1382,5 +1382,8 @@
   "savedPlanSave": "حفظ",
   "savedPlanStartingLocation": "موقع الانطلاق",
   "savedPlanAssistanceNeeded": "المساعدة المطلوبة",
-  "savedPlanWhatWouldHelp": "ما الذي قد يفيدك؟"
+  "savedPlanWhatWouldHelp": "ما الذي قد يفيدك؟",
+  "postDurationActiveDays": "{days, plural, =1{نشط لمدة يوم واحد.} =2{نشط لمدة يومين.} few{نشط لمدة {days} أيام.} many{نشط لمدة {days} يوماً.} other{نشط لمدة {days} يوم.}}",
+  "postDurationFullNotice": "{days, plural, =1{سيكون طلبك نشطاً لمدة يوم واحد.} =2{سيكون طلبك نشطاً لمدة يومين.} few{سيكون طلبك نشطاً لمدة {days} أيام.} many{سيكون طلبك نشطاً لمدة {days} يوماً.} other{سيكون طلبك نشطاً لمدة {days} يوم.}}",
+  "postDurationNotice": "ستنتهي صلاحية طلبك تلقائياً بعد هذه الفترة."
 }

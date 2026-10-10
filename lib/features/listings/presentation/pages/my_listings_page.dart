@@ -367,35 +367,6 @@ class _ForexRequestCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
-  Color _statusColor(BuildContext context) {
-    switch (request.status) {
-      case 'active':
-        return AppColors.purple;
-      case 'contracted':
-        return Colors.green;
-      case 'cancelled':
-      case 'expired':
-        return Colors.grey;
-      default:
-        return Theme.of(context).colorScheme.secondary;
-    }
-  }
-
-  IconData _statusIcon() {
-    switch (request.status) {
-      case 'active':
-        return Icons.radio_button_checked_rounded;
-      case 'contracted':
-        return Icons.handshake_rounded;
-      case 'cancelled':
-        return Icons.cancel_outlined;
-      case 'expired':
-        return Icons.timer_off_outlined;
-      default:
-        return Icons.circle_outlined;
-    }
-  }
-
   String _fmtAmount(int amount) => NumberFormat('#,###').format(amount);
 
   String _timeLabel() {
@@ -607,8 +578,6 @@ class _ForexRequestCard extends StatelessWidget {
     );
   }
 }
-
-enum _ForexRequestAction { cancel }
 
 class _ForexRequestMetric extends StatelessWidget {
   const _ForexRequestMetric({

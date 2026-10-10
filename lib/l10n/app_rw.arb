@@ -1382,5 +1382,8 @@
   "savedPlanSave": "Bika",
   "savedPlanStartingLocation": "Aho uhera",
   "savedPlanAssistanceNeeded": "Ubufasha ukeneye",
-  "savedPlanWhatWouldHelp": "Ni iki cyakugirira akamaro?"
+  "savedPlanWhatWouldHelp": "Ni iki cyakugirira akamaro?",
+  "postDurationActiveDays": "{days, plural, =1{Bikora mu munsi 1.} other{Bikora mu minsi {days}.}}",
+  "postDurationFullNotice": "{days, plural, =1{Ubusabe bwawe buzakora mu munsi 1.} other{Ubusabe bwawe buzakora mu minsi {days}.}}",
+  "postDurationNotice": "Ubusabe bwawe buzarangira mu buryo bwikora nyuma y'iki gihe."
 }

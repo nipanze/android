@@ -1389,5 +1389,8 @@
   "savedPlanSave": "Enregistrer",
   "savedPlanStartingLocation": "Lieu de départ",
   "savedPlanAssistanceNeeded": "Aide nécessaire",
-  "savedPlanWhatWouldHelp": "Qu’est-ce qui vous serait utile ?"
+  "savedPlanWhatWouldHelp": "Qu’est-ce qui vous serait utile ?",
+  "postDurationActiveDays": "{days, plural, =1{Actif pendant 1 jour.} other{Actif pendant {days} jours.}}",
+  "postDurationFullNotice": "{days, plural, =1{Votre demande sera active pendant 1 jour.} other{Votre demande sera active pendant {days} jours.}}",
+  "postDurationNotice": "Votre demande expirera automatiquement après cette période."
 }

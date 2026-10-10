@@ -3057,4 +3057,30 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get savedPlanWhatWouldHelp => 'Ni nini kingekusaidia?';
+
+  @override
+  String postDurationActiveDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Inafanya kazi kwa siku $days.',
+      one: 'Inafanya kazi kwa siku 1.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String postDurationFullNotice(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Ombi lako litakuwa hai kwa siku $days.',
+      one: 'Ombi lako litakuwa hai kwa siku 1.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get postDurationNotice =>
+      'Ombi lako litaisha kiotomatiki baada ya kipindi hiki.';
 }

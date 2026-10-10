@@ -745,21 +745,6 @@ class _FinancialCapabilityList extends StatelessWidget {
   }
 }
 
-String _financialCapabilityName(
-  String slug,
-  String fallback,
-  AppLocalizations l10n,
-) =>
-    switch (slug) {
-      'bank_loan_agent' => l10n.bankLoanAgentCapability,
-      'money_lender_private_lender' => l10n.moneyLenderPrivateLenderCapability,
-      'financial_advisory' => l10n.financialAdvisoryCapability,
-      'forex_currency_exchange' => l10n.forexCurrencyExchangeCapability,
-      'loan_services' => l10n.loanServicesCapability,
-      'sacco_microfinance' => l10n.saccoMicrofinanceCapability,
-      'other_financial_services' => l10n.otherFinancialServicesCapability,
-      _ => fallback,
-    };
 
 class _MarketingCapabilityList extends StatelessWidget {
   const _MarketingCapabilityList({
@@ -905,24 +890,4 @@ class _MarketingCapabilityList extends StatelessWidget {
       ],
     );
   }
-
-  String _marketingCapabilityName(String slug, AppLocalizations l10n) =>
-      switch (slug) {
-        'social_media_marketing' => l10n.socialMediaMarketing,
-        'tiktok_promotion' => l10n.tiktokPromotion,
-        'instagram_promotion' => l10n.instagramPromotion,
-        'youtube_promotion' => l10n.youtubePromotion,
-        'facebook_promotion' => l10n.facebookPromotion,
-        'influencer_marketing' => l10n.influencerMarketing,
-        'content_creation' => l10n.contentCreation,
-        'product_reviews' => l10n.productReviews,
-        'event_promotion' => l10n.eventPromotion,
-        'whatsapp_community_promotion' => l10n.whatsAppCommunityPromotion,
-        'affiliate_marketing' => l10n.affiliateMarketing,
-        'advertising_campaigns' => l10n.advertisingCampaigns,
-        'brand_promotion' => l10n.brandPromotion,
-        'other_marketing_services' => l10n.otherMarketingServices,
-        _audienceCapabilitySlug => l10n.iHaveAnAudience,
-        _ => slug,
-      };
 }

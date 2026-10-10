@@ -12,9 +12,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/currency_model.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
+import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../settings/data/system_settings_repository.dart';
 import '../../data/forex_repository.dart';
 
 const _defaultTradeableCurrencies = [
@@ -330,6 +332,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   String? _district;
   bool _submitting = false;
   List<CurrencyModel>? _currencies;
+  PlatformLimits _limits = PlatformLimits.defaults;
 
   @override
   void initState() {
@@ -337,6 +340,15 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     _amountController.addListener(_refreshButtonState);
     _preferredRateController.addListener(_refreshButtonState);
     _loadCurrencies();
+    _loadLimits();
+  }
+
+  Future<void> _loadLimits() async {
+    try {
+      final limits = await getIt<SystemSettingsRepository>().getLimits();
+      if (!mounted) return;
+      setState(() => _limits = limits);
+    } catch (_) {}
   }
 
   Future<void> _loadCurrencies() async {
@@ -466,6 +478,11 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                 _parseDecimal(_preferredRateController.text)?.toString() ??
                     'Not specified',
               ),
+            _previewItem(
+              l10n?.reviewDuration ?? 'Listing duration',
+              l10n?.postDurationActiveDays(_limits.forexListingDurationDays) ??
+                  'Active for ${_limits.forexListingDurationDays} days',
+            ),
           ],
         ),
         actions: [
@@ -943,25 +960,34 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
             ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PostDurationInfoCard(
+              durationDays: _limits.forexListingDurationDays,
             ),
-          ),
-          onPressed:
-              _submitting || (currencies?.length ?? 0) < 2 || !_isReadyToPublish
-                  ? null
-                  : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(
-                  l10n?.needsPreviewBtn ?? 'Preview request',
+            const SizedBox(height: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
+              ),
+              onPressed:
+                  _submitting || (currencies?.length ?? 0) < 2 || !_isReadyToPublish
+                      ? null
+                      : _submit,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      l10n?.needsPreviewBtn ?? 'Preview request',
+                    ),
+            ),
+          ],
         ),
       ),
     );

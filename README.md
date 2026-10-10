@@ -462,3 +462,36 @@ No expiry-reminder sender was found in the repository. The migration emits no no
 ### Verification record
 
 The migration was executed against an isolated local PostgreSQL 15 fixture modeled on the repository schema (not production and not a full Supabase stack). First run: 3 Loans, 3 Forex, and 5 Needs examined; 2/2/3 expiry dates updated; 1 active post in each market became expired; one contracted Loan, one contracted Forex, and one matched Need remained terminal. The fixture contained no missing listing timestamps or expiry dates and one unmapped `financial_services` Need, which was skipped and reported. A supplemental run nulled one active expiry in each market; all three were restored from `listed_at`, and the following rerun updated zero dates and expired zero additional posts. Feed and Provider Opportunities expiry checks, insert-duration checks (30/7/category duration), valid live offer/acceptance transitions, and rejection of offers/acceptance for expired posts passed with Loan/Forex enum status types. Existing offer-validation triggers and acceptance RPCs remained present; one offer, review, and audit fixture row per table remained present. These are fixture results only; production record counts must come from the production run.
+
+## 4.5 Post duration info card (Flutter UI)
+
+Every request-creation screen now shows a compact informational widget telling the user how long their post will stay active. The duration is read directly from `PlatformLimits` (backed by `system_settings`), so it always matches the server-enforced expiry.
+
+### Where it appears
+
+| Screen | Step / location | Duration shown |
+|---|---|---|
+| Loan create (`listing_create_page.dart`) | Bottom bar — step 3 (final review) | 30 days |
+| Forex create (`forex_create_page.dart`) | Above the Submit button + in the preview dialog | 7 days |
+| Needs create (`needs_create_page.dart`) | Above the Post button + in the preview dialog | Category-specific (7 or 14 days); updates immediately when category changes |
+
+### Widget — `PostDurationInfoCard`
+
+Located at `lib/shared/widgets/post_duration_info_card.dart`. Accepts `durationDays` (int) and `compact` (bool). Uses `Theme.of(context)` colour tokens throughout — no hardcoded hex values. Supports all 5 app locales (`en`, `sw`, `fr`, `rw`, `ar`) and both light and dark themes.
+
+### No database changes
+
+The card is purely informational. Expiry enforcement remains in the server-side trigger `trg_fn_set_listing_expiry()` (patched in §4.4).
+
+### New localization keys
+
+| Key | Example (en) |
+|---|---|
+| `postDurationActiveDays(days)` | "Active for 30 days" |
+| `postDurationFullNotice(days)` | "Your request will be active for 30 days." |
+| `postDurationNotice` | "Your request will automatically expire after this period." |
+
+### Tests
+
+- `test/shared/widgets/post_duration_info_card_test.dart` — widget tests across all durations, compact/full modes, dark/light themes, and all 5 locales.
+- `test/features/settings/platform_limits_test.dart` — unit tests for `PlatformLimits.durationForNeedsCategory` covering all approved Needs categories, the unknown-slug fallback, custom-map overrides, and `listingDurationDays` / `forexListingDurationDays` defaults.
