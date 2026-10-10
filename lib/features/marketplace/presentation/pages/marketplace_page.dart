@@ -299,14 +299,17 @@ class _MarketplaceView extends StatelessWidget {
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
-                              DiscoveryCard(country: country),
-                              const SizedBox(height: 6),
-                              _MarketplaceDiscoveryCard(
-                                country: country,
-                                hideOpportunities: state.moduleFilter ==
-                                    MarketplaceModule.needs,
-                              ),
-                              const SizedBox(height: 6),
+                              if (state.moduleFilter == null) ...[
+                                DiscoveryCard(country: country),
+                                const SizedBox(height: 6),
+                                _MarketplaceDiscoveryCard(
+                                  country: country,
+                                  hideOpportunities:
+                                      state.moduleFilter ==
+                                          MarketplaceModule.needs,
+                                ),
+                                const SizedBox(height: 6),
+                              ],
                               EmptyState(
                                 icon: Icons.show_chart_rounded,
                                 title: AppLocalizations.of(context)!
@@ -336,6 +339,7 @@ class _MarketplaceView extends StatelessWidget {
                         );
                       }
 
+                      final isForYou = state.moduleFilter == null;
                       final placementHint = state.listings.fold<int>(
                         0,
                         (value, listing) =>
@@ -346,11 +350,14 @@ class _MarketplaceView extends StatelessWidget {
                             ),
                       );
                       final desiredDiscoveryIndex = 2 + placementHint % 2;
-                      final discoveryIndex =
-                          desiredDiscoveryIndex < state.listings.length
+                      final discoveryIndex = isForYou
+                          ? (desiredDiscoveryIndex < state.listings.length
                               ? desiredDiscoveryIndex
-                              : state.listings.length;
-                      final totalCount = state.listings.length + 1;
+                              : state.listings.length)
+                          : null;
+                      final totalCount = isForYou
+                          ? state.listings.length + 1
+                          : state.listings.length;
 
                       return RefreshIndicator(
                         onRefresh: () =>
@@ -361,7 +368,7 @@ class _MarketplaceView extends StatelessWidget {
                           separatorBuilder: (_, __) =>
                               const SizedBox(height: 6),
                           itemBuilder: (context, index) {
-                            if (index == discoveryIndex) {
+                            if (isForYou && index == discoveryIndex) {
                               return Column(
                                 key: const ValueKey('marketplace-discovery'),
                                 children: [
@@ -376,8 +383,9 @@ class _MarketplaceView extends StatelessWidget {
                               );
                             }
 
-                            final listingIndex =
-                                index < discoveryIndex ? index : index - 1;
+                            final listingIndex = isForYou && discoveryIndex != null
+                                ? (index < discoveryIndex ? index : index - 1)
+                                : index;
                             final listing = state.listings[listingIndex];
                             return BlocBuilder<WatchlistCubit, WatchlistState>(
                               builder: (context, _) {
