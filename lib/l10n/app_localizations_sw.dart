@@ -200,6 +200,35 @@ class AppLocalizationsSw extends AppLocalizations {
   String get expired => 'Imemalizika';
 
   @override
+  String get listingExpiryTitle => 'Muda wa tangazo';
+
+  @override
+  String get listingExpiryTooltip => 'Onyesha muda uliosalia';
+
+  @override
+  String listingRemainingDaysHours(int days, int hours) {
+    return 'Siku $days, saa $hours zimebaki';
+  }
+
+  @override
+  String listingRemainingHoursMinutes(int hours, int minutes) {
+    return 'Saa $hours, dakika $minutes zimebaki';
+  }
+
+  @override
+  String listingRemainingMinutes(int minutes) {
+    return 'Dakika $minutes zimebaki';
+  }
+
+  @override
+  String listingRemainingSeconds(int seconds) {
+    return 'Sekunde $seconds zimebaki';
+  }
+
+  @override
+  String get openToOffers => 'Inapokea ofa';
+
+  @override
   String get marketplaceForYou => 'Kwa Ajili Yako';
 
   @override

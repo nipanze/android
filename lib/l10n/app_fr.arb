@@ -85,6 +85,47 @@
     }
   },
   "expired": "Expiré",
+  "listingExpiryTitle": "Expiration de l'annonce",
+  "listingExpiryTooltip": "Afficher le temps restant",
+  "listingRemainingDaysHours": "{days} jours, {hours} heures restantes",
+  "@listingRemainingDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingHoursMinutes": "{hours} heures, {minutes} minutes restantes",
+  "@listingRemainingHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingMinutes": "{minutes} minutes restantes",
+  "@listingRemainingMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingSeconds": "{seconds} secondes restantes",
+  "@listingRemainingSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "openToOffers": "Ouvert aux offres",
   "marketplaceForYou": "Pour Vous",
   "marketplaceAll": "Tout",
   "marketplaceLoan": "Prêt",

@@ -446,6 +446,48 @@ abstract class AppLocalizations {
   /// **'Expired'**
   String get expired;
 
+  /// No description provided for @listingExpiryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listing expiry'**
+  String get listingExpiryTitle;
+
+  /// No description provided for @listingExpiryTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show time remaining'**
+  String get listingExpiryTooltip;
+
+  /// No description provided for @listingRemainingDaysHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days, {hours} hours remaining'**
+  String listingRemainingDaysHours(int days, int hours);
+
+  /// No description provided for @listingRemainingHoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hours, {minutes} minutes remaining'**
+  String listingRemainingHoursMinutes(int hours, int minutes);
+
+  /// No description provided for @listingRemainingMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes remaining'**
+  String listingRemainingMinutes(int minutes);
+
+  /// No description provided for @listingRemainingSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds remaining'**
+  String listingRemainingSeconds(int seconds);
+
+  /// No description provided for @openToOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to offers'**
+  String get openToOffers;
+
   /// No description provided for @marketplaceForYou.
   ///
   /// In en, this message translates to:

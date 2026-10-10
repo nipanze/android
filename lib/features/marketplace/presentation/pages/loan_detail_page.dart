@@ -301,43 +301,53 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: (listing.isClosingSoon24h
-                                  ? AppColors.danger
-                                  : AppColors.warning)
-                              .withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 11,
-                              color: listing.isClosingSoon24h
-                                  ? AppColors.danger
-                                  : AppColors.warning,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              listing.isExpired
-                                  ? (l10n?.expiredLabel ?? 'Expired')
-                                  : listing.timeRemainingLabel,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w600,
-                                color: listing.isClosingSoon24h
+                      if (listing.expiresAt != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: (listing.isExpired || listing.isClosingSoon6h
                                     ? AppColors.danger
-                                    : AppColors.warning,
+                                    : listing.isClosingSoon24h
+                                        ? AppColors.warning
+                                        : AppColors.accent)
+                                .withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.access_time_rounded,
+                                size: 11,
+                                color:
+                                    listing.isExpired || listing.isClosingSoon6h
+                                        ? AppColors.danger
+                                        : listing.isClosingSoon24h
+                                            ? AppColors.warning
+                                            : AppColors.accent,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Text(
+                                listing.isExpired
+                                    ? (l10n?.expiredLabel ?? 'Expired')
+                                    : listing.timeRemainingLabel ?? '',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: listing.isExpired ||
+                                          listing.isClosingSoon6h
+                                      ? AppColors.danger
+                                      : listing.isClosingSoon24h
+                                          ? AppColors.warning
+                                          : AppColors.accent,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 6),

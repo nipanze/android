@@ -356,3 +356,13 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 - Widget and unit tests pass (`flutter test`).
 - `flutter analyze` reports zero warnings.
 - All 5 locales (en, sw, fr, rw, ar) and both themes (light, dark) render without overflow or exceptions.
+
+## Marketplace Home and Listing Card Polish — October 2026
+
+- Home continues to delegate to the shared Marketplace feed; Home and Markets use the same listing card for Loans, Forex, and Needs.
+- Cards use a compact blue-first hierarchy with a title, amount, relevant location, offer count, and module-specific details. Listing-age labels and loan repayment terms are not shown as expiry metadata. Secured is shown only for loans marked as collateral-backed.
+- `ListingExpiryIndicator` uses the public `expires_at` and `listed_at` timestamps to represent the remaining fraction of the original listing lifetime. It shows a live, localized exact countdown on tap; missing expiry is omitted, and expired listings show an expired state. Existing detail-page expiry/offer rules remain authoritative.
+- Provider opportunities and their recommendation placement/matching remain unchanged; feed spacing and card presentation are tightened.
+- No database changes.
+
+**Verification:** focused ListingCard, expiry-indicator, Forex model, and Marketplace feed widget tests; Flutter formatting and analysis.

@@ -85,6 +85,47 @@
     }
   },
   "expired": "منتهي",
+  "listingExpiryTitle": "انتهاء الإعلان",
+  "listingExpiryTooltip": "عرض الوقت المتبقي",
+  "listingRemainingDaysHours": "متبقي {days} يوم و{hours} ساعة",
+  "@listingRemainingDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingHoursMinutes": "متبقي {hours} ساعة و{minutes} دقيقة",
+  "@listingRemainingHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingMinutes": "متبقي {minutes} دقيقة",
+  "@listingRemainingMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingSeconds": "متبقي {seconds} ثانية",
+  "@listingRemainingSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "openToOffers": "مفتوح لتلقي العروض",
   "marketplaceForYou": "من أجلك",
   "marketplaceAll": "الكل",
   "marketplaceLoan": "قرض",

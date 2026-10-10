@@ -18,7 +18,7 @@ class ForexListingModel extends Equatable {
     required this.numberOfOffers,
     this.rateCoverageTier,
     required this.listedAt,
-    required this.expiresAt,
+    this.expiresAt,
     this.kycStatus,
     this.trustRatingAvg,
     this.trustReviewCount = 0,
@@ -45,7 +45,7 @@ class ForexListingModel extends Equatable {
   final int numberOfOffers;
   final String? rateCoverageTier;
   final DateTime listedAt;
-  final DateTime expiresAt;
+  final DateTime? expiresAt;
   final String? kycStatus;
   final double? trustRatingAvg;
   final int trustReviewCount;
@@ -55,12 +55,16 @@ class ForexListingModel extends Equatable {
   final String? trustResponseTimeBucket;
   final bool trustIsVerified;
 
-  Duration get timeRemaining => expiresAt.difference(DateTime.now());
+  Duration? get timeRemaining => expiresAt?.difference(DateTime.now());
   bool get isClosingSoon24h =>
-      timeRemaining.inHours < 24 && !timeRemaining.isNegative;
+      timeRemaining != null &&
+      timeRemaining!.inHours < 24 &&
+      !timeRemaining!.isNegative;
   bool get isClosingSoon6h =>
-      timeRemaining.inHours < 6 && !timeRemaining.isNegative;
-  bool get isExpired => timeRemaining.isNegative;
+      timeRemaining != null &&
+      timeRemaining!.inHours < 6 &&
+      !timeRemaining!.isNegative;
+  bool get isExpired => timeRemaining?.isNegative ?? false;
 
   int get receiveEstimate =>
       preferredRate == null ? 0 : (amount * preferredRate!).round();
@@ -117,8 +121,9 @@ class ForexListingModel extends Equatable {
       rateCoverageTier: map['rate_coverage_tier'] as String?,
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
           DateTime.now(),
-      expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ??
-          DateTime.now(),
+      expiresAt: map['expires_at'] == null
+          ? null
+          : DateTime.tryParse(map['expires_at'] as String),
       kycStatus: map['kyc_status'] as String?,
       trustRatingAvg: (map['trust_rating_avg'] as num?)?.toDouble(),
       trustReviewCount: (map['trust_review_count'] as num?)?.toInt() ?? 0,
@@ -142,13 +147,17 @@ class ForexListingModel extends Equatable {
 
     final value = cleaned.toLowerCase();
     if (value.contains('equity')) return 'Equity Bank';
-    if (value.contains('mpesa') || value.contains('m-pesa') || value.contains('m pesa')) {
+    if (value.contains('mpesa') ||
+        value.contains('m-pesa') ||
+        value.contains('m pesa')) {
       return 'M-Pesa';
     }
     if (value.contains('airtel')) return 'Airtel Money';
     if (value.contains('bank')) return 'Bank';
     if (value.contains('mobile')) return 'Mobile Money';
-    if (value.contains('person') || value.contains('cash') || value.contains('pickup')) {
+    if (value.contains('person') ||
+        value.contains('cash') ||
+        value.contains('pickup')) {
       return 'In person';
     }
     return _cleanSettlementText(cleaned);
@@ -159,7 +168,8 @@ class ForexListingModel extends Equatable {
     String? district,
   ) {
     final explicitDistrict = (district ?? '').trim();
-    if (explicitDistrict.isNotEmpty && explicitDistrict.toLowerCase() != 'other') {
+    if (explicitDistrict.isNotEmpty &&
+        explicitDistrict.toLowerCase() != 'other') {
       return explicitDistrict;
     }
 
@@ -195,7 +205,8 @@ class ForexListingModel extends Equatable {
       return normalized.substring(commaIndex + 1).trim();
     }
 
-    final match = RegExp(r'\)\s*([A-Za-z][A-Za-z0-9 .-]+)$').firstMatch(normalized);
+    final match =
+        RegExp(r'\)\s*([A-Za-z][A-Za-z0-9 .-]+)$').firstMatch(normalized);
     if (match != null) {
       return match.group(1)?.trim() ?? '';
     }

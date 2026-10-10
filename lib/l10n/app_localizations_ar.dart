@@ -201,6 +201,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get expired => 'منتهي';
 
   @override
+  String get listingExpiryTitle => 'انتهاء الإعلان';
+
+  @override
+  String get listingExpiryTooltip => 'عرض الوقت المتبقي';
+
+  @override
+  String listingRemainingDaysHours(int days, int hours) {
+    return 'متبقي $days يوم و$hours ساعة';
+  }
+
+  @override
+  String listingRemainingHoursMinutes(int hours, int minutes) {
+    return 'متبقي $hours ساعة و$minutes دقيقة';
+  }
+
+  @override
+  String listingRemainingMinutes(int minutes) {
+    return 'متبقي $minutes دقيقة';
+  }
+
+  @override
+  String listingRemainingSeconds(int seconds) {
+    return 'متبقي $seconds ثانية';
+  }
+
+  @override
+  String get openToOffers => 'مفتوح لتلقي العروض';
+
+  @override
   String get marketplaceForYou => 'من أجلك';
 
   @override

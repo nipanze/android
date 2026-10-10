@@ -169,9 +169,13 @@ Proposed: **`Home · Markets · ➕ Post · Activity · Account`**
 - **Meta line:** location · timeline (e.g. "Kampala · December")
 - **Title** (what is needed) and **budget** (in the listing's currency, or "Open to offers")
 - **One-line summary**
-- **Offer count** (e.g. "3 offers") and **"Xd left"** countdown
+- **Offer count** (e.g. "3 offers") and a compact expiry clock with a shrinking lifetime ring
 - **Trust badges:** requester `⭐ No reviews yet` / `💎 0 completed`; `✓ Verified requester` when KYC approved
 - **Star icon:** save to watchlist
+
+Home and Markets share the same compact listing-card layout. Cards show their category, title, amount, relevant location, offer count, and module-specific metadata; age labels are not used as expiry. When `expires_at` is present, the blue/amber/red clock ring uses the fraction of the original listing lifetime remaining and opens a live, exact countdown. Missing expiry data produces no countdown. Loan repayment term remains loan-specific and is shown in loan details, never in listing-expiry metadata.
+
+The provider-opportunities card remains mixed into the feed at its existing recommendation-selected position and keeps the existing capability-matching logic. Its surface, border, and spacing follow the listing cards.
 
 **Regulatory Compliance** — add: *Needs categories carry their own sector rules. Travel and immigration assistance, Hajj/Umrah operators, freight, and professional services (legal, accounting, engineering) are licensed or regulated in many markets. Nipanze matches; it does not vouch for a provider's licence unless the "Provider verified" badge, granted after admin review, says so. Every market needs a per-category review before that category is enabled there.*
 

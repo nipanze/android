@@ -202,6 +202,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String get expired => 'Expiré';
 
   @override
+  String get listingExpiryTitle => 'Expiration de l\'annonce';
+
+  @override
+  String get listingExpiryTooltip => 'Afficher le temps restant';
+
+  @override
+  String listingRemainingDaysHours(int days, int hours) {
+    return '$days jours, $hours heures restantes';
+  }
+
+  @override
+  String listingRemainingHoursMinutes(int hours, int minutes) {
+    return '$hours heures, $minutes minutes restantes';
+  }
+
+  @override
+  String listingRemainingMinutes(int minutes) {
+    return '$minutes minutes restantes';
+  }
+
+  @override
+  String listingRemainingSeconds(int seconds) {
+    return '$seconds secondes restantes';
+  }
+
+  @override
+  String get openToOffers => 'Ouvert aux offres';
+
+  @override
   String get marketplaceForYou => 'Pour Vous';
 
   @override

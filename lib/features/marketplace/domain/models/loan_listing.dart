@@ -29,7 +29,7 @@ class LoanListing extends Equatable {
     this.collateralLocation,
     required this.status,
     required this.listedAt,
-    required this.expiresAt,
+    this.expiresAt,
     required this.numberOfOffers,
     this.kycStatus,
     this.offerCoverageTier,
@@ -71,7 +71,7 @@ class LoanListing extends Equatable {
   final String? collateralLocation;
   final String status;
   final DateTime listedAt;
-  final DateTime expiresAt;
+  final DateTime? expiresAt;
   final int numberOfOffers;
   final String? kycStatus;
   final String? offerCoverageTier;
@@ -119,16 +119,21 @@ class LoanListing extends Equatable {
     return '${details.substring(0, 77)}...';
   }
 
-  Duration get timeRemaining => expiresAt.difference(DateTime.now());
+  Duration? get timeRemaining => expiresAt?.difference(DateTime.now());
   bool get isClosingSoon24h =>
-      timeRemaining.inHours < 24 && !timeRemaining.isNegative;
+      timeRemaining != null &&
+      timeRemaining!.inHours < 24 &&
+      !timeRemaining!.isNegative;
   bool get isClosingSoon6h =>
-      timeRemaining.inHours < 6 && !timeRemaining.isNegative;
-  bool get isExpired => timeRemaining.isNegative;
+      timeRemaining != null &&
+      timeRemaining!.inHours < 6 &&
+      !timeRemaining!.isNegative;
+  bool get isExpired => timeRemaining?.isNegative ?? false;
 
-  String get timeRemainingLabel {
+  String? get timeRemainingLabel {
+    if (timeRemaining == null) return null;
     if (isExpired) return 'Expired';
-    final d = timeRemaining;
+    final d = timeRemaining!;
     if (d.inDays > 0) return '${d.inDays}d ${d.inHours % 24}h left';
     if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m left';
     return '${d.inMinutes}m left';
@@ -165,8 +170,9 @@ class LoanListing extends Equatable {
       status: map['status'] as String? ?? 'active',
       listedAt: DateTime.tryParse(map['listed_at'] as String? ?? '') ??
           DateTime.now(),
-      expiresAt: DateTime.tryParse(map['expires_at'] as String? ?? '') ??
-          DateTime.now(),
+      expiresAt: map['expires_at'] == null
+          ? null
+          : DateTime.tryParse(map['expires_at'] as String),
       numberOfOffers: map['number_of_offers'] as int? ?? 0,
       kycStatus: map['kyc_status'] as String?,
       offerCoverageTier: map['offer_coverage_tier'] as String?,
@@ -179,11 +185,12 @@ class LoanListing extends Equatable {
       trustPhoneVerified: map['trust_phone_verified'] as bool? ?? false,
       trustResponseTimeBucket: map['trust_response_time_bucket'] as String?,
       trustIsVerified: map['trust_is_verified'] as bool? ?? false,
-        country: map['country'] as String? ?? 'UG',
-        currency: map['currency'] as String? ??
+      country: map['country'] as String? ?? 'UG',
+      currency: map['currency'] as String? ??
           (map['country'] is String
-            ? EastAfricaCountries.findByCode(map['country'] as String).currency
-            : 'UGX'),
+              ? EastAfricaCountries.findByCode(map['country'] as String)
+                  .currency
+              : 'UGX'),
       preferredBank: map['preferred_bank'] as String?,
       institutionType: map['institution_type'] as String?,
       isBankAgent: map['is_bank_agent'] as bool? ?? false,

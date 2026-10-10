@@ -201,6 +201,35 @@ class AppLocalizationsRw extends AppLocalizations {
   String get expired => 'Byarangiye';
 
   @override
+  String get listingExpiryTitle => 'Igihe itangazo rirangirira';
+
+  @override
+  String get listingExpiryTooltip => 'Erekana igihe gisigaye';
+
+  @override
+  String listingRemainingDaysHours(int days, int hours) {
+    return 'Iminsi $days, amasaha $hours isigaye';
+  }
+
+  @override
+  String listingRemainingHoursMinutes(int hours, int minutes) {
+    return 'Amasaha $hours, iminota $minutes isigaye';
+  }
+
+  @override
+  String listingRemainingMinutes(int minutes) {
+    return 'Iminota $minutes isigaye';
+  }
+
+  @override
+  String listingRemainingSeconds(int seconds) {
+    return 'Amasegonda $seconds asigaye';
+  }
+
+  @override
+  String get openToOffers => 'Urahawe kwakira ibiciro';
+
+  @override
   String get marketplaceForYou => 'Ibyawe';
 
   @override

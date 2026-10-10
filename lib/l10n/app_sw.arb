@@ -85,6 +85,47 @@
     }
   },
   "expired": "Imemalizika",
+  "listingExpiryTitle": "Muda wa tangazo",
+  "listingExpiryTooltip": "Onyesha muda uliosalia",
+  "listingRemainingDaysHours": "Siku {days}, saa {hours} zimebaki",
+  "@listingRemainingDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingHoursMinutes": "Saa {hours}, dakika {minutes} zimebaki",
+  "@listingRemainingHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingMinutes": "Dakika {minutes} zimebaki",
+  "@listingRemainingMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingSeconds": "Sekunde {seconds} zimebaki",
+  "@listingRemainingSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "openToOffers": "Inapokea ofa",
   "marketplaceForYou": "Kwa Ajili Yako",
   "marketplaceAll": "Zote",
   "marketplaceLoan": "Mkopo",

@@ -250,7 +250,7 @@ class _MarketplaceView extends StatelessWidget {
                       return ListView.separated(
                         padding: const EdgeInsets.fromLTRB(13, 1, 13, 14),
                         itemCount: 4,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        separatorBuilder: (_, __) => const SizedBox(height: 6),
                         itemBuilder: (_, __) => const ListingCardSkeleton(),
                       );
                     }
@@ -300,13 +300,13 @@ class _MarketplaceView extends StatelessWidget {
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
                               DiscoveryCard(country: country),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               _MarketplaceDiscoveryCard(
                                 country: country,
                                 hideOpportunities: state.moduleFilter ==
                                     MarketplaceModule.needs,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               EmptyState(
                                 icon: Icons.show_chart_rounded,
                                 title: AppLocalizations.of(context)!
@@ -359,14 +359,14 @@ class _MarketplaceView extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                           itemCount: totalCount,
                           separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                           itemBuilder: (context, index) {
                             if (index == discoveryIndex) {
                               return Column(
                                 key: const ValueKey('marketplace-discovery'),
                                 children: [
                                   DiscoveryCard(country: country),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   _MarketplaceDiscoveryCard(
                                     country: country,
                                     hideOpportunities: state.moduleFilter ==
@@ -662,7 +662,7 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
         return GestureDetector(
           onTap: () => _onTap(prompt),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
               borderRadius: BorderRadius.circular(12),

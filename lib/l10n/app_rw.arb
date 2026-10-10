@@ -85,6 +85,47 @@
     }
   },
   "expired": "Byarangiye",
+  "listingExpiryTitle": "Igihe itangazo rirangirira",
+  "listingExpiryTooltip": "Erekana igihe gisigaye",
+  "listingRemainingDaysHours": "Iminsi {days}, amasaha {hours} isigaye",
+  "@listingRemainingDaysHours": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingHoursMinutes": "Amasaha {hours}, iminota {minutes} isigaye",
+  "@listingRemainingHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingMinutes": "Iminota {minutes} isigaye",
+  "@listingRemainingMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listingRemainingSeconds": "Amasegonda {seconds} asigaye",
+  "@listingRemainingSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "openToOffers": "Urahawe kwakira ibiciro",
   "marketplaceForYou": "Ibyawe",
   "marketplaceAll": "Byose",
   "marketplaceLoan": "Inguzanyo",

@@ -13,7 +13,7 @@ import 'package:nipanze/l10n/app_localizations.dart';
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
-  testWidgets('secured badge is aligned to the far right of the metadata row',
+  testWidgets('card metadata is compact and loan term is not expiry metadata',
       (tester) async {
     final repo = MockAuthRepository();
     when(() => repo.authStateChanges).thenAnswer((_) => const Stream.empty());
@@ -54,6 +54,8 @@ void main() {
       ),
     );
 
+    var cardTaps = 0;
+    var watchlistToggles = 0;
     await tester.pumpWidget(
       BlocProvider<AuthBloc>.value(
         value: authBloc,
@@ -66,9 +68,9 @@ void main() {
                 width: 420,
                 child: ListingCard(
                   listing: listing,
-                  onTap: () {},
+                  onTap: () => cardTaps++,
                   isSaved: false,
-                  onWatchlistToggle: () {},
+                  onWatchlistToggle: () => watchlistToggles++,
                 ),
               ),
             ),
@@ -78,11 +80,23 @@ void main() {
     );
 
     final securedRect = tester.getRect(find.text('Secured'));
-    final attributeRect = tester.getRect(find.text('12 months'));
+    final offersRect = tester.getRect(find.text('3 offers'));
 
-    expect(securedRect.left, lessThan(attributeRect.left));
+    expect((securedRect.center.dy - offersRect.center.dy).abs(), lessThan(2));
+    expect(find.text('12 months'), findsNothing);
+    expect(find.textContaining('ago'), findsNothing);
+    expect(find.text('Today'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.star_border_rounded));
+    await tester.pump();
+    expect(watchlistToggles, 1);
+    expect(cardTaps, 0);
+
+    await tester.tap(find.byTooltip('Show time remaining'));
+    await tester.pumpAndSettle();
+    expect(find.text('Listing expiry'), findsOneWidget);
+    expect(cardTaps, 0);
 
     await authBloc.close();
   });
-
 }
