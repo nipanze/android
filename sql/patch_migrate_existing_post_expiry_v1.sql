@@ -5,8 +5,10 @@
 -- The migration uses listed_at (never created_at or updated_at) and the
 -- approved global system_settings values. It fails before changing data if
 -- those settings or any country overrides disagree with the approved rules.
--- Only active posts with a reliable listed_at and a recognized Needs category
--- are changed. Terminal statuses, offers, reviews, and audit records are not.
+-- Active posts with a reliable listed_at and a recognized Needs category are
+-- recalculated. Expired seed/demo posts are relisted with today's posting date
+-- so local seeded databases stay usable. Contracted/matched/cancelled rows,
+-- offers, reviews, and audit records are not changed.
 
 BEGIN;
 
@@ -115,6 +117,47 @@ JOIN public.system_settings s
 
 LOCK TABLE public.loan_requests, public.forex_requests, public.needs_requests
   IN SHARE ROW EXCLUSIVE MODE;
+
+-- Seed/demo repair: relist expired sample posts with today's posting date so
+-- local seeded databases remain usable after the expiry rules are installed.
+-- Contracted/matched/cancelled rows are intentionally left untouched.
+WITH relist_clock AS (
+  SELECT timezone('Africa/Kampala', transaction_timestamp())::date::timestamp AS listed_today
+)
+UPDATE public.loan_requests lr
+SET status = 'active',
+    listed_at = rc.listed_today,
+    expires_at = rc.listed_today + make_interval(days => d.days)
+FROM relist_clock rc
+JOIN private.expiry_duration_v1 d ON d.market = 'Loans'
+WHERE lr.status::text = 'expired'
+  AND lr.borrower_id::text LIKE '10000000-%';
+
+WITH relist_clock AS (
+  SELECT timezone('Africa/Kampala', transaction_timestamp())::date::timestamp AS listed_today
+)
+UPDATE public.forex_requests fr
+SET status = 'active',
+    listed_at = rc.listed_today,
+    expires_at = rc.listed_today + make_interval(days => d.days)
+FROM relist_clock rc
+JOIN private.expiry_duration_v1 d ON d.market = 'Forex'
+WHERE fr.status::text = 'expired'
+  AND fr.requester_id::text LIKE '10000000-%';
+
+WITH relist_clock AS (
+  SELECT timezone('Africa/Kampala', transaction_timestamp())::date::timestamp AS listed_today
+)
+UPDATE public.needs_requests nr
+SET status = 'active',
+    listed_at = rc.listed_today,
+    expires_at = rc.listed_today + make_interval(days => d.days)
+FROM relist_clock rc
+JOIN private.expiry_duration_v1 d
+  ON d.market = 'Needs'
+WHERE nr.status::text = 'expired'
+  AND d.category_slug = nr.category_slug
+  AND (nr.requester_id IS NULL OR nr.requester_id::text LIKE '10000000-%');
 
 DROP TABLE IF EXISTS private.expiry_terminal_before_v1;
 CREATE TABLE private.expiry_terminal_before_v1 AS
