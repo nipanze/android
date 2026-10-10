@@ -304,9 +304,8 @@ class _MarketplaceView extends StatelessWidget {
                                 const SizedBox(height: 6),
                                 _MarketplaceDiscoveryCard(
                                   country: country,
-                                  hideOpportunities:
-                                      state.moduleFilter ==
-                                          MarketplaceModule.needs,
+                                  hideOpportunities: state.moduleFilter ==
+                                      MarketplaceModule.needs,
                                 ),
                                 const SizedBox(height: 6),
                               ],
@@ -383,7 +382,8 @@ class _MarketplaceView extends StatelessWidget {
                               );
                             }
 
-                            final listingIndex = isForYou && discoveryIndex != null
+                            final listingIndex = isForYou &&
+                                    discoveryIndex != null
                                 ? (index < discoveryIndex ? index : index - 1)
                                 : index;
                             final listing = state.listings[listingIndex];

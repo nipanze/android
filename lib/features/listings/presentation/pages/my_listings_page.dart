@@ -373,7 +373,7 @@ class _ForexRequestCard extends StatelessWidget {
     if (request.status != 'active' || request.isExpired) return '';
 
     final timeLeft = request.timeRemaining;
-    if (timeLeft.isNegative) return '';
+    if (timeLeft == null || timeLeft.isNegative) return '';
     if (timeLeft.inDays > 0) {
       return '${timeLeft.inDays}d ${timeLeft.inHours % 24}h left';
     }
@@ -389,7 +389,7 @@ class _ForexRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = AppColors.purple;
+    const accent = AppColors.purple;
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColors.bg2Dark : theme.colorScheme.surface;
     final borderColor =
@@ -427,12 +427,12 @@ class _ForexRequestCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(7),
                       border: Border.all(color: accent.withValues(alpha: 0.95)),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.currency_exchange_rounded,
                             size: 12, color: accent),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           'Forex',
                           style: TextStyle(
@@ -518,7 +518,7 @@ class _ForexRequestCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.arrow_forward_rounded,
                           size: 16,
                           color: accent,

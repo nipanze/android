@@ -44,7 +44,7 @@ class ListingCard extends StatelessWidget {
     final needs = listing.needs;
     final isForex = forex != null;
     final isNeeds = needs != null;
-    final accent = AppColors.accent;
+    const accent = AppColors.accent;
     final surfaceColor = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
     final mutedColor =
@@ -91,8 +91,8 @@ class ListingCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Icon(
                   Icons.swap_horiz_rounded,
                   size: 18,

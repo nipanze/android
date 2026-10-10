@@ -363,6 +363,7 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 - Cards use a compact blue-first hierarchy with a title, amount, relevant location, offer count, and module-specific details. Listing-age labels and loan repayment terms are not shown as expiry metadata. Secured is shown only for loans marked as collateral-backed.
 - `ListingExpiryIndicator` uses the public `expires_at` and `listed_at` timestamps to represent the remaining fraction of the original listing lifetime. It shows a live, localized exact countdown on tap; missing expiry is omitted, and expired listings show an expired state. Existing detail-page expiry/offer rules remain authoritative.
 - Provider opportunities and their recommendation placement/matching remain unchanged; feed spacing and card presentation are tightened.
+- Discovery prompts remain pinned to the For You tab only; the rest of the marketplace remains a pure listings experience.
 - No database changes.
 
 **Verification:** focused ListingCard, expiry-indicator, Forex model, and Marketplace feed widget tests; Flutter formatting and analysis.

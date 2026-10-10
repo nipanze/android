@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nipanze/features/auth/data/auth_repository.dart';
 import 'package:nipanze/features/auth/domain/models/nipanze_user.dart';
 import 'package:nipanze/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:nipanze/features/marketplace/domain/models/loan_listing.dart';
@@ -10,18 +9,13 @@ import 'package:nipanze/features/marketplace/domain/models/marketplace_item.dart
 import 'package:nipanze/features/marketplace/presentation/widgets/listing_card.dart';
 import 'package:nipanze/l10n/app_localizations.dart';
 
-class MockAuthRepository extends Mock implements AuthRepository {}
+class MockAuthBloc extends Mock implements AuthBloc {}
 
 void main() {
   testWidgets('card metadata is compact and loan term is not expiry metadata',
       (tester) async {
-    final repo = MockAuthRepository();
-    when(() => repo.authStateChanges).thenAnswer((_) => const Stream.empty());
-    when(() => repo.currentUser).thenReturn(null);
-    when(() => repo.isEmailVerified).thenReturn(true);
-
-    final authBloc = AuthBloc(repo);
-    authBloc.emit(const AuthAuthenticated(
+    final authBloc = MockAuthBloc();
+    when(() => authBloc.state).thenReturn(const AuthAuthenticated(
       user: NipanzeUser(
         id: 'user-1',
         email: 'tester@example.com',
@@ -29,6 +23,7 @@ void main() {
         isEmailVerified: true,
       ),
     ));
+    when(() => authBloc.stream).thenAnswer((_) => const Stream.empty());
 
     final listing = MarketplaceItem.loan(
       LoanListing(
@@ -78,7 +73,6 @@ void main() {
         ),
       ),
     );
-
     final securedRect = tester.getRect(find.text('Secured'));
     final offersRect = tester.getRect(find.text('3 offers'));
 
@@ -86,7 +80,6 @@ void main() {
     expect(find.text('12 months'), findsNothing);
     expect(find.textContaining('ago'), findsNothing);
     expect(find.text('Today'), findsNothing);
-
     await tester.tap(find.byIcon(Icons.star_border_rounded));
     await tester.pump();
     expect(watchlistToggles, 1);
@@ -99,6 +92,6 @@ void main() {
 
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
     await tester.pump();
-    await authBloc.close();
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 }
