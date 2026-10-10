@@ -93,10 +93,12 @@ void main() {
     expect(cardTaps, 0);
 
     await tester.tap(find.byTooltip('Show time remaining'));
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Listing expiry'), findsOneWidget);
     expect(cardTaps, 0);
 
+    Navigator.of(tester.element(find.byType(Scaffold))).pop();
+    await tester.pump();
     await authBloc.close();
   });
 }

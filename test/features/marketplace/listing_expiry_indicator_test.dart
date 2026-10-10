@@ -54,7 +54,7 @@ void main() {
     );
 
     await tester.tap(find.byTooltip('Show time remaining'));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(ListingExpiryIndicator)),
@@ -78,6 +78,9 @@ void main() {
 
     expect(find.text(expected), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    Navigator.of(tester.element(find.byType(Scaffold))).pop();
+    await tester.pump();
   });
 
   testWidgets('expired listings show Expired in the countdown sheet',
@@ -99,7 +102,7 @@ void main() {
       0,
     );
     await tester.tap(find.byTooltip('Show time remaining'));
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Expired'), findsOneWidget);
     expect(
       tester
@@ -109,6 +112,9 @@ void main() {
           .color,
       AppColors.danger,
     );
+
+    Navigator.of(tester.element(find.byType(Scaffold))).pop();
+    await tester.pump();
   });
 
   testWidgets('missing expiry renders no misleading countdown', (tester) async {
