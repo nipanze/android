@@ -1882,11 +1882,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get providerVerificationRequiredTitle =>
-      'Provider verification required';
+      'Additional verification required';
 
   @override
   String get providerVerificationRequiredDesc =>
-      'Complete provider verification before offering services in this category.';
+      'This category requires provider verification before you can offer this service.';
 
   @override
   String get identityVerificationRequiredTitle =>

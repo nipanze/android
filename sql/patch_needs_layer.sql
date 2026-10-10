@@ -200,7 +200,12 @@ values
   ('needs_free_offers_per_month', '3', 'number', 'needs', 'Free subscription plan monthly offer cap on Needs', false),
   ('max_active_needs_free', '3', 'number', 'needs', 'Max active Needs for free plan', false),
   ('max_active_needs_lender', '8', 'number', 'needs', 'Max active Needs for lender plan', false),
-  ('max_active_needs_pro', '20', 'number', 'needs', 'Max active Needs for pro plan', false)
+  ('max_active_needs_pro', '20', 'number', 'needs', 'Max active Needs for pro plan', false),
+  ('needs_default_duration_machinery_equipment_days', '14', 'number', 'marketplace', 'Default days for Machinery & Equipment needs requests', true),
+  ('needs_default_duration_professional_services_days', '14', 'number', 'marketplace', 'Default days for Professional Services needs requests', true),
+  ('needs_default_duration_transport_logistics_days', '7', 'number', 'marketplace', 'Default days for Transport & Logistics needs requests', true),
+  ('needs_default_duration_specialized_products_days', '14', 'number', 'marketplace', 'Default days for Specialized Products & Procurement needs requests', true),
+  ('needs_default_duration_travel_international_days', '14', 'number', 'marketplace', 'Default days for Travel & International needs requests', true)
 on conflict (setting_key, coalesce(country, '__global__')) do nothing;
 
 -- 9. BACKFILL EXISTING SAMPLE REQUESTS

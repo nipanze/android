@@ -20,7 +20,15 @@ class PlatformLimits {
     this.maxActiveRequestsFree = 2,
     this.maxActiveRequestsLender = 5,
     this.maxActiveRequestsPro = 15,
-    this.listingDurationDays = 7,
+    this.listingDurationDays = 30,
+    this.forexListingDurationDays = 7,
+    this.needsDurationByCategory = const {
+      'machinery_equipment': 14,
+      'professional_services': 14,
+      'transport_logistics': 7,
+      'specialized_products': 14,
+      'travel_international': 14,
+    },
     this.marketRateBaselinePct = 10.0,
   });
 
@@ -33,6 +41,8 @@ class PlatformLimits {
   final int maxActiveRequestsLender;
   final int maxActiveRequestsPro;
   final int listingDurationDays;
+  final int forexListingDurationDays;
+  final Map<String, int> needsDurationByCategory;
   final double marketRateBaselinePct;
 
   int maxActiveRequestsFor(SubscriptionPlan plan) => switch (plan) {
@@ -41,7 +51,18 @@ class PlatformLimits {
         SubscriptionPlan.pro => maxActiveRequestsPro,
       };
 
-  /// Fallback defaults match the schema v5.0 seed values.
+  int durationForNeedsCategory(String slug) =>
+      needsDurationByCategory[slug] ??
+      switch (slug) {
+        'machinery_equipment' => 14,
+        'professional_services' => 14,
+        'transport_logistics' => 7,
+        'specialized_products' => 14,
+        'travel_international' => 14,
+        _ => 14,
+      };
+
+  /// Fallback defaults match the schema seed values.
   static const PlatformLimits defaults = PlatformLimits();
 }
 
@@ -86,9 +107,36 @@ class SystemSettingsRepository {
         maxActiveRequestsPro:
             int.tryParse(map['max_active_requests_pro'] ?? '') ?? 15,
         listingDurationDays:
-            int.tryParse(map['listing_duration_days'] ?? '') ?? 7,
-        marketRateBaselinePct:
-            double.tryParse(map['market_rate_baseline_pct'] ?? '') ?? 10.0,
+            int.tryParse(map['listing_duration_days'] ?? '') ?? 30,
+        forexListingDurationDays:
+            int.tryParse(map['forex_listing_duration_days'] ?? '') ?? 7,
+        needsDurationByCategory: {
+          'machinery_equipment': int.tryParse(
+                  map['needs_default_duration_machinery_equipment_days'] ??
+                      '') ??
+              14,
+          'professional_services': int.tryParse(
+                  map['needs_default_duration_professional_services_days'] ??
+                      '') ??
+              14,
+          'transport_logistics': int.tryParse(
+                  map['needs_default_duration_transport_logistics_days'] ??
+                      '') ??
+              7,
+          'specialized_products': int.tryParse(
+                  map['needs_default_duration_specialized_products_days'] ??
+                      '') ??
+              14,
+          'travel_international': int.tryParse(
+                  map['needs_default_duration_travel_international_days'] ??
+                      '') ??
+              14,
+        },
+        marketRateBaselinePct: double.tryParse(
+                  map['market_interest_rate_baseline_pct'] ??
+                      map['market_rate_baseline_pct'] ??
+                      '') ??
+              10.0,
       );
       return _cached!;
     } catch (_) {
