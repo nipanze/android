@@ -264,3 +264,41 @@ Extended the existing Identity Verification (KYC) system in Account → Edit Pro
 - Publishing remains explicit: discovery answers can save a private plan only; no listing is automatically created.
 
 **Acceptance checks:** users can skip/dismiss/mute questions; saved plans remain private under RLS; plans can be edited/deleted from Account; existing Loans, Forex, Needs, provider services, contact reveal, and watchlist flows remain unchanged.
+
+## 14. Existing-post expiry migration (v1)
+
+### Approved durations
+
+| Post type | Duration |
+|---|---:|
+| Loan | 30 days |
+| Forex | 7 days |
+| Machinery & Equipment Need | 14 days |
+| Professional Services Need | 14 days |
+| Transport & Logistics Need | 7 days |
+| Specialized Products & Procurement Need | 14 days |
+| Travel & International Need | 14 days |
+
+### Migration
+
+- Standalone file: [`sql/patch_migrate_existing_post_expiry_v1.sql`](./sql/patch_migrate_existing_post_expiry_v1.sql). Keep it separate from `sql/patch.sql`.
+- Apply after `schema.sql`, `patch.sql`, and the Needs schema have been applied; use a database backup and execute as the database owner, staging before production.
+- The transactional patch validates existing global duration settings and country overrides against the approved values, then uses the settings values for the backfill.
+- Recalculate only active, classifiable posts from `listed_at`; do not use `created_at`/`updated_at` or reset a post to a fresh lifetime. Posts whose recalculated expiry has passed are changed from active to expired.
+- Leave terminal states and all offers, reviews, audit history, and other historical data untouched. Do not emit migration-time notifications.
+- Needs rows with missing listing times or unsupported/missing `category_slug` are reported and not recalculated. Audit output also identifies sample/development records with repository seed heuristics.
+- Preserve the existing expiry trigger names; correct the Forex trigger setting, add configured Needs insert expiry, and leave existing listing views/recommendation RPC definitions, output columns, grants, and dependencies untouched. The backfill marks overdue active rows expired, which removes them from the existing active-status filtered public feeds and Needs recommendation queries. Guard new offers and acceptance state transitions. Schedule the private expiration sweep every five minutes if `pg_cron` is installed, replacing the named job on rerun.
+
+### Execution and verification status
+
+1. Back up; confirm schema and Needs patch are present.
+2. Run `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f sql/patch_migrate_existing_post_expiry_v1.sql` in staging (or paste the standalone file into the Supabase SQL editor).
+3. Review its before/after per-market/status totals, expiry updates, active-to-expired counts, terminal-status comparison, invalid/missing expiry rows, sample rows, and manual-review rows. Confirm pg_cron scheduling; if unavailable, enable it and schedule `SELECT * FROM private.expire_marketplace_posts_v1()` every five minutes.
+4. Rerun in staging and verify it updates zero expiry dates and expires no additional rows. Run the offer/acceptance smoke checks before production.
+5. Apply the same file to production only after staging sign-off; production execution and record counts are still pending.
+
+**Local verification (PostgreSQL 15 fixture, not production):** 3 Loans, 3 Forex, and 5 Needs examined. First run updated 2, 2, and 3 expiry dates, respectively, and expired one active post in each market. One contracted Loan, one contracted Forex, and one matched Need retained their terminal statuses. No timestamps/expiry dates were missing in the first fixture run; one historical `financial_services` Need had no approved duration mapping and was skipped/reported. A supplemental run nulled one active expiry per market; all three were restored from `listed_at`, and the following run updated zero dates and expired zero additional posts. Feed and Provider Opportunities expiry checks, configured insert durations, valid live offer/acceptance transitions, and rejection of expired offer/acceptance flows passed with Loan/Forex enum status types. Existing offer-validation triggers and acceptance RPCs remained present; fixture offer, review, and audit rows remained. A follow-up PostgreSQL 15 run with deliberately extended deployed-view columns completed without redefining the views; the output columns remained intact and all feed/recommendation expiry checks passed. Listing views and recommendation RPC definitions remain untouched by the migration, avoiding deployed output-column/dependency drift. The full Supabase stack did not start because its configured local ports were already occupied; tests used an isolated local PostgreSQL instance instead.
+
+**Manual review:** production IDs/counts are unknown until the migration is run. Inspect every skipped `financial_services`/unknown Needs category and every row reported with a null listing timestamp before deciding whether an explicit correction is justified. Review the sample/development IDs listed by the audit rather than treating seed data as live user inventory.
+
+**Notifications:** no expiry-reminder sender was found in repository SQL/functions. This migration sends none. The normal deployed reminder worker, if external to this repository, must check active status, due two-day timing, and an unnotified expiry cycle; it must not remind matched, cancelled, or expired posts.
