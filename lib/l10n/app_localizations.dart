@@ -3467,13 +3467,13 @@ abstract class AppLocalizations {
   /// No description provided for @providerVerificationRequiredTitle.
   ///
   /// In en, this message translates to:
-  /// **'Provider verification required'**
+  /// **'Additional verification required'**
   String get providerVerificationRequiredTitle;
 
   /// No description provided for @providerVerificationRequiredDesc.
   ///
   /// In en, this message translates to:
-  /// **'Complete provider verification before offering services in this category.'**
+  /// **'This category requires provider verification before you can offer this service.'**
   String get providerVerificationRequiredDesc;
 
   /// No description provided for @identityVerificationRequiredTitle.
