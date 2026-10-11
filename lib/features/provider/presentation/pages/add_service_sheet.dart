@@ -13,15 +13,10 @@ const _marketingServicesSlug = 'marketing_services';
 const _audienceCapabilitySlug = 'i_have_an_audience';
 const _marketingCapabilitySlugs = {
   'social_media_marketing',
-  'tiktok_promotion',
-  'instagram_promotion',
-  'youtube_promotion',
-  'facebook_promotion',
   'influencer_marketing',
   'content_creation',
   'product_reviews',
   'event_promotion',
-  'whatsapp_community_promotion',
   'affiliate_marketing',
   'advertising_campaigns',
   'brand_promotion',
