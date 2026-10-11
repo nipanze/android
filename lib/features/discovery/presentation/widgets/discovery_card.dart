@@ -19,17 +19,22 @@ class DiscoveryCard extends StatelessWidget {
     super.key,
     required this.country,
     this.compact = false,
+    this.spacingAfter = false,
   });
 
   final String country;
   final bool compact;
+  final bool spacingAfter;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => DiscoveryCubit(getIt<DiscoveryRepository>())
         ..loadCard(country: country),
-      child: _DiscoveryCardView(compact: compact),
+      child: _DiscoveryCardView(
+        compact: compact,
+        spacingAfter: spacingAfter,
+      ),
     );
   }
 }
@@ -37,9 +42,11 @@ class DiscoveryCard extends StatelessWidget {
 class _DiscoveryCardView extends StatefulWidget {
   const _DiscoveryCardView({
     required this.compact,
+    required this.spacingAfter,
   });
 
   final bool compact;
+  final bool spacingAfter;
 
   @override
   State<_DiscoveryCardView> createState() => _DiscoveryCardViewState();
@@ -55,7 +62,9 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
     return BlocBuilder<DiscoveryCubit, DiscoveryState>(
       builder: (context, state) {
         if (state is DiscoveryLoading) {
-          return const SkeletonBox(height: 116, width: double.infinity);
+          return _withSpacing(
+            const SkeletonBox(height: 116, width: double.infinity),
+          );
         }
         if (state is! DiscoveryCardLoaded || state.template == null) {
           return const SizedBox.shrink();
@@ -72,7 +81,7 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
             .where((option) => option.value.toLowerCase() != 'skip')
             .toList();
 
-        return Container(
+        return _withSpacing(Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: surface,
@@ -188,8 +197,16 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
               ],
             ],
           ),
-        );
+        ));
       },
+    );
+  }
+
+  Widget _withSpacing(Widget child) {
+    if (!widget.spacingAfter) return child;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: child,
     );
   }
 

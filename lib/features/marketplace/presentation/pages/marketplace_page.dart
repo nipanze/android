@@ -300,14 +300,15 @@ class _MarketplaceView extends StatelessWidget {
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
                               if (state.moduleFilter == null) ...[
-                                DiscoveryCard(country: country),
-                                const SizedBox(height: 8),
+                                DiscoveryCard(
+                                  country: country,
+                                  spacingAfter: true,
+                                ),
                                 _MarketplaceDiscoveryCard(
                                   country: country,
                                   hideOpportunities: state.moduleFilter ==
                                       MarketplaceModule.needs,
                                 ),
-                                const SizedBox(height: 8),
                               ],
                               EmptyState(
                                 icon: Icons.show_chart_rounded,
@@ -371,8 +372,10 @@ class _MarketplaceView extends StatelessWidget {
                               return Column(
                                 key: const ValueKey('marketplace-discovery'),
                                 children: [
-                                  DiscoveryCard(country: country),
-                                  const SizedBox(height: 8),
+                                  DiscoveryCard(
+                                    country: country,
+                                    spacingAfter: true,
+                                  ),
                                   _MarketplaceDiscoveryCard(
                                     country: country,
                                     hideOpportunities: state.moduleFilter ==
