@@ -248,9 +248,13 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                       if (!isOwner)
                         SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
                             onPressed: _openOfferSheet,
-                            child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                            icon: const Icon(
+                              Icons.handshake_rounded,
+                              size: 18,
+                            ),
+                            label: Text(l10n?.makeAnOffer ?? 'Make an offer'),
                           ),
                         ),
                     ],

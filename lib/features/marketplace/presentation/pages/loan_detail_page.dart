@@ -550,7 +550,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
             const SizedBox(height: 16),
 
             if (canMakeOffer)
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () {
                   if (user == null) {
                     context.go('/auth/login');
@@ -580,7 +580,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                     ),
                   );
                 },
-                child: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                icon: const Icon(Icons.handshake_rounded),
+                label: Text(l10n?.makeAnOffer ?? 'Make an offer'),
               )
             else if (hasMadeOffer)
               _OfferPlacedNotice(),
