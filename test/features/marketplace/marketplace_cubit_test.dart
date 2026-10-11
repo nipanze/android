@@ -248,7 +248,7 @@ void main() {
     );
 
     test('personalizes listing order for different viewers', () async {
-      final now = DateTime.utc(2026, 1, 1, 12);
+      final now = DateTime.now();
       final sameSignalListings = ['req-a', 'req-b', 'req-c', 'req-d', 'req-e']
           .map((id) => MarketplaceItem.loan(LoanListing(
                 requestId: id,
@@ -296,6 +296,58 @@ void main() {
           sameSignalListings.map((l) => l.requestId).toSet());
       expect(secondViewerOrder.toSet(),
           sameSignalListings.map((l) => l.requestId).toSet());
+    });
+
+    test('removes expired listings from the feed as they expire', () async {
+      LoanListing loanWithExpiry(String requestId, DateTime expiresAt) =>
+          LoanListing(
+            requestId: requestId,
+            title: 'Working Capital',
+            purpose: 'Business',
+            district: 'Kampala',
+            country: 'UG',
+            durationMonths: 6,
+            requestedAmount: 500000,
+            incomeSource: 'Business',
+            preferredRepaymentPlan: 'Monthly',
+            repaymentAmountPerPeriod: 90000,
+            repaymentTimeline: '6 months',
+            status: 'active',
+            listedAt: DateTime.now(),
+            expiresAt: expiresAt,
+            numberOfOffers: 0,
+          );
+
+      final now = DateTime.now();
+      final listings = [
+        MarketplaceItem.loan(
+          loanWithExpiry(
+              'already-expired', now.subtract(const Duration(seconds: 1))),
+        ),
+        MarketplaceItem.loan(
+          loanWithExpiry(
+              'expires-soon', now.add(const Duration(milliseconds: 500))),
+        ),
+      ];
+      when(() => mockRepo.getListings(
+            district: any(named: 'district'),
+            module: any(named: 'module'),
+          )).thenAnswer((_) async => listings);
+      final cubit = MarketplaceCubit(mockRepo);
+      addTearDown(cubit.close);
+
+      await cubit.load(module: MarketplaceModule.loan);
+
+      expect(
+        (cubit.state as MarketplaceLoaded)
+            .listings
+            .map((listing) => listing.requestId),
+        ['expires-soon'],
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+
+      expect((cubit.state as MarketplaceLoaded).listings, isEmpty);
     });
   });
 }

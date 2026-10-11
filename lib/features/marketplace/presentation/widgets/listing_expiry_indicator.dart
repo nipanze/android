@@ -22,6 +22,7 @@ class ListingExpiryIndicator extends StatefulWidget {
 class _ListingExpiryIndicatorState extends State<ListingExpiryIndicator> {
   Timer? _timer;
   DateTime _now = DateTime.now();
+  static const _expiringSoonWindow = Duration(hours: 24);
 
   @override
   void initState() {
@@ -63,6 +64,10 @@ class _ListingExpiryIndicatorState extends State<ListingExpiryIndicator> {
     if (total.isNegative && remaining > Duration.zero) {
       return const SizedBox.shrink();
     }
+    final isExpired = remaining.isNegative || remaining == Duration.zero;
+    if (!isExpired && remaining > _expiringSoonWindow) {
+      return const SizedBox.shrink();
+    }
 
     final progress = total.inMilliseconds <= 0
         ? 0.0
@@ -73,13 +78,11 @@ class _ListingExpiryIndicatorState extends State<ListingExpiryIndicator> {
     final isDark = theme.brightness == Brightness.dark;
     final mutedColor =
         isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
-    final color = remaining.isNegative
+    final color = isExpired
         ? AppColors.danger
         : remaining.inHours < 6
             ? AppColors.danger
-            : remaining.inHours < 24
-                ? AppColors.warning
-                : mutedColor;
+            : AppColors.warning;
     final l10n = AppLocalizations.of(context)!;
 
     return Tooltip(

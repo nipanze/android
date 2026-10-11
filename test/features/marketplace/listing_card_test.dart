@@ -42,7 +42,7 @@ void main() {
         collateralDetails: 'Motorbike logbook',
         status: 'active',
         listedAt: DateTime.now().subtract(const Duration(days: 2)),
-        expiresAt: DateTime.now().add(const Duration(days: 9)),
+        expiresAt: DateTime.now().add(const Duration(hours: 9)),
         numberOfOffers: 3,
         trustIsVerified: true,
         currency: 'UGX',

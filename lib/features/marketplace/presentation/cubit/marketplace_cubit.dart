@@ -64,6 +64,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   final int _anonymousFeedSeed = Random().nextInt(0x7fffffff);
   StreamSubscription<List<MarketplaceItem>>? _realtimeSub;
   StreamSubscription<List<MarketplaceItem>>? _forexRealtimeSub;
+  Timer? _expiryTimer;
 
   String? _districtFilter;
   MarketplaceModule? _moduleFilter;
@@ -292,10 +293,17 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _emitLoaded({List<MarketplaceItem>? overrideListings}) {
-    final interestFiltered =
-        _applyInterestFilter(overrideListings ?? _allListings);
+    _scheduleExpiryCheck();
+    final now = DateTime.now();
+    final interestFiltered = _applyInterestFilter(
+      overrideListings ?? _allListings,
+    );
     final visibleListings = interestFiltered
-        .where((l) => !_myOfferRequestIds.contains(_offerKey(l)))
+        .where((listing) {
+          final expiresAt = _expiresAt(listing);
+          return expiresAt == null || expiresAt.isAfter(now);
+        })
+        .where((listing) => !_myOfferRequestIds.contains(_offerKey(listing)))
         .toList();
     final rankedListings = _rankPersonalized(visibleListings);
     final listings = _moduleFilter == null
@@ -309,6 +317,38 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       proFilterActive: false,
       interestCategorySlugs: _interestCategorySlugs,
     ));
+  }
+
+  DateTime? _expiresAt(MarketplaceItem item) =>
+      item.loan?.expiresAt ?? item.forex?.expiresAt ?? item.needs?.expiresAt;
+
+  void _scheduleExpiryCheck() {
+    _expiryTimer?.cancel();
+    final now = DateTime.now();
+    DateTime? nextExpiry;
+    for (final listing in _allListings) {
+      final expiresAt = _expiresAt(listing);
+      if (expiresAt != null &&
+          expiresAt.isAfter(now) &&
+          (nextExpiry == null || expiresAt.isBefore(nextExpiry))) {
+        nextExpiry = expiresAt;
+      }
+    }
+
+    if (nextExpiry != null) {
+      _expiryTimer = Timer(nextExpiry.difference(now), () {
+        if (isClosed) return;
+        if (_proFilter.isActive && _cachedProFilteredIds != null) {
+          final filtered = _allListings
+              .where((listing) =>
+                  _cachedProFilteredIds!.contains(listing.requestId))
+              .toList();
+          _emitLoaded(overrideListings: filtered);
+        } else {
+          _emitLoaded();
+        }
+      });
+    }
   }
 
   List<MarketplaceItem> _applyInterestFilter(List<MarketplaceItem> listings) {
@@ -361,6 +401,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   @override
   Future<void> close() {
+    _expiryTimer?.cancel();
     _realtimeSub?.cancel();
     _forexRealtimeSub?.cancel();
     _connectionSubscription.cancel();

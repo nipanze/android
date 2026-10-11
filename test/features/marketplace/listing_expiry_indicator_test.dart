@@ -26,8 +26,8 @@ void main() {
     final now = DateTime.now();
     await tester.pumpWidget(
       buildIndicator(
-        listedAt: now.subtract(const Duration(days: 10)),
-        expiresAt: now.add(const Duration(days: 10)),
+        listedAt: now.subtract(const Duration(hours: 12)),
+        expiresAt: now.add(const Duration(hours: 12)),
       ),
     );
 
@@ -45,10 +45,10 @@ void main() {
   testWidgets('tapping the clock shows an accurate live countdown',
       (tester) async {
     final now = DateTime.now();
-    final expiresAt = now.add(const Duration(days: 13, hours: 4));
+    final expiresAt = now.add(const Duration(hours: 13, minutes: 4));
     await tester.pumpWidget(
       buildIndicator(
-        listedAt: now.subtract(const Duration(days: 2)),
+        listedAt: now.subtract(const Duration(days: 1)),
         expiresAt: expiresAt,
       ),
     );
@@ -122,6 +122,21 @@ void main() {
       buildIndicator(
         listedAt: DateTime.now().subtract(const Duration(days: 2)),
         expiresAt: null,
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byTooltip('Show time remaining'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('future expiry outside the warning window stays hidden',
+      (tester) async {
+    final now = DateTime.now();
+    await tester.pumpWidget(
+      buildIndicator(
+        listedAt: now.subtract(const Duration(days: 2)),
+        expiresAt: now.add(const Duration(days: 9)),
       ),
     );
 
