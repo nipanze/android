@@ -17,6 +17,7 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../discovery/data/discovery_repository.dart';
+import '../../../discovery/presentation/cubit/discovery_cubit.dart';
 import '../../../discovery/presentation/widgets/discovery_card.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
@@ -51,6 +52,12 @@ class MarketplacePage extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (_) => DiscoveryCubit(getIt<DiscoveryRepository>())
+            ..loadCard(
+              country: userCountry,
+            ),
+        ),
         BlocProvider(
           create: (_) {
             final cubit = getIt<MarketplaceCubit>();
@@ -264,6 +271,16 @@ class _MarketplaceView extends StatelessWidget {
                     }
 
                     if (state is MarketplaceLoaded) {
+                      final discoveryCubit = context.read<DiscoveryCubit>();
+                      final hasActiveDiscoveryCard =
+                          discoveryCubit.state is DiscoveryCardLoaded &&
+                              (discoveryCubit.state as DiscoveryCardLoaded)
+                                      .template !=
+                                  null;
+                      final shouldShowMarketDiscoveryPrompt =
+                          discoveryCubit.state is! DiscoveryLoading &&
+                              !hasActiveDiscoveryCard;
+
                       // Subtle loading overlay while Pro filter RPC is in flight.
                       if (state.proFilterActive) {
                         return Center(
@@ -303,12 +320,14 @@ class _MarketplaceView extends StatelessWidget {
                                 DiscoveryCard(
                                   country: country,
                                   spacingAfter: true,
+                                  cubit: discoveryCubit,
                                 ),
-                                _MarketplaceDiscoveryCard(
-                                  country: country,
-                                  hideOpportunities: state.moduleFilter ==
-                                      MarketplaceModule.needs,
-                                ),
+                                if (shouldShowMarketDiscoveryPrompt)
+                                  _MarketplaceDiscoveryCard(
+                                    country: country,
+                                    hideOpportunities: state.moduleFilter ==
+                                        MarketplaceModule.needs,
+                                  ),
                               ],
                               EmptyState(
                                 icon: Icons.show_chart_rounded,
@@ -375,12 +394,14 @@ class _MarketplaceView extends StatelessWidget {
                                   DiscoveryCard(
                                     country: country,
                                     spacingAfter: true,
+                                    cubit: context.read<DiscoveryCubit>(),
                                   ),
-                                  _MarketplaceDiscoveryCard(
-                                    country: country,
-                                    hideOpportunities: state.moduleFilter ==
-                                        MarketplaceModule.needs,
-                                  ),
+                                  if (shouldShowMarketDiscoveryPrompt)
+                                    _MarketplaceDiscoveryCard(
+                                      country: country,
+                                      hideOpportunities: state.moduleFilter ==
+                                          MarketplaceModule.needs,
+                                    ),
                                 ],
                               );
                             }

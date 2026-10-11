@@ -20,17 +20,22 @@ class DiscoveryCard extends StatelessWidget {
     required this.country,
     this.compact = false,
     this.spacingAfter = false,
+    this.cubit,
   });
 
   final String country;
   final bool compact;
   final bool spacingAfter;
+  final DiscoveryCubit? cubit;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => DiscoveryCubit(getIt<DiscoveryRepository>())
-        ..loadCard(country: country),
+    final sharedCubit = cubit ??
+        (DiscoveryCubit(getIt<DiscoveryRepository>())
+          ..loadCard(country: country));
+
+    return BlocProvider.value(
+      value: sharedCubit,
       child: _DiscoveryCardView(
         compact: compact,
         spacingAfter: spacingAfter,
