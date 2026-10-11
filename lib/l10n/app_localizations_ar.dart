@@ -3093,4 +3093,37 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get postDurationNotice =>
       'ستنتهي صلاحية طلبك تلقائياً بعد هذه الفترة.';
+
+  @override
+  String get nationalityUgandan => 'أوغندي';
+
+  @override
+  String get nationalityKenyan => 'كيني';
+
+  @override
+  String get nationalityTanzanian => 'تنزاني';
+
+  @override
+  String get nationalityRwandan => 'رواندي';
+
+  @override
+  String get nationalityNigerian => 'نيجيري';
+
+  @override
+  String get nationalitySouthAfrican => 'جنوب أفريقي';
+
+  @override
+  String get nationalityEgyptian => 'مصري';
+
+  @override
+  String get nationalityCongoleseDrc => 'كونغولي (جمهورية الكونغو الديمقراطية)';
+
+  @override
+  String get nationalityBurundian => 'بوروندي';
+
+  @override
+  String get nationalitySouthSudanese => 'جنوب سوداني';
+
+  @override
+  String get nationalitySomali => 'صومالي';
 }

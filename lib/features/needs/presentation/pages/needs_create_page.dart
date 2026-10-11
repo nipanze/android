@@ -550,10 +550,58 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     };
   }
 
+  Map<String, String> _localizedNationalities(AppLocalizations l10n) => {
+        'Ugandan': l10n.nationalityUgandan,
+        'Kenyan': l10n.nationalityKenyan,
+        'Tanzanian': l10n.nationalityTanzanian,
+        'Rwandan': l10n.nationalityRwandan,
+        'Nigerian': l10n.nationalityNigerian,
+        'South African': l10n.nationalitySouthAfrican,
+        'Egyptian': l10n.nationalityEgyptian,
+        'Congolese (DRC)': l10n.nationalityCongoleseDrc,
+        'Burundian': l10n.nationalityBurundian,
+        'South Sudanese': l10n.nationalitySouthSudanese,
+        'Somali': l10n.nationalitySomali,
+      };
+
   Widget _buildFieldQuickValues(NeedFormField field) {
     final values = _quickValuesForField(field);
     if (values.isEmpty) return const SizedBox.shrink();
     final selected = _dynamicControllers[field.key]?.text ?? '';
+    if (field.key == 'nationality') {
+      final localizedNationalities =
+          _localizedNationalities(AppLocalizations.of(context)!);
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Wrap(
+          children: values.map((nationality) {
+            final flag = CountryLocations.flagForNationality(nationality);
+            final label = localizedNationalities[nationality] ?? nationality;
+            final isSelected = selected == nationality || selected == label;
+            if (flag == null) {
+              return _microPill(
+                label,
+                () => _setFieldValue(field, label),
+                selected: isSelected,
+              );
+            }
+            return Semantics(
+              button: true,
+              label: label,
+              selected: isSelected,
+              child: Tooltip(
+                message: label,
+                child: _microPill(
+                  flag,
+                  () => _setFieldValue(field, label),
+                  selected: isSelected,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Wrap(
@@ -709,7 +757,19 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         final text = _dynamicControllers[field.key]?.text.trim() ?? '';
         map[field.key] = num.tryParse(text) ?? text;
       } else {
-        map[field.key] = _dynamicControllers[field.key]?.text.trim() ?? '';
+        final value = _dynamicControllers[field.key]?.text.trim() ?? '';
+        if (field.key == 'nationality') {
+          final l10n = AppLocalizations.of(context)!;
+          final localizedNationalities = _localizedNationalities(l10n);
+          map[field.key] = localizedNationalities.entries
+              .firstWhere(
+                (entry) => entry.value == value,
+                orElse: () => MapEntry(value, value),
+              )
+              .key;
+        } else {
+          map[field.key] = value;
+        }
       }
     }
     return map;

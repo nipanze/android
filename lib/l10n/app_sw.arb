@@ -1426,5 +1426,16 @@
   "savedPlanWhatWouldHelp": "Ni nini kingekusaidia?",
   "postDurationActiveDays": "{days, plural, =1{Inafanya kazi kwa siku 1.} other{Inafanya kazi kwa siku {days}.}}",
   "postDurationFullNotice": "{days, plural, =1{Ombi lako litakuwa hai kwa siku 1.} other{Ombi lako litakuwa hai kwa siku {days}.}}",
-  "postDurationNotice": "Ombi lako litaisha kiotomatiki baada ya kipindi hiki."
+  "postDurationNotice": "Ombi lako litaisha kiotomatiki baada ya kipindi hiki.",
+  "nationalityUgandan": "Muganda",
+  "nationalityKenyan": "Mkenya",
+  "nationalityTanzanian": "Mtanzania",
+  "nationalityRwandan": "Mnyarwanda",
+  "nationalityNigerian": "Mnigeria",
+  "nationalitySouthAfrican": "Raia wa Afrika Kusini",
+  "nationalityEgyptian": "Mmisri",
+  "nationalityCongoleseDrc": "Mkongo (DRC)",
+  "nationalityBurundian": "Mburundi",
+  "nationalitySouthSudanese": "Msudan Kusini",
+  "nationalitySomali": "Msomali"
 }

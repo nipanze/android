@@ -26,6 +26,9 @@ void main() {
       ugandanNationalities,
       containsAll(['Congolese (DRC)', 'South African', 'Nigerian']),
     );
+    expect(CountryLocations.flagForNationality('Ugandan'), '🇺🇬');
+    expect(CountryLocations.flagForNationality('Congolese (DRC)'), '🇨🇩');
+    expect(CountryLocations.flagForNationality('Unknown'), isNull);
 
     final southAfricanNationalities =
         CountryLocations.nationalitiesFor(EastAfricaCountries.southAfrica);

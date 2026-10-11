@@ -3101,4 +3101,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get postDurationNotice =>
       'Your request will automatically expire after this period.';
+
+  @override
+  String get nationalityUgandan => 'Ugandan';
+
+  @override
+  String get nationalityKenyan => 'Kenyan';
+
+  @override
+  String get nationalityTanzanian => 'Tanzanian';
+
+  @override
+  String get nationalityRwandan => 'Rwandan';
+
+  @override
+  String get nationalityNigerian => 'Nigerian';
+
+  @override
+  String get nationalitySouthAfrican => 'South African';
+
+  @override
+  String get nationalityEgyptian => 'Egyptian';
+
+  @override
+  String get nationalityCongoleseDrc => 'Congolese (DRC)';
+
+  @override
+  String get nationalityBurundian => 'Burundian';
+
+  @override
+  String get nationalitySouthSudanese => 'South Sudanese';
+
+  @override
+  String get nationalitySomali => 'Somali';
 }

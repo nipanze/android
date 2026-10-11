@@ -3117,4 +3117,37 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get postDurationNotice =>
       'Ubusabe bwawe buzarangira mu buryo bwikora nyuma y\'iki gihe.';
+
+  @override
+  String get nationalityUgandan => 'Umunya-Uganda';
+
+  @override
+  String get nationalityKenyan => 'Umunya-Kenya';
+
+  @override
+  String get nationalityTanzanian => 'Umunya-Tanzaniya';
+
+  @override
+  String get nationalityRwandan => 'Umunyarwanda';
+
+  @override
+  String get nationalityNigerian => 'Umunya-Nijeriya';
+
+  @override
+  String get nationalitySouthAfrican => 'Umunya-Afurika y\'Epfo';
+
+  @override
+  String get nationalityEgyptian => 'Umunya-Misiri';
+
+  @override
+  String get nationalityCongoleseDrc => 'Umunya-Kongo (DRC)';
+
+  @override
+  String get nationalityBurundian => 'Umunya-Burundi';
+
+  @override
+  String get nationalitySouthSudanese => 'Umunya-Sudani y\'Epfo';
+
+  @override
+  String get nationalitySomali => 'Umunya-Somaliya';
 }

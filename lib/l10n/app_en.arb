@@ -1504,6 +1504,17 @@
     }
   },
   "postDurationNotice": "Your request will automatically expire after this period.",
+  "nationalityUgandan": "Ugandan",
+  "nationalityKenyan": "Kenyan",
+  "nationalityTanzanian": "Tanzanian",
+  "nationalityRwandan": "Rwandan",
+  "nationalityNigerian": "Nigerian",
+  "nationalitySouthAfrican": "South African",
+  "nationalityEgyptian": "Egyptian",
+  "nationalityCongoleseDrc": "Congolese (DRC)",
+  "nationalityBurundian": "Burundian",
+  "nationalitySouthSudanese": "South Sudanese",
+  "nationalitySomali": "Somali",
   "@postDurationNotice": {
     "description": "Supporting note that requests automatically expire"
   }

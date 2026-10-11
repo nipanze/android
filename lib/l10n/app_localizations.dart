@@ -5643,6 +5643,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your request will automatically expire after this period.'**
   String get postDurationNotice;
+
+  /// No description provided for @nationalityUgandan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ugandan'**
+  String get nationalityUgandan;
+
+  /// No description provided for @nationalityKenyan.
+  ///
+  /// In en, this message translates to:
+  /// **'Kenyan'**
+  String get nationalityKenyan;
+
+  /// No description provided for @nationalityTanzanian.
+  ///
+  /// In en, this message translates to:
+  /// **'Tanzanian'**
+  String get nationalityTanzanian;
+
+  /// No description provided for @nationalityRwandan.
+  ///
+  /// In en, this message translates to:
+  /// **'Rwandan'**
+  String get nationalityRwandan;
+
+  /// No description provided for @nationalityNigerian.
+  ///
+  /// In en, this message translates to:
+  /// **'Nigerian'**
+  String get nationalityNigerian;
+
+  /// No description provided for @nationalitySouthAfrican.
+  ///
+  /// In en, this message translates to:
+  /// **'South African'**
+  String get nationalitySouthAfrican;
+
+  /// No description provided for @nationalityEgyptian.
+  ///
+  /// In en, this message translates to:
+  /// **'Egyptian'**
+  String get nationalityEgyptian;
+
+  /// No description provided for @nationalityCongoleseDrc.
+  ///
+  /// In en, this message translates to:
+  /// **'Congolese (DRC)'**
+  String get nationalityCongoleseDrc;
+
+  /// No description provided for @nationalityBurundian.
+  ///
+  /// In en, this message translates to:
+  /// **'Burundian'**
+  String get nationalityBurundian;
+
+  /// No description provided for @nationalitySouthSudanese.
+  ///
+  /// In en, this message translates to:
+  /// **'South Sudanese'**
+  String get nationalitySouthSudanese;
+
+  /// No description provided for @nationalitySomali.
+  ///
+  /// In en, this message translates to:
+  /// **'Somali'**
+  String get nationalitySomali;
 }
 
 class _AppLocalizationsDelegate

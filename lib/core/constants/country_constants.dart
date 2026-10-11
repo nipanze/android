@@ -357,8 +357,28 @@ class CountryLocations {
     'Somali',
   ];
 
+  static const Map<String, String> _countryCodeByNationality = {
+    'Ugandan': 'UG',
+    'Kenyan': 'KE',
+    'Tanzanian': 'TZ',
+    'Rwandan': 'RW',
+    'Nigerian': 'NG',
+    'South African': 'ZA',
+    'Egyptian': 'EG',
+    'Congolese (DRC)': 'CD',
+    'Burundian': 'BI',
+    'South Sudanese': 'SS',
+    'Somali': 'SO',
+  };
+
   static List<String> localitiesFor(CountryInfo country) =>
       _localitiesByCountry[country.code] ?? country.regions;
+
+  static String? flagForNationality(String nationality) {
+    final countryCode = _countryCodeByNationality[nationality];
+    if (countryCode == null) return null;
+    return EastAfricaCountries.findByCode(countryCode).flag;
+  }
 
   static List<String> nationalitiesFor(CountryInfo country) {
     final countryNationality =

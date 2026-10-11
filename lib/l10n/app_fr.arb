@@ -1433,5 +1433,16 @@
   "savedPlanWhatWouldHelp": "Qu’est-ce qui vous serait utile ?",
   "postDurationActiveDays": "{days, plural, =1{Actif pendant 1 jour.} other{Actif pendant {days} jours.}}",
   "postDurationFullNotice": "{days, plural, =1{Votre demande sera active pendant 1 jour.} other{Votre demande sera active pendant {days} jours.}}",
-  "postDurationNotice": "Votre demande expirera automatiquement après cette période."
+  "postDurationNotice": "Votre demande expirera automatiquement après cette période.",
+  "nationalityUgandan": "Ougandais",
+  "nationalityKenyan": "Kényan",
+  "nationalityTanzanian": "Tanzanien",
+  "nationalityRwandan": "Rwandais",
+  "nationalityNigerian": "Nigérian",
+  "nationalitySouthAfrican": "Sud-Africain",
+  "nationalityEgyptian": "Égyptien",
+  "nationalityCongoleseDrc": "Congolais (RDC)",
+  "nationalityBurundian": "Burundais",
+  "nationalitySouthSudanese": "Sud-Soudanais",
+  "nationalitySomali": "Somalien"
 }

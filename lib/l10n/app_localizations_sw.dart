@@ -3112,4 +3112,37 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get postDurationNotice =>
       'Ombi lako litaisha kiotomatiki baada ya kipindi hiki.';
+
+  @override
+  String get nationalityUgandan => 'Muganda';
+
+  @override
+  String get nationalityKenyan => 'Mkenya';
+
+  @override
+  String get nationalityTanzanian => 'Mtanzania';
+
+  @override
+  String get nationalityRwandan => 'Mnyarwanda';
+
+  @override
+  String get nationalityNigerian => 'Mnigeria';
+
+  @override
+  String get nationalitySouthAfrican => 'Raia wa Afrika Kusini';
+
+  @override
+  String get nationalityEgyptian => 'Mmisri';
+
+  @override
+  String get nationalityCongoleseDrc => 'Mkongo (DRC)';
+
+  @override
+  String get nationalityBurundian => 'Mburundi';
+
+  @override
+  String get nationalitySouthSudanese => 'Msudan Kusini';
+
+  @override
+  String get nationalitySomali => 'Msomali';
 }
