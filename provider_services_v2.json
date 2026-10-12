@@ -1,0 +1,3265 @@
+{
+  "version": 1,
+  "global": {
+    "account_modes": [
+      {
+        "id": "business",
+        "name": "Offer services / hire out",
+        "description": "Businesses or individuals listing what they provide."
+      },
+      {
+        "id": "work",
+        "name": "Available for jobs",
+        "description": "People who want to be hired as operators, managers, technicians etc."
+      }
+    ],
+    "common_qualifications": [
+      {
+        "id": "id_verified",
+        "name": "ID verified",
+        "type": "auto"
+      },
+      {
+        "id": "years_experience",
+        "name": "Years of experience",
+        "type": "select",
+        "options": [
+          "<1",
+          "1-2",
+          "3-5",
+          "6-10",
+          "10+"
+        ]
+      },
+      {
+        "id": "availability",
+        "name": "Availability",
+        "type": "select",
+        "options": [
+          "Full-time",
+          "Part-time",
+          "Contract / project",
+          "Weekends only"
+        ]
+      },
+      {
+        "id": "willing_to_travel",
+        "name": "Willing to travel / relocate",
+        "type": "toggle"
+      },
+      {
+        "id": "references",
+        "name": "References available",
+        "type": "toggle"
+      },
+      {
+        "id": "languages",
+        "name": "Languages spoken",
+        "type": "multi",
+        "options": [
+          "English",
+          "Luganda",
+          "Kiswahili",
+          "French",
+          "Kinyarwanda",
+          "Arabic"
+        ]
+      },
+      {
+        "id": "certificate_upload",
+        "name": "Upload certificates / licences",
+        "type": "files"
+      },
+      {
+        "id": "expected_rate",
+        "name": "Expected pay",
+        "type": "amount+period"
+      }
+    ],
+    "occasion_tags": [
+      "Wedding",
+      "Birthday",
+      "Graduation",
+      "Corporate",
+      "Baby shower",
+      "Funeral / memorial",
+      "Anniversary",
+      "Engagement",
+      "Other"
+    ],
+    "flow": [
+      "1. Pick category",
+      "2. Toggle 'Work roles': Yes/No",
+      "3. If yes, pick one or more roles (Operator, Manager, Project Manager ...)",
+      "4. For each role, answer the kind question (e.g. 'Which machine do you operate?') with options",
+      "5. Tick qualifications for that role + common qualifications; upload proofs",
+      "6. Employer posts a job with category + role + kind + required qualifications; matching uses these fields",
+      "Services are ticked separately under 'What I offer'"
+    ]
+  },
+  "categories": [
+    {
+      "id": "technology_digital",
+      "name": "Technology & Digital",
+      "icon": "💻",
+      "description": "Software, websites, IT support and security",
+      "service_groups": [
+        {
+          "id": "build",
+          "name": "Build",
+          "services": [
+            {
+              "id": "software_development",
+              "name": "Software Development"
+            },
+            {
+              "id": "website_development",
+              "name": "Website Development"
+            },
+            {
+              "id": "mobile_app_development",
+              "name": "Mobile App Development"
+            },
+            {
+              "id": "automation",
+              "name": "Automation"
+            }
+          ]
+        },
+        {
+          "id": "support_infrastructure",
+          "name": "Support & Infrastructure",
+          "services": [
+            {
+              "id": "it_support",
+              "name": "IT Support"
+            },
+            {
+              "id": "networking",
+              "name": "Networking"
+            },
+            {
+              "id": "cybersecurity",
+              "name": "Cybersecurity"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_technology",
+              "name": "Other Technology"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "developer",
+          "name": "Developer",
+          "kind_question": "What do you build?",
+          "kinds": [
+            {
+              "id": "frontend",
+              "name": "Frontend"
+            },
+            {
+              "id": "backend",
+              "name": "Backend"
+            },
+            {
+              "id": "full_stack",
+              "name": "Full-stack"
+            },
+            {
+              "id": "mobile",
+              "name": "Mobile"
+            },
+            {
+              "id": "qa_tester",
+              "name": "QA / Tester"
+            },
+            {
+              "id": "devops",
+              "name": "DevOps"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree_diploma_in_it_or_cs",
+              "name": "Degree / Diploma in IT or CS"
+            },
+            {
+              "id": "portfolio_or_github_link",
+              "name": "Portfolio or GitHub link"
+            },
+            {
+              "id": "cloud_certification_aws_azure_gcp",
+              "name": "Cloud certification (AWS/Azure/GCP)"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "it_technician",
+          "name": "IT Technician",
+          "kind_question": "What do you do?",
+          "kinds": [
+            {
+              "id": "helpdesk",
+              "name": "Helpdesk"
+            },
+            {
+              "id": "hardware_repair",
+              "name": "Hardware repair"
+            },
+            {
+              "id": "network_installation",
+              "name": "Network installation"
+            },
+            {
+              "id": "cctv_access_control",
+              "name": "CCTV & access control"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "comptia_a_n",
+              "name": "CompTIA A+ / N+"
+            },
+            {
+              "id": "ccna",
+              "name": "CCNA"
+            },
+            {
+              "id": "own_toolkit",
+              "name": "Own toolkit"
+            },
+            {
+              "id": "2_years_experience",
+              "name": "2+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "security_specialist",
+          "name": "Security Specialist",
+          "kind_question": "Which area?",
+          "kinds": [
+            {
+              "id": "network_security",
+              "name": "Network security"
+            },
+            {
+              "id": "penetration_testing",
+              "name": "Penetration testing"
+            },
+            {
+              "id": "security_audits",
+              "name": "Security audits"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "ceh",
+              "name": "CEH"
+            },
+            {
+              "id": "cissp_cism",
+              "name": "CISSP / CISM"
+            },
+            {
+              "id": "iso_27001",
+              "name": "ISO 27001"
+            },
+            {
+              "id": "police_clearance",
+              "name": "Police clearance"
+            }
+          ]
+        },
+        {
+          "id": "project_manager",
+          "name": "Project Manager",
+          "kind_question": "What kind of projects?",
+          "kinds": [
+            {
+              "id": "software",
+              "name": "Software"
+            },
+            {
+              "id": "it_infrastructure",
+              "name": "IT infrastructure"
+            },
+            {
+              "id": "digital_transformation",
+              "name": "Digital transformation"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pmp_prince2",
+              "name": "PMP / PRINCE2"
+            },
+            {
+              "id": "agile_scrum_certified",
+              "name": "Agile / Scrum certified"
+            },
+            {
+              "id": "led_3_projects",
+              "name": "Led 3+ projects"
+            },
+            {
+              "id": "degree",
+              "name": "Degree"
+            }
+          ]
+        },
+        {
+          "id": "team_lead_manager",
+          "name": "Team Lead / Manager",
+          "kind_question": "What do you lead?",
+          "kinds": [
+            {
+              "id": "dev_team",
+              "name": "Dev team"
+            },
+            {
+              "id": "it_support_team",
+              "name": "IT / support team"
+            },
+            {
+              "id": "product",
+              "name": "Product"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "managed_5_people",
+              "name": "Managed 5+ people"
+            },
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "3_years_leadership",
+              "name": "3+ years leadership"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marketing_promotion",
+      "name": "Marketing & Promotion",
+      "icon": "📣",
+      "description": "Advertising, content and influencer work",
+      "service_groups": [
+        {
+          "id": "campaigns",
+          "name": "Campaigns",
+          "services": [
+            {
+              "id": "digital_marketing",
+              "name": "Digital Marketing"
+            },
+            {
+              "id": "social_media_marketing",
+              "name": "Social Media Marketing"
+            },
+            {
+              "id": "advertising_campaigns",
+              "name": "Advertising Campaigns"
+            },
+            {
+              "id": "brand_promotion",
+              "name": "Brand Promotion"
+            },
+            {
+              "id": "event_promotion",
+              "name": "Event Promotion"
+            },
+            {
+              "id": "affiliate_marketing",
+              "name": "Affiliate Marketing"
+            }
+          ]
+        },
+        {
+          "id": "content_reach",
+          "name": "Content & Reach",
+          "services": [
+            {
+              "id": "content_creation",
+              "name": "Content Creation"
+            },
+            {
+              "id": "influencer_marketing",
+              "name": "Influencer Marketing"
+            },
+            {
+              "id": "product_reviews",
+              "name": "Product Reviews"
+            },
+            {
+              "id": "i_have_an_audience",
+              "name": "I Have an Audience"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_marketing_services",
+              "name": "Other Marketing Services"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "marketer_specialist",
+          "name": "Marketer / Specialist",
+          "kind_question": "Which channel?",
+          "kinds": [
+            {
+              "id": "social_media",
+              "name": "Social media"
+            },
+            {
+              "id": "seo_sem",
+              "name": "SEO / SEM"
+            },
+            {
+              "id": "email",
+              "name": "Email"
+            },
+            {
+              "id": "brand",
+              "name": "Brand"
+            },
+            {
+              "id": "community_management",
+              "name": "Community management"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "marketing_diploma_degree",
+              "name": "Marketing diploma / degree"
+            },
+            {
+              "id": "google_ads_meta_certified",
+              "name": "Google Ads / Meta certified"
+            },
+            {
+              "id": "case_studies_or_portfolio",
+              "name": "Case studies or portfolio"
+            },
+            {
+              "id": "2_years_experience",
+              "name": "2+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "content_creator",
+          "name": "Content Creator",
+          "kind_question": "What do you produce?",
+          "kinds": [
+            {
+              "id": "video",
+              "name": "Video"
+            },
+            {
+              "id": "photo",
+              "name": "Photo"
+            },
+            {
+              "id": "writing",
+              "name": "Writing"
+            },
+            {
+              "id": "design",
+              "name": "Design"
+            },
+            {
+              "id": "podcast",
+              "name": "Podcast"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "own_equipment",
+              "name": "Own equipment"
+            },
+            {
+              "id": "audience_size_proof",
+              "name": "Audience size proof"
+            }
+          ]
+        },
+        {
+          "id": "marketing_manager",
+          "name": "Marketing Manager",
+          "kind_question": "What scope?",
+          "kinds": [
+            {
+              "id": "brand",
+              "name": "Brand"
+            },
+            {
+              "id": "digital",
+              "name": "Digital"
+            },
+            {
+              "id": "events_promotions",
+              "name": "Events & promotions"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "managed_budgets",
+              "name": "Managed budgets"
+            },
+            {
+              "id": "managed_3_people",
+              "name": "Managed 3+ people"
+            }
+          ]
+        },
+        {
+          "id": "campaign_project_manager",
+          "name": "Campaign Project Manager",
+          "kind_question": "Campaign type?",
+          "kinds": [
+            {
+              "id": "digital",
+              "name": "Digital"
+            },
+            {
+              "id": "field_activation",
+              "name": "Field / activation"
+            },
+            {
+              "id": "event",
+              "name": "Event"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pmp_prince2",
+              "name": "PMP / PRINCE2"
+            },
+            {
+              "id": "led_3_campaigns",
+              "name": "Led 3+ campaigns"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "business_professional_services",
+      "name": "Business & Professional Services",
+      "icon": "💼",
+      "description": "Consulting, legal, accounting, HR and design",
+      "service_groups": [
+        {
+          "id": "finance_legal",
+          "name": "Finance & Legal",
+          "services": [
+            {
+              "id": "accounting_tax",
+              "name": "Accounting & Tax"
+            },
+            {
+              "id": "legal_services",
+              "name": "Legal Services"
+            },
+            {
+              "id": "company_registration",
+              "name": "Company Registration"
+            }
+          ]
+        },
+        {
+          "id": "advisory",
+          "name": "Advisory",
+          "services": [
+            {
+              "id": "business_consulting",
+              "name": "Business Consulting"
+            },
+            {
+              "id": "hr_services",
+              "name": "HR Services"
+            }
+          ]
+        },
+        {
+          "id": "design_engineering",
+          "name": "Design & Engineering",
+          "services": [
+            {
+              "id": "architecture",
+              "name": "Architecture"
+            },
+            {
+              "id": "engineering",
+              "name": "Engineering"
+            },
+            {
+              "id": "driving_school_driver_training",
+              "name": "Driving School / Driver Training"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_professional_services",
+              "name": "Other Professional Services"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "accountant_finance_officer",
+          "name": "Accountant / Finance Officer",
+          "kind_question": "What area?",
+          "kinds": [
+            {
+              "id": "bookkeeping",
+              "name": "Bookkeeping"
+            },
+            {
+              "id": "tax",
+              "name": "Tax"
+            },
+            {
+              "id": "audit",
+              "name": "Audit"
+            },
+            {
+              "id": "payroll",
+              "name": "Payroll"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "cpa_acca_cpa_u",
+              "name": "CPA / ACCA / CPA-U"
+            },
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "lawyer_legal_officer",
+          "name": "Lawyer / Legal Officer",
+          "kind_question": "What area?",
+          "kinds": [
+            {
+              "id": "corporate",
+              "name": "Corporate"
+            },
+            {
+              "id": "property",
+              "name": "Property"
+            },
+            {
+              "id": "contracts",
+              "name": "Contracts"
+            },
+            {
+              "id": "compliance",
+              "name": "Compliance"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "bar_admission_practising_certificate",
+              "name": "Bar admission / practising certificate"
+            },
+            {
+              "id": "llb",
+              "name": "LLB"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "engineer",
+          "name": "Engineer",
+          "kind_question": "Which discipline?",
+          "kinds": [
+            {
+              "id": "civil",
+              "name": "Civil"
+            },
+            {
+              "id": "electrical",
+              "name": "Electrical"
+            },
+            {
+              "id": "mechanical",
+              "name": "Mechanical"
+            },
+            {
+              "id": "mining",
+              "name": "Mining"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree_in_engineering",
+              "name": "Degree in engineering"
+            },
+            {
+              "id": "registered_with_engineers_board",
+              "name": "Registered with engineers board"
+            },
+            {
+              "id": "site_experience",
+              "name": "Site experience"
+            }
+          ]
+        },
+        {
+          "id": "architect_designer",
+          "name": "Architect / Designer",
+          "kind_question": "What do you design?",
+          "kinds": [
+            {
+              "id": "buildings",
+              "name": "Buildings"
+            },
+            {
+              "id": "interiors",
+              "name": "Interiors"
+            },
+            {
+              "id": "landscape",
+              "name": "Landscape"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "registered_architect",
+              "name": "Registered architect"
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "cad_bim_skills",
+              "name": "CAD/BIM skills"
+            }
+          ]
+        },
+        {
+          "id": "hr_officer_manager",
+          "name": "HR Officer / Manager",
+          "kind_question": "What area?",
+          "kinds": [
+            {
+              "id": "recruitment",
+              "name": "Recruitment"
+            },
+            {
+              "id": "payroll_benefits",
+              "name": "Payroll & benefits"
+            },
+            {
+              "id": "training_compliance",
+              "name": "Training & compliance"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "hr_diploma_degree",
+              "name": "HR diploma / degree"
+            },
+            {
+              "id": "ihrm_cipd",
+              "name": "IHRM / CIPD"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "consultant",
+          "name": "Consultant",
+          "kind_question": "Advisory area?",
+          "kinds": [
+            {
+              "id": "strategy",
+              "name": "Strategy"
+            },
+            {
+              "id": "operations",
+              "name": "Operations"
+            },
+            {
+              "id": "finance",
+              "name": "Finance"
+            },
+            {
+              "id": "compliance",
+              "name": "Compliance"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "case_studies",
+              "name": "Case studies"
+            },
+            {
+              "id": "5_years_experience",
+              "name": "5+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "project_manager",
+          "name": "Project Manager",
+          "kind_question": "What kind of projects?",
+          "kinds": [
+            {
+              "id": "business",
+              "name": "Business"
+            },
+            {
+              "id": "compliance",
+              "name": "Compliance"
+            },
+            {
+              "id": "operations",
+              "name": "Operations"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pmp_prince2",
+              "name": "PMP / PRINCE2"
+            },
+            {
+              "id": "led_3_projects",
+              "name": "Led 3+ projects"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "education_training",
+      "name": "Education & Training",
+      "icon": "🎓",
+      "description": "Learning, admissions and placements",
+      "service_groups": [
+        {
+          "id": "learning",
+          "name": "Learning",
+          "services": [
+            {
+              "id": "private_tutoring",
+              "name": "Private Tutoring"
+            },
+            {
+              "id": "online_classes",
+              "name": "Online Classes"
+            },
+            {
+              "id": "exam_preparation",
+              "name": "Exam Preparation"
+            },
+            {
+              "id": "language_training",
+              "name": "Language Training"
+            },
+            {
+              "id": "computer_training",
+              "name": "Computer Training"
+            },
+            {
+              "id": "professional_training",
+              "name": "Professional Training"
+            },
+            {
+              "id": "vocational_training",
+              "name": "Vocational Training"
+            },
+            {
+              "id": "academic_consulting",
+              "name": "Academic Consulting"
+            }
+          ]
+        },
+        {
+          "id": "admissions_placements",
+          "name": "Admissions & Placements",
+          "services": [
+            {
+              "id": "university_admissions",
+              "name": "University Admissions"
+            },
+            {
+              "id": "study_abroad_guidance",
+              "name": "Study Abroad Guidance"
+            },
+            {
+              "id": "internship_placement",
+              "name": "Internship Placement"
+            },
+            {
+              "id": "health_nursing_placements",
+              "name": "Health / Nursing Placements"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "teacher_tutor",
+          "name": "Teacher / Tutor",
+          "kind_question": "What do you teach?",
+          "kinds": [
+            {
+              "id": "primary",
+              "name": "Primary"
+            },
+            {
+              "id": "secondary",
+              "name": "Secondary"
+            },
+            {
+              "id": "university",
+              "name": "University"
+            },
+            {
+              "id": "languages",
+              "name": "Languages"
+            },
+            {
+              "id": "exam_prep",
+              "name": "Exam prep"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "teaching_certificate_degree",
+              "name": "Teaching certificate / degree"
+            },
+            {
+              "id": "registered_with_teaching_board",
+              "name": "Registered with teaching board"
+            },
+            {
+              "id": "2_years_teaching",
+              "name": "2+ years teaching"
+            },
+            {
+              "id": "subject_specialisation",
+              "name": "Subject specialisation"
+            }
+          ]
+        },
+        {
+          "id": "trainer_instructor",
+          "name": "Trainer / Instructor",
+          "kind_question": "Training field?",
+          "kinds": [
+            {
+              "id": "computer_it",
+              "name": "Computer / IT"
+            },
+            {
+              "id": "vocational_technical",
+              "name": "Vocational / technical"
+            },
+            {
+              "id": "professional_corporate",
+              "name": "Professional / corporate"
+            },
+            {
+              "id": "driving",
+              "name": "Driving"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "trade_certificate",
+              "name": "Trade certificate"
+            },
+            {
+              "id": "trainer_of_trainers_tot",
+              "name": "Trainer-of-trainers (ToT)"
+            },
+            {
+              "id": "industry_experience_3_years",
+              "name": "Industry experience 3+ years"
+            }
+          ]
+        },
+        {
+          "id": "placement_coordinator",
+          "name": "Placement Coordinator",
+          "kind_question": "What placements?",
+          "kinds": [
+            {
+              "id": "internships",
+              "name": "Internships"
+            },
+            {
+              "id": "nursing_health",
+              "name": "Nursing / health"
+            },
+            {
+              "id": "study_abroad",
+              "name": "Study abroad"
+            },
+            {
+              "id": "university",
+              "name": "University"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "education_or_hr_background",
+              "name": "Education or HR background"
+            },
+            {
+              "id": "partner_network",
+              "name": "Partner network"
+            },
+            {
+              "id": "counselling_certificate",
+              "name": "Counselling certificate"
+            }
+          ]
+        },
+        {
+          "id": "programme_manager",
+          "name": "Programme Manager",
+          "kind_question": "What programmes?",
+          "kinds": [
+            {
+              "id": "training_programmes",
+              "name": "Training programmes"
+            },
+            {
+              "id": "placement_programmes",
+              "name": "Placement programmes"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "managed_3_programmes",
+              "name": "Managed 3+ programmes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "events_celebrations",
+      "name": "Events & Celebrations",
+      "icon": "🎉",
+      "description": "Weddings, parties, corporate events and the services behind them",
+      "service_groups": [
+        {
+          "id": "planning_styling",
+          "name": "Planning & Styling",
+          "services": [
+            {
+              "id": "event_planning",
+              "name": "Event Planning"
+            },
+            {
+              "id": "decoration",
+              "name": "Decoration"
+            },
+            {
+              "id": "cakes",
+              "name": "Cakes"
+            },
+            {
+              "id": "catering",
+              "name": "Catering"
+            }
+          ]
+        },
+        {
+          "id": "equipment_venue_setup",
+          "name": "Equipment & Venue Setup",
+          "services": [
+            {
+              "id": "tents",
+              "name": "Tents"
+            },
+            {
+              "id": "event_equipment",
+              "name": "Event Equipment"
+            },
+            {
+              "id": "sound_systems",
+              "name": "Sound Systems"
+            },
+            {
+              "id": "lighting",
+              "name": "Lighting"
+            }
+          ]
+        },
+        {
+          "id": "entertainment_hosting",
+          "name": "Entertainment & Hosting",
+          "services": [
+            {
+              "id": "djs_mcs",
+              "name": "DJs / MCs"
+            },
+            {
+              "id": "event_transport",
+              "name": "Event Transport"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_events",
+              "name": "Other Events"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "event_manager_planner",
+          "name": "Event Manager / Planner",
+          "kind_question": "What events?",
+          "kinds": [
+            {
+              "id": "weddings",
+              "name": "Weddings"
+            },
+            {
+              "id": "corporate",
+              "name": "Corporate"
+            },
+            {
+              "id": "birthdays_parties",
+              "name": "Birthdays & parties"
+            },
+            {
+              "id": "graduations",
+              "name": "Graduations"
+            },
+            {
+              "id": "funerals_memorials",
+              "name": "Funerals & memorials"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "event_planning_certificate",
+              "name": "Event planning certificate"
+            },
+            {
+              "id": "portfolio_of_5_events",
+              "name": "Portfolio of 5+ events"
+            },
+            {
+              "id": "insurance_permit",
+              "name": "Insurance / permit"
+            },
+            {
+              "id": "team_of_3_staff",
+              "name": "Team of 3+ staff"
+            }
+          ]
+        },
+        {
+          "id": "mc_dj",
+          "name": "MC / DJ",
+          "kind_question": "Which role?",
+          "kinds": [
+            {
+              "id": "mc",
+              "name": "MC"
+            },
+            {
+              "id": "dj",
+              "name": "DJ"
+            },
+            {
+              "id": "both",
+              "name": "Both"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "own_equipment",
+              "name": "Own equipment"
+            },
+            {
+              "id": "sample_mix_video",
+              "name": "Sample mix / video"
+            },
+            {
+              "id": "references",
+              "name": "References"
+            }
+          ]
+        },
+        {
+          "id": "event_crew_technician",
+          "name": "Event Crew / Technician",
+          "kind_question": "What do you operate?",
+          "kinds": [
+            {
+              "id": "sound",
+              "name": "Sound"
+            },
+            {
+              "id": "lighting",
+              "name": "Lighting"
+            },
+            {
+              "id": "tents_setup",
+              "name": "Tents & setup"
+            },
+            {
+              "id": "stage",
+              "name": "Stage"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "technical_training",
+              "name": "Technical training"
+            },
+            {
+              "id": "own_tools",
+              "name": "Own tools"
+            },
+            {
+              "id": "event_experience_1_year",
+              "name": "Event experience 1+ year"
+            }
+          ]
+        },
+        {
+          "id": "caterer_chef",
+          "name": "Caterer / Chef",
+          "kind_question": "What kind?",
+          "kinds": [
+            {
+              "id": "event_catering",
+              "name": "Event catering"
+            },
+            {
+              "id": "cakes_baking",
+              "name": "Cakes & baking"
+            },
+            {
+              "id": "buffet_plated",
+              "name": "Buffet / plated"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "food_handler_certificate",
+              "name": "Food handler certificate"
+            },
+            {
+              "id": "health_permit",
+              "name": "Health permit"
+            },
+            {
+              "id": "culinary_diploma",
+              "name": "Culinary diploma"
+            }
+          ]
+        },
+        {
+          "id": "event_supervisor",
+          "name": "Event Supervisor",
+          "kind_question": "What scope?",
+          "kinds": [
+            {
+              "id": "venue",
+              "name": "Venue"
+            },
+            {
+              "id": "logistics",
+              "name": "Logistics"
+            },
+            {
+              "id": "guest_management",
+              "name": "Guest management"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "managed_5_events",
+              "name": "Managed 5+ events"
+            },
+            {
+              "id": "team_leadership",
+              "name": "Team leadership"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "photo_video_music_talent",
+      "name": "Photo, Video, Music & Talent",
+      "icon": "🎬",
+      "description": "Creative production and performers for any occasion",
+      "service_groups": [
+        {
+          "id": "photo_video",
+          "name": "Photo & Video",
+          "services": [
+            {
+              "id": "photography",
+              "name": "Photography"
+            },
+            {
+              "id": "videography",
+              "name": "Videography"
+            },
+            {
+              "id": "video_editors",
+              "name": "Video Editors"
+            }
+          ]
+        },
+        {
+          "id": "music_production",
+          "name": "Music Production",
+          "services": [
+            {
+              "id": "recording_studios",
+              "name": "Recording Studios"
+            },
+            {
+              "id": "music_producers",
+              "name": "Music Producers"
+            },
+            {
+              "id": "mixing_mastering",
+              "name": "Mixing & Mastering"
+            },
+            {
+              "id": "songwriters",
+              "name": "Songwriters"
+            },
+            {
+              "id": "singers_vocalists",
+              "name": "Singers / Vocalists"
+            }
+          ]
+        },
+        {
+          "id": "on_screen_performers",
+          "name": "On-screen & Performers",
+          "services": [
+            {
+              "id": "actors_actresses",
+              "name": "Actors / Actresses"
+            },
+            {
+              "id": "dancers",
+              "name": "Dancers"
+            },
+            {
+              "id": "background_extras",
+              "name": "Background Extras"
+            },
+            {
+              "id": "music_video_models",
+              "name": "Music Video Models"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "photographer_videographer",
+          "name": "Photographer / Videographer",
+          "kind_question": "What do you shoot?",
+          "kinds": [
+            {
+              "id": "weddings",
+              "name": "Weddings"
+            },
+            {
+              "id": "corporate",
+              "name": "Corporate"
+            },
+            {
+              "id": "fashion_portraits",
+              "name": "Fashion & portraits"
+            },
+            {
+              "id": "music_videos",
+              "name": "Music videos"
+            },
+            {
+              "id": "real_estate",
+              "name": "Real estate"
+            },
+            {
+              "id": "graduations",
+              "name": "Graduations"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "portfolio_link",
+              "name": "Portfolio link"
+            },
+            {
+              "id": "own_camera_drone_kit",
+              "name": "Own camera / drone kit"
+            },
+            {
+              "id": "drone_licence",
+              "name": "Drone licence"
+            },
+            {
+              "id": "editing_skills",
+              "name": "Editing skills"
+            }
+          ]
+        },
+        {
+          "id": "audio_engineer_producer",
+          "name": "Audio Engineer / Producer",
+          "kind_question": "What do you do?",
+          "kinds": [
+            {
+              "id": "recording",
+              "name": "Recording"
+            },
+            {
+              "id": "mixing_mastering",
+              "name": "Mixing & mastering"
+            },
+            {
+              "id": "beat_production",
+              "name": "Beat production"
+            },
+            {
+              "id": "live_sound",
+              "name": "Live sound"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "own_studio_daw",
+              "name": "Own studio / DAW"
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "audio_engineering_diploma",
+              "name": "Audio engineering diploma"
+            }
+          ]
+        },
+        {
+          "id": "performer_talent",
+          "name": "Performer / Talent",
+          "kind_question": "What kind?",
+          "kinds": [
+            {
+              "id": "singer",
+              "name": "Singer"
+            },
+            {
+              "id": "dancer",
+              "name": "Dancer"
+            },
+            {
+              "id": "actor",
+              "name": "Actor"
+            },
+            {
+              "id": "model",
+              "name": "Model"
+            },
+            {
+              "id": "extra",
+              "name": "Extra"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "showreel_audition_clip",
+              "name": "Showreel / audition clip"
+            },
+            {
+              "id": "agency_representation",
+              "name": "Agency representation"
+            },
+            {
+              "id": "performance_experience",
+              "name": "Performance experience"
+            }
+          ]
+        },
+        {
+          "id": "production_manager",
+          "name": "Production Manager",
+          "kind_question": "What productions?",
+          "kinds": [
+            {
+              "id": "video_film",
+              "name": "Video / film"
+            },
+            {
+              "id": "music",
+              "name": "Music"
+            },
+            {
+              "id": "live_events",
+              "name": "Live events"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "managed_3_productions",
+              "name": "Managed 3+ productions"
+            },
+            {
+              "id": "budget_handling",
+              "name": "Budget handling"
+            },
+            {
+              "id": "crew_network",
+              "name": "Crew network"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beauty_fashion_styling",
+      "name": "Beauty, Fashion & Styling",
+      "icon": "💄",
+      "description": "Makeup, hair, styling and clothing",
+      "service_groups": [
+        {
+          "id": "beauty",
+          "name": "Beauty",
+          "services": [
+            {
+              "id": "makeup_artists",
+              "name": "Makeup Artists"
+            },
+            {
+              "id": "hair_stylists",
+              "name": "Hair Stylists"
+            }
+          ]
+        },
+        {
+          "id": "fashion",
+          "name": "Fashion",
+          "services": [
+            {
+              "id": "bridal_styling",
+              "name": "Bridal Styling"
+            },
+            {
+              "id": "stylists",
+              "name": "Stylists"
+            },
+            {
+              "id": "wedding_dresses_bridesmaid_outfits",
+              "name": "Wedding Dresses / Bridesmaid Outfits"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "makeup_artist",
+          "name": "Makeup Artist",
+          "kind_question": "Specialty?",
+          "kinds": [
+            {
+              "id": "bridal",
+              "name": "Bridal"
+            },
+            {
+              "id": "fashion_editorial",
+              "name": "Fashion / editorial"
+            },
+            {
+              "id": "film_stage",
+              "name": "Film / stage"
+            },
+            {
+              "id": "everyday",
+              "name": "Everyday"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "cosmetology_certificate",
+              "name": "Cosmetology certificate"
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "own_kit",
+              "name": "Own kit"
+            },
+            {
+              "id": "hygiene_certification",
+              "name": "Hygiene certification"
+            }
+          ]
+        },
+        {
+          "id": "hair_stylist",
+          "name": "Hair Stylist",
+          "kind_question": "Specialty?",
+          "kinds": [
+            {
+              "id": "braiding",
+              "name": "Braiding"
+            },
+            {
+              "id": "salon_styling",
+              "name": "Salon styling"
+            },
+            {
+              "id": "bridal_hair",
+              "name": "Bridal hair"
+            },
+            {
+              "id": "barbering",
+              "name": "Barbering"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "cosmetology_certificate",
+              "name": "Cosmetology certificate"
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "salon_licence",
+              "name": "Salon licence"
+            }
+          ]
+        },
+        {
+          "id": "stylist_designer",
+          "name": "Stylist / Designer",
+          "kind_question": "Specialty?",
+          "kinds": [
+            {
+              "id": "wardrobe_styling",
+              "name": "Wardrobe styling"
+            },
+            {
+              "id": "tailoring",
+              "name": "Tailoring"
+            },
+            {
+              "id": "bridal_wear",
+              "name": "Bridal wear"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "fashion_diploma",
+              "name": "Fashion diploma"
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio"
+            },
+            {
+              "id": "own_workshop",
+              "name": "Own workshop"
+            }
+          ]
+        },
+        {
+          "id": "salon_studio_manager",
+          "name": "Salon / Studio Manager",
+          "kind_question": "What scope?",
+          "kinds": [
+            {
+              "id": "salon",
+              "name": "Salon"
+            },
+            {
+              "id": "fashion_studio",
+              "name": "Fashion studio"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "managed_3_staff",
+              "name": "Managed 3+ staff"
+            },
+            {
+              "id": "business_licence",
+              "name": "Business licence"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "construction_building",
+      "name": "Construction & Building",
+      "icon": "🏗️",
+      "description": "Contractors, trades and surveying",
+      "service_groups": [
+        {
+          "id": "contracting",
+          "name": "Contracting",
+          "services": [
+            {
+              "id": "building_contractors",
+              "name": "Building Contractors"
+            },
+            {
+              "id": "roofing",
+              "name": "Roofing"
+            },
+            {
+              "id": "excavation",
+              "name": "Excavation"
+            },
+            {
+              "id": "concrete",
+              "name": "Concrete"
+            }
+          ]
+        },
+        {
+          "id": "trades",
+          "name": "Trades",
+          "services": [
+            {
+              "id": "plumbing",
+              "name": "Plumbing"
+            },
+            {
+              "id": "electrical_works",
+              "name": "Electrical Works"
+            }
+          ]
+        },
+        {
+          "id": "materials_survey",
+          "name": "Materials & Survey",
+          "services": [
+            {
+              "id": "construction_materials",
+              "name": "Construction Materials"
+            },
+            {
+              "id": "surveying",
+              "name": "Surveying"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_construction",
+              "name": "Other Construction"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "site_manager",
+          "name": "Site Manager",
+          "kind_question": "What type of sites?",
+          "kinds": [
+            {
+              "id": "residential",
+              "name": "Residential"
+            },
+            {
+              "id": "commercial",
+              "name": "Commercial"
+            },
+            {
+              "id": "infrastructure",
+              "name": "Infrastructure"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "civil_construction_diploma_or_degree",
+              "name": "Civil/Construction diploma or degree"
+            },
+            {
+              "id": "registered_with_engineers_contractors_board",
+              "name": "Registered with engineers/contractors board"
+            },
+            {
+              "id": "5_years_on_site",
+              "name": "5+ years on site"
+            },
+            {
+              "id": "safety_certification_osha",
+              "name": "Safety certification (OSHA)"
+            }
+          ]
+        },
+        {
+          "id": "project_manager",
+          "name": "Project Manager",
+          "kind_question": "What kind of projects?",
+          "kinds": [
+            {
+              "id": "residential",
+              "name": "Residential"
+            },
+            {
+              "id": "commercial",
+              "name": "Commercial"
+            },
+            {
+              "id": "roads_civil",
+              "name": "Roads & civil"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pmp_prince2",
+              "name": "PMP / PRINCE2"
+            },
+            {
+              "id": "degree",
+              "name": "Degree"
+            },
+            {
+              "id": "delivered_3_projects",
+              "name": "Delivered 3+ projects"
+            }
+          ]
+        },
+        {
+          "id": "foreman_supervisor",
+          "name": "Foreman / Supervisor",
+          "kind_question": "Which trade?",
+          "kinds": [
+            {
+              "id": "masonry",
+              "name": "Masonry"
+            },
+            {
+              "id": "roofing",
+              "name": "Roofing"
+            },
+            {
+              "id": "concrete",
+              "name": "Concrete"
+            },
+            {
+              "id": "finishing",
+              "name": "Finishing"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "trade_test_certificate",
+              "name": "Trade test certificate"
+            },
+            {
+              "id": "managed_10_workers",
+              "name": "Managed 10+ workers"
+            },
+            {
+              "id": "safety_training",
+              "name": "Safety training"
+            }
+          ]
+        },
+        {
+          "id": "skilled_tradesperson",
+          "name": "Skilled Tradesperson",
+          "kind_question": "Which trade?",
+          "kinds": [
+            {
+              "id": "mason",
+              "name": "Mason"
+            },
+            {
+              "id": "plumber",
+              "name": "Plumber"
+            },
+            {
+              "id": "electrician",
+              "name": "Electrician"
+            },
+            {
+              "id": "carpenter",
+              "name": "Carpenter"
+            },
+            {
+              "id": "welder",
+              "name": "Welder"
+            },
+            {
+              "id": "painter",
+              "name": "Painter"
+            },
+            {
+              "id": "roofer",
+              "name": "Roofer"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "trade_test_grade_i_ii_iii",
+              "name": "Trade test (Grade I/II/III)"
+            },
+            {
+              "id": "licence_electrical_plumbing",
+              "name": "Licence (electrical/plumbing)"
+            },
+            {
+              "id": "own_tools",
+              "name": "Own tools"
+            },
+            {
+              "id": "2_years_experience",
+              "name": "2+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "surveyor",
+          "name": "Surveyor",
+          "kind_question": "What type?",
+          "kinds": [
+            {
+              "id": "land",
+              "name": "Land"
+            },
+            {
+              "id": "quantity",
+              "name": "Quantity"
+            },
+            {
+              "id": "topographic",
+              "name": "Topographic"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "registered_surveyor",
+              "name": "Registered surveyor"
+            },
+            {
+              "id": "degree_diploma",
+              "name": "Degree / diploma"
+            },
+            {
+              "id": "own_instruments",
+              "name": "Own instruments"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "energy_water",
+      "name": "Energy & Water",
+      "icon": "⚡",
+      "description": "Solar, power backup, boreholes and water systems",
+      "service_groups": [
+        {
+          "id": "power",
+          "name": "Power",
+          "services": [
+            {
+              "id": "solar_systems",
+              "name": "Solar Systems"
+            },
+            {
+              "id": "batteries",
+              "name": "Batteries"
+            },
+            {
+              "id": "backup_power",
+              "name": "Backup Power"
+            },
+            {
+              "id": "generators",
+              "name": "Generators"
+            },
+            {
+              "id": "electrical_installation",
+              "name": "Electrical Installation"
+            }
+          ]
+        },
+        {
+          "id": "water",
+          "name": "Water",
+          "services": [
+            {
+              "id": "boreholes",
+              "name": "Boreholes"
+            },
+            {
+              "id": "water_systems",
+              "name": "Water Systems"
+            }
+          ]
+        },
+        {
+          "id": "advisory",
+          "name": "Advisory",
+          "services": [
+            {
+              "id": "energy_consulting",
+              "name": "Energy Consulting"
+            },
+            {
+              "id": "other_energy_services",
+              "name": "Other Energy Services"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "solar_electrical_technician",
+          "name": "Solar / Electrical Technician",
+          "kind_question": "What do you install?",
+          "kinds": [
+            {
+              "id": "solar_pv",
+              "name": "Solar PV"
+            },
+            {
+              "id": "batteries_inverters",
+              "name": "Batteries & inverters"
+            },
+            {
+              "id": "generators",
+              "name": "Generators"
+            },
+            {
+              "id": "wiring",
+              "name": "Wiring"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "electrical_licence",
+              "name": "Electrical licence"
+            },
+            {
+              "id": "solar_installer_certificate",
+              "name": "Solar installer certificate"
+            },
+            {
+              "id": "safety_training",
+              "name": "Safety training"
+            },
+            {
+              "id": "own_tools",
+              "name": "Own tools"
+            }
+          ]
+        },
+        {
+          "id": "borehole_water_technician",
+          "name": "Borehole / Water Technician",
+          "kind_question": "What do you do?",
+          "kinds": [
+            {
+              "id": "drilling",
+              "name": "Drilling"
+            },
+            {
+              "id": "pump_installation",
+              "name": "Pump installation"
+            },
+            {
+              "id": "plumbing_tanks",
+              "name": "Plumbing & tanks"
+            },
+            {
+              "id": "water_treatment",
+              "name": "Water treatment"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "water_technician_certificate",
+              "name": "Water technician certificate"
+            },
+            {
+              "id": "drilling_permit",
+              "name": "Drilling permit"
+            },
+            {
+              "id": "own_equipment",
+              "name": "Own equipment"
+            }
+          ]
+        },
+        {
+          "id": "energy_engineer",
+          "name": "Energy Engineer",
+          "kind_question": "Which area?",
+          "kinds": [
+            {
+              "id": "solar_design",
+              "name": "Solar design"
+            },
+            {
+              "id": "energy_audits",
+              "name": "Energy audits"
+            },
+            {
+              "id": "grid_mini_grid",
+              "name": "Grid / mini-grid"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "engineering_degree",
+              "name": "Engineering degree"
+            },
+            {
+              "id": "registered_engineer",
+              "name": "Registered engineer"
+            },
+            {
+              "id": "design_software_skills",
+              "name": "Design software skills"
+            }
+          ]
+        },
+        {
+          "id": "project_manager",
+          "name": "Project Manager",
+          "kind_question": "What kind of projects?",
+          "kinds": [
+            {
+              "id": "solar",
+              "name": "Solar"
+            },
+            {
+              "id": "water",
+              "name": "Water"
+            },
+            {
+              "id": "electrification",
+              "name": "Electrification"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pmp_prince2",
+              "name": "PMP / PRINCE2"
+            },
+            {
+              "id": "delivered_3_projects",
+              "name": "Delivered 3+ projects"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transport_logistics",
+      "name": "Transport & Logistics",
+      "icon": "🚚",
+      "description": "Moving, hauling, delivery and cold chain",
+      "service_groups": [
+        {
+          "id": "freight",
+          "name": "Freight",
+          "services": [
+            {
+              "id": "cargo_transport",
+              "name": "Cargo Transport"
+            },
+            {
+              "id": "bulk_delivery",
+              "name": "Bulk Delivery"
+            },
+            {
+              "id": "heavy_haulage",
+              "name": "Heavy Haulage"
+            },
+            {
+              "id": "agricultural_transport",
+              "name": "Agricultural Transport"
+            },
+            {
+              "id": "cold_chain_refrigerated",
+              "name": "Cold Chain & Refrigerated"
+            }
+          ]
+        },
+        {
+          "id": "delivery_moving",
+          "name": "Delivery & Moving",
+          "services": [
+            {
+              "id": "courier",
+              "name": "Courier"
+            },
+            {
+              "id": "moving_services",
+              "name": "Moving Services"
+            }
+          ]
+        },
+        {
+          "id": "vehicles",
+          "name": "Vehicles",
+          "services": [
+            {
+              "id": "truck_hire",
+              "name": "Truck Hire"
+            },
+            {
+              "id": "vehicle_transport",
+              "name": "Vehicle Transport"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_logistics",
+              "name": "Other Logistics"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "driver",
+          "name": "Driver",
+          "kind_question": "What do you drive?",
+          "kinds": [
+            {
+              "id": "truck_heavy",
+              "name": "Truck / heavy"
+            },
+            {
+              "id": "pickup_van",
+              "name": "Pickup / van"
+            },
+            {
+              "id": "bus_minibus",
+              "name": "Bus / minibus"
+            },
+            {
+              "id": "motorcycle_courier",
+              "name": "Motorcycle courier"
+            },
+            {
+              "id": "tanker",
+              "name": "Tanker"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "valid_driving_licence_class",
+              "name": "Valid driving licence (class)"
+            },
+            {
+              "id": "psv_badge",
+              "name": "PSV badge"
+            },
+            {
+              "id": "clean_driving_record",
+              "name": "Clean driving record"
+            },
+            {
+              "id": "defensive_driving_certificate",
+              "name": "Defensive driving certificate"
+            },
+            {
+              "id": "own_vehicle",
+              "name": "Own vehicle"
+            }
+          ]
+        },
+        {
+          "id": "fleet_operations_manager",
+          "name": "Fleet / Operations Manager",
+          "kind_question": "What fleet?",
+          "kinds": [
+            {
+              "id": "trucks",
+              "name": "Trucks"
+            },
+            {
+              "id": "vans_couriers",
+              "name": "Vans & couriers"
+            },
+            {
+              "id": "mixed",
+              "name": "Mixed"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "logistics_diploma_degree",
+              "name": "Logistics diploma / degree"
+            },
+            {
+              "id": "managed_10_vehicles",
+              "name": "Managed 10+ vehicles"
+            },
+            {
+              "id": "transport_licence",
+              "name": "Transport licence"
+            }
+          ]
+        },
+        {
+          "id": "dispatcher_coordinator",
+          "name": "Dispatcher / Coordinator",
+          "kind_question": "What area?",
+          "kinds": [
+            {
+              "id": "route_planning",
+              "name": "Route planning"
+            },
+            {
+              "id": "customs_clearing",
+              "name": "Customs & clearing"
+            },
+            {
+              "id": "warehouse",
+              "name": "Warehouse"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "logistics_experience",
+              "name": "Logistics experience"
+            },
+            {
+              "id": "customs_clearing_licence",
+              "name": "Customs clearing licence"
+            }
+          ]
+        },
+        {
+          "id": "loader_mover",
+          "name": "Loader / Mover",
+          "kind_question": "What work?",
+          "kinds": [
+            {
+              "id": "moving",
+              "name": "Moving"
+            },
+            {
+              "id": "warehouse",
+              "name": "Warehouse"
+            },
+            {
+              "id": "loading",
+              "name": "Loading"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "physical_fitness",
+              "name": "Physical fitness"
+            },
+            {
+              "id": "experience_1_year",
+              "name": "Experience 1+ year"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "machinery_equipment",
+      "name": "Machinery & Equipment",
+      "icon": "🚜",
+      "description": "Heavy machinery and equipment hire, with or without an operator",
+      "service_groups": [
+        {
+          "id": "earthmoving",
+          "name": "Earthmoving",
+          "services": [
+            {
+              "id": "excavator_hire",
+              "name": "Excavator Hire"
+            },
+            {
+              "id": "loader_hire",
+              "name": "Loader Hire"
+            },
+            {
+              "id": "grader_hire",
+              "name": "Grader Hire"
+            }
+          ]
+        },
+        {
+          "id": "lifting_power",
+          "name": "Lifting & Power",
+          "services": [
+            {
+              "id": "crane_hire",
+              "name": "Crane Hire"
+            },
+            {
+              "id": "generator_hire",
+              "name": "Generator Hire"
+            }
+          ]
+        },
+        {
+          "id": "farm_industrial",
+          "name": "Farm & Industrial",
+          "services": [
+            {
+              "id": "tractor_hire",
+              "name": "Tractor Hire"
+            },
+            {
+              "id": "industrial_equipment",
+              "name": "Industrial Equipment"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_machinery",
+              "name": "Other Machinery"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "machine_operator",
+          "name": "Machine Operator",
+          "kind_question": "Which machine do you operate?",
+          "kinds": [
+            {
+              "id": "excavator",
+              "name": "Excavator"
+            },
+            {
+              "id": "loader",
+              "name": "Loader"
+            },
+            {
+              "id": "grader",
+              "name": "Grader"
+            },
+            {
+              "id": "crane",
+              "name": "Crane"
+            },
+            {
+              "id": "tractor",
+              "name": "Tractor"
+            },
+            {
+              "id": "roller",
+              "name": "Roller"
+            },
+            {
+              "id": "forklift",
+              "name": "Forklift"
+            },
+            {
+              "id": "bulldozer",
+              "name": "Bulldozer"
+            },
+            {
+              "id": "concrete_mixer_pump",
+              "name": "Concrete mixer / pump"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "operator_licence_certificate",
+              "name": "Operator licence / certificate"
+            },
+            {
+              "id": "safety_osha_certificate",
+              "name": "Safety / OSHA certificate"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            },
+            {
+              "id": "medical_fitness",
+              "name": "Medical fitness"
+            },
+            {
+              "id": "can_work_away_from_home",
+              "name": "Can work away from home"
+            }
+          ]
+        },
+        {
+          "id": "equipment_mechanic",
+          "name": "Equipment Mechanic",
+          "kind_question": "What do you service?",
+          "kinds": [
+            {
+              "id": "heavy_plant",
+              "name": "Heavy plant"
+            },
+            {
+              "id": "generators",
+              "name": "Generators"
+            },
+            {
+              "id": "hydraulics",
+              "name": "Hydraulics"
+            },
+            {
+              "id": "electrical_systems",
+              "name": "Electrical systems"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "mechanic_trade_certificate",
+              "name": "Mechanic trade certificate"
+            },
+            {
+              "id": "own_tools",
+              "name": "Own tools"
+            },
+            {
+              "id": "field_repair_experience",
+              "name": "Field repair experience"
+            }
+          ]
+        },
+        {
+          "id": "fleet_equipment_manager",
+          "name": "Fleet / Equipment Manager",
+          "kind_question": "What fleet?",
+          "kinds": [
+            {
+              "id": "construction_plant",
+              "name": "Construction plant"
+            },
+            {
+              "id": "farm_machinery",
+              "name": "Farm machinery"
+            },
+            {
+              "id": "industrial_equipment",
+              "name": "Industrial equipment"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "managed_fleet_of_5_machines",
+              "name": "Managed fleet of 5+ machines"
+            },
+            {
+              "id": "diploma_degree",
+              "name": "Diploma / degree"
+            },
+            {
+              "id": "maintenance_scheduling",
+              "name": "Maintenance scheduling"
+            }
+          ]
+        },
+        {
+          "id": "site_supervisor",
+          "name": "Site Supervisor",
+          "kind_question": "Which sites?",
+          "kinds": [
+            {
+              "id": "earthworks",
+              "name": "Earthworks"
+            },
+            {
+              "id": "quarry_mining",
+              "name": "Quarry / mining"
+            },
+            {
+              "id": "farm",
+              "name": "Farm"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "plant_experience",
+              "name": "Plant experience"
+            },
+            {
+              "id": "team_leadership",
+              "name": "Team leadership"
+            },
+            {
+              "id": "safety_certification",
+              "name": "Safety certification"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agriculture_agribusiness",
+      "name": "Agriculture & Agribusiness",
+      "icon": "🌾",
+      "description": "Farm services, inputs and produce",
+      "service_groups": [
+        {
+          "id": "farm_operations",
+          "name": "Farm Operations",
+          "services": [
+            {
+              "id": "farm_services",
+              "name": "Farm Services"
+            },
+            {
+              "id": "irrigation",
+              "name": "Irrigation"
+            }
+          ]
+        },
+        {
+          "id": "inputs_livestock",
+          "name": "Inputs & Livestock",
+          "services": [
+            {
+              "id": "seeds_inputs",
+              "name": "Seeds & Inputs"
+            },
+            {
+              "id": "livestock_sourcing",
+              "name": "Livestock Sourcing"
+            }
+          ]
+        },
+        {
+          "id": "market",
+          "name": "Market",
+          "services": [
+            {
+              "id": "produce_buyers",
+              "name": "Produce Buyers"
+            },
+            {
+              "id": "other_agriculture",
+              "name": "Other Agriculture"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "farm_manager",
+          "name": "Farm Manager",
+          "kind_question": "What farm?",
+          "kinds": [
+            {
+              "id": "crops",
+              "name": "Crops"
+            },
+            {
+              "id": "dairy",
+              "name": "Dairy"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "mixed",
+              "name": "Mixed"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "agriculture_diploma_degree",
+              "name": "Agriculture diploma / degree"
+            },
+            {
+              "id": "managed_5_workers",
+              "name": "Managed 5+ workers"
+            },
+            {
+              "id": "5_years_farming_experience",
+              "name": "5+ years farming experience"
+            }
+          ]
+        },
+        {
+          "id": "agronomist_extension_officer",
+          "name": "Agronomist / Extension Officer",
+          "kind_question": "What focus?",
+          "kinds": [
+            {
+              "id": "crops",
+              "name": "Crops"
+            },
+            {
+              "id": "soil_irrigation",
+              "name": "Soil & irrigation"
+            },
+            {
+              "id": "pest_management",
+              "name": "Pest management"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree_diploma_in_agronomy",
+              "name": "Degree / diploma in agronomy"
+            },
+            {
+              "id": "field_experience",
+              "name": "Field experience"
+            }
+          ]
+        },
+        {
+          "id": "veterinary_livestock_officer",
+          "name": "Veterinary / Livestock Officer",
+          "kind_question": "What animals?",
+          "kinds": [
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "small_ruminants",
+              "name": "Small ruminants"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "veterinary_licence",
+              "name": "Veterinary licence"
+            },
+            {
+              "id": "diploma_degree",
+              "name": "Diploma / degree"
+            },
+            {
+              "id": "vaccination_certification",
+              "name": "Vaccination certification"
+            }
+          ]
+        },
+        {
+          "id": "farm_worker_operator",
+          "name": "Farm Worker / Operator",
+          "kind_question": "What work?",
+          "kinds": [
+            {
+              "id": "tractor_operation",
+              "name": "Tractor operation"
+            },
+            {
+              "id": "irrigation",
+              "name": "Irrigation"
+            },
+            {
+              "id": "harvesting",
+              "name": "Harvesting"
+            },
+            {
+              "id": "spraying",
+              "name": "Spraying"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "tractor_licence",
+              "name": "Tractor licence"
+            },
+            {
+              "id": "pesticide_handling_certificate",
+              "name": "Pesticide handling certificate"
+            },
+            {
+              "id": "experience_1_year",
+              "name": "Experience 1+ year"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "procurement_sourcing",
+      "name": "Procurement & Sourcing",
+      "icon": "🔎",
+      "description": "Buying, importing and finding hard-to-get products",
+      "service_groups": [
+        {
+          "id": "sourcing",
+          "name": "Sourcing",
+          "services": [
+            {
+              "id": "bulk_procurement",
+              "name": "Bulk Procurement"
+            },
+            {
+              "id": "equipment_sourcing",
+              "name": "Equipment Sourcing"
+            },
+            {
+              "id": "imported_products",
+              "name": "Imported Products"
+            },
+            {
+              "id": "hard_to_find_products",
+              "name": "Hard-to-Find Products"
+            }
+          ]
+        },
+        {
+          "id": "parts_supplies",
+          "name": "Parts & Supplies",
+          "services": [
+            {
+              "id": "electronics_procurement",
+              "name": "Electronics Procurement"
+            },
+            {
+              "id": "industrial_parts",
+              "name": "Industrial Parts"
+            },
+            {
+              "id": "spare_parts",
+              "name": "Spare Parts"
+            },
+            {
+              "id": "medical_lab_supplies",
+              "name": "Medical & Lab Supplies"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_procurement",
+              "name": "Other Procurement"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "procurement_officer_manager",
+          "name": "Procurement Officer / Manager",
+          "kind_question": "What do you buy?",
+          "kinds": [
+            {
+              "id": "industrial",
+              "name": "Industrial"
+            },
+            {
+              "id": "electronics",
+              "name": "Electronics"
+            },
+            {
+              "id": "medical_lab",
+              "name": "Medical & lab"
+            },
+            {
+              "id": "general_supplies",
+              "name": "General supplies"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "procurement_diploma_cips_or_similar",
+              "name": "Procurement diploma (CIPS or similar)"
+            },
+            {
+              "id": "supplier_network",
+              "name": "Supplier network"
+            },
+            {
+              "id": "3_years_experience",
+              "name": "3+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "sourcing_agent",
+          "name": "Sourcing Agent",
+          "kind_question": "Where do you source?",
+          "kinds": [
+            {
+              "id": "local",
+              "name": "Local"
+            },
+            {
+              "id": "china",
+              "name": "China"
+            },
+            {
+              "id": "dubai",
+              "name": "Dubai"
+            },
+            {
+              "id": "india",
+              "name": "India"
+            },
+            {
+              "id": "europe_usa",
+              "name": "Europe / USA"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "import_export_experience",
+              "name": "Import/export experience"
+            },
+            {
+              "id": "language_skills",
+              "name": "Language skills"
+            },
+            {
+              "id": "supplier_contacts",
+              "name": "Supplier contacts"
+            }
+          ]
+        },
+        {
+          "id": "clearing_customs_agent",
+          "name": "Clearing & Customs Agent",
+          "kind_question": "What do you handle?",
+          "kinds": [
+            {
+              "id": "imports",
+              "name": "Imports"
+            },
+            {
+              "id": "exports",
+              "name": "Exports"
+            },
+            {
+              "id": "freight_forwarding",
+              "name": "Freight forwarding"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "customs_clearing_licence",
+              "name": "Customs clearing licence"
+            },
+            {
+              "id": "logistics_experience",
+              "name": "Logistics experience"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "travel_international",
+      "name": "Travel & International",
+      "icon": "✈️",
+      "description": "Bookings, visas, tours and relocation",
+      "service_groups": [
+        {
+          "id": "bookings",
+          "name": "Bookings",
+          "services": [
+            {
+              "id": "flight_tickets_bookings",
+              "name": "Flight Tickets & Bookings"
+            },
+            {
+              "id": "accommodation",
+              "name": "Accommodation"
+            },
+            {
+              "id": "airport_transfers",
+              "name": "Airport Transfers"
+            },
+            {
+              "id": "tour_packages",
+              "name": "Tour Packages"
+            }
+          ]
+        },
+        {
+          "id": "documents_cover",
+          "name": "Documents & Cover",
+          "services": [
+            {
+              "id": "visa_assistance",
+              "name": "Visa Assistance"
+            },
+            {
+              "id": "travel_documentation",
+              "name": "Travel Documentation"
+            },
+            {
+              "id": "travel_insurance",
+              "name": "Travel Insurance"
+            }
+          ]
+        },
+        {
+          "id": "specialised",
+          "name": "Specialised",
+          "services": [
+            {
+              "id": "hajj_umrah",
+              "name": "Hajj & Umrah"
+            },
+            {
+              "id": "international_relocation",
+              "name": "International Relocation"
+            },
+            {
+              "id": "travel_consultation",
+              "name": "Travel Consultation"
+            },
+            {
+              "id": "other_travel_services",
+              "name": "Other Travel Services"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "travel_agent_consultant",
+          "name": "Travel Agent / Consultant",
+          "kind_question": "What do you handle?",
+          "kinds": [
+            {
+              "id": "flights",
+              "name": "Flights"
+            },
+            {
+              "id": "tours_packages",
+              "name": "Tours & packages"
+            },
+            {
+              "id": "visas",
+              "name": "Visas"
+            },
+            {
+              "id": "hajj_umrah",
+              "name": "Hajj & Umrah"
+            },
+            {
+              "id": "relocation",
+              "name": "Relocation"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "iata_certification",
+              "name": "IATA certification"
+            },
+            {
+              "id": "travel_agency_licence",
+              "name": "Travel agency licence"
+            },
+            {
+              "id": "2_years_experience",
+              "name": "2+ years experience"
+            }
+          ]
+        },
+        {
+          "id": "tour_guide",
+          "name": "Tour Guide",
+          "kind_question": "What tours?",
+          "kinds": [
+            {
+              "id": "wildlife_safari",
+              "name": "Wildlife safari"
+            },
+            {
+              "id": "cultural",
+              "name": "Cultural"
+            },
+            {
+              "id": "city_tours",
+              "name": "City tours"
+            },
+            {
+              "id": "adventure",
+              "name": "Adventure"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "tourism_board_guide_licence",
+              "name": "Tourism board guide licence"
+            },
+            {
+              "id": "first_aid_certificate",
+              "name": "First aid certificate"
+            },
+            {
+              "id": "languages_spoken",
+              "name": "Languages spoken"
+            }
+          ]
+        },
+        {
+          "id": "driver_guide",
+          "name": "Driver-Guide",
+          "kind_question": "What vehicle?",
+          "kinds": [
+            {
+              "id": "safari_vehicle",
+              "name": "Safari vehicle"
+            },
+            {
+              "id": "minibus",
+              "name": "Minibus"
+            },
+            {
+              "id": "airport_transfers",
+              "name": "Airport transfers"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "valid_driving_licence_class",
+              "name": "Valid driving licence (class)"
+            },
+            {
+              "id": "tourism_licence",
+              "name": "Tourism licence"
+            },
+            {
+              "id": "clean_driving_record",
+              "name": "Clean driving record"
+            }
+          ]
+        },
+        {
+          "id": "operations_manager",
+          "name": "Operations Manager",
+          "kind_question": "What scope?",
+          "kinds": [
+            {
+              "id": "tours",
+              "name": "Tours"
+            },
+            {
+              "id": "visa_documentation",
+              "name": "Visa & documentation"
+            },
+            {
+              "id": "travel_desk",
+              "name": "Travel desk"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "tourism_diploma_degree",
+              "name": "Tourism diploma / degree"
+            },
+            {
+              "id": "managed_3_staff",
+              "name": "Managed 3+ staff"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
