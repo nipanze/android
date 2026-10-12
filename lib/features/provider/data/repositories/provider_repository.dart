@@ -8,6 +8,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_opportunity.dart';
+import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 
 @LazySingleton(as: IProviderRepository)
@@ -19,12 +20,35 @@ class ProviderRepository implements IProviderRepository {
   final SupabaseClient _client;
   final Map<String, List<ProviderCapability>> _capabilityCache = {};
   final Map<String, List<ProviderOpportunity>> _opportunityCache = {};
+  bool? _capabilityProfilesEnabled;
 
   String? get _uid => _client.auth.currentUser?.id;
 
   void _clearCache() {
     _capabilityCache.clear();
     _opportunityCache.clear();
+    _capabilityProfilesEnabled = null;
+  }
+
+  @override
+  Future<bool> capabilityProfilesEnabled() async {
+    if (_capabilityProfilesEnabled != null) {
+      return _capabilityProfilesEnabled!;
+    }
+    try {
+      final data = await _client
+          .from(TableNames.systemSettings)
+          .select('setting_value')
+          .eq('setting_key', 'capability_profiles_enabled')
+          .eq('is_public', true)
+          .maybeSingle();
+      final value = data?['setting_value']?.toString().toLowerCase();
+      _capabilityProfilesEnabled = value == 'true' || value == '1';
+      return _capabilityProfilesEnabled!;
+    } catch (_) {
+      _capabilityProfilesEnabled = false;
+      return false;
+    }
   }
 
   @override
@@ -32,6 +56,25 @@ class ProviderRepository implements IProviderRepository {
     try {
       final uid = _uid;
       if (uid == null) return const [];
+      if (await capabilityProfilesEnabled()) {
+        try {
+          final data = await _client
+              .from(ViewNames.myCapabilityStatus)
+              .select()
+              .eq('user_id', uid)
+              .order('created_at');
+          final capabilities = (data as List)
+              .map((e) => ProviderCapability.fromMap(e as Map<String, dynamic>))
+              .toList();
+          _capabilityCache[uid] = capabilities;
+          OfflineService().reportRequestSuccess();
+          return capabilities;
+        } catch (_) {
+          // Fall back to the stable base-table query when the SQL patch has
+          // not landed yet or the view is temporarily unavailable.
+        }
+      }
+
       final data = await _client
           .from(TableNames.providerCapabilities)
           .select(
@@ -148,6 +191,40 @@ class ProviderRepository implements IProviderRepository {
       if (cached != null && parseSupabaseError(e) is NetworkException) {
         return cached;
       }
+      return const [];
+    }
+  }
+
+  @override
+  Future<List<ProviderServiceRole>> getServiceRoles({
+    String? categorySlug,
+    String? capabilitySlug,
+  }) async {
+    try {
+      var query = _client.from(TableNames.capabilityRoles).select(
+            'slug, name, kind_question, category_slug, capability_slug, '
+            'role_kinds(slug, name, sort_order), '
+            'role_qualifications(slug, name, is_evidence, sort_order)',
+          );
+
+      if (capabilitySlug != null) {
+        query = query.or(
+          'capability_slug.eq.$capabilitySlug,category_slug.eq.$categorySlug',
+        ) as dynamic;
+      } else if (categorySlug != null) {
+        query = query.eq('category_slug', categorySlug) as dynamic;
+      }
+
+      final data = await (query as PostgrestFilterBuilder)
+          .eq('is_active', true)
+          .order('name', ascending: true);
+
+      return (data as List)
+          .map((row) => ProviderServiceRole.fromMap(
+                row as Map<String, dynamic>,
+              ))
+          .toList();
+    } catch (_) {
       return const [];
     }
   }

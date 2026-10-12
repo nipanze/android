@@ -15,6 +15,7 @@ class CapabilityBadge extends StatelessWidget {
     required this.capability,
     this.phoneVerified = false,
     this.identityVerified = false,
+    this.showProfileDetails = false,
     this.opportunityCount,
     this.onRemove,
   });
@@ -22,6 +23,7 @@ class CapabilityBadge extends StatelessWidget {
   final ProviderCapability capability;
   final bool phoneVerified;
   final bool identityVerified;
+  final bool showProfileDetails;
   final int? opportunityCount;
   final VoidCallback? onRemove;
 
@@ -101,6 +103,7 @@ class CapabilityBadge extends StatelessWidget {
                   children: [
                     ProviderVerificationChip(
                       level: capability.verificationLevel,
+                      status: capability.status,
                       phoneVerified: phoneVerified,
                       identityVerified: identityVerified,
                     ),
@@ -117,6 +120,10 @@ class CapabilityBadge extends StatelessWidget {
                   const SizedBox(height: 6),
                   _DeclaredOrganisation(capability: capability),
                 ],
+                if (showProfileDetails) ...[
+                  const SizedBox(height: 8),
+                  _CapabilityProfileSummary(capability: capability),
+                ],
               ],
             ),
           ),
@@ -128,6 +135,125 @@ class CapabilityBadge extends StatelessWidget {
               onPressed: onRemove,
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _CapabilityProfileSummary extends StatelessWidget {
+  const _CapabilityProfileSummary({required this.capability});
+
+  final ProviderCapability capability;
+
+  @override
+  Widget build(BuildContext context) {
+    final metadata = capability.metadata;
+    final engagements = capability.engagements;
+    final roles = capability.roles;
+    final details = <String>[
+      if (engagements.contains('service')) 'Provides service',
+      if (engagements.contains('work')) 'Available for jobs',
+      if (metadata['years_experience'] != null)
+        '${metadata['years_experience']} experience',
+      if (metadata['availability'] != null) metadata['availability'].toString(),
+      if (metadata['willing_to_travel'] == true) 'Willing to travel',
+    ];
+
+    final roleLabels = roles
+        .map((role) {
+          final roleId = role['role_id']?.toString();
+          final kinds = (role['kind_ids'] as List? ?? const [])
+              .map((kind) => kind.toString())
+              .join(', ');
+          if (roleId == null || roleId.isEmpty) return null;
+          return kinds.isEmpty
+              ? _formatSlug(roleId)
+              : '${_formatSlug(roleId)}: $kinds';
+        })
+        .whereType<String>()
+        .toList();
+
+    final evidenceParts = <String>[
+      if (capability.pendingEvidenceCount > 0)
+        '${capability.pendingEvidenceCount} pending',
+      if (capability.approvedEvidenceCount > 0)
+        '${capability.approvedEvidenceCount} approved',
+      if (capability.rejectedEvidenceCount > 0)
+        '${capability.rejectedEvidenceCount} rejected',
+      if (capability.expiredEvidenceCount > 0)
+        '${capability.expiredEvidenceCount} expired',
+    ];
+
+    if (details.isEmpty &&
+        roleLabels.isEmpty &&
+        evidenceParts.isEmpty &&
+        capability.latestRejectReason == null) {
+      return const SizedBox.shrink();
+    }
+
+    final text2 =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.68);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (details.isNotEmpty)
+          Text(
+            details.join(' · '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: text2,
+                ),
+          ),
+        if (roleLabels.isNotEmpty) ...[
+          const SizedBox(height: 3),
+          Text(
+            roleLabels.join(' · '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: text2,
+                ),
+          ),
+        ],
+        if (evidenceParts.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              for (final part in evidenceParts) _MiniPill(label: part),
+            ],
+          ),
+        ],
+        if (capability.latestRejectReason != null &&
+            capability.latestRejectReason!.isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text(
+            capability.latestRejectReason!,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.danger,
+                ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _MiniPill extends StatelessWidget {
+  const _MiniPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall,
       ),
     );
   }
@@ -221,6 +347,12 @@ String _platformLabel(String slug, AppLocalizations l10n) => switch (slug) {
       'whatsapp' => l10n.audiencePlatformWhatsApp,
       _ => l10n.audiencePlatformOther,
     };
+
+String _formatSlug(String slug) => slug
+    .split('_')
+    .where((part) => part.isNotEmpty)
+    .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+    .join(' ');
 
 String _capabilityDisplayName(
   String slug,

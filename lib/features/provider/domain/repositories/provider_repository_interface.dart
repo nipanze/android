@@ -2,8 +2,10 @@
 
 import '../entities/provider_capability.dart';
 import '../entities/provider_opportunity.dart';
+import '../entities/provider_service_role.dart';
 
 abstract class IProviderRepository {
+  Future<bool> capabilityProfilesEnabled();
   Future<List<ProviderCapability>> getProviderCapabilities();
   Future<void> addCapabilities(
     List<String> slugs, {
@@ -12,4 +14,8 @@ abstract class IProviderRepository {
   Future<void> removeCapability(String capabilitySlug);
   Future<bool> hasCapability(String capabilitySlug);
   Future<List<ProviderOpportunity>> getProviderOpportunities();
+  Future<List<ProviderServiceRole>> getServiceRoles({
+    String? categorySlug,
+    String? capabilitySlug,
+  });
 }

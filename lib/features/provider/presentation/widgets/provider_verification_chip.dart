@@ -10,11 +10,13 @@ class ProviderVerificationChip extends StatelessWidget {
   const ProviderVerificationChip({
     super.key,
     required this.level,
+    this.status,
     this.phoneVerified = false,
     this.identityVerified = false,
   });
 
   final ProviderVerificationLevel level;
+  final ProviderCapabilityStatus? status;
   final bool phoneVerified;
   final bool identityVerified;
 
@@ -22,25 +24,46 @@ class ProviderVerificationChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final capabilityStatus = status ??
+        (level == ProviderVerificationLevel.providerVerified
+            ? ProviderCapabilityStatus.providerVerified
+            : ProviderCapabilityStatus.selfDeclared);
     final isProviderVerified =
-      level == ProviderVerificationLevel.providerVerified;
-    final color = isProviderVerified || identityVerified
-      ? AppColors.accent
-      : phoneVerified
-        ? AppColors.success
-        : AppColors.warning;
-    final label = isProviderVerified
-      ? l10n.providerVerified
-      : identityVerified
-        ? l10n.kycIdentityVerified
-        : phoneVerified
-          ? l10n.phoneVerified
-          : l10n.selfDeclared;
-    final icon = isProviderVerified || identityVerified
-      ? Icons.verified_rounded
-      : phoneVerified
-        ? Icons.phone_iphone_rounded
-        : Icons.info_outline_rounded;
+        capabilityStatus == ProviderCapabilityStatus.providerVerified;
+    final color = switch (capabilityStatus) {
+      ProviderCapabilityStatus.providerVerified => AppColors.accent,
+      ProviderCapabilityStatus.pendingReview => AppColors.warning,
+      ProviderCapabilityStatus.rejected => AppColors.danger,
+      ProviderCapabilityStatus.expired => AppColors.danger,
+      ProviderCapabilityStatus.selfDeclared => identityVerified
+          ? AppColors.accent
+          : phoneVerified
+              ? AppColors.success
+              : AppColors.warning,
+    };
+    final label = switch (capabilityStatus) {
+      ProviderCapabilityStatus.providerVerified => l10n.providerVerified,
+      ProviderCapabilityStatus.pendingReview => 'Pending review',
+      ProviderCapabilityStatus.rejected => 'Rejected',
+      ProviderCapabilityStatus.expired => l10n.expired,
+      ProviderCapabilityStatus.selfDeclared => identityVerified
+          ? l10n.kycIdentityVerified
+          : phoneVerified
+              ? l10n.phoneVerified
+              : l10n.selfDeclared,
+    };
+    final icon = switch (capabilityStatus) {
+      ProviderCapabilityStatus.providerVerified => Icons.verified_rounded,
+      ProviderCapabilityStatus.pendingReview => Icons.hourglass_top_rounded,
+      ProviderCapabilityStatus.rejected => Icons.error_outline_rounded,
+      ProviderCapabilityStatus.expired => Icons.event_busy_rounded,
+      ProviderCapabilityStatus.selfDeclared =>
+        isProviderVerified || identityVerified
+            ? Icons.verified_rounded
+            : phoneVerified
+                ? Icons.phone_iphone_rounded
+                : Icons.info_outline_rounded,
+    };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

@@ -768,6 +768,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
     if (shouldAdd == true && mounted) {
       final provRepo = getIt<IProviderRepository>();
       final existing = await provRepo.getProviderCapabilities();
+      final profilesEnabled = await provRepo.capabilityProfilesEnabled();
       if (!mounted) return;
       final existingSlugs = existing.map((c) => c.capabilitySlug).toSet();
       final selection = await AddServiceSheet.show(
@@ -775,6 +776,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
         existingSlugs: existingSlugs,
         preselectedCategorySlug: need.categorySlug,
         needsRepository: getIt<NeedsRepository>(),
+        providerRepository: provRepo,
+        capabilityProfilesEnabled: profilesEnabled,
       );
       if (selection != null && selection.slugs.isNotEmpty && mounted) {
         await provRepo.addCapabilities(

@@ -10,6 +10,7 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/repositories/provider_repository_interface.dart';
 import '../cubit/capabilities_cubit.dart';
 import '../cubit/capabilities_state.dart';
 import '../widgets/capability_badge.dart';
@@ -100,6 +101,7 @@ class _ProviderServicesView extends StatelessWidget {
                     capability: cap,
                     phoneVerified: profile?.trustPhoneVerified ?? false,
                     identityVerified: profile?.isKycApproved ?? false,
+                    showProfileDetails: loaded.capabilityProfilesEnabled,
                     opportunityCount: opps
                         .where((o) => o.capabilitySlug == cap.capabilitySlug)
                         .fold<int>(0, (sum, o) => sum + o.opportunityCount),
@@ -143,6 +145,7 @@ class _ProviderServicesView extends StatelessWidget {
         : null;
 
     final needsRepo = getIt<NeedsRepository>();
+    final providerRepo = getIt<IProviderRepository>();
     final selection = await AddServiceSheet.show(
       context,
       existingSlugs: existingSlugs,
@@ -154,6 +157,9 @@ class _ProviderServicesView extends StatelessWidget {
           : null,
       existingFinancialMetadata: existingFinancialMetadata,
       needsRepository: needsRepo,
+      providerRepository: providerRepo,
+      capabilityProfilesEnabled:
+          loaded is CapabilitiesLoaded && loaded.capabilityProfilesEnabled,
     );
     if (selection != null &&
         (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {

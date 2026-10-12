@@ -19,6 +19,11 @@ class TableNames {
   static const String needOffers = 'need_offers';
   static const String needContactReveals = 'need_contact_reveals';
   static const String providerCapabilities = 'provider_capabilities';
+  static const String providerCapabilityEvidence =
+      'provider_capability_evidence';
+  static const String capabilityRoles = 'capability_roles';
+  static const String roleKinds = 'role_kinds';
+  static const String roleQualifications = 'role_qualifications';
   static const String userInterests = 'user_interests';
   static const String userInterestEvents = 'user_interest_events';
   static const String discoveryQuestionTemplates =
@@ -46,6 +51,7 @@ class ViewNames {
   static const String forexListings = 'v_forex_listings';
   static const String needsListings = 'v_needs_listings';
   static const String providerBadges = 'v_provider_badges';
+  static const String myCapabilityStatus = 'v_my_capability_status';
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
   static const String forexOffers = 'v_forex_offers';

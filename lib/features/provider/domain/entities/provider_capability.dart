@@ -23,6 +23,22 @@ enum ProviderVerificationLevel {
   }
 }
 
+enum ProviderCapabilityStatus {
+  selfDeclared,
+  pendingReview,
+  providerVerified,
+  rejected,
+  expired;
+
+  static ProviderCapabilityStatus fromString(String? value) => switch (value) {
+        'pending_review' => ProviderCapabilityStatus.pendingReview,
+        'provider_verified' => ProviderCapabilityStatus.providerVerified,
+        'rejected' => ProviderCapabilityStatus.rejected,
+        'expired' => ProviderCapabilityStatus.expired,
+        _ => ProviderCapabilityStatus.selfDeclared,
+      };
+}
+
 class ProviderCapability {
   const ProviderCapability({
     required this.id,
@@ -39,15 +55,23 @@ class ProviderCapability {
     this.categorySlug,
     this.categoryName,
     this.categoryIcon,
+    this.status = ProviderCapabilityStatus.selfDeclared,
+    this.pendingEvidenceCount = 0,
+    this.approvedEvidenceCount = 0,
+    this.rejectedEvidenceCount = 0,
+    this.expiredEvidenceCount = 0,
+    this.latestRejectReason,
   });
 
   factory ProviderCapability.fromMap(Map<String, dynamic> map) {
+    final verificationLevel = ProviderVerificationLevel.fromString(
+      map['verification_level'] as String?,
+    );
     return ProviderCapability(
-      id: map['id'] as String,
+      id: (map['id'] ?? map['provider_capability_id']) as String,
       userId: map['user_id'] as String,
       capabilitySlug: map['capability_slug'] as String,
-      verificationLevel: ProviderVerificationLevel.fromString(
-          map['verification_level'] as String?),
+      verificationLevel: verificationLevel,
       evidenceUrl: map['evidence_url'] as String?,
       metadata: (map['metadata'] as Map<String, dynamic>?) ?? const {},
       verifiedBy: map['verified_by'] as String?,
@@ -60,6 +84,18 @@ class ProviderCapability {
       categorySlug: map['category_slug'] as String?,
       categoryName: map['category_name'] as String?,
       categoryIcon: map['category_icon'] as String?,
+      status: ProviderCapabilityStatus.fromString(
+        map['capability_status'] as String? ?? verificationLevel.dbValue,
+      ),
+      pendingEvidenceCount:
+          (map['pending_evidence_count'] as num?)?.toInt() ?? 0,
+      approvedEvidenceCount:
+          (map['approved_evidence_count'] as num?)?.toInt() ?? 0,
+      rejectedEvidenceCount:
+          (map['rejected_evidence_count'] as num?)?.toInt() ?? 0,
+      expiredEvidenceCount:
+          (map['expired_evidence_count'] as num?)?.toInt() ?? 0,
+      latestRejectReason: map['latest_reject_reason'] as String?,
     );
   }
 
@@ -78,7 +114,24 @@ class ProviderCapability {
   final String? categorySlug;
   final String? categoryName;
   final String? categoryIcon;
+  final ProviderCapabilityStatus status;
+  final int pendingEvidenceCount;
+  final int approvedEvidenceCount;
+  final int rejectedEvidenceCount;
+  final int expiredEvidenceCount;
+  final String? latestRejectReason;
 
   bool get isVerified =>
-      verificationLevel == ProviderVerificationLevel.providerVerified;
+      verificationLevel == ProviderVerificationLevel.providerVerified ||
+      status == ProviderCapabilityStatus.providerVerified;
+
+  List<String> get engagements => (metadata['engagements'] as List? ?? const [])
+      .map((value) => value.toString())
+      .toList();
+
+  List<Map<String, dynamic>> get roles =>
+      (metadata['roles'] as List? ?? const [])
+          .whereType<Map>()
+          .map((value) => value.cast<String, dynamic>())
+          .toList();
 }

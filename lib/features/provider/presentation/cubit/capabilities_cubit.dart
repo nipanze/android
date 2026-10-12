@@ -25,7 +25,11 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     if (state is! CapabilitiesLoaded) emit(const CapabilitiesLoading());
     try {
       final caps = await _repo.getProviderCapabilities();
-      emit(CapabilitiesLoaded(capabilities: caps));
+      final enabled = await _repo.capabilityProfilesEnabled();
+      emit(CapabilitiesLoaded(
+        capabilities: caps,
+        capabilityProfilesEnabled: enabled,
+      ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);
       if (state is! CapabilitiesLoaded) {
@@ -39,7 +43,12 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     try {
       final caps = await _repo.getProviderCapabilities();
       final opps = await _repo.getProviderOpportunities();
-      emit(CapabilitiesLoaded(capabilities: caps, opportunities: opps));
+      final enabled = await _repo.capabilityProfilesEnabled();
+      emit(CapabilitiesLoaded(
+        capabilities: caps,
+        opportunities: opps,
+        capabilityProfilesEnabled: enabled,
+      ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);
       if (state is! CapabilitiesLoaded) {
