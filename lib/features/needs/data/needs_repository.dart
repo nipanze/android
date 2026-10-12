@@ -72,6 +72,8 @@ class NeedsRepository {
       }
       final data = await (query as PostgrestFilterBuilder)
           .eq('is_active', true)
+          .order('sort_order', ascending: true)
+          .order('service_sort_order', ascending: true)
           .order('name', ascending: true);
 
       return _dedupeBySlug(

@@ -123,8 +123,6 @@ class _ProviderServicesView extends StatelessWidget {
                 ...caps.map(
                   (cap) => CapabilityBadge(
                     capability: cap,
-                    phoneVerified: profile?.trustPhoneVerified ?? false,
-                    identityVerified: profile?.isKycApproved ?? false,
                     showProfileDetails: loaded.capabilityProfilesEnabled,
                     opportunityCount: opps
                         .where((o) => o.capabilitySlug == cap.capabilitySlug)

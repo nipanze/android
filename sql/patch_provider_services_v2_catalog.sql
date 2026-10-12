@@ -730,6 +730,391 @@ on conflict (role_slug, slug) do update set
   is_evidence = excluded.is_evidence,
   sort_order = excluded.sort_order;
 
+-- Provider-entered qualifications remain claims until Nipanze reviews evidence.
+create table if not exists public.provider_role_qualification_claims (
+  id uuid primary key default gen_random_uuid(),
+  provider_capability_id uuid not null
+    references public.provider_capabilities(id) on delete cascade,
+  role_slug text not null,
+  qualification_slug text not null,
+  is_claimed boolean not null default true,
+  status text not null default 'self_declared'
+    check (status in ('self_declared', 'pending_review', 'verified', 'rejected', 'expired')),
+  evidence_object_path text,
+  reject_reason text,
+  expires_at timestamptz,
+  reviewed_by uuid references auth.users(id) on delete set null,
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint provider_role_qualification_claims_unique
+    unique (provider_capability_id, role_slug, qualification_slug),
+  constraint provider_role_qualification_claims_qualification_fk
+    foreign key (role_slug, qualification_slug)
+    references public.role_qualifications(role_slug, slug)
+    on delete restrict,
+  constraint provider_role_qualification_claims_review_state_check
+    check (
+      (status in ('self_declared', 'pending_review') and reviewed_by is null and reviewed_at is null)
+      or (status in ('verified', 'rejected', 'expired') and reviewed_by is not null and reviewed_at is not null)
+    )
+);
+
+create index if not exists idx_provider_role_qualification_claims_owner
+  on public.provider_role_qualification_claims(provider_capability_id, is_claimed);
+create index if not exists idx_provider_role_qualification_claims_review
+  on public.provider_role_qualification_claims(status, updated_at);
+
+alter table public.provider_role_qualification_claims enable row level security;
+drop policy if exists "provider role qualification claims owner select"
+  on public.provider_role_qualification_claims;
+create policy "provider role qualification claims owner select"
+  on public.provider_role_qualification_claims
+  for select to authenticated
+  using (
+    exists (
+      select 1 from public.provider_capabilities pc
+      where pc.id = provider_role_qualification_claims.provider_capability_id
+        and (pc.user_id = auth.uid() or private.is_admin())
+    )
+  );
+revoke all on public.provider_role_qualification_claims from anon, public, authenticated;
+grant select on public.provider_role_qualification_claims to authenticated;
+
+-- Keep qualification selections in metadata as the existing app contract,
+-- while mirroring them into a reviewable per-qualification claim table.
+create or replace function private.sync_provider_role_qualification_claims()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, private
+as $$
+declare
+  v_category_slug text;
+  v_roles jsonb;
+  v_role jsonb;
+  v_role_slug text;
+  v_qualifications jsonb;
+  v_qualification_slug text;
+begin
+  select nc.category_slug
+  into v_category_slug
+  from public.need_capabilities nc
+  where nc.slug = new.capability_slug;
+
+  v_roles := case
+    when jsonb_typeof(coalesce(new.metadata, '{}'::jsonb)->'roles') = 'array'
+      then coalesce(new.metadata, '{}'::jsonb)->'roles'
+    else '[]'::jsonb
+  end;
+
+  update public.provider_role_qualification_claims
+  set is_claimed = false,
+      updated_at = now()
+  where provider_capability_id = new.id
+    and is_claimed;
+
+  for v_role in select value from jsonb_array_elements(v_roles)
+  loop
+    v_role_slug := nullif(btrim(v_role->>'role_id'), '');
+    if v_role_slug is null or not exists (
+      select 1
+      from public.capability_roles cr
+      where cr.slug = v_role_slug
+        and cr.is_active
+        and (
+          cr.capability_slug = new.capability_slug
+          or (cr.capability_slug is null and cr.category_slug = v_category_slug)
+        )
+    ) then
+      continue;
+    end if;
+
+    v_qualifications := case
+      when jsonb_typeof(v_role->'qualification_ids') = 'array'
+        then v_role->'qualification_ids'
+      else '[]'::jsonb
+    end;
+
+    for v_qualification_slug in
+      select jsonb_array_elements_text(v_qualifications)
+    loop
+      if exists (
+        select 1
+        from public.role_qualifications rq
+        where rq.role_slug = v_role_slug
+          and rq.slug = v_qualification_slug
+      ) then
+        insert into public.provider_role_qualification_claims
+          (provider_capability_id, role_slug, qualification_slug, is_claimed)
+        values
+          (new.id, v_role_slug, v_qualification_slug, true)
+        on conflict (provider_capability_id, role_slug, qualification_slug)
+        do update set
+          is_claimed = true,
+          updated_at = now();
+      end if;
+    end loop;
+  end loop;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_sync_provider_role_qualification_claims
+  on public.provider_capabilities;
+create trigger trg_sync_provider_role_qualification_claims
+  after insert or update of metadata, capability_slug
+  on public.provider_capabilities
+  for each row
+  execute function private.sync_provider_role_qualification_claims();
+
+-- Backfill existing self-declared role selections; invalid legacy option IDs
+-- are left untouched in metadata and are not promoted into verified claims.
+update public.provider_capabilities
+set metadata = metadata
+where metadata ? 'roles';
+
+create or replace function public.submit_provider_role_qualification_evidence(
+  p_provider_capability_id uuid,
+  p_role_slug text,
+  p_qualification_slug text,
+  p_evidence_object_path text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, private, storage
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_capability_slug text;
+  v_claim_id uuid;
+begin
+  if v_user_id is null then
+    raise exception 'Not authenticated.' using errcode = '42501';
+  end if;
+
+  select pc.capability_slug, claim.id
+  into v_capability_slug, v_claim_id
+  from public.provider_capabilities pc
+  join public.provider_role_qualification_claims claim
+    on claim.provider_capability_id = pc.id
+  join public.role_qualifications rq
+    on rq.role_slug = claim.role_slug
+   and rq.slug = claim.qualification_slug
+  where pc.id = p_provider_capability_id
+    and pc.user_id = v_user_id
+    and claim.role_slug = p_role_slug
+    and claim.qualification_slug = p_qualification_slug
+    and claim.is_claimed
+    and rq.is_evidence
+  for update of claim;
+
+  if not found then
+    raise exception 'Claim not found or this qualification does not accept evidence.'
+      using errcode = 'P0212';
+  end if;
+
+  if p_evidence_object_path is null
+     or position('..' in p_evidence_object_path) > 0
+     or left(
+       p_evidence_object_path,
+       length('evidence/' || v_user_id::text || '/' || v_capability_slug || '/')
+     ) <> ('evidence/' || v_user_id::text || '/' || v_capability_slug || '/') then
+    raise exception 'Evidence must be stored in the provider''s private capability folder.'
+      using errcode = '22023';
+  end if;
+
+  if not exists (
+    select 1
+    from storage.objects so
+    where so.bucket_id = 'provider-evidence'
+      and so.name = p_evidence_object_path
+  ) then
+    raise exception 'Uploaded provider evidence was not found in private storage.'
+      using errcode = 'P0213';
+  end if;
+
+  update public.provider_role_qualification_claims
+  set status = 'pending_review',
+      evidence_object_path = p_evidence_object_path,
+      reject_reason = null,
+      expires_at = null,
+      reviewed_by = null,
+      reviewed_at = null,
+      updated_at = now()
+  where id = v_claim_id;
+
+  return v_claim_id;
+end;
+$$;
+
+revoke all on function public.submit_provider_role_qualification_evidence(uuid, text, text, text)
+  from public, anon;
+grant execute on function public.submit_provider_role_qualification_evidence(uuid, text, text, text)
+  to authenticated;
+
+create or replace function public.admin_review_provider_role_qualification(
+  p_claim_id uuid,
+  p_action text,
+  p_reject_reason text default null,
+  p_expires_at timestamptz default null
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_admin uuid := auth.uid();
+  v_claim record;
+begin
+  if not private.is_admin() then
+    raise exception 'Unauthorized: Admin access required.' using errcode = '42501';
+  end if;
+  if p_action not in ('approve', 'reject', 'expire') then
+    raise exception 'Action must be approve, reject, or expire.' using errcode = '22023';
+  end if;
+
+  select claim.*, pc.capability_slug, pc.user_id
+  into v_claim
+  from public.provider_role_qualification_claims claim
+  join public.provider_capabilities pc on pc.id = claim.provider_capability_id
+  where claim.id = p_claim_id
+  for update of claim;
+
+  if not found then
+    raise exception 'Provider role qualification claim not found.' using errcode = 'P0212';
+  end if;
+  if p_action = 'approve' and v_claim.status <> 'pending_review' then
+    raise exception 'Only submitted qualification evidence can be approved.' using errcode = '22023';
+  end if;
+  if p_action = 'approve' and p_expires_at is not null and p_expires_at <= now() then
+    raise exception 'Evidence expiry must be in the future.' using errcode = '22023';
+  end if;
+
+  update public.provider_role_qualification_claims
+  set status = case
+        when p_action = 'approve' then 'verified'
+        when p_action = 'reject' then 'rejected'
+        else 'expired'
+      end,
+      reject_reason = case when p_action = 'reject' then coalesce(p_reject_reason, '') else null end,
+      expires_at = case when p_action = 'approve' then p_expires_at else expires_at end,
+      reviewed_by = v_admin,
+      reviewed_at = now(),
+      updated_at = now()
+  where id = p_claim_id;
+
+  insert into public.audit_logs
+    (user_id, event_type, entity_type, entity_id, action, new_values)
+  values
+    (v_admin, 'admin_action', 'provider_role_qualification_claim', p_claim_id,
+     'review_provider_role_qualification',
+     jsonb_build_object(
+       'action', p_action,
+       'provider_capability_id', v_claim.provider_capability_id,
+       'capability_slug', v_claim.capability_slug,
+       'role_slug', v_claim.role_slug,
+       'qualification_slug', v_claim.qualification_slug,
+       'reject_reason', p_reject_reason,
+       'expires_at', p_expires_at
+     ));
+
+  return true;
+end;
+$$;
+
+revoke all on function public.admin_review_provider_role_qualification(uuid, text, text, timestamptz)
+  from public, anon;
+grant execute on function public.admin_review_provider_role_qualification(uuid, text, text, timestamptz)
+  to authenticated;
+
+-- Owner/admin status view: evidence paths stay private; status is safe to render in-app.
+create or replace view public.v_my_capability_status
+with (security_invoker = true)
+as
+with latest_rejection as (
+  select distinct on (e.provider_capability_id)
+    e.provider_capability_id, e.reject_reason, e.reviewed_at
+  from public.provider_capability_evidence e
+  where e.status = 'rejected'
+  order by e.provider_capability_id, e.reviewed_at desc nulls last, e.created_at desc
+),
+evidence_summary as (
+  select
+    e.provider_capability_id,
+    count(*) filter (where e.status = 'pending') as pending_count,
+    count(*) filter (where e.status = 'approved') as approved_count,
+    count(*) filter (where e.status = 'rejected') as rejected_count,
+    count(*) filter (where e.status = 'expired') as expired_count
+  from public.provider_capability_evidence e
+  group by e.provider_capability_id
+),
+qualification_summary as (
+  select
+    claim.provider_capability_id,
+    jsonb_agg(
+      jsonb_build_object(
+        'role_slug', claim.role_slug,
+        'qualification_slug', claim.qualification_slug,
+        'qualification_name', rq.name,
+        'status', case
+          when claim.status = 'verified'
+               and claim.expires_at is not null
+               and claim.expires_at <= now() then 'expired'
+          else claim.status
+        end,
+        'has_evidence', claim.evidence_object_path is not null,
+        'reject_reason', claim.reject_reason,
+        'verified_at', claim.reviewed_at
+      )
+      order by claim.role_slug, claim.qualification_slug
+    ) as claims
+  from public.provider_role_qualification_claims claim
+  join public.role_qualifications rq
+    on rq.role_slug = claim.role_slug
+   and rq.slug = claim.qualification_slug
+  where claim.is_claimed
+  group by claim.provider_capability_id
+)
+select
+  pc.id as provider_capability_id,
+  pc.user_id,
+  pc.capability_slug,
+  nc.name as capability_name,
+  nc.category_slug,
+  cat.name as category_name,
+  cat.icon as category_icon,
+  pc.verification_level,
+  pc.metadata,
+  case
+    when pc.verification_level = 'provider_verified' then 'provider_verified'
+    when coalesce(es.pending_count, 0) > 0 then 'pending_review'
+    when coalesce(es.rejected_count, 0) > 0 then 'rejected'
+    when coalesce(es.expired_count, 0) > 0 then 'expired'
+    else 'self_declared'
+  end as capability_status,
+  coalesce(es.pending_count, 0)::int as pending_evidence_count,
+  coalesce(es.approved_count, 0)::int as approved_evidence_count,
+  coalesce(es.rejected_count, 0)::int as rejected_evidence_count,
+  coalesce(es.expired_count, 0)::int as expired_evidence_count,
+  lr.reject_reason as latest_reject_reason,
+  pc.verified_by,
+  pc.verified_at,
+  pc.created_at,
+  coalesce(qs.claims, '[]'::jsonb) as role_qualification_claims
+from public.provider_capabilities pc
+join public.need_capabilities nc on nc.slug = pc.capability_slug
+join public.need_categories cat on cat.slug = nc.category_slug
+left join evidence_summary es on es.provider_capability_id = pc.id
+left join latest_rejection lr on lr.provider_capability_id = pc.id
+left join qualification_summary qs on qs.provider_capability_id = pc.id
+where pc.user_id = auth.uid() or private.is_admin();
+
+grant select on public.v_my_capability_status to authenticated;
+
 -- The role/kind/qualification step is feature-flagged in the app.
 -- Enable it so the pictured Provider Services flow is available after this patch.
 insert into public.system_settings

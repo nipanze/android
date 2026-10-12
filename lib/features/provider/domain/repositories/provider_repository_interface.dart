@@ -18,6 +18,12 @@ abstract class IProviderRepository {
     required String requirementKey,
     required String fileUrl,
   });
+  Future<String> submitRoleQualificationEvidence({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String evidenceObjectPath,
+  });
   Future<List<ProviderOpportunity>> getProviderOpportunities();
   Future<List<ProviderServiceRole>> getServiceRoles({
     String? categorySlug,

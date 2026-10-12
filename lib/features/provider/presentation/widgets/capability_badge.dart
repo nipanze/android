@@ -13,16 +13,12 @@ class CapabilityBadge extends StatelessWidget {
   const CapabilityBadge({
     super.key,
     required this.capability,
-    this.phoneVerified = false,
-    this.identityVerified = false,
     this.showProfileDetails = false,
     this.opportunityCount,
     this.onRemove,
   });
 
   final ProviderCapability capability;
-  final bool phoneVerified;
-  final bool identityVerified;
   final bool showProfileDetails;
   final int? opportunityCount;
   final VoidCallback? onRemove;
@@ -104,8 +100,6 @@ class CapabilityBadge extends StatelessWidget {
                     ProviderVerificationChip(
                       level: capability.verificationLevel,
                       status: capability.status,
-                      phoneVerified: phoneVerified,
-                      identityVerified: identityVerified,
                     ),
                     if (opportunityCount != null && opportunityCount! > 0)
                       _OpportunityPill(count: opportunityCount!, l10n: l10n),
@@ -173,6 +167,19 @@ class _CapabilityProfileSummary extends StatelessWidget {
         .whereType<String>()
         .toList();
 
+    final qualificationLabels = capability.roleQualificationClaims.map((claim) {
+      final name = claim['qualification_name']?.toString() ??
+          _formatSlug(claim['qualification_slug']?.toString() ?? '');
+      final status = switch (claim['status']) {
+        'pending_review' => 'Nipanze review pending',
+        'verified' => 'Nipanze verified',
+        'rejected' => 'Evidence rejected',
+        'expired' => 'Verification expired',
+        _ => 'Self-declared',
+      };
+      return '$name · $status';
+    }).toList();
+
     final evidenceParts = <String>[
       if (capability.pendingEvidenceCount > 0)
         '${capability.pendingEvidenceCount} pending',
@@ -186,6 +193,7 @@ class _CapabilityProfileSummary extends StatelessWidget {
 
     if (details.isEmpty &&
         roleLabels.isEmpty &&
+        qualificationLabels.isEmpty &&
         evidenceParts.isEmpty &&
         capability.latestRejectReason == null) {
       return const SizedBox.shrink();
@@ -208,6 +216,15 @@ class _CapabilityProfileSummary extends StatelessWidget {
           const SizedBox(height: 3),
           Text(
             roleLabels.join(' · '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: text2,
+                ),
+          ),
+        ],
+        if (qualificationLabels.isNotEmpty) ...[
+          const SizedBox(height: 3),
+          Text(
+            'Qualifications: ${qualificationLabels.join(' · ')}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: text2,
                 ),

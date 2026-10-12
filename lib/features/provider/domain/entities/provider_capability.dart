@@ -61,6 +61,7 @@ class ProviderCapability {
     this.rejectedEvidenceCount = 0,
     this.expiredEvidenceCount = 0,
     this.latestRejectReason,
+    this.roleQualificationClaims = const [],
   }) : status = status ??
             (verificationLevel == ProviderVerificationLevel.providerVerified
                 ? ProviderCapabilityStatus.providerVerified
@@ -99,6 +100,11 @@ class ProviderCapability {
       expiredEvidenceCount:
           (map['expired_evidence_count'] as num?)?.toInt() ?? 0,
       latestRejectReason: map['latest_reject_reason'] as String?,
+      roleQualificationClaims:
+          ((map['role_qualification_claims'] as List?) ?? const [])
+              .whereType<Map>()
+              .map((claim) => claim.cast<String, dynamic>())
+              .toList(),
     );
   }
 
@@ -123,6 +129,7 @@ class ProviderCapability {
   final int rejectedEvidenceCount;
   final int expiredEvidenceCount;
   final String? latestRejectReason;
+  final List<Map<String, dynamic>> roleQualificationClaims;
 
   bool get isVerified =>
       verificationLevel == ProviderVerificationLevel.providerVerified ||

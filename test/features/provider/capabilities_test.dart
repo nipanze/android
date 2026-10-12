@@ -61,6 +61,26 @@ void main() {
       expect(cap.categoryIcon, '🚜');
     });
 
+    group('NeedCapability provider catalog fields', () {
+      test('parses Provider Services v2 group and ordering metadata', () {
+        final capability = NeedCapability.fromMap({
+          'slug': 'software_development',
+          'category_slug': 'technology_digital',
+          'name': 'Software Development',
+          'is_active': true,
+          'ui_group_slug': 'technology_digital',
+          'service_group_slug': 'build',
+          'service_group_name': 'Build',
+          'service_sort_order': 10,
+        });
+
+        expect(capability.uiGroupSlug, 'technology_digital');
+        expect(capability.serviceGroupSlug, 'build');
+        expect(capability.serviceGroupName, 'Build');
+        expect(capability.serviceSortOrder, 10);
+      });
+    });
+
     test('parses fromMap correctly for provider-verified', () {
       final map = {
         'id': 'cap-2',
@@ -75,6 +95,38 @@ void main() {
       expect(cap.verificationLevel, ProviderVerificationLevel.providerVerified);
       expect(cap.isVerified, true);
       expect(cap.verifiedBy, 'admin-1');
+    });
+
+    test('parses independently reviewed role qualifications', () {
+      final cap = ProviderCapability.fromMap({
+        'id': 'cap-3',
+        'user_id': 'u-1',
+        'capability_slug': 'software_development',
+        'verification_level': 'self_declared',
+        'created_at': '2026-09-01T12:00:00Z',
+        'role_qualification_claims': [
+          {
+            'role_slug': 'developer',
+            'qualification_slug': 'portfolio_or_github_link',
+            'qualification_name': 'Portfolio or GitHub link',
+            'status': 'verified',
+            'has_evidence': true,
+          },
+          {
+            'role_slug': 'developer',
+            'qualification_slug': 'cloud_certification_aws_azure_gcp',
+            'qualification_name': 'Cloud certification (AWS/Azure/GCP)',
+            'status': 'pending_review',
+            'has_evidence': true,
+          },
+        ],
+      });
+
+      expect(cap.status, ProviderCapabilityStatus.selfDeclared);
+      expect(cap.isVerified, isFalse);
+      expect(cap.roleQualificationClaims, hasLength(2));
+      expect(cap.roleQualificationClaims.first['status'], 'verified');
+      expect(cap.roleQualificationClaims.last['status'], 'pending_review');
     });
   });
 
@@ -314,12 +366,16 @@ void main() {
                   categorySlug: 'professional_services',
                   name: 'Company Registration',
                   isActive: true,
+                  serviceGroupSlug: 'finance_legal',
+                  serviceGroupName: 'Finance & Legal',
                 ),
                 NeedCapability(
                   slug: 'legal_services',
                   categorySlug: 'professional_services',
                   name: 'Legal Services',
                   isActive: true,
+                  serviceGroupSlug: 'finance_legal',
+                  serviceGroupName: 'Finance & Legal',
                 ),
                 NeedCapability(
                   slug: 'marketing_services',
@@ -360,6 +416,7 @@ void main() {
       // Should see professional capabilities only.
       expect(find.text('Company Registration'), findsOneWidget);
       expect(find.text('Legal Services'), findsOneWidget);
+      expect(find.text('Finance & Legal'), findsOneWidget);
       expect(find.text('Marketing & Promotion'), findsNothing);
 
       // Should NOT see individual marketing sub-items directly in Professional.
@@ -508,33 +565,17 @@ void main() {
       expect(find.text('Self-declared'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip renders phone verification',
+    testWidgets('ProviderVerificationChip keeps capability self-declared',
         (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
           level: ProviderVerificationLevel.selfDeclared,
-          phoneVerified: true,
         ),
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.phone_iphone_rounded), findsOneWidget);
-      expect(find.text('Phone verified'), findsOneWidget);
-    });
-
-    testWidgets('ProviderVerificationChip prioritizes identity verification',
-        (tester) async {
-      await tester.pumpWidget(createLocalizedWidget(
-        const ProviderVerificationChip(
-          level: ProviderVerificationLevel.selfDeclared,
-          phoneVerified: true,
-          identityVerified: true,
-        ),
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.verified_rounded), findsOneWidget);
-      expect(find.text('Identity verified'), findsOneWidget);
+      expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
+      expect(find.text('Self-declared'), findsOneWidget);
     });
 
     testWidgets('CapabilityBadge renders capability details and chip',
@@ -563,6 +604,60 @@ void main() {
       expect(find.text('🚜'), findsOneWidget);
       expect(find.text('Provider Verified'), findsOneWidget);
       expect(find.text('4 opportunities'), findsOneWidget);
+    });
+
+    testWidgets(
+        'CapabilityBadge distinguishes claimed and reviewed '
+        'qualifications', (tester) async {
+      final cap = ProviderCapability(
+        id: 'cap-qualification-1',
+        userId: 'u-1',
+        capabilitySlug: 'software_development',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        capabilityName: 'Software Development',
+        metadata: {
+          'engagements': ['work'],
+          'roles': [
+            {
+              'role_id': 'developer',
+              'kind_ids': ['backend'],
+              'qualification_ids': [
+                'portfolio_or_github_link',
+                'cloud_certification_aws_azure_gcp',
+              ],
+            },
+          ],
+        },
+        roleQualificationClaims: const [
+          {
+            'role_slug': 'developer',
+            'qualification_slug': 'portfolio_or_github_link',
+            'qualification_name': 'Portfolio or GitHub link',
+            'status': 'verified',
+          },
+          {
+            'role_slug': 'developer',
+            'qualification_slug': 'cloud_certification_aws_azure_gcp',
+            'qualification_name': 'Cloud certification',
+            'status': 'pending_review',
+          },
+        ],
+      );
+
+      await tester.pumpWidget(createLocalizedWidget(
+        CapabilityBadge(
+          capability: cap,
+          showProfileDetails: true,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Self-declared'), findsOneWidget);
+      expect(find.textContaining('Portfolio or GitHub link'), findsOneWidget);
+      expect(find.textContaining('Nipanze verified'), findsOneWidget);
+      expect(find.textContaining('Nipanze review pending'), findsOneWidget);
+      expect(cap.isVerified, isFalse);
     });
 
     testWidgets('ProviderOpportunitiesSection renders opportunities',

@@ -8,6 +8,10 @@ class NeedCapability {
     this.countryLabels = const {},
     this.baseName,
     this.isActive = true,
+    this.uiGroupSlug,
+    this.serviceGroupSlug,
+    this.serviceGroupName,
+    this.serviceSortOrder = 1000,
   });
 
   factory NeedCapability.fromMap(
@@ -26,6 +30,10 @@ class NeedCapability {
       countryLabels: countryLabels,
       baseName: map['name'] as String,
       isActive: map['is_active'] as bool? ?? true,
+      uiGroupSlug: map['ui_group_slug'] as String?,
+      serviceGroupSlug: map['service_group_slug'] as String?,
+      serviceGroupName: map['service_group_name'] as String?,
+      serviceSortOrder: (map['service_sort_order'] as num?)?.toInt() ?? 1000,
     );
   }
 
@@ -35,6 +43,10 @@ class NeedCapability {
   final Map<String, dynamic> countryLabels;
   final String? baseName;
   final bool isActive;
+  final String? uiGroupSlug;
+  final String? serviceGroupSlug;
+  final String? serviceGroupName;
+  final int serviceSortOrder;
 
   String nameForCountry(String? countryCode) {
     final labels = countryLabels[countryCode?.toUpperCase()];

@@ -192,6 +192,30 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<String> submitRoleQualificationEvidence({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String evidenceObjectPath,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        RpcNames.submitProviderRoleQualificationEvidence,
+        params: {
+          'p_provider_capability_id': providerCapabilityId,
+          'p_role_slug': roleSlug,
+          'p_qualification_slug': qualificationSlug,
+          'p_evidence_object_path': evidenceObjectPath,
+        },
+      );
+      _clearCache();
+      return result as String;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<List<ProviderOpportunity>> getProviderOpportunities() async {
     try {
       final uid = _uid;

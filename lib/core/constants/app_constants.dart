@@ -97,6 +97,8 @@ class RpcNames {
       'admin_review_provider_capability';
   static const String submitProviderCapabilityEvidence =
       'submit_provider_capability_evidence';
+  static const String submitProviderRoleQualificationEvidence =
+      'submit_provider_role_qualification_evidence';
   static const String adminReviewProviderCapabilityEvidence =
       'admin_review_provider_capability_evidence';
   // Pro Advanced Filters (schema v4.2)
@@ -116,6 +118,7 @@ class StorageBuckets {
 
   static const String kycDocuments = 'verification-documents';
   static const String contracts = 'contracts';
+  static const String providerEvidence = 'provider-evidence';
 }
 
 class AppStrings {

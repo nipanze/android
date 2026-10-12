@@ -731,8 +731,17 @@ class _CapabilityDetailEditor extends StatelessWidget {
           if (selectedRole.qualifications.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              'Qualifications',
+              'Qualifications you claim',
               style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Selecting a qualification is a self-declaration. '
+              'Nipanze marks it verified only after reviewing evidence. '
+              'The upload icon marks qualifications that require evidence.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: text2,
+                  ),
             ),
             const SizedBox(height: 6),
             Wrap(
@@ -1045,97 +1054,113 @@ class _CapabilityList extends StatelessWidget {
     return ListView(
       controller: scrollController,
       children: [
-        for (final cap in capabilities) ...[
-          if (cap.slug == _audienceCapabilitySlug)
-            Builder(
-              builder: (context) {
-                final alreadyOwned = existingSlugs.contains(cap.slug);
-                final isSelected = selected.contains(cap.slug);
-                final hasPlatforms = audiencePlatforms.isNotEmpty;
-                final subtitleText = isSelected || alreadyOwned
-                    ? (hasPlatforms
-                        ? _formatAudienceSubtitle(
-                            context,
-                            audiencePlatforms,
-                            audienceFollowersCount,
-                          )
-                        : l10n.selectAudiencePlatforms)
-                    : null;
-
-                return ListTile(
-                  enabled: !alreadyOwned,
-                  leading: alreadyOwned
-                      ? const Icon(Icons.check_circle_rounded,
-                          color: AppColors.success, size: 22)
-                      : Checkbox(
-                          value: isSelected,
-                          onChanged: (_) {
-                            onToggle(cap.slug);
-                            if (!isSelected && onAudienceTap != null) {
-                              onAudienceTap!();
-                            }
-                          },
-                          activeColor: AppColors.accent,
-                        ),
-                  title: Text(
-                    cap.localizedName(localeCode),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: alreadyOwned ? text2 : null,
+        for (var index = 0; index < capabilities.length; index++) ...[
+          if (capabilities[index].serviceGroupSlug != null &&
+              (index == 0 ||
+                  capabilities[index - 1].serviceGroupSlug !=
+                      capabilities[index].serviceGroupSlug))
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, index == 0 ? 12 : 14, 16, 4),
+              child: Text(
+                capabilities[index].serviceGroupName ?? '',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: text2,
                     ),
-                  ),
-                  subtitle: subtitleText != null
-                      ? Text(
-                          subtitleText,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: hasPlatforms ? AppColors.accent : text2,
-                            fontWeight: hasPlatforms
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
-                        )
-                      : null,
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: alreadyOwned
-                      ? null
-                      : () {
-                          if (!isSelected) {
-                            onToggle(cap.slug);
-                          }
-                          onAudienceTap?.call();
-                        },
-                );
-              },
-            )
-          else
-            Builder(
-              builder: (context) {
-                final alreadyOwned = existingSlugs.contains(cap.slug);
-                final isSelected = selected.contains(cap.slug);
-
-                return ListTile(
-                  enabled: !alreadyOwned,
-                  leading: alreadyOwned
-                      ? const Icon(Icons.check_circle_rounded,
-                          color: AppColors.success, size: 22)
-                      : Checkbox(
-                          value: isSelected,
-                          onChanged: (_) => onToggle(cap.slug),
-                          activeColor: AppColors.accent,
-                        ),
-                  title: Text(
-                    cap.localizedName(localeCode),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: alreadyOwned ? text2 : null,
-                    ),
-                  ),
-                  onTap: alreadyOwned ? null : () => onToggle(cap.slug),
-                );
-              },
+              ),
             ),
-          Divider(height: 1, color: border),
+          for (final cap in [capabilities[index]]) ...[
+            if (cap.slug == _audienceCapabilitySlug)
+              Builder(
+                builder: (context) {
+                  final alreadyOwned = existingSlugs.contains(cap.slug);
+                  final isSelected = selected.contains(cap.slug);
+                  final hasPlatforms = audiencePlatforms.isNotEmpty;
+                  final subtitleText = isSelected || alreadyOwned
+                      ? (hasPlatforms
+                          ? _formatAudienceSubtitle(
+                              context,
+                              audiencePlatforms,
+                              audienceFollowersCount,
+                            )
+                          : l10n.selectAudiencePlatforms)
+                      : null;
+
+                  return ListTile(
+                    enabled: !alreadyOwned,
+                    leading: alreadyOwned
+                        ? const Icon(Icons.check_circle_rounded,
+                            color: AppColors.success, size: 22)
+                        : Checkbox(
+                            value: isSelected,
+                            onChanged: (_) {
+                              onToggle(cap.slug);
+                              if (!isSelected && onAudienceTap != null) {
+                                onAudienceTap!();
+                              }
+                            },
+                            activeColor: AppColors.accent,
+                          ),
+                    title: Text(
+                      cap.localizedName(localeCode),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: alreadyOwned ? text2 : null,
+                      ),
+                    ),
+                    subtitle: subtitleText != null
+                        ? Text(
+                            subtitleText,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: hasPlatforms ? AppColors.accent : text2,
+                              fontWeight: hasPlatforms
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          )
+                        : null,
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: alreadyOwned
+                        ? null
+                        : () {
+                            if (!isSelected) {
+                              onToggle(cap.slug);
+                            }
+                            onAudienceTap?.call();
+                          },
+                  );
+                },
+              )
+            else
+              Builder(
+                builder: (context) {
+                  final alreadyOwned = existingSlugs.contains(cap.slug);
+                  final isSelected = selected.contains(cap.slug);
+
+                  return ListTile(
+                    enabled: !alreadyOwned,
+                    leading: alreadyOwned
+                        ? const Icon(Icons.check_circle_rounded,
+                            color: AppColors.success, size: 22)
+                        : Checkbox(
+                            value: isSelected,
+                            onChanged: (_) => onToggle(cap.slug),
+                            activeColor: AppColors.accent,
+                          ),
+                    title: Text(
+                      cap.localizedName(localeCode),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: alreadyOwned ? text2 : null,
+                      ),
+                    ),
+                    onTap: alreadyOwned ? null : () => onToggle(cap.slug),
+                  );
+                },
+              ),
+            Divider(height: 1, color: border),
+          ],
         ],
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
