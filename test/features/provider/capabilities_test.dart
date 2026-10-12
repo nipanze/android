@@ -383,6 +383,111 @@ void main() {
       expect(find.text('Company Registration'), findsOneWidget);
       expect(find.text('Advertising Campaigns'), findsNothing);
     });
+
+    testWidgets(
+        'Marketing & Promotion category filters out redundant marketing_services tile and opens audience editor',
+        (tester) async {
+      final mockProviderRepo = MockProviderRepository();
+      final mockNeedsRepo = MockNeedsRepository();
+      final mockProfileRepo = MockProfileRepository();
+
+      getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
+      getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
+      getIt.registerSingleton<CapabilitiesCubit>(
+          CapabilitiesCubit(mockProviderRepo));
+      getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
+
+      addTearDown(() {
+        getIt.reset();
+      });
+
+      when(() => mockProviderRepo.getProviderCapabilities())
+          .thenAnswer((_) async => const <ProviderCapability>[]);
+      when(() => mockProviderRepo.getProviderOpportunities())
+          .thenAnswer((_) async => const <ProviderOpportunity>[]);
+      when(() => mockProfileRepo.getProfile())
+          .thenAnswer((_) async => const UserProfile(
+                id: 'u-1',
+                email: 'user@test.com',
+                accountStatus: 'active',
+              ));
+      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+            NeedCategory(
+              slug: 'marketing_promotion',
+              name: 'Marketing & Promotion',
+              icon: '📣',
+              sortOrder: 2,
+              isActive: true,
+            ),
+          ]);
+      when(() => mockNeedsRepo.getCapabilities(
+              categorySlug: any(named: 'categorySlug')))
+          .thenAnswer((_) async => const [
+                NeedCapability(
+                  slug: 'advertising_campaigns',
+                  categorySlug: 'marketing_promotion',
+                  name: 'Advertising Campaigns',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'marketing_services',
+                  categorySlug: 'marketing_promotion',
+                  name: 'Marketing & Promotion',
+                  isActive: true,
+                ),
+                NeedCapability(
+                  slug: 'i_have_an_audience',
+                  categorySlug: 'marketing_promotion',
+                  name: 'I Have an Audience',
+                  isActive: true,
+                ),
+              ]);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProviderServicesPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add Service'));
+      await tester.pumpAndSettle();
+
+      // Tap Marketing & Promotion category
+      await tester.tap(find.text('Marketing & Promotion'));
+      await tester.pumpAndSettle();
+
+      // Should see Advertising Campaigns and I Have an Audience
+      expect(find.text('Advertising Campaigns'), findsOneWidget);
+      expect(find.text('I Have an Audience'), findsOneWidget);
+
+      // The only "Marketing & Promotion" text should be the header title, not a tile
+      expect(find.text('Marketing & Promotion'), findsOneWidget);
+
+      // Tap "I Have an Audience" row to open audience editor
+      await tester.tap(find.text('I Have an Audience'));
+      await tester.pumpAndSettle();
+
+      // Should show audience editor with platforms like WhatsApp, TikTok, etc.
+      expect(find.text('Where is your audience?'), findsOneWidget);
+      expect(find.text('TikTok'), findsOneWidget);
+      expect(find.text('WhatsApp'), findsOneWidget);
+
+      // Tap TikTok and WhatsApp
+      await tester.tap(find.text('TikTok'));
+      await tester.tap(find.text('WhatsApp'));
+      await tester.pumpAndSettle();
+
+      // Tap back arrow to return to Marketing & Promotion list
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.pumpAndSettle();
+
+      // Back on Marketing & Promotion list, subtitle reflects selected platforms
+      expect(find.text('Advertising Campaigns'), findsOneWidget);
+      expect(find.text('WhatsApp, TikTok'), findsOneWidget);
+    });
   });
 
   group('Provider Widgets', () {
