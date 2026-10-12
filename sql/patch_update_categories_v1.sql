@@ -161,8 +161,10 @@ WHERE category_slug = 'weddings_celebrations'
 -- Marketing roles → marketing_promotion
 UPDATE public.capability_roles
 SET category_slug = 'marketing_promotion'
-WHERE category_slug = 'professional_services'
+WHERE category_slug IN ('professional_services', 'marketing_promotion')
   AND slug IN (
+    'marketer_specialist',
+    'content_creator',
     'digital_marketer',
     'social_media_manager',
     'graphic_designer',
@@ -172,9 +174,10 @@ WHERE category_slug = 'professional_services'
 -- Events roles → events_production (Events & Celebrations)
 UPDATE public.capability_roles
 SET category_slug = 'events_production'
-WHERE category_slug = 'weddings_celebrations'
+WHERE category_slug IN ('weddings_celebrations', 'events_production')
   AND slug IN (
     'event_manager_planner',
+    'mc_dj',
     'event_decorator',
     'event_caterer',
     'sound_technician',
@@ -184,12 +187,16 @@ WHERE category_slug = 'weddings_celebrations'
 -- Photo / Video / Music roles → photo_video_music_talent
 UPDATE public.capability_roles
 SET category_slug = 'photo_video_music_talent'
-WHERE category_slug = 'music_video';
+WHERE category_slug IN ('music_video', 'photo_video_music_talent')
+  AND slug IN (
+    'photographer_videographer',
+    'performer_talent'
+  );
 
 -- Beauty / Fashion roles → beauty_fashion_styling
 UPDATE public.capability_roles
 SET category_slug = 'beauty_fashion_styling'
-WHERE category_slug = 'weddings_celebrations'
+WHERE category_slug IN ('weddings_celebrations', 'beauty_fashion_styling')
   AND slug IN (
     'hair_stylist',
     'makeup_artist',
@@ -206,4 +213,49 @@ WHERE category_slug = 'weddings_celebrations'
 UPDATE public.need_categories
 SET is_active = false
 WHERE slug IN ('music_video', 'weddings_celebrations');
+
+-- ---------------------------------------------------------------------------
+-- 9. Final de-duplication and safety checks for active category inners.
+--    Slugs are already unique, but this keeps legacy placeholder rows from
+--    rendering as repeated inner categories in clients that fetch all active
+--    capabilities.
+-- ---------------------------------------------------------------------------
+UPDATE public.need_capabilities
+SET is_active = false
+WHERE slug = 'marketing_services';
+
+UPDATE public.need_capabilities
+SET category_slug = 'marketing_promotion'
+WHERE slug IN (
+  'social_media_marketing',
+  'influencer_marketing',
+  'content_creation',
+  'product_reviews',
+  'event_promotion',
+  'affiliate_marketing',
+  'advertising_campaigns',
+  'brand_promotion',
+  'tiktok_promotion',
+  'other_marketing_services',
+  'i_have_an_audience'
+);
+
+UPDATE public.need_categories
+SET provider_verification_required = true
+WHERE slug IN (
+  'technology_digital',
+  'marketing_promotion',
+  'professional_services',
+  'education_training',
+  'events_production',
+  'photo_video_music_talent',
+  'beauty_fashion_styling',
+  'construction_building',
+  'energy_utilities',
+  'transport_logistics',
+  'machinery_equipment',
+  'agriculture_agribusiness',
+  'specialized_products',
+  'travel_international'
+);
 

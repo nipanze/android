@@ -271,7 +271,7 @@ void main() {
     });
 
     testWidgets(
-        'Professional Services hides marketing sub-items and navigates to Marketing & Promotion without repetition',
+        'Professional Services hides marketing capabilities without repetition',
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
       final mockNeedsRepo = MockNeedsRepository();
@@ -357,31 +357,14 @@ void main() {
       await tester.tap(find.text('Professional & Business Services'));
       await tester.pumpAndSettle();
 
-      // Should see Company Registration, Legal Services, and Marketing & Promotion
+      // Should see professional capabilities only.
       expect(find.text('Company Registration'), findsOneWidget);
       expect(find.text('Legal Services'), findsOneWidget);
-      expect(find.text('Marketing & Promotion'), findsOneWidget);
+      expect(find.text('Marketing & Promotion'), findsNothing);
 
-      // Should NOT see individual marketing sub-items directly in the top-level list
+      // Should NOT see individual marketing sub-items directly in Professional.
       expect(find.text('Advertising Campaigns'), findsNothing);
       expect(find.text('TikTok Promotion'), findsNothing);
-
-      // Tap Marketing & Promotion to enter sub-category
-      await tester.tap(find.text('Marketing & Promotion'));
-      await tester.pumpAndSettle();
-
-      // Inside Marketing & Promotion, sub-items are shown
-      expect(find.text('Advertising Campaigns'), findsOneWidget);
-      expect(find.text('TikTok Promotion'), findsOneWidget);
-
-      // Tap back arrow to return to Professional & Business Services
-      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
-      await tester.pumpAndSettle();
-
-      // Header and content should be back to Professional & Business Services
-      expect(find.text('Professional & Business Services'), findsOneWidget);
-      expect(find.text('Company Registration'), findsOneWidget);
-      expect(find.text('Advertising Campaigns'), findsNothing);
     });
 
     testWidgets(
@@ -612,7 +595,8 @@ void main() {
       expect(find.text('2 opportunities'), findsOneWidget);
     });
 
-    testWidgets('CapabilityBadge renders Driving School under Professional Services',
+    testWidgets(
+        'CapabilityBadge renders Driving School under Professional Services',
         (tester) async {
       final cap = ProviderCapability(
         id: 'cap-driving-1',

@@ -15976,3 +15976,116 @@ ON CONFLICT (setting_key, COALESCE(country, '__global__')) DO UPDATE SET
 -- ============================================================
 -- END MERGED SECTION: patch_post_duration_defaults_v1.sql
 -- ============================================================
+
+-- ============================================================
+-- BEGIN MERGED SECTION: 20261012_capability_catalog_verification_finalization.sql
+-- ============================================================
+
+-- Final catalog normalization for Provider Services:
+-- - Marketing is a real top-level category, not an inner Professional row.
+-- - User claims, work qualifications, and Nipanze verification stay separate.
+-- - Evidence submission creates pending review only; admin review grants badges.
+
+UPDATE public.need_capabilities
+SET is_active = false
+WHERE slug = 'marketing_services';
+
+UPDATE public.need_capabilities
+SET category_slug = 'marketing_promotion'
+WHERE slug IN (
+  'social_media_marketing',
+  'influencer_marketing',
+  'content_creation',
+  'product_reviews',
+  'event_promotion',
+  'affiliate_marketing',
+  'advertising_campaigns',
+  'brand_promotion',
+  'tiktok_promotion',
+  'other_marketing_services',
+  'i_have_an_audience'
+);
+
+UPDATE public.capability_roles
+SET category_slug = 'marketing_promotion'
+WHERE slug IN ('marketer_specialist', 'content_creator', 'digital_marketer', 'social_media_manager', 'graphic_designer', 'marketing_officer');
+
+UPDATE public.capability_roles
+SET category_slug = 'events_production'
+WHERE slug IN ('event_manager_planner', 'mc_dj', 'event_decorator', 'event_caterer', 'sound_technician', 'event_coordinator');
+
+UPDATE public.capability_roles
+SET category_slug = 'photo_video_music_talent'
+WHERE slug IN ('photographer_videographer', 'performer_talent');
+
+UPDATE public.capability_roles
+SET category_slug = 'beauty_fashion_styling'
+WHERE slug IN ('hair_stylist', 'makeup_artist', 'tailor_fashion_designer', 'fashion_designer', 'wardrobe_stylist');
+
+UPDATE public.need_categories
+SET is_active = false
+WHERE slug IN ('music_video', 'weddings_celebrations', 'financial_services');
+
+UPDATE public.need_categories
+SET provider_verification_required = true
+WHERE slug NOT IN ('financial_services');
+
+create or replace function public.submit_provider_capability_evidence(
+  p_provider_capability_id uuid,
+  p_requirement_key text,
+  p_file_url text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_evidence_id uuid;
+begin
+  if v_user is null then
+    raise exception 'Not authenticated' using errcode = '42501';
+  end if;
+
+  if nullif(btrim(p_requirement_key), '') is null then
+    raise exception 'Evidence requirement key is required.' using errcode = '22023';
+  end if;
+
+  if nullif(btrim(p_file_url), '') is null then
+    raise exception 'Evidence file URL is required.' using errcode = '22023';
+  end if;
+
+  if not exists (
+    select 1
+    from public.provider_capabilities pc
+    where pc.id = p_provider_capability_id
+      and pc.user_id = v_user
+  ) then
+    raise exception 'Provider capability not found for current user.' using errcode = 'P0212';
+  end if;
+
+  insert into public.provider_capability_evidence (
+    provider_capability_id,
+    requirement_key,
+    file_url,
+    status
+  )
+  values (
+    p_provider_capability_id,
+    btrim(p_requirement_key),
+    btrim(p_file_url),
+    'pending'
+  )
+  returning id into v_evidence_id;
+
+  return v_evidence_id;
+end;
+$$;
+
+grant execute on function public.submit_provider_capability_evidence(uuid, text, text)
+  to authenticated;
+
+-- ============================================================
+-- END MERGED SECTION: 20261012_capability_catalog_verification_finalization.sql
+-- ============================================================

@@ -13,6 +13,11 @@ abstract class IProviderRepository {
   });
   Future<void> removeCapability(String capabilitySlug);
   Future<bool> hasCapability(String capabilitySlug);
+  Future<String> submitCapabilityEvidence({
+    required String providerCapabilityId,
+    required String requirementKey,
+    required String fileUrl,
+  });
   Future<List<ProviderOpportunity>> getProviderOpportunities();
   Future<List<ProviderServiceRole>> getServiceRoles({
     String? categorySlug,

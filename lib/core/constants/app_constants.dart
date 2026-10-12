@@ -95,6 +95,10 @@ class RpcNames {
       'admin_get_provider_capabilities';
   static const String adminReviewProviderCapability =
       'admin_review_provider_capability';
+  static const String submitProviderCapabilityEvidence =
+      'submit_provider_capability_evidence';
+  static const String adminReviewProviderCapabilityEvidence =
+      'admin_review_provider_capability_evidence';
   // Pro Advanced Filters (schema v4.2)
   static const String getMarketplaceProFiltered =
       'get_marketplace_pro_filtered';

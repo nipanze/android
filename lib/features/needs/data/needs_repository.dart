@@ -50,12 +50,14 @@ class NeedsRepository {
           .neq('slug', 'financial_services')
           .order('sort_order', ascending: true);
 
-      return (data as List)
-          .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
-          .where((category) => category.slug != 'financial_services')
-          .toList();
+      return _dedupeBySlug(
+        (data as List)
+            .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
+            .where((category) => category.slug != 'financial_services')
+            .toList(),
+      );
     } catch (_) {
-      return NeedCategory.defaultCategories;
+      return _dedupeBySlug(NeedCategory.defaultCategories);
     }
   }
 
@@ -72,19 +74,35 @@ class NeedsRepository {
           .eq('is_active', true)
           .order('name', ascending: true);
 
-      return (data as List)
-          .map((e) => NeedCapability.fromMap(e, countryCode: countryCode))
-          .where(
-              (capability) => capability.categorySlug != 'financial_services')
-          .toList();
+      return _dedupeBySlug(
+        (data as List)
+            .map((e) => NeedCapability.fromMap(e, countryCode: countryCode))
+            .where(
+                (capability) => capability.categorySlug != 'financial_services')
+            .toList(),
+      );
     } catch (_) {
       if (categorySlug != null) {
-        return NeedCapability.defaults
+        return _dedupeBySlug(NeedCapability.defaults
             .where((c) => c.categorySlug == categorySlug)
-            .toList();
+            .toList());
       }
-      return NeedCapability.defaults;
+      return _dedupeBySlug(NeedCapability.defaults);
     }
+  }
+
+  List<T> _dedupeBySlug<T>(List<T> items) {
+    final seen = <String>{};
+    final result = <T>[];
+    for (final item in items) {
+      final slug = switch (item) {
+        final NeedCategory category => category.slug,
+        final NeedCapability capability => capability.slug,
+        _ => item.toString(),
+      };
+      if (seen.add(slug)) result.add(item);
+    }
+    return result;
   }
 
   /// Create a need request

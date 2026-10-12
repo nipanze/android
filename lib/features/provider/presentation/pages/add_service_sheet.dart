@@ -133,7 +133,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   NeedCategory? _selectedCategory;
   List<NeedCategory> _categories = [];
   List<NeedCapability> _categoryCapabilities = [];
-  List<NeedCapability> _marketingCapabilities = [];
   List<ProviderServiceRole> _categoryRoles = [];
   final Set<String> _selected = {};
   final Map<String, _CapabilityDraft> _drafts = {};
@@ -146,7 +145,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final _roleController = TextEditingController();
   bool _showProfessionalTag = true;
   bool _allowInstitutionMatching = false;
-  bool _showMarketing = false;
   bool _showAudience = false;
   bool _loading = true;
   bool _iWantJobs = false;
@@ -269,7 +267,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   Future<void> _selectCategory(NeedCategory cat) async {
     setState(() {
       _selectedCategory = cat;
-      _showMarketing = false;
       _showAudience = false;
       _loading = true;
     });
@@ -286,17 +283,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     if (cat.slug == 'professional_services') {
       filteredCaps = caps
           .where((capability) =>
+              capability.slug != _marketingServicesSlug &&
               !_marketingCapabilitySlugs.contains(capability.slug))
           .toList();
-      if (!filteredCaps.any((c) => c.slug == _marketingServicesSlug)) {
-        filteredCaps.add(
-          const NeedCapability(
-            slug: _marketingServicesSlug,
-            categorySlug: 'professional_services',
-            name: 'Marketing & Promotion',
-          ),
-        );
-      }
     } else if (cat.slug == 'marketing_promotion') {
       filteredCaps = caps
           .where((capability) => capability.slug != _marketingServicesSlug)
@@ -329,33 +318,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
   }
 
-  Future<void> _openMarketing() async {
-    setState(() {
-      _showMarketing = true;
-      _loading = true;
-    });
-    final caps = await widget.needsRepository.getCapabilities(
-      categorySlug: 'professional_services',
-    );
-    if (!mounted) return;
-    setState(() {
-      _marketingCapabilities = caps
-          .where((capability) =>
-              _marketingCapabilitySlugs.contains(capability.slug))
-          .toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
-      _loading = false;
-    });
-  }
-
   void _goBack() {
     setState(() {
       if (_step == 2) {
         _step = 1;
       } else if (_showAudience) {
         _showAudience = false;
-      } else if (_showMarketing) {
-        _showMarketing = false;
       } else {
         _step = 0;
       }
@@ -416,11 +384,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                 ? 'Service details'
                                 : _showAudience
                                     ? l10n.iHaveAnAudience
-                                    : _showMarketing
-                                        ? l10n.marketingAndPromotion
-                                        : (_selectedCategory
-                                                ?.localizedName(localeCode) ??
-                                            l10n.chooseCapabilities),
+                                    : (_selectedCategory
+                                            ?.localizedName(localeCode) ??
+                                        l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -493,107 +459,72 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                     onDone: () =>
                                         setState(() => _showAudience = false),
                                   )
-                                : _showMarketing
-                                    ? _MarketingCapabilityList(
-                                        capabilities: _marketingCapabilities,
+                                : _selectedCategory?.slug ==
+                                        _financialCategorySlug
+                                    ? _FinancialCapabilityList(
+                                        capabilities: _categoryCapabilities,
+                                        existingSlugs: widget.existingSlugs,
+                                        selected: _selected,
+                                        institutionController:
+                                            _institutionController,
+                                        roleController: _roleController,
+                                        showProfessionalTag:
+                                            _showProfessionalTag,
+                                        allowInstitutionMatching:
+                                            _allowInstitutionMatching,
+                                        scrollController: scrollController,
+                                        onToggle: (slug) {
+                                          setState(() {
+                                            if (_selected.contains(slug)) {
+                                              _selected.remove(slug);
+                                              _drafts.remove(slug);
+                                            } else {
+                                              _selected.add(slug);
+                                              _drafts.putIfAbsent(
+                                                slug,
+                                                _CapabilityDraft.new,
+                                              );
+                                            }
+                                          });
+                                        },
+                                        onProfessionalTagChanged: (v) =>
+                                            setState(
+                                                () => _showProfessionalTag = v),
+                                        onInstitutionMatchingChanged: (v) =>
+                                            setState(() =>
+                                                _allowInstitutionMatching = v),
+                                        iWantJobs: _iWantJobs,
+                                        onIWantJobsChanged: (v) =>
+                                            setState(() => _iWantJobs = v),
+                                      )
+                                    : _CapabilityList(
+                                        capabilities: _categoryCapabilities,
                                         existingSlugs: widget.existingSlugs,
                                         selected: _selected,
                                         audiencePlatforms: _audiencePlatforms,
-                                        audienceCountController:
-                                            _audienceCountController,
-                                        audienceLocationController:
-                                            _audienceLocationController,
-                                        audienceInterestController:
-                                            _audienceInterestController,
+                                        audienceFollowersCount: int.tryParse(
+                                            _audienceCountController.text
+                                                .trim()),
                                         scrollController: scrollController,
-                                        onToggle: (slug) => setState(() {
-                                          if (_selected.contains(slug)) {
-                                            _selected.remove(slug);
-                                            _drafts.remove(slug);
-                                          } else {
-                                            _selected.add(slug);
-                                            _drafts.putIfAbsent(
-                                              slug,
-                                              () => _CapabilityDraft(),
-                                            );
-                                          }
-                                        }),
-                                        onPlatformToggle: (platform) =>
-                                            setState(() {
-                                          if (_audiencePlatforms
-                                              .contains(platform)) {
-                                            _audiencePlatforms.remove(platform);
-                                          } else {
-                                            _audiencePlatforms.add(platform);
-                                          }
-                                        }),
-                                      )
-                                    : _selectedCategory?.slug ==
-                                            _financialCategorySlug
-                                        ? _FinancialCapabilityList(
-                                            capabilities: _categoryCapabilities,
-                                            existingSlugs: widget.existingSlugs,
-                                            selected: _selected,
-                                            institutionController:
-                                                _institutionController,
-                                            roleController: _roleController,
-                                            showProfessionalTag:
-                                                _showProfessionalTag,
-                                            allowInstitutionMatching:
-                                                _allowInstitutionMatching,
-                                            scrollController: scrollController,
-                                            onToggle: (slug) {
-                                              setState(() {
-                                                if (_selected.contains(slug)) {
-                                                  _selected.remove(slug);
-                                                  _drafts.remove(slug);
-                                                } else {
-                                                  _selected.add(slug);
-                                                  _drafts.putIfAbsent(
-                                                    slug,
-                                                    () => _CapabilityDraft(),
-                                                  );
-                                                }
-                                              });
-                                            },
-                                            onProfessionalTagChanged: (v) =>
-                                                setState(
-                                                    () => _showProfessionalTag = v),
-                                            onInstitutionMatchingChanged: (v) =>
-                                                setState(() =>
-                                                    _allowInstitutionMatching = v),
-                                            iWantJobs: _iWantJobs,
-                                            onIWantJobsChanged: (v) =>
-                                                setState(() => _iWantJobs = v),
-                                          )
-                                        : _CapabilityList(
-                                            capabilities: _categoryCapabilities,
-                                            existingSlugs: widget.existingSlugs,
-                                            selected: _selected,
-                                            audiencePlatforms: _audiencePlatforms,
-                                            audienceFollowersCount: int.tryParse(
-                                                _audienceCountController.text.trim()),
-                                            scrollController: scrollController,
-                                            onMarketingTap: _openMarketing,
-                                            onAudienceTap: _openAudience,
-                                            iWantJobs: _iWantJobs,
-                                            onIWantJobsChanged: (v) =>
-                                                setState(() => _iWantJobs = v),
-                                            onToggle: (slug) {
-                                              setState(() {
-                                                if (_selected.contains(slug)) {
-                                                  _selected.remove(slug);
-                                                  _drafts.remove(slug);
-                                                } else {
-                                                  _selected.add(slug);
-                                                  _drafts.putIfAbsent(
-                                                    slug,
-                                                    () => _CapabilityDraft(),
-                                                  );
-                                                }
-                                              });
-                                            },
-                                          ),
+                                        onAudienceTap: _openAudience,
+                                        iWantJobs: _iWantJobs,
+                                        onIWantJobsChanged: (v) =>
+                                            setState(() => _iWantJobs = v),
+                                        onToggle: (slug) {
+                                          setState(() {
+                                            if (_selected.contains(slug)) {
+                                              _selected.remove(slug);
+                                              _drafts.remove(slug);
+                                            } else {
+                                              _selected.add(slug);
+                                              _drafts.putIfAbsent(
+                                                slug,
+                                                _CapabilityDraft.new,
+                                              );
+                                            }
+                                          });
+                                        },
+                                      ),
               ),
             ],
           ),
@@ -672,7 +603,7 @@ class _CapabilityDetailsList extends StatelessWidget {
       separatorBuilder: (_, __) => Divider(height: 28, color: border),
       itemBuilder: (context, index) {
         final cap = capabilities[index];
-        final draft = drafts.putIfAbsent(cap.slug, () => _CapabilityDraft());
+        final draft = drafts.putIfAbsent(cap.slug, _CapabilityDraft.new);
         return _CapabilityDetailEditor(
           capability: cap,
           roles: roles
@@ -1020,7 +951,8 @@ class _CategoryListState extends State<_CategoryList> {
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               filled: true,
               fillColor: bg3,
               border: OutlineInputBorder(
@@ -1060,7 +992,9 @@ class _CategoryListState extends State<_CategoryList> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+                          color: isDark
+                              ? AppColors.text2Dark
+                              : AppColors.text2Light,
                         ),
                       ),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -1080,7 +1014,6 @@ class _CapabilityList extends StatelessWidget {
     required this.existingSlugs,
     required this.selected,
     required this.scrollController,
-    required this.onMarketingTap,
     this.onAudienceTap,
     this.audiencePlatforms = const {},
     this.audienceFollowersCount,
@@ -1093,7 +1026,6 @@ class _CapabilityList extends StatelessWidget {
   final Set<String> existingSlugs;
   final Set<String> selected;
   final ScrollController scrollController;
-  final VoidCallback onMarketingTap;
   final VoidCallback? onAudienceTap;
   final Set<String> audiencePlatforms;
   final int? audienceFollowersCount;
@@ -1114,17 +1046,7 @@ class _CapabilityList extends StatelessWidget {
       controller: scrollController,
       children: [
         for (final cap in capabilities) ...[
-          if (cap.slug == _marketingServicesSlug)
-            ListTile(
-              leading: const Icon(Icons.campaign_outlined),
-              title: Text(
-                AppLocalizations.of(context)!.marketingAndPromotion,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: onMarketingTap,
-            )
-          else if (cap.slug == _audienceCapabilitySlug)
+          if (cap.slug == _audienceCapabilitySlug)
             Builder(
               builder: (context) {
                 final alreadyOwned = existingSlugs.contains(cap.slug);
@@ -1392,152 +1314,6 @@ class _FinancialCapabilityList extends StatelessWidget {
             onChanged: onIWantJobsChanged,
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _MarketingCapabilityList extends StatelessWidget {
-  const _MarketingCapabilityList({
-    required this.capabilities,
-    required this.existingSlugs,
-    required this.selected,
-    required this.audiencePlatforms,
-    required this.audienceCountController,
-    required this.audienceLocationController,
-    required this.audienceInterestController,
-    required this.scrollController,
-    required this.onToggle,
-    required this.onPlatformToggle,
-  });
-
-  final List<NeedCapability> capabilities;
-  final Set<String> existingSlugs;
-  final Set<String> selected;
-  final Set<String> audiencePlatforms;
-  final TextEditingController audienceCountController;
-  final TextEditingController audienceLocationController;
-  final TextEditingController audienceInterestController;
-  final ScrollController scrollController;
-  final void Function(String) onToggle;
-  final void Function(String) onPlatformToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-    final audienceSelected = selected.contains(_audienceCapabilitySlug) ||
-        existingSlugs.contains(_audienceCapabilitySlug);
-    final platforms = <(String, String)>[
-      ('tiktok', l10n.audiencePlatformTikTok),
-      ('instagram', l10n.audiencePlatformInstagram),
-      ('youtube', l10n.audiencePlatformYouTube),
-      ('facebook', l10n.audiencePlatformFacebook),
-      ('whatsapp', l10n.audiencePlatformWhatsApp),
-      ('other', l10n.audiencePlatformOther),
-    ];
-
-    return ListView(
-      controller: scrollController,
-      children: [
-        for (final capability in capabilities)
-          Builder(builder: (context) {
-            final alreadyOwned = existingSlugs.contains(capability.slug);
-            final isSelected = selected.contains(capability.slug);
-            final localeCode = Localizations.localeOf(context).languageCode;
-            final name = capability.localizedName(localeCode);
-            return Column(
-              children: [
-                ListTile(
-                  enabled: !alreadyOwned,
-                  leading: alreadyOwned
-                      ? const Icon(Icons.check_circle_rounded,
-                          color: AppColors.success, size: 22)
-                      : Checkbox(
-                          value: isSelected,
-                          onChanged: (_) => onToggle(capability.slug),
-                          activeColor: AppColors.accent,
-                        ),
-                  title: Text(
-                    name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: alreadyOwned ? text2 : null,
-                    ),
-                  ),
-                  onTap: alreadyOwned ? null : () => onToggle(capability.slug),
-                ),
-                Divider(height: 1, color: border),
-              ],
-            );
-          }),
-        if (audienceSelected)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.whereIsYourAudience,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.selectAudiencePlatforms,
-                  style: TextStyle(fontSize: 12, color: text2),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 0,
-                  children: [
-                    for (final (slug, label) in platforms)
-                      FilterChip(
-                        label: Text(label),
-                        selected: audiencePlatforms.contains(slug),
-                        onSelected: (_) => onPlatformToggle(slug),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.tellBusinessesAboutYourAudience,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: audienceCountController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    labelText: l10n.audienceFollowersMembersCount,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: audienceLocationController,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: l10n.audienceMainLocation,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: audienceInterestController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    labelText: l10n.audienceMainInterest,
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }

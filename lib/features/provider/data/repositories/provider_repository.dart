@@ -170,6 +170,28 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<String> submitCapabilityEvidence({
+    required String providerCapabilityId,
+    required String requirementKey,
+    required String fileUrl,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        RpcNames.submitProviderCapabilityEvidence,
+        params: {
+          'p_provider_capability_id': providerCapabilityId,
+          'p_requirement_key': requirementKey,
+          'p_file_url': fileUrl,
+        },
+      );
+      _clearCache();
+      return result as String;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<List<ProviderOpportunity>> getProviderOpportunities() async {
     try {
       final uid = _uid;

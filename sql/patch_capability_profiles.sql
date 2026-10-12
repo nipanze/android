@@ -154,13 +154,17 @@ comment on column public.need_capabilities.ui_group_slug is
 insert into public.need_categories
   (slug, name, icon, sort_order, is_active)
 values
-  ('technology_digital', 'Technology & Digital', '💻', 70, false),
-  ('education_training', 'Education & Training', '🎓', 60, false),
+  ('technology_digital', 'Technology & Digital', '💻', 1, true),
+  ('marketing_promotion', 'Marketing & Promotion', '📣', 2, true),
+  ('education_training', 'Education & Training', '🎓', 4, true),
+  ('events_production', 'Events & Celebrations', '🎉', 5, true),
+  ('photo_video_music_talent', 'Photo, Video, Music & Talent', '🎬', 6, true),
+  ('beauty_fashion_styling', 'Beauty, Fashion & Styling', '💄', 7, true),
+  ('construction_building', 'Construction & Building', '🏗️', 8, true),
+  ('energy_utilities', 'Energy & Water', '⚡', 9, true),
+  ('agriculture_agribusiness', 'Agriculture', '🌾', 12, true),
   ('weddings_celebrations', 'Weddings & Celebrations', '🎉', 120, false),
-  ('music_video', 'Music & Video', '🎬', 110, false),
-  ('construction_building', 'Construction & Building', '🏗️', 50, false),
-  ('energy_utilities', 'Energy & Utilities', '⚡', 90, false),
-  ('agriculture_agribusiness', 'Agriculture & Agribusiness', '🌾', 60, false)
+  ('music_video', 'Music & Video', '🎬', 110, false)
 on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -567,19 +571,19 @@ values
   ('developer', 'technology_digital', null, 'Developer', 'What do you build?', true),
   ('it_technician', 'technology_digital', null, 'IT Technician', 'What do you do?', true),
   ('security_specialist', 'technology_digital', null, 'Security Specialist', 'Which area?', true),
-  ('marketer_specialist', 'professional_services', null, 'Marketer / Specialist', 'Which channel?', true),
-  ('content_creator', 'professional_services', null, 'Content Creator', 'What do you produce?', true),
+  ('marketer_specialist', 'marketing_promotion', null, 'Marketer / Specialist', 'Which channel?', true),
+  ('content_creator', 'marketing_promotion', null, 'Content Creator', 'What do you produce?', true),
   ('accountant_finance_officer', 'professional_services', null, 'Accountant / Finance Officer', 'What area?', true),
   ('lawyer_legal_officer', 'professional_services', null, 'Lawyer / Legal Officer', 'What area?', true),
   ('engineer', 'professional_services', null, 'Engineer', 'Which discipline?', true),
   ('teacher_tutor', 'education_training', null, 'Teacher / Tutor', 'What do you teach?', true),
   ('trainer_instructor', 'education_training', null, 'Trainer / Instructor', 'Training field?', true),
-  ('event_manager_planner', 'weddings_celebrations', null, 'Event Manager / Planner', 'What events?', true),
-  ('mc_dj', 'weddings_celebrations', null, 'MC / DJ', 'Which role?', true),
-  ('photographer_videographer', 'music_video', null, 'Photographer / Videographer', 'What do you shoot?', true),
-  ('performer_talent', 'music_video', null, 'Performer / Talent', 'What kind?', true),
-  ('makeup_artist', 'weddings_celebrations', null, 'Makeup Artist', 'Specialty?', true),
-  ('hair_stylist', 'weddings_celebrations', null, 'Hair Stylist', 'Specialty?', true),
+  ('event_manager_planner', 'events_production', null, 'Event Manager / Planner', 'What events?', true),
+  ('mc_dj', 'events_production', null, 'MC / DJ', 'Which role?', true),
+  ('photographer_videographer', 'photo_video_music_talent', null, 'Photographer / Videographer', 'What do you shoot?', true),
+  ('performer_talent', 'photo_video_music_talent', null, 'Performer / Talent', 'What kind?', true),
+  ('makeup_artist', 'beauty_fashion_styling', null, 'Makeup Artist', 'Specialty?', true),
+  ('hair_stylist', 'beauty_fashion_styling', null, 'Hair Stylist', 'Specialty?', true),
   ('site_manager', 'construction_building', null, 'Site Manager', 'What type of sites?', true),
   ('skilled_tradesperson', 'construction_building', null, 'Skilled Tradesperson', 'Which trade?', true),
   ('solar_electrical_technician', 'energy_utilities', null, 'Solar / Electrical Technician', 'What do you install?', true),
@@ -796,7 +800,70 @@ where pc.user_id = auth.uid() or private.is_admin();
 grant select on public.v_my_capability_status to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 7. Matching helpers for hire-person Needs.
+-- 7. User evidence submission. Uploading evidence only creates a pending
+--    review item; it never grants a verified badge.
+-- ---------------------------------------------------------------------------
+create or replace function public.submit_provider_capability_evidence(
+  p_provider_capability_id uuid,
+  p_requirement_key text,
+  p_file_url text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_evidence_id uuid;
+begin
+  if v_user is null then
+    raise exception 'Not authenticated' using errcode = '42501';
+  end if;
+
+  if nullif(btrim(p_requirement_key), '') is null then
+    raise exception 'Evidence requirement key is required.'
+      using errcode = '22023';
+  end if;
+
+  if nullif(btrim(p_file_url), '') is null then
+    raise exception 'Evidence file URL is required.'
+      using errcode = '22023';
+  end if;
+
+  if not exists (
+    select 1
+    from public.provider_capabilities pc
+    where pc.id = p_provider_capability_id
+      and pc.user_id = v_user
+  ) then
+    raise exception 'Provider capability not found for current user.'
+      using errcode = 'P0212';
+  end if;
+
+  insert into public.provider_capability_evidence (
+    provider_capability_id,
+    requirement_key,
+    file_url,
+    status
+  )
+  values (
+    p_provider_capability_id,
+    btrim(p_requirement_key),
+    btrim(p_file_url),
+    'pending'
+  )
+  returning id into v_evidence_id;
+
+  return v_evidence_id;
+end;
+$$;
+
+grant execute on function public.submit_provider_capability_evidence(uuid, text, text)
+  to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 8. Matching helpers for hire-person Needs.
 -- ---------------------------------------------------------------------------
 create schema if not exists private;
 
@@ -873,7 +940,7 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
--- 8. Need-offer validation extension for hire-person Needs.
+-- 9. Need-offer validation extension for hire-person Needs.
 --    Keeps existing capability + central verification behavior, adds role/kind.
 -- ---------------------------------------------------------------------------
 create or replace function private.trg_validate_need_offer()
@@ -996,7 +1063,7 @@ create trigger trg_validate_need_offer
   execute function private.trg_validate_need_offer();
 
 -- ---------------------------------------------------------------------------
--- 9. Evidence review RPCs and expiry downgrade job.
+-- 10. Evidence review RPCs and expiry downgrade job.
 -- ---------------------------------------------------------------------------
 create or replace function public.admin_review_provider_capability_evidence(
   p_evidence_id uuid,
@@ -1162,7 +1229,7 @@ grant execute on function public.expire_provider_capability_evidence()
   to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 10. Dry-run/report queries for Supabase SQL Editor.
+-- 11. Dry-run/report queries for Supabase SQL Editor.
 -- ---------------------------------------------------------------------------
 select 'capability_profiles_patch_applied' as check_name, now() as checked_at;
 
