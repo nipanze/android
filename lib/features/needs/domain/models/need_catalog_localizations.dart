@@ -9,10 +9,10 @@ class NeedCatalogLocalizations {
       'ar': 'الإنشاءات والبناء',
     },
     'agriculture_agribusiness': {
-      'rw': 'Ubuhinzi n\'ubucuruzi bw\'ubuhinzi',
-      'fr': 'Agriculture et agro-industrie',
-      'sw': 'Kilimo na biashara ya kilimo',
-      'ar': 'الزراعة والأعمال الزراعية',
+      'rw': 'Ubuhinzi',
+      'fr': 'Agriculture',
+      'sw': 'Kilimo',
+      'ar': 'الزراعة',
     },
     'technology_digital': {
       'rw': 'Ikoranabuhanga n\'ibikorwa by\'ikoranabuhanga',
@@ -21,16 +21,16 @@ class NeedCatalogLocalizations {
       'ar': 'التكنولوجيا والخدمات الرقمية',
     },
     'events_production': {
-      'rw': 'Ibirori n\'umusaruro',
-      'fr': 'Événements et production',
-      'sw': 'Matukio na uzalishaji',
-      'ar': 'الفعاليات والإنتاج',
+      'rw': 'Ibirori n\'Iminsi Mikuru',
+      'fr': 'Événements et célébrations',
+      'sw': 'Matukio na Sherehe',
+      'ar': 'الفعاليات والاحتفالات',
     },
     'energy_utilities': {
-      'rw': 'Ingufu na serivisi z\'ibanze',
-      'fr': 'Énergie et services publics',
-      'sw': 'Nishati na huduma za msingi',
-      'ar': 'الطاقة والمرافق',
+      'rw': 'Ingufu n\'Amazi',
+      'fr': 'Énergie et eau',
+      'sw': 'Nishati na Maji',
+      'ar': 'الطاقة والمياه',
     },
     'machinery_equipment': {
       'rw': 'Imashini n\'ibikoresho',
@@ -39,10 +39,10 @@ class NeedCatalogLocalizations {
       'ar': 'الآلات والمعدات',
     },
     'professional_services': {
-      'rw': 'Serivisi z\'Ubucuruzi',
-      'fr': 'Services professionnels',
-      'sw': 'Huduma za kitaalamu',
-      'ar': 'الخدمات المهنية',
+      'rw': 'Ubucuruzi n\'Inzobere',
+      'fr': 'Affaires et services professionnels',
+      'sw': 'Biashara na Huduma za Kitaalamu',
+      'ar': 'الأعمال والخدمات المهنية',
     },
     'transport_logistics': {
       'rw': 'Ubwikorezi n\'ibikorwa byo gutwara ibintu',
@@ -51,10 +51,10 @@ class NeedCatalogLocalizations {
       'ar': 'النقل والخدمات اللوجستية',
     },
     'specialized_products': {
-      'rw': 'Ibicuruzwa byihariye n\'itangwa ryabyo',
-      'fr': 'Produits spécialisés et approvisionnement',
-      'sw': 'Bidhaa maalum na ununuzi',
-      'ar': 'المنتجات المتخصصة والتوريد',
+      'rw': 'Kugura no Gutangwa kw\'Ibicuruzwa',
+      'fr': 'Approvisionnement et sourcing',
+      'sw': 'Ununuzi na Ugavi wa Bidhaa',
+      'ar': 'المشتريات والتوريد',
     },
     'education_training': {
       'rw': 'Uburezi n\'amahugurwa',
@@ -68,6 +68,26 @@ class NeedCatalogLocalizations {
       'sw': 'Usafiri na huduma za kimataifa',
       'ar': 'السفر والخدمات الدولية',
     },
+    // New top-level categories
+    'marketing_promotion': {
+      'rw': 'Pazamariya n\'Gutangaza',
+      'fr': 'Marketing et promotion',
+      'sw': 'Masoko na Utangazaji',
+      'ar': 'التسويق والترويج',
+    },
+    'photo_video_music_talent': {
+      'rw': 'Ifoto, Amashusho, Umuziki n\'Ibibuga',
+      'fr': 'Photo, vidéo, musique et talents',
+      'sw': 'Picha, Video, Muziki na Vipaji',
+      'ar': 'التصوير والفيديو والموسيقى والمواهب',
+    },
+    'beauty_fashion_styling': {
+      'rw': 'Ubwiza, Imyambaro n\'Usitayire',
+      'fr': 'Beauté, mode et stylisme',
+      'sw': 'Urembo, Mitindo na Usafi wa Mavazi',
+      'ar': 'الجمال والأزياء والتصفيف',
+    },
+    // Legacy slugs kept for backward-compatibility
     'music_video': {
       'rw': 'Umuziki na amashusho',
       'fr': 'Musique et vidéo',
@@ -218,6 +238,36 @@ class NeedCatalogLocalizations {
           'Mikopo, ubadilishaji fedha, mawakala wa benki, SACCO, huduma ndogo za kifedha na ushauri.',
       'ar':
           'القروض وصرف العملات ووكلاء البنوك والتعاونيات والتمويل الأصغر والاستشارات المالية.',
+    },
+    'marketing_promotion': {
+      'rw':
+          'Kwamamaza kuri interineti, ku mbuga nkoranyambaga, kwamamaza ibicuruzwa no gutangaza brand.',
+      'fr':
+          'Marketing numérique, réseaux sociaux, publicité, influenceurs et promotion de marque.',
+      'sw':
+          'Masoko ya kidijitali, mitandao ya kijamii, matangazo, washawishi na utangazaji wa chapa.',
+      'ar':
+          'التسويق الرقمي ووسائل التواصل الاجتماعي والإعلانات والمؤثرين والترويج للعلامة التجارية.',
+    },
+    'photo_video_music_talent': {
+      'rw':
+          'Gufotora, gukorora amashusho, umuziki, DJ, abakinnyi n\'abafite ibibuga by\'ubuhanzi.',
+      'fr':
+          'Photographie, vidéographie, production musicale, DJ, artistes et talents créatifs.',
+      'sw':
+          'Upigaji picha, utengenezaji video, muziki, DJ, wanamuziki na wasanii wa ubunifu.',
+      'ar':
+          'التصوير الفوتوغرافي والفيديو وإنتاج الموسيقى والـDJ والفنانين والمواهب الإبداعية.',
+    },
+    'beauty_fashion_styling': {
+      'rw':
+          'Gusana umusatsi, gutwika, gusona imyenda, gushushanya imyambaro no gutegura isura.',
+      'fr':
+          'Coiffure, maquillage, couture, création de mode et stylisme personnel.',
+      'sw':
+          'Kutengeneza nywele, makeup, ushonaji, ubunifu wa mitindo na ushauri wa mavazi.',
+      'ar':
+          'تصفيف الشعر والمكياج والخياطة وتصميم الأزياء والتصفيف الشخصي.',
     },
   };
 
