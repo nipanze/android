@@ -8,12 +8,14 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../account/domain/models/user_profile.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../job_profile/data/job_profile_repository.dart';
 import '../../../job_profile/presentation/widgets/work_profile_section.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import '../cubit/capabilities_cubit.dart';
 import '../cubit/capabilities_state.dart';
@@ -46,127 +48,99 @@ class _ProviderServicesView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.providerServicesTitle),
-        centerTitle: false,
-      ),
-      body: BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
-        builder: (context, state) {
-          if (state is CapabilitiesLoading || state is CapabilitiesInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is CapabilitiesError) {
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              children: [
-                _AddServiceEntryCard(
-                  onAdd: () => _showAddSheet(context),
-                ),
-                const SizedBox(height: 16),
-                ErrorState(
-                  message: state.message,
-                  onRetry: () =>
-                      context.read<CapabilitiesCubit>().loadWithOpportunities(),
-                ),
-              ],
-            );
-          }
-
-          final loaded = state as CapabilitiesLoaded;
-          final caps = loaded.capabilities;
-          final opps = loaded.opportunities;
-          final profileState = context.watch<ProfileCubit>().state;
-          final profile =
-              profileState is ProfileCubitLoaded ? profileState.profile : null;
-          final needsRepo = getIt<NeedsRepository>();
-          final workProfileRepository =
-              JobProfileRepository(getIt<supabase.SupabaseClient>());
-
-          if (caps.isEmpty) {
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              children: [
-                _AddServiceEntryCard(
-                  onAdd: () => _showAddSheet(context),
-                ),
-                const SizedBox(height: 16),
-                _CategoryEntrySection(
-                  needsRepository: needsRepo,
-                  onViewAll: () => _showAddSheet(context),
-                  onSelectCategory: (category) => _showAddSheet(
-                    context,
-                    preselectedCategorySlug: category.slug,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.providerServicesTitle),
+          centerTitle: false,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Offer Services'),
+              Tab(text: 'Available for Jobs'),
+            ],
+          ),
+        ),
+        body: BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
+          builder: (context, state) {
+            if (state is CapabilitiesLoading || state is CapabilitiesInitial) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is CapabilitiesError) {
+              final needsRepo = getIt<NeedsRepository>();
+              return TabBarView(
+                children: [
+                  _ErrorCategoryTab(
+                    needsRepository: needsRepo,
+                    title: 'Professional Categories',
+                    subtitle:
+                        'Choose what you offer. Categories stay on this page.',
+                    errorMessage: state.message,
+                    onSelectCategory: (category) => _showAddSheet(
+                      context,
+                      preselectedCategorySlug: category.slug,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                WorkProfileSection(
-                  repository: workProfileRepository,
-                  needsRepository: needsRepo,
-                  profile: profile,
-                ),
-                SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 0.55,
-                  child: _EmptyState(l10n: l10n, isDark: isDark),
-                ),
-              ],
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () =>
-                context.read<CapabilitiesCubit>().loadWithOpportunities(),
-            child: ListView(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, top: 16, bottom: 24),
-              children: [
-                // Subtitle
-                Text(
-                  l10n.providerServicesSubtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? AppColors.text2Dark : AppColors.text2Light,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                // Opportunities
-                if (opps.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  ProviderOpportunitiesSection(
-                    opportunities: opps,
+                  _ErrorCategoryTab(
+                    needsRepository: needsRepo,
+                    title: 'Job Categories',
+                    subtitle: 'Choose where you are available for work.',
+                    errorMessage: state.message,
+                    onSelectCategory: (_) {},
                   ),
                 ],
-                const SizedBox(height: 16),
-                WorkProfileSection(
-                  repository: workProfileRepository,
-                  needsRepository: needsRepo,
-                  profile: profile,
-                ),
-                const SizedBox(height: 16),
-                _CategoryEntrySection(
-                  needsRepository: needsRepo,
-                  onViewAll: () => _showAddSheet(context),
-                  onSelectCategory: (category) => _showAddSheet(
-                    context,
-                    preselectedCategorySlug: category.slug,
+              );
+            }
+
+            final loaded = state as CapabilitiesLoaded;
+            final caps = loaded.capabilities;
+            final opps = loaded.opportunities;
+            final profileState = context.watch<ProfileCubit>().state;
+            final profile = profileState is ProfileCubitLoaded
+                ? profileState.profile
+                : null;
+            final needsRepo = getIt<NeedsRepository>();
+            final workProfileRepository =
+                JobProfileRepository(getIt<supabase.SupabaseClient>());
+
+            return TabBarView(
+              children: [
+                RefreshIndicator(
+                  onRefresh: () =>
+                      context.read<CapabilitiesCubit>().loadWithOpportunities(),
+                  child: _OfferServicesTab(
+                    capabilities: caps,
+                    opportunities: opps,
+                    capabilityProfilesEnabled: loaded.capabilityProfilesEnabled,
+                    needsRepository: needsRepo,
+                    isDark: isDark,
+                    onSelectCategory: (category) => _showAddSheet(
+                      context,
+                      preselectedCategorySlug: category.slug,
+                    ),
+                    onRemove: (capability) =>
+                        _confirmRemove(context, capability, l10n),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Capabilities
-                ...caps.map(
-                  (cap) => CapabilityBadge(
-                    capability: cap,
-                    showProfileDetails: loaded.capabilityProfilesEnabled,
-                    opportunityCount: opps
-                        .where((o) => o.capabilitySlug == cap.capabilitySlug)
-                        .fold<int>(0, (sum, o) => sum + o.opportunityCount),
-                    onRemove: () => _confirmRemove(context, cap, l10n),
+                RefreshIndicator(
+                  onRefresh: () =>
+                      context.read<CapabilitiesCubit>().loadWithOpportunities(),
+                  child: _AvailableJobsTab(
+                    needsRepository: needsRepo,
+                    workProfileRepository: workProfileRepository,
+                    profile: profile,
+                    onSelectCategory: (category) => _showWorkProfileEditor(
+                      context,
+                      needsRepository: needsRepo,
+                      profile: profile,
+                      preselectedCategorySlug: category.slug,
+                    ),
                   ),
                 ),
               ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -237,6 +211,22 @@ class _ProviderServicesView extends StatelessWidget {
     }
   }
 
+  Future<void> _showWorkProfileEditor(
+    BuildContext context, {
+    required NeedsRepository needsRepository,
+    required UserProfile? profile,
+    String? preselectedCategorySlug,
+  }) async {
+    final defaultCurrency = profile?.incomeCurrency ?? 'UGX';
+    await WorkProfileEditorSheet.show(
+      context,
+      repository: getIt<JobProfileRepository>(),
+      needsRepository: needsRepository,
+      defaultCurrency: defaultCurrency,
+      preselectedCategorySlug: preselectedCategorySlug,
+    );
+  }
+
   void _confirmRemove(
     BuildContext context,
     ProviderCapability cap,
@@ -271,79 +261,152 @@ class _ProviderServicesView extends StatelessWidget {
   }
 }
 
-class _AddServiceEntryCard extends StatelessWidget {
-  const _AddServiceEntryCard({required this.onAdd});
+class _ErrorCategoryTab extends StatelessWidget {
+  const _ErrorCategoryTab({
+    required this.needsRepository,
+    required this.title,
+    required this.subtitle,
+    required this.errorMessage,
+    required this.onSelectCategory,
+  });
 
-  final VoidCallback onAdd;
+  final NeedsRepository needsRepository;
+  final String title;
+  final String subtitle;
+  final String errorMessage;
+  final ValueChanged<NeedCategory> onSelectCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        _CategoryEntrySection(
+          needsRepository: needsRepository,
+          title: title,
+          subtitle: subtitle,
+          onSelectCategory: onSelectCategory,
+        ),
+        const SizedBox(height: 16),
+        ErrorState(
+          message: errorMessage,
+          onRetry: () =>
+              context.read<CapabilitiesCubit>().loadWithOpportunities(),
+        ),
+      ],
+    );
+  }
+}
+
+class _OfferServicesTab extends StatelessWidget {
+  const _OfferServicesTab({
+    required this.capabilities,
+    required this.opportunities,
+    required this.capabilityProfilesEnabled,
+    required this.needsRepository,
+    required this.isDark,
+    required this.onSelectCategory,
+    required this.onRemove,
+  });
+
+  final List<ProviderCapability> capabilities;
+  final List<ProviderOpportunity> opportunities;
+  final bool capabilityProfilesEnabled;
+  final NeedsRepository needsRepository;
+  final bool isDark;
+  final ValueChanged<NeedCategory> onSelectCategory;
+  final ValueChanged<ProviderCapability> onRemove;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
-    return Material(
-      color: bg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: border),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onAdd,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.business_center_outlined,
-                  color: AppColors.accent,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.addService,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.providerServicesSubtitle,
-                      style: TextStyle(fontSize: 12, color: text2),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                onPressed: onAdd,
-                tooltip: l10n.addService,
-                icon: const Icon(Icons.add_rounded),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  fixedSize: const Size.square(40),
-                ),
-              ),
-            ],
-          ),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        Text(
+          l10n.providerServicesSubtitle,
+          style: TextStyle(fontSize: 14, color: text2),
         ),
-      ),
+        if (opportunities.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ProviderOpportunitiesSection(
+            opportunities: opportunities,
+          ),
+        ],
+        const SizedBox(height: 16),
+        _CategoryEntrySection(
+          needsRepository: needsRepository,
+          title: 'Professional Categories',
+          subtitle: 'Choose what you offer. Categories stay on this page.',
+          onSelectCategory: onSelectCategory,
+        ),
+        const SizedBox(height: 16),
+        if (capabilities.isEmpty)
+          _EmptyState(l10n: l10n, isDark: isDark)
+        else ...[
+          Text(
+            l10n.yourServices,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 10),
+          ...capabilities.map(
+            (capability) => CapabilityBadge(
+              capability: capability,
+              showProfileDetails: capabilityProfilesEnabled,
+              opportunityCount: opportunities
+                  .where((opportunity) =>
+                      opportunity.capabilitySlug == capability.capabilitySlug)
+                  .fold<int>(
+                    0,
+                    (sum, opportunity) => sum + opportunity.opportunityCount,
+                  ),
+              onRemove: () => onRemove(capability),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AvailableJobsTab extends StatelessWidget {
+  const _AvailableJobsTab({
+    required this.needsRepository,
+    required this.workProfileRepository,
+    required this.profile,
+    required this.onSelectCategory,
+  });
+
+  final NeedsRepository needsRepository;
+  final JobProfileRepository workProfileRepository;
+  final UserProfile? profile;
+  final ValueChanged<NeedCategory> onSelectCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        _CategoryEntrySection(
+          needsRepository: needsRepository,
+          title: 'Job Categories',
+          subtitle: 'Choose where you are available for work.',
+          onSelectCategory: onSelectCategory,
+        ),
+        const SizedBox(height: 16),
+        WorkProfileSection(
+          repository: workProfileRepository,
+          needsRepository: needsRepository,
+          profile: profile,
+        ),
+      ],
     );
   }
 }
@@ -351,13 +414,15 @@ class _AddServiceEntryCard extends StatelessWidget {
 class _CategoryEntrySection extends StatefulWidget {
   const _CategoryEntrySection({
     required this.needsRepository,
+    required this.title,
+    required this.subtitle,
     required this.onSelectCategory,
-    required this.onViewAll,
   });
 
   final NeedsRepository needsRepository;
+  final String title;
+  final String subtitle;
   final ValueChanged<NeedCategory> onSelectCategory;
-  final VoidCallback onViewAll;
 
   @override
   State<_CategoryEntrySection> createState() => _CategoryEntrySectionState();
@@ -404,8 +469,6 @@ class _CategoryEntrySectionState extends State<_CategoryEntrySection> {
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
         if (categories.isEmpty) return const SizedBox.shrink();
 
-        final visibleCategories = categories.take(6).toList();
-
         return Container(
           decoration: BoxDecoration(
             color: bg,
@@ -421,7 +484,7 @@ class _CategoryEntrySectionState extends State<_CategoryEntrySection> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Add another service',
+                      widget.title,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0,
@@ -429,26 +492,18 @@ class _CategoryEntrySectionState extends State<_CategoryEntrySection> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Pick a category to add services or job availability.',
+                      widget.subtitle,
                       style: TextStyle(fontSize: 12, color: text2),
                     ),
                   ],
                 ),
               ),
-              for (final entry in visibleCategories.indexed)
+              for (final entry in categories.indexed)
                 _CategoryEntryTile(
                   category: entry.$2,
                   localeCode: localeCode,
-                  showDivider: entry.$1 != visibleCategories.length - 1,
+                  showDivider: entry.$1 != categories.length - 1,
                   onTap: () => widget.onSelectCategory(entry.$2),
-                ),
-              if (categories.length > visibleCategories.length)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                  child: TextButton(
-                    onPressed: widget.onViewAll,
-                    child: const Text('View all categories'),
-                  ),
                 ),
             ],
           ),

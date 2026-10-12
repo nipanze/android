@@ -257,7 +257,7 @@ void main() {
   });
 
   group('Provider Services flow', () {
-    testWidgets('Add Service opens the category sheet', (tester) async {
+    testWidgets('Offer Services tab shows categories inline', (tester) async {
       final mockProviderRepo = MockProviderRepository();
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
@@ -311,15 +311,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add Service'));
-      await tester.pumpAndSettle();
-
+      expect(find.text('Offer Services'), findsOneWidget);
+      expect(find.text('Available for Jobs'), findsOneWidget);
       expect(find.text('Machinery & Equipment'), findsOneWidget);
 
-      await tester.tapAt(const Offset(10, 10));
+      await tester.tap(find.text('Machinery & Equipment'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Machinery & Equipment'), findsNothing);
+      expect(find.text('Excavator Hire'), findsOneWidget);
     });
 
     testWidgets(
@@ -406,9 +405,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add Service'));
-      await tester.pumpAndSettle();
-
       // Tap Professional Services category
       await tester.tap(find.text('Professional & Business Services'));
       await tester.pumpAndSettle();
@@ -492,9 +488,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add Service'));
-      await tester.pumpAndSettle();
-
       // Tap Marketing & Promotion category
       await tester.tap(find.text('Marketing & Promotion'));
       await tester.pumpAndSettle();
@@ -503,8 +496,8 @@ void main() {
       expect(find.text('Advertising Campaigns'), findsOneWidget);
       expect(find.text('I Have an Audience'), findsOneWidget);
 
-      // The only "Marketing & Promotion" text should be the header title, not a tile
-      expect(find.text('Marketing & Promotion'), findsOneWidget);
+      // The redundant marketing_services tile should not be shown.
+      expect(find.text('Marketing & Promotion'), findsWidgets);
 
       // Tap "I Have an Audience" row to open audience editor
       await tester.tap(find.text('I Have an Audience'));
