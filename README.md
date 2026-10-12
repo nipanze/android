@@ -501,3 +501,18 @@ The card is purely informational. Expiry enforcement remains in the server-side 
 
 - `test/shared/widgets/post_duration_info_card_test.dart` — widget tests across all durations, compact/full modes, dark/light themes, and all 5 locales.
 - `test/features/settings/platform_limits_test.dart` — unit tests for `PlatformLimits.durationForNeedsCategory` covering all approved Needs categories, the unknown-slug fallback, custom-map overrides, and `listingDurationDays` / `forexListingDurationDays` defaults.
+
+## 4.6 Provider Services and Work Profiles
+
+Provider Services remain the service-offering surface: selected services are stored in `provider_capabilities` and continue to gate Needs offers server-side. Work-seeking is now modeled separately by the standalone patch `sql/patch_job_seeking_profiles.sql`.
+
+The new patch adds owner-private `job_profiles`, `job_profile_roles`, `job_profile_role_work_types`, and `job_profile_qualification_answers` tables plus `v_my_job_profiles`. These records describe the work a user wants, the roles they qualify for, role-specific work types, self-declared qualifications, expected pay, availability, languages, and location preference. They do not grant Need-offer permissions and do not create an admin-verified provider badge.
+
+The `/account/services` screen now shows a separate Work Profile section behind the public `job_profiles_enabled` setting. Job matching is intentionally shown as unavailable until a real jobs/opportunity source exists; no fake listings or match percentages are generated.
+
+Apply order:
+
+1. Apply the existing Needs/provider capability SQL patches.
+2. Apply `sql/patch_capability_profiles.sql` if capability roles/kinds/qualifications are not already present.
+3. Apply `sql/patch_job_seeking_profiles.sql`.
+4. Enable `system_settings.job_profiles_enabled` only after staging verification.

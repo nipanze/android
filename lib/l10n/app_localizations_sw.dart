@@ -791,7 +791,7 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get perMonth => ' / mwezi';
+  String get perMonth => 'mwezi';
 
   @override
   String get freePlanSubtitle =>
@@ -2806,6 +2806,121 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerOpportunitiesTitle => 'Watu wanatafuta unachotoa';
 
   @override
+  String get workProfileTitle => 'Wasifu wa Kazi';
+
+  @override
+  String get workProfileSubtitle =>
+      'Eleza kazi unazotaka tofauti na huduma unazotoa.';
+
+  @override
+  String get workProfilesDisabled => 'Wasifu wa kazi haujawashwa bado.';
+
+  @override
+  String get addWorkProfile => 'Ongeza wasifu wa kazi';
+
+  @override
+  String get noWorkProfilesYet =>
+      'Bado hakuna wasifu wa kazi. Ongeza mmoja ikiwa unataka watu waelewe kazi unazoweza kufanya.';
+
+  @override
+  String get jobOpportunitiesUnavailable =>
+      'Ulinganishaji wa kazi haupatikani bado. Wasifu wako umehifadhiwa kwa ulinganishaji wa baadaye na hautengenezi beji iliyothibitishwa.';
+
+  @override
+  String get jobRole => 'Jukumu la kazi';
+
+  @override
+  String get workTypes => 'Aina za kazi';
+
+  @override
+  String get qualifications => 'Sifa';
+
+  @override
+  String get experience => 'Uzoefu';
+
+  @override
+  String get availability => 'Upatikanaji';
+
+  @override
+  String get fullTime => 'Muda wote';
+
+  @override
+  String get partTime => 'Muda mfupi';
+
+  @override
+  String get contract => 'Mkataba';
+
+  @override
+  String get weekends => 'Mwishoni mwa wiki';
+
+  @override
+  String get preferredLocation => 'Eneo unalopendelea';
+
+  @override
+  String get flexible => 'Rahisi kubadilika';
+
+  @override
+  String get onsite => 'Mahali pa kazi';
+
+  @override
+  String get remote => 'Mbali';
+
+  @override
+  String get hybrid => 'Mchanganyiko';
+
+  @override
+  String get expectedPay => 'Malipo unayotarajia';
+
+  @override
+  String get payOpen => 'Malipo wazi';
+
+  @override
+  String get per => 'Kwa';
+
+  @override
+  String get perHour => 'saa';
+
+  @override
+  String get perDay => 'siku';
+
+  @override
+  String get perWeek => 'wiki';
+
+  @override
+  String get perProject => 'mradi';
+
+  @override
+  String get languages => 'Lugha';
+
+  @override
+  String get profileSummary => 'Muhtasari wa wasifu';
+
+  @override
+  String get saveWorkProfile => 'Hifadhi wasifu wa kazi';
+
+  @override
+  String get deactivateWorkProfile => 'Zima wasifu wa kazi';
+
+  @override
+  String get deactivateWorkProfileConfirm =>
+      'Hii inaficha wasifu wa kazi lakini haiondoi uwezo wako wa huduma.';
+
+  @override
+  String get deactivate => 'Zima';
+
+  @override
+  String get inactive => 'Haitumiki';
+
+  @override
+  String get edit => 'Hariri';
+
+  @override
+  String get retry => 'Jaribu tena';
+
+  @override
+  String get requiredField => 'Inahitajika';
+
+  @override
   String get viewOpportunities => 'Tazama fursa';
 
   @override
@@ -3145,4 +3260,44 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get nationalitySomali => 'Msomali';
+
+  @override
+  String get iWantJobs => 'Ninataka kazi';
+
+  @override
+  String get iWantJobsSubtitle =>
+      'Sanidi wasifu wa kutafuta kazi kwa kitengo hiki';
+
+  @override
+  String get searchCategories => 'Tafuta aina za huduma';
+
+  @override
+  String get noMatchingJobOpportunities =>
+      'Hakuna nafasi za kazi zinazolingana bado. Nafasi zitaonekana hapa waajiri wanapochapisha maombi.';
+
+  @override
+  String get selectAtLeastOneRole =>
+      'Tafadhali chagua angalau jukumu moja la kazi';
+
+  @override
+  String qualificationsDeclared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sifa $count zilizotangazwa',
+      one: 'Sifa 1 iliyotangazwa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rolesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Majukumu $count',
+      one: 'Jukumu 1',
+    );
+    return '$_temp0';
+  }
 }

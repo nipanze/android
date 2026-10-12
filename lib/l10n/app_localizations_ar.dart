@@ -787,7 +787,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get perMonth => ' / شهرياً';
+  String get perMonth => 'شهر';
 
   @override
   String get freePlanSubtitle =>
@@ -2776,6 +2776,121 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerOpportunitiesTitle => 'يبحث الناس عما تقدمه';
 
   @override
+  String get workProfileTitle => 'ملف العمل';
+
+  @override
+  String get workProfileSubtitle =>
+      'صف الوظائف التي تريدها بشكل منفصل عن الخدمات التي تقدمها.';
+
+  @override
+  String get workProfilesDisabled => 'ملفات العمل غير مفعلة بعد.';
+
+  @override
+  String get addWorkProfile => 'إضافة ملف عمل';
+
+  @override
+  String get noWorkProfilesYet =>
+      'لا يوجد ملف عمل بعد. أضف واحدًا إذا أردت أن يفهم الناس العمل الذي أنت مؤهل له.';
+
+  @override
+  String get jobOpportunitiesUnavailable =>
+      'مطابقة فرص العمل غير متاحة بعد. يتم حفظ ملفك للمطابقة لاحقًا ولا ينشئ شارة تحقق.';
+
+  @override
+  String get jobRole => 'دور العمل';
+
+  @override
+  String get workTypes => 'أنواع العمل';
+
+  @override
+  String get qualifications => 'المؤهلات';
+
+  @override
+  String get experience => 'الخبرة';
+
+  @override
+  String get availability => 'التوفر';
+
+  @override
+  String get fullTime => 'دوام كامل';
+
+  @override
+  String get partTime => 'دوام جزئي';
+
+  @override
+  String get contract => 'عقد';
+
+  @override
+  String get weekends => 'عطلات نهاية الأسبوع';
+
+  @override
+  String get preferredLocation => 'الموقع المفضل';
+
+  @override
+  String get flexible => 'مرن';
+
+  @override
+  String get onsite => 'في الموقع';
+
+  @override
+  String get remote => 'عن بُعد';
+
+  @override
+  String get hybrid => 'هجين';
+
+  @override
+  String get expectedPay => 'الأجر المتوقع';
+
+  @override
+  String get payOpen => 'الأجر مفتوح';
+
+  @override
+  String get per => 'لكل';
+
+  @override
+  String get perHour => 'ساعة';
+
+  @override
+  String get perDay => 'يوم';
+
+  @override
+  String get perWeek => 'أسبوع';
+
+  @override
+  String get perProject => 'مشروع';
+
+  @override
+  String get languages => 'اللغات';
+
+  @override
+  String get profileSummary => 'ملخص الملف';
+
+  @override
+  String get saveWorkProfile => 'حفظ ملف العمل';
+
+  @override
+  String get deactivateWorkProfile => 'تعطيل ملف العمل';
+
+  @override
+  String get deactivateWorkProfileConfirm =>
+      'هذا يخفي ملف العمل ولكنه لا يزيل قدراتك الخدمية.';
+
+  @override
+  String get deactivate => 'تعطيل';
+
+  @override
+  String get inactive => 'غير نشط';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get requiredField => 'مطلوب';
+
+  @override
   String get viewOpportunities => 'عرض الفرص';
 
   @override
@@ -3126,4 +3241,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get nationalitySomali => 'صومالي';
+
+  @override
+  String get iWantJobs => 'أرغب في العمل';
+
+  @override
+  String get iWantJobsSubtitle => 'إعداد ملف البحث عن عمل لهذه الفئة';
+
+  @override
+  String get searchCategories => 'البحث في الفئات';
+
+  @override
+  String get noMatchingJobOpportunities =>
+      'لا توجد فرص عمل مطابقة متاحة حتى الآن. ستظهر الفرص هنا عند نشر أصحاب العمل للطلبات.';
+
+  @override
+  String get selectAtLeastOneRole => 'يرجى تحديد دور وظيفي واحد على الأقل';
+
+  @override
+  String qualificationsDeclared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مؤهل معلن',
+      many: '$count مؤهلاً معلناً',
+      few: '$count مؤهلات معلنة',
+      two: 'مؤهلان معلنان',
+      one: 'مؤهل واحد معلن',
+      zero: 'لا توجد مؤهلات معلنة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rolesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count دور',
+      many: '$count دوراً',
+      few: '$count أدوار',
+      two: 'دوران',
+      one: 'دور واحد',
+      zero: 'لا توجد أدوار',
+    );
+    return '$_temp0';
+  }
 }

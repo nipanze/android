@@ -1368,6 +1368,44 @@
   "removeService": "Remove Service",
   "removeServiceConfirm": "Are you sure you want to remove this service from your profile?",
   "providerOpportunitiesTitle": "People are looking for what you provide",
+  "workProfileTitle": "Work Profile",
+  "workProfileSubtitle": "Describe jobs you want separately from services you offer.",
+  "workProfilesDisabled": "Work profiles are not enabled yet.",
+  "addWorkProfile": "Add work profile",
+  "noWorkProfilesYet": "No work profile yet. Add one if you want people to understand the work you are qualified to do.",
+  "jobOpportunitiesUnavailable": "Job matching is not available yet. Your profile is saved for future matching and does not create a verified badge.",
+  "jobRole": "Job role",
+  "workTypes": "Work types",
+  "qualifications": "Qualifications",
+  "experience": "Experience",
+  "availability": "Availability",
+  "fullTime": "Full-time",
+  "partTime": "Part-time",
+  "contract": "Contract",
+  "weekends": "Weekends",
+  "preferredLocation": "Preferred location",
+  "flexible": "Flexible",
+  "onsite": "On site",
+  "remote": "Remote",
+  "hybrid": "Hybrid",
+  "expectedPay": "Expected pay",
+  "payOpen": "Pay open",
+  "per": "Per",
+  "perHour": "hour",
+  "perDay": "day",
+  "perWeek": "week",
+  "perMonth": "month",
+  "perProject": "project",
+  "languages": "Languages",
+  "profileSummary": "Profile summary",
+  "saveWorkProfile": "Save work profile",
+  "deactivateWorkProfile": "Deactivate work profile",
+  "deactivateWorkProfileConfirm": "This hides the work profile but does not remove your service capabilities.",
+  "deactivate": "Deactivate",
+  "inactive": "Inactive",
+  "edit": "Edit",
+  "retry": "Retry",
+  "requiredField": "Required",
   "viewOpportunities": "View opportunities",
   "addYourServices": "Add your services",
   "canYouHelp": "Can you help people with something?",
@@ -1517,5 +1555,28 @@
   "nationalitySomali": "Somali",
   "@postDurationNotice": {
     "description": "Supporting note that requests automatically expire"
+  },
+  "iWantJobs": "I want jobs",
+  "iWantJobsSubtitle": "Configure a work-seeking profile for this category",
+  "searchCategories": "Search categories",
+  "noMatchingJobOpportunities": "No matching job opportunities available yet. Opportunities will appear here as requests are posted.",
+  "selectAtLeastOneRole": "Please select at least one job role",
+  "qualificationsDeclared": "{count, plural, =1{1 qualification declared} other{{count} qualifications declared}}",
+  "@qualificationsDeclared": {
+    "description": "Count of declared qualifications",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rolesCount": "{count, plural, =1{1 role} other{{count} roles}}",
+  "@rolesCount": {
+    "description": "Count of job roles",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

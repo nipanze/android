@@ -16,6 +16,30 @@ SET LOCAL lock_timeout = '10s';
 CREATE SCHEMA IF NOT EXISTS private;
 SET search_path = public, private;
 
+CREATE TABLE IF NOT EXISTS private.expiry_duration_v1 (
+  market text NOT NULL,
+  category_slug text,
+  setting_key text NOT NULL,
+  days integer NOT NULL
+);
+TRUNCATE TABLE private.expiry_duration_v1;
+
+INSERT INTO private.expiry_duration_v1 (market, category_slug, setting_key, days)
+SELECT x.market, x.category_slug, x.setting_key, COALESCE(NULLIF(s.setting_value, '')::integer, x.fallback_days)
+FROM (VALUES
+  ('Loans', NULL::text, 'listing_duration_days', 30),
+  ('Forex', NULL::text, 'forex_listing_duration_days', 7),
+  ('Needs', 'machinery_equipment', 'needs_default_duration_machinery_equipment_days', 14),
+  ('Needs', 'professional_services', 'needs_default_duration_professional_services_days', 14),
+  ('Needs', 'transport_logistics', 'needs_default_duration_transport_logistics_days', 7),
+  ('Needs', 'specialized_products', 'needs_default_duration_specialized_products_days', 14),
+  ('Needs', 'travel_international', 'needs_default_duration_travel_international_days', 14)
+) AS x(market, category_slug, setting_key, fallback_days)
+LEFT JOIN public.system_settings s
+  ON s.setting_key = x.setting_key
+ AND s.country IS NULL
+ AND s.setting_value ~ '^[0-9]+$';
+
 DO $preflight$
 DECLARE
   v_expected record;
@@ -91,29 +115,6 @@ BEGIN
   END LOOP;
 END;
 $preflight$;
-
-DROP TABLE IF EXISTS private.expiry_duration_v1;
-CREATE TABLE private.expiry_duration_v1 (
-  market text NOT NULL,
-  category_slug text,
-  setting_key text NOT NULL,
-  days integer NOT NULL
-);
-
-INSERT INTO private.expiry_duration_v1 (market, category_slug, setting_key, days)
-SELECT x.market, x.category_slug, x.setting_key, s.setting_value::integer
-FROM (VALUES
-  ('Loans', NULL::text, 'listing_duration_days'),
-  ('Forex', NULL::text, 'forex_listing_duration_days'),
-  ('Needs', 'machinery_equipment', 'needs_default_duration_machinery_equipment_days'),
-  ('Needs', 'professional_services', 'needs_default_duration_professional_services_days'),
-  ('Needs', 'transport_logistics', 'needs_default_duration_transport_logistics_days'),
-  ('Needs', 'specialized_products', 'needs_default_duration_specialized_products_days'),
-  ('Needs', 'travel_international', 'needs_default_duration_travel_international_days')
-) AS x(market, category_slug, setting_key)
-JOIN public.system_settings s
-  ON s.setting_key = x.setting_key
- AND s.country IS NULL;
 
 LOCK TABLE public.loan_requests, public.forex_requests, public.needs_requests
   IN SHARE ROW EXCLUSIVE MODE;

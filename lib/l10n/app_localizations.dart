@@ -1475,7 +1475,7 @@ abstract class AppLocalizations {
   /// No description provided for @perMonth.
   ///
   /// In en, this message translates to:
-  /// **' / month'**
+  /// **'month'**
   String get perMonth;
 
   /// No description provided for @freePlanSubtitle.
@@ -5122,6 +5122,228 @@ abstract class AppLocalizations {
   /// **'People are looking for what you provide'**
   String get providerOpportunitiesTitle;
 
+  /// No description provided for @workProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Work Profile'**
+  String get workProfileTitle;
+
+  /// No description provided for @workProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe jobs you want separately from services you offer.'**
+  String get workProfileSubtitle;
+
+  /// No description provided for @workProfilesDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Work profiles are not enabled yet.'**
+  String get workProfilesDisabled;
+
+  /// No description provided for @addWorkProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add work profile'**
+  String get addWorkProfile;
+
+  /// No description provided for @noWorkProfilesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No work profile yet. Add one if you want people to understand the work you are qualified to do.'**
+  String get noWorkProfilesYet;
+
+  /// No description provided for @jobOpportunitiesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Job matching is not available yet. Your profile is saved for future matching and does not create a verified badge.'**
+  String get jobOpportunitiesUnavailable;
+
+  /// No description provided for @jobRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Job role'**
+  String get jobRole;
+
+  /// No description provided for @workTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'Work types'**
+  String get workTypes;
+
+  /// No description provided for @qualifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Qualifications'**
+  String get qualifications;
+
+  /// No description provided for @experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get experience;
+
+  /// No description provided for @availability.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability'**
+  String get availability;
+
+  /// No description provided for @fullTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-time'**
+  String get fullTime;
+
+  /// No description provided for @partTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Part-time'**
+  String get partTime;
+
+  /// No description provided for @contract.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract'**
+  String get contract;
+
+  /// No description provided for @weekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get weekends;
+
+  /// No description provided for @preferredLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred location'**
+  String get preferredLocation;
+
+  /// No description provided for @flexible.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible'**
+  String get flexible;
+
+  /// No description provided for @onsite.
+  ///
+  /// In en, this message translates to:
+  /// **'On site'**
+  String get onsite;
+
+  /// No description provided for @remote.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote'**
+  String get remote;
+
+  /// No description provided for @hybrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Hybrid'**
+  String get hybrid;
+
+  /// No description provided for @expectedPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected pay'**
+  String get expectedPay;
+
+  /// No description provided for @payOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay open'**
+  String get payOpen;
+
+  /// No description provided for @per.
+  ///
+  /// In en, this message translates to:
+  /// **'Per'**
+  String get per;
+
+  /// No description provided for @perHour.
+  ///
+  /// In en, this message translates to:
+  /// **'hour'**
+  String get perHour;
+
+  /// No description provided for @perDay.
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get perDay;
+
+  /// No description provided for @perWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get perWeek;
+
+  /// No description provided for @perProject.
+  ///
+  /// In en, this message translates to:
+  /// **'project'**
+  String get perProject;
+
+  /// No description provided for @languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languages;
+
+  /// No description provided for @profileSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile summary'**
+  String get profileSummary;
+
+  /// No description provided for @saveWorkProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save work profile'**
+  String get saveWorkProfile;
+
+  /// No description provided for @deactivateWorkProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate work profile'**
+  String get deactivateWorkProfile;
+
+  /// No description provided for @deactivateWorkProfileConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This hides the work profile but does not remove your service capabilities.'**
+  String get deactivateWorkProfileConfirm;
+
+  /// No description provided for @deactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivate;
+
+  /// No description provided for @inactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get inactive;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
   /// No description provided for @viewOpportunities.
   ///
   /// In en, this message translates to:
@@ -5709,6 +5931,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Somali'**
   String get nationalitySomali;
+
+  /// No description provided for @iWantJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'I want jobs'**
+  String get iWantJobs;
+
+  /// No description provided for @iWantJobsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure a work-seeking profile for this category'**
+  String get iWantJobsSubtitle;
+
+  /// No description provided for @searchCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories'**
+  String get searchCategories;
+
+  /// No description provided for @noMatchingJobOpportunities.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching job opportunities available yet. Opportunities will appear here as requests are posted.'**
+  String get noMatchingJobOpportunities;
+
+  /// No description provided for @selectAtLeastOneRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least one job role'**
+  String get selectAtLeastOneRole;
+
+  /// Count of declared qualifications
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 qualification declared} other{{count} qualifications declared}}'**
+  String qualificationsDeclared(int count);
+
+  /// Count of job roles
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 role} other{{count} roles}}'**
+  String rolesCount(int count);
 }
 
 class _AppLocalizationsDelegate

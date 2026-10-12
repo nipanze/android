@@ -790,7 +790,7 @@ class AppLocalizationsRw extends AppLocalizations {
   }
 
   @override
-  String get perMonth => ' / ukwezi';
+  String get perMonth => 'ukwezi';
 
   @override
   String get freePlanSubtitle =>
@@ -2812,6 +2812,121 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerOpportunitiesTitle => 'Abantu barashaka ibyo utanga';
 
   @override
+  String get workProfileTitle => 'Profayili y\'akazi';
+
+  @override
+  String get workProfileSubtitle =>
+      'Sobanura akazi ushaka bitandukanye na serivisi utanga.';
+
+  @override
+  String get workProfilesDisabled => 'Profayili z\'akazi ntizirafungurwa.';
+
+  @override
+  String get addWorkProfile => 'Ongeraho profayili y\'akazi';
+
+  @override
+  String get noWorkProfilesYet =>
+      'Nta profayili y\'akazi irahari. Yongeraho niba ushaka ko abantu bamenya akazi ushoboye.';
+
+  @override
+  String get jobOpportunitiesUnavailable =>
+      'Guhuza abantu n\'akazi ntibiraboneka. Profayili yawe irabitswe ku gihe kizaza kandi ntabwo itanga ikirango cy\'uwagenzuwe.';
+
+  @override
+  String get jobRole => 'Uruhare rw\'akazi';
+
+  @override
+  String get workTypes => 'Ubwoko bw\'akazi';
+
+  @override
+  String get qualifications => 'Impamyabumenyi n\'ubumenyi';
+
+  @override
+  String get experience => 'Uburambe';
+
+  @override
+  String get availability => 'Kuboneka';
+
+  @override
+  String get fullTime => 'Igihe cyose';
+
+  @override
+  String get partTime => 'Igihe gito';
+
+  @override
+  String get contract => 'Amasezerano';
+
+  @override
+  String get weekends => 'Mu mpera z\'icyumweru';
+
+  @override
+  String get preferredLocation => 'Aho wifuza';
+
+  @override
+  String get flexible => 'Byahinduka';
+
+  @override
+  String get onsite => 'Ku kazi';
+
+  @override
+  String get remote => 'Kure';
+
+  @override
+  String get hybrid => 'Bivanze';
+
+  @override
+  String get expectedPay => 'Umushahara wifuza';
+
+  @override
+  String get payOpen => 'Umushahara ufunguye';
+
+  @override
+  String get per => 'Kuri';
+
+  @override
+  String get perHour => 'isaha';
+
+  @override
+  String get perDay => 'umunsi';
+
+  @override
+  String get perWeek => 'icyumweru';
+
+  @override
+  String get perProject => 'umushinga';
+
+  @override
+  String get languages => 'Indimi';
+
+  @override
+  String get profileSummary => 'Incamake ya profayili';
+
+  @override
+  String get saveWorkProfile => 'Bika profayili y\'akazi';
+
+  @override
+  String get deactivateWorkProfile => 'Hagarika profayili y\'akazi';
+
+  @override
+  String get deactivateWorkProfileConfirm =>
+      'Ibi bihisha profayili y\'akazi ariko ntibikuraho serivisi utanga.';
+
+  @override
+  String get deactivate => 'Hagarika';
+
+  @override
+  String get inactive => 'Ntikora';
+
+  @override
+  String get edit => 'Hindura';
+
+  @override
+  String get retry => 'Ongera ugerageze';
+
+  @override
+  String get requiredField => 'Birasabwa';
+
+  @override
   String get viewOpportunities => 'Reba amahirwe';
 
   @override
@@ -3150,4 +3265,44 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get nationalitySomali => 'Umunya-Somaliya';
+
+  @override
+  String get iWantJobs => 'Ndashaka akazi';
+
+  @override
+  String get iWantJobsSubtitle =>
+      'Tunganya umwirondoro wo gushaka akazi muri iki cyiciro';
+
+  @override
+  String get searchCategories => 'Shakisha ibyiciro';
+
+  @override
+  String get noMatchingJobOpportunities =>
+      'Nta mahirwe y\'akazi ahwanye arahari ubu. Amahirwe azagaragara hano abakoresha nibashyiraho ibyifuzo.';
+
+  @override
+  String get selectAtLeastOneRole =>
+      'Nyamuneka hitamo byibura inshingano imwe y\'akazi';
+
+  @override
+  String qualificationsDeclared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Impamyabumenyi $count zatangajwe',
+      one: 'Impamyabumenyi 1 yatangajwe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rolesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Inshingano $count',
+      one: 'Inshingano 1',
+    );
+    return '$_temp0';
+  }
 }

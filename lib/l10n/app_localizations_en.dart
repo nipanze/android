@@ -785,7 +785,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get perMonth => ' / month';
+  String get perMonth => 'month';
 
   @override
   String get freePlanSubtitle =>
@@ -2794,6 +2794,121 @@ class AppLocalizationsEn extends AppLocalizations {
       'People are looking for what you provide';
 
   @override
+  String get workProfileTitle => 'Work Profile';
+
+  @override
+  String get workProfileSubtitle =>
+      'Describe jobs you want separately from services you offer.';
+
+  @override
+  String get workProfilesDisabled => 'Work profiles are not enabled yet.';
+
+  @override
+  String get addWorkProfile => 'Add work profile';
+
+  @override
+  String get noWorkProfilesYet =>
+      'No work profile yet. Add one if you want people to understand the work you are qualified to do.';
+
+  @override
+  String get jobOpportunitiesUnavailable =>
+      'Job matching is not available yet. Your profile is saved for future matching and does not create a verified badge.';
+
+  @override
+  String get jobRole => 'Job role';
+
+  @override
+  String get workTypes => 'Work types';
+
+  @override
+  String get qualifications => 'Qualifications';
+
+  @override
+  String get experience => 'Experience';
+
+  @override
+  String get availability => 'Availability';
+
+  @override
+  String get fullTime => 'Full-time';
+
+  @override
+  String get partTime => 'Part-time';
+
+  @override
+  String get contract => 'Contract';
+
+  @override
+  String get weekends => 'Weekends';
+
+  @override
+  String get preferredLocation => 'Preferred location';
+
+  @override
+  String get flexible => 'Flexible';
+
+  @override
+  String get onsite => 'On site';
+
+  @override
+  String get remote => 'Remote';
+
+  @override
+  String get hybrid => 'Hybrid';
+
+  @override
+  String get expectedPay => 'Expected pay';
+
+  @override
+  String get payOpen => 'Pay open';
+
+  @override
+  String get per => 'Per';
+
+  @override
+  String get perHour => 'hour';
+
+  @override
+  String get perDay => 'day';
+
+  @override
+  String get perWeek => 'week';
+
+  @override
+  String get perProject => 'project';
+
+  @override
+  String get languages => 'Languages';
+
+  @override
+  String get profileSummary => 'Profile summary';
+
+  @override
+  String get saveWorkProfile => 'Save work profile';
+
+  @override
+  String get deactivateWorkProfile => 'Deactivate work profile';
+
+  @override
+  String get deactivateWorkProfileConfirm =>
+      'This hides the work profile but does not remove your service capabilities.';
+
+  @override
+  String get deactivate => 'Deactivate';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get requiredField => 'Required';
+
+  @override
   String get viewOpportunities => 'View opportunities';
 
   @override
@@ -3134,4 +3249,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nationalitySomali => 'Somali';
+
+  @override
+  String get iWantJobs => 'I want jobs';
+
+  @override
+  String get iWantJobsSubtitle =>
+      'Configure a work-seeking profile for this category';
+
+  @override
+  String get searchCategories => 'Search categories';
+
+  @override
+  String get noMatchingJobOpportunities =>
+      'No matching job opportunities available yet. Opportunities will appear here as requests are posted.';
+
+  @override
+  String get selectAtLeastOneRole => 'Please select at least one job role';
+
+  @override
+  String qualificationsDeclared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count qualifications declared',
+      one: '1 qualification declared',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rolesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count roles',
+      one: '1 role',
+    );
+    return '$_temp0';
+  }
 }

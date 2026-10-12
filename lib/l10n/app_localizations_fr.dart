@@ -792,7 +792,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get perMonth => ' / mois';
+  String get perMonth => 'mois';
 
   @override
   String get freePlanSubtitle =>
@@ -2836,6 +2836,122 @@ class AppLocalizationsFr extends AppLocalizations {
       'Des personnes recherchent ce que vous proposez';
 
   @override
+  String get workProfileTitle => 'Profil de travail';
+
+  @override
+  String get workProfileSubtitle =>
+      'Décrivez les emplois recherchés séparément des services proposés.';
+
+  @override
+  String get workProfilesDisabled =>
+      'Les profils de travail ne sont pas encore activés.';
+
+  @override
+  String get addWorkProfile => 'Ajouter un profil';
+
+  @override
+  String get noWorkProfilesYet =>
+      'Aucun profil de travail pour le moment. Ajoutez-en un si vous voulez expliquer les travaux que vous êtes qualifié à faire.';
+
+  @override
+  String get jobOpportunitiesUnavailable =>
+      'La mise en relation pour les emplois n’est pas encore disponible. Votre profil est enregistré pour plus tard et ne crée pas de badge vérifié.';
+
+  @override
+  String get jobRole => 'Rôle recherché';
+
+  @override
+  String get workTypes => 'Types de travail';
+
+  @override
+  String get qualifications => 'Qualifications';
+
+  @override
+  String get experience => 'Expérience';
+
+  @override
+  String get availability => 'Disponibilité';
+
+  @override
+  String get fullTime => 'Temps plein';
+
+  @override
+  String get partTime => 'Temps partiel';
+
+  @override
+  String get contract => 'Contrat';
+
+  @override
+  String get weekends => 'Week-ends';
+
+  @override
+  String get preferredLocation => 'Lieu préféré';
+
+  @override
+  String get flexible => 'Flexible';
+
+  @override
+  String get onsite => 'Sur site';
+
+  @override
+  String get remote => 'À distance';
+
+  @override
+  String get hybrid => 'Hybride';
+
+  @override
+  String get expectedPay => 'Rémunération attendue';
+
+  @override
+  String get payOpen => 'Rémunération ouverte';
+
+  @override
+  String get per => 'Par';
+
+  @override
+  String get perHour => 'heure';
+
+  @override
+  String get perDay => 'jour';
+
+  @override
+  String get perWeek => 'semaine';
+
+  @override
+  String get perProject => 'projet';
+
+  @override
+  String get languages => 'Langues';
+
+  @override
+  String get profileSummary => 'Résumé du profil';
+
+  @override
+  String get saveWorkProfile => 'Enregistrer le profil';
+
+  @override
+  String get deactivateWorkProfile => 'Désactiver le profil';
+
+  @override
+  String get deactivateWorkProfileConfirm =>
+      'Cela masque le profil de travail mais ne supprime pas vos services.';
+
+  @override
+  String get deactivate => 'Désactiver';
+
+  @override
+  String get inactive => 'Inactif';
+
+  @override
+  String get edit => 'Modifier';
+
+  @override
+  String get retry => 'Réessayer';
+
+  @override
+  String get requiredField => 'Obligatoire';
+
+  @override
   String get viewOpportunities => 'Voir les opportunités';
 
   @override
@@ -3179,4 +3295,44 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get nationalitySomali => 'Somalien';
+
+  @override
+  String get iWantJobs => 'Je cherche du travail';
+
+  @override
+  String get iWantJobsSubtitle =>
+      'Configurer un profil de recherche d\'emploi pour cette catégorie';
+
+  @override
+  String get searchCategories => 'Rechercher des catégories';
+
+  @override
+  String get noMatchingJobOpportunities =>
+      'Aucune opportunité d\'emploi correspondante pour le moment. Les opportunités apparaîtront ici dès que des demandes seront publiées.';
+
+  @override
+  String get selectAtLeastOneRole =>
+      'Veuillez sélectionner au moins un rôle professionnel';
+
+  @override
+  String qualificationsDeclared(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count qualifications déclarées',
+      one: '1 qualification déclarée',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rolesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rôles',
+      one: '1 rôle',
+    );
+    return '$_temp0';
+  }
 }

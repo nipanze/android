@@ -74,10 +74,6 @@ class _ListingExpiryIndicatorState extends State<ListingExpiryIndicator> {
         : (remaining.inMilliseconds.clamp(0, total.inMilliseconds) /
                 total.inMilliseconds)
             .toDouble();
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final mutedColor =
-        isDark ? AppColors.text2Dark : theme.colorScheme.onSurfaceVariant;
     final color = isExpired
         ? AppColors.danger
         : remaining.inHours < 6

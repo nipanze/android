@@ -305,6 +305,7 @@ Planned items:
 - Contract generation and `reveal_contact` gating
 - Database migration for country-aware multi-market support
 - Actual forex module completion and currency gating
+- Work-profile admin review and real job-opportunity matching source
 
 ### Documentation gaps
 - Keep README package list matched to `pubspec.yaml`
@@ -319,6 +320,7 @@ Planned items:
 4. Build Stage 4.7 forex request/offer flow and verify with direct API tests
 5. Review and test the `login_page.dart` country default behavior; decide whether locale is sufficient or if carrier detection should be added later
 6. Implement version-check UI before public store rollout
+7. Stage and review `sql/patch_job_seeking_profiles.sql`; keep work-seeking profiles separate from `provider_capabilities`
 
 ---
 
@@ -340,6 +342,7 @@ Planned items:
 - Confirm whether `profiles.country` is persisted for new users and whether the country is mutable only through onboarding.
 - Confirm whether `offer` visibility is currently gated by participant status in the backend.
 - Confirm whether `contracts` and contact reveal are enforced by the `reveal_contact` backend function or a similar RPC.
+- Confirm when `job_profiles_enabled` should be enabled and which real opportunity source should feed work-profile matches.
 
 ---
 

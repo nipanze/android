@@ -55,13 +55,16 @@ class ProviderCapability {
     this.categorySlug,
     this.categoryName,
     this.categoryIcon,
-    this.status = ProviderCapabilityStatus.selfDeclared,
+    ProviderCapabilityStatus? status,
     this.pendingEvidenceCount = 0,
     this.approvedEvidenceCount = 0,
     this.rejectedEvidenceCount = 0,
     this.expiredEvidenceCount = 0,
     this.latestRejectReason,
-  });
+  }) : status = status ??
+            (verificationLevel == ProviderVerificationLevel.providerVerified
+                ? ProviderCapabilityStatus.providerVerified
+                : ProviderCapabilityStatus.selfDeclared);
 
   factory ProviderCapability.fromMap(Map<String, dynamic> map) {
     final verificationLevel = ProviderVerificationLevel.fromString(

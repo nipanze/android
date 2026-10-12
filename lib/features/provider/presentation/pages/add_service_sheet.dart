@@ -22,6 +22,7 @@ const _marketingCapabilitySlugs = {
   'affiliate_marketing',
   'advertising_campaigns',
   'brand_promotion',
+  'tiktok_promotion',
   'other_marketing_services',
   _audienceCapabilitySlug,
 };
@@ -50,10 +51,14 @@ class ProviderCapabilitySelection {
   const ProviderCapabilitySelection({
     required this.slugs,
     this.metadataBySlug = const {},
+    this.openWorkProfile = false,
+    this.categorySlug,
   });
 
   final List<String> slugs;
   final Map<String, Map<String, dynamic>> metadataBySlug;
+  final bool openWorkProfile;
+  final String? categorySlug;
 }
 
 /// Bottom sheet for adding provider capabilities.
@@ -143,6 +148,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _allowInstitutionMatching = false;
   bool _showMarketing = false;
   bool _loading = true;
+  bool _iWantJobs = false;
 
   @override
   void initState() {
@@ -228,6 +234,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     return ProviderCapabilitySelection(
       slugs: slugs,
       metadataBySlug: metadataBySlug,
+      openWorkProfile: _iWantJobs,
+      categorySlug: _selectedCategory?.slug,
     );
   }
 
@@ -516,6 +524,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                         onInstitutionMatchingChanged: (v) =>
                                             setState(() =>
                                                 _allowInstitutionMatching = v),
+                                        iWantJobs: _iWantJobs,
+                                        onIWantJobsChanged: (v) =>
+                                            setState(() => _iWantJobs = v),
                                       )
                                     : _CapabilityList(
                                         capabilities: _categoryCapabilities,
@@ -523,6 +534,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                         selected: _selected,
                                         scrollController: scrollController,
                                         onMarketingTap: _openMarketing,
+                                        iWantJobs: _iWantJobs,
+                                        onIWantJobsChanged: (v) =>
+                                            setState(() => _iWantJobs = v),
                                         onToggle: (slug) {
                                           setState(() {
                                             if (_selected.contains(slug)) {
@@ -714,7 +728,7 @@ class _CapabilityDetailEditor extends StatelessWidget {
         ],
         if (draft.work && selectedRole != null) ...[
           if (selectedRole.kindQuestion != null &&
-              selectedRole!.kinds.isNotEmpty) ...[
+              selectedRole.kinds.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               selectedRole.kindQuestion!,
@@ -905,7 +919,7 @@ class _CapabilityDetailEditor extends StatelessWidget {
   }
 }
 
-class _CategoryList extends StatelessWidget {
+class _CategoryList extends StatefulWidget {
   const _CategoryList({
     required this.categories,
     required this.scrollController,
@@ -917,47 +931,103 @@ class _CategoryList extends StatelessWidget {
   final void Function(NeedCategory) onSelect;
 
   @override
+  State<_CategoryList> createState() => _CategoryListState();
+}
+
+class _CategoryListState extends State<_CategoryList> {
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final bg3 = isDark ? AppColors.bg3Dark : AppColors.bg3Light;
+    final l10n = AppLocalizations.of(context)!;
     final localeCode = Localizations.localeOf(context).languageCode;
 
-    return ListView.separated(
-      controller: scrollController,
-      itemCount: categories.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: border),
-      itemBuilder: (_, i) {
-        final cat = categories[i];
-        final description = cat.localizedDescription(localeCode);
-        return ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: bg3,
-              borderRadius: BorderRadius.circular(10),
+    final filtered = widget.categories.where((cat) {
+      if (_searchQuery.trim().isEmpty) return true;
+      final q = _searchQuery.trim().toLowerCase();
+      final name = cat.localizedName(localeCode).toLowerCase();
+      final desc = (cat.localizedDescription(localeCode) ?? '').toLowerCase();
+      return name.contains(q) || desc.contains(q);
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: l10n.searchCategories,
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              filled: true,
+              fillColor: bg3,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
-            alignment: Alignment.center,
-            child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
+            onChanged: (val) => setState(() => _searchQuery = val),
           ),
-          title: Text(cat.localizedName(localeCode),
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: description == null || description.isEmpty
-              ? null
-              : Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+        ),
+        Expanded(
+          child: ListView.separated(
+            controller: widget.scrollController,
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => Divider(height: 1, color: border),
+            itemBuilder: (_, i) {
+              final cat = filtered[i];
+              final description = cat.localizedDescription(localeCode);
+              return ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: bg3,
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  alignment: Alignment.center,
+                  child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
                 ),
-          trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => onSelect(cat),
-        );
-      },
+                title: Text(cat.localizedName(localeCode),
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: description == null || description.isEmpty
+                    ? null
+                    : Text(
+                        description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? AppColors.text2Dark : AppColors.text2Light,
+                        ),
+                      ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => widget.onSelect(cat),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -970,6 +1040,8 @@ class _CapabilityList extends StatelessWidget {
     required this.scrollController,
     required this.onMarketingTap,
     required this.onToggle,
+    required this.iWantJobs,
+    required this.onIWantJobsChanged,
   });
 
   final List<NeedCapability> capabilities;
@@ -978,6 +1050,8 @@ class _CapabilityList extends StatelessWidget {
   final ScrollController scrollController;
   final VoidCallback onMarketingTap;
   final void Function(String) onToggle;
+  final bool iWantJobs;
+  final ValueChanged<bool> onIWantJobsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -986,46 +1060,68 @@ class _CapabilityList extends StatelessWidget {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final localeCode = Localizations.localeOf(context).languageCode;
 
-    return ListView.separated(
+    final l10n = AppLocalizations.of(context)!;
+
+    return ListView(
       controller: scrollController,
-      itemCount: capabilities.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: border),
-      itemBuilder: (_, i) {
-        final cap = capabilities[i];
-        if (cap.slug == _marketingServicesSlug) {
-          return ListTile(
-            leading: const Icon(Icons.campaign_outlined),
+      children: [
+        for (final cap in capabilities) ...[
+          if (cap.slug == _marketingServicesSlug)
+            ListTile(
+              leading: const Icon(Icons.campaign_outlined),
+              title: Text(
+                AppLocalizations.of(context)!.marketingAndPromotion,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: onMarketingTap,
+            )
+          else
+            Builder(
+              builder: (context) {
+                final alreadyOwned = existingSlugs.contains(cap.slug);
+                final isSelected = selected.contains(cap.slug);
+
+                return ListTile(
+                  enabled: !alreadyOwned,
+                  leading: alreadyOwned
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.success, size: 22)
+                      : Checkbox(
+                          value: isSelected,
+                          onChanged: (_) => onToggle(cap.slug),
+                          activeColor: AppColors.accent,
+                        ),
+                  title: Text(
+                    cap.localizedName(localeCode),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: alreadyOwned ? text2 : null,
+                    ),
+                  ),
+                  onTap: alreadyOwned ? null : () => onToggle(cap.slug),
+                );
+              },
+            ),
+          Divider(height: 1, color: border),
+        ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
             title: Text(
-              AppLocalizations.of(context)!.marketingAndPromotion,
+              l10n.iWantJobs,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: onMarketingTap,
-          );
-        }
-        final alreadyOwned = existingSlugs.contains(cap.slug);
-        final isSelected = selected.contains(cap.slug);
-
-        return ListTile(
-          enabled: !alreadyOwned,
-          leading: alreadyOwned
-              ? const Icon(Icons.check_circle_rounded,
-                  color: AppColors.success, size: 22)
-              : Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onToggle(cap.slug),
-                  activeColor: AppColors.accent,
-                ),
-          title: Text(
-            cap.localizedName(localeCode),
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: alreadyOwned ? text2 : null,
+            subtitle: Text(
+              l10n.iWantJobsSubtitle,
+              style: TextStyle(fontSize: 12, color: text2),
             ),
+            value: iWantJobs,
+            onChanged: onIWantJobsChanged,
           ),
-          onTap: alreadyOwned ? null : () => onToggle(cap.slug),
-        );
-      },
+        ),
+      ],
     );
   }
 }
@@ -1043,6 +1139,8 @@ class _FinancialCapabilityList extends StatelessWidget {
     required this.onToggle,
     required this.onProfessionalTagChanged,
     required this.onInstitutionMatchingChanged,
+    required this.iWantJobs,
+    required this.onIWantJobsChanged,
   });
 
   final List<NeedCapability> capabilities;
@@ -1056,6 +1154,8 @@ class _FinancialCapabilityList extends StatelessWidget {
   final void Function(String) onToggle;
   final void Function(bool) onProfessionalTagChanged;
   final void Function(bool) onInstitutionMatchingChanged;
+  final bool iWantJobs;
+  final ValueChanged<bool> onIWantJobsChanged;
 
   bool get _hasFinancialSelected =>
       selected.intersection(_financialMetadataSlugs).isNotEmpty ||
@@ -1166,6 +1266,22 @@ class _FinancialCapabilityList extends StatelessWidget {
               ],
             ),
           ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              l10n.iWantJobs,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              l10n.iWantJobsSubtitle,
+              style: TextStyle(fontSize: 12, color: text2),
+            ),
+            value: iWantJobs,
+            onChanged: onIWantJobsChanged,
+          ),
+        ),
       ],
     );
   }

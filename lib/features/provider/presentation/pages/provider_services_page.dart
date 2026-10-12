@@ -2,12 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
+import '../../../job_profile/data/job_profile_repository.dart';
+import '../../../job_profile/presentation/widgets/work_profile_section.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
@@ -66,9 +69,25 @@ class _ProviderServicesView extends StatelessWidget {
           final profileState = context.watch<ProfileCubit>().state;
           final profile =
               profileState is ProfileCubitLoaded ? profileState.profile : null;
+          final needsRepo = getIt<NeedsRepository>();
+          final workProfileRepository =
+              JobProfileRepository(getIt<supabase.SupabaseClient>());
 
           if (caps.isEmpty) {
-            return _EmptyState(l10n: l10n, isDark: isDark);
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              children: [
+                WorkProfileSection(
+                  repository: workProfileRepository,
+                  needsRepository: needsRepo,
+                  profile: profile,
+                ),
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.55,
+                  child: _EmptyState(l10n: l10n, isDark: isDark),
+                ),
+              ],
+            );
           }
 
           return RefreshIndicator(
@@ -95,6 +114,11 @@ class _ProviderServicesView extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
+                WorkProfileSection(
+                  repository: workProfileRepository,
+                  needsRepository: needsRepo,
+                  profile: profile,
+                ),
                 // Capabilities
                 ...caps.map(
                   (cap) => CapabilityBadge(
@@ -166,6 +190,21 @@ class _ProviderServicesView extends StatelessWidget {
       await cubit.addCapabilities(
         selection.slugs,
         metadataBySlug: selection.metadataBySlug,
+      );
+    }
+
+    if (selection != null && selection.openWorkProfile && context.mounted) {
+      final profileState = context.read<ProfileCubit>().state;
+      final profile =
+          profileState is ProfileCubitLoaded ? profileState.profile : null;
+      final defaultCurrency = profile?.incomeCurrency ?? 'UGX';
+
+      await WorkProfileEditorSheet.show(
+        context,
+        repository: getIt<JobProfileRepository>(),
+        needsRepository: needsRepo,
+        defaultCurrency: defaultCurrency,
+        preselectedCategorySlug: selection.categorySlug,
       );
     }
   }

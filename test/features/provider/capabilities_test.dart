@@ -33,6 +33,8 @@ void main() {
 
   setUp(() {
     mockRepo = MockProviderRepository();
+    when(() => mockRepo.capabilityProfilesEnabled())
+        .thenAnswer((_) async => false);
   });
 
   group('ProviderCapability Entity', () {
