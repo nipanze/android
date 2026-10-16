@@ -452,5 +452,11 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 - 2026-10-16: SQL patch `sql/patch_provider_services_work_profiles.sql` aligned: removed non-existent `pc.updated_at` reference from `v_my_capability_status` view definition and `save_provider_capabilities`, ensuring full drop-in compatibility with production Supabase schema (`schema.sql:15635`).
 - 2026-10-16: Fixed `setting_type_enum` in `system_settings` insert: updated `max_provider_capabilities` setting type from `'integer'` to canonical enum value `'number'`.
 - 2026-10-16: `flutter test test/features/provider/capabilities_test.dart` passes 21/21 tests. `flutter analyze` verified clean with 0 errors and 0 warnings.
+- 2026-10-16: Redesigned Provider Services category setup flow per Reference Image 2: Replaced flat checkbox sheet with structured multi-step flow:
+  - Step 1 (Category Setup): Integrated `_JobsToggleCard` with switch ("I want jobs in this category"), collapsible `_SectionAccordion` for services when jobs are enabled, uppercase subcategory grouping (`_CapabilityCard` cards with animated circular indicators and theme-adaptive borders), and `_RoleCard` cards with full role descriptions.
+  - Step 2 (Pick Your Kind / Specialty): Clean chip-based selection with step indicator (`_StepBadge`), specialty question, and dynamic selection counter.
+  - Step 3 (Qualifications & Proof): Multi-party qualification checklist, upload proof card, years of experience, availability, languages, travel preference, and expected pay.
+  - Connecting Links & Resilience: Saving Step 3 directly persists `JobProfileDraft` via `JobProfileRepository.saveProfile(draft)` and reloads `CapabilitiesCubit.loadWithOpportunities()`. Provided full canonical defaults across all 14 categories in both `ProviderRepository` and `JobProfileRepository` for offline and immediate reliability.
+  - Verification: 21/21 tests pass; `flutter analyze` passes with 0 errors and 0 warnings.
 
 

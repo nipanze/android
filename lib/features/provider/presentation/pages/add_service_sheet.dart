@@ -77,8 +77,8 @@ class AddServiceSheet extends StatefulWidget {
     this.preselectedCategorySlug,
     required this.needsRepository,
     required this.providerRepository,
-    this.capabilityProfilesEnabled = false,
-    this.workProfilesEnabled = false,
+    this.capabilityProfilesEnabled = true,
+    this.workProfilesEnabled = true,
     this.initialJobsMode = false,
   });
 
@@ -101,8 +101,8 @@ class AddServiceSheet extends StatefulWidget {
     Map<String, dynamic>? existingFinancialMetadata,
     required NeedsRepository needsRepository,
     required IProviderRepository providerRepository,
-    bool capabilityProfilesEnabled = false,
-    bool workProfilesEnabled = false,
+    bool capabilityProfilesEnabled = true,
+    bool workProfilesEnabled = true,
     bool initialJobsMode = false,
     String? preselectedCategorySlug,
   }) {
@@ -424,15 +424,25 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                       child: Text(
                         _step == 0
                             ? l10n.chooseCategory
-                            : _step == 2
-                                ? 'STEP 2 OF 3: Choose Kind'
-                                : _step == 3
-                                    ? 'STEP 3 OF 3: Qualifications & Proof'
-                                    : _showAudience
-                                        ? l10n.iHaveAnAudience
-                                        : (_selectedCategory
-                                                ?.localizedName(localeCode) ??
-                                            l10n.chooseCapabilities),
+                            : (_step == 2 || _step == 3)
+                                ? (_selectedRoles.isNotEmpty
+                                    ? _categoryRoles
+                                        .firstWhere(
+                                          (r) =>
+                                              r.slug ==
+                                              _selectedRoles.elementAtOrNull(
+                                                  _currentRoleIndex),
+                                          orElse: () => _categoryRoles.first,
+                                        )
+                                        .name
+                                    : (_selectedCategory
+                                            ?.localizedName(localeCode) ??
+                                        ''))
+                                : _showAudience
+                                    ? l10n.iHaveAnAudience
+                                    : (_selectedCategory
+                                            ?.localizedName(localeCode) ??
+                                        l10n.chooseCapabilities),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium
@@ -530,6 +540,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                         setState(() => _showAudience = false),
                                   )
                                 : _CategoryCapabilitiesView(
+                                    categorySlug: _selectedCategory?.slug,
                                     capabilities: _categoryCapabilities,
                                     roles: _categoryRoles,
                                     existingSlugs: widget.existingSlugs,
@@ -749,6 +760,7 @@ class _CategoryListState extends State<_CategoryList> {
 // ---------------------------------------------------------------------------
 class _CategoryCapabilitiesView extends StatelessWidget {
   const _CategoryCapabilitiesView({
+    this.categorySlug,
     required this.capabilities,
     required this.roles,
     required this.existingSlugs,
@@ -769,6 +781,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     this.audienceFollowersCount,
   });
 
+  final String? categorySlug;
   final List<NeedCapability> capabilities;
   final List<ProviderServiceRole> roles;
   final Set<String> existingSlugs;
@@ -793,350 +806,190 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final bg3 = isDark ? AppColors.bg3Dark : AppColors.bg3Light;
     final localeCode = Localizations.localeOf(context).languageCode;
+
+    // Build ordered group list preserving original capability order.
+    final List<(String?, String?, List<NeedCapability>)> orderedGroups = [];
+    final seenGroupSlugs = <String>{};
+    final noGroup = <NeedCapability>[];
+    for (final cap in capabilities) {
+      final g = cap.serviceGroupSlug;
+      if (g != null && g.isNotEmpty) {
+        if (!seenGroupSlugs.contains(g)) {
+          seenGroupSlugs.add(g);
+          final groupCaps =
+              capabilities.where((c) => c.serviceGroupSlug == g).toList();
+          orderedGroups.add((g, cap.serviceGroupName, groupCaps));
+        }
+      } else {
+        noGroup.add(cap);
+      }
+    }
+    if (noGroup.isNotEmpty) {
+      orderedGroups.add((null, null, noGroup));
+    }
+
+    // Count only newly-selected (not already owned).
+    final newSelected =
+        selected.where((s) => !existingSlugs.contains(s)).length;
 
     return Stack(
       children: [
         ListView(
           controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
-            // Switch card: "I want jobs in this category"
+            // ── Jobs toggle card ───────────────────────────────────
             if (workProfilesEnabled)
-              Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withValues(alpha: iWantJobs ? 0.12 : 0.06),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.purple
-                        .withValues(alpha: iWantJobs ? 0.35 : 0.15),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.work_outline_rounded,
-                        color: Colors.purple, size: 22),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'I want jobs in this category',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          Text(
-                            'Looking to be hired as an operator, driver, or technician?',
-                            style:
-                                TextStyle(fontSize: 11, color: Colors.purple),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch.adaptive(
-                      value: iWantJobs,
-                      activeThumbColor: Colors.purple,
-                      onChanged: onIWantJobsChanged,
-                    ),
-                  ],
-                ),
+              _JobsToggleCard(
+                iWantJobs: iWantJobs,
+                categorySlug: categorySlug,
+                onChanged: onIWantJobsChanged,
+                border: border,
               ),
 
-            // If jobs ON: WHAT I OFFER collapses to an accordion
+            // ── "WHAT I OFFER" section header ──────────────────────
             if (iWantJobs) ...[
-              InkWell(
+              _SectionAccordion(
+                label: 'WHAT I OFFER',
+                count: selected.length,
+                summary: () {
+                  final names = capabilities
+                      .where((c) => selected.contains(c.slug))
+                      .map((c) => c.localizedName(localeCode))
+                      .take(2)
+                      .join(', ');
+                  final extra =
+                      selected.length > 2 ? ' +${selected.length - 2}' : '';
+                  final count = selected.length;
+                  if (names.isEmpty) return null;
+                  return '$names$extra  •  $count selected';
+                }(),
+                expanded: offerServicesExpanded,
                 onTap: onToggleOfferExpanded,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: border.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'WHAT I OFFER',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${selected.length} selected',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Icon(
-                        offerServicesExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        size: 20,
-                        color: text2,
-                      ),
-                    ],
+                text2: text2,
+                border: border,
+              ),
+              const SizedBox(height: 4),
+            ] else ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
+                child: Text(
+                  'WHAT I OFFER',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: text2,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
             ],
 
-            // Services list (shown if jobs OFF OR if accordion expanded)
-            if (!iWantJobs || offerServicesExpanded) ...[
-              if (!iWantJobs)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    'WHAT I OFFER',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: text2,
-                    ),
-                  ),
-                ),
-              for (var index = 0; index < capabilities.length; index++) ...[
-                if (capabilities[index].serviceGroupSlug != null &&
-                    (index == 0 ||
-                        capabilities[index - 1].serviceGroupSlug !=
-                            capabilities[index].serviceGroupSlug))
+            // ── Service capability cards (grouped) ─────────────────
+            if (!iWantJobs || offerServicesExpanded)
+              for (final (groupSlug, groupName, caps) in orderedGroups) ...[
+                if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
-                    padding:
-                        EdgeInsets.fromLTRB(4, index == 0 ? 4 : 12, 4, 4),
+                    padding: const EdgeInsets.fromLTRB(2, 12, 2, 6),
                     child: Text(
-                      capabilities[index].serviceGroupName ?? '',
+                      groupName,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: text2,
                           ),
                     ),
                   ),
-                Builder(
-                  builder: (context) {
-                    final cap = capabilities[index];
-                    final alreadyOwned = existingSlugs.contains(cap.slug);
-                    final isSelected = selected.contains(cap.slug);
-
-                    if (cap.slug == _audienceCapabilitySlug) {
-                      final l10n = AppLocalizations.of(context)!;
-                      final platformLabels = {
-                        'whatsapp': l10n.audiencePlatformWhatsApp,
-                        'tiktok': l10n.audiencePlatformTikTok,
-                        'instagram': l10n.audiencePlatformInstagram,
-                        'youtube': l10n.audiencePlatformYouTube,
-                        'facebook': l10n.audiencePlatformFacebook,
-                        'other': l10n.audiencePlatformOther,
-                      };
-                      final ordered = [
-                        'whatsapp',
-                        'tiktok',
-                        'instagram',
-                        'youtube',
-                        'facebook',
-                        'other',
-                      ];
-                      final selectedNames = ordered
-                          .where(audiencePlatforms.contains)
-                          .map((p) => platformLabels[p] ?? p)
-                          .toList();
-                      final subtitle = selectedNames.join(', ');
-
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        enabled: !alreadyOwned,
-                        leading: alreadyOwned
-                            ? const Icon(Icons.check_circle_rounded,
-                                color: AppColors.success, size: 20)
-                            : Checkbox(
-                                value: isSelected,
-                                onChanged: (_) {
-                                  onToggleCapability(cap.slug);
-                                  if (!isSelected && onAudienceTap != null) {
-                                    onAudienceTap!();
-                                  }
-                                },
-                                activeColor: AppColors.accent,
-                              ),
-                        title: Text(
-                          cap.localizedName(localeCode),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: alreadyOwned ? text2 : null,
+                ] else if (groupSlug == null && orderedGroups.length > 1) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(2, 12, 2, 6),
+                    child: Text(
+                      'Other',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: text2,
                           ),
-                        ),
-                        subtitle: subtitle.isNotEmpty
-                            ? Text(
-                                subtitle,
-                                style: TextStyle(fontSize: 12, color: text2),
-                              )
-                            : null,
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () {
-                          if (alreadyOwned) return;
-                          if (!isSelected) {
-                            onToggleCapability(cap.slug);
-                          }
-                          if (onAudienceTap != null) {
-                            onAudienceTap!();
-                          }
-                        },
-                      );
-                    }
-
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      enabled: !alreadyOwned,
-                      leading: alreadyOwned
-                          ? const Icon(Icons.check_circle_rounded,
-                              color: AppColors.success, size: 20)
-                          : Checkbox(
-                              value: isSelected,
-                              onChanged: (_) => onToggleCapability(cap.slug),
-                              activeColor: AppColors.accent,
-                            ),
-                      title: Text(
-                        cap.localizedName(localeCode),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: alreadyOwned ? text2 : null,
-                        ),
-                      ),
-                      onTap: alreadyOwned
-                          ? null
-                          : () => onToggleCapability(cap.slug),
-                    );
-                  },
-                ),
-                Divider(height: 1, color: border.withValues(alpha: 0.5)),
-              ],
-            ],
-
-            // If jobs ON: STEP 1 OF 3 "What role do you do?"
-            if (iWantJobs) ...[
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'STEP 1 OF 3',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.purple,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'What role do you do?',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
                     ),
                   ),
                 ],
+                for (final cap in caps)
+                  _CapabilityCard(
+                    cap: cap,
+                    localeCode: localeCode,
+                    isSelected: selected.contains(cap.slug),
+                    alreadyOwned: existingSlugs.contains(cap.slug),
+                    isDark: isDark,
+                    border: border,
+                    bg3: bg3,
+                    text2: text2,
+                    onTap: () {
+                      if (cap.slug == _audienceCapabilitySlug) {
+                        if (!selected.contains(cap.slug)) {
+                          onToggleCapability(cap.slug);
+                        }
+                        onAudienceTap?.call();
+                      } else {
+                        onToggleCapability(cap.slug);
+                      }
+                    },
+                    audiencePlatforms: cap.slug == _audienceCapabilitySlug
+                        ? audiencePlatforms
+                        : null,
+                    audienceFollowersCount: cap.slug == _audienceCapabilitySlug
+                        ? audienceFollowersCount
+                        : null,
+                  ),
+              ],
+
+            // ── Jobs: role selection ───────────────────────────────
+            if (iWantJobs) ...[
+              const SizedBox(height: 16),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: _StepBadge(
+                  label: 'STEP 1 OF 3',
+                  color: AppColors.proPurple,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+              Text(
+                'What role do you do?',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Pick every role that fits you. You can add more later.',
+                style: TextStyle(fontSize: 12, color: text2),
+              ),
+              const SizedBox(height: 12),
               if (roles.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Center(
                     child: Text(
                       'No specific job roles configured for this category yet.',
+                      textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: text2),
                     ),
                   ),
                 )
               else
                 for (final role in roles)
-                  Builder(
-                    builder: (context) {
-                      final isSelected = selectedRoles.contains(role.slug);
-                      return Card(
-                        elevation: 0,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        color: isSelected
-                            ? Colors.purple.withValues(alpha: 0.08)
-                            : Theme.of(context).cardColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(
-                            color: isSelected
-                                ? Colors.purple
-                                : border.withValues(alpha: 0.7),
-                            width: isSelected ? 1.5 : 1,
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: () => onToggleRole(role.slug),
-                          borderRadius: BorderRadius.circular(10),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                Checkbox(
-                                  value: isSelected,
-                                  onChanged: (_) => onToggleRole(role.slug),
-                                  activeColor: Colors.purple,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        role.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      if (role.kindQuestion != null) ...[
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          role.kindQuestion!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: text2,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  _RoleCard(
+                    role: role,
+                    isSelected: selectedRoles.contains(role.slug),
+                    border: border,
+                    text2: text2,
+                    onTap: () => onToggleRole(role.slug),
                   ),
             ],
           ],
         ),
 
-        // Sticky bottom button
+        // ── Sticky bottom action button ─────────────────────────────
         Positioned(
           left: 16,
           right: 16,
@@ -1144,39 +997,550 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           child: iWantJobs
               ? ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
+                    backgroundColor: AppColors.proPurple,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.proPurple.withValues(alpha: 0.35),
+                    disabledForegroundColor:
+                        Colors.white.withValues(alpha: 0.6),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: selectedRoles.isNotEmpty ? onNextKind : null,
-                  child: const Text(
-                    'Next: choose your kind',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  child: Text(
+                    selectedRoles.isNotEmpty
+                        ? 'Next: choose your kind'
+                        : 'Select at least one role',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 15),
                   ),
                 )
               : ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.accent.withValues(alpha: 0.35),
+                    disabledForegroundColor:
+                        Colors.white.withValues(alpha: 0.6),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: selected.isNotEmpty ? onSaveServices : null,
+                  onPressed: newSelected > 0 ? onSaveServices : null,
                   child: Text(
-                    selected.isNotEmpty
-                        ? 'Save services (${selected.length})'
-                        : 'Save services',
+                    newSelected > 0
+                        ? 'Save services ($newSelected)'
+                        : 'Select at least one service',
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 15),
                   ),
                 ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helper widgets for the category capabilities view
+// ---------------------------------------------------------------------------
+
+/// Jobs toggle card shown at the top when workProfilesEnabled is true.
+class _JobsToggleCard extends StatelessWidget {
+  const _JobsToggleCard({
+    required this.iWantJobs,
+    required this.onChanged,
+    required this.border,
+    this.categorySlug,
+  });
+
+  final bool iWantJobs;
+  final ValueChanged<bool> onChanged;
+  final Color border;
+  final String? categorySlug;
+
+  @override
+  Widget build(BuildContext context) {
+    const activeColor = AppColors.proPurple;
+    final String subtitle = iWantJobs
+        ? 'Employers can find and hire you for these roles'
+        : switch (categorySlug) {
+            'machinery_equipment' =>
+              'Operator, mechanic, manager or supervisor roles',
+            'transport_logistics' =>
+              'Driver, fleet manager, or courier roles',
+            'construction_building' =>
+              'Foreman, mason, plumber, electrician or trades roles',
+            'technology_digital' =>
+              'Developer, technician, or IT specialist roles',
+            'marketing_promotion' =>
+              'Marketer, content creator, or campaign manager roles',
+            'professional_services' =>
+              'Accountant, lawyer, engineer, or consultant roles',
+            'education_training' =>
+              'Teacher, tutor, trainer, or instructor roles',
+            'events_celebrations' || 'events_production' =>
+              'Planner, MC, DJ, caterer, or crew roles',
+            'photo_video_talent' || 'photo_video_music_talent' =>
+              'Photographer, videographer, or performer roles',
+            'beauty_fashion_styling' =>
+              'Stylist, barber, makeup artist, or designer roles',
+            'energy_utilities' =>
+              'Solar, electrical, borehole, or energy technician roles',
+            'agriculture_agribusiness' =>
+              'Farm manager, agronomist, or livestock officer roles',
+            'specialized_products' =>
+              'Procurement officer, sourcing, or customs agent roles',
+            'travel_international' =>
+              'Travel consultant, tour guide, or driver-guide roles',
+            _ => 'Looking to be hired? Build a work-seeker profile.',
+          };
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: iWantJobs
+            ? activeColor.withValues(alpha: 0.08)
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: iWantJobs
+              ? activeColor.withValues(alpha: 0.4)
+              : border.withValues(alpha: 0.6),
+          width: iWantJobs ? 1.5 : 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => onChanged(!iWantJobs),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                iWantJobs
+                    ? Icons.work_rounded
+                    : Icons.work_outline_rounded,
+                color: activeColor,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'I want jobs in this category',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: iWantJobs ? activeColor : null,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: iWantJobs
+                            ? activeColor.withValues(alpha: 0.8)
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: iWantJobs,
+                activeThumbColor: activeColor,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Collapsible accordion header for the "WHAT I OFFER" section (jobs-ON mode).
+class _SectionAccordion extends StatelessWidget {
+  const _SectionAccordion({
+    required this.label,
+    required this.count,
+    this.summary,
+    required this.expanded,
+    required this.onTap,
+    required this.text2,
+    required this.border,
+  });
+
+  final String label;
+  final int count;
+  final String? summary;
+  final bool expanded;
+  final VoidCallback onTap;
+  final Color text2;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: border.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                      letterSpacing: 0.7,
+                      color: text2,
+                    ),
+                  ),
+                  if (summary != null && summary!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      summary!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (count > 0 && (summary == null || summary!.isEmpty))
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  '$count selected',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ),
+            Icon(
+              expanded
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              size: 20,
+              color: text2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Step badge label chip (e.g. "STEP 1 OF 3").
+class _StepBadge extends StatelessWidget {
+  const _StepBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+/// A tappable selection card for a single capability / service item.
+class _CapabilityCard extends StatelessWidget {
+  const _CapabilityCard({
+    required this.cap,
+    required this.localeCode,
+    required this.isSelected,
+    required this.alreadyOwned,
+    required this.isDark,
+    required this.border,
+    required this.bg3,
+    required this.text2,
+    required this.onTap,
+    this.audiencePlatforms,
+    this.audienceFollowersCount,
+  });
+
+  final NeedCapability cap;
+  final String localeCode;
+  final bool isSelected;
+  final bool alreadyOwned;
+  final bool isDark;
+  final Color border;
+  final Color bg3;
+  final Color text2;
+  final VoidCallback onTap;
+  final Set<String>? audiencePlatforms;
+  final int? audienceFollowersCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isAudience = cap.slug == _audienceCapabilitySlug;
+    const accentColor = AppColors.accent;
+
+    String? subtitle;
+    if (isAudience &&
+        audiencePlatforms != null &&
+        audiencePlatforms!.isNotEmpty) {
+      final l10n = AppLocalizations.of(context)!;
+      final platformLabels = {
+        'whatsapp': l10n.audiencePlatformWhatsApp,
+        'tiktok': l10n.audiencePlatformTikTok,
+        'instagram': l10n.audiencePlatformInstagram,
+        'youtube': l10n.audiencePlatformYouTube,
+        'facebook': l10n.audiencePlatformFacebook,
+        'other': l10n.audiencePlatformOther,
+      };
+      const ordered = [
+        'whatsapp',
+        'tiktok',
+        'instagram',
+        'youtube',
+        'facebook',
+        'other',
+      ];
+      final selectedNames = ordered
+          .where(audiencePlatforms!.contains)
+          .map((p) => platformLabels[p] ?? p)
+          .toList();
+      subtitle = selectedNames.join(', ');
+    }
+
+    return GestureDetector(
+      onTap: alreadyOwned ? null : onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        decoration: BoxDecoration(
+          color: alreadyOwned
+              ? bg3.withValues(alpha: 0.6)
+              : isSelected
+                  ? accentColor.withValues(alpha: 0.07)
+                  : isDark
+                      ? AppColors.bg3Dark.withValues(alpha: 0.4)
+                      : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: alreadyOwned
+                ? border.withValues(alpha: 0.4)
+                : isSelected
+                    ? accentColor.withValues(alpha: 0.65)
+                    : border.withValues(alpha: 0.7),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              if (alreadyOwned)
+                const Icon(Icons.check_circle_rounded,
+                    color: AppColors.success, size: 20)
+              else
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? accentColor : Colors.transparent,
+                    border: Border.all(
+                      color: isSelected ? accentColor : border,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check_rounded,
+                          size: 13, color: Colors.white)
+                      : null,
+                ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cap.localizedName(localeCode),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: alreadyOwned ? text2 : null,
+                      ),
+                    ),
+                    if (subtitle != null && subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(fontSize: 11, color: text2),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (isAudience && !alreadyOwned)
+                Icon(Icons.chevron_right_rounded, color: text2, size: 18),
+              if (alreadyOwned)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Added',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A tappable selection card for a work / job role.
+class _RoleCard extends StatelessWidget {
+  const _RoleCard({
+    required this.role,
+    required this.isSelected,
+    required this.border,
+    required this.text2,
+    required this.onTap,
+  });
+
+  final ProviderServiceRole role;
+  final bool isSelected;
+  final Color border;
+  final Color text2;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const activeColor = AppColors.proPurple;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? activeColor.withValues(alpha: 0.07)
+              : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? activeColor.withValues(alpha: 0.65)
+                : border.withValues(alpha: 0.7),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? activeColor : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? activeColor : border,
+                    width: 1.5,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded,
+                        size: 13, color: Colors.white)
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      role.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if ((role.description ?? role.kindQuestion) != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        role.description ?? role.kindQuestion!,
+                        style: TextStyle(fontSize: 12, color: text2),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (role.kinds.isNotEmpty)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: isSelected ? activeColor : text2,
+                  size: 18,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1222,7 +1586,7 @@ class _KindStepViewState extends State<_KindStepView> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withValues(alpha: 0.15),
+                    color: AppColors.proPurple.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
@@ -1230,7 +1594,7 @@ class _KindStepViewState extends State<_KindStepView> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.purple,
+                      color: AppColors.proPurple,
                     ),
                   ),
                 ),
@@ -1252,10 +1616,12 @@ class _KindStepViewState extends State<_KindStepView> {
             ),
             const SizedBox(height: 4),
             Text(
-              '${widget.selectedKinds.length} selected',
+              widget.role.slug == 'machine_operator'
+                  ? 'Pick all that apply. Employers search by machine.'
+                  : 'Pick all that apply. Employers search by specialty.',
               style: TextStyle(fontSize: 12, color: text2),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1264,8 +1630,8 @@ class _KindStepViewState extends State<_KindStepView> {
                   FilterChip(
                     label: Text(kind.name),
                     selected: widget.selectedKinds.contains(kind.slug),
-                    selectedColor: Colors.purple.withValues(alpha: 0.2),
-                    checkmarkColor: Colors.purple,
+                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
+                    checkmarkColor: AppColors.proPurple,
                     onSelected: (val) {
                       setState(() {
                         if (val) {
@@ -1278,6 +1644,17 @@ class _KindStepViewState extends State<_KindStepView> {
                   ),
               ],
             ),
+            const SizedBox(height: 14),
+            Text(
+              widget.role.slug == 'machine_operator'
+                  ? '${widget.selectedKinds.length} machines selected'
+                  : '${widget.selectedKinds.length} selected',
+              style: TextStyle(
+                fontSize: 12,
+                color: text2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         Positioned(
@@ -1286,18 +1663,18 @@ class _KindStepViewState extends State<_KindStepView> {
           bottom: 12,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
+              backgroundColor: AppColors.proPurple,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: widget.onNext,
+            onPressed: widget.selectedKinds.isNotEmpty ? widget.onNext : null,
             child: Text(
               widget.roleIndex < widget.totalRoles - 1
                   ? 'Next role'
-                  : 'Next: qualifications & proof',
+                  : 'Next: add qualifications',
               style:
                   const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
@@ -1346,7 +1723,7 @@ class _QualificationsStepView extends StatefulWidget {
 class _QualificationsStepViewState extends State<_QualificationsStepView> {
   final _amountController = TextEditingController();
 
-  final _experienceOptions = ['<1', '1-2', '3-5', '6-10', '10+'];
+  final _experienceOptions = ['<1 yr', '1-2', '3-5', '5-10', '10+'];
   final _availabilityOptions = [
     'Full-time',
     'Part-time',
@@ -1387,7 +1764,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withValues(alpha: 0.15),
+                    color: AppColors.proPurple.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
@@ -1395,7 +1772,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.purple,
+                      color: AppColors.proPurple,
                     ),
                   ),
                 ),
@@ -1403,14 +1780,14 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Qualifications & proof',
+              'Tick what you have',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Tick qualifications you claim. Upload proof to request verified status.',
+              'Paperwork and experience boost matches.',
               style: TextStyle(fontSize: 12, color: text2),
             ),
             const SizedBox(height: 16),
@@ -1438,7 +1815,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     dense: true,
                     contentPadding: EdgeInsets.zero,
                     value: isChecked,
-                    activeColor: Colors.purple,
+                    activeColor: AppColors.proPurple,
                     onChanged: (val) {
                       setState(() {
                         if (val == true) {
@@ -1486,15 +1863,15 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: Colors.purple.withValues(alpha: 0.4),
+                  color: AppColors.proPurple.withValues(alpha: 0.4),
                   style: BorderStyle.solid,
                 ),
-                color: Colors.purple.withValues(alpha: 0.04),
+                color: AppColors.proPurple.withValues(alpha: 0.04),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.upload_file_rounded,
-                      color: Colors.purple, size: 28),
+                      color: AppColors.proPurple, size: 28),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Column(
@@ -1553,7 +1930,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     label: Text(exp),
                     selected:
                         widget.yearsExperienceByRole[primaryRoleSlug] == exp,
-                    selectedColor: Colors.purple.withValues(alpha: 0.2),
+                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
                     onSelected: (val) {
                       setState(() {
                         widget.yearsExperienceByRole[primaryRoleSlug] =
@@ -1580,7 +1957,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     label: Text(avail),
                     selected:
                         widget.availabilityByRole[primaryRoleSlug] == avail,
-                    selectedColor: Colors.purple.withValues(alpha: 0.2),
+                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
                     onSelected: (val) {
                       setState(() {
                         widget.availabilityByRole[primaryRoleSlug] =
@@ -1608,7 +1985,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     selected: (widget.languagesByRole[primaryRoleSlug] ??
                             {'English'})
                         .contains(lang),
-                    selectedColor: Colors.purple.withValues(alpha: 0.2),
+                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
                     onSelected: (val) {
                       final langs = widget.languagesByRole
                           .putIfAbsent(primaryRoleSlug, () => {'English'});
@@ -1631,7 +2008,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
               title: const Text('Willing to travel / relocate',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               value: widget.willingToTravelByRole[primaryRoleSlug] ?? false,
-              activeThumbColor: Colors.purple,
+              activeThumbColor: AppColors.proPurple,
               onChanged: (val) {
                 setState(() {
                   widget.willingToTravelByRole[primaryRoleSlug] = val;
@@ -1698,7 +2075,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
           bottom: 12,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
+              backgroundColor: AppColors.proPurple,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(

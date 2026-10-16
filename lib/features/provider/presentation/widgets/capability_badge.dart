@@ -97,7 +97,7 @@ class CapabilityBadge extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: (isJob ? Colors.purple : AppColors.accent)
+                    color: (isJob ? AppColors.proPurple : AppColors.accent)
                         .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -118,7 +118,7 @@ class CapabilityBadge extends StatelessWidget {
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: isJob
-                                  ? Colors.purple.withValues(alpha: 0.15)
+                                  ? AppColors.proPurple.withValues(alpha: 0.15)
                                   : AppColors.accent.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -128,7 +128,7 @@ class CapabilityBadge extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color:
-                                    isJob ? Colors.purple : AppColors.accent,
+                                    isJob ? AppColors.proPurple : AppColors.accent,
                               ),
                             ),
                           ),

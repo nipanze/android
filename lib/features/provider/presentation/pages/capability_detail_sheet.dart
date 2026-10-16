@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../widgets/provider_verification_chip.dart';
 
@@ -49,7 +48,6 @@ class CapabilityDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
@@ -95,7 +93,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: (isJob ? Colors.purple : AppColors.accent)
+                    color: (isJob ? AppColors.proPurple : AppColors.accent)
                         .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -114,7 +112,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: isJob
-                                  ? Colors.purple.withValues(alpha: 0.15)
+                                  ? AppColors.proPurple.withValues(alpha: 0.15)
                                   : AppColors.accent.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -124,7 +122,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color:
-                                    isJob ? Colors.purple : AppColors.accent,
+                                    isJob ? AppColors.proPurple : AppColors.accent,
                               ),
                             ),
                           ),
@@ -169,11 +167,11 @@ class CapabilityDetailSheet extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: (isJob ? Colors.purple : AppColors.accent)
+                color: (isJob ? AppColors.proPurple : AppColors.accent)
                     .withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: (isJob ? Colors.purple : AppColors.accent)
+                  color: (isJob ? AppColors.proPurple : AppColors.accent)
                       .withValues(alpha: 0.2),
                 ),
               ),
@@ -182,7 +180,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                   Icon(
                     Icons.work_outline_rounded,
                     size: 18,
-                    color: isJob ? Colors.purple : AppColors.accent,
+                    color: isJob ? AppColors.proPurple : AppColors.accent,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -192,7 +190,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: isJob ? Colors.purple : AppColors.accent,
+                      color: isJob ? AppColors.proPurple : AppColors.accent,
                     ),
                   ),
                 ],
@@ -239,9 +237,12 @@ class CapabilityDetailSheet extends StatelessWidget {
 
                 // Verification checklist section
                 Text(
-                  'What is needed for the verified badge',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  'WHAT IS NEEDED FOR THE VERIFIED BADGE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: text2,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -251,58 +252,67 @@ class CapabilityDetailSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Action buttons
+          // Action buttons matching Image 2 Screen G
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Edit'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          onEdit();
-                        },
-                      ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isJob ? AppColors.proPurple : AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: Icon(
-                          capability.isPaused
-                              ? Icons.play_arrow_outlined
-                              : Icons.pause_circle_outline,
-                          size: 18,
-                        ),
-                        label: Text(
-                          capability.isPaused
-                              ? 'Resume'
-                              : (isJob ? 'Pause jobs' : 'Pause'),
-                        ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          onTogglePause(!capability.isPaused);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  icon: const Icon(Icons.delete_outline,
-                      size: 18, color: Colors.redAccent),
-                  label: Text(
-                    l10n.removeService,
-                    style: const TextStyle(color: Colors.redAccent),
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    onRemove();
+                    onEdit();
                   },
+                  child: Text(
+                    isJob ? 'Edit work profile' : 'Edit',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onTogglePause(!capability.isPaused);
+                      },
+                      child: Text(
+                        capability.isPaused
+                            ? 'Resume'
+                            : (isJob
+                                ? 'Pause jobs for this role'
+                                : 'Pause service'),
+                        style: TextStyle(color: text2, fontSize: 13),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onRemove();
+                      },
+                      child: const Text(
+                        'Remove',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

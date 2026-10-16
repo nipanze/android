@@ -11,6 +11,7 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/domain/models/user_profile.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../job_profile/data/job_profile_repository.dart';
+import '../../../job_profile/domain/models/job_profile.dart';
 import '../../../job_profile/presentation/widgets/work_profile_section.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
@@ -231,6 +232,10 @@ class _ProviderServicesView extends StatelessWidget {
             ?.metadata
         : null;
 
+    final profileState = context.read<ProfileCubit>().state;
+    final defaultCurrency = profileState is ProfileCubitLoaded
+        ? profileState.profile.incomeCurrency
+        : 'UGX';
     final needsRepo = getIt<NeedsRepository>();
     final providerRepo = getIt<IProviderRepository>();
     final selection = await AddServiceSheet.show(
@@ -246,7 +251,9 @@ class _ProviderServicesView extends StatelessWidget {
       needsRepository: needsRepo,
       providerRepository: providerRepo,
       capabilityProfilesEnabled:
-          loaded is CapabilitiesLoaded && loaded.capabilityProfilesEnabled,
+          loaded is CapabilitiesLoaded ? loaded.capabilityProfilesEnabled : true,
+      workProfilesEnabled:
+          loaded is CapabilitiesLoaded ? loaded.workProfilesEnabled : true,
       preselectedCategorySlug: preselectedCategorySlug,
     );
     if (selection != null &&
@@ -257,11 +264,62 @@ class _ProviderServicesView extends StatelessWidget {
       );
     }
 
-    if (selection != null && selection.openWorkProfile && context.mounted) {
-      final profileState = context.read<ProfileCubit>().state;
-      final profile =
-          profileState is ProfileCubitLoaded ? profileState.profile : null;
-      final defaultCurrency = profile?.incomeCurrency ?? 'UGX';
+    if (selection != null &&
+        selection.workRoles.isNotEmpty &&
+        selection.categorySlug != null) {
+      final roleDrafts = <JobProfileRoleDraft>[];
+      for (final roleSlug in selection.workRoles) {
+        final meta = selection.workMetadataByRole[roleSlug] ?? {};
+        final kinds = (meta['kind_ids'] as List? ?? const [])
+            .map((k) => k.toString())
+            .toList();
+        final qualifications =
+            (meta['qualification_ids'] as List? ?? const [])
+                .map((q) => q.toString())
+                .toList();
+        final years = meta['years_experience']?.toString();
+        roleDrafts.add(
+          JobProfileRoleDraft(
+            roleSlug: roleSlug,
+            yearsExperience: years,
+            workTypeSlugs: kinds,
+            qualificationSlugs: qualifications,
+          ),
+        );
+      }
+
+      final firstRoleMeta =
+          selection.workMetadataByRole[selection.workRoles.first] ?? {};
+      final expPay = firstRoleMeta['expected_pay'] as Map<String, dynamic>?;
+      final draft = JobProfileDraft(
+        categorySlug: selection.categorySlug!,
+        preferredCurrency: expPay?['currency']?.toString() ?? defaultCurrency,
+        availability: firstRoleMeta['availability']?.toString(),
+        expectedPayAmount: expPay?['amount'] as int?,
+        expectedPayPeriod: expPay?['period']?.toString(),
+        languages: (firstRoleMeta['languages'] as List? ?? const ['English'])
+            .map((l) => l.toString())
+            .toList(),
+        roles: roleDrafts,
+      );
+
+      final jobRepo = getIt.isRegistered<JobProfileRepository>()
+          ? getIt<JobProfileRepository>()
+          : (getIt.isRegistered<supabase.SupabaseClient>()
+              ? JobProfileRepository(getIt<supabase.SupabaseClient>())
+              : null);
+
+      if (jobRepo != null) {
+        try {
+          await jobRepo.saveProfile(draft);
+        } catch (_) {}
+      }
+      if (context.mounted) {
+        await cubit.loadWithOpportunities();
+      }
+    } else if (selection != null &&
+        selection.openWorkProfile &&
+        context.mounted) {
 
       await WorkProfileEditorSheet.show(
         context,
@@ -270,6 +328,9 @@ class _ProviderServicesView extends StatelessWidget {
         defaultCurrency: defaultCurrency,
         preselectedCategorySlug: selection.categorySlug,
       );
+      if (context.mounted) {
+        await cubit.loadWithOpportunities();
+      }
     }
   }
 
@@ -433,7 +494,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                   _FilterChip(
                     label: 'Jobs ($jobsCount)',
                     selected: _filter == _CapFilter.jobs,
-                    color: Colors.purple,
+                    color: AppColors.proPurple,
                     onTap: () => setState(() => _filter = _CapFilter.jobs),
                   ),
                 ],
@@ -585,9 +646,9 @@ class _WorkProfileStrip extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.purple.withValues(alpha: 0.08),
+        color: AppColors.proPurple.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.proPurple.withValues(alpha: 0.25)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
@@ -600,7 +661,7 @@ class _WorkProfileStrip extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.purple,
+                color: AppColors.proPurple,
               ),
             ),
           ),

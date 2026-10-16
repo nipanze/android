@@ -56,13 +56,15 @@ class JobProfileRepository {
           .eq('category_slug', categorySlug)
           .eq('is_active', true)
           .order('name', ascending: true);
-      return (data as List)
+      final list = (data as List)
           .map((row) => ProviderServiceRole.fromMap(
                 row as Map<String, dynamic>,
               ))
           .toList();
+      if (list.isNotEmpty) return list;
+      return ProviderServiceRole.defaultsForCategory(categorySlug);
     } catch (_) {
-      return const [];
+      return ProviderServiceRole.defaultsForCategory(categorySlug);
     }
   }
 

@@ -378,13 +378,14 @@ class ProviderRepository implements IProviderRepository {
           .eq('is_active', true)
           .order('name', ascending: true);
 
-      return (data as List)
+      final roles = (data as List)
           .map((row) => ProviderServiceRole.fromMap(
                 row as Map<String, dynamic>,
               ))
           .toList();
-    } catch (_) {
-      return const [];
-    }
+      if (roles.isNotEmpty) return roles;
+    } catch (_) {}
+
+    return ProviderServiceRole.defaultsForCategory(categorySlug);
   }
 }
