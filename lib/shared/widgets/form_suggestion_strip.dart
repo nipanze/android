@@ -24,7 +24,7 @@ class FormSuggestionStrip extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(top: 5),
+      padding: const EdgeInsets.only(top: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -32,14 +32,14 @@ class FormSuggestionStrip extends StatelessWidget {
             label,
             style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 5),
           Expanded(
             child: SizedBox(
-              height: 28,
+              height: 24,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: values.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 5),
+                separatorBuilder: (_, __) => const SizedBox(width: 4),
                 itemBuilder: (context, index) {
                   final value = values[index];
                   return Tooltip(
@@ -51,13 +51,10 @@ class FormSuggestionStrip extends StatelessWidget {
                         onTap: () => onSelected(value),
                         borderRadius: BorderRadius.circular(5),
                         child: Container(
-                          constraints: const BoxConstraints(maxWidth: 190),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
                           alignment: Alignment.center,
                           child: Text(
                             value,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 10,
                               color: colors.onSurface.withValues(alpha: 0.78),
