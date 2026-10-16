@@ -825,6 +825,47 @@
           ]
         },
         {
+          "id": "business_administrator_office_manager",
+          "name": "Business Administrator / Office Manager",
+          "kind_question": "What kind of admin work?",
+          "kinds": [
+            {
+              "id": "office_administration",
+              "name": "Office administration"
+            },
+            {
+              "id": "operations_support",
+              "name": "Operations support"
+            },
+            {
+              "id": "executive_assistant",
+              "name": "Executive assistant"
+            },
+            {
+              "id": "records_documentation",
+              "name": "Records & documentation"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "diploma_degree_in_business_administration",
+              "name": "Diploma / degree in business administration"
+            },
+            {
+              "id": "office_software_skills_documents_spreadsheets_email",
+              "name": "Office software skills (documents, spreadsheets, email)"
+            },
+            {
+              "id": "2_years_experience",
+              "name": "2+ years experience"
+            },
+            {
+              "id": "references",
+              "name": "References"
+            }
+          ]
+        },
+        {
           "id": "consultant",
           "name": "Consultant",
           "kind_question": "Advisory area?",
