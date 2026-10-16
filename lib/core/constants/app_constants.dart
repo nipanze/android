@@ -53,6 +53,7 @@ class ViewNames {
 
   static const String loanListings = 'v_loan_listings';
   static const String loanListingDetails = 'v_loan_listing_details';
+  static const String loanListingDescriptions = 'v_loan_listing_descriptions';
   static const String forexListings = 'v_forex_listings';
   static const String needsListings = 'v_needs_listings';
   static const String providerBadges = 'v_provider_badges';
@@ -87,8 +88,7 @@ class RpcNames {
   static const String recordInterestEvent = 'record_interest_event';
   static const String canPerformMarketplaceActivity =
       'can_perform_marketplace_activity';
-  static const String saveProviderCapabilities =
-      'save_provider_capabilities';
+  static const String saveProviderCapabilities = 'save_provider_capabilities';
   static const String adminGetVerificationRequirements =
       'admin_get_verification_requirements';
   static const String adminUpdateVerificationRequirement =

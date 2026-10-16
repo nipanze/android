@@ -114,16 +114,15 @@ class MarketplaceRepository {
   /// Get a single listing detail.
   Future<LoanListing> getListingDetail(String requestId) async {
     try {
+      late final Map<String, dynamic> data;
       try {
-        final data = await _client
+        data = await _client
             .from(ViewNames.loanListingDetails)
             .select()
             .eq('request_id', requestId)
             .single();
-
-        return LoanListing.fromMap(data);
       } catch (_) {
-        final data = await _client.from(TableNames.loanRequests).select('''
+        data = await _client.from(TableNames.loanRequests).select('''
               id, title, purpose, district, country, duration_months,
               requested_amount, preferred_repayment_plan,
               repayment_amount_per_period, repayment_timeline,
@@ -131,9 +130,17 @@ class MarketplaceRepository {
               suggested_repayment_frequency, suggested_installment_amount,
               terms_locked_at, status, number_of_offers, listed_at, expires_at
             ''').eq('id', requestId).single();
-
-        return LoanListing.fromMap(data);
       }
+
+      final publicContext = await _client
+          .from(ViewNames.loanListingDescriptions)
+          .select('description')
+          .eq('request_id', requestId)
+          .maybeSingle();
+      return LoanListing.fromMap({
+        ...data,
+        'description': publicContext?['description'],
+      });
     } catch (e) {
       throw parseSupabaseError(e);
     }

@@ -14,6 +14,7 @@ class MyListing extends Equatable {
     required this.preferredRepaymentPlan,
     required this.repaymentAmountPerPeriod,
     required this.repaymentTimeline,
+    this.description,
     this.suggestedInterestRatePct,
     this.suggestedLateFeePct,
     this.suggestedRepaymentFrequency,
@@ -43,6 +44,7 @@ class MyListing extends Equatable {
   final String preferredRepaymentPlan;
   final int repaymentAmountPerPeriod;
   final String repaymentTimeline;
+  final String? description;
   final double? suggestedInterestRatePct;
   final double? suggestedLateFeePct;
   final String? suggestedRepaymentFrequency;
@@ -94,6 +96,7 @@ class MyListing extends Equatable {
       repaymentAmountPerPeriod:
           (map['repayment_amount_per_period'] as num?)?.toInt() ?? 0,
       repaymentTimeline: map['repayment_timeline'] as String? ?? '',
+      description: map['description'] as String?,
       suggestedInterestRatePct:
           (map['suggested_interest_rate_pct'] as num?)?.toDouble(),
       suggestedLateFeePct: (map['suggested_late_fee_pct'] as num?)?.toDouble(),
@@ -147,5 +150,5 @@ class MyListing extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, status, numberOfOffers];
+  List<Object?> get props => [id, status, numberOfOffers, description];
 }

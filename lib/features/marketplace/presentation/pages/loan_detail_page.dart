@@ -400,6 +400,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                       body: listing.purpose,
                     ),
                   ],
+                  if (listing.description?.trim().isNotEmpty == true) ...[
+                    const SizedBox(height: 12),
+                    _DescriptionSection(
+                      title: 'How the funds will be used',
+                      body: listing.description!.trim(),
+                    ),
+                  ],
 
                   if (listing.suggestedInterestRatePct != null ||
                       listing.suggestedLateFeePct != null ||

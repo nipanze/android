@@ -16,6 +16,7 @@ void main() {
         'preferred_repayment_plan': 'Monthly',
         'repayment_amount_per_period': 100000,
         'repayment_timeline': '12 months',
+        'description': 'I will use the funds to cover tuition and books.',
         'suggested_interest_rate_pct': 10.5,
         'has_collateral': true,
         'collateral_details': 'Land title',
@@ -41,6 +42,10 @@ void main() {
       expect(listing.preferredRepaymentPlan, 'Monthly');
       expect(listing.repaymentAmountPerPeriod, 100000);
       expect(listing.repaymentTimeline, '12 months');
+      expect(
+        listing.description,
+        'I will use the funds to cover tuition and books.',
+      );
       expect(listing.suggestedInterestRatePct, 10.5);
       expect(listing.hasCollateral, isTrue);
       expect(listing.collateralDetails, 'Land title');
@@ -272,8 +277,7 @@ void main() {
           );
 
       expect(base(institutionType: 'bank').professionalTag, 'Bank');
-      expect(
-          base(institutionType: 'forex_exchange').professionalTag,
+      expect(base(institutionType: 'forex_exchange').professionalTag,
           'Forex exchange');
       expect(base(institutionType: 'sacco').professionalTag, 'SACCO');
       expect(base(institutionType: 'company').professionalTag, 'Company');

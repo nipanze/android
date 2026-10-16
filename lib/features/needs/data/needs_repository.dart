@@ -152,6 +152,29 @@ class NeedsRepository {
     }
   }
 
+  /// Fetch recent requests owned by the signed-in user for reusable form
+  /// suggestions. The explicit requester filter also keeps this query scoped
+  /// to the current user's own drafts.
+  Future<List<NeedsListing>> getMyRecentRequests({int limit = 12}) async {
+    try {
+      final data = await _client
+          .from(TableNames.needsRequests)
+          .select(
+            'request_id, title, specification, category, category_slug, '
+            'capability_slug, details, budget, currency, location, urgency, listed_at',
+          )
+          .eq('requester_id', _uid)
+          .order('listed_at', ascending: false)
+          .limit(limit);
+
+      return (data as List)
+          .map((row) => NeedsListing.fromMap(Map<String, dynamic>.from(row)))
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   /// Get public or private offers for a need request
   Future<List<NeedOffer>> getOffers(String needId) async {
     try {

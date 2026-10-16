@@ -11,10 +11,12 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/services/localization_fallback.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/form_suggestion_strip.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
@@ -37,6 +39,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   final Map<String, TextEditingController> _dynamicControllers = {};
   final Map<String, bool> _dynamicBooleans = {};
   List<NeedCategory> _categories = NeedCategory.defaultCategories;
+  List<NeedsListing> _recentRequests = const [];
+  String? _recentRequestsLoadError;
 
   String _categorySlug = 'machinery_equipment';
   String _urgency = 'Within 30 days';
@@ -61,6 +65,24 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _initCategoryControllers();
     _loadCategories();
     _loadLimits();
+    _loadRecentRequests();
+  }
+
+  Future<void> _loadRecentRequests() async {
+    try {
+      final requests =
+          await getIt<NeedsRepository>().getMyRecentRequests(limit: 12);
+      if (!mounted) return;
+      setState(() {
+        _recentRequests = requests;
+        _recentRequestsLoadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _recentRequestsLoadError = parseSupabaseError(e).message;
+      });
+    }
   }
 
   Future<void> _loadLimits() async {
@@ -202,6 +224,71 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     });
   }
 
+  List<NeedsListing> get _recentRequestsForCategory => _recentRequests
+      .where((request) => request.categorySlug == _categorySlug)
+      .toList();
+
+  List<String> _recentValues(String Function(NeedsListing) select) {
+    final values = <String>[];
+    final seen = <String>{};
+    for (final request in _recentRequestsForCategory) {
+      final value = select(request).trim();
+      if (value.isNotEmpty && seen.add(value)) {
+        values.add(value);
+        if (values.length == 4) break;
+      }
+    }
+    return values;
+  }
+
+  List<String> _recentValuesAcrossCategories(
+    String Function(NeedsListing) select,
+  ) {
+    final values = <String>[];
+    final seen = <String>{};
+    for (final request in _recentRequests) {
+      final value = select(request).trim();
+      if (value.isNotEmpty && seen.add(value)) {
+        values.add(value);
+        if (values.length == 4) break;
+      }
+    }
+    return values;
+  }
+
+  void _applyRecentRequest(NeedsListing request) {
+    setState(() {
+      _titleController.text = request.title;
+      _specificationController.text = request.specification;
+      if (request.currency == _currency(context.read<AuthBloc>().state)) {
+        _budgetController.text = request.budget.toString();
+      }
+      _urgency = _urgencies.contains(request.urgency)
+          ? request.urgency
+          : _urgencies.last;
+      if (request.location == 'Other' ||
+          _countryInfo(context.read<AuthBloc>().state)
+              .regions
+              .contains(request.location)) {
+        _location = request.location;
+        _customLocationController.clear();
+      } else {
+        _location = 'Other';
+        _customLocationController.text = request.location;
+      }
+      for (final entry in request.details.entries) {
+        final field = _fieldByKey(entry.key);
+        if (field == null) continue;
+        if (field.type == NeedFieldType.boolean) {
+          _dynamicBooleans[entry.key] =
+              entry.value == true || entry.value.toString() == 'true';
+        } else {
+          _dynamicControllers[entry.key]?.text = entry.value.toString();
+        }
+      }
+    });
+  }
+
   NeedFormField? _fieldByKey(String key) {
     for (final field in NeedFormSchema.fieldsForCategory(_categorySlug)) {
       if (field.key == key) return field;
@@ -239,125 +326,83 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() => controller.text = next.toString());
   }
 
-  Widget _sectionLabel(String text) {
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-    );
-  }
-
-  Widget _microPill(
-    String label,
-    VoidCallback onTap, {
-    bool selected = false,
-    IconData? icon,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(right: 7, bottom: 7),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-          decoration: BoxDecoration(
-            color: selected
-                ? colorScheme.primary.withValues(alpha: 0.16)
-                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: selected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 14,
-                  color: selected ? colorScheme.primary : null,
-                ),
-                const SizedBox(width: 5),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: selected
-                      ? colorScheme.primary
-                      : colorScheme.onSurface.withValues(alpha: 0.82),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _horizontalPills(List<Widget> pills) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(children: pills),
-    );
-  }
-
   Widget _buildStarterPresets() {
     final presets = NeedFormSchema.presetsForCategory(_categorySlug);
+    final recentRequests = _recentRequestsForCategory;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('Quick suggestions'),
-        const SizedBox(height: 7),
-        _horizontalPills(
-          presets
-              .map(
-                (preset) => _microPill(
-                  preset.label,
-                  () => _applyPreset(preset),
-                  icon: Icons.auto_awesome_rounded,
-                ),
-              )
-              .toList(),
+        FormSuggestionStrip(
+          label: 'Start with',
+          suggestions: [
+            ...recentRequests.map((request) => 'Repeat: ${request.title}'),
+            ...presets.map((preset) => preset.label),
+          ],
+          onSelected: (value) {
+            final recent = recentRequests
+                .where((request) => 'Repeat: ${request.title}' == value)
+                .firstOrNull;
+            if (recent != null) {
+              _applyRecentRequest(recent);
+              return;
+            }
+            final preset =
+                presets.where((preset) => preset.label == value).firstOrNull;
+            if (preset != null) _applyPreset(preset);
+          },
         ),
       ],
     );
   }
 
   Widget _buildOptionPills(NeedFormField field) {
-    final selected = _dynamicControllers[field.key]?.text ?? '';
-    return Wrap(
-      children: field.options!
-          .map(
-            (option) => _microPill(
-              option,
-              () => _setFieldValue(field, option),
-              selected: selected == option,
-            ),
-          )
-          .toList(),
+    return FormSuggestionStrip(
+      label: 'Try',
+      suggestions: _optionsForField(field),
+      onSelected: (value) => _setFieldValue(field, value),
     );
   }
 
+  List<String> _optionsForField(NeedFormField field) {
+    final selected = _dynamicControllers[field.key]?.text;
+    return {
+      ...field.options!,
+      ..._suggestionsForField(field),
+      if (selected != null && selected.isNotEmpty) selected,
+    }.toList();
+  }
+
   Widget _buildBudgetShortcuts(String currency) {
-    return Wrap(
-      children: [
-        _microPill('Lower 25%', () => _setBudgetPercent(0.75)),
-        _microPill('Fair target', () => _setBudgetPercent(1.0)),
-        _microPill('Add 25%', () => _setBudgetPercent(1.25)),
-        _microPill('+$currency 50k', () => _adjustBudget(50000)),
-        _microPill('-$currency 50k', () => _adjustBudget(-50000)),
+    final recentAmounts = _recentValuesAcrossCategories(
+      (request) => request.currency == currency && request.budget > 0
+          ? '$currency ${request.budget}'
+          : '',
+    );
+    return FormSuggestionStrip(
+      label: 'Try',
+      suggestions: [
+        ...recentAmounts,
+        'Lower 25%',
+        'Fair target',
+        'Add 25%',
+        '+$currency 50k',
+        '-$currency 50k',
       ],
+      onSelected: (value) {
+        if (value == 'Lower 25%') {
+          _setBudgetPercent(0.75);
+        } else if (value == 'Fair target') {
+          _setBudgetPercent(1.0);
+        } else if (value == 'Add 25%') {
+          _setBudgetPercent(1.25);
+        } else if (value.startsWith('+$currency')) {
+          _adjustBudget(50000);
+        } else if (value.startsWith('-$currency')) {
+          _adjustBudget(-50000);
+        } else {
+          _budgetController.text = value.replaceAll(RegExp(r'[^0-9]'), '');
+        }
+      },
     );
   }
 
@@ -550,6 +595,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     };
   }
 
+  List<String> _suggestionsForField(NeedFormField field) => {
+        ..._quickValuesForField(field),
+        ..._recentValues(
+          (request) => request.details[field.key]?.toString() ?? '',
+        ),
+      }.toList();
+
   Map<String, String> _localizedNationalities(AppLocalizations l10n) => {
         'Ugandan': l10n.nationalityUgandan,
         'Kenyan': l10n.nationalityKenyan,
@@ -565,56 +617,23 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       };
 
   Widget _buildFieldQuickValues(NeedFormField field) {
-    final values = _quickValuesForField(field);
+    final values = _suggestionsForField(field);
     if (values.isEmpty) return const SizedBox.shrink();
-    final selected = _dynamicControllers[field.key]?.text ?? '';
-    if (field.key == 'nationality') {
-      final localizedNationalities =
-          _localizedNationalities(AppLocalizations.of(context)!);
-      return Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Wrap(
-          children: values.map((nationality) {
-            final flag = CountryLocations.flagForNationality(nationality);
-            final label = localizedNationalities[nationality] ?? nationality;
-            final isSelected = selected == nationality || selected == label;
-            if (flag == null) {
-              return _microPill(
-                label,
-                () => _setFieldValue(field, label),
-                selected: isSelected,
-              );
-            }
-            return Semantics(
-              button: true,
-              label: label,
-              selected: isSelected,
-              child: Tooltip(
-                message: label,
-                child: _microPill(
-                  flag,
-                  () => _setFieldValue(field, label),
-                  selected: isSelected,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Wrap(
-        children: values
-            .map(
-              (value) => _microPill(
-                value,
-                () => _setFieldValue(field, value),
-                selected: selected == value,
-              ),
-            )
-            .toList(),
-      ),
+    final localizedNationalities = field.key == 'nationality'
+        ? _localizedNationalities(AppLocalizations.of(context)!)
+        : const <String, String>{};
+    return FormSuggestionStrip(
+      label: 'Try',
+      suggestions: values
+          .map((value) => localizedNationalities[value] ?? value)
+          .toList(),
+      onSelected: (value) {
+        final source = localizedNationalities.entries
+            .where((entry) => entry.value == value)
+            .map((entry) => entry.key)
+            .firstOrNull;
+        _setFieldValue(field, source ?? value);
+      },
     );
   }
 
@@ -699,23 +718,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   ) {
     final index = fields.indexOf(field);
     return index > 0 && _isTransportLocationPairAt(fields, index - 1);
-  }
-
-  Widget _buildUrgencyChips(AppLocalizations l10n) {
-    return Wrap(
-      children: _urgencies
-          .map(
-            (urgency) => _microPill(
-              _urgencyLabel(l10n, urgency),
-              () => setState(() => _urgency = urgency),
-              selected: _urgency == urgency,
-              icon: urgency == 'Urgent'
-                  ? Icons.bolt_rounded
-                  : Icons.schedule_rounded,
-            ),
-          )
-          .toList(),
-    );
   }
 
   String _categoryLocalizedName(AppLocalizations l10n, String slug) {
@@ -1001,6 +1003,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (_recentRequestsLoadError != null) ...[
+                  Text(
+                    'Previous Need suggestions unavailable: '
+                    '$_recentRequestsLoadError',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   'Choose Need Category',
                   style: theme.textTheme.labelMedium?.copyWith(
@@ -1060,6 +1070,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     return null;
                   },
                 ),
+                FormSuggestionStrip(
+                  label: 'Recent',
+                  suggestions: _recentValues((request) => request.title),
+                  onSelected: (value) =>
+                      setState(() => _titleController.text = value),
+                ),
                 const SizedBox(height: 8),
                 _buildStarterPresets(),
                 const SizedBox(height: 14),
@@ -1090,6 +1106,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     }
                     return null;
                   },
+                ),
+                FormSuggestionStrip(
+                  label: 'Previous text',
+                  suggestions:
+                      _recentValues((request) => request.specification),
+                  onSelected: (value) =>
+                      setState(() => _specificationController.text = value),
                 ),
                 if (dynamicFields.isNotEmpty) ...[
                   const SizedBox(height: 18),
@@ -1157,7 +1180,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                 helperText: field.helperText,
                                 border: const OutlineInputBorder(),
                               ),
-                              items: field.options!
+                              items: _optionsForField(field)
                                   .map(
                                     (option) => DropdownMenuItem(
                                       value: option,
@@ -1211,7 +1234,20 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 6),
+                FormSuggestionStrip(
+                  label: 'Recent budget',
+                  suggestions: _recentValues(
+                    (request) =>
+                        request.currency == currency && request.budget > 0
+                            ? '$currency ${formatter.format(request.budget)}'
+                            : '',
+                  ),
+                  onSelected: (value) => setState(() {
+                    _budgetController.text =
+                        value.replaceAll(RegExp(r'[^0-9]'), '');
+                  }),
+                ),
+                const SizedBox(height: 4),
                 _buildBudgetShortcuts(currency),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
@@ -1244,6 +1280,17 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                       ? l10n.needsLocationRequired
                       : null,
                 ),
+                FormSuggestionStrip(
+                  label: 'Recent',
+                  suggestions: _recentValuesAcrossCategories(
+                          (request) => request.location)
+                      .where(country.regions.contains)
+                      .toList(),
+                  onSelected: (value) => setState(() {
+                    _location = value;
+                    _customLocationController.clear();
+                  }),
+                ),
                 if (selectedLocation == 'Other') ...[
                   const SizedBox(height: 14),
                   TextFormField(
@@ -1264,6 +1311,17 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                       }
                       return null;
                     },
+                  ),
+                  FormSuggestionStrip(
+                    label: 'Recent',
+                    suggestions: _recentValuesAcrossCategories(
+                      (request) => request.location,
+                    )
+                        .where((value) => !country.regions.contains(value))
+                        .toList(),
+                    onSelected: (value) => setState(
+                      () => _customLocationController.text = value,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 14),
@@ -1289,8 +1347,29 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     () => _urgency = value ?? _urgencies.first,
                   ),
                 ),
-                const SizedBox(height: 6),
-                _buildUrgencyChips(l10n),
+                FormSuggestionStrip(
+                  label: 'Recent',
+                  suggestions: _recentValuesAcrossCategories(
+                          (request) => request.urgency)
+                      .where(
+                        _urgencies.contains,
+                      )
+                      .toList(),
+                  onSelected: (value) => setState(() => _urgency = value),
+                ),
+                const SizedBox(height: 4),
+                FormSuggestionStrip(
+                  label: 'Try',
+                  suggestions: _urgencies
+                      .map((value) => _urgencyLabel(l10n, value))
+                      .toList(),
+                  onSelected: (value) => setState(() {
+                    _urgency = _urgencies.firstWhere(
+                      (urgency) => _urgencyLabel(l10n, urgency) == value,
+                      orElse: () => _urgencies.last,
+                    );
+                  }),
+                ),
                 const SizedBox(height: 18),
                 Text(
                   l10n.needsBudgetPreview(

@@ -10,6 +10,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/form_suggestion_strip.dart';
 import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -17,6 +18,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/listing_repository.dart';
 import '../../domain/models/borrower_information.dart';
+import '../../domain/models/my_listing.dart';
 import '../../domain/models/repayment_calculator.dart';
 import '../widgets/listing_create_widgets.dart';
 
@@ -112,6 +114,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
   final _amountController = TextEditingController();
   final _durationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _customPurposeController = TextEditingController();
   final _collateralDetailsController = TextEditingController();
   final _collateralValueController = TextEditingController();
   final _collateralLocationController = TextEditingController();
@@ -178,6 +181,8 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
 
   bool _submitting = false;
   PlatformLimits _limits = PlatformLimits.defaults;
+  List<MyListing> _recentRequests = const [];
+  String? _recentRequestsLoadError;
 
   @override
   void initState() {
@@ -198,7 +203,44 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     }
     _loadLimits();
     _loadBorrowerInformation();
+    _loadRecentRequests();
   }
+
+  Future<void> _loadRecentRequests() async {
+    try {
+      final requests =
+          await getIt<ListingRepository>().getMyListings(limit: 12);
+      if (!mounted) return;
+      setState(() {
+        _recentRequests = requests;
+        _recentRequestsLoadError = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _recentRequestsLoadError = parseSupabaseError(e).message;
+      });
+    }
+  }
+
+  List<String> _recentValues(String Function(MyListing) select) {
+    final values = <String>[];
+    final seen = <String>{};
+    for (final request in _recentRequests) {
+      final value = select(request).trim();
+      if (value.isNotEmpty && seen.add(value)) {
+        values.add(value);
+        if (values.length == 3) break;
+      }
+    }
+    return values;
+  }
+
+  List<String> _uniqueSuggestions(Iterable<String> suggestions) => suggestions
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty)
+      .toSet()
+      .toList();
 
   Future<void> _loadBorrowerInformation() async {
     try {
@@ -311,6 +353,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
     _amountController.dispose();
     _durationController.dispose();
     _descriptionController.dispose();
+    _customPurposeController.dispose();
     _collateralDetailsController.dispose();
     _collateralValueController.dispose();
     _collateralLocationController.dispose();
@@ -592,6 +635,7 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
         requestedAmount: int.parse(_amountController.text),
         durationMonths: int.parse(_durationController.text),
         district: _selectedRegion,
+        description: _descriptionController.text,
         incomeSource: _incomeSourceController.text.trim(),
         preferredRepaymentPlan: _preferredRepaymentPlan!,
         repaymentAmountPerPeriod: int.parse(_repaymentAmountController.text),
@@ -847,6 +891,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                 ) ??
                 '$currency ${fmtAmount(_limits.minLoanAmount)}-${fmtAmount(_limits.maxLoanAmount)} · Up to 60 months · terms lock on publish',
           ),
+          if (_recentRequestsLoadError != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Previous request suggestions unavailable: '
+              '$_recentRequestsLoadError',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 14),
           ListingFormPanel(
             title: l10n?.panelTheBasics ?? 'The basics',
@@ -871,6 +923,16 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   return null;
                 },
               ),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _uniqueSuggestions([
+                  ..._recentValues((request) => request.title),
+                  if (_selectedPurpose != null && _selectedPurpose != 'Other')
+                    'Loan for ${_getLocalizedPurpose(_selectedPurpose!)}',
+                ]),
+                onSelected: (value) =>
+                    setState(() => _titleController.text = value),
+              ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _selectedPurpose,
@@ -886,40 +948,42 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     .toList(),
                 onChanged: (v) => setState(() {
                   _selectedPurpose = v;
-                  if (v != 'Other') _customPurpose = null;
+                  if (v != 'Other') {
+                    _customPurpose = null;
+                    _customPurposeController.clear();
+                  }
                 }),
                 validator: (v) => v == null
                     ? (l10n?.validationPurposeRequired ?? 'Select a purpose')
                     : null,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Quick purpose',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  'Business expansion',
-                  'Education / School fees',
-                  'Emergency medical',
-                  'Inventory / Stock',
-                  'Transport / Vehicle',
-                ].map((purpose) {
-                  return ActionChip(
-                    label: Text(_getLocalizedPurpose(purpose)),
-                    onPressed: () => setState(() {
-                      _selectedPurpose = purpose;
-                      _customPurpose = null;
-                    }),
-                  );
-                }).toList(),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _uniqueSuggestions(
+                  _recentValues((request) => request.purpose).isEmpty
+                      ? const [
+                          'Business expansion',
+                          'Education / School fees',
+                          'Emergency medical',
+                          'Inventory / Stock',
+                          'Transport / Vehicle',
+                        ]
+                      : _recentValues((request) => request.purpose),
+                ),
+                onSelected: (value) => setState(() {
+                  if (_purposes.contains(value)) {
+                    _selectedPurpose = value;
+                    _customPurpose = null;
+                  } else {
+                    _selectedPurpose = 'Other';
+                    _customPurpose = value;
+                  }
+                }),
               ),
               if (_selectedPurpose == 'Other') ...[
                 const SizedBox(height: 12),
                 TextFormField(
+                  controller: _customPurposeController,
                   decoration: InputDecoration(
                     labelText:
                         l10n?.describePurposeLabel ?? 'Describe your purpose',
@@ -933,6 +997,16 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     }
                     return null;
                   },
+                ),
+                FormSuggestionStrip(
+                  label: 'Previous',
+                  suggestions: _recentValues((request) => request.purpose)
+                      .where((purpose) => !_purposes.contains(purpose))
+                      .toList(),
+                  onSelected: (value) => setState(() {
+                    _customPurpose = value;
+                    _customPurposeController.text = value;
+                  }),
                 ),
               ],
             ],
@@ -1008,41 +1082,33 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Quick amount',
-                style: Theme.of(context).textTheme.labelSmall,
+              FormSuggestionStrip(
+                label: 'Amount',
+                suggestions: _uniqueSuggestions([
+                  ..._quickLoanAmounts.map(
+                    (amount) => '$currency ${fmtAmount(amount)}',
+                  ),
+                  ..._recentValues((request) => request.currency == currency
+                      ? '$currency ${fmtAmount(request.requestedAmount)}'
+                      : ''),
+                ]),
+                onSelected: (value) => setState(() {
+                  _amountController.text =
+                      value.replaceAll(RegExp(r'[^0-9]'), '');
+                }),
               ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: _quickLoanAmounts.map((amount) {
-                  return ActionChip(
-                    label: Text('$currency ${fmtAmount(amount)}'),
-                    onPressed: () => setState(
-                      () => _amountController.text = amount.toString(),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Quick duration',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [3, 6, 12, 24, 36, 60].map((months) {
-                  return ActionChip(
-                    label: Text('$months months'),
-                    onPressed: () => setState(
-                      () => _durationController.text = months.toString(),
-                    ),
-                  );
-                }).toList(),
+              FormSuggestionStrip(
+                label: 'Duration',
+                suggestions: _uniqueSuggestions([
+                  ...[3, 6, 12, 24, 36, 60].map((months) => '$months months'),
+                  ..._recentValues(
+                    (request) => '${request.durationMonths} months',
+                  ),
+                ]),
+                onSelected: (value) => setState(() {
+                  _durationController.text =
+                      value.replaceAll(RegExp(r'[^0-9]'), '');
+                }),
               ),
               if (_monthlyPrincipalEstimate case final estimate?) ...[
                 const SizedBox(height: 8),
@@ -1076,6 +1142,13 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     .toList(),
                 onChanged: (v) => setState(() => _district = v ?? region),
               ),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _recentValues((request) => request.district)
+                    .where(country.regions.contains)
+                    .toList(),
+                onSelected: (value) => setState(() => _district = value),
+              ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
@@ -1086,8 +1159,20 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       'Description (optional)',
                   hintText: l10n?.descriptionOptionalHint ??
                       'Add any context Providers should know',
+                  helperText:
+                      'Shown to lenders. Avoid including private information.',
                   alignLabelWithHint: true,
                 ),
+              ),
+              FormSuggestionStrip(
+                label: 'Draft',
+                suggestions: _uniqueSuggestions([
+                  ..._recentValues((request) => request.description ?? ''),
+                  'I need this loan to [specific purpose]. The funds will help me '
+                      '[expected outcome]. I plan to repay from [income source].',
+                ]),
+                onSelected: (value) =>
+                    setState(() => _descriptionController.text = value),
               ),
             ],
           ),
@@ -1162,6 +1247,15 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     return null;
                   },
                 ),
+                FormSuggestionStrip(
+                  label: 'Recent',
+                  suggestions: _recentValues(
+                    (request) => request.collateralDetails ?? '',
+                  ),
+                  onSelected: (value) => setState(
+                    () => _collateralDetailsController.text = value,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -1199,6 +1293,29 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                       ),
                     ),
                   ],
+                ),
+                FormSuggestionStrip(
+                  label: 'Value',
+                  suggestions: _recentValues(
+                    (request) => request.collateralEstimatedValue == null
+                        ? ''
+                        : request.currency != currency
+                            ? ''
+                            : '$currency ${fmtAmount(request.collateralEstimatedValue!)}',
+                  ),
+                  onSelected: (value) => setState(
+                    () => _collateralValueController.text =
+                        value.replaceAll(RegExp(r'[^0-9]'), ''),
+                  ),
+                ),
+                FormSuggestionStrip(
+                  label: 'Location',
+                  suggestions: _recentValues(
+                    (request) => request.collateralLocation ?? '',
+                  ),
+                  onSelected: (value) => setState(
+                    () => _collateralLocationController.text = value,
+                  ),
                 ),
               ],
             ],
@@ -1249,28 +1366,18 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Quick-fill income source',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _uniqueSuggestions([
+                  ..._recentValues((request) => request.incomeSource),
                   'Monthly salary',
                   'Business income',
                   'Farming income',
                   'Rental income',
                   'Contract work',
-                ].map((source) {
-                  return ActionChip(
-                    label: Text(source),
-                    onPressed: () =>
-                        setState(() => _incomeSourceController.text = source),
-                  );
-                }).toList(),
+                ]),
+                onSelected: (value) =>
+                    setState(() => _incomeSourceController.text = value),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -1297,6 +1404,22 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                     ? (l10n?.validationRepaymentPlanRequired ??
                         'Select a repayment plan')
                     : null,
+              ),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _recentValues(
+                  (request) => _getLocalizedRepaymentPlan(
+                      request.preferredRepaymentPlan),
+                ),
+                onSelected: (value) => setState(() {
+                  _preferredRepaymentPlan =
+                      _repaymentPlans.map((plan) => plan['value']!).firstWhere(
+                            (plan) => _getLocalizedRepaymentPlan(plan) == value,
+                            orElse: () => _preferredRepaymentPlan ?? 'monthly',
+                          );
+                  _selectedDueDay = null;
+                  _updateRepaymentTimeline();
+                }),
               ),
             ],
           ),
@@ -1327,6 +1450,19 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   }
                   return null;
                 },
+              ),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions: _recentValues(
+                  (request) => request.currency == currency
+                      ? '$currency '
+                          '${fmtAmount(request.repaymentAmountPerPeriod)}'
+                      : '',
+                ),
+                onSelected: (value) => setState(() {
+                  _repaymentAmountController.text =
+                      value.replaceAll(RegExp(r'[^0-9]'), '');
+                }),
               ),
               const SizedBox(height: 4),
               Align(
@@ -1421,6 +1557,14 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                   }
                   return null;
                 },
+              ),
+              FormSuggestionStrip(
+                label: 'Recent',
+                suggestions:
+                    _recentValues((request) => request.repaymentTimeline),
+                onSelected: (value) => setState(
+                  () => _repaymentTimelineController.text = value,
+                ),
               ),
             ],
           ),
@@ -1517,6 +1661,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                         return null;
                       },
                     ),
+                    FormSuggestionStrip(
+                      label: 'Recent',
+                      suggestions: _recentValues((request) =>
+                          request.suggestedInterestRatePct == null
+                              ? ''
+                              : '${request.suggestedInterestRatePct}%'),
+                      onSelected: (value) => setState(
+                        () => _suggestedInterestController.text =
+                            value.replaceAll('%', ''),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _suggestedLateFeeController,
@@ -1540,6 +1695,17 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                         return null;
                       },
                     ),
+                    FormSuggestionStrip(
+                      label: 'Recent',
+                      suggestions: _recentValues((request) =>
+                          request.suggestedLateFeePct == null
+                              ? ''
+                              : '${request.suggestedLateFeePct}%'),
+                      onSelected: (value) => setState(
+                        () => _suggestedLateFeeController.text =
+                            value.replaceAll('%', ''),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _suggestedRepaymentPlan,
@@ -1558,6 +1724,24 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                           .toList(),
                       onChanged: (v) =>
                           setState(() => _suggestedRepaymentPlan = v),
+                    ),
+                    FormSuggestionStrip(
+                      label: 'Recent',
+                      suggestions: _recentValues(
+                        (request) => _getLocalizedRepaymentPlan(
+                          request.suggestedRepaymentFrequency,
+                        ),
+                      ),
+                      onSelected: (value) => setState(() {
+                        _suggestedRepaymentPlan = _repaymentPlans
+                            .map((plan) => plan['value']!)
+                            .firstWhere(
+                              (plan) =>
+                                  _getLocalizedRepaymentPlan(plan) == value,
+                              orElse: () =>
+                                  _suggestedRepaymentPlan ?? 'monthly',
+                            );
+                      }),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -1580,6 +1764,21 @@ class _ListingCreatePageState extends State<ListingCreatePage> {
                         }
                         return null;
                       },
+                    ),
+                    FormSuggestionStrip(
+                      label: 'Recent',
+                      suggestions: _recentValues(
+                        (request) => request.suggestedInstallmentAmount == null
+                            ? ''
+                            : request.currency != currency
+                                ? ''
+                                : '$currency '
+                                    '${fmtAmount(request.suggestedInstallmentAmount!)}',
+                      ),
+                      onSelected: (value) => setState(
+                        () => _suggestedInstallmentController.text =
+                            value.replaceAll(RegExp(r'[^0-9]'), ''),
+                      ),
                     ),
                   ]
                 : [

@@ -419,6 +419,8 @@ Provider Services is the single place where a user declares what they provide ac
 - Employment status, employer/business name, government employee status, monthly income range and its currency, other income source, and preferred bank are collected inside Post → Loan only. Reusable values live in `public.borrower_information`, separate from `profiles` and all request/listing tables.
 - The table grants access only to the authenticated owner through RLS. It is not joined into public marketplace views or included in a Loan, Forex, Needs, Offer, or public-profile payload.
 - Future Loan Requests load the saved values into the loan form. The user can restore the saved values, edit them for the current request, and the edited values are saved for later Loan Requests. Loan amount, purpose, repayment terms, collateral, and other request details are still entered for each loan.
+- Loan requests also save optional borrower-written context. Apply `sql/patch_loan_request_descriptions.sql` to existing databases before deploying the app update; new database setups receive the column from `sql/schema.sql`.
+- Loan and Need forms offer compact, optional suggestions from the user's own recent requests. Need suggestions are loaded only for the signed-in requester; choosing one copies editable values into the form.
 - Database changes are consolidated in `sql/patch.sql` and `sql/merged.sql`.
 
 ## 4.3 Private discovery plans and quick questions

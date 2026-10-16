@@ -538,6 +538,7 @@ CREATE TABLE loan_requests (
 
     title                       TEXT NOT NULL,
     purpose                     TEXT NOT NULL,
+    description                 TEXT,
     requested_amount            BIGINT NOT NULL CONSTRAINT chk_lr_amount_positive CHECK (requested_amount > 0),
     duration_months             INT NOT NULL
                                     CONSTRAINT chk_lr_duration CHECK (duration_months BETWEEN 1 AND 60),
@@ -1242,6 +1243,18 @@ COMMENT ON VIEW v_loan_listing_details IS
 'Single-listing detail view for active loan requests. Unlike v_loan_listings, it remains
  visible to users who already placed an offer, so the detail page can load after offer
  submission. Collateral and professional tags remain Pro-masked.';
+
+CREATE VIEW v_loan_listing_descriptions AS
+SELECT
+    lr.id AS request_id,
+    lr.description
+FROM loan_requests lr
+WHERE lr.status = 'active'
+  AND NOT private.is_blocked_from_future_request(lr.borrower_id, auth.uid(), lr.listed_at);
+
+COMMENT ON VIEW v_loan_listing_descriptions IS
+'Optional borrower-written context for active Loan Requests. Exposes no borrower identity
+or private income information and follows the active-listing block visibility rule.';
 
 
 -- --------------------------------------------
@@ -3189,6 +3202,7 @@ COMMENT ON FUNCTION public.consume_free_unlock() IS
 -- Grants for views
 GRANT SELECT ON countries TO authenticated, anon;
 GRANT SELECT ON v_loan_listings TO authenticated, anon;
+GRANT SELECT ON v_loan_listing_descriptions TO authenticated, anon;
 GRANT SELECT ON v_loan_listing_details TO authenticated, anon;
 GRANT SELECT ON v_user_marketplace_activity TO authenticated, anon;
 GRANT SELECT ON v_lender_offers TO authenticated, anon;
@@ -16976,4 +16990,3 @@ WHERE slug IN (
 UPDATE public.need_capabilities
 SET is_active = false
 WHERE slug = 'marketing_services';
-

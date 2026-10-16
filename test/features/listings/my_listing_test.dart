@@ -13,11 +13,12 @@ void main() {
     'preferred_repayment_plan': 'Monthly',
     'repayment_amount_per_period': 200000,
     'repayment_timeline': '6 months',
+    'description': 'Use the funds to stock my shop.',
     'status': 'active',
     'number_of_offers': 2,
-    'listed_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-    'expires_at':
-        DateTime.now().add(const Duration(days: 7)).toIso8601String(),
+    'listed_at':
+        DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+    'expires_at': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
   };
 
   group('MyListing', () {
@@ -30,6 +31,7 @@ void main() {
       expect(listing.district, 'Kampala');
       expect(listing.durationMonths, 6);
       expect(listing.requestedAmount, 1000000);
+      expect(listing.description, 'Use the funds to stock my shop.');
       expect(listing.status, ListingStatus.active);
       expect(listing.numberOfOffers, 2);
       expect(listing.isActive, isTrue);
@@ -62,8 +64,8 @@ void main() {
     test('fromMap falls back to flat currency keys', () {
       expect(MyListing.fromMap({...baseMap, 'currency_code': 'TZS'}).currency,
           'TZS');
-      expect(MyListing.fromMap({...baseMap, 'currency': 'NGN'}).currency,
-          'NGN');
+      expect(
+          MyListing.fromMap({...baseMap, 'currency': 'NGN'}).currency, 'NGN');
       expect(MyListing.fromMap(baseMap).currency, 'UGX');
     });
 

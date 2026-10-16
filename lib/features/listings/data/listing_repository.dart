@@ -40,14 +40,14 @@ class ListingRepository {
   }
 
   /// Fetch all loan requests belonging to the current borrower.
-  Future<List<MyListing>> getMyListings() async {
+  Future<List<MyListing>> getMyListings({int? limit}) async {
     try {
-      final data = await _client
+      var query = _client
           .from(TableNames.loanRequests)
           .select(
             'id, title, purpose, district, country, countries(currency_code), duration_months, requested_amount, '
             'income_source, preferred_repayment_plan, repayment_amount_per_period, '
-            'repayment_timeline, suggested_interest_rate_pct, suggested_late_fee_pct, '
+            'repayment_timeline, description, suggested_interest_rate_pct, suggested_late_fee_pct, '
             'suggested_repayment_frequency, suggested_installment_amount, terms_locked_at, '
             'has_collateral, collateral_details, collateral_estimated_value, collateral_location, '
             'status, number_of_offers, '
@@ -55,7 +55,8 @@ class ListingRepository {
           )
           .eq('borrower_id', _uid)
           .order('listed_at', ascending: false);
-
+      if (limit != null) query = query.limit(limit);
+      final data = await query;
       return (data as List).map((e) => MyListing.fromMap(e)).toList();
     } catch (e) {
       throw parseSupabaseError(e);
@@ -74,6 +75,7 @@ class ListingRepository {
     required String preferredRepaymentPlan,
     required int repaymentAmountPerPeriod,
     required String repaymentTimeline,
+    String? description,
     double? suggestedInterestRatePct,
     double? suggestedLateFeePct,
     String? suggestedRepaymentFrequency,
@@ -100,6 +102,9 @@ class ListingRepository {
             'preferred_repayment_plan': preferredRepaymentPlan,
             'repayment_amount_per_period': repaymentAmountPerPeriod,
             'repayment_timeline': repaymentTimeline,
+            'description': description?.trim().isNotEmpty == true
+                ? description!.trim()
+                : null,
             'country': country,
             'has_collateral': hasCollateral,
             'collateral_details': hasCollateral &&
