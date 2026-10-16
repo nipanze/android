@@ -942,7 +942,7 @@ class ProviderServiceRole {
     ProviderServiceRole(
       slug: 'machine_operator',
       name: 'Machine Operator',
-      description: 'Drive and operate heavy machines',
+      description: 'Drive or run heavy machines',
       kindQuestion: 'Which machine do you operate?',
       categorySlug: 'machinery_equipment',
       capabilitySlug: 'work_machine_operator',
@@ -987,7 +987,7 @@ class ProviderServiceRole {
     ProviderServiceRole(
       slug: 'fleet_equipment_manager',
       name: 'Fleet / Equipment Manager',
-      description: 'Take care of maintenance and crews',
+      description: 'Run a fleet of machines and crews',
       kindQuestion: 'What fleet?',
       categorySlug: 'machinery_equipment',
       capabilitySlug: 'work_fleet_equipment_manager',

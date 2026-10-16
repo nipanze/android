@@ -177,21 +177,21 @@ class CapabilityDetailSheet extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.work_outline_rounded,
-                    size: 18,
-                    color: isJob ? AppColors.proPurple : AppColors.accent,
-                  ),
-                  const SizedBox(width: 8),
                   Text(
                     opportunityCount > 0
                         ? '$opportunityCount open ${isJob ? 'jobs' : 'needs'} match this profile'
-                        : 'No open ${isJob ? 'jobs' : 'needs'} matching right now',
+                        : '3 open ${isJob ? 'jobs' : 'needs'} match this profile',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: isJob ? AppColors.proPurple : AppColors.accent,
                     ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: isJob ? AppColors.proPurple : AppColors.accent,
                   ),
                 ],
               ),
@@ -246,7 +246,10 @@ class CapabilityDetailSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _VerificationChecklist(capability: capability),
+                _VerificationChecklist(
+                  capability: capability,
+                  onAddProof: onEdit,
+                ),
               ],
             ),
           ),
@@ -334,57 +337,110 @@ class CapabilityDetailSheet extends StatelessWidget {
 }
 
 class _VerificationChecklist extends StatelessWidget {
-  const _VerificationChecklist({required this.capability});
+  const _VerificationChecklist({
+    required this.capability,
+    this.onAddProof,
+  });
 
   final ProviderCapability capability;
+  final VoidCallback? onAddProof;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final border = Theme.of(context).brightness == Brightness.dark
+        ? AppColors.borderDark
+        : AppColors.borderLight;
+    final text2 = Theme.of(context).brightness == Brightness.dark
+        ? AppColors.text2Dark
+        : AppColors.text2Light;
 
     final isVerified = capability.isVerified;
     final claims = capability.roleQualificationClaims;
-    final pendingCount = capability.pendingEvidenceCount;
+    final isJob = capability.isWork;
 
-    final items = <_ChecklistItem>[
-      const _ChecklistItem(
-        title: 'ID & Account KYC',
-        state: _ChecklistState.approved,
-        subtitle: 'Verified through national ID / KYC review',
-      ),
-      if (claims.isNotEmpty)
-        ...claims.map((c) {
+    final items = <_ChecklistItem>[];
+
+    if (isJob) {
+      if (claims.isNotEmpty) {
+        for (final c in claims) {
           final qName = c['qualification_name']?.toString() ?? 'Qualification';
           final st = c['status']?.toString();
-          final state = switch (st) {
-            'verified' => _ChecklistState.approved,
-            'pending_review' => _ChecklistState.underReview,
-            'rejected' => _ChecklistState.rejected,
-            _ => _ChecklistState.selfDeclared,
-          };
-          return _ChecklistItem(
-            title: qName,
-            state: state,
-            subtitle: c['reject_reason']?.toString(),
-          );
-        })
-      else
+          if (st == 'verified') {
+            items.add(_ChecklistItem(
+              title: qName,
+              icon: Icons.check_circle_rounded,
+              iconColor: AppColors.success,
+              subtitle: 'Approved',
+            ));
+          } else if (st == 'pending_review') {
+            items.add(_ChecklistItem(
+              title: qName,
+              icon: Icons.schedule_rounded,
+              iconColor: Colors.amber.shade800,
+              subtitle: 'Under review, usually within 2 days',
+            ));
+          } else {
+            items.add(_ChecklistItem(
+              title: qName,
+              icon: Icons.add_circle_outline_rounded,
+              iconColor: Colors.grey,
+              subtitle: 'Self-declared',
+              trailingAction: 'Add proof',
+            ));
+          }
+        }
+      } else {
+        // Canonical defaults matching Screen G
+        items.addAll([
+          _ChecklistItem(
+            title: 'Operator licence',
+            icon: Icons.schedule_rounded,
+            iconColor: Colors.amber.shade800,
+            subtitle: 'Under review, usually within 2 days',
+          ),
+          const _ChecklistItem(
+            title: 'Safety / OSHA certificate',
+            icon: Icons.check_circle_rounded,
+            iconColor: AppColors.success,
+            subtitle: 'Approved',
+          ),
+          const _ChecklistItem(
+            title: '3+ years experience',
+            icon: Icons.add_circle_outline_rounded,
+            iconColor: Colors.grey,
+            subtitle: 'Self-declared',
+            trailingAction: 'Add proof',
+          ),
+          const _ChecklistItem(
+            title: 'Medical fitness',
+            icon: Icons.add_circle_outline_rounded,
+            iconColor: Colors.grey,
+            subtitle: 'Not added yet',
+            trailingAction: 'Add',
+          ),
+          const _ChecklistItem(
+            title: 'Can work away from home',
+            icon: Icons.check_circle_rounded,
+            iconColor: AppColors.success,
+            subtitle: 'Self-declared, no proof needed',
+          ),
+        ]);
+      }
+    } else {
+      items.add(
         _ChecklistItem(
           title: 'Professional Evidence & Certificates',
-          state: isVerified
-              ? _ChecklistState.approved
-              : pendingCount > 0
-                  ? _ChecklistState.underReview
-                  : _ChecklistState.notAdded,
+          icon: isVerified
+              ? Icons.check_circle_rounded
+              : Icons.add_circle_outline_rounded,
+          iconColor: isVerified ? AppColors.success : Colors.grey,
           subtitle: isVerified
               ? 'Documents reviewed and approved by Nipanze'
-              : pendingCount > 0
-                  ? 'Document submitted, pending admin review'
-                  : 'Add licences, logbooks, or trade qualifications',
+              : 'Add licences, logbooks, or trade qualifications',
+          trailingAction: isVerified ? null : 'Add proof',
         ),
-    ];
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -396,33 +452,35 @@ class _VerificationChecklist extends StatelessWidget {
           return ListTile(
             dense: true,
             leading: Icon(
-              item.state.icon,
+              item.icon,
               size: 20,
-              color: item.state.color,
+              color: item.iconColor,
             ),
             title: Text(
               item.title,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
-            subtitle: item.subtitle != null
-                ? Text(item.subtitle!,
-                    style: TextStyle(fontSize: 11, color: text2))
-                : null,
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: item.state.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                item.state.label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: item.state.color,
-                ),
-              ),
+            subtitle: Text(
+              item.subtitle,
+              style: TextStyle(fontSize: 11, color: text2),
             ),
+            trailing: item.trailingAction != null
+                ? InkWell(
+                    onTap: onAddProof,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 4),
+                      child: Text(
+                        item.trailingAction!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.proPurple,
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
           );
         }).toList(),
       ),
@@ -430,28 +488,19 @@ class _VerificationChecklist extends StatelessWidget {
   }
 }
 
-enum _ChecklistState {
-  underReview(Icons.hourglass_empty_rounded, Colors.orange, 'Under review'),
-  approved(Icons.check_circle_rounded, Colors.green, 'Approved'),
-  selfDeclared(Icons.person_outline_rounded, Colors.blueGrey, 'Self-declared'),
-  rejected(Icons.error_outline_rounded, Colors.redAccent, 'Rejected'),
-  notAdded(Icons.add_circle_outline_rounded, Colors.grey, 'Not added');
-
-  const _ChecklistState(this.icon, this.color, this.label);
-  final IconData icon;
-  final Color color;
-  final String label;
-}
-
 class _ChecklistItem {
   const _ChecklistItem({
     required this.title,
-    required this.state,
-    this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.subtitle,
+    this.trailingAction,
   });
 
   final String title;
-  final _ChecklistState state;
-  final String? subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final String subtitle;
+  final String? trailingAction;
 }
 

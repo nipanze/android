@@ -275,8 +275,25 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
 
     final workMetadataByRole = <String, Map<String, dynamic>>{};
-    for (final role in _selectedRoles) {
-      workMetadataByRole[role] = _buildWorkMetadata(role);
+    if (_iWantJobs) {
+      for (final roleSlug in _selectedRoles) {
+        workMetadataByRole[roleSlug] = _buildWorkMetadata(roleSlug);
+        final role = _categoryRoles.firstWhere(
+          (r) => r.slug == roleSlug,
+          orElse: () => ProviderServiceRole(
+            slug: roleSlug,
+            name: roleSlug,
+            categorySlug: _selectedCategory?.slug ?? '',
+            capabilitySlug: 'work_$roleSlug',
+            kindQuestion: '',
+          ),
+        );
+        final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
+        if (!slugs.contains(capSlug)) {
+          slugs.add(capSlug);
+        }
+        metadataBySlug[capSlug] = _buildWorkMetadata(roleSlug);
+      }
     }
 
     return ProviderCapabilitySelection(
@@ -314,9 +331,27 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
     final caps =
         await widget.needsRepository.getCapabilities(categorySlug: cat.slug);
-    final roles = await widget.providerRepository.getServiceRoles(
+    var roles = await widget.providerRepository.getServiceRoles(
       categorySlug: cat.slug,
     );
+    if (roles.isEmpty) {
+      roles = ProviderServiceRole.defaultsForCategory(cat.slug);
+    }
+    if (roles.isEmpty) {
+      final workCaps = caps.where((c) =>
+          c.serviceGroupSlug == 'work_roles' || c.slug.startsWith('work_'));
+      if (workCaps.isNotEmpty) {
+        roles = workCaps
+            .map((c) => ProviderServiceRole(
+                  slug: c.slug.replaceFirst('work_', ''),
+                  name: c.name,
+                  categorySlug: cat.slug,
+                  capabilitySlug: c.slug,
+                  kindQuestion: 'What is your specialty?',
+                ))
+            .toList();
+      }
+    }
     if (!mounted) return;
 
     List<NeedCapability> filteredCaps;
@@ -342,6 +377,31 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         });
     } else {
       filteredCaps = caps;
+    }
+
+    // Filter out work roles from the services section ("WHAT I OFFER") so they
+    // are only inside the jobs flow ("What role do you do?").
+    filteredCaps = filteredCaps
+        .where((capability) =>
+            capability.serviceGroupSlug != 'work_roles' &&
+            !capability.slug.startsWith('work_'))
+        .toList();
+
+    // Populate initial selections for this category
+    for (final cap in filteredCaps) {
+      if (widget.existingSlugs.contains(cap.slug)) {
+        _selected.add(cap.slug);
+      }
+    }
+    for (final role in roles) {
+      final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
+      if (widget.existingSlugs.contains(capSlug) ||
+          widget.existingSlugs.contains(role.slug)) {
+        _selectedRoles.add(role.slug);
+      }
+    }
+    if (_selectedRoles.isNotEmpty) {
+      _iWantJobs = true;
     }
 
     setState(() {
@@ -472,6 +532,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                           )
                         : _step == 2
                             ? _KindStepView(
+                                categorySlug: _selectedCategory?.slug,
                                 role: _categoryRoles.firstWhere(
                                   (r) =>
                                       r.slug ==
@@ -814,12 +875,20 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final seenGroupSlugs = <String>{};
     final noGroup = <NeedCapability>[];
     for (final cap in capabilities) {
+      if (cap.serviceGroupSlug == 'work_roles' ||
+          cap.slug.startsWith('work_')) {
+        continue;
+      }
       final g = cap.serviceGroupSlug;
       if (g != null && g.isNotEmpty) {
         if (!seenGroupSlugs.contains(g)) {
           seenGroupSlugs.add(g);
-          final groupCaps =
-              capabilities.where((c) => c.serviceGroupSlug == g).toList();
+          final groupCaps = capabilities
+              .where((c) =>
+                  c.serviceGroupSlug == g &&
+                  c.serviceGroupSlug != 'work_roles' &&
+                  !c.slug.startsWith('work_'))
+              .toList();
           orderedGroups.add((g, cap.serviceGroupName, groupCaps));
         }
       } else {
@@ -852,26 +921,18 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             // ── "WHAT I OFFER" section header ──────────────────────
             if (iWantJobs) ...[
               _SectionAccordion(
-                label: 'WHAT I OFFER',
+                label: 'What I offer',
                 count: selected.length,
-                summary: () {
-                  final names = capabilities
-                      .where((c) => selected.contains(c.slug))
-                      .map((c) => c.localizedName(localeCode))
-                      .take(2)
-                      .join(', ');
-                  final extra =
-                      selected.length > 2 ? ' +${selected.length - 2}' : '';
-                  final count = selected.length;
-                  if (names.isEmpty) return null;
-                  return '$names$extra  •  $count selected';
-                }(),
+                summary: capabilities
+                    .where((c) => selected.contains(c.slug))
+                    .map((c) => c.localizedName(localeCode))
+                    .join(', '),
                 expanded: offerServicesExpanded,
                 onTap: onToggleOfferExpanded,
                 text2: text2,
                 border: border,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
             ] else ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
@@ -945,14 +1006,16 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             // ── Jobs: role selection ───────────────────────────────
             if (iWantJobs) ...[
               const SizedBox(height: 16),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: _StepBadge(
-                  label: 'STEP 1 OF 3',
-                  color: AppColors.proPurple,
+              Text(
+                'STEP 1 OF 3',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                  color: text2,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 'What role do you do?',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -1192,14 +1255,16 @@ class _SectionAccordion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: border.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: border),
         ),
         child: Row(
           children: [
@@ -1210,45 +1275,44 @@ class _SectionAccordion extends StatelessWidget {
                   Text(
                     label,
                     style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 11,
-                      letterSpacing: 0.7,
+                      fontSize: 12,
                       color: text2,
                     ),
                   ),
                   if (summary != null && summary!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       summary!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            if (count > 0 && (summary == null || summary!.isEmpty))
+            if (count > 0)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 margin: const EdgeInsets.only(right: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: AppColors.accent.withValues(alpha: 0.3)),
+                  color: isDark
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '$count selected',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.accent,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? Colors.green.shade300
+                        : const Color(0xFF15803D),
                   ),
                 ),
               ),
@@ -1266,34 +1330,6 @@ class _SectionAccordion extends StatelessWidget {
   }
 }
 
-/// Step badge label chip (e.g. "STEP 1 OF 3").
-class _StepBadge extends StatelessWidget {
-  const _StepBadge({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
-          color: color,
-        ),
-      ),
-    );
-  }
-}
 
 /// A tappable selection card for a single capability / service item.
 class _CapabilityCard extends StatelessWidget {
@@ -1391,7 +1427,7 @@ class _CapabilityCard extends StatelessWidget {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(4),
                     color: isSelected ? accentColor : Colors.transparent,
                     border: Border.all(
                       color: isSelected ? accentColor : border,
@@ -1497,7 +1533,7 @@ class _RoleCard extends StatelessWidget {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(4),
                   color: isSelected ? activeColor : Colors.transparent,
                   border: Border.all(
                     color: isSelected ? activeColor : border,
@@ -1531,12 +1567,6 @@ class _RoleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (role.kinds.isNotEmpty)
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: isSelected ? activeColor : text2,
-                  size: 18,
-                ),
             ],
           ),
         ),
@@ -1556,6 +1586,7 @@ class _KindStepView extends StatefulWidget {
     required this.selectedKinds,
     required this.scrollController,
     required this.onNext,
+    this.categorySlug,
   });
 
   final ProviderServiceRole role;
@@ -1564,15 +1595,93 @@ class _KindStepView extends StatefulWidget {
   final Set<String> selectedKinds;
   final ScrollController scrollController;
   final VoidCallback onNext;
+  final String? categorySlug;
 
   @override
   State<_KindStepView> createState() => _KindStepViewState();
 }
 
 class _KindStepViewState extends State<_KindStepView> {
+  String _getInstruction(ProviderServiceRole role) {
+    final q = (role.kindQuestion ?? '').toLowerCase();
+    final slug = role.slug.toLowerCase();
+    if (slug == 'machine_operator' || q.contains('machine')) {
+      return 'Pick all that apply. Employers search by machine.';
+    }
+    if (slug == 'skilled_tradesperson' || q.contains('trade')) {
+      return 'Pick all that apply. Employers search by trade.';
+    }
+    if (slug == 'site_manager' || q.contains('site')) {
+      return 'Pick all that apply. Employers search by site type.';
+    }
+    if (slug == 'driver' || q.contains('vehicle') || q.contains('drive')) {
+      return 'Pick all that apply. Employers search by vehicle type.';
+    }
+    if (slug == 'developer' || q.contains('build') || q.contains('software')) {
+      return 'Pick all that apply. Employers search by tech stack.';
+    }
+    if (slug == 'marketer_specialist' || q.contains('channel')) {
+      return 'Pick all that apply. Employers search by marketing channel.';
+    }
+    return 'Pick all that apply. Employers search by specialty.';
+  }
+
+  String _getCalloutNote(String? categorySlug) {
+    return switch (categorySlug) {
+      'construction_building' =>
+        'The question changes with the role. A Tradesperson is asked "Which trade?" and a Site Manager is asked "What type of sites?"',
+      'machinery_equipment' =>
+        'The question changes with the role. A Mechanic is asked "What do you service?" and a Fleet Manager is asked "What fleet?"',
+      'technology_digital' =>
+        'The question changes with the role. A Developer is asked "What do you build?" and an IT Technician is asked "What do you do?"',
+      'transport_logistics' =>
+        'The question changes with the role. A Driver is asked "What do you drive?" and a Fleet Manager is asked "What fleet?"',
+      'energy_utilities' =>
+        'The question changes with the role. A Solar Tech is asked "What do you install?" and a Water Tech is asked "What do you do?"',
+      'marketing_promotion' =>
+        'The question changes with the role. A Marketer is asked "Which channel?" and a Content Creator is asked "What do you produce?"',
+      'professional_services' =>
+        'The question changes with the role. An Engineer is asked "Which discipline?" and an Accountant is asked "What area?"',
+      'events_celebrations' || 'events_production' =>
+        'The question changes with the role. An Event Planner is asked "What events?" and an MC/DJ is asked "Which role?"',
+      'photo_video_talent' || 'photo_video_music_talent' =>
+        'The question changes with the role. A Photographer is asked "What do you shoot?" and an Audio Producer is asked "What do you do?"',
+      'beauty_fashion_styling' =>
+        'The question changes with the role. A Stylist is asked "Specialty?" and a Manager is asked "What scope?"',
+      'agriculture_agribusiness' =>
+        'The question changes with the role. An Agronomist is asked "What focus?" and a Livestock Officer is asked "What animals?"',
+      'specialized_products' =>
+        'The question changes with the role. A Procurement Officer is asked "What do you buy?" and a Sourcing Agent is asked "Where do you source?"',
+      'travel_international' =>
+        'The question changes with the role. A Tour Guide is asked "What tours?" and a Driver-Guide is asked "What vehicle?"',
+      _ =>
+        'The question changes with the role to help employers find your exact specialty.',
+    };
+  }
+
+  String _getSelectionCountLabel(ProviderServiceRole role, int count) {
+    final q = (role.kindQuestion ?? '').toLowerCase();
+    final slug = role.slug.toLowerCase();
+    if (slug == 'machine_operator' || q.contains('machine')) {
+      return '$count machine${count == 1 ? '' : 's'} selected';
+    }
+    if (slug == 'skilled_tradesperson' || q.contains('trade')) {
+      return '$count trade${count == 1 ? '' : 's'} selected';
+    }
+    if (slug == 'site_manager' || q.contains('site')) {
+      return '$count site type${count == 1 ? '' : 's'} selected';
+    }
+    if (slug == 'driver' || q.contains('vehicle') || q.contains('drive')) {
+      return '$count vehicle type${count == 1 ? '' : 's'} selected';
+    }
+    return '$count selected';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final text2 = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     return Stack(
       children: [
@@ -1582,20 +1691,13 @@ class _KindStepViewState extends State<_KindStepView> {
           children: [
             Row(
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.proPurple.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'STEP 2 OF 3',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.proPurple,
-                    ),
+                Text(
+                  'STEP 2 OF 3',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: text2,
                   ),
                 ),
                 if (widget.totalRoles > 1) ...[
@@ -1616,9 +1718,7 @@ class _KindStepViewState extends State<_KindStepView> {
             ),
             const SizedBox(height: 4),
             Text(
-              widget.role.slug == 'machine_operator'
-                  ? 'Pick all that apply. Employers search by machine.'
-                  : 'Pick all that apply. Employers search by specialty.',
+              _getInstruction(widget.role),
               style: TextStyle(fontSize: 12, color: text2),
             ),
             const SizedBox(height: 14),
@@ -1644,15 +1744,30 @@ class _KindStepViewState extends State<_KindStepView> {
                   ),
               ],
             ),
-            const SizedBox(height: 14),
-            Text(
-              widget.role.slug == 'machine_operator'
-                  ? '${widget.selectedKinds.length} machines selected'
-                  : '${widget.selectedKinds.length} selected',
-              style: TextStyle(
-                fontSize: 12,
-                color: text2,
-                fontWeight: FontWeight.w600,
+            Container(
+              margin: const EdgeInsets.only(top: 14, bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.bg3Dark : Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: border.withValues(alpha: 0.6),
+                ),
+              ),
+              child: Text(
+                _getCalloutNote(widget.categorySlug),
+                style: TextStyle(fontSize: 11, color: text2, height: 1.3),
+              ),
+            ),
+            Center(
+              child: Text(
+                _getSelectionCountLabel(
+                    widget.role, widget.selectedKinds.length),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: text2,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -1723,7 +1838,7 @@ class _QualificationsStepView extends StatefulWidget {
 class _QualificationsStepViewState extends State<_QualificationsStepView> {
   final _amountController = TextEditingController();
 
-  final _experienceOptions = ['<1 yr', '1-2', '3-5', '5-10', '10+'];
+  final _experienceOptions = ['Under 1', '1-2', '3-5', '6-10', '10+'];
   final _availabilityOptions = [
     'Full-time',
     'Part-time',
@@ -1758,25 +1873,14 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
           controller: widget.scrollController,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
           children: [
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.proPurple.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'STEP 3 OF 3',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.proPurple,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              'STEP 3 OF 3',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+                color: text2,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -1787,7 +1891,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Paperwork and experience boost matches.',
+              'More ticks and proofs mean better job matches.',
               style: TextStyle(fontSize: 12, color: text2),
             ),
             const SizedBox(height: 16),
@@ -1838,15 +1942,22 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.15),
+                              color: Colors.amber.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.amber.shade700
+                                    .withValues(alpha: 0.3),
+                              ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Uploaded',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.green,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.amber.shade300
+                                    : Colors.amber.shade800,
                               ),
                             ),
                           ),
@@ -1858,59 +1969,59 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ],
 
             // Dashed upload card for licences / proof
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: AppColors.proPurple.withValues(alpha: 0.4),
-                  style: BorderStyle.solid,
+            InkWell(
+              onTap: () {
+                final roleUploads = widget.uploadedProofByRole
+                    .putIfAbsent(primaryRoleSlug, () => {});
+                final roleQuals = widget.qualificationsByRole
+                    .putIfAbsent(primaryRoleSlug, () => {});
+                setState(() {
+                  roleUploads.addAll(roleQuals);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Document attached for verification'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.proPurple.withValues(alpha: 0.4),
+                    style: BorderStyle.solid,
+                  ),
+                  color: AppColors.proPurple.withValues(alpha: 0.04),
                 ),
-                color: AppColors.proPurple.withValues(alpha: 0.04),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.upload_file_rounded,
-                      color: AppColors.proPurple, size: 28),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Upload certificates or licence',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
+                child: Row(
+                  children: [
+                    const Icon(Icons.file_upload_outlined,
+                        color: AppColors.proPurple, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Upload licence or certificates',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'PDF, JPG, or PNG (up to 5 MB)',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            'Reviewed by Nipanze. Approved proofs earn a badge.',
+                            style: TextStyle(fontSize: 11, color: text2),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  OutlinedButton(
-                    onPressed: () {
-                      // Mark primary qualifications uploaded as confirmation
-                      final roleUploads = widget.uploadedProofByRole
-                          .putIfAbsent(primaryRoleSlug, () => {});
-                      final roleQuals = widget.qualificationsByRole
-                          .putIfAbsent(primaryRoleSlug, () => {});
-                      setState(() {
-                        roleUploads.addAll(roleQuals);
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Document attached for verification'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                    child: const Text('Add Proof'),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),

@@ -103,7 +103,7 @@ class _OpportunityRow extends StatelessWidget {
           ),
           Text(
             l10n.opportunitiesCount(opportunity.opportunityCount),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: AppColors.accent,
               fontWeight: FontWeight.w600,
