@@ -162,13 +162,20 @@ class CapabilityBadge extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: border.withValues(alpha: 0.3),
+                                color: AppColors.proPurple.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: AppColors.proPurple.withValues(alpha: 0.3),
+                                  width: 0.8,
+                                ),
                               ),
                               child: Text(
                                 _formatSlug(k),
-                                style: TextStyle(
-                                    fontSize: 11, color: text2),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.proPurple,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             );
                           }).toList(),

@@ -62,117 +62,109 @@ class CapabilityDetailSheet extends StatelessWidget {
         color: bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.only(
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          const SizedBox(height: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
 
-          // Header
+          // Header (matches Image G)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: (isJob ? AppColors.proPurple : AppColors.accent)
-                        .withValues(alpha: 0.12),
+                    color: isJob
+                        ? const Color(0xFFFEF3C7)
+                        : AppColors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text(icon, style: const TextStyle(fontSize: 26)),
+                  child: Text(
+                    isJob ? '👷' : icon,
+                    style: const TextStyle(fontSize: 24),
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isJob
-                                  ? AppColors.proPurple.withValues(alpha: 0.15)
-                                  : AppColors.accent.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              isJob ? 'Job' : 'Service',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    isJob ? AppColors.proPurple : AppColors.accent,
-                              ),
-                            ),
-                          ),
-                          if (category.isNotEmpty) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              category,
-                              style: TextStyle(fontSize: 12, color: text2),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
                       Text(
                         title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
+                          fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      ProviderVerificationChip(
-                        level: capability.verificationLevel,
-                        status: capability.status,
-                      ),
+                      const SizedBox(height: 2),
+                      Builder(builder: (ctx) {
+                        final kindsFormatted = capability.kindIds
+                            .map(_formatSlug)
+                            .where((s) => s.isNotEmpty)
+                            .join(', ');
+                        final subtitleParts = [
+                          if (category.isNotEmpty) category,
+                          if (kindsFormatted.isNotEmpty) kindsFormatted,
+                        ];
+                        final subtitleText = subtitleParts.isNotEmpty
+                            ? subtitleParts.join(' · ')
+                            : (isJob ? 'Work Profile' : 'Service Profile');
+                        return Text(
+                          subtitleText,
+                          style: TextStyle(fontSize: 12, color: text2),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      }),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  color: text2,
-                  onPressed: () => Navigator.pop(context),
+                const SizedBox(width: 8),
+                ProviderVerificationChip(
+                  level: capability.verificationLevel,
+                  status: capability.status,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1),
 
-          // Open jobs / opportunities match banner
+          // Open jobs / opportunities match banner (matches Image G)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               decoration: BoxDecoration(
                 color: (isJob ? AppColors.proPurple : AppColors.accent)
                     .withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: (isJob ? AppColors.proPurple : AppColors.accent)
-                      .withValues(alpha: 0.2),
+                      .withValues(alpha: 0.25),
                 ),
               ),
               child: Row(
@@ -197,45 +189,14 @@ class CapabilityDetailSheet extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 12),
 
-          // Details summary
+          // Details summary: Verification checklist section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isJob && capability.kindIds.isNotEmpty) ...[
-                  Text(
-                    'Kinds & Equipment',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: text2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: capability.kindIds.map((k) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: border.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          _formatSlug(k),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                // Verification checklist section
                 Text(
                   'WHAT IS NEEDED FOR THE VERIFIED BADGE',
                   style: TextStyle(
@@ -320,7 +281,9 @@ class CapabilityDetailSheet extends StatelessWidget {
               ],
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

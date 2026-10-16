@@ -13,9 +13,11 @@ import 'package:nipanze/features/needs/domain/models/need_capability.dart';
 import 'package:nipanze/features/needs/domain/models/need_category.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_capability.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_opportunity.dart';
+import 'package:nipanze/features/provider/domain/entities/provider_service_role.dart';
 import 'package:nipanze/features/provider/domain/repositories/provider_repository_interface.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_cubit.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_state.dart';
+import 'package:nipanze/features/provider/presentation/pages/capability_detail_sheet.dart';
 import 'package:nipanze/features/provider/presentation/pages/provider_services_page.dart';
 import 'package:nipanze/features/provider/presentation/widgets/capability_badge.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_opportunities_section.dart';
@@ -845,6 +847,108 @@ void main() {
 
       expect(find.text('Provider Verified'), findsWidgets);
       expect(find.text('Edit'), findsOneWidget);
+    });
+
+    test('ProviderServiceRole category taxonomy differentiates Machinery, Technology, and Travel', () {
+      final machineryRoles = ProviderServiceRole.defaultsForCategory('machinery_equipment');
+      expect(machineryRoles.any((r) => r.slug == 'machine_operator'), isTrue);
+      final operatorRole = machineryRoles.firstWhere((r) => r.slug == 'machine_operator');
+      expect(operatorRole.kinds.any((k) => k.slug == 'excavator'), isTrue);
+      expect(operatorRole.qualifications.any((q) => q.slug == 'operator_licence_certificate'), isTrue);
+
+      final techRoles = ProviderServiceRole.defaultsForCategory('technology_digital');
+      expect(techRoles.any((r) => r.slug == 'developer'), isTrue);
+      final devRole = techRoles.firstWhere((r) => r.slug == 'developer');
+      expect(devRole.kinds.any((k) => k.slug == 'frontend'), isTrue);
+      expect(devRole.kinds.any((k) => k.slug == 'backend'), isTrue);
+
+      final travelRoles = ProviderServiceRole.defaultsForCategory('travel_international');
+      expect(travelRoles.any((r) => r.slug == 'travel_agent_consultant'), isTrue);
+      final travelRole = travelRoles.firstWhere((r) => r.slug == 'travel_agent_consultant');
+      expect(travelRole.kinds.any((k) => k.slug == 'flights'), isTrue);
+      expect(travelRole.kinds.any((k) => k.slug == 'visas'), isTrue);
+    });
+
+    testWidgets('CapabilityDetailSheet renders work profile for job role with Edit work profile action', (tester) async {
+      final jobCap = ProviderCapability(
+        id: 'cap-job-1',
+        userId: 'u-1',
+        capabilitySlug: 'work_machine_operator',
+        capabilityName: 'Machine Operator',
+        categorySlug: 'machinery_equipment',
+        categoryName: 'Machinery & Equipment',
+        categoryIcon: '🚜',
+        capabilityType: 'work',
+        status: ProviderCapabilityStatus.pendingReview,
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        metadata: {
+          'kind_ids': ['excavator', 'loader'],
+        },
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: CapabilityDetailSheet(
+              capability: jobCap,
+              opportunityCount: 3,
+              onEdit: () {},
+              onTogglePause: (_) {},
+              onRemove: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Machine Operator'), findsOneWidget);
+      expect(find.textContaining('Machinery & Equipment'), findsOneWidget);
+      expect(find.text('Edit work profile'), findsOneWidget);
+      expect(find.text('Pause jobs for this role'), findsOneWidget);
+      expect(find.text('Remove'), findsOneWidget);
+      expect(find.text('WHAT IS NEEDED FOR THE VERIFIED BADGE'), findsOneWidget);
+    });
+
+    testWidgets('CapabilityBadge renders three-dot menu with Edit, Pause, and Remove actions', (tester) async {
+      final cap = ProviderCapability(
+        id: 'cap-service-1',
+        userId: 'u-1',
+        capabilitySlug: 'excavator_hire',
+        capabilityName: 'Excavator Hire',
+        categorySlug: 'machinery_equipment',
+        categoryName: 'Machinery & Equipment',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: CapabilityBadge(
+              capability: cap,
+              onEdit: () {},
+              onTogglePause: (_) {},
+              onRemove: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final popupFinder = find.byIcon(Icons.more_vert_rounded);
+      expect(popupFinder, findsOneWidget);
+
+      await tester.tap(popupFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit'), findsOneWidget);
+      expect(find.text('Pause'), findsOneWidget);
+      expect(find.text('Remove Service'), findsOneWidget);
     });
   });
 }

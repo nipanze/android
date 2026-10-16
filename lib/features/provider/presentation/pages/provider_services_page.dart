@@ -142,6 +142,7 @@ class _ProviderServicesView extends StatelessWidget {
                   opps: opps,
                   l10n: l10n,
                 ),
+                onRemoveCapability: (cap) => _confirmRemove(context, cap, l10n),
               ),
             ),
             floatingActionButton: FloatingActionButton.extended(
@@ -252,8 +253,10 @@ class _ProviderServicesView extends StatelessWidget {
       providerRepository: providerRepo,
       capabilityProfilesEnabled:
           loaded is CapabilitiesLoaded ? loaded.capabilityProfilesEnabled : true,
-      workProfilesEnabled:
-          loaded is CapabilitiesLoaded ? loaded.workProfilesEnabled : true,
+      workProfilesEnabled: loaded is CapabilitiesLoaded
+          ? (loaded.workProfilesEnabled ||
+              loaded.capabilities.any((c) => c.isWork))
+          : true,
       preselectedCategorySlug: preselectedCategorySlug,
     );
     if (selection != null &&
@@ -426,6 +429,7 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.l10n,
     required this.onAddService,
     required this.onTapCapability,
+    this.onRemoveCapability,
   });
 
   final List<ProviderCapability> capabilities;
@@ -436,6 +440,7 @@ class _ScreenASummaryView extends StatefulWidget {
   final AppLocalizations l10n;
   final VoidCallback onAddService;
   final ValueChanged<ProviderCapability> onTapCapability;
+  final ValueChanged<ProviderCapability>? onRemoveCapability;
 
   @override
   State<_ScreenASummaryView> createState() => _ScreenASummaryViewState();
@@ -527,6 +532,16 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                   showProfileDetails: true,
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
+                  onEdit: () => widget.onTapCapability(cap),
+                  onTogglePause: (val) {
+                    context.read<CapabilitiesCubit>().setCapabilityPaused(
+                          capabilitySlug: cap.capabilitySlug,
+                          paused: val,
+                        );
+                  },
+                  onRemove: widget.onRemoveCapability != null
+                      ? () => widget.onRemoveCapability!(cap)
+                      : null,
                 );
               },
             ),
@@ -616,7 +631,7 @@ class _WorkProfileStrip extends StatelessWidget {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
-    if (!workProfilesEnabled) {
+    if (!workProfilesEnabled && jobsCount == 0) {
       return Container(
         decoration: BoxDecoration(
           color: bg,
@@ -642,29 +657,51 @@ class _WorkProfileStrip extends StatelessWidget {
     final summary = jobsCount == 0
         ? 'No job roles added'
         : '$jobsCount ${jobsCount == 1 ? 'role' : 'roles'} · Available for jobs'
-            '${totalJobMatches > 0 ? ' · $totalJobMatches open ${totalJobMatches == 1 ? 'job' : 'jobs'} match' : ''}';
+            '${totalJobMatches > 0 ? ' · $totalJobMatches open jobs match' : ''}';
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.proPurple.withValues(alpha: 0.08),
+        color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.proPurple.withValues(alpha: 0.25)),
+        border: Border.all(color: border),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          const Text('💼', style: TextStyle(fontSize: 20)),
-          const SizedBox(width: 10),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.proPurple.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: const Text('💼', style: TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              summary,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.proPurple,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Work Profile',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  summary,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: text2,
+                  ),
+                ),
+              ],
             ),
           ),
+          Icon(Icons.chevron_right_rounded, size: 20, color: text2),
         ],
       ),
     );

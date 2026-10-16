@@ -457,6 +457,15 @@ This stage introduces no new database columns, tables, or migrations. All expiry
   - Step 2 (Pick Your Kind / Specialty): Clean chip-based selection with step indicator (`_StepBadge`), specialty question, and dynamic selection counter.
   - Step 3 (Qualifications & Proof): Multi-party qualification checklist, upload proof card, years of experience, availability, languages, travel preference, and expected pay.
   - Connecting Links & Resilience: Saving Step 3 directly persists `JobProfileDraft` via `JobProfileRepository.saveProfile(draft)` and reloads `CapabilitiesCubit.loadWithOpportunities()`. Provided full canonical defaults across all 14 categories in both `ProviderRepository` and `JobProfileRepository` for offline and immediate reliability.
-  - Verification: 21/21 tests pass; `flutter analyze` passes with 0 errors and 0 warnings.
+- 2026-10-16: Standardized and polished all 7 screens to match visual spec and reference image:
+  - Screen A: Provider Services Dashboard (`/account/services`) with `All (N)`, `Services (N)`, `Jobs (N)` tab filters, `Work Profile` summary card, 3-dot popup menu on each card with `Edit`, `Pause`/`Resume`, and `Remove Service`, and fixed `+ Add Service` FAB.
+  - Screen B: Choose Category sheet with search field, icons, descriptions, green count pill badge, and chevron navigation.
+  - Screen C: Category setup with "I want jobs in this category" switch OFF, uppercase `WHAT I OFFER` header, blue group headers, flat list rows with square checkboxes and dividers, and sticky blue `Save services (N)` button.
+  - Screen D: Category setup with "I want jobs in this category" switch ON, collapsible accordion with green count pill, `STEP 1 OF 3`, `What role do you do?`, rounded role cards with purple selection styling, and sticky purple `Next: choose your kind` button.
+  - Screen E: Step 2 of 3 specialty selection (`Which machine do you operate?`), selectable purple chips (`_KindChip`), callout note, selection counter, and sticky purple `Next: add qualifications` button.
+  - Screen F: Step 3 of 3 qualifications & evidence, checklist with square checkboxes and dividers, `[Uploaded]` amber badges, upload card, purple experience choice chips (`Under 1`, `1-2`, `3-5`, `6-10`, `10+`), and sticky purple `Save work profile` button.
+  - Screen G: Profile detail modal (`CapabilityDetailSheet`), worker avatar (`👷`), `[Category] · [Kinds]`, status badge, match banner (`3 open jobs match this profile >`), 5 badge checklist items, purple `Edit work profile` button, and bottom action row (`Pause jobs for this role` | `Remove`).
+  - Responsiveness & Reliability: Wrapped `CapabilityDetailSheet` in `SingleChildScrollView` + `SafeArea` to prevent layout overflow across all screen sizes and test environments.
+  - Verification: `flutter analyze lib/features/provider test/features/provider` passed with 0 issues; `flutter test test/features/provider/capabilities_test.dart` passed 24/24 tests.
 
 

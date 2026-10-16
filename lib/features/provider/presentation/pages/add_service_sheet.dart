@@ -400,9 +400,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         _selectedRoles.add(role.slug);
       }
     }
-    if (_selectedRoles.isNotEmpty) {
-      _iWantJobs = true;
-    }
+    _iWantJobs = widget.initialJobsMode;
 
     setState(() {
       _categoryCapabilities = filteredCaps;
@@ -509,11 +507,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      color: text2,
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
+                    if (_step == 0)
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        color: text2,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                   ],
                 ),
               ),
@@ -634,6 +633,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                     onIWantJobsChanged: (val) {
                                       setState(() {
                                         _iWantJobs = val;
+                                        if (val) {
+                                          _offerServicesExpanded = false;
+                                        }
                                       });
                                     },
                                     onToggleOfferExpanded: () {
@@ -867,7 +869,6 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-    final bg3 = isDark ? AppColors.bg3Dark : AppColors.bg3Light;
     final localeCode = Localizations.localeOf(context).languageCode;
 
     // Build ordered group list preserving original capability order.
@@ -909,8 +910,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           controller: scrollController,
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
-            // ── Jobs toggle card ───────────────────────────────────
-            if (workProfilesEnabled)
+            // ── Jobs toggle card (Screen C / D toggle) ─────────────
+            if (roles.isNotEmpty)
               _JobsToggleCard(
                 iWantJobs: iWantJobs,
                 categorySlug: categorySlug,
@@ -948,41 +949,41 @@ class _CategoryCapabilitiesView extends StatelessWidget {
               ),
             ],
 
-            // ── Service capability cards (grouped) ─────────────────
+            // ── Service capability rows (grouped, flat list style) ──
             if (!iWantJobs || offerServicesExpanded)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
                 if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 12, 2, 6),
+                    padding: const EdgeInsets.fromLTRB(2, 14, 2, 4),
                     child: Text(
                       groupName,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: text2,
+                            color: AppColors.accent,
+                            letterSpacing: 0.2,
                           ),
                     ),
                   ),
                 ] else if (groupSlug == null && orderedGroups.length > 1) ...[
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 12, 2, 6),
+                    padding: const EdgeInsets.fromLTRB(2, 14, 2, 4),
                     child: Text(
                       'Other',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: text2,
+                            color: AppColors.accent,
+                            letterSpacing: 0.2,
                           ),
                     ),
                   ),
                 ],
                 for (final cap in caps)
-                  _CapabilityCard(
+                  _CapabilityRow(
                     cap: cap,
                     localeCode: localeCode,
                     isSelected: selected.contains(cap.slug),
                     alreadyOwned: existingSlugs.contains(cap.slug),
-                    isDark: isDark,
                     border: border,
-                    bg3: bg3,
                     text2: text2,
                     onTap: () {
                       if (cap.slug == _audienceCapabilitySlug) {
@@ -1166,14 +1167,10 @@ class _JobsToggleCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: iWantJobs
-            ? activeColor.withValues(alpha: 0.08)
-            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: activeColor.withValues(alpha: iWantJobs ? 0.09 : 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: iWantJobs
-              ? activeColor.withValues(alpha: 0.4)
-              : border.withValues(alpha: 0.6),
+          color: activeColor.withValues(alpha: iWantJobs ? 0.45 : 0.25),
           width: iWantJobs ? 1.5 : 1,
         ),
       ),
@@ -1196,12 +1193,12 @@ class _JobsToggleCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'I want jobs in this category',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
-                        color: iWantJobs ? activeColor : null,
+                        color: activeColor,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1210,11 +1207,11 @@ class _JobsToggleCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         color: iWantJobs
-                            ? activeColor.withValues(alpha: 0.8)
+                            ? activeColor.withValues(alpha: 0.85)
                             : Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withValues(alpha: 0.55),
+                                .withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -1222,7 +1219,10 @@ class _JobsToggleCard extends StatelessWidget {
               ),
               Switch.adaptive(
                 value: iWantJobs,
-                activeThumbColor: activeColor,
+                activeThumbColor: Colors.white,
+                activeTrackColor: activeColor,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: border,
                 onChanged: onChanged,
               ),
             ],
@@ -1330,17 +1330,20 @@ class _SectionAccordion extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Flat list-row variants (matches the reference image: checkbox + text + divider)
+// ---------------------------------------------------------------------------
 
-/// A tappable selection card for a single capability / service item.
-class _CapabilityCard extends StatelessWidget {
-  const _CapabilityCard({
+/// A flat list row for a capability / service item.
+/// Shows a square checkbox on the left, the capability name, and a full-width
+/// Divider below — no card border or background.
+class _CapabilityRow extends StatelessWidget {
+  const _CapabilityRow({
     required this.cap,
     required this.localeCode,
     required this.isSelected,
     required this.alreadyOwned,
-    required this.isDark,
     required this.border,
-    required this.bg3,
     required this.text2,
     required this.onTap,
     this.audiencePlatforms,
@@ -1351,9 +1354,7 @@ class _CapabilityCard extends StatelessWidget {
   final String localeCode;
   final bool isSelected;
   final bool alreadyOwned;
-  final bool isDark;
   final Color border;
-  final Color bg3;
   final Color text2;
   final VoidCallback onTap;
   final Set<String>? audiencePlatforms;
@@ -1392,104 +1393,89 @@ class _CapabilityCard extends StatelessWidget {
       subtitle = selectedNames.join(', ');
     }
 
-    return GestureDetector(
-      onTap: alreadyOwned ? null : onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        decoration: BoxDecoration(
-          color: alreadyOwned
-              ? bg3.withValues(alpha: 0.6)
-              : isSelected
-                  ? accentColor.withValues(alpha: 0.07)
-                  : isDark
-                      ? AppColors.bg3Dark.withValues(alpha: 0.4)
-                      : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: alreadyOwned
-                ? border.withValues(alpha: 0.4)
-                : isSelected
-                    ? accentColor.withValues(alpha: 0.65)
-                    : border.withValues(alpha: 0.7),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              if (alreadyOwned)
-                const Icon(Icons.check_circle_rounded,
-                    color: AppColors.success, size: 20)
-              else
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    color: isSelected ? accentColor : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected ? accentColor : border,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(Icons.check_rounded,
-                          size: 13, color: Colors.white)
-                      : null,
-                ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      cap.localizedName(localeCode),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: alreadyOwned ? text2 : null,
+    return Column(
+      children: [
+        InkWell(
+          onTap: alreadyOwned ? null : onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
+            child: Row(
+              children: [
+                // Square checkbox
+                if (alreadyOwned)
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppColors.success, size: 20)
+                else
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: isSelected ? accentColor : Colors.transparent,
+                      border: Border.all(
+                        color: isSelected ? accentColor : border,
+                        width: 1.5,
                       ),
                     ),
-                    if (subtitle != null && subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                    child: isSelected
+                        ? const Icon(Icons.check_rounded,
+                            size: 13, color: Colors.white)
+                        : null,
+                  ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subtitle,
-                        style: TextStyle(fontSize: 11, color: text2),
+                        cap.localizedName(localeCode),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: alreadyOwned ? text2 : null,
+                        ),
                       ),
+                      if (subtitle != null && subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(fontSize: 11, color: text2),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ),
-              if (isAudience && !alreadyOwned)
-                Icon(Icons.chevron_right_rounded, color: text2, size: 18),
-              if (alreadyOwned)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
-                    'Added',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.success,
+                ),
+                if (isAudience && !alreadyOwned)
+                  Icon(Icons.chevron_right_rounded, color: text2, size: 18),
+                if (alreadyOwned)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Added',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.success,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+        Divider(height: 1, thickness: 1, color: border.withValues(alpha: 0.6)),
+      ],
     );
   }
 }
 
-/// A tappable selection card for a work / job role.
+/// A card item for a work / job role (matches Image D).
 class _RoleCard extends StatelessWidget {
   const _RoleCard({
     required this.role,
@@ -1508,67 +1494,121 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const activeColor = AppColors.proPurple;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? activeColor.withValues(alpha: 0.07)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
+              ? activeColor.withValues(alpha: 0.08)
+              : (isDark ? AppColors.bg3Dark : Colors.white),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? activeColor.withValues(alpha: 0.65)
-                : border.withValues(alpha: 0.7),
+            color: isSelected ? activeColor : border.withValues(alpha: 0.7),
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  color: isSelected ? activeColor : Colors.transparent,
-                  border: Border.all(
-                    color: isSelected ? activeColor : border,
-                    width: 1.5,
-                  ),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: isSelected ? activeColor : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? activeColor : border,
+                  width: 1.5,
                 ),
-                child: isSelected
-                    ? const Icon(Icons.check_rounded,
-                        size: 13, color: Colors.white)
-                    : null,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      role.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
+              child: isSelected
+                  ? const Icon(Icons.check_rounded,
+                      size: 13, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    role.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
                     ),
-                    if ((role.description ?? role.kindQuestion) != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        role.description ?? role.kindQuestion!,
-                        style: TextStyle(fontSize: 12, color: text2),
-                      ),
-                    ],
+                  ),
+                  if ((role.description ?? role.kindQuestion) != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      role.description ?? role.kindQuestion!,
+                      style: TextStyle(fontSize: 12, color: text2),
+                    ),
                   ],
-                ),
+                ],
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Selectable chip for kind/machine/trade selection (matches Image E).
+/// Purple border and light purple fill when selected, outlined when not.
+class _KindChip extends StatelessWidget {
+  const _KindChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const purple = AppColors.proPurple;
+    final unselectedBg = isDark ? AppColors.bg3Dark : Colors.white;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? purple.withValues(alpha: 0.1) : unselectedBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? purple : border,
+            width: selected ? 1.5 : 1,
           ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selected) ...[
+              const Icon(Icons.check_rounded, size: 14, color: purple),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? purple
+                    : Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1727,17 +1767,15 @@ class _KindStepViewState extends State<_KindStepView> {
               runSpacing: 8,
               children: [
                 for (final kind in widget.role.kinds)
-                  FilterChip(
-                    label: Text(kind.name),
+                  _KindChip(
+                    label: kind.name,
                     selected: widget.selectedKinds.contains(kind.slug),
-                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
-                    checkmarkColor: AppColors.proPurple,
-                    onSelected: (val) {
+                    onTap: () {
                       setState(() {
-                        if (val) {
-                          widget.selectedKinds.add(kind.slug);
-                        } else {
+                        if (widget.selectedKinds.contains(kind.slug)) {
                           widget.selectedKinds.remove(kind.slug);
+                        } else {
+                          widget.selectedKinds.add(kind.slug);
                         }
                       });
                     },
@@ -1838,7 +1876,7 @@ class _QualificationsStepView extends StatefulWidget {
 class _QualificationsStepViewState extends State<_QualificationsStepView> {
   final _amountController = TextEditingController();
 
-  final _experienceOptions = ['Under 1', '1-2', '3-5', '6-10', '10+'];
+  final _experienceOptions = ['Under 1', '1-2', '2-5', '0-10', '10+'];
   final _availabilityOptions = [
     'Full-time',
     'Part-time',
@@ -1896,15 +1934,17 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ),
             const SizedBox(height: 16),
 
-            // Qualifications checkboxes per role
+            // Qualifications checkboxes per role (flat list with dividers matching Image F)
             for (final role in widget.roles) ...[
               if (widget.roles.length > 1) ...[
-                Text(
-                  role.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 13),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, bottom: 4),
+                  child: Text(
+                    role.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
                 ),
-                const SizedBox(height: 6),
               ],
               for (final qual in role.qualifications)
                 Builder(builder: (ctx) {
@@ -1915,57 +1955,89 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   final isChecked = roleQuals.contains(qual.slug);
                   final isUploaded = roleUploads.contains(qual.slug);
 
-                  return CheckboxListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    value: isChecked,
-                    activeColor: AppColors.proPurple,
-                    onChanged: (val) {
-                      setState(() {
-                        if (val == true) {
-                          roleQuals.add(qual.slug);
-                        } else {
-                          roleQuals.remove(qual.slug);
-                        }
-                      });
-                    },
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            qual.name,
-                            style: const TextStyle(fontSize: 13),
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+                  final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+                  const activeColor = AppColors.proPurple;
+
+                  return Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (isChecked) {
+                              roleQuals.remove(qual.slug);
+                            } else {
+                              roleQuals.add(qual.slug);
+                            }
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 2, vertical: 12),
+                          child: Row(
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: isChecked
+                                      ? activeColor
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: isChecked ? activeColor : border,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: isChecked
+                                    ? const Icon(Icons.check_rounded,
+                                        size: 13, color: Colors.white)
+                                    : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  qual.name,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              if (isUploaded)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF3C7),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: const Color(0xFFF59E0B)
+                                          .withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Uploaded',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        if (isUploaded)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: Colors.amber.shade700
-                                    .withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              'Uploaded',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.amber.shade300
-                                    : Colors.amber.shade800,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                      ),
+                      Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: border.withValues(alpha: 0.6)),
+                    ],
                   );
                 }),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
 
             // Dashed upload card for licences / proof
@@ -2037,18 +2109,48 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
               runSpacing: 6,
               children: [
                 for (final exp in _experienceOptions)
-                  ChoiceChip(
-                    label: Text(exp),
-                    selected:
-                        widget.yearsExperienceByRole[primaryRoleSlug] == exp,
-                    selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
-                    onSelected: (val) {
-                      setState(() {
-                        widget.yearsExperienceByRole[primaryRoleSlug] =
-                            val ? exp : '';
-                      });
-                    },
-                  ),
+                  Builder(builder: (ctx) {
+                    final selected =
+                        widget.yearsExperienceByRole[primaryRoleSlug] == exp;
+                    final isDark =
+                        Theme.of(ctx).brightness == Brightness.dark;
+                    const purple = AppColors.proPurple;
+                    final border =
+                        isDark ? AppColors.borderDark : AppColors.borderLight;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          widget.yearsExperienceByRole[primaryRoleSlug] =
+                              selected ? '' : exp;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? purple.withValues(alpha: 0.1)
+                              : (isDark ? AppColors.bg3Dark : Colors.white),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected ? purple : border,
+                            width: selected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          exp,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: selected
+                                ? purple
+                                : Theme.of(ctx).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
               ],
             ),
             const SizedBox(height: 16),
