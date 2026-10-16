@@ -26,9 +26,11 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     try {
       final caps = await _repo.getProviderCapabilities();
       final enabled = await _repo.capabilityProfilesEnabled();
+      final workEnabled = await _repo.workProfilesEnabled();
       emit(CapabilitiesLoaded(
         capabilities: caps,
         capabilityProfilesEnabled: enabled,
+        workProfilesEnabled: workEnabled,
       ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);
@@ -44,10 +46,12 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
       final caps = await _repo.getProviderCapabilities();
       final opps = await _repo.getProviderOpportunities();
       final enabled = await _repo.capabilityProfilesEnabled();
+      final workEnabled = await _repo.workProfilesEnabled();
       emit(CapabilitiesLoaded(
         capabilities: caps,
         opportunities: opps,
         capabilityProfilesEnabled: enabled,
+        workProfilesEnabled: workEnabled,
       ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);
@@ -63,6 +67,47 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   }) async {
     try {
       await _repo.addCapabilities(slugs, metadataBySlug: metadataBySlug);
+      await loadWithOpportunities();
+    } catch (e) {
+      OfflineService().reportRequestFailure(e);
+      if (state is! CapabilitiesLoaded ||
+          parseSupabaseError(e) is! NetworkException) {
+        emit(CapabilitiesError(userFacingErrorMessage(e)));
+      }
+    }
+  }
+
+  Future<void> saveCapabilitiesBulk({
+    required List<Map<String, dynamic>> items,
+    String? categorySlug,
+    List<String> removeSlugs = const [],
+  }) async {
+    try {
+      await _repo.saveProviderCapabilitiesBulk(
+        items: items,
+        categorySlug: categorySlug,
+        removeSlugs: removeSlugs,
+      );
+      await loadWithOpportunities();
+    } catch (e) {
+      OfflineService().reportRequestFailure(e);
+      if (state is! CapabilitiesLoaded ||
+          parseSupabaseError(e) is! NetworkException) {
+        emit(CapabilitiesError(userFacingErrorMessage(e)));
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> setCapabilityPaused({
+    required String capabilitySlug,
+    required bool paused,
+  }) async {
+    try {
+      await _repo.setCapabilityPaused(
+        capabilitySlug: capabilitySlug,
+        paused: paused,
+      );
       await loadWithOpportunities();
     } catch (e) {
       OfflineService().reportRequestFailure(e);

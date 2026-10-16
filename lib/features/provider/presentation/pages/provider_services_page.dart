@@ -22,6 +22,7 @@ import '../cubit/capabilities_state.dart';
 import '../widgets/capability_badge.dart';
 import '../widgets/provider_opportunities_section.dart';
 import 'add_service_sheet.dart';
+import 'capability_detail_sheet.dart';
 
 class ProviderServicesPage extends StatelessWidget {
   const ProviderServicesPage({super.key});
@@ -48,27 +49,34 @@ class _ProviderServicesView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.providerServicesTitle),
-          centerTitle: false,
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Offer Services'),
-              Tab(text: 'Available for Jobs'),
-            ],
-          ),
-        ),
-        body: BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
-          builder: (context, state) {
-            if (state is CapabilitiesLoading || state is CapabilitiesInitial) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state is CapabilitiesError) {
-              final needsRepo = getIt<NeedsRepository>();
-              return TabBarView(
+    return BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
+      builder: (context, state) {
+        if (state is CapabilitiesLoading || state is CapabilitiesInitial) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.providerServicesTitle),
+              centerTitle: false,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (state is CapabilitiesError) {
+          final needsRepo = getIt<NeedsRepository>();
+          return DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(l10n.providerServicesTitle),
+                centerTitle: false,
+                bottom: const TabBar(
+                  tabs: [
+                    Tab(text: 'Offer Services'),
+                    Tab(text: 'Available for Jobs'),
+                  ],
+                ),
+              ),
+              body: TabBarView(
                 children: [
                   _ErrorCategoryTab(
                     needsRepository: needsRepo,
@@ -89,21 +97,75 @@ class _ProviderServicesView extends StatelessWidget {
                     onSelectCategory: (_) {},
                   ),
                 ],
-              );
-            }
+              ),
+            ),
+          );
+        }
 
-            final loaded = state as CapabilitiesLoaded;
-            final caps = loaded.capabilities;
-            final opps = loaded.opportunities;
-            final profileState = context.watch<ProfileCubit>().state;
-            final profile = profileState is ProfileCubitLoaded
-                ? profileState.profile
-                : null;
-            final needsRepo = getIt<NeedsRepository>();
-            final workProfileRepository =
-                JobProfileRepository(getIt<supabase.SupabaseClient>());
+        final loaded = state as CapabilitiesLoaded;
+        final caps = loaded.capabilities;
+        final opps = loaded.opportunities;
+        final profileState = context.watch<ProfileCubit>().state;
+        final profile = profileState is ProfileCubitLoaded
+            ? profileState.profile
+            : null;
+        final needsRepo = getIt<NeedsRepository>();
+        final workProfileRepository =
+            getIt.isRegistered<JobProfileRepository>()
+                ? getIt<JobProfileRepository>()
+                : (getIt.isRegistered<supabase.SupabaseClient>()
+                    ? JobProfileRepository(getIt<supabase.SupabaseClient>())
+                    : null);
 
-            return TabBarView(
+        // ── Screen A: unified summary when capability profiles flag is ON ──
+        if (loaded.capabilityProfilesEnabled) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.providerServicesTitle),
+              centerTitle: false,
+            ),
+            body: RefreshIndicator(
+              onRefresh: () =>
+                  context.read<CapabilitiesCubit>().loadWithOpportunities(),
+              child: _ScreenASummaryView(
+                capabilities: caps,
+                opportunities: opps,
+                workProfilesEnabled: loaded.workProfilesEnabled,
+                needsRepository: needsRepo,
+                isDark: isDark,
+                l10n: l10n,
+                onAddService: () => _showAddSheet(context),
+                onTapCapability: (cap) => _showCapabilityDetail(
+                  context,
+                  capability: cap,
+                  opps: opps,
+                  l10n: l10n,
+                ),
+              ),
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () => _showAddSheet(context),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add Service'),
+            ),
+          );
+        }
+
+        // ── Legacy 2-tab view when flag is OFF ──
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.providerServicesTitle),
+              centerTitle: false,
+              bottom: const TabBar(
+                tabs: [
+                  Tab(text: 'Offer Services'),
+                  Tab(text: 'Available for Jobs'),
+                ],
+              ),
+            ),
+            body: TabBarView(
               children: [
                 RefreshIndicator(
                   onRefresh: () =>
@@ -138,10 +200,10 @@ class _ProviderServicesView extends StatelessWidget {
                   ),
                 ),
               ],
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -259,7 +321,295 @@ class _ProviderServicesView extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _showCapabilityDetail(
+    BuildContext context, {
+    required ProviderCapability capability,
+    required List<ProviderOpportunity> opps,
+    required AppLocalizations l10n,
+  }) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    final oppCount = opps
+        .where((o) => o.capabilitySlug == capability.capabilitySlug)
+        .fold<int>(0, (sum, o) => sum + o.opportunityCount);
+    await CapabilityDetailSheet.show(
+      context,
+      capability: capability,
+      opportunityCount: oppCount,
+      onEdit: () => _showAddSheet(
+        context,
+        preselectedCategorySlug: capability.categorySlug,
+      ),
+      onTogglePause: (paused) => cubit.setCapabilityPaused(
+        capabilitySlug: capability.capabilitySlug,
+        paused: paused,
+      ),
+      onRemove: () => _confirmRemove(context, capability, l10n),
+    );
+  }
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Screen A — unified summary view (capabilityProfilesEnabled = true)
+// ────────────────────────────────────────────────────────────────────────────
+
+enum _CapFilter { all, services, jobs }
+
+class _ScreenASummaryView extends StatefulWidget {
+  const _ScreenASummaryView({
+    required this.capabilities,
+    required this.opportunities,
+    required this.workProfilesEnabled,
+    required this.needsRepository,
+    required this.isDark,
+    required this.l10n,
+    required this.onAddService,
+    required this.onTapCapability,
+  });
+
+  final List<ProviderCapability> capabilities;
+  final List<ProviderOpportunity> opportunities;
+  final bool workProfilesEnabled;
+  final NeedsRepository needsRepository;
+  final bool isDark;
+  final AppLocalizations l10n;
+  final VoidCallback onAddService;
+  final ValueChanged<ProviderCapability> onTapCapability;
+
+  @override
+  State<_ScreenASummaryView> createState() => _ScreenASummaryViewState();
+}
+
+class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
+  _CapFilter _filter = _CapFilter.all;
+
+  List<ProviderCapability> get _filtered {
+    switch (_filter) {
+      case _CapFilter.services:
+        return widget.capabilities.where((c) => !c.isWork).toList();
+      case _CapFilter.jobs:
+        return widget.capabilities.where((c) => c.isWork).toList();
+      case _CapFilter.all:
+        return widget.capabilities;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final caps = widget.capabilities;
+    final servicesCount = caps.where((c) => !c.isWork).length;
+    final jobsCount = caps.where((c) => c.isWork).length;
+    final totalJobMatches = widget.opportunities
+        .where((o) => caps.any(
+              (c) => c.isWork && c.capabilitySlug == o.capabilitySlug,
+            ))
+        .fold<int>(0, (sum, o) => sum + o.opportunityCount);
+
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        // ── Filter chips ──
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'All (${caps.length})',
+                    selected: _filter == _CapFilter.all,
+                    onTap: () => setState(() => _filter = _CapFilter.all),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Services ($servicesCount)',
+                    selected: _filter == _CapFilter.services,
+                    color: AppColors.accent,
+                    onTap: () =>
+                        setState(() => _filter = _CapFilter.services),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Jobs ($jobsCount)',
+                    selected: _filter == _CapFilter.jobs,
+                    color: Colors.purple,
+                    onTap: () => setState(() => _filter = _CapFilter.jobs),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // ── Capability cards ──
+        if (_filtered.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              child: _EmptyState(
+                  l10n: widget.l10n, isDark: widget.isDark),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            sliver: SliverList.builder(
+              itemCount: _filtered.length,
+              itemBuilder: (context, i) {
+                final cap = _filtered[i];
+                final oppCount = widget.opportunities
+                    .where((o) => o.capabilitySlug == cap.capabilitySlug)
+                    .fold<int>(0, (sum, o) => sum + o.opportunityCount);
+                return CapabilityBadge(
+                  capability: cap,
+                  showProfileDetails: true,
+                  opportunityCount: oppCount,
+                  onTap: () => widget.onTapCapability(cap),
+                );
+              },
+            ),
+          ),
+
+        // ── Work profile strip ──
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: _WorkProfileStrip(
+              jobsCount: jobsCount,
+              totalJobMatches: totalJobMatches,
+              workProfilesEnabled: widget.workProfilesEnabled,
+              isDark: widget.isDark,
+            ),
+          ),
+        ),
+
+        // Bottom padding for FAB
+        const SliverToBoxAdapter(child: SizedBox(height: 96)),
+      ],
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.color,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = color ?? AppColors.accent;
+    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? activeColor.withValues(alpha: 0.12) : bg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? activeColor : border,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? activeColor : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkProfileStrip extends StatelessWidget {
+  const _WorkProfileStrip({
+    required this.jobsCount,
+    required this.totalJobMatches,
+    required this.workProfilesEnabled,
+    required this.isDark,
+  });
+
+  final int jobsCount;
+  final int totalJobMatches;
+  final bool workProfilesEnabled;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+
+    if (!workProfilesEnabled) {
+      return Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: border),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            const Text('💼', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Work profiles are not enabled yet',
+                style: TextStyle(fontSize: 13, color: text2),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final summary = jobsCount == 0
+        ? 'No job roles added'
+        : '$jobsCount ${jobsCount == 1 ? 'role' : 'roles'} · Available for jobs'
+            '${totalJobMatches > 0 ? ' · $totalJobMatches open ${totalJobMatches == 1 ? 'job' : 'jobs'} match' : ''}';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.25)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          const Text('💼', style: TextStyle(fontSize: 20)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              summary,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.purple,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _ErrorCategoryTab extends StatelessWidget {
   const _ErrorCategoryTab({
@@ -384,7 +734,7 @@ class _AvailableJobsTab extends StatelessWidget {
   });
 
   final NeedsRepository needsRepository;
-  final JobProfileRepository workProfileRepository;
+  final JobProfileRepository? workProfileRepository;
   final UserProfile? profile;
   final ValueChanged<NeedCategory> onSelectCategory;
 
@@ -401,11 +751,12 @@ class _AvailableJobsTab extends StatelessWidget {
           onSelectCategory: onSelectCategory,
         ),
         const SizedBox(height: 16),
-        WorkProfileSection(
-          repository: workProfileRepository,
-          needsRepository: needsRepository,
-          profile: profile,
-        ),
+        if (workProfileRepository != null)
+          WorkProfileSection(
+            repository: workProfileRepository!,
+            needsRepository: needsRepository,
+            profile: profile,
+          ),
       ],
     );
   }

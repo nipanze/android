@@ -20,11 +20,13 @@ class CapabilitiesLoaded extends CapabilitiesState {
     required this.capabilities,
     this.opportunities = const [],
     this.capabilityProfilesEnabled = false,
+    this.workProfilesEnabled = false,
   });
 
   final List<ProviderCapability> capabilities;
   final List<ProviderOpportunity> opportunities;
   final bool capabilityProfilesEnabled;
+  final bool workProfilesEnabled;
 }
 
 class CapabilitiesError extends CapabilitiesState {

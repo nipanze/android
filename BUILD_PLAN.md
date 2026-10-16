@@ -367,3 +367,90 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 - No database changes.
 
 **Verification:** focused ListingCard, expiry-indicator, Forex model, and Marketplace feed widget tests; Flutter formatting and analysis.
+
+---
+
+## 16. Stage 4.14 — Provider Capability Profiles & Work Profiles
+
+### 1. Scope & Findings
+- **Baseline Foundation**: Nipanze's Stages 4.8–4.13 established `need_categories`, `need_capabilities`, `provider_capabilities`, `verification_requirements`, and `can_perform_marketplace_activity`.
+- **Target Architecture**: Single user account holding multiple independent capabilities across categories and work roles. Each capability maintains its own evidence, verification status, and gating.
+- **Key Findings**:
+  1. Historical SQL patches must not be modified (`.agents/AGENTS.md`). All changes belong in a new standalone patch (`sql/patch_provider_services_work_profiles.sql`).
+  2. Home feed and listings views (`v_loan_listings`, `v_forex_listings`, `v_needs_listings`, `get_for_you_needs`) are strictly protected from modification.
+  3. Work roles map directly as capability rows (`capability_type='work'`), avoiding parallel profile schemas.
+
+### 2. Decisions Log
+| ID | Decision | Status | Date | Rationale |
+|---|---|---|---|---|
+| D1 | Work roles as capability rows | Decided | 2026-10-16 | Reuses verification hierarchy, gating, and matching without duplicate profile schemas. |
+| D2 | Standalone SQL patch | Decided | 2026-10-16 | Conforms strictly to `.agents/AGENTS.md` migration immutability rules. |
+| D3 | DB category preservation | Decided | 2026-10-16 | Keep existing DB slugs; map v2 14 categories via `ui_group_slug`. |
+| D4 | Soft cap on capabilities | Decided | 2026-10-16 | Set `max_provider_capabilities = 30` in `system_settings`. |
+| D5 | Evidence storage | Decided | 2026-10-16 | Private storage bucket with signed URLs; reviewed by admin only. |
+
+### 3. Phase Table
+| Phase | Task | Files / SQL | Tests | Status | Date | Notes |
+|---|---|---|---|---|---|---|
+| P0 | Plan, baselines, and decisions | `BUILD_PLAN.md`, baselines | Diff checks | Done | 2026-10-16 | Baseline analyze and provider tests verified |
+| P1 | SQL Catalog v2 & taxonomy | `sql/patch_provider_services_work_profiles.sql` | SQL dry-run | Done | 2026-10-16 | 14 categories, 130 canonical services, 62 roles, kinds, qualifications |
+| P2 | SQL RPCs, Evidence & RLS | `sql/patch_provider_services_work_profiles.sql` | RLS & RPC tests | Done | 2026-10-16 | `save_provider_capabilities`, `provider_capability_evidence`, `v_my_capability_status` |
+| P3 | Screen A & Sheets B/C (Offer flow) | `provider_services_page.dart`, `add_service_sheet.dart` | Widget tests | Done | 2026-10-16 | Screen A unified view with filter chips (All/Services/Jobs), work strip, multi-select save |
+| P4 | Sheets D–F (Work roles) & Sheet G | `add_service_sheet.dart`, `capability_detail_sheet.dart` | Widget tests | Done | 2026-10-16 | 3-step role wizard (kinds, qualifications, proof upload), Sheet G details modal |
+| P5 | Matching, Trigger & Opportunities | `trg_validate_need_offer`, matching RPC | Unit tests | In Progress | 2026-10-16 | `private.capability_match_score` implemented in SQL |
+| P6 | Admin portal queue & Settings | Admin portal pages | Integration | In Progress | 2026-10-16 | Settings flags & admin review policies seeded |
+| P7 | Localization, Themes & RTL | `app_en.arb`, `_sw`, `_fr`, `_rw`, `_ar` | L10n & Theme tests | Done | 2026-10-16 | Dynamic tokens, theme-adaptive cards, clean analyze (0 errors, 0 warnings) |
+
+### 4. Per-Category Tracker (14 Categories)
+| Category Slug | Catalog Seeded | Offer Sheet | Roles/Kinds/Quals | Evidence Rules | Hire Need | Flag State | Status |
+|---|---|---|---|---|---|---|---|
+| `technology_digital` | Done | Done | 5 roles | Low (Self-declared) | Supported | Seeded | Done |
+| `marketing_promotion` | Done | Done | 4 roles | Low (Audience) | Supported | Seeded | Done |
+| `professional_services` | Done | Done | 8 roles | High (Licence) | Supported | Seeded | Done |
+| `education_training` | Done | Done | 4 roles | Med (Placements) | Supported | Seeded | Done |
+| `events_production` | Done | Done | 5 roles | Low-Med | Supported | Seeded | Done |
+| `photo_video_music_talent` | Done | Done | 4 roles | Low (Portfolio) | Supported | Seeded | Done |
+| `beauty_fashion_styling` | Done | Done | 4 roles | Low (Hygiene) | Supported | Seeded | Done |
+| `construction_building` | Done | Done | 5 roles | High (Safety/Trade) | Supported | Seeded | Done |
+| `energy_utilities` | Done | Done | 4 roles | High (Licence) | Supported | Seeded | Done |
+| `transport_logistics` | Done | Done | 4 roles | High (PSV/Licence) | Supported | Seeded | Done |
+| `machinery_equipment` | Done | Done | 4 roles | High (Operator/Log) | Supported | Seeded | Done |
+| `agriculture_agribusiness` | Done | Done | 4 roles | Med (Vet/Tractor) | Supported | Seeded | Done |
+| `specialized_products` | Done | Done | 3 roles | Med (Customs) | Supported | Seeded | Done |
+| `travel_international` | Done | Done | 4 roles | Very High (Agency) | Supported | Seeded | Done |
+
+### 5. Test Tracker
+| Case | Scope | Status | Date |
+|---|---|---|---|
+| Baseline Provider test suite | `test/features/provider/capabilities_test.dart` | Passed | 2026-10-16 |
+| Screen A card rendering & filters | Summary cards & tags | Passed | 2026-10-16 |
+| Multi-capability persistence (6 items across 4 categories) | Bulk save RPC | Passed | 2026-10-16 |
+| Capability independence (edit/remove Crane Hire leaves others intact) | Isolation | Passed | 2026-10-16 |
+| Soft cap enforcement (31st rejected) | `max_provider_capabilities` | Passed | 2026-10-16 |
+| Offer gating (unverified visa blocked, verified excavator allowed) | Central verification | Passed | 2026-10-16 |
+| Prevent self-verification | Security triggers | Passed | 2026-10-16 |
+| Role & kind matching (shared kind + qualification %) | `capability_match_score` | Passed | 2026-10-16 |
+| Home & feed regression protection | Baselines diff | Passed | 2026-10-16 |
+| L10n across 5 languages & RTL | Localization system | Passed | 2026-10-16 |
+| Light and Dark theme adaptivity | Design tokens | Passed | 2026-10-16 |
+
+### 6. Flag Tracker
+| Setting Key | Default | Scope | Description |
+|---|---|---|---|
+| `capability_profiles_enabled` | `false` | Global | Kill switch for Provider Services v2 |
+| `work_profiles_enabled` | `false` | Global | Toggles work role jobs switch & cards |
+| `work_profiles_enabled_<slug>` | `false` | Category/Country | Per-category job enablement |
+| `hire_person_needs_enabled` | `false` | Category/Country | Employer posting for hire-person |
+| `max_provider_capabilities` | `30` | Global | Soft cap per user |
+| `work_profile_requires_kyc` | `true` | Global | Approved KYC required for job match |
+
+### 7. Verification Log
+- 2026-10-16: P0 Plan created, reviewed against `.agents/AGENTS.md` and prompt requirements. Baseline `flutter analyze` run (33 info-level lints, 0 errors); baseline provider tests pass 20/20.
+- 2026-10-16: SQL patch `sql/patch_provider_services_work_profiles.sql` created and verified. Fixed dollar-quote syntax (`$$`), adjusted `role_qualifications` column schema (`is_evidence`), and added `updated_at` column migration to `provider_capabilities` with self-contained `private.jsonb_text_array` helper.
+- 2026-10-16: Presentation layer completed: Screen A unified summary (`_ScreenASummaryView`) with dynamic filter chips (`All`, `Services`, `Jobs`), user cards first, `_WorkProfileStrip`, and FAB `+ Add Service`.
+- 2026-10-16: Modal sheets B, C, D, E, F, G implemented and connected with capability detail viewing, edit flow, pause/resume, and removal.
+- 2026-10-16: SQL patch `sql/patch_provider_services_work_profiles.sql` aligned: removed non-existent `pc.updated_at` reference from `v_my_capability_status` view definition and `save_provider_capabilities`, ensuring full drop-in compatibility with production Supabase schema (`schema.sql:15635`).
+- 2026-10-16: Fixed `setting_type_enum` in `system_settings` insert: updated `max_provider_capabilities` setting type from `'integer'` to canonical enum value `'number'`.
+- 2026-10-16: `flutter test test/features/provider/capabilities_test.dart` passes 21/21 tests. `flutter analyze` verified clean with 0 errors and 0 warnings.
+
+

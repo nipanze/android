@@ -45,11 +45,13 @@ class ProviderCapability {
     required this.userId,
     required this.capabilitySlug,
     required this.verificationLevel,
+    this.capabilityType = 'service',
     this.evidenceUrl,
     this.metadata = const {},
     this.verifiedBy,
     this.verifiedAt,
     required this.createdAt,
+    this.updatedAt,
     // Joined from need_capabilities
     this.capabilityName,
     this.categorySlug,
@@ -71,10 +73,15 @@ class ProviderCapability {
     final verificationLevel = ProviderVerificationLevel.fromString(
       map['verification_level'] as String?,
     );
+    final rawSlug = map['capability_slug'] as String? ?? '';
+    final rawType = map['capability_type'] as String?;
+    final determinedType =
+        rawType ?? (rawSlug.startsWith('work_') ? 'work' : 'service');
     return ProviderCapability(
       id: (map['id'] ?? map['provider_capability_id']) as String,
       userId: map['user_id'] as String,
-      capabilitySlug: map['capability_slug'] as String,
+      capabilitySlug: rawSlug,
+      capabilityType: determinedType,
       verificationLevel: verificationLevel,
       evidenceUrl: map['evidence_url'] as String?,
       metadata: (map['metadata'] as Map<String, dynamic>?) ?? const {},
@@ -84,6 +91,9 @@ class ProviderCapability {
           : null,
       createdAt: DateTime.tryParse(map['created_at'] as String? ?? '') ??
           DateTime.now(),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.tryParse(map['updated_at'] as String)
+          : null,
       capabilityName: map['capability_name'] as String?,
       categorySlug: map['category_slug'] as String?,
       categoryName: map['category_name'] as String?,
@@ -111,12 +121,14 @@ class ProviderCapability {
   final String id;
   final String userId;
   final String capabilitySlug;
+  final String capabilityType;
   final ProviderVerificationLevel verificationLevel;
   final String? evidenceUrl;
   final Map<String, dynamic> metadata;
   final String? verifiedBy;
   final DateTime? verifiedAt;
   final DateTime createdAt;
+  final DateTime? updatedAt;
 
   // Joined fields
   final String? capabilityName;
@@ -134,6 +146,50 @@ class ProviderCapability {
   bool get isVerified =>
       verificationLevel == ProviderVerificationLevel.providerVerified ||
       status == ProviderCapabilityStatus.providerVerified;
+
+  bool get isWork =>
+      capabilityType == 'work' ||
+      capabilitySlug.startsWith('work_') ||
+      engagements.contains('work') ||
+      roles.isNotEmpty ||
+      metadata.containsKey('kind_ids');
+
+  bool get isService => !isWork;
+
+  bool get isPaused => metadata['is_paused'] as bool? ?? false;
+
+  List<String> get kindIds => (metadata['kind_ids'] as List? ?? const [])
+      .map((e) => e.toString())
+      .toList();
+
+  List<String> get qualificationIds =>
+      (metadata['qualification_ids'] as List? ?? const [])
+          .map((e) => e.toString())
+          .toList();
+
+  String? get yearsExperience => metadata['years_experience'] as String?;
+  String? get availability => metadata['availability'] as String?;
+  List<String> get languages => (metadata['languages'] as List? ?? const [])
+      .map((e) => e.toString())
+      .toList();
+  bool get willingToTravel => metadata['willing_to_travel'] as bool? ?? false;
+  num? get expectedPayAmount {
+    final pay = metadata['expected_pay'];
+    if (pay is Map) return pay['amount'] as num?;
+    return metadata['expected_pay_amount'] as num?;
+  }
+
+  String? get expectedPayPeriod {
+    final pay = metadata['expected_pay'];
+    if (pay is Map) return pay['period'] as String?;
+    return metadata['expected_pay_period'] as String?;
+  }
+
+  String? get expectedPayCurrency {
+    final pay = metadata['expected_pay'];
+    if (pay is Map) return pay['currency'] as String?;
+    return metadata['expected_pay_currency'] as String? ?? 'UGX';
+  }
 
   List<String> get engagements => (metadata['engagements'] as List? ?? const [])
       .map((value) => value.toString())

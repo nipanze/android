@@ -87,6 +87,8 @@ class RpcNames {
   static const String recordInterestEvent = 'record_interest_event';
   static const String canPerformMarketplaceActivity =
       'can_perform_marketplace_activity';
+  static const String saveProviderCapabilities =
+      'save_provider_capabilities';
   static const String adminGetVerificationRequirements =
       'admin_get_verification_requirements';
   static const String adminUpdateVerificationRequirement =

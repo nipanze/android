@@ -6,13 +6,24 @@ import '../entities/provider_service_role.dart';
 
 abstract class IProviderRepository {
   Future<bool> capabilityProfilesEnabled();
+  Future<bool> workProfilesEnabled();
+  Future<bool> isCategoryWorkProfileEnabled(String categorySlug);
   Future<List<ProviderCapability>> getProviderCapabilities();
   Future<void> addCapabilities(
     List<String> slugs, {
     Map<String, Map<String, dynamic>> metadataBySlug = const {},
   });
+  Future<void> saveProviderCapabilitiesBulk({
+    required List<Map<String, dynamic>> items,
+    String? categorySlug,
+    List<String> removeSlugs = const [],
+  });
   Future<void> removeCapability(String capabilitySlug);
   Future<bool> hasCapability(String capabilitySlug);
+  Future<void> setCapabilityPaused({
+    required String capabilitySlug,
+    required bool paused,
+  });
   Future<String> submitCapabilityEvidence({
     required String providerCapabilityId,
     required String requirementKey,

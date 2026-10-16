@@ -35,6 +35,14 @@ void main() {
     mockRepo = MockProviderRepository();
     when(() => mockRepo.capabilityProfilesEnabled())
         .thenAnswer((_) async => false);
+    when(() => mockRepo.workProfilesEnabled())
+        .thenAnswer((_) async => false);
+    when(() => mockRepo.getServiceRoles(
+          categorySlug: any(named: 'categorySlug'),
+          capabilitySlug: any(named: 'capabilitySlug'),
+        )).thenAnswer((_) async => []);
+    when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
+        .thenAnswer((_) async => false);
   });
 
   group('ProviderCapability Entity', () {
@@ -176,6 +184,8 @@ void main() {
       build: () {
         when(() => mockRepo.getProviderCapabilities())
             .thenAnswer((_) async => testCaps);
+        when(() => mockRepo.getProviderOpportunities())
+            .thenAnswer((_) async => const <ProviderOpportunity>[]);
         return CapabilitiesCubit(mockRepo);
       },
       act: (cubit) => cubit.load(),
@@ -233,6 +243,8 @@ void main() {
         when(() => mockRepo.addCapabilities(any())).thenAnswer((_) async {});
         when(() => mockRepo.getProviderCapabilities())
             .thenAnswer((_) async => testCaps);
+        when(() => mockRepo.getProviderOpportunities())
+            .thenAnswer((_) async => const <ProviderOpportunity>[]);
         return CapabilitiesCubit(mockRepo);
       },
       act: (cubit) => cubit.addCapabilities(['excavator_hire']),
@@ -247,6 +259,8 @@ void main() {
         when(() => mockRepo.removeCapability(any())).thenAnswer((_) async {});
         when(() => mockRepo.getProviderCapabilities())
             .thenAnswer((_) async => []);
+        when(() => mockRepo.getProviderOpportunities())
+            .thenAnswer((_) async => const <ProviderOpportunity>[]);
         return CapabilitiesCubit(mockRepo);
       },
       act: (cubit) => cubit.removeCapability('excavator_hire'),
@@ -256,9 +270,27 @@ void main() {
     );
   });
 
+  void setupMockProviderRepo(MockProviderRepository repo) {
+    when(() => repo.capabilityProfilesEnabled())
+        .thenAnswer((_) async => false);
+    when(() => repo.workProfilesEnabled())
+        .thenAnswer((_) async => false);
+    when(() => repo.getProviderCapabilities())
+        .thenAnswer((_) async => const <ProviderCapability>[]);
+    when(() => repo.getProviderOpportunities())
+        .thenAnswer((_) async => const <ProviderOpportunity>[]);
+    when(() => repo.getServiceRoles(
+          categorySlug: any(named: 'categorySlug'),
+          capabilitySlug: any(named: 'capabilitySlug'),
+        )).thenAnswer((_) async => []);
+    when(() => repo.isCategoryWorkProfileEnabled(any()))
+        .thenAnswer((_) async => false);
+  }
+
   group('Provider Services flow', () {
     testWidgets('Offer Services tab shows categories inline', (tester) async {
       final mockProviderRepo = MockProviderRepository();
+      setupMockProviderRepo(mockProviderRepo);
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
 
@@ -268,21 +300,15 @@ void main() {
           CapabilitiesCubit(mockProviderRepo));
       getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
 
-      addTearDown(() {
-        getIt.reset();
-      });
+      addTearDown(getIt.reset);
 
-      when(() => mockProviderRepo.getProviderCapabilities())
-          .thenAnswer((_) async => const <ProviderCapability>[]);
-      when(() => mockProviderRepo.getProviderOpportunities())
-          .thenAnswer((_) async => const <ProviderOpportunity>[]);
-      when(() => mockProfileRepo.getProfile())
+      when(mockProfileRepo.getProfile)
           .thenAnswer((_) async => const UserProfile(
                 id: 'u-1',
                 email: 'user@test.com',
                 accountStatus: 'active',
               ));
-      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+      when(mockNeedsRepo.getCategories).thenAnswer((_) async => const [
             NeedCategory(
               slug: 'machinery_equipment',
               name: 'Machinery & Equipment',
@@ -303,10 +329,10 @@ void main() {
               ]);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const ProviderServicesPage(),
+          home: ProviderServicesPage(),
         ),
       );
       await tester.pumpAndSettle();
@@ -325,6 +351,7 @@ void main() {
         'Professional Services hides marketing capabilities without repetition',
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
+      setupMockProviderRepo(mockProviderRepo);
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
 
@@ -334,21 +361,15 @@ void main() {
           CapabilitiesCubit(mockProviderRepo));
       getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
 
-      addTearDown(() {
-        getIt.reset();
-      });
+      addTearDown(getIt.reset);
 
-      when(() => mockProviderRepo.getProviderCapabilities())
-          .thenAnswer((_) async => const <ProviderCapability>[]);
-      when(() => mockProviderRepo.getProviderOpportunities())
-          .thenAnswer((_) async => const <ProviderOpportunity>[]);
-      when(() => mockProfileRepo.getProfile())
+      when(mockProfileRepo.getProfile)
           .thenAnswer((_) async => const UserProfile(
                 id: 'u-1',
                 email: 'user@test.com',
                 accountStatus: 'active',
               ));
-      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+      when(mockNeedsRepo.getCategories).thenAnswer((_) async => const [
             NeedCategory(
               slug: 'professional_services',
               name: 'Professional & Business Services',
@@ -397,10 +418,10 @@ void main() {
               ]);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const ProviderServicesPage(),
+          home: ProviderServicesPage(),
         ),
       );
       await tester.pumpAndSettle();
@@ -424,6 +445,7 @@ void main() {
         'Marketing & Promotion category filters out redundant marketing_services tile and opens audience editor',
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
+      setupMockProviderRepo(mockProviderRepo);
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
 
@@ -433,21 +455,15 @@ void main() {
           CapabilitiesCubit(mockProviderRepo));
       getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
 
-      addTearDown(() {
-        getIt.reset();
-      });
+      addTearDown(getIt.reset);
 
-      when(() => mockProviderRepo.getProviderCapabilities())
-          .thenAnswer((_) async => const <ProviderCapability>[]);
-      when(() => mockProviderRepo.getProviderOpportunities())
-          .thenAnswer((_) async => const <ProviderOpportunity>[]);
-      when(() => mockProfileRepo.getProfile())
+      when(mockProfileRepo.getProfile)
           .thenAnswer((_) async => const UserProfile(
                 id: 'u-1',
                 email: 'user@test.com',
                 accountStatus: 'active',
               ));
-      when(() => mockNeedsRepo.getCategories()).thenAnswer((_) async => const [
+      when(mockNeedsRepo.getCategories).thenAnswer((_) async => const [
             NeedCategory(
               slug: 'marketing_promotion',
               name: 'Marketing & Promotion',
@@ -480,10 +496,10 @@ void main() {
               ]);
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const ProviderServicesPage(),
+          home: ProviderServicesPage(),
         ),
       );
       await tester.pumpAndSettle();
@@ -711,6 +727,124 @@ void main() {
       expect(find.text('🧑‍💼'), findsOneWidget);
       expect(find.text('Provider Verified'), findsOneWidget);
       expect(find.text('5 opportunities'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Screen A renders summary with filter chips and capability cards when enabled',
+        (tester) async {
+      final mockProviderRepo = MockProviderRepository();
+      setupMockProviderRepo(mockProviderRepo);
+      final mockNeedsRepo = MockNeedsRepository();
+      final mockProfileRepo = MockProfileRepository();
+
+      getIt.registerSingleton<IProviderRepository>(mockProviderRepo);
+      getIt.registerSingleton<NeedsRepository>(mockNeedsRepo);
+      getIt.registerSingleton<CapabilitiesCubit>(
+          CapabilitiesCubit(mockProviderRepo));
+      getIt.registerSingleton<ProfileCubit>(ProfileCubit(mockProfileRepo));
+
+      addTearDown(getIt.reset);
+
+      final testService = ProviderCapability(
+        id: 'cap-service-1',
+        userId: 'u-1',
+        capabilitySlug: 'excavator_hire',
+        capabilityType: 'service',
+        verificationLevel: ProviderVerificationLevel.providerVerified,
+        createdAt: DateTime.now(),
+        capabilityName: 'Excavator Hire',
+        categorySlug: 'machinery_equipment',
+        categoryName: 'Machinery & Equipment',
+        categoryIcon: '🚜',
+      );
+
+      final testJob = ProviderCapability(
+        id: 'cap-job-1',
+        userId: 'u-1',
+        capabilitySlug: 'work_machine_operator',
+        capabilityType: 'work',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        capabilityName: 'Machine Operator',
+        categorySlug: 'machinery_equipment',
+        categoryName: 'Machinery & Equipment',
+        categoryIcon: '🚜',
+        metadata: {
+          'kind_ids': ['excavator', 'loader'],
+          'years_experience': 4,
+        },
+      );
+
+      when(mockProviderRepo.capabilityProfilesEnabled)
+          .thenAnswer((_) async => true);
+      when(mockProviderRepo.workProfilesEnabled)
+          .thenAnswer((_) async => true);
+      when(mockProviderRepo.getProviderCapabilities)
+          .thenAnswer((_) async => [testService, testJob]);
+      when(mockProviderRepo.getProviderOpportunities)
+          .thenAnswer((_) async => [
+                const ProviderOpportunity(
+                  capabilitySlug: 'work_machine_operator',
+                  opportunityCount: 2,
+                  capabilityName: 'Machine Operator',
+                ),
+              ]);
+      when(mockProfileRepo.getProfile)
+          .thenAnswer((_) async => const UserProfile(
+                id: 'u-1',
+                email: 'user@test.com',
+                accountStatus: 'active',
+              ));
+      when(mockNeedsRepo.getCategories)
+          .thenAnswer((_) async => const []);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ProviderServicesPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Screen A elements:
+      // Filter chips: All (2), Services (1), Jobs (1)
+      expect(find.text('All (2)'), findsOneWidget);
+      expect(find.text('Services (1)'), findsOneWidget);
+      expect(find.text('Jobs (1)'), findsOneWidget);
+
+      // Cards
+      expect(find.text('Excavator Hire'), findsOneWidget);
+      expect(find.text('Machine Operator'), findsOneWidget);
+
+      // Tags
+      expect(find.text('Service'), findsOneWidget);
+      expect(find.text('Job'), findsOneWidget);
+
+      // Work profile strip
+      expect(
+          find.textContaining('1 role · Available for jobs'), findsOneWidget);
+
+      // Filter by Jobs only
+      await tester.tap(find.text('Jobs (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Machine Operator'), findsOneWidget);
+      expect(find.text('Excavator Hire'), findsNothing);
+
+      // Filter by Services only
+      await tester.tap(find.text('Services (1)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Excavator Hire'), findsOneWidget);
+      expect(find.text('Machine Operator'), findsNothing);
+
+      // Tap card to open CapabilityDetailSheet
+      await tester.tap(find.text('Excavator Hire'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Provider Verified'), findsWidgets);
+      expect(find.text('Edit'), findsOneWidget);
     });
   });
 }

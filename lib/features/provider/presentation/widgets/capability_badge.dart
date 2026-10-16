@@ -15,12 +15,18 @@ class CapabilityBadge extends StatelessWidget {
     required this.capability,
     this.showProfileDetails = false,
     this.opportunityCount,
+    this.onTap,
+    this.onEdit,
+    this.onTogglePause,
     this.onRemove,
   });
 
   final ProviderCapability capability;
   final bool showProfileDetails;
   final int? opportunityCount;
+  final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final ValueChanged<bool>? onTogglePause;
   final VoidCallback? onRemove;
 
   @override
@@ -32,7 +38,8 @@ class CapabilityBadge extends StatelessWidget {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final localeCode = Localizations.localeOf(context).languageCode;
 
-    final icon = capability.categoryIcon ?? '🔧';
+    final isJob = capability.isWork;
+    final icon = capability.categoryIcon ?? (isJob ? '💼' : '🔧');
     final capabilityFallback = NeedCapability(
       slug: capability.capabilitySlug,
       categorySlug: capability.categorySlug ?? '',
@@ -51,84 +58,232 @@ class CapabilityBadge extends StatelessWidget {
             icon: icon,
           ).localizedName(localeCode);
 
+    // Compute one-line status note
+    String statusNote;
+    if (capability.status == ProviderCapabilityStatus.providerVerified) {
+      statusNote = 'Verified by Nipanze';
+    } else if (capability.status == ProviderCapabilityStatus.pendingReview) {
+      statusNote = 'Documents submitted · Under review';
+    } else if (capability.status == ProviderCapabilityStatus.rejected) {
+      statusNote = capability.latestRejectReason ?? 'Evidence rejected · Tap to resubmit';
+    } else if (capability.status == ProviderCapabilityStatus.expired) {
+      statusNote = 'Verification expired · Resubmit proof';
+    } else if (isJob && capability.qualificationIds.isNotEmpty) {
+      statusNote = '${capability.qualificationIds.length} qualifications declared';
+    } else {
+      statusNote = 'Self-declared · Add proof to verify';
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: border, width: 1),
       ),
-      child: Row(
-        children: [
-          // Icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Text(icon, style: const TextStyle(fontSize: 22)),
-          ),
-          const SizedBox(width: 12),
-          // Info
-          Expanded(
-            child: Column(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                if (category.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    category,
-                    style: TextStyle(fontSize: 12, color: text2),
+                // Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: (isJob ? Colors.purple : AppColors.accent)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    ProviderVerificationChip(
-                      level: capability.verificationLevel,
-                      status: capability.status,
-                    ),
-                    if (opportunityCount != null && opportunityCount! > 0)
-                      _OpportunityPill(count: opportunityCount!, l10n: l10n),
-                  ],
+                  alignment: Alignment.center,
+                  child: Text(icon, style: const TextStyle(fontSize: 22)),
                 ),
-                if (capability.capabilitySlug == 'i_have_an_audience') ...[
-                  const SizedBox(height: 8),
-                  _DeclaredAudience(capability: capability, l10n: l10n),
-                ],
-                if (capability.metadata['institution'] != null ||
-                    capability.metadata['role'] != null) ...[
-                  const SizedBox(height: 6),
-                  _DeclaredOrganisation(capability: capability),
-                ],
-                if (showProfileDetails) ...[
-                  const SizedBox(height: 8),
-                  _CapabilityProfileSummary(capability: capability),
-                ],
+                const SizedBox(width: 12),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tag & Category
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isJob
+                                  ? Colors.purple.withValues(alpha: 0.15)
+                                  : AppColors.accent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isJob ? 'Job' : 'Service',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    isJob ? Colors.purple : AppColors.accent,
+                              ),
+                            ),
+                          ),
+                          if (category.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                category,
+                                style: TextStyle(fontSize: 12, color: text2),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      if (isJob && capability.kindIds.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 2,
+                          children: capability.kindIds.take(3).map((k) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: border.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _formatSlug(k),
+                                style: TextStyle(
+                                    fontSize: 11, color: text2),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          ProviderVerificationChip(
+                            level: capability.verificationLevel,
+                            status: capability.status,
+                          ),
+                          if (opportunityCount != null && opportunityCount! > 0)
+                            _OpportunityPill(
+                                count: opportunityCount!, l10n: l10n),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        statusNote,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: text2,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      if (capability.capabilitySlug == 'i_have_an_audience') ...[
+                        const SizedBox(height: 8),
+                        _DeclaredAudience(capability: capability, l10n: l10n),
+                      ],
+                      if (capability.metadata['institution'] != null ||
+                          capability.metadata['role'] != null) ...[
+                        const SizedBox(height: 6),
+                        _DeclaredOrganisation(capability: capability),
+                      ],
+                      if (showProfileDetails) ...[
+                        const SizedBox(height: 8),
+                        _CapabilityProfileSummary(capability: capability),
+                      ],
+                    ],
+                  ),
+                ),
+                // Three-dot menu or remove button
+                if (onEdit != null || onTogglePause != null || onRemove != null)
+                  PopupMenuButton<String>(
+                    icon: Icon(Icons.more_vert_rounded, color: text2, size: 20),
+                    padding: EdgeInsets.zero,
+                    onSelected: (val) {
+                      if (val == 'edit' && onEdit != null) onEdit!();
+                      if (val == 'pause' && onTogglePause != null) {
+                        onTogglePause!(!capability.isPaused);
+                      }
+                      if (val == 'remove' && onRemove != null) onRemove!();
+                    },
+                    itemBuilder: (ctx) => [
+                      if (onEdit != null)
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text('Edit'),
+                            ],
+                          ),
+                        ),
+                      if (onTogglePause != null)
+                        PopupMenuItem(
+                          value: 'pause',
+                          child: Row(
+                            children: [
+                              Icon(
+                                capability.isPaused
+                                    ? Icons.play_arrow_outlined
+                                    : Icons.pause_circle_outline,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(capability.isPaused
+                                  ? 'Resume'
+                                  : (isJob ? 'Pause jobs' : 'Pause')),
+                            ],
+                          ),
+                        ),
+                      if (onRemove != null)
+                        PopupMenuItem(
+                          value: 'remove',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.delete_outline,
+                                  size: 18, color: Colors.redAccent),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.removeService,
+                                style:
+                                    const TextStyle(color: Colors.redAccent),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  )
+                else if (onRemove != null)
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    color: text2,
+                    tooltip: l10n.removeService,
+                    onPressed: onRemove,
+                  ),
               ],
             ),
           ),
-          if (onRemove != null)
-            IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18),
-              color: text2,
-              tooltip: l10n.removeService,
-              onPressed: onRemove,
-            ),
-        ],
+        ),
       ),
     );
   }

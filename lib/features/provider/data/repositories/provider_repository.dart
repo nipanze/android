@@ -52,6 +52,41 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<bool> workProfilesEnabled() async {
+    try {
+      final data = await _client
+          .from(TableNames.systemSettings)
+          .select('setting_value')
+          .eq('setting_key', 'work_profiles_enabled')
+          .eq('is_public', true)
+          .maybeSingle();
+      final value = data?['setting_value']?.toString().toLowerCase();
+      return value == 'true' || value == '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> isCategoryWorkProfileEnabled(String categorySlug) async {
+    final globalEnabled = await workProfilesEnabled();
+    if (!globalEnabled) return false;
+    try {
+      final data = await _client
+          .from(TableNames.systemSettings)
+          .select('setting_value')
+          .eq('setting_key', 'work_profiles_enabled_$categorySlug')
+          .eq('is_public', true)
+          .maybeSingle();
+      if (data == null) return true; // Default true if global is enabled and no specific override
+      final value = data['setting_value']?.toString().toLowerCase();
+      return value != 'false' && value != '0';
+    } catch (_) {
+      return true;
+    }
+  }
+
+  @override
   Future<List<ProviderCapability>> getProviderCapabilities() async {
     try {
       final uid = _uid;
@@ -132,6 +167,84 @@ class ProviderRepository implements IProviderRepository {
       await _client
           .from(TableNames.providerCapabilities)
           .upsert(rows, onConflict: 'user_id,capability_slug');
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> saveProviderCapabilitiesBulk({
+    required List<Map<String, dynamic>> items,
+    String? categorySlug,
+    List<String> removeSlugs = const [],
+  }) async {
+    try {
+      final uid = _uid;
+      if (uid == null) throw const AuthException('Not authenticated');
+
+      try {
+        await _client.rpc(
+          RpcNames.saveProviderCapabilities,
+          params: {
+            'p_items': items,
+            'p_category_slug': categorySlug,
+            'p_remove_slugs': removeSlugs,
+          },
+        );
+      } catch (rpcErr) {
+        // Fall back to direct table operations if RPC not present in db yet
+        if (removeSlugs.isNotEmpty) {
+          await _client
+              .from(TableNames.providerCapabilities)
+              .delete()
+              .eq('user_id', uid)
+              .filter('capability_slug', 'in', removeSlugs);
+        }
+        if (items.isNotEmpty) {
+          final rows = items
+              .map((it) => {
+                    'user_id': uid,
+                    'capability_slug': it['capability_slug'],
+                    'verification_level': 'self_declared',
+                    if (it['metadata'] != null) 'metadata': it['metadata'],
+                  })
+              .toList();
+          await _client
+              .from(TableNames.providerCapabilities)
+              .upsert(rows, onConflict: 'user_id,capability_slug');
+        }
+      }
+      _clearCache();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> setCapabilityPaused({
+    required String capabilitySlug,
+    required bool paused,
+  }) async {
+    try {
+      final uid = _uid;
+      if (uid == null) throw const AuthException('Not authenticated');
+
+      final existing = await _client
+          .from(TableNames.providerCapabilities)
+          .select('metadata')
+          .eq('user_id', uid)
+          .eq('capability_slug', capabilitySlug)
+          .maybeSingle();
+
+      final meta = Map<String, dynamic>.from(existing?['metadata'] as Map? ?? {});
+      meta['is_paused'] = paused;
+
+      await _client
+          .from(TableNames.providerCapabilities)
+          .update({'metadata': meta, 'updated_at': DateTime.now().toIso8601String()})
+          .eq('user_id', uid)
+          .eq('capability_slug', capabilitySlug);
+      _clearCache();
     } catch (e) {
       throw parseSupabaseError(e);
     }
