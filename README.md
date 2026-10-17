@@ -506,6 +506,10 @@ The card is purely informational. Expiry enforcement remains in the server-side 
 
 ## 4.6 Provider Services and Work Profiles
 
+Provider capability declarations are separate from provider verification. Individuals use the multi-role details flow; Company / Organization service selections pass through a review step and are saved as `self_declared`. Capability details show the current capability status and provide an evidence upload action when verification rules configure evidence. Evidence uploads go to the private `provider-evidence` bucket and create a `pending` review item; only the admin evidence review RPC can promote the corresponding capability. Identity and phone verification remain separate.
+
+Apply `sql/patch_provider_capability_evidence_security.sql` after the existing provider services/evidence patches. It removes direct authenticated writes to evidence rows and hardens the submit RPC to accept only configured evidence keys and owner-scoped private object paths. Offers for restricted capabilities continue to depend on matching declared capabilities and the server-side verification rules. The current Flutter evidence picker accepts images from the device gallery; PDF/document picker support is not included yet.
+
 Provider Services remain the service-offering surface: selected services are stored in `provider_capabilities` and continue to gate Needs offers server-side. Work-seeking is now modeled separately by the standalone patch `sql/patch_job_seeking_profiles.sql`.
 
 The new patch adds owner-private `job_profiles`, `job_profile_roles`, `job_profile_role_work_types`, and `job_profile_qualification_answers` tables plus `v_my_job_profiles`. These records describe the work a user wants, the roles they qualify for, role-specific work types, self-declared qualifications, expected pay, availability, languages, and location preference. They do not grant Need-offer permissions and do not create an admin-verified provider badge.

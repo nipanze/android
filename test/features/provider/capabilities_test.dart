@@ -190,6 +190,17 @@ void main() {
     expect(find.text('What roles do you do?'), findsNothing);
     expect(find.text('STEP 1 OF 3'), findsNothing);
     expect(find.text('Machine Operator'), findsNothing);
+
+    await tester.tap(find.text('Excavator Hire'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Review services'), findsOneWidget);
+    expect(
+        find.text(
+            'These capabilities will be saved as self-declared. Verification applies separately to each service.'),
+        findsOneWidget);
+    expect(find.text('Excavator Hire'), findsOneWidget);
   });
 
   group('ProviderCapability Entity', () {

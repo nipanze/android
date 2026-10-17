@@ -150,7 +150,8 @@ class AddServiceSheet extends StatefulWidget {
 }
 
 class _AddServiceSheetState extends State<AddServiceSheet> {
-  // Steps: 0 = choose category (Sheet B), 1 = category view (Sheet C/D), 2 = kinds (Sheet E), 3 = qualifications & proof (Sheet F)
+  // Steps: 0 category list, 1 category capabilities, 2-3 individual role details,
+  // 4 provider type, 5 company service review.
   int _step = 0;
   NeedCategory? _selectedCategory;
   List<NeedCategory> _categories = [];
@@ -169,7 +170,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final Map<String, bool> _willingToTravelByRole = {};
   final Map<String, String> _expectedPayAmountByRole = {};
   final Map<String, String> _expectedPayPeriodByRole = {};
-  final Map<String, Set<String>> _uploadedProofByRole = {};
 
   // Audience metadata
   final Set<String> _audiencePlatforms = {};
@@ -508,6 +508,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       if (_step == 3) {
         _step = 2;
+      } else if (_step == 5) {
+        _step = 1;
       } else if (_step == 2) {
         if (_currentRoleIndex > 0) {
           _currentRoleIndex--;
@@ -639,135 +641,149 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                 }),
                                 onContinue: _continueProviderType,
                               )
-                            : _step == 2
-                                ? _KindStepView(
-                                    categorySlug: _selectedCategory?.slug,
-                                    role: _categoryRoles.firstWhere(
-                                      (r) =>
-                                          r.slug ==
+                            : _step == 5
+                                ? _CompanyServiceReview(
+                                    capabilities: _categoryCapabilities
+                                        .where((cap) =>
+                                            _selected.contains(cap.slug))
+                                        .toList(),
+                                    onSave: () =>
+                                        Navigator.of(context).pop(_selection()),
+                                  )
+                                : _step == 2
+                                    ? _KindStepView(
+                                        categorySlug: _selectedCategory?.slug,
+                                        role: _categoryRoles.firstWhere(
+                                          (r) =>
+                                              r.slug ==
+                                              _selectedRoles
+                                                  .elementAt(_currentRoleIndex),
+                                          orElse: () => _categoryRoles.first,
+                                        ),
+                                        roleIndex: _currentRoleIndex,
+                                        totalRoles: _selectedRoles.length,
+                                        selectedKinds: _kindsByRole.putIfAbsent(
                                           _selectedRoles
                                               .elementAt(_currentRoleIndex),
-                                      orElse: () => _categoryRoles.first,
-                                    ),
-                                    roleIndex: _currentRoleIndex,
-                                    totalRoles: _selectedRoles.length,
-                                    selectedKinds: _kindsByRole.putIfAbsent(
-                                      _selectedRoles
-                                          .elementAt(_currentRoleIndex),
-                                      () => {},
-                                    ),
-                                    scrollController: scrollController,
-                                    onNext: () {
-                                      if (_currentRoleIndex <
-                                          _selectedRoles.length - 1) {
-                                        setState(() => _currentRoleIndex++);
-                                      } else {
-                                        setState(() => _step = 3);
-                                      }
-                                    },
-                                  )
-                                : _step == 3
-                                    ? _QualificationsStepView(
-                                        roles: _categoryRoles
-                                            .where((r) =>
-                                                _selectedRoles.contains(r.slug))
-                                            .toList(),
-                                        qualificationsByRole:
-                                            _qualificationsByRole,
-                                        yearsExperienceByRole:
-                                            _yearsExperienceByRole,
-                                        availabilityByRole: _availabilityByRole,
-                                        languagesByRole: _languagesByRole,
-                                        willingToTravelByRole:
-                                            _willingToTravelByRole,
-                                        expectedPayAmountByRole:
-                                            _expectedPayAmountByRole,
-                                        expectedPayPeriodByRole:
-                                            _expectedPayPeriodByRole,
-                                        uploadedProofByRole:
-                                            _uploadedProofByRole,
+                                          () => {},
+                                        ),
                                         scrollController: scrollController,
-                                        onSave: () => Navigator.of(context)
-                                            .pop(_selection()),
+                                        onNext: () {
+                                          if (_currentRoleIndex <
+                                              _selectedRoles.length - 1) {
+                                            setState(() => _currentRoleIndex++);
+                                          } else {
+                                            setState(() => _step = 3);
+                                          }
+                                        },
                                       )
-                                    : _showAudience
-                                        ? _AudienceEditorView(
-                                            audiencePlatforms:
-                                                _audiencePlatforms,
-                                            audienceCountController:
-                                                _audienceCountController,
-                                            audienceLocationController:
-                                                _audienceLocationController,
-                                            audienceInterestController:
-                                                _audienceInterestController,
+                                    : _step == 3
+                                        ? _QualificationsStepView(
+                                            roles: _categoryRoles
+                                                .where((r) => _selectedRoles
+                                                    .contains(r.slug))
+                                                .toList(),
+                                            qualificationsByRole:
+                                                _qualificationsByRole,
+                                            yearsExperienceByRole:
+                                                _yearsExperienceByRole,
+                                            availabilityByRole:
+                                                _availabilityByRole,
+                                            languagesByRole: _languagesByRole,
+                                            willingToTravelByRole:
+                                                _willingToTravelByRole,
+                                            expectedPayAmountByRole:
+                                                _expectedPayAmountByRole,
+                                            expectedPayPeriodByRole:
+                                                _expectedPayPeriodByRole,
                                             scrollController: scrollController,
-                                            onPlatformToggle: (platform) =>
-                                                setState(() {
-                                              if (_audiencePlatforms
-                                                  .contains(platform)) {
-                                                _audiencePlatforms
-                                                    .remove(platform);
-                                              } else {
-                                                _audiencePlatforms
-                                                    .add(platform);
-                                              }
-                                            }),
-                                            onDone: () => setState(
-                                                () => _showAudience = false),
+                                            onSave: () => Navigator.of(context)
+                                                .pop(_selection()),
                                           )
-                                        : _CategoryCapabilitiesView(
-                                            categorySlug:
-                                                _selectedCategory?.slug,
-                                            capabilities: _categoryCapabilities,
-                                            roles: _categoryRoles,
-                                            existingSlugs: widget.existingSlugs,
-                                            selected: _selected,
-                                            selectedRoles: _selectedRoles,
-                                            iWantJobs:
-                                                _categoryWorkProfilesEnabled,
-                                            companyType: _providerType !=
-                                                ProviderCategoryType.individual,
-                                            providerType: _providerType,
-                                            scrollController: scrollController,
-                                            onToggleCapability: (slug) {
-                                              setState(() {
-                                                if (_selected.contains(slug)) {
-                                                  _selected.remove(slug);
-                                                } else {
-                                                  _selected.add(slug);
-                                                }
-                                              });
-                                            },
-                                            onToggleRole: (slug) {
-                                              setState(() {
-                                                if (_selectedRoles
-                                                    .contains(slug)) {
-                                                  _selectedRoles.remove(slug);
-                                                } else {
-                                                  _selectedRoles.add(slug);
-                                                }
-                                              });
-                                            },
-                                            onChangeProviderType: () =>
-                                                setState(() => _step = 4),
-                                            onSaveServices: () =>
-                                                Navigator.of(context)
-                                                    .pop(_selection()),
-                                            onNextKind: () {
-                                              setState(() {
-                                                _step = 2;
-                                                _currentRoleIndex = 0;
-                                              });
-                                            },
-                                            onAudienceTap: _openAudience,
-                                            audiencePlatforms:
-                                                _audiencePlatforms,
-                                            audienceFollowersCount:
-                                                int.tryParse(
-                                                    _audienceCountController
-                                                        .text
-                                                        .trim()),
-                                          ),
+                                        : _showAudience
+                                            ? _AudienceEditorView(
+                                                audiencePlatforms:
+                                                    _audiencePlatforms,
+                                                audienceCountController:
+                                                    _audienceCountController,
+                                                audienceLocationController:
+                                                    _audienceLocationController,
+                                                audienceInterestController:
+                                                    _audienceInterestController,
+                                                scrollController:
+                                                    scrollController,
+                                                onPlatformToggle: (platform) =>
+                                                    setState(() {
+                                                  if (_audiencePlatforms
+                                                      .contains(platform)) {
+                                                    _audiencePlatforms
+                                                        .remove(platform);
+                                                  } else {
+                                                    _audiencePlatforms
+                                                        .add(platform);
+                                                  }
+                                                }),
+                                                onDone: () => setState(() =>
+                                                    _showAudience = false),
+                                              )
+                                            : _CategoryCapabilitiesView(
+                                                categorySlug:
+                                                    _selectedCategory?.slug,
+                                                capabilities:
+                                                    _categoryCapabilities,
+                                                roles: _categoryRoles,
+                                                existingSlugs:
+                                                    widget.existingSlugs,
+                                                selected: _selected,
+                                                selectedRoles: _selectedRoles,
+                                                iWantJobs:
+                                                    _categoryWorkProfilesEnabled,
+                                                companyType: _providerType !=
+                                                    ProviderCategoryType
+                                                        .individual,
+                                                providerType: _providerType,
+                                                scrollController:
+                                                    scrollController,
+                                                onToggleCapability: (slug) {
+                                                  setState(() {
+                                                    if (_selected
+                                                        .contains(slug)) {
+                                                      _selected.remove(slug);
+                                                    } else {
+                                                      _selected.add(slug);
+                                                    }
+                                                  });
+                                                },
+                                                onToggleRole: (slug) {
+                                                  setState(() {
+                                                    if (_selectedRoles
+                                                        .contains(slug)) {
+                                                      _selectedRoles
+                                                          .remove(slug);
+                                                    } else {
+                                                      _selectedRoles.add(slug);
+                                                    }
+                                                  });
+                                                },
+                                                onChangeProviderType: () =>
+                                                    setState(() => _step = 4),
+                                                onSaveServices: () =>
+                                                    setState(() => _step = 5),
+                                                onNextKind: () {
+                                                  setState(() {
+                                                    _step = 2;
+                                                    _currentRoleIndex = 0;
+                                                  });
+                                                },
+                                                onAudienceTap: _openAudience,
+                                                audiencePlatforms:
+                                                    _audiencePlatforms,
+                                                audienceFollowersCount:
+                                                    int.tryParse(
+                                                        _audienceCountController
+                                                            .text
+                                                            .trim()),
+                                              ),
               ),
             ],
           ),
@@ -1027,6 +1043,66 @@ class _CategoryListState extends State<_CategoryList> {
 // ---------------------------------------------------------------------------
 // Sheet C (jobs OFF) and Sheet D (jobs ON) view
 // ---------------------------------------------------------------------------
+class _CompanyServiceReview extends StatelessWidget {
+  const _CompanyServiceReview(
+      {required this.capabilities, required this.onSave});
+
+  final List<NeedCapability> capabilities;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final text2 = Theme.of(context).brightness == Brightness.dark
+        ? AppColors.text2Dark
+        : AppColors.text2Light;
+    final locale = Localizations.localeOf(context).languageCode;
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text('Review services',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Text(
+                  'These capabilities will be saved as self-declared. Verification applies separately to each service.',
+                  style: TextStyle(color: text2, fontSize: 13)),
+              const SizedBox(height: 16),
+              for (final capability in capabilities)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.check_circle_outline_rounded,
+                      color: AppColors.accent),
+                  title: Text(capability.localizedName(locale)),
+                  subtitle: const Text('Self-declared until reviewed'),
+                ),
+              const SizedBox(height: 12),
+              Text(
+                  'After saving, open a service to add evidence when requirements are configured. Evidence remains private, and offers that require approval stay restricted until an administrator reviews it.',
+                  style: TextStyle(color: text2, fontSize: 12)),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onSave,
+              child: Text(AppLocalizations.of(context)!
+                  .providerTypeSaveServicesCount(capabilities.length)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _CategoryCapabilitiesView extends StatelessWidget {
   const _CategoryCapabilitiesView({
     this.categorySlug,
@@ -1299,9 +1375,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 ),
                 onPressed: hasServices ? onSaveServices : null,
                 child: Text(
-                  hasServices
-                      ? l10n.providerTypeSaveServicesCount(selected.length)
-                      : l10n.providerTypeSelectService,
+                  hasServices ? 'Continue' : l10n.providerTypeSelectService,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),
@@ -1831,7 +1905,6 @@ class _QualificationsStepView extends StatefulWidget {
     required this.willingToTravelByRole,
     required this.expectedPayAmountByRole,
     required this.expectedPayPeriodByRole,
-    required this.uploadedProofByRole,
     required this.scrollController,
     required this.onSave,
   });
@@ -1844,7 +1917,6 @@ class _QualificationsStepView extends StatefulWidget {
   final Map<String, bool> willingToTravelByRole;
   final Map<String, String> expectedPayAmountByRole;
   final Map<String, String> expectedPayPeriodByRole;
-  final Map<String, Set<String>> uploadedProofByRole;
   final ScrollController scrollController;
   final VoidCallback onSave;
 
@@ -1937,10 +2009,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 Builder(builder: (ctx) {
                   final roleQuals = widget.qualificationsByRole
                       .putIfAbsent(role.slug, () => {});
-                  final roleUploads = widget.uploadedProofByRole
-                      .putIfAbsent(role.slug, () => {});
                   final isChecked = roleQuals.contains(qual.slug);
-                  final isUploaded = roleUploads.contains(qual.slug);
 
                   final isDark =
                       Theme.of(context).brightness == Brightness.dark;
@@ -1994,27 +2063,6 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                   ),
                                 ),
                               ),
-                              if (isUploaded)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF3C7),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: const Color(0xFFF59E0B)
-                                          .withValues(alpha: 0.4),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Uploaded',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFB45309),
-                                    ),
-                                  ),
-                                ),
                             ],
                           ),
                         ),
@@ -2030,59 +2078,41 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ],
 
             // Dashed upload card for licences / proof
-            InkWell(
-              onTap: () {
-                final roleUploads = widget.uploadedProofByRole
-                    .putIfAbsent(primaryRoleSlug, () => {});
-                final roleQuals = widget.qualificationsByRole
-                    .putIfAbsent(primaryRoleSlug, () => {});
-                setState(() {
-                  roleUploads.addAll(roleQuals);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Document attached for verification'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: AppColors.proPurple.withValues(alpha: 0.4),
-                    style: BorderStyle.solid,
-                  ),
-                  color: AppColors.proPurple.withValues(alpha: 0.04),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.proPurple.withValues(alpha: 0.4),
+                  style: BorderStyle.solid,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.file_upload_outlined,
-                        color: AppColors.proPurple, size: 28),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Upload licence or certificates',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                            ),
+                color: AppColors.proPurple.withValues(alpha: 0.04),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.file_upload_outlined,
+                      color: AppColors.proPurple, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Evidence and review',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Reviewed by Nipanze. Approved proofs earn a badge.',
-                            style: TextStyle(fontSize: 11, color: text2),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Your role and qualifications are saved as claims. Add configured evidence from the saved capability details; only an administrator can verify it.',
+                          style: TextStyle(fontSize: 11, color: text2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

@@ -15,6 +15,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required this.onEdit,
     required this.onTogglePause,
     required this.onRemove,
+    this.onAddProof,
     this.hiddenForCompanyOnly = false,
   });
 
@@ -23,6 +24,7 @@ class CapabilityDetailSheet extends StatelessWidget {
   final VoidCallback onEdit;
   final ValueChanged<bool> onTogglePause;
   final VoidCallback onRemove;
+  final VoidCallback? onAddProof;
   final bool hiddenForCompanyOnly;
 
   static Future<void> show(
@@ -32,6 +34,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required VoidCallback onEdit,
     required ValueChanged<bool> onTogglePause,
     required VoidCallback onRemove,
+    VoidCallback? onAddProof,
     bool hiddenForCompanyOnly = false,
   }) {
     return showModalBottomSheet<void>(
@@ -44,6 +47,7 @@ class CapabilityDetailSheet extends StatelessWidget {
         onEdit: onEdit,
         onTogglePause: onTogglePause,
         onRemove: onRemove,
+        onAddProof: onAddProof,
         hiddenForCompanyOnly: hiddenForCompanyOnly,
       ),
     );
@@ -223,7 +227,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                     const SizedBox(height: 8),
                     _VerificationChecklist(
                       capability: capability,
-                      onAddProof: onEdit,
+                      onAddProof: onAddProof,
                     ),
                   ],
                 ),
@@ -367,53 +371,34 @@ class _VerificationChecklist extends StatelessWidget {
           }
         }
       } else {
-        // Canonical defaults matching Screen G
-        items.addAll([
-          _ChecklistItem(
-            title: 'Operator licence',
-            icon: Icons.schedule_rounded,
-            iconColor: Colors.amber.shade800,
-            subtitle: 'Under review, usually within 2 days',
-          ),
-          const _ChecklistItem(
-            title: 'Safety / OSHA certificate',
-            icon: Icons.check_circle_rounded,
-            iconColor: AppColors.success,
-            subtitle: 'Approved',
-          ),
-          const _ChecklistItem(
-            title: '3+ years experience',
-            icon: Icons.add_circle_outline_rounded,
-            iconColor: Colors.grey,
-            subtitle: 'Self-declared',
-            trailingAction: 'Add proof',
-          ),
-          const _ChecklistItem(
-            title: 'Medical fitness',
-            icon: Icons.add_circle_outline_rounded,
-            iconColor: Colors.grey,
-            subtitle: 'Not added yet',
-            trailingAction: 'Add',
-          ),
-          const _ChecklistItem(
-            title: 'Can work away from home',
-            icon: Icons.check_circle_rounded,
-            iconColor: AppColors.success,
-            subtitle: 'Self-declared, no proof needed',
-          ),
-        ]);
+        items.add(_ChecklistItem(
+          title: 'Role details',
+          icon: capability.pendingEvidenceCount > 0
+              ? Icons.schedule_rounded
+              : Icons.info_outline_rounded,
+          iconColor: capability.pendingEvidenceCount > 0
+              ? Colors.amber.shade800
+              : text2,
+          subtitle: capability.pendingEvidenceCount > 0
+              ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
+              : 'Role details are self-declared',
+        ));
       }
     } else {
       items.add(
         _ChecklistItem(
-          title: 'Professional Evidence & Certificates',
+          title: capability.capabilityName ?? capability.capabilitySlug,
           icon: isVerified
               ? Icons.check_circle_rounded
               : Icons.add_circle_outline_rounded,
           iconColor: isVerified ? AppColors.success : Colors.grey,
           subtitle: isVerified
-              ? 'Documents reviewed and approved by Nipanze'
-              : 'Add licences, logbooks, or trade qualifications',
+              ? 'Provider verified by Nipanze'
+              : capability.pendingEvidenceCount > 0
+                  ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
+                  : capability.rejectedEvidenceCount > 0
+                      ? 'Evidence was rejected. Review the reason and resubmit.'
+                      : 'Self-declared. Verification depends on this service’s requirements.',
           trailingAction: isVerified ? null : 'Add proof',
         ),
       );

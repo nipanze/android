@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/di/injection.dart';
@@ -416,6 +417,98 @@ class _ProviderServicesView extends StatelessWidget {
         paused: paused,
       ),
       onRemove: () => _confirmRemove(context, capability, l10n),
+      onAddProof: () async {
+        try {
+          final client = getIt<supabase.SupabaseClient>();
+          final rules = await client
+              .from('verification_requirements')
+              .select(
+                  'scope_type, scope_id, evidence_requirements, required_evidence')
+              .eq('is_active', true)
+              .inFilter('scope_type', ['capability', 'category']);
+          final matching = (rules as List).cast<Map<String, dynamic>>();
+          Map<String, dynamic>? rule;
+          for (final type in ['capability', 'category']) {
+            rule = matching.cast<Map<String, dynamic>?>().firstWhere(
+                  (r) =>
+                      r?['scope_type'] == type &&
+                      r?['scope_id'] ==
+                          (type == 'capability'
+                              ? capability.capabilitySlug
+                              : capability.categorySlug),
+                  orElse: () => null,
+                );
+            if (rule != null) break;
+          }
+          final raw = rule?['evidence_requirements'];
+          final labels =
+              raw is List ? raw.map((e) => e.toString()).toList() : <String>[];
+          final required = (rule?['required_evidence'] as List? ?? const [])
+              .map((e) => e.toString())
+              .toList();
+          final keys = {...required, ...labels}
+              .where((key) => key.trim().isNotEmpty)
+              .toList();
+          if (keys.isEmpty) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text('No evidence is configured for this capability.')),
+            );
+            return;
+          }
+          if (!context.mounted) return;
+          final key = keys.length == 1
+              ? keys.single
+              : await showDialog<String>(
+                  context: context,
+                  builder: (dialogContext) => SimpleDialog(
+                    title: const Text('Choose evidence type'),
+                    children: [
+                      for (final evidenceKey in keys)
+                        SimpleDialogOption(
+                          onPressed: () =>
+                              Navigator.pop(dialogContext, evidenceKey),
+                          child: Text(evidenceKey),
+                        ),
+                    ],
+                  ),
+                );
+          if (key == null) return;
+          final picked =
+              await ImagePicker().pickImage(source: ImageSource.gallery);
+          if (picked == null) return;
+          final uid = client.auth.currentUser?.id;
+          if (uid == null) return;
+          final extension =
+              picked.name.contains('.') ? picked.name.split('.').last : 'jpg';
+          final path =
+              'evidence/$uid/${capability.capabilitySlug}/${DateTime.now().microsecondsSinceEpoch}.$extension';
+          await client.storage.from('provider-evidence').uploadBinary(
+                path,
+                await picked.readAsBytes(),
+                fileOptions: supabase.FileOptions(contentType: picked.mimeType),
+              );
+          await getIt<IProviderRepository>().submitCapabilityEvidence(
+            providerCapabilityId: capability.id,
+            requirementKey: key,
+            fileUrl: path,
+          );
+          await cubit.loadWithOpportunities();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Evidence submitted for review.')),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not submit evidence: $e')),
+            );
+          }
+        }
+      },
     );
   }
 }
