@@ -19,7 +19,7 @@ You are a senior Flutter + Supabase engineer in the existing Nipanze repo. This 
 ## 2. The flow to build
 ```
 Add Service (FAB) -> B Choose Category -> B2 Who is offering? (Company / Organization)
- -> D  What we offer + What roles do you do?   (blue STEP 1 OF 2)
+ -> D  What we offer                            (blue STEP 1 OF 2)
  -> CD Tell us about your company              (blue STEP 2 OF 2)
  -> save -> sheet closes, short confirmation -> A Provider Services (refreshed)
 ```
@@ -32,9 +32,8 @@ Selecting Company and tapping Continue saves the type for this category through 
 - Header: back + category name. Pill: "Offering as Company / Organization" with Change (reopens B2).
 - Blue progress bar (2 segments), "STEP 1 OF 2".
 - **What we offer**: "Tick everything your company provides." Service groups from the catalog as bordered cards with an "N of M" count and 52px checkbox rows (selected row tinted blue, bold label).
-- Divider, then **What roles do you do?**: "Optional. Tick the roles you work in. Job profiles are personal and are saved under your own name. You can add machines and qualifications later." Multi-select role cards (purple when selected). Shown only if `work_profiles_enabled` AND the category is enabled for the user's country; otherwise the roles section is hidden entirely (no greyed control).
-- Footer: summary "2 services · 1 role selected" and blue **Next: company details**, disabled until at least one service or role is ticked. D saves nothing; ticks live in a per-step draft so Back from CD returns to D unchanged. Leaving mid-flow asks save/discard.
-- Roles chosen here do NOT go through the kind and qualifications steps. They are saved as work capabilities with empty profile and status Self-declared.
+- Company D contains only **What we offer**. Do not show role headings, role cards, role descriptions, or role progress indicators. Existing personal work profiles are left unchanged by Company service edits.
+- Footer: selected-service count and blue **Next: company details**, disabled until at least one service is ticked. D saves nothing; service ticks live in a per-step draft so Back from CD returns to D unchanged. Leaving mid-flow asks save/discard.
 
 ### CD: company details (new screen)
 Header: back + category name. Blue progress bar full, "STEP 2 OF 2". Heading "Tell us about your company"; sub "Everything here is optional. People see this before they contact you."
@@ -76,16 +75,16 @@ create table if not exists public.provider_company_profiles (
 -- RLS: owner select, admin select; no anon; writes only through the RPC.
 ```
 - One row per user and category, so one account can be a company in Transport and an individual in Technology. Removing the last service in a category keeps the row (it is a preference).
-- RPC `save_company_category(p_category_slug text, p_services text[], p_roles text[], p_profile jsonb)` via `private.save_company_category_internal` + `SECURITY INVOKER` wrapper. In ONE transaction it: checks `capability_profiles_enabled`; requires the caller's saved type for this category to be `company`; validates slugs against the active catalog and the country's enablement; upserts the service rows (`capability_type='service'`) and, only if roles are enabled, the work rows (`'work'`); upserts the company profile; enforces the soft cap `max_provider_capabilities`; writes audit rows on change. It removes only items the user explicitly un-ticked in this session for THIS category and never touches other categories. Any failing item rolls back everything.
+- RPC `save_company_category(p_category_slug text, p_services text[], p_roles text[], p_profile jsonb)` via `private.save_company_category_internal` + `SECURITY INVOKER` wrapper. In ONE transaction it: checks `capability_profiles_enabled`; requires the caller's saved type for this category to be `company`; rejects non-empty `p_roles`; validates service slugs against the active catalog and the country's enablement; upserts/removes only this category's service rows; leaves personal work rows unchanged; upserts the company profile; enforces the soft cap `max_provider_capabilities`; writes audit rows on change. Any failing item rolls back everything.
 - Reject `service` items for a category whose saved type is `individual` (server enforced). Work roles are allowed for both types.
 - Evidence: the CD checklist is category-level, but verification is per capability. One upload creates one `provider_capability_evidence` row per ticked service that requires that evidence key (rows share the same private storage object), each reviewed and approved independently. Admin queue may group by file. (Decision D-C1: recommend this fan-out.)
 - Evidence bucket path `evidence/<user_id>/<category_slug>/<requirement_key>/...`; private; signed URLs; 5 MB; JPG/PNG/PDF only; auto-delete when the capability is removed; rate limits per user.
 - Privacy: company name and service areas may be shown to employers and customers only through a later, additive public view; in this change they are private to the owner and admins. Registration number is never public. No evidence, phone or exact address in any public view. (Decision D-C2: confirm whether company name is public.)
-- Type switching: Company -> Individual keeps saved services, hides them from the category sheet, excludes them from matching and public badges, and shows "Hidden: offered as Company only" on A until the user switches back. Individual -> Company keeps roles and adds the services section.
+- Type switching: Company -> Individual keeps saved services, hides them from the category sheet, excludes them from matching and public badges, and shows "Hidden: offered as Company only" on A until the user switches back. Individual -> Company keeps personal roles unchanged and shows the services-only section.
 - Company type changes no verification rule yet. Later, `verification_requirements` can add a business-registration requirement for companies (separate change).
 
 ## 4. Flutter
-- New: `features/provider/presentation/widgets/company_details_step.dart` (CD), `CompanyProfile` model, repository `saveCompanyCategory(...)`, `getCompanyProfile(category)`, cubit state for the step draft (services, roles, company fields). D is the existing category sheet in Company mode; do not fork it: the provider type decides which sections render.
+- New: `features/provider/presentation/widgets/company_details_step.dart` (CD), `CompanyProfile` model, repository `saveCompanyCategory(...)`, `getCompanyProfile(category)`, cubit state for the step draft (services and company fields). D is the existing category sheet in Company mode; do not fork it: the provider type decides which sections render.
 - Navigation only: B2 -> D -> CD -> close -> A refresh. Individual navigation is unchanged.
 - Constants: `Rpcs.saveCompanyCategory`, `Tables.providerCompanyProfiles`.
 - l10n in en, sw, fr, rw, ar (RTL): keys for every string above (`companyDetailsTitle`, `companyDetailsSub`, `companyName`, `companyRegistrationNumber`, `companyTeamSize`, `companyYearsInBusiness`, `companyServiceArea`, `companyProofTitle`, `companyProofNote`, `companySave`, `companyNextDetails`, ...). English complete; others fall back; missing keys listed.
@@ -107,11 +106,11 @@ create table if not exists public.provider_company_profiles (
 | Area | Case |
 |---|---|
 | Flow | B -> B2 (Company) -> D -> CD -> save -> A; Back from CD returns to D with ticks intact; Back from D returns to B2 with value; leaving mid-flow asks save/discard |
-| D logic | Footer disabled with nothing ticked; enabled with only services, only roles, or both; summary text correct; roles section hidden when roles flag/country is off |
-| Atomic save | Services + roles + company details saved in one transaction; a failing item rolls back everything; other categories untouched |
+| D logic | Company shows only grouped service selections; saved services can be toggled; footer requires at least one service; Individual role flow remains unchanged |
+| Atomic save | Services + company details saved in one transaction; non-empty role payload rejected; existing personal roles and other categories untouched |
 | Per category | Company in Transport and Individual in Technology: both persisted and each shows the right sections after reopen |
 | Individual guard | RPC rejects `service` items for a category saved as `individual`; roles accepted |
-| Roles | Company roles saved as work capabilities with empty metadata and Self-declared status; no kind/qualification steps shown in the company flow; Job card prompts to add them |
+| Roles | Company D never offers role selection; existing personal work capabilities remain unchanged by Company service saves |
 | Evidence | One upload fans out to each ticked service that requires it; approving one capability does not verify another; wrong type/size rejected; other users and anon cannot read rows or files |
 | Type switch | Company -> Individual hides but keeps services; matching and public badges exclude them; switching back restores them |
 | Cap | The 31st capability is rejected with a clear message; limit read from `system_settings` |
@@ -125,7 +124,7 @@ create table if not exists public.provider_company_profiles (
 | Regression | Individual path, Loans, Forex, Needs, offers, accept, contact reveal, trust, watchlist, discovery plans unchanged |
 
 ## 7. Definition of done
-- A user who picks Company on B2 gets D, then CD, then lands on A with their services and job roles saved atomically for that category only.
+- A user who picks Company on B2 gets a services-only D, then CD, then lands on A with company services and details saved atomically for that category only; existing personal work profiles are left unchanged.
 - Individuals are unaffected. Each category keeps its own type, company details and capabilities.
 - Per-capability verification, privacy and flags behave as above; Home is identical to the baseline.
 - All tests pass, `flutter analyze` is clean, five locales, RTL, dark mode and 360px verified, and Stage 4.15 and its trackers in `BUILD_PLAN.md` are complete.

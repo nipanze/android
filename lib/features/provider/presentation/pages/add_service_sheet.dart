@@ -320,26 +320,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
         metadataBySlug[capSlug] = _buildWorkMetadata(roleSlug);
       }
-    } else if (companyPath && _categoryWorkProfilesEnabled) {
-      for (final roleSlug in _selectedRoles) {
-        final role = _categoryRoles.firstWhere(
-          (r) => r.slug == roleSlug,
-          orElse: () => ProviderServiceRole(
-            slug: roleSlug,
-            name: roleSlug,
-            categorySlug: _selectedCategory?.slug ?? '',
-            capabilitySlug: 'work_$roleSlug',
-            kindQuestion: '',
-          ),
-        );
-        final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
-        if (!slugs.contains(capSlug)) slugs.add(capSlug);
-        metadataBySlug[capSlug] = const {};
-      }
-    } else {
+    } else if (!companyPath) {
       // Keep saved roles intact while the category's role feature is disabled.
-      // Company sheets do not expose role editing. Keep any existing work
-      // capability rows in the atomic category save without changing them.
       for (final role in _categoryRoles) {
         final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
         if (widget.existingSlugs.contains(capSlug)) slugs.add(capSlug);
@@ -601,25 +583,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final categorySlug = _selectedCategory?.slug;
     if (categorySlug == null || _savingCompanyDetails) return;
     setState(() => _savingCompanyDetails = true);
-    final roles = <String>[];
-    for (final roleSlug in _selectedRoles) {
-      final role = _categoryRoles.firstWhere(
-        (r) => r.slug == roleSlug,
-        orElse: () => ProviderServiceRole(
-          slug: roleSlug,
-          name: roleSlug,
-          categorySlug: categorySlug,
-          capabilitySlug: 'work_$roleSlug',
-          kindQuestion: '',
-        ),
-      );
-      roles.add(role.capabilitySlug ?? 'work_${role.slug}');
-    }
     try {
       await widget.providerRepository.saveCompanyCategory(
         categorySlug: categorySlug,
         serviceSlugs: _selected.toList(),
-        roleCapabilitySlugs: _categoryWorkProfilesEnabled ? roles : const [],
+        roleCapabilitySlugs: const [],
         profile: profile,
         evidence: evidence,
       );
@@ -672,15 +640,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         .where((capability) => widget.existingSlugs.contains(capability.slug))
         .map((capability) => capability.slug)
         .toSet();
-    final existingRoles = _categoryRoles
-        .where((role) => widget.existingSlugs.contains(
-              role.capabilitySlug ?? 'work_${role.slug}',
-            ))
-        .map((role) => role.slug)
-        .toSet();
-    return !_sameSet(existingServices, _selected) ||
-        (_categoryWorkProfilesEnabled &&
-            !_sameSet(existingRoles, _selectedRoles));
+    return !_sameSet(existingServices, _selected);
   }
 
   static bool _sameSet(Set<String> first, Set<String> second) =>
@@ -847,9 +807,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       categorySlug:
                                           _selectedCategory?.slug ?? '',
                                       serviceCount: _selected.length,
-                                      roleCount: _categoryWorkProfilesEnabled
-                                          ? _selectedRoles.length
-                                          : 0,
+                                      roleCount: 0,
                                       initialProfile: _companyProfile,
                                       requirements: _companyRequirements,
                                       existingEvidence: _companyEvidence,
@@ -1350,10 +1308,10 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
     final individualType = providerType == ProviderCategoryType.individual;
     final companyMode = providerType == ProviderCategoryType.company;
-    final showRoles = (individualType || companyMode) && iWantJobs;
+    final showRoles = individualType && iWantJobs;
     final hasServices = companyType && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
-    final hasCompanySelections = hasServices || hasRoles;
+    final hasCompanySelections = hasServices;
 
     return Stack(
       children: [
@@ -1475,31 +1433,76 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     ),
                   ),
                 ],
-                for (final cap in caps)
-                  _CapabilityRow(
-                    cap: cap,
-                    localeCode: localeCode,
-                    isSelected: selected.contains(cap.slug),
-                    alreadyOwned: existingSlugs.contains(cap.slug),
-                    border: border,
-                    text2: text2,
-                    onTap: () {
-                      if (cap.slug == _audienceCapabilitySlug) {
-                        if (!selected.contains(cap.slug)) {
+                if (companyMode)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: border),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        for (var index = 0; index < caps.length; index++)
+                          _CapabilityRow(
+                            cap: caps[index],
+                            localeCode: localeCode,
+                            isSelected: selected.contains(caps[index].slug),
+                            alreadyOwned: false,
+                            border: border,
+                            text2: text2,
+                            companyStyle: true,
+                            showDivider: index < caps.length - 1,
+                            onTap: () {
+                              final slug = caps[index].slug;
+                              if (slug == _audienceCapabilitySlug) {
+                                if (!selected.contains(slug)) {
+                                  onToggleCapability(slug);
+                                }
+                                onAudienceTap?.call();
+                              } else {
+                                onToggleCapability(slug);
+                              }
+                            },
+                            audiencePlatforms:
+                                caps[index].slug == _audienceCapabilitySlug
+                                    ? audiencePlatforms
+                                    : null,
+                            audienceFollowersCount:
+                                caps[index].slug == _audienceCapabilitySlug
+                                    ? audienceFollowersCount
+                                    : null,
+                          ),
+                      ],
+                    ),
+                  )
+                else
+                  for (final cap in caps)
+                    _CapabilityRow(
+                      cap: cap,
+                      localeCode: localeCode,
+                      isSelected: selected.contains(cap.slug),
+                      alreadyOwned: existingSlugs.contains(cap.slug),
+                      border: border,
+                      text2: text2,
+                      onTap: () {
+                        if (cap.slug == _audienceCapabilitySlug) {
+                          if (!selected.contains(cap.slug)) {
+                            onToggleCapability(cap.slug);
+                          }
+                          onAudienceTap?.call();
+                        } else {
                           onToggleCapability(cap.slug);
                         }
-                        onAudienceTap?.call();
-                      } else {
-                        onToggleCapability(cap.slug);
-                      }
-                    },
-                    audiencePlatforms: cap.slug == _audienceCapabilitySlug
-                        ? audiencePlatforms
-                        : null,
-                    audienceFollowersCount: cap.slug == _audienceCapabilitySlug
-                        ? audienceFollowersCount
-                        : null,
-                  ),
+                      },
+                      audiencePlatforms: cap.slug == _audienceCapabilitySlug
+                          ? audiencePlatforms
+                          : null,
+                      audienceFollowersCount:
+                          cap.slug == _audienceCapabilitySlug
+                              ? audienceFollowersCount
+                              : null,
+                    ),
               ],
 
             // ── Jobs: role selection ───────────────────────────────
@@ -1568,9 +1571,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 individualType
                     ? l10n.rolesCount(showRoles ? selectedRoles.length : 0)
                     : companyMode
-                        ? l10n.providerTypeCompanySelectionCount(
-                            selected.length,
-                            hasRoles ? selectedRoles.length : 0)
+                        ? l10n.servicesCount(selected.length)
                         : l10n.servicesCount(selected.length),
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
@@ -1657,6 +1658,8 @@ class _CapabilityRow extends StatelessWidget {
     required this.border,
     required this.text2,
     required this.onTap,
+    this.companyStyle = false,
+    this.showDivider = true,
     this.audiencePlatforms,
     this.audienceFollowersCount,
   });
@@ -1668,6 +1671,8 @@ class _CapabilityRow extends StatelessWidget {
   final Color border;
   final Color text2;
   final VoidCallback onTap;
+  final bool companyStyle;
+  final bool showDivider;
   final Set<String>? audiencePlatforms;
   final int? audienceFollowersCount;
 
@@ -1704,83 +1709,104 @@ class _CapabilityRow extends StatelessWidget {
       subtitle = selectedNames.join(', ');
     }
 
+    final theme = Theme.of(context);
+    final selectedBackground = theme.colorScheme.primary.withValues(
+      alpha: theme.brightness == Brightness.dark ? 0.22 : 0.09,
+    );
+    final checkColor = isSelected ? theme.colorScheme.primary : border;
+
     return Column(
       children: [
-        InkWell(
-          onTap: alreadyOwned ? null : onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
-            child: Row(
-              children: [
-                // Square checkbox
-                if (alreadyOwned)
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.success, size: 20)
-                else
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color: isSelected ? accentColor : Colors.transparent,
-                      border: Border.all(
-                        color: isSelected ? accentColor : border,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check_rounded,
-                            size: 13, color: Colors.white)
-                        : null,
-                  ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cap.localizedName(localeCode),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          color: alreadyOwned ? text2 : null,
+        Material(
+          color: companyStyle && isSelected
+              ? selectedBackground
+              : Colors.transparent,
+          child: InkWell(
+            onTap: alreadyOwned ? null : onTap,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: companyStyle ? 8 : 2,
+                vertical: companyStyle ? 9 : 12,
+              ),
+              child: Row(
+                children: [
+                  // Square checkbox
+                  if (alreadyOwned)
+                    const Icon(Icons.check_circle_rounded,
+                        color: AppColors.success, size: 20)
+                  else
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: isSelected ? accentColor : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected ? accentColor : checkColor,
+                          width: 1.5,
                         ),
                       ),
-                      if (subtitle != null && subtitle.isNotEmpty) ...[
-                        const SizedBox(height: 2),
+                      child: isSelected
+                          ? const Icon(Icons.check_rounded,
+                              size: 13, color: Colors.white)
+                          : null,
+                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          subtitle,
-                          style: TextStyle(fontSize: 11, color: text2),
+                          cap.localizedName(localeCode),
+                          style: TextStyle(
+                            fontWeight: isSelected && companyStyle
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            fontSize: companyStyle ? 12 : 14,
+                            color: alreadyOwned ? text2 : null,
+                          ),
                         ),
+                        if (subtitle != null && subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: TextStyle(fontSize: 11, color: text2),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ),
-                if (isAudience && !alreadyOwned)
-                  Icon(Icons.chevron_right_rounded, color: text2, size: 18),
-                if (alreadyOwned)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
-                      'Added',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.success,
+                  ),
+                  if (isAudience && !alreadyOwned)
+                    Icon(Icons.chevron_right_rounded, color: text2, size: 18),
+                  if (alreadyOwned)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Added',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.success,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-        Divider(height: 1, thickness: 1, color: border.withValues(alpha: 0.6)),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: border.withValues(alpha: 0.6),
+          ),
       ],
     );
   }

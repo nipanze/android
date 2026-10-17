@@ -1,4 +1,4 @@
--- Company provider category path: private profile, atomic service/role save,
+-- Company provider category path: private profile, atomic service-only save,
 -- and capability-specific evidence fan-out. Safe to rerun; this patch is additive.
 begin;
 
@@ -96,15 +96,11 @@ declare
   v_country text;
   v_type text;
   v_enabled text;
-  v_work_enabled text;
-  v_category_work_enabled text;
   v_limit integer := 30;
   v_count integer;
   v_services text[] := coalesce(p_services, array[]::text[]);
   v_roles text[] := coalesce(p_roles, array[]::text[]);
-  v_all text[];
   v_service text;
-  v_role text;
   v_item jsonb;
   v_key text;
   v_path text;
@@ -130,8 +126,11 @@ begin
      or v_services && v_roles then
     raise exception 'Duplicate or conflicting provider selections.' using errcode = 'P0201';
   end if;
-  if cardinality(v_services) + cardinality(v_roles) = 0 then
-    raise exception 'Select at least one service or role.' using errcode = 'P0201';
+  if cardinality(v_roles) > 0 then
+    raise exception 'Company providers can select services only.' using errcode = 'P0201';
+  end if;
+  if cardinality(v_services) = 0 then
+    raise exception 'Select at least one service.' using errcode = 'P0201';
   end if;
   if not exists (select 1 from public.need_categories c
     where c.slug = p_category_slug and c.is_active) then
@@ -160,20 +159,6 @@ begin
     raise exception 'This provider category is not enabled in your market.' using errcode = 'P0202';
   end if;
 
-  select setting_value into v_work_enabled from public.system_settings
-    where setting_key = 'work_profiles_enabled' and is_public
-      and (country = v_country or country is null)
-    order by (country = v_country) desc nulls last limit 1;
-  select setting_value into v_category_work_enabled from public.system_settings
-    where setting_key = 'work_profiles_enabled_' || p_category_slug and is_public
-      and (country = v_country or country is null)
-    order by (country = v_country) desc nulls last limit 1;
-  if cardinality(v_roles) > 0 and
-     (lower(coalesce(v_work_enabled, 'false')) not in ('true', '1') or
-      lower(coalesce(v_category_work_enabled, 'true')) in ('false', '0')) then
-    raise exception 'Work roles are not enabled for this category.' using errcode = 'P0202';
-  end if;
-
   foreach v_service in array v_services loop
     if not exists (select 1 from public.need_capabilities nc
       where nc.slug = v_service and nc.category_slug = p_category_slug
@@ -181,14 +166,6 @@ begin
       raise exception 'A selected service is invalid for this category.' using errcode = 'P0203';
     end if;
   end loop;
-  foreach v_role in array v_roles loop
-    if not exists (select 1 from public.need_capabilities nc
-      where nc.slug = v_role and nc.category_slug = p_category_slug
-        and nc.is_active and nc.capability_type = 'work') then
-      raise exception 'A selected work role is invalid for this category.' using errcode = 'P0203';
-    end if;
-  end loop;
-
   if length(coalesce(v_profile->>'company_name', '')) > 80
      or length(coalesce(v_profile->>'registration_number', '')) > 40
      or (v_profile ? 'team_size' and v_profile->>'team_size' not in ('1-5','6-20','21-50','50+'))
@@ -212,8 +189,9 @@ begin
   select count(*) into v_count
     from public.provider_capabilities pc
     join public.need_capabilities nc on nc.slug = pc.capability_slug
-    where pc.user_id = v_user and nc.category_slug <> p_category_slug;
-  if v_count + cardinality(v_services) + cardinality(v_roles) > v_limit then
+    where pc.user_id = v_user
+      and (nc.category_slug <> p_category_slug or nc.capability_type = 'work');
+  if v_count + cardinality(v_services) > v_limit then
     raise exception 'Maximum limit of % provider capabilities reached.', v_limit using errcode = 'P0206';
   end if;
 
@@ -227,21 +205,12 @@ begin
     end if;
   end if;
 
-  v_all := v_services || case when lower(coalesce(v_work_enabled, 'false')) in ('true', '1')
-    and lower(coalesce(v_category_work_enabled, 'true')) not in ('false', '0')
-    then v_roles else array[]::text[] end;
-  if lower(coalesce(v_work_enabled, 'false')) in ('true', '1')
-     and lower(coalesce(v_category_work_enabled, 'true')) not in ('false', '0') then
-    delete from public.provider_capabilities pc using public.need_capabilities nc
-      where pc.capability_slug = nc.slug and pc.user_id = v_user
-        and nc.category_slug = p_category_slug and nc.capability_type in ('service', 'work')
-        and not (pc.capability_slug = any(v_all));
-  else
-    delete from public.provider_capabilities pc using public.need_capabilities nc
-      where pc.capability_slug = nc.slug and pc.user_id = v_user
-        and nc.category_slug = p_category_slug and nc.capability_type = 'service'
-        and not (pc.capability_slug = any(v_services));
-  end if;
+  -- The Company path edits services only. Existing personal work profiles in
+  -- this category remain unchanged and are never presented as Company roles.
+  delete from public.provider_capabilities pc using public.need_capabilities nc
+    where pc.capability_slug = nc.slug and pc.user_id = v_user
+      and nc.category_slug = p_category_slug and nc.capability_type = 'service'
+      and not (pc.capability_slug = any(v_services));
 
   foreach v_service in array v_services loop
     insert into public.provider_capabilities(user_id, capability_slug, verification_level, metadata, created_at)
@@ -250,12 +219,6 @@ begin
       set verification_level = case when provider_capabilities.verification_level = 'provider_verified'
         then provider_capabilities.verification_level else 'self_declared' end;
   end loop;
-  foreach v_role in array v_roles loop
-    insert into public.provider_capabilities(user_id, capability_slug, verification_level, metadata, created_at)
-      values (v_user, v_role, 'self_declared', '{}'::jsonb, now())
-    on conflict (user_id, capability_slug) do nothing;
-  end loop;
-
   select to_jsonb(cp) into v_old_profile from public.provider_company_profiles cp
     where cp.user_id = v_user and cp.category_slug = p_category_slug;
   insert into public.provider_company_profiles(
