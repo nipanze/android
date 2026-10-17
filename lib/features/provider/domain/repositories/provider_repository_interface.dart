@@ -1,11 +1,14 @@
 // lib/features/provider/domain/repositories/provider_repository_interface.dart
 
 import '../entities/provider_capability.dart';
+import '../entities/provider_category_type.dart';
 import '../entities/provider_opportunity.dart';
 import '../entities/provider_service_role.dart';
 
 abstract class IProviderRepository {
   Future<bool> capabilityProfilesEnabled();
+  Future<Map<String, ProviderCategoryType>> getMyCategoryTypes();
+  Future<void> setCategoryType(String categorySlug, ProviderCategoryType type);
   Future<bool> workProfilesEnabled();
   Future<bool> isCategoryWorkProfileEnabled(String categorySlug);
   Future<List<ProviderCapability>> getProviderCapabilities();

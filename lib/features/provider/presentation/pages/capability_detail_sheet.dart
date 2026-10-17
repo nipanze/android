@@ -14,6 +14,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required this.onEdit,
     required this.onTogglePause,
     required this.onRemove,
+    this.hiddenForCompanyOnly = false,
   });
 
   final ProviderCapability capability;
@@ -21,6 +22,7 @@ class CapabilityDetailSheet extends StatelessWidget {
   final VoidCallback onEdit;
   final ValueChanged<bool> onTogglePause;
   final VoidCallback onRemove;
+  final bool hiddenForCompanyOnly;
 
   static Future<void> show(
     BuildContext context, {
@@ -29,6 +31,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required VoidCallback onEdit,
     required ValueChanged<bool> onTogglePause,
     required VoidCallback onRemove,
+    bool hiddenForCompanyOnly = false,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -40,6 +43,7 @@ class CapabilityDetailSheet extends StatelessWidget {
         onEdit: onEdit,
         onTogglePause: onTogglePause,
         onRemove: onRemove,
+        hiddenForCompanyOnly: hiddenForCompanyOnly,
       ),
     );
   }
@@ -85,202 +89,211 @@ class CapabilityDetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              if (hiddenForCompanyOnly)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('Hidden: offered as Company only',
+                      style:
+                          TextStyle(fontSize: 12, color: AppColors.text2Light)),
+                ),
 
-          // Header (matches Image G)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: isJob
-                        ? const Color(0xFFFEF3C7)
-                        : AppColors.accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    isJob ? '👷' : icon,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Builder(builder: (ctx) {
-                        final kindsFormatted = capability.kindIds
-                            .map(_formatSlug)
-                            .where((s) => s.isNotEmpty)
-                            .join(', ');
-                        final subtitleParts = [
-                          if (category.isNotEmpty) category,
-                          if (kindsFormatted.isNotEmpty) kindsFormatted,
-                        ];
-                        final subtitleText = subtitleParts.isNotEmpty
-                            ? subtitleParts.join(' · ')
-                            : (isJob ? 'Work Profile' : 'Service Profile');
-                        return Text(
-                          subtitleText,
-                          style: TextStyle(fontSize: 12, color: text2),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ProviderVerificationChip(
-                  level: capability.verificationLevel,
-                  status: capability.status,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Open jobs / opportunities match banner (matches Image G)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              decoration: BoxDecoration(
-                color: (isJob ? AppColors.proPurple : AppColors.accent)
-                    .withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: (isJob ? AppColors.proPurple : AppColors.accent)
-                      .withValues(alpha: 0.25),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    opportunityCount > 0
-                        ? '$opportunityCount open ${isJob ? 'jobs' : 'needs'} match this profile'
-                        : '3 open ${isJob ? 'jobs' : 'needs'} match this profile',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isJob ? AppColors.proPurple : AppColors.accent,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 20,
-                    color: isJob ? AppColors.proPurple : AppColors.accent,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Details summary: Verification checklist section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'WHAT IS NEEDED FOR THE VERIFIED BADGE',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: text2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _VerificationChecklist(
-                  capability: capability,
-                  onAddProof: onEdit,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Action buttons matching Image 2 Screen G
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isJob ? AppColors.proPurple : AppColors.accent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    onEdit();
-                  },
-                  child: Text(
-                    isJob ? 'Edit work profile' : 'Edit',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Header (matches Image G)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onTogglePause(!capability.isPaused);
-                      },
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: isJob
+                            ? const Color(0xFFFEF3C7)
+                            : AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
                       child: Text(
-                        capability.isPaused
-                            ? 'Resume'
-                            : (isJob
-                                ? 'Pause jobs for this role'
-                                : 'Pause service'),
-                        style: TextStyle(color: text2, fontSize: 13),
+                        isJob ? '👷' : icon,
+                        style: const TextStyle(fontSize: 24),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onRemove();
-                      },
-                      child: const Text(
-                        'Remove',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Builder(builder: (ctx) {
+                            final kindsFormatted = capability.kindIds
+                                .map(_formatSlug)
+                                .where((s) => s.isNotEmpty)
+                                .join(', ');
+                            final subtitleParts = [
+                              if (category.isNotEmpty) category,
+                              if (kindsFormatted.isNotEmpty) kindsFormatted,
+                            ];
+                            final subtitleText = subtitleParts.isNotEmpty
+                                ? subtitleParts.join(' · ')
+                                : (isJob ? 'Work Profile' : 'Service Profile');
+                            return Text(
+                              subtitleText,
+                              style: TextStyle(fontSize: 12, color: text2),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          }),
+                        ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    ProviderVerificationChip(
+                      level: capability.verificationLevel,
+                      status: capability.status,
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+              const SizedBox(height: 12),
+
+              // Open jobs / opportunities match banner (matches Image G)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: (isJob ? AppColors.proPurple : AppColors.accent)
+                        .withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: (isJob ? AppColors.proPurple : AppColors.accent)
+                          .withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        opportunityCount > 0
+                            ? '$opportunityCount open ${isJob ? 'jobs' : 'needs'} match this profile'
+                            : '3 open ${isJob ? 'jobs' : 'needs'} match this profile',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isJob ? AppColors.proPurple : AppColors.accent,
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: isJob ? AppColors.proPurple : AppColors.accent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Details summary: Verification checklist section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'WHAT IS NEEDED FOR THE VERIFIED BADGE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                        color: text2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _VerificationChecklist(
+                      capability: capability,
+                      onAddProof: onEdit,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Action buttons matching Image 2 Screen G
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            isJob ? AppColors.proPurple : AppColors.accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onEdit();
+                      },
+                      child: Text(
+                        isJob ? 'Edit work profile' : 'Edit',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            onTogglePause(!capability.isPaused);
+                          },
+                          child: Text(
+                            capability.isPaused
+                                ? 'Resume'
+                                : (isJob
+                                    ? 'Pause jobs for this role'
+                                    : 'Pause service'),
+                            style: TextStyle(color: text2, fontSize: 13),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            onRemove();
+                          },
+                          child: const Text(
+                            'Remove',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -466,4 +479,3 @@ class _ChecklistItem {
   final String subtitle;
   final String? trailingAction;
 }
-

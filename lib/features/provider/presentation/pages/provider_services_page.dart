@@ -16,6 +16,7 @@ import '../../../job_profile/presentation/widgets/work_profile_section.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import '../cubit/capabilities_cubit.dart';
@@ -107,16 +108,14 @@ class _ProviderServicesView extends StatelessWidget {
         final caps = loaded.capabilities;
         final opps = loaded.opportunities;
         final profileState = context.watch<ProfileCubit>().state;
-        final profile = profileState is ProfileCubitLoaded
-            ? profileState.profile
-            : null;
+        final profile =
+            profileState is ProfileCubitLoaded ? profileState.profile : null;
         final needsRepo = getIt<NeedsRepository>();
-        final workProfileRepository =
-            getIt.isRegistered<JobProfileRepository>()
-                ? getIt<JobProfileRepository>()
-                : (getIt.isRegistered<supabase.SupabaseClient>()
-                    ? JobProfileRepository(getIt<supabase.SupabaseClient>())
-                    : null);
+        final workProfileRepository = getIt.isRegistered<JobProfileRepository>()
+            ? getIt<JobProfileRepository>()
+            : (getIt.isRegistered<supabase.SupabaseClient>()
+                ? JobProfileRepository(getIt<supabase.SupabaseClient>())
+                : null);
 
         // ── Screen A: unified summary when capability profiles flag is ON ──
         if (loaded.capabilityProfilesEnabled) {
@@ -130,6 +129,7 @@ class _ProviderServicesView extends StatelessWidget {
                   context.read<CapabilitiesCubit>().loadWithOpportunities(),
               child: _ScreenASummaryView(
                 capabilities: caps,
+                categoryTypes: loaded.categoryTypes,
                 opportunities: opps,
                 workProfilesEnabled: loaded.workProfilesEnabled,
                 needsRepository: needsRepo,
@@ -242,6 +242,8 @@ class _ProviderServicesView extends StatelessWidget {
     final selection = await AddServiceSheet.show(
       context,
       existingSlugs: existingSlugs,
+      existingCapabilities:
+          loaded is CapabilitiesLoaded ? loaded.capabilities : const [],
       existingAudienceMetadata: loaded is CapabilitiesLoaded
           ? loaded.capabilities
               .where((cap) => cap.capabilitySlug == 'i_have_an_audience')
@@ -251,8 +253,9 @@ class _ProviderServicesView extends StatelessWidget {
       existingFinancialMetadata: existingFinancialMetadata,
       needsRepository: needsRepo,
       providerRepository: providerRepo,
-      capabilityProfilesEnabled:
-          loaded is CapabilitiesLoaded ? loaded.capabilityProfilesEnabled : true,
+      capabilityProfilesEnabled: loaded is CapabilitiesLoaded
+          ? loaded.capabilityProfilesEnabled
+          : true,
       workProfilesEnabled: loaded is CapabilitiesLoaded
           ? (loaded.workProfilesEnabled ||
               loaded.capabilities.any((c) => c.isWork))
@@ -266,6 +269,7 @@ class _ProviderServicesView extends StatelessWidget {
         metadataBySlug: selection.metadataBySlug,
       );
     }
+    await cubit.loadWithOpportunities();
 
     if (selection != null &&
         selection.workRoles.isNotEmpty &&
@@ -276,10 +280,9 @@ class _ProviderServicesView extends StatelessWidget {
         final kinds = (meta['kind_ids'] as List? ?? const [])
             .map((k) => k.toString())
             .toList();
-        final qualifications =
-            (meta['qualification_ids'] as List? ?? const [])
-                .map((q) => q.toString())
-                .toList();
+        final qualifications = (meta['qualification_ids'] as List? ?? const [])
+            .map((q) => q.toString())
+            .toList();
         final years = meta['years_experience']?.toString();
         roleDrafts.add(
           JobProfileRoleDraft(
@@ -323,7 +326,6 @@ class _ProviderServicesView extends StatelessWidget {
     } else if (selection != null &&
         selection.openWorkProfile &&
         context.mounted) {
-
       await WorkProfileEditorSheet.show(
         context,
         repository: getIt<JobProfileRepository>(),
@@ -400,6 +402,11 @@ class _ProviderServicesView extends StatelessWidget {
       context,
       capability: capability,
       opportunityCount: oppCount,
+      hiddenForCompanyOnly: !capability.isWork &&
+          (cubit.state is CapabilitiesLoaded) &&
+          (cubit.state as CapabilitiesLoaded)
+                  .categoryTypes[capability.categorySlug] ==
+              ProviderCategoryType.individual,
       onEdit: () => _showAddSheet(
         context,
         preselectedCategorySlug: capability.categorySlug,
@@ -422,6 +429,7 @@ enum _CapFilter { all, services, jobs }
 class _ScreenASummaryView extends StatefulWidget {
   const _ScreenASummaryView({
     required this.capabilities,
+    required this.categoryTypes,
     required this.opportunities,
     required this.workProfilesEnabled,
     required this.needsRepository,
@@ -433,6 +441,7 @@ class _ScreenASummaryView extends StatefulWidget {
   });
 
   final List<ProviderCapability> capabilities;
+  final Map<String, ProviderCategoryType> categoryTypes;
   final List<ProviderOpportunity> opportunities;
   final bool workProfilesEnabled;
   final NeedsRepository needsRepository;
@@ -492,8 +501,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                     label: 'Services ($servicesCount)',
                     selected: _filter == _CapFilter.services,
                     color: AppColors.accent,
-                    onTap: () =>
-                        setState(() => _filter = _CapFilter.services),
+                    onTap: () => setState(() => _filter = _CapFilter.services),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
@@ -513,8 +521,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-              child: _EmptyState(
-                  l10n: widget.l10n, isDark: widget.isDark),
+              child: _EmptyState(l10n: widget.l10n, isDark: widget.isDark),
             ),
           )
         else
@@ -529,6 +536,9 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                     .fold<int>(0, (sum, o) => sum + o.opportunityCount);
                 return CapabilityBadge(
                   capability: cap,
+                  hiddenForCompanyOnly: !cap.isWork &&
+                      widget.categoryTypes[cap.categorySlug] ==
+                          ProviderCategoryType.individual,
                   showProfileDetails: true,
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
@@ -707,7 +717,6 @@ class _WorkProfileStrip extends StatelessWidget {
     );
   }
 }
-
 
 class _ErrorCategoryTab extends StatelessWidget {
   const _ErrorCategoryTab({

@@ -3305,4 +3305,66 @@ class AppLocalizationsRw extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get providerTypeChange => 'Hindura';
+
+  @override
+  String get providerTypeWhatWeOffer => 'Ibyo dutanga';
+
+  @override
+  String get providerTypeWhatRoles => 'Ukora iyihe mirimo?';
+
+  @override
+  String get providerTypeStepOneOfThree => 'INTAMBWE YA 1 KURI 3';
+
+  @override
+  String get providerTypePickRoles => 'Hitamo imirimo yose ijyanye nawe. Ushobora kongeraho indi nyuma.';
+
+  @override
+  String get providerTypeNextKind => 'Komeza: hitamo ubwoko';
+
+  @override
+  String providerTypeSaveServicesCount(int count) => 'Bika serivisi' + ' (' + count.toString() + ')';
+
+  @override
+  String get providerTypeSelectService => 'Hitamo nibura serivisi imwe';
+
+  @override
+  String get providerTypeHiddenCompanyOnly => 'Byahishwe: bitangwa na Sosiyete gusa';
+
+  @override
+  String get providerTypeOffering => "Uratanga serivisi muri iki cyiciro";
+
+  @override
+  String get providerTypeTitle => "Ni nde utanga serivisi?";
+
+  @override
+  String get providerTypeSubtitle =>
+      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+
+  @override
+  String get providerTypeIndividual => "Umuntu ku giti cye";
+
+  @override
+  String get providerTypeIndividualDesc =>
+      'Ntanga ubumenyi bwanjye ku bakiriya ku giti cyanjye, ndi umwigenga cyangwa umukozi.';
+
+  @override
+  String get providerTypeCompany => "Ikigo / Umuryango";
+
+  @override
+  String get providerTypeCompanyDesc =>
+      'A registered business, agency, team or institution.';
+
+  @override
+  String get providerTypeNotVerification =>
+      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+
+  @override
+  String get providerTypeChooseOne => "Hitamo kimwe kugira ngo ukomeze";
+
+  @override
+  String get providerTypeJobsPersonalNote =>
+      'Job profiles are personal and are saved under your own name.';
 }

@@ -7,6 +7,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
+import '../../domain/entities/provider_category_type.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import 'capabilities_state.dart';
 
@@ -21,16 +22,30 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   final IProviderRepository _repo;
   late final StreamSubscription<void> _connectionSubscription;
 
+  Future<Map<String, ProviderCategoryType>> _loadCategoryTypes(
+    bool enabled,
+  ) async {
+    if (!enabled) return const {};
+    try {
+      return await _repo.getMyCategoryTypes();
+    } catch (_) {
+      // Type preferences are additive and must not block the existing service list.
+      return const {};
+    }
+  }
+
   Future<void> load() async {
     if (state is! CapabilitiesLoaded) emit(const CapabilitiesLoading());
     try {
       final caps = await _repo.getProviderCapabilities();
       final enabled = await _repo.capabilityProfilesEnabled();
       final workEnabled = await _repo.workProfilesEnabled();
+      final categoryTypes = await _loadCategoryTypes(enabled);
       emit(CapabilitiesLoaded(
         capabilities: caps,
         capabilityProfilesEnabled: enabled,
         workProfilesEnabled: workEnabled,
+        categoryTypes: categoryTypes,
       ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);
@@ -47,11 +62,13 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
       final opps = await _repo.getProviderOpportunities();
       final enabled = await _repo.capabilityProfilesEnabled();
       final workEnabled = await _repo.workProfilesEnabled();
+      final categoryTypes = await _loadCategoryTypes(enabled);
       emit(CapabilitiesLoaded(
         capabilities: caps,
         opportunities: opps,
         capabilityProfilesEnabled: enabled,
         workProfilesEnabled: workEnabled,
+        categoryTypes: categoryTypes,
       ));
     } catch (e) {
       OfflineService().reportRequestFailure(e);

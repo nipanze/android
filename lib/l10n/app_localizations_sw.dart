@@ -3300,4 +3300,66 @@ class AppLocalizationsSw extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get providerTypeChange => 'Badilisha';
+
+  @override
+  String get providerTypeWhatWeOffer => 'Tunachotoa';
+
+  @override
+  String get providerTypeWhatRoles => 'Unafanya majukumu gani?';
+
+  @override
+  String get providerTypeStepOneOfThree => 'HATUA YA 1 KATI YA 3';
+
+  @override
+  String get providerTypePickRoles => 'Chagua majukumu yote yanayokufaa. Unaweza kuongeza mengine baadaye.';
+
+  @override
+  String get providerTypeNextKind => 'Endelea: chagua aina';
+
+  @override
+  String providerTypeSaveServicesCount(int count) => 'Hifadhi huduma' + ' (' + count.toString() + ')';
+
+  @override
+  String get providerTypeSelectService => 'Chagua angalau huduma moja';
+
+  @override
+  String get providerTypeHiddenCompanyOnly => 'Imefichwa: hutolewa na Kampuni pekee';
+
+  @override
+  String get providerTypeOffering => "Kutoa huduma katika aina hii";
+
+  @override
+  String get providerTypeTitle => "Nani anayetoa huduma?";
+
+  @override
+  String get providerTypeSubtitle =>
+      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+
+  @override
+  String get providerTypeIndividual => "Mtu binafsi";
+
+  @override
+  String get providerTypeIndividualDesc =>
+      'Ninatoa ujuzi wangu binafsi moja kwa moja kwa wateja, kama mfanyakazi huru au mfanyakazi.';
+
+  @override
+  String get providerTypeCompany => "Kampuni / Shirika";
+
+  @override
+  String get providerTypeCompanyDesc =>
+      'A registered business, agency, team or institution.';
+
+  @override
+  String get providerTypeNotVerification =>
+      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+
+  @override
+  String get providerTypeChooseOne => "Chagua chaguo moja ili kuendelea";
+
+  @override
+  String get providerTypeJobsPersonalNote =>
+      'Job profiles are personal and are saved under your own name.';
 }

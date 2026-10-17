@@ -3287,4 +3287,66 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get providerTypeChange => 'تغيير';
+
+  @override
+  String get providerTypeWhatWeOffer => 'ما نقدمه';
+
+  @override
+  String get providerTypeWhatRoles => 'ما الأدوار التي تقوم بها؟';
+
+  @override
+  String get providerTypeStepOneOfThree => 'الخطوة 1 من 3';
+
+  @override
+  String get providerTypePickRoles => 'اختر كل الأدوار المناسبة لك. يمكنك إضافة المزيد لاحقًا.';
+
+  @override
+  String get providerTypeNextKind => 'التالي: اختر تخصصك';
+
+  @override
+  String providerTypeSaveServicesCount(int count) => 'حفظ الخدمات' + ' (' + count.toString() + ')';
+
+  @override
+  String get providerTypeSelectService => 'اختر خدمة واحدة على الأقل';
+
+  @override
+  String get providerTypeHiddenCompanyOnly => 'مخفي: يُعرض بصفة شركة فقط';
+
+  @override
+  String get providerTypeOffering => "تقديم الخدمات في هذه الفئة";
+
+  @override
+  String get providerTypeTitle => "من الذي يقدم الخدمة؟";
+
+  @override
+  String get providerTypeSubtitle =>
+      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+
+  @override
+  String get providerTypeIndividual => "فرد";
+
+  @override
+  String get providerTypeIndividualDesc =>
+      'أقدم مهاراتي الشخصية مباشرةً للعملاء بصفتي مستقلاً أو عاملاً.';
+
+  @override
+  String get providerTypeCompany => "شركة / مؤسسة";
+
+  @override
+  String get providerTypeCompanyDesc =>
+      'A registered business, agency, team or institution.';
+
+  @override
+  String get providerTypeNotVerification =>
+      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+
+  @override
+  String get providerTypeChooseOne => "اختر خياراً واحداً للمتابعة";
+
+  @override
+  String get providerTypeJobsPersonalNote =>
+      'Job profiles are personal and are saved under your own name.';
 }

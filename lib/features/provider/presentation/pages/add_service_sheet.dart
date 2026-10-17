@@ -3,14 +3,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/offline_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
+import '../widgets/provider_type_sheet.dart';
 
 const _marketingServicesSlug = 'marketing_services';
 const _audienceCapabilitySlug = 'i_have_an_audience';
@@ -154,8 +159,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final Set<String> _selected = {};
 
   // Work profile selection state
-  bool _iWantJobs = false;
-  bool _offerServicesExpanded = false;
   final Set<String> _selectedRoles = {};
   int _currentRoleIndex = 0;
   final Map<String, Set<String>> _kindsByRole = {};
@@ -181,11 +184,15 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _allowInstitutionMatching = false;
   bool _showAudience = false;
   bool _loading = true;
+  ProviderCategoryType? _providerType;
+  bool _providerTypeRequired = false;
+  bool _categoryWorkProfilesEnabled = false;
+  bool _savingProviderType = false;
+  String? _providerTypeError;
 
   @override
   void initState() {
     super.initState();
-    _iWantJobs = widget.initialJobsMode;
     final audience = widget.existingAudienceMetadata;
     if (widget.existingSlugs.contains(_audienceCapabilitySlug)) {
       _selected.add(_audienceCapabilitySlug);
@@ -246,7 +253,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 
   ProviderCapabilitySelection _selection() {
-    final slugs = _selected.toList();
+    final slugs = <String>[];
+    if (_providerType != ProviderCategoryType.individual) {
+      slugs.addAll(_selected);
+    }
     final metadataBySlug = <String, Map<String, dynamic>>{};
 
     if (_selected.contains(_audienceCapabilitySlug)) {
@@ -275,7 +285,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
 
     final workMetadataByRole = <String, Map<String, dynamic>>{};
-    if (_iWantJobs) {
+    if (_categoryWorkProfilesEnabled) {
       for (final roleSlug in _selectedRoles) {
         workMetadataByRole[roleSlug] = _buildWorkMetadata(roleSlug);
         final role = _categoryRoles.firstWhere(
@@ -294,12 +304,18 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
         metadataBySlug[capSlug] = _buildWorkMetadata(roleSlug);
       }
+    } else {
+      // Keep saved roles intact while the category's role feature is disabled.
+      for (final role in _categoryRoles) {
+        final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
+        if (widget.existingSlugs.contains(capSlug)) slugs.add(capSlug);
+      }
     }
 
     return ProviderCapabilitySelection(
       slugs: slugs,
       metadataBySlug: metadataBySlug,
-      openWorkProfile: _iWantJobs,
+      openWorkProfile: _categoryWorkProfilesEnabled,
       categorySlug: _selectedCategory?.slug,
       workRoles: _selectedRoles.toList(),
       workMetadataByRole: workMetadataByRole,
@@ -331,6 +347,20 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
     final caps =
         await widget.needsRepository.getCapabilities(categorySlug: cat.slug);
+    var needsProviderType = false;
+    ProviderCategoryType? providerType;
+    if (widget.capabilityProfilesEnabled) {
+      try {
+        needsProviderType =
+            await widget.providerRepository.capabilityProfilesEnabled();
+        if (needsProviderType) {
+          providerType =
+              (await widget.providerRepository.getMyCategoryTypes())[cat.slug];
+        }
+      } catch (_) {
+        // Continue to the category sheet if the preference lookup is unavailable.
+      }
+    }
     var roles = await widget.providerRepository.getServiceRoles(
       categorySlug: cat.slug,
     );
@@ -388,8 +418,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         .toList();
 
     // Populate initial selections for this category
+    final categoryWorkEnabled = widget.workProfilesEnabled &&
+        await widget.providerRepository.isCategoryWorkProfileEnabled(cat.slug);
     for (final cap in filteredCaps) {
-      if (widget.existingSlugs.contains(cap.slug)) {
+      if (widget.existingSlugs.contains(cap.slug) &&
+          providerType != ProviderCategoryType.individual) {
         _selected.add(cap.slug);
       }
     }
@@ -400,14 +433,57 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         _selectedRoles.add(role.slug);
       }
     }
-    _iWantJobs = widget.initialJobsMode;
 
     setState(() {
       _categoryCapabilities = filteredCaps;
       _categoryRoles = roles;
+      _providerTypeRequired = needsProviderType;
+      _providerType = providerType;
+      _categoryWorkProfilesEnabled = categoryWorkEnabled;
+      _providerTypeError = null;
       _loading = false;
-      _step = 1;
+      _step = needsProviderType ? 4 : 1;
     });
+  }
+
+  Future<void> _continueProviderType() async {
+    final type = _providerType;
+    final slug = _selectedCategory?.slug;
+    if (type == null || slug == null || _savingProviderType) return;
+    setState(() {
+      _savingProviderType = true;
+      _providerTypeError = null;
+    });
+    try {
+      await widget.providerRepository.setCategoryType(slug, type);
+      if (mounted) {
+        setState(() {
+          if (type == ProviderCategoryType.individual) {
+            _selected.clear();
+          } else {
+            for (final cap in _categoryCapabilities) {
+              if (widget.existingSlugs.contains(cap.slug)) {
+                _selected.add(cap.slug);
+              }
+            }
+          }
+          _step = 1;
+          _savingProviderType = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      OfflineService().reportRequestFailure(e);
+      final offline = parseSupabaseError(e) is NetworkException;
+      if (offline) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.networkError)),
+        );
+      } else {
+        setState(() => _providerTypeError = userFacingErrorMessage(e));
+      }
+      setState(() => _savingProviderType = false);
+    }
   }
 
   void _openAudience() {
@@ -426,6 +502,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
       } else if (_showAudience) {
         _showAudience = false;
+      } else if (_step == 1 && _providerTypeRequired) {
+        _step = 4;
+      } else if (_step == 4) {
+        _step = 0;
+        _selectedCategory = null;
+        _providerType = null;
       } else {
         _step = 0;
       }
@@ -472,9 +554,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                 child: Row(
                   children: [
                     if (_step > 0)
-                      GestureDetector(
-                        onTap: _goBack,
-                        child: Icon(Icons.arrow_back_rounded,
+                      IconButton(
+                        onPressed: _goBack,
+                        constraints:
+                            const BoxConstraints(minWidth: 44, minHeight: 44),
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.arrow_back_rounded,
                             color: text2, size: 22),
                       ),
                     if (_step > 0) const SizedBox(width: 8),
@@ -529,140 +614,247 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             scrollController: scrollController,
                             onSelect: _selectCategory,
                           )
-                        : _step == 2
-                            ? _KindStepView(
-                                categorySlug: _selectedCategory?.slug,
-                                role: _categoryRoles.firstWhere(
-                                  (r) =>
-                                      r.slug ==
+                        : _step == 4
+                            ? _ProviderTypeStep(
+                                selected: _providerType,
+                                saving: _savingProviderType,
+                                error: _providerTypeError,
+                                onSelect: (value) => setState(() {
+                                  _providerType = value;
+                                  _providerTypeError = null;
+                                }),
+                                onContinue: _continueProviderType,
+                              )
+                            : _step == 2
+                                ? _KindStepView(
+                                    categorySlug: _selectedCategory?.slug,
+                                    role: _categoryRoles.firstWhere(
+                                      (r) =>
+                                          r.slug ==
+                                          _selectedRoles
+                                              .elementAt(_currentRoleIndex),
+                                      orElse: () => _categoryRoles.first,
+                                    ),
+                                    roleIndex: _currentRoleIndex,
+                                    totalRoles: _selectedRoles.length,
+                                    selectedKinds: _kindsByRole.putIfAbsent(
                                       _selectedRoles
                                           .elementAt(_currentRoleIndex),
-                                  orElse: () => _categoryRoles.first,
-                                ),
-                                roleIndex: _currentRoleIndex,
-                                totalRoles: _selectedRoles.length,
-                                selectedKinds: _kindsByRole.putIfAbsent(
-                                  _selectedRoles.elementAt(_currentRoleIndex),
-                                  () => {},
-                                ),
-                                scrollController: scrollController,
-                                onNext: () {
-                                  if (_currentRoleIndex <
-                                      _selectedRoles.length - 1) {
-                                    setState(() => _currentRoleIndex++);
-                                  } else {
-                                    setState(() => _step = 3);
-                                  }
-                                },
-                              )
-                        : _step == 3
-                            ? _QualificationsStepView(
-                                roles: _categoryRoles
-                                    .where((r) =>
-                                        _selectedRoles.contains(r.slug))
-                                    .toList(),
-                                qualificationsByRole: _qualificationsByRole,
-                                yearsExperienceByRole:
-                                    _yearsExperienceByRole,
-                                availabilityByRole: _availabilityByRole,
-                                languagesByRole: _languagesByRole,
-                                willingToTravelByRole:
-                                    _willingToTravelByRole,
-                                expectedPayAmountByRole:
-                                    _expectedPayAmountByRole,
-                                expectedPayPeriodByRole:
-                                    _expectedPayPeriodByRole,
-                                uploadedProofByRole: _uploadedProofByRole,
-                                scrollController: scrollController,
-                                onSave: () =>
-                                    Navigator.of(context).pop(_selection()),
-                              )
-                            : _showAudience
-                                ? _AudienceEditorView(
-                                    audiencePlatforms: _audiencePlatforms,
-                                    audienceCountController:
-                                        _audienceCountController,
-                                    audienceLocationController:
-                                        _audienceLocationController,
-                                    audienceInterestController:
-                                        _audienceInterestController,
+                                      () => {},
+                                    ),
                                     scrollController: scrollController,
-                                    onPlatformToggle: (platform) =>
-                                        setState(() {
-                                      if (_audiencePlatforms
-                                          .contains(platform)) {
-                                        _audiencePlatforms.remove(platform);
+                                    onNext: () {
+                                      if (_currentRoleIndex <
+                                          _selectedRoles.length - 1) {
+                                        setState(() => _currentRoleIndex++);
                                       } else {
-                                        _audiencePlatforms.add(platform);
+                                        setState(() => _step = 3);
                                       }
-                                    }),
-                                    onDone: () =>
-                                        setState(() => _showAudience = false),
+                                    },
                                   )
-                                : _CategoryCapabilitiesView(
-                                    categorySlug: _selectedCategory?.slug,
-                                    capabilities: _categoryCapabilities,
-                                    roles: _categoryRoles,
-                                    existingSlugs: widget.existingSlugs,
-                                    selected: _selected,
-                                    selectedRoles: _selectedRoles,
-                                    iWantJobs: _iWantJobs,
-                                    workProfilesEnabled:
-                                        widget.workProfilesEnabled,
-                                    offerServicesExpanded:
-                                        _offerServicesExpanded,
-                                    scrollController: scrollController,
-                                    onToggleCapability: (slug) {
-                                      setState(() {
-                                        if (_selected.contains(slug)) {
-                                          _selected.remove(slug);
-                                        } else {
-                                          _selected.add(slug);
-                                        }
-                                      });
-                                    },
-                                    onToggleRole: (slug) {
-                                      setState(() {
-                                        if (_selectedRoles.contains(slug)) {
-                                          _selectedRoles.remove(slug);
-                                        } else {
-                                          _selectedRoles.add(slug);
-                                        }
-                                      });
-                                    },
-                                    onIWantJobsChanged: (val) {
-                                      setState(() {
-                                        _iWantJobs = val;
-                                        if (val) {
-                                          _offerServicesExpanded = false;
-                                        }
-                                      });
-                                    },
-                                    onToggleOfferExpanded: () {
-                                      setState(() {
-                                        _offerServicesExpanded =
-                                            !_offerServicesExpanded;
-                                      });
-                                    },
-                                    onSaveServices: () =>
-                                        Navigator.of(context).pop(_selection()),
-                                    onNextKind: () {
-                                      setState(() {
-                                        _step = 2;
-                                        _currentRoleIndex = 0;
-                                      });
-                                    },
-                                    onAudienceTap: _openAudience,
-                                    audiencePlatforms: _audiencePlatforms,
-                                    audienceFollowersCount: int.tryParse(
-                                        _audienceCountController.text.trim()),
-                                  ),
+                                : _step == 3
+                                    ? _QualificationsStepView(
+                                        roles: _categoryRoles
+                                            .where((r) =>
+                                                _selectedRoles.contains(r.slug))
+                                            .toList(),
+                                        qualificationsByRole:
+                                            _qualificationsByRole,
+                                        yearsExperienceByRole:
+                                            _yearsExperienceByRole,
+                                        availabilityByRole: _availabilityByRole,
+                                        languagesByRole: _languagesByRole,
+                                        willingToTravelByRole:
+                                            _willingToTravelByRole,
+                                        expectedPayAmountByRole:
+                                            _expectedPayAmountByRole,
+                                        expectedPayPeriodByRole:
+                                            _expectedPayPeriodByRole,
+                                        uploadedProofByRole:
+                                            _uploadedProofByRole,
+                                        scrollController: scrollController,
+                                        onSave: () => Navigator.of(context)
+                                            .pop(_selection()),
+                                      )
+                                    : _showAudience
+                                        ? _AudienceEditorView(
+                                            audiencePlatforms:
+                                                _audiencePlatforms,
+                                            audienceCountController:
+                                                _audienceCountController,
+                                            audienceLocationController:
+                                                _audienceLocationController,
+                                            audienceInterestController:
+                                                _audienceInterestController,
+                                            scrollController: scrollController,
+                                            onPlatformToggle: (platform) =>
+                                                setState(() {
+                                              if (_audiencePlatforms
+                                                  .contains(platform)) {
+                                                _audiencePlatforms
+                                                    .remove(platform);
+                                              } else {
+                                                _audiencePlatforms
+                                                    .add(platform);
+                                              }
+                                            }),
+                                            onDone: () => setState(
+                                                () => _showAudience = false),
+                                          )
+                                        : _CategoryCapabilitiesView(
+                                            categorySlug:
+                                                _selectedCategory?.slug,
+                                            capabilities: _categoryCapabilities,
+                                            roles: _categoryRoles,
+                                            existingSlugs: widget.existingSlugs,
+                                            selected: _selected,
+                                            selectedRoles: _selectedRoles,
+                                            iWantJobs:
+                                                _categoryWorkProfilesEnabled,
+                                            companyType: _providerType !=
+                                                ProviderCategoryType.individual,
+                                            providerType: _providerType,
+                                            scrollController: scrollController,
+                                            onToggleCapability: (slug) {
+                                              setState(() {
+                                                if (_selected.contains(slug)) {
+                                                  _selected.remove(slug);
+                                                } else {
+                                                  _selected.add(slug);
+                                                }
+                                              });
+                                            },
+                                            onToggleRole: (slug) {
+                                              setState(() {
+                                                if (_selectedRoles
+                                                    .contains(slug)) {
+                                                  _selectedRoles.remove(slug);
+                                                } else {
+                                                  _selectedRoles.add(slug);
+                                                }
+                                              });
+                                            },
+                                            onChangeProviderType: () =>
+                                                setState(() => _step = 4),
+                                            onSaveServices: () =>
+                                                Navigator.of(context)
+                                                    .pop(_selection()),
+                                            onNextKind: () {
+                                              setState(() {
+                                                _step = 2;
+                                                _currentRoleIndex = 0;
+                                              });
+                                            },
+                                            onAudienceTap: _openAudience,
+                                            audiencePlatforms:
+                                                _audiencePlatforms,
+                                            audienceFollowersCount:
+                                                int.tryParse(
+                                                    _audienceCountController
+                                                        .text
+                                                        .trim()),
+                                          ),
               ),
             ],
           ),
         );
       },
     );
+  }
+}
+
+class _ProviderTypeStep extends StatelessWidget {
+  const _ProviderTypeStep({
+    required this.selected,
+    required this.saving,
+    required this.error,
+    required this.onSelect,
+    required this.onContinue,
+  });
+
+  final ProviderCategoryType? selected;
+  final bool saving;
+  final String? error;
+  final ValueChanged<ProviderCategoryType> onSelect;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(children: [
+      Expanded(
+          child: ListView(padding: const EdgeInsets.all(20), children: [
+        Text(l10n.providerTypeOffering,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text(l10n.providerTypeTitle,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Text(l10n.providerTypeSubtitle),
+        const SizedBox(height: 20),
+        Semantics(
+          container: true,
+          explicitChildNodes: true,
+          label: l10n.providerTypeTitle,
+          child: Column(children: [
+            ProviderTypeCard(
+                type: ProviderCategoryType.individual,
+                title: l10n.providerTypeIndividual,
+                description: l10n.providerTypeIndividualDesc,
+                selected: selected == ProviderCategoryType.individual,
+                onTap: () => onSelect(ProviderCategoryType.individual)),
+            const SizedBox(height: 10),
+            ProviderTypeCard(
+                type: ProviderCategoryType.company,
+                title: l10n.providerTypeCompany,
+                description: l10n.providerTypeCompanyDesc,
+                selected: selected == ProviderCategoryType.company,
+                onTap: () => onSelect(ProviderCategoryType.company)),
+          ]),
+        ),
+        const SizedBox(height: 14),
+        Text(l10n.providerTypeNotVerification,
+            style: Theme.of(context).textTheme.bodySmall),
+        if (error != null) ...[
+          const SizedBox(height: 12),
+          Text(error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          TextButton.icon(
+              onPressed: saving ? null : onContinue,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry)),
+        ],
+      ])),
+      SafeArea(
+          top: false,
+          child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(children: [
+                SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: FilledButton(
+                        onPressed:
+                            selected == null || saving ? null : onContinue,
+                        child: saving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2))
+                            : Text(l10n.btnContinue))),
+                if (selected == null)
+                  Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(l10n.providerTypeChooseOne,
+                          style: Theme.of(context).textTheme.bodySmall)),
+              ]))),
+    ]);
   }
 }
 
@@ -830,13 +1022,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.selected,
     required this.selectedRoles,
     required this.iWantJobs,
-    required this.workProfilesEnabled,
-    required this.offerServicesExpanded,
+    required this.companyType,
+    required this.providerType,
     required this.scrollController,
     required this.onToggleCapability,
     required this.onToggleRole,
-    required this.onIWantJobsChanged,
-    required this.onToggleOfferExpanded,
+    required this.onChangeProviderType,
     required this.onSaveServices,
     required this.onNextKind,
     this.onAudienceTap,
@@ -851,13 +1042,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final Set<String> selected;
   final Set<String> selectedRoles;
   final bool iWantJobs;
-  final bool workProfilesEnabled;
-  final bool offerServicesExpanded;
+  final bool companyType;
+  final ProviderCategoryType? providerType;
   final ScrollController scrollController;
   final ValueChanged<String> onToggleCapability;
   final ValueChanged<String> onToggleRole;
-  final ValueChanged<bool> onIWantJobsChanged;
-  final VoidCallback onToggleOfferExpanded;
+  final VoidCallback onChangeProviderType;
   final VoidCallback onSaveServices;
   final VoidCallback onNextKind;
   final VoidCallback? onAudienceTap;
@@ -870,6 +1060,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
     final localeCode = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
 
     // Build ordered group list preserving original capability order.
     final List<(String?, String?, List<NeedCapability>)> orderedGroups = [];
@@ -900,9 +1091,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
       orderedGroups.add((null, null, noGroup));
     }
 
-    // Count only newly-selected (not already owned).
-    final newSelected =
-        selected.where((s) => !existingSlugs.contains(s)).length;
+    final hasServices = companyType && selected.isNotEmpty;
+    final hasRoles = iWantJobs && selectedRoles.isNotEmpty;
 
     return Stack(
       children: [
@@ -910,47 +1100,38 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           controller: scrollController,
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
-            // ── Jobs toggle card (Screen C / D toggle) ─────────────
-            if (roles.isNotEmpty)
-              _JobsToggleCard(
-                iWantJobs: iWantJobs,
-                categorySlug: categorySlug,
-                onChanged: onIWantJobsChanged,
-                border: border,
+            // Provider type is category scoped and can be changed from C/D.
+            if (providerType != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(children: [
+                  const Icon(Icons.badge_outlined,
+                      size: 16, color: AppColors.accent),
+                  const SizedBox(width: 6),
+                  Text(
+                      '${l10n.providerTypeOffering}  ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const Spacer(),
+                  TextButton(
+                      onPressed: onChangeProviderType,
+                      child: const Text('Change')),
+                ]),
               ),
 
             // ── "WHAT I OFFER" section header ──────────────────────
-            if (iWantJobs) ...[
-              _SectionAccordion(
-                label: 'What I offer',
-                count: selected.length,
-                summary: capabilities
-                    .where((c) => selected.contains(c.slug))
-                    .map((c) => c.localizedName(localeCode))
-                    .join(', '),
-                expanded: offerServicesExpanded,
-                onTap: onToggleOfferExpanded,
-                text2: text2,
-                border: border,
-              ),
-              const SizedBox(height: 12),
-            ] else ...[
+            if (companyType)
               Padding(
                 padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
-                child: Text(
-                  'WHAT I OFFER',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                    color: text2,
-                  ),
-                ),
+                child: Text('WHAT WE OFFER',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                        color: text2)),
               ),
-            ],
 
             // ── Service capability rows (grouped, flat list style) ──
-            if (!iWantJobs || offerServicesExpanded)
+            if (companyType)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
                 if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
@@ -1006,6 +1187,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
             // ── Jobs: role selection ───────────────────────────────
             if (iWantJobs) ...[
+              if (companyType)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(l10n.providerTypeJobsPersonalNote,
+                      style: Theme.of(context).textTheme.bodySmall),
+                ),
               const SizedBox(height: 16),
               Text(
                 'STEP 1 OF 3',
@@ -1018,7 +1205,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'What role do you do?',
+                'What roles do you do?',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -1057,52 +1244,55 @@ class _CategoryCapabilitiesView extends StatelessWidget {
         Positioned(
           left: 16,
           right: 16,
-          bottom: 12,
-          child: iWantJobs
-              ? ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.proPurple,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.proPurple.withValues(alpha: 0.35),
-                    disabledForegroundColor:
-                        Colors.white.withValues(alpha: 0.6),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: selectedRoles.isNotEmpty ? onNextKind : null,
-                  child: Text(
-                    selectedRoles.isNotEmpty
-                        ? 'Next: choose your kind'
-                        : 'Select at least one role',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 15),
-                  ),
-                )
-              : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.accent.withValues(alpha: 0.35),
-                    disabledForegroundColor:
-                        Colors.white.withValues(alpha: 0.6),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: newSelected > 0 ? onSaveServices : null,
-                  child: Text(
-                    newSelected > 0
-                        ? 'Save services ($newSelected)'
-                        : 'Select at least one service',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 15),
+          bottom: 8,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(
+                '${companyType ? selected.length : 0} services · ${iWantJobs ? selectedRoles.length : 0} roles selected',
+                style: TextStyle(fontSize: 11, color: text2)),
+            const SizedBox(height: 8),
+            if (hasRoles)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.proPurple,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.proPurple.withValues(alpha: 0.35),
+                  disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                onPressed: onNextKind,
+                child: const Text(
+                  'Next: choose your kind',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+              )
+            else
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.accent.withValues(alpha: 0.35),
+                  disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: hasServices ? onSaveServices : null,
+                child: Text(
+                  hasServices
+                      ? 'Save services (${selected.length})'
+                      : 'Select at least one service',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+              ),
+          ]),
         ),
       ],
     );
@@ -1113,230 +1303,6 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 // Helper widgets for the category capabilities view
 // ---------------------------------------------------------------------------
 
-/// Jobs toggle card shown at the top when workProfilesEnabled is true.
-class _JobsToggleCard extends StatelessWidget {
-  const _JobsToggleCard({
-    required this.iWantJobs,
-    required this.onChanged,
-    required this.border,
-    this.categorySlug,
-  });
-
-  final bool iWantJobs;
-  final ValueChanged<bool> onChanged;
-  final Color border;
-  final String? categorySlug;
-
-  @override
-  Widget build(BuildContext context) {
-    const activeColor = AppColors.proPurple;
-    final String subtitle = iWantJobs
-        ? 'Employers can find and hire you for these roles'
-        : switch (categorySlug) {
-            'machinery_equipment' =>
-              'Operator, mechanic, manager or supervisor roles',
-            'transport_logistics' =>
-              'Driver, fleet manager, or courier roles',
-            'construction_building' =>
-              'Foreman, mason, plumber, electrician or trades roles',
-            'technology_digital' =>
-              'Developer, technician, or IT specialist roles',
-            'marketing_promotion' =>
-              'Marketer, content creator, or campaign manager roles',
-            'professional_services' =>
-              'Accountant, lawyer, engineer, or consultant roles',
-            'education_training' =>
-              'Teacher, tutor, trainer, or instructor roles',
-            'events_celebrations' || 'events_production' =>
-              'Planner, MC, DJ, caterer, or crew roles',
-            'photo_video_talent' || 'photo_video_music_talent' =>
-              'Photographer, videographer, or performer roles',
-            'beauty_fashion_styling' =>
-              'Stylist, barber, makeup artist, or designer roles',
-            'energy_utilities' =>
-              'Solar, electrical, borehole, or energy technician roles',
-            'agriculture_agribusiness' =>
-              'Farm manager, agronomist, or livestock officer roles',
-            'specialized_products' =>
-              'Procurement officer, sourcing, or customs agent roles',
-            'travel_international' =>
-              'Travel consultant, tour guide, or driver-guide roles',
-            _ => 'Looking to be hired? Build a work-seeker profile.',
-          };
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: activeColor.withValues(alpha: iWantJobs ? 0.09 : 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: activeColor.withValues(alpha: iWantJobs ? 0.45 : 0.25),
-          width: iWantJobs ? 1.5 : 1,
-        ),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => onChanged(!iWantJobs),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Icon(
-                iWantJobs
-                    ? Icons.work_rounded
-                    : Icons.work_outline_rounded,
-                color: activeColor,
-                size: 22,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'I want jobs in this category',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        color: activeColor,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: iWantJobs
-                            ? activeColor.withValues(alpha: 0.85)
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch.adaptive(
-                value: iWantJobs,
-                activeThumbColor: Colors.white,
-                activeTrackColor: activeColor,
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: border,
-                onChanged: onChanged,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Collapsible accordion header for the "WHAT I OFFER" section (jobs-ON mode).
-class _SectionAccordion extends StatelessWidget {
-  const _SectionAccordion({
-    required this.label,
-    required this.count,
-    this.summary,
-    required this.expanded,
-    required this.onTap,
-    required this.text2,
-    required this.border,
-  });
-
-  final String label;
-  final int count;
-  final String? summary;
-  final bool expanded;
-  final VoidCallback onTap;
-  final Color text2;
-  final Color border;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: border),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: text2,
-                    ),
-                  ),
-                  if (summary != null && summary!.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      summary!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (count > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                margin: const EdgeInsets.only(right: 6),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.green.withValues(alpha: 0.2)
-                      : const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$count selected',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? Colors.green.shade300
-                        : const Color(0xFF15803D),
-                  ),
-                ),
-              ),
-            Icon(
-              expanded
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              size: 20,
-              color: text2,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Flat list-row variants (matches the reference image: checkbox + text + divider)
-// ---------------------------------------------------------------------------
-
-/// A flat list row for a capability / service item.
-/// Shows a square checkbox on the left, the capability name, and a full-width
-/// Divider below — no card border or background.
 class _CapabilityRow extends StatelessWidget {
   const _CapabilityRow({
     required this.cap,
@@ -1603,9 +1569,8 @@ class _KindChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: selected
-                    ? purple
-                    : Theme.of(context).colorScheme.onSurface,
+                color:
+                    selected ? purple : Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -1682,9 +1647,11 @@ class _KindStepViewState extends State<_KindStepView> {
         'The question changes with the role. A Marketer is asked "Which channel?" and a Content Creator is asked "What do you produce?"',
       'professional_services' =>
         'The question changes with the role. An Engineer is asked "Which discipline?" and an Accountant is asked "What area?"',
-      'events_celebrations' || 'events_production' =>
+      'events_celebrations' ||
+      'events_production' =>
         'The question changes with the role. An Event Planner is asked "What events?" and an MC/DJ is asked "Which role?"',
-      'photo_video_talent' || 'photo_video_music_talent' =>
+      'photo_video_talent' ||
+      'photo_video_music_talent' =>
         'The question changes with the role. A Photographer is asked "What do you shoot?" and an Audio Producer is asked "What do you do?"',
       'beauty_fashion_styling' =>
         'The question changes with the role. A Stylist is asked "Specialty?" and a Manager is asked "What scope?"',
@@ -1828,8 +1795,7 @@ class _KindStepViewState extends State<_KindStepView> {
               widget.roleIndex < widget.totalRoles - 1
                   ? 'Next role'
                   : 'Next: add qualifications',
-              style:
-                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
             ),
           ),
         ),
@@ -1883,7 +1849,13 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
     'Contract / project',
     'Weekends only'
   ];
-  final _languageOptions = ['English', 'Swahili', 'Luganda', 'French', 'Arabic'];
+  final _languageOptions = [
+    'English',
+    'Swahili',
+    'Luganda',
+    'French',
+    'Arabic'
+  ];
   final _payPeriods = ['hour', 'day', 'week', 'month', 'project'];
 
   @override
@@ -1902,7 +1874,8 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
 
   @override
   Widget build(BuildContext context) {
-    final text2 = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
+    final text2 =
+        Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     final primaryRoleSlug = widget.roles.firstOrNull?.slug ?? '';
 
     return Stack(
@@ -1955,8 +1928,10 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   final isChecked = roleQuals.contains(qual.slug);
                   final isUploaded = roleUploads.contains(qual.slug);
 
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-                  final border = isDark ? AppColors.borderDark : AppColors.borderLight;
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+                  final border =
+                      isDark ? AppColors.borderDark : AppColors.borderLight;
                   const activeColor = AppColors.proPurple;
 
                   return Column(
@@ -2112,8 +2087,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   Builder(builder: (ctx) {
                     final selected =
                         widget.yearsExperienceByRole[primaryRoleSlug] == exp;
-                    final isDark =
-                        Theme.of(ctx).brightness == Brightness.dark;
+                    final isDark = Theme.of(ctx).brightness == Brightness.dark;
                     const purple = AppColors.proPurple;
                     final border =
                         isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -2195,9 +2169,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 for (final lang in _languageOptions)
                   FilterChip(
                     label: Text(lang),
-                    selected: (widget.languagesByRole[primaryRoleSlug] ??
-                            {'English'})
-                        .contains(lang),
+                    selected:
+                        (widget.languagesByRole[primaryRoleSlug] ?? {'English'})
+                            .contains(lang),
                     selectedColor: AppColors.proPurple.withValues(alpha: 0.2),
                     onSelected: (val) {
                       final langs = widget.languagesByRole
@@ -2258,8 +2232,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 Expanded(
                   flex: 2,
                   child: DropdownButtonFormField<String>(
-                    initialValue: widget.expectedPayPeriodByRole[primaryRoleSlug] ??
-                        'month',
+                    initialValue:
+                        widget.expectedPayPeriodByRole[primaryRoleSlug] ??
+                            'month',
                     decoration: const InputDecoration(
                       labelText: 'Period',
                       border: OutlineInputBorder(),

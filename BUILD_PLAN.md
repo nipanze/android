@@ -388,6 +388,11 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 | D3 | DB category preservation | Decided | 2026-10-16 | Keep existing DB slugs; map v2 14 categories via `ui_group_slug`. |
 | D4 | Soft cap on capabilities | Decided | 2026-10-16 | Set `max_provider_capabilities = 30` in `system_settings`. |
 | D5 | Evidence storage | Decided | 2026-10-16 | Private storage bucket with signed URLs; reviewed by admin only. |
+| D6 | Provider type revisit | Decided | 2026-10-17 | Always show B2; prefill the saved category choice so repeat visits take one tap. |
+| D7 | Company evidence | Decided | 2026-10-17 | Consider business-registration evidence through `verification_requirements` in a separate change. |
+| D8 | Public Company badge | Decided | 2026-10-17 | Defer pending a privacy decision; no public view or badge changes in this feature. |
+| D9 | Company staff and operators | Decided | 2026-10-17 | Multiple staff/operators are out of scope. |
+| D10 | Company job-profile note | Decided | 2026-10-17 | Show: “Job profiles are personal and are saved under your own name.” |
 
 ### 3. Phase Table
 | Phase | Task | Files / SQL | Tests | Status | Date | Notes |
@@ -400,6 +405,8 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 | P5 | Matching, Trigger & Opportunities | `trg_validate_need_offer`, matching RPC | Unit tests | In Progress | 2026-10-16 | `private.capability_match_score` implemented in SQL |
 | P6 | Admin portal queue & Settings | Admin portal pages | Integration | In Progress | 2026-10-16 | Settings flags & admin review policies seeded |
 | P7 | Localization, Themes & RTL | `app_en.arb`, `_sw`, `_fr`, `_rw`, `_ar` | L10n & Theme tests | Done | 2026-10-16 | Dynamic tokens, theme-adaptive cards, clean analyze (0 errors, 0 warnings) |
+| P2a | SQL provider category type + private RPCs | `sql/patch_provider_category_type.sql` | SQL/RLS/idempotency checks | In Progress | 2026-10-17 | Standalone patch per `.agents/AGENTS.md`; not folded into historical `patch.sql`/`merged.sql` because that file forbids modifying historical SQL. No existing capability rate limiter was found, so changed values use a 20/minute audit-backed throttle. |
+| P3a | Sheet B2 + B→B2→C navigation | `provider_type_sheet.dart`, `add_service_sheet.dart` | Flow/offline/l10n/widget checks | In Progress | 2026-10-17 | Always shown only when capability flag is enabled; personal jobs note for Company. |
 
 ### 4. Per-Category Tracker (14 Categories)
 | Category Slug | Catalog Seeded | Offer Sheet | Roles/Kinds/Quals | Evidence Rules | Hire Need | Flag State | Status |
@@ -433,6 +440,12 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 | Home & feed regression protection | Baselines diff | Passed | 2026-10-16 |
 | L10n across 5 languages & RTL | Localization system | Passed | 2026-10-16 |
 | Light and Dark theme adaptivity | Design tokens | Passed | 2026-10-16 |
+| Per-category type persistence, independence, prefill and privacy | Provider category type RPC | Pending | — |
+| B → B2 → C, disabled Continue, both back paths, retry/offline retention | Provider type sheet | Pending | — |
+| Flag off has no B2 or writes; Company jobs stay personal | Feature flag + job roles | Pending | — |
+| RLS, direct-write denial, validation, no-op audit behavior, rerunnable patch | Provider category type SQL | Pending | — |
+| Localization, RTL, dark mode, 360px and 200% text scale | Provider type sheet | Pending | — |
+| Home protected: no Home files, views, feed, or RPC output changes | Git diff / baseline | Pending | — |
 
 ### 6. Flag Tracker
 | Setting Key | Default | Scope | Description |
@@ -467,5 +480,7 @@ This stage introduces no new database columns, tables, or migrations. All expiry
   - Screen G: Profile detail modal (`CapabilityDetailSheet`), worker avatar (`👷`), `[Category] · [Kinds]`, status badge, match banner (`3 open jobs match this profile >`), 5 badge checklist items, purple `Edit work profile` button, and bottom action row (`Pause jobs for this role` | `Remove`).
   - Responsiveness & Reliability: Wrapped `CapabilityDetailSheet` in `SingleChildScrollView` + `SafeArea` to prevent layout overflow across all screen sizes and test environments.
   - Verification: `flutter analyze lib/features/provider test/features/provider` passed with 0 issues; `flutter test test/features/provider/capabilities_test.dart` passed 24/24 tests.
+- 2026-10-17: Added the approved B2 provider-type step and the private, per-category `provider_category_profiles` preference. The capability flag controls visibility; Company selections do not affect personal job roles or verification.
+- 2026-10-17: Scoped Flutter analysis passed with 0 issues; provider tests passed 25/25, including the provider-type accessibility card test. Repository-wide analysis reports 10 info-level lints outside this change. Full `flutter test` has two failures in untouched areas: the Kinyarwanda `events_celebrations` description assertion and a Kinyarwanda locale warning in `post_duration_info_card_test.dart`. SQL execution/RLS checks and Home snapshot comparison remain pending; keep P2a/P3a in progress until those run.
 
 

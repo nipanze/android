@@ -19,6 +19,7 @@ class CapabilityBadge extends StatelessWidget {
     this.onEdit,
     this.onTogglePause,
     this.onRemove,
+    this.hiddenForCompanyOnly = false,
   });
 
   final ProviderCapability capability;
@@ -28,6 +29,7 @@ class CapabilityBadge extends StatelessWidget {
   final VoidCallback? onEdit;
   final ValueChanged<bool>? onTogglePause;
   final VoidCallback? onRemove;
+  final bool hiddenForCompanyOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -65,11 +67,13 @@ class CapabilityBadge extends StatelessWidget {
     } else if (capability.status == ProviderCapabilityStatus.pendingReview) {
       statusNote = 'Documents submitted · Under review';
     } else if (capability.status == ProviderCapabilityStatus.rejected) {
-      statusNote = capability.latestRejectReason ?? 'Evidence rejected · Tap to resubmit';
+      statusNote = capability.latestRejectReason ??
+          'Evidence rejected · Tap to resubmit';
     } else if (capability.status == ProviderCapabilityStatus.expired) {
       statusNote = 'Verification expired · Resubmit proof';
     } else if (isJob && capability.qualificationIds.isNotEmpty) {
-      statusNote = '${capability.qualificationIds.length} qualifications declared';
+      statusNote =
+          '${capability.qualificationIds.length} qualifications declared';
     } else {
       statusNote = 'Self-declared · Add proof to verify';
     }
@@ -127,8 +131,9 @@ class CapabilityBadge extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color:
-                                    isJob ? AppColors.proPurple : AppColors.accent,
+                                color: isJob
+                                    ? AppColors.proPurple
+                                    : AppColors.accent,
                               ),
                             ),
                           ),
@@ -152,6 +157,12 @@ class CapabilityBadge extends StatelessWidget {
                             .bodyMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
+                      if (hiddenForCompanyOnly) ...[
+                        const SizedBox(height: 4),
+                        const Text('Hidden: offered as Company only',
+                            style: TextStyle(
+                                fontSize: 11, color: AppColors.text2Light)),
+                      ],
                       if (isJob && capability.kindIds.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Wrap(
@@ -162,10 +173,12 @@ class CapabilityBadge extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.proPurple.withValues(alpha: 0.1),
+                                color:
+                                    AppColors.proPurple.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: AppColors.proPurple.withValues(alpha: 0.3),
+                                  color: AppColors.proPurple
+                                      .withValues(alpha: 0.3),
                                   width: 0.8,
                                 ),
                               ),
@@ -204,7 +217,8 @@ class CapabilityBadge extends StatelessWidget {
                           fontStyle: FontStyle.italic,
                         ),
                       ),
-                      if (capability.capabilitySlug == 'i_have_an_audience') ...[
+                      if (capability.capabilitySlug ==
+                          'i_have_an_audience') ...[
                         const SizedBox(height: 8),
                         _DeclaredAudience(capability: capability, l10n: l10n),
                       ],
@@ -272,8 +286,7 @@ class CapabilityBadge extends StatelessWidget {
                               const SizedBox(width: 8),
                               Text(
                                 l10n.removeService,
-                                style:
-                                    const TextStyle(color: Colors.redAccent),
+                                style: const TextStyle(color: Colors.redAccent),
                               ),
                             ],
                           ),

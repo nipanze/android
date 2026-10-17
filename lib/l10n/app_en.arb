@@ -1578,5 +1578,24 @@
         "type": "int"
       }
     }
-  }
+  },
+  "providerTypeChange": "Change",
+  "providerTypeWhatWeOffer": "What we offer",
+  "providerTypeWhatRoles": "What roles do you do?",
+  "providerTypeStepOneOfThree": "STEP 1 OF 3",
+  "providerTypePickRoles": "Pick every role that fits you. You can add more later.",
+  "providerTypeNextKind": "Next: choose your kind",
+  "providerTypeSaveServicesCount": "Save services {count}",
+  "providerTypeSelectService": "Select at least one service",
+  "providerTypeHiddenCompanyOnly": "Hidden: offered as Company only",
+  "providerTypeOffering": "Offering as",
+  "providerTypeTitle": "Who is offering?",
+  "providerTypeSubtitle": "This tells people whether they would deal with you or with your business. You can set it differently for each category.",
+  "providerTypeIndividual": "Individual",
+  "providerTypeIndividualDesc": "I offer my personal skills directly to clients, as a freelancer or worker.",
+  "providerTypeCompany": "Company / Organization",
+  "providerTypeCompanyDesc": "A registered business, agency, team or institution.",
+  "providerTypeNotVerification": "Selecting this does not verify you. Verification is separate and only asked where a service requires it.",
+  "providerTypeChooseOne": "Choose one option to continue",
+  "providerTypeJobsPersonalNote": "Job profiles are personal and are saved under your own name."
 }

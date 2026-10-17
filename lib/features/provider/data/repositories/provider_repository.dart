@@ -7,6 +7,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
@@ -21,6 +22,7 @@ class ProviderRepository implements IProviderRepository {
   final Map<String, List<ProviderCapability>> _capabilityCache = {};
   final Map<String, List<ProviderOpportunity>> _opportunityCache = {};
   bool? _capabilityProfilesEnabled;
+  Map<String, ProviderCategoryType>? _categoryTypeCache;
 
   String? get _uid => _client.auth.currentUser?.id;
 
@@ -28,6 +30,40 @@ class ProviderRepository implements IProviderRepository {
     _capabilityCache.clear();
     _opportunityCache.clear();
     _capabilityProfilesEnabled = null;
+    _categoryTypeCache = null;
+  }
+
+  @override
+  Future<Map<String, ProviderCategoryType>> getMyCategoryTypes() async {
+    if (_categoryTypeCache != null) return Map.of(_categoryTypeCache!);
+    try {
+      final rows =
+          await _client.rpc(RpcNames.getMyProviderCategoryTypes) as List;
+      final result = <String, ProviderCategoryType>{};
+      for (final row in rows.cast<Map<String, dynamic>>()) {
+        final type = ProviderCategoryType.fromValue(row['provider_type']);
+        if (type != null) result[row['category_slug'].toString()] = type;
+      }
+      _categoryTypeCache = result;
+      return Map.of(result);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> setCategoryType(
+      String categorySlug, ProviderCategoryType type) async {
+    try {
+      await _client.rpc(RpcNames.setProviderCategoryType, params: {
+        'p_category_slug': categorySlug,
+        'p_provider_type': type.name,
+      });
+      _categoryTypeCache ??= {};
+      _categoryTypeCache![categorySlug] = type;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
   }
 
   @override
@@ -78,7 +114,9 @@ class ProviderRepository implements IProviderRepository {
           .eq('setting_key', 'work_profiles_enabled_$categorySlug')
           .eq('is_public', true)
           .maybeSingle();
-      if (data == null) return true; // Default true if global is enabled and no specific override
+      if (data == null) {
+        return true; // Default true if global is enabled and no specific override
+      }
       final value = data['setting_value']?.toString().toLowerCase();
       return value != 'false' && value != '0';
     } catch (_) {
@@ -236,12 +274,16 @@ class ProviderRepository implements IProviderRepository {
           .eq('capability_slug', capabilitySlug)
           .maybeSingle();
 
-      final meta = Map<String, dynamic>.from(existing?['metadata'] as Map? ?? {});
+      final meta =
+          Map<String, dynamic>.from(existing?['metadata'] as Map? ?? {});
       meta['is_paused'] = paused;
 
       await _client
           .from(TableNames.providerCapabilities)
-          .update({'metadata': meta, 'updated_at': DateTime.now().toIso8601String()})
+          .update({
+            'metadata': meta,
+            'updated_at': DateTime.now().toIso8601String()
+          })
           .eq('user_id', uid)
           .eq('capability_slug', capabilitySlug);
       _clearCache();

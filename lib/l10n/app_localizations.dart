@@ -5973,6 +5973,25 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 role} other{{count} roles}}'**
   String rolesCount(int count);
+  String get providerTypeChange;
+  String get providerTypeWhatWeOffer;
+  String get providerTypeWhatRoles;
+  String get providerTypeStepOneOfThree;
+  String get providerTypePickRoles;
+  String get providerTypeNextKind;
+  String providerTypeSaveServicesCount(int count);
+  String get providerTypeSelectService;
+  String get providerTypeHiddenCompanyOnly;
+  String get providerTypeOffering;
+  String get providerTypeTitle;
+  String get providerTypeSubtitle;
+  String get providerTypeIndividual;
+  String get providerTypeIndividualDesc;
+  String get providerTypeCompany;
+  String get providerTypeCompanyDesc;
+  String get providerTypeNotVerification;
+  String get providerTypeChooseOne;
+  String get providerTypeJobsPersonalNote;
 }
 
 class _AppLocalizationsDelegate

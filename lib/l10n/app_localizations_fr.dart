@@ -3335,4 +3335,66 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get providerTypeChange => 'Modifier';
+
+  @override
+  String get providerTypeWhatWeOffer => 'Nos services';
+
+  @override
+  String get providerTypeWhatRoles => 'Quels rôles exercez-vous ?';
+
+  @override
+  String get providerTypeStepOneOfThree => 'ÉTAPE 1 SUR 3';
+
+  @override
+  String get providerTypePickRoles => 'Choisissez tous les rôles qui vous correspondent. Vous pourrez en ajouter plus tard.';
+
+  @override
+  String get providerTypeNextKind => 'Suivant : choisir votre spécialité';
+
+  @override
+  String providerTypeSaveServicesCount(int count) => 'Enregistrer les services' + ' (' + count.toString() + ')';
+
+  @override
+  String get providerTypeSelectService => 'Sélectionnez au moins un service';
+
+  @override
+  String get providerTypeHiddenCompanyOnly => 'Masqué : proposé uniquement comme entreprise';
+
+  @override
+  String get providerTypeOffering => "Proposez dans cette catégorie";
+
+  @override
+  String get providerTypeTitle => "Qui propose le service ?";
+
+  @override
+  String get providerTypeSubtitle =>
+      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+
+  @override
+  String get providerTypeIndividual => "Particulier";
+
+  @override
+  String get providerTypeIndividualDesc =>
+      'Je propose directement mes compétences personnelles aux clients, en tant qu’indépendant ou salarié.';
+
+  @override
+  String get providerTypeCompany => "Entreprise / Organisation";
+
+  @override
+  String get providerTypeCompanyDesc =>
+      'A registered business, agency, team or institution.';
+
+  @override
+  String get providerTypeNotVerification =>
+      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+
+  @override
+  String get providerTypeChooseOne => "Choisissez une option pour continuer";
+
+  @override
+  String get providerTypeJobsPersonalNote =>
+      'Job profiles are personal and are saved under your own name.';
 }

@@ -1,5 +1,7 @@
 // test/features/provider/capabilities_test.dart
 
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,7 @@ import 'package:nipanze/features/needs/data/needs_repository.dart';
 import 'package:nipanze/features/needs/domain/models/need_capability.dart';
 import 'package:nipanze/features/needs/domain/models/need_category.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_capability.dart';
+import 'package:nipanze/features/provider/domain/entities/provider_category_type.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_opportunity.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_service_role.dart';
 import 'package:nipanze/features/provider/domain/repositories/provider_repository_interface.dart';
@@ -21,6 +24,7 @@ import 'package:nipanze/features/provider/presentation/pages/capability_detail_s
 import 'package:nipanze/features/provider/presentation/pages/provider_services_page.dart';
 import 'package:nipanze/features/provider/presentation/widgets/capability_badge.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_opportunities_section.dart';
+import 'package:nipanze/features/provider/presentation/widgets/provider_type_sheet.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_verification_chip.dart';
 import 'package:nipanze/l10n/app_localizations.dart';
 
@@ -37,14 +41,46 @@ void main() {
     mockRepo = MockProviderRepository();
     when(() => mockRepo.capabilityProfilesEnabled())
         .thenAnswer((_) async => false);
-    when(() => mockRepo.workProfilesEnabled())
-        .thenAnswer((_) async => false);
+    when(() => mockRepo.workProfilesEnabled()).thenAnswer((_) async => false);
     when(() => mockRepo.getServiceRoles(
           categorySlug: any(named: 'categorySlug'),
           capabilitySlug: any(named: 'capabilitySlug'),
         )).thenAnswer((_) async => []);
     when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
         .thenAnswer((_) async => false);
+  });
+
+  testWidgets(
+      'provider type card announces its selected state and responds to tap',
+      (tester) async {
+    var selected = false;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: StatefulBuilder(
+          builder: (context, setState) => ProviderTypeCard(
+            type: ProviderCategoryType.company,
+            title: 'Company / Organization',
+            description: 'A registered business, agency, team or institution.',
+            selected: selected,
+            onTap: () => setState(() => selected = true),
+          ),
+        ),
+      ),
+    ));
+    final semantics = tester.getSemantics(find.byType(ProviderTypeCard));
+    expect(semantics.label, 'Company / Organization');
+    expect(
+        semantics.hint, 'A registered business, agency, team or institution.');
+    expect(semantics.getSemanticsData().flagsCollection.isSelected,
+        Tristate.isFalse);
+    await tester.tap(find.byType(ProviderTypeCard));
+    await tester.pump();
+    final selectedSemantics =
+        tester.getSemantics(find.byType(ProviderTypeCard));
+    expect(selectedSemantics.getSemanticsData().hasAction(SemanticsAction.tap),
+        isTrue);
+    expect(selectedSemantics.getSemanticsData().flagsCollection.isSelected,
+        Tristate.isTrue);
   });
 
   group('ProviderCapability Entity', () {
@@ -273,10 +309,8 @@ void main() {
   });
 
   void setupMockProviderRepo(MockProviderRepository repo) {
-    when(() => repo.capabilityProfilesEnabled())
-        .thenAnswer((_) async => false);
-    when(() => repo.workProfilesEnabled())
-        .thenAnswer((_) async => false);
+    when(() => repo.capabilityProfilesEnabled()).thenAnswer((_) async => false);
+    when(() => repo.workProfilesEnabled()).thenAnswer((_) async => false);
     when(() => repo.getProviderCapabilities())
         .thenAnswer((_) async => const <ProviderCapability>[]);
     when(() => repo.getProviderOpportunities())
@@ -779,26 +813,23 @@ void main() {
 
       when(mockProviderRepo.capabilityProfilesEnabled)
           .thenAnswer((_) async => true);
-      when(mockProviderRepo.workProfilesEnabled)
-          .thenAnswer((_) async => true);
+      when(mockProviderRepo.workProfilesEnabled).thenAnswer((_) async => true);
       when(mockProviderRepo.getProviderCapabilities)
           .thenAnswer((_) async => [testService, testJob]);
-      when(mockProviderRepo.getProviderOpportunities)
-          .thenAnswer((_) async => [
-                const ProviderOpportunity(
-                  capabilitySlug: 'work_machine_operator',
-                  opportunityCount: 2,
-                  capabilityName: 'Machine Operator',
-                ),
-              ]);
+      when(mockProviderRepo.getProviderOpportunities).thenAnswer((_) async => [
+            const ProviderOpportunity(
+              capabilitySlug: 'work_machine_operator',
+              opportunityCount: 2,
+              capabilityName: 'Machine Operator',
+            ),
+          ]);
       when(mockProfileRepo.getProfile)
           .thenAnswer((_) async => const UserProfile(
                 id: 'u-1',
                 email: 'user@test.com',
                 accountStatus: 'active',
               ));
-      when(mockNeedsRepo.getCategories)
-          .thenAnswer((_) async => const []);
+      when(mockNeedsRepo.getCategories).thenAnswer((_) async => const []);
 
       await tester.pumpWidget(
         const MaterialApp(
@@ -849,27 +880,40 @@ void main() {
       expect(find.text('Edit'), findsOneWidget);
     });
 
-    test('ProviderServiceRole category taxonomy differentiates Machinery, Technology, and Travel', () {
-      final machineryRoles = ProviderServiceRole.defaultsForCategory('machinery_equipment');
+    test(
+        'ProviderServiceRole category taxonomy differentiates Machinery, Technology, and Travel',
+        () {
+      final machineryRoles =
+          ProviderServiceRole.defaultsForCategory('machinery_equipment');
       expect(machineryRoles.any((r) => r.slug == 'machine_operator'), isTrue);
-      final operatorRole = machineryRoles.firstWhere((r) => r.slug == 'machine_operator');
+      final operatorRole =
+          machineryRoles.firstWhere((r) => r.slug == 'machine_operator');
       expect(operatorRole.kinds.any((k) => k.slug == 'excavator'), isTrue);
-      expect(operatorRole.qualifications.any((q) => q.slug == 'operator_licence_certificate'), isTrue);
+      expect(
+          operatorRole.qualifications
+              .any((q) => q.slug == 'operator_licence_certificate'),
+          isTrue);
 
-      final techRoles = ProviderServiceRole.defaultsForCategory('technology_digital');
+      final techRoles =
+          ProviderServiceRole.defaultsForCategory('technology_digital');
       expect(techRoles.any((r) => r.slug == 'developer'), isTrue);
       final devRole = techRoles.firstWhere((r) => r.slug == 'developer');
       expect(devRole.kinds.any((k) => k.slug == 'frontend'), isTrue);
       expect(devRole.kinds.any((k) => k.slug == 'backend'), isTrue);
 
-      final travelRoles = ProviderServiceRole.defaultsForCategory('travel_international');
-      expect(travelRoles.any((r) => r.slug == 'travel_agent_consultant'), isTrue);
-      final travelRole = travelRoles.firstWhere((r) => r.slug == 'travel_agent_consultant');
+      final travelRoles =
+          ProviderServiceRole.defaultsForCategory('travel_international');
+      expect(
+          travelRoles.any((r) => r.slug == 'travel_agent_consultant'), isTrue);
+      final travelRole =
+          travelRoles.firstWhere((r) => r.slug == 'travel_agent_consultant');
       expect(travelRole.kinds.any((k) => k.slug == 'flights'), isTrue);
       expect(travelRole.kinds.any((k) => k.slug == 'visas'), isTrue);
     });
 
-    testWidgets('CapabilityDetailSheet renders work profile for job role with Edit work profile action', (tester) async {
+    testWidgets(
+        'CapabilityDetailSheet renders work profile for job role with Edit work profile action',
+        (tester) async {
       final jobCap = ProviderCapability(
         id: 'cap-job-1',
         userId: 'u-1',
@@ -909,10 +953,13 @@ void main() {
       expect(find.text('Edit work profile'), findsOneWidget);
       expect(find.text('Pause jobs for this role'), findsOneWidget);
       expect(find.text('Remove'), findsOneWidget);
-      expect(find.text('WHAT IS NEEDED FOR THE VERIFIED BADGE'), findsOneWidget);
+      expect(
+          find.text('WHAT IS NEEDED FOR THE VERIFIED BADGE'), findsOneWidget);
     });
 
-    testWidgets('CapabilityBadge renders three-dot menu with Edit, Pause, and Remove actions', (tester) async {
+    testWidgets(
+        'CapabilityBadge renders three-dot menu with Edit, Pause, and Remove actions',
+        (tester) async {
       final cap = ProviderCapability(
         id: 'cap-service-1',
         userId: 'u-1',

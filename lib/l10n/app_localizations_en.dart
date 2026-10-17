@@ -3288,4 +3288,66 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get providerTypeChange => 'Change';
+
+  @override
+  String get providerTypeWhatWeOffer => 'What we offer';
+
+  @override
+  String get providerTypeWhatRoles => 'What roles do you do?';
+
+  @override
+  String get providerTypeStepOneOfThree => 'STEP 1 OF 3';
+
+  @override
+  String get providerTypePickRoles => 'Pick every role that fits you. You can add more later.';
+
+  @override
+  String get providerTypeNextKind => 'Next: choose your kind';
+
+  @override
+  String providerTypeSaveServicesCount(int count) => 'Save services' + ' (' + count.toString() + ')';
+
+  @override
+  String get providerTypeSelectService => 'Select at least one service';
+
+  @override
+  String get providerTypeHiddenCompanyOnly => 'Hidden: offered as Company only';
+
+  @override
+  String get providerTypeOffering => 'Offering as';
+
+  @override
+  String get providerTypeTitle => 'Who is offering?';
+
+  @override
+  String get providerTypeSubtitle =>
+      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+
+  @override
+  String get providerTypeIndividual => 'Individual';
+
+  @override
+  String get providerTypeIndividualDesc =>
+      'I offer my personal skills directly to clients, as a freelancer or worker.';
+
+  @override
+  String get providerTypeCompany => 'Company / Organization';
+
+  @override
+  String get providerTypeCompanyDesc =>
+      'A registered business, agency, team or institution.';
+
+  @override
+  String get providerTypeNotVerification =>
+      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+
+  @override
+  String get providerTypeChooseOne => 'Choose one option to continue';
+
+  @override
+  String get providerTypeJobsPersonalNote =>
+      'Job profiles are personal and are saved under your own name.';
 }
