@@ -64,7 +64,6 @@ class ProviderCapability {
     this.expiredEvidenceCount = 0,
     this.latestRejectReason,
     this.roleQualificationClaims = const [],
-    this.hiddenForCompanyOnly = false,
   }) : status = status ??
             (verificationLevel == ProviderVerificationLevel.providerVerified
                 ? ProviderCapabilityStatus.providerVerified
@@ -143,7 +142,6 @@ class ProviderCapability {
   final int expiredEvidenceCount;
   final String? latestRejectReason;
   final List<Map<String, dynamic>> roleQualificationClaims;
-  final bool hiddenForCompanyOnly;
 
   bool get isVerified =>
       verificationLevel == ProviderVerificationLevel.providerVerified ||

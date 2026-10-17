@@ -3301,19 +3301,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerTypeStepOneOfThree => 'الخطوة 1 من 3';
 
   @override
-  String get providerTypePickRoles => 'اختر كل الأدوار المناسبة لك. يمكنك إضافة المزيد لاحقًا.';
+  String get providerTypePickRoles =>
+      'اختر كل الأدوار المناسبة لك. يمكنك إضافة المزيد لاحقًا.';
 
   @override
   String get providerTypeNextKind => 'التالي: اختر تخصصك';
 
   @override
-  String providerTypeSaveServicesCount(int count) => 'حفظ الخدمات' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(int count) =>
+      'حفظ الخدمات' + ' (' + count.toString() + ')';
 
   @override
   String get providerTypeSelectService => 'اختر خدمة واحدة على الأقل';
 
   @override
   String get providerTypeHiddenCompanyOnly => 'مخفي: يُعرض بصفة شركة فقط';
+
+  @override
+  String get providerTypeOfferingAs => 'تقدم بصفتك';
 
   @override
   String get providerTypeOffering => "تقديم الخدمات في هذه الفئة";

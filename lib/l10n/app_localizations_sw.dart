@@ -3314,19 +3314,25 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerTypeStepOneOfThree => 'HATUA YA 1 KATI YA 3';
 
   @override
-  String get providerTypePickRoles => 'Chagua majukumu yote yanayokufaa. Unaweza kuongeza mengine baadaye.';
+  String get providerTypePickRoles =>
+      'Chagua majukumu yote yanayokufaa. Unaweza kuongeza mengine baadaye.';
 
   @override
   String get providerTypeNextKind => 'Endelea: chagua aina';
 
   @override
-  String providerTypeSaveServicesCount(int count) => 'Hifadhi huduma' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(int count) =>
+      'Hifadhi huduma' + ' (' + count.toString() + ')';
 
   @override
   String get providerTypeSelectService => 'Chagua angalau huduma moja';
 
   @override
-  String get providerTypeHiddenCompanyOnly => 'Imefichwa: hutolewa na Kampuni pekee';
+  String get providerTypeHiddenCompanyOnly =>
+      'Imefichwa: hutolewa na Kampuni pekee';
+
+  @override
+  String get providerTypeOfferingAs => 'Unatoa kama';
 
   @override
   String get providerTypeOffering => "Kutoa huduma katika aina hii";

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../widgets/provider_verification_chip.dart';
 
@@ -51,6 +52,7 @@ class CapabilityDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isDark = theme.brightness == Brightness.dark;
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
@@ -90,11 +92,10 @@ class CapabilityDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               if (hiddenForCompanyOnly)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text('Hidden: offered as Company only',
-                      style:
-                          TextStyle(fontSize: 12, color: AppColors.text2Light)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(l10n.providerTypeHiddenCompanyOnly,
+                      style: TextStyle(fontSize: 12, color: text2)),
                 ),
 
               // Header (matches Image G)

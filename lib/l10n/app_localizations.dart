@@ -5982,6 +5982,7 @@ abstract class AppLocalizations {
   String providerTypeSaveServicesCount(int count);
   String get providerTypeSelectService;
   String get providerTypeHiddenCompanyOnly;
+  String get providerTypeOfferingAs;
   String get providerTypeOffering;
   String get providerTypeTitle;
   String get providerTypeSubtitle;

@@ -20,6 +20,7 @@ import 'package:nipanze/features/provider/domain/entities/provider_service_role.
 import 'package:nipanze/features/provider/domain/repositories/provider_repository_interface.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_cubit.dart';
 import 'package:nipanze/features/provider/presentation/cubit/capabilities_state.dart';
+import 'package:nipanze/features/provider/presentation/pages/add_service_sheet.dart';
 import 'package:nipanze/features/provider/presentation/pages/capability_detail_sheet.dart';
 import 'package:nipanze/features/provider/presentation/pages/provider_services_page.dart';
 import 'package:nipanze/features/provider/presentation/widgets/capability_badge.dart';
@@ -81,6 +82,59 @@ void main() {
         isTrue);
     expect(selectedSemantics.getSemanticsData().flagsCollection.isSelected,
         Tristate.isTrue);
+  });
+
+  testWidgets('Individual category sheet hides saved services and shows roles',
+      (tester) async {
+    final needsRepo = MockNeedsRepository();
+    when(needsRepo.getCategories).thenAnswer((_) async => const [
+          NeedCategory(
+            slug: 'machinery_equipment',
+            name: 'Machinery & Equipment',
+            icon: '🚜',
+          ),
+        ]);
+    when(() =>
+            needsRepo.getCapabilities(categorySlug: any(named: 'categorySlug')))
+        .thenAnswer((_) async => const [
+              NeedCapability(
+                slug: 'excavator_hire',
+                categorySlug: 'machinery_equipment',
+                name: 'Excavator Hire',
+              ),
+            ]);
+    when(() => mockRepo.capabilityProfilesEnabled())
+        .thenAnswer((_) async => true);
+    when(() => mockRepo.getMyCategoryTypes()).thenAnswer((_) async => {
+          'machinery_equipment': ProviderCategoryType.individual,
+        });
+    when(() => mockRepo.setCategoryType(
+          'machinery_equipment',
+          ProviderCategoryType.individual,
+        )).thenAnswer((_) async {});
+    when(() => mockRepo.workProfilesEnabled()).thenAnswer((_) async => true);
+    when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
+        .thenAnswer((_) async => true);
+
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: AddServiceSheet(
+          existingSlugs: const {'excavator_hire'},
+          preselectedCategorySlug: 'machinery_equipment',
+          needsRepository: needsRepo,
+          providerRepository: mockRepo,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('What roles do you do?'), findsOneWidget);
+    expect(find.text('What we offer'), findsNothing);
+    expect(find.text('Excavator Hire'), findsNothing);
   });
 
   group('ProviderCapability Entity', () {
@@ -649,6 +703,23 @@ void main() {
       expect(find.text('🚜'), findsOneWidget);
       expect(find.text('Provider Verified'), findsOneWidget);
       expect(find.text('4 opportunities'), findsOneWidget);
+    });
+
+    testWidgets('CapabilityBadge labels services hidden for Individual',
+        (tester) async {
+      final cap = ProviderCapability(
+        id: 'cap-hidden',
+        userId: 'user-1',
+        capabilitySlug: 'excavator_hire',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        capabilityName: 'Excavator Hire',
+      );
+      await tester.pumpWidget(createLocalizedWidget(CapabilityBadge(
+        capability: cap,
+        hiddenForCompanyOnly: true,
+      )));
+      expect(find.text('Hidden: offered as Company only'), findsOneWidget);
     });
 
     testWidgets(

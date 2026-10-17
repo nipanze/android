@@ -159,9 +159,8 @@ class CapabilityBadge extends StatelessWidget {
                       ),
                       if (hiddenForCompanyOnly) ...[
                         const SizedBox(height: 4),
-                        const Text('Hidden: offered as Company only',
-                            style: TextStyle(
-                                fontSize: 11, color: AppColors.text2Light)),
+                        Text(l10n.providerTypeHiddenCompanyOnly,
+                            style: TextStyle(fontSize: 11, color: text2)),
                       ],
                       if (isJob && capability.kindIds.isNotEmpty) ...[
                         const SizedBox(height: 4),

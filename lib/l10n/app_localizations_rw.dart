@@ -3319,19 +3319,25 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerTypeStepOneOfThree => 'INTAMBWE YA 1 KURI 3';
 
   @override
-  String get providerTypePickRoles => 'Hitamo imirimo yose ijyanye nawe. Ushobora kongeraho indi nyuma.';
+  String get providerTypePickRoles =>
+      'Hitamo imirimo yose ijyanye nawe. Ushobora kongeraho indi nyuma.';
 
   @override
   String get providerTypeNextKind => 'Komeza: hitamo ubwoko';
 
   @override
-  String providerTypeSaveServicesCount(int count) => 'Bika serivisi' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(int count) =>
+      'Bika serivisi' + ' (' + count.toString() + ')';
 
   @override
   String get providerTypeSelectService => 'Hitamo nibura serivisi imwe';
 
   @override
-  String get providerTypeHiddenCompanyOnly => 'Byahishwe: bitangwa na Sosiyete gusa';
+  String get providerTypeHiddenCompanyOnly =>
+      'Byahishwe: bitangwa na Sosiyete gusa';
+
+  @override
+  String get providerTypeOfferingAs => 'Utanga nka';
 
   @override
   String get providerTypeOffering => "Uratanga serivisi muri iki cyiciro";

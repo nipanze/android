@@ -341,6 +341,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   Future<void> _selectCategory(NeedCategory cat) async {
     setState(() {
+      _selected.clear();
+      _selectedRoles.clear();
+      _categoryWorkProfilesEnabled = false;
       _selectedCategory = cat;
       _showAudience = false;
       _loading = true;
@@ -1109,12 +1112,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                       size: 16, color: AppColors.accent),
                   const SizedBox(width: 6),
                   Text(
-                      '${l10n.providerTypeOffering}  ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                      '${l10n.providerTypeOfferingAs}  ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
                       style: Theme.of(context).textTheme.bodySmall),
                   const Spacer(),
                   TextButton(
                       onPressed: onChangeProviderType,
-                      child: const Text('Change')),
+                      child: Text(l10n.providerTypeChange)),
                 ]),
               ),
 
@@ -1122,7 +1125,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             if (companyType)
               Padding(
                 padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
-                child: Text('WHAT WE OFFER',
+                child: Text(l10n.providerTypeWhatWeOffer.toUpperCase(),
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -1195,7 +1198,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 ),
               const SizedBox(height: 16),
               Text(
-                'STEP 1 OF 3',
+                l10n.providerTypeStepOneOfThree,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -1205,14 +1208,14 @@ class _CategoryCapabilitiesView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'What roles do you do?',
+                l10n.providerTypeWhatRoles,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Pick every role that fits you. You can add more later.',
+                l10n.providerTypePickRoles,
                 style: TextStyle(fontSize: 12, color: text2),
               ),
               const SizedBox(height: 12),
@@ -1247,7 +1250,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           bottom: 8,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(
-                '${companyType ? selected.length : 0} services · ${iWantJobs ? selectedRoles.length : 0} roles selected',
+                '${l10n.servicesCount(companyType ? selected.length : 0)} · ${l10n.rolesCount(iWantJobs ? selectedRoles.length : 0)}',
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
             if (hasRoles)
@@ -1264,9 +1267,9 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   ),
                 ),
                 onPressed: onNextKind,
-                child: const Text(
-                  'Next: choose your kind',
-                  style: TextStyle(
+                child: Text(
+                  l10n.providerTypeNextKind,
+                  style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               )
@@ -1286,8 +1289,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 onPressed: hasServices ? onSaveServices : null,
                 child: Text(
                   hasServices
-                      ? 'Save services (${selected.length})'
-                      : 'Select at least one service',
+                      ? l10n.providerTypeSaveServicesCount(selected.length)
+                      : l10n.providerTypeSelectService,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),

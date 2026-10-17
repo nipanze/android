@@ -3302,13 +3302,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerTypeStepOneOfThree => 'STEP 1 OF 3';
 
   @override
-  String get providerTypePickRoles => 'Pick every role that fits you. You can add more later.';
+  String get providerTypePickRoles =>
+      'Pick every role that fits you. You can add more later.';
 
   @override
   String get providerTypeNextKind => 'Next: choose your kind';
 
   @override
-  String providerTypeSaveServicesCount(int count) => 'Save services' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(int count) =>
+      'Save services' + ' (' + count.toString() + ')';
 
   @override
   String get providerTypeSelectService => 'Select at least one service';
@@ -3317,7 +3319,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerTypeHiddenCompanyOnly => 'Hidden: offered as Company only';
 
   @override
-  String get providerTypeOffering => 'Offering as';
+  String get providerTypeOfferingAs => 'Offering as';
+
+  @override
+  String get providerTypeOffering => 'Offering in this category';
 
   @override
   String get providerTypeTitle => 'Who is offering?';

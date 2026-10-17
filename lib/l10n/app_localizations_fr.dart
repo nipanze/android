@@ -3349,19 +3349,25 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerTypeStepOneOfThree => 'ÉTAPE 1 SUR 3';
 
   @override
-  String get providerTypePickRoles => 'Choisissez tous les rôles qui vous correspondent. Vous pourrez en ajouter plus tard.';
+  String get providerTypePickRoles =>
+      'Choisissez tous les rôles qui vous correspondent. Vous pourrez en ajouter plus tard.';
 
   @override
   String get providerTypeNextKind => 'Suivant : choisir votre spécialité';
 
   @override
-  String providerTypeSaveServicesCount(int count) => 'Enregistrer les services' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(int count) =>
+      'Enregistrer les services' + ' (' + count.toString() + ')';
 
   @override
   String get providerTypeSelectService => 'Sélectionnez au moins un service';
 
   @override
-  String get providerTypeHiddenCompanyOnly => 'Masqué : proposé uniquement comme entreprise';
+  String get providerTypeHiddenCompanyOnly =>
+      'Masqué : proposé uniquement comme entreprise';
+
+  @override
+  String get providerTypeOfferingAs => 'Vous proposez en tant que';
 
   @override
   String get providerTypeOffering => "Proposez dans cette catégorie";
