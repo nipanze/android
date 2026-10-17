@@ -33,7 +33,7 @@ Selecting Company and tapping Continue saves the type for this category through 
 - Blue progress bar (2 segments), "STEP 1 OF 2".
 - **What we offer**: "Tick everything your company provides." Service groups from the catalog as bordered cards with an "N of M" count and 52px checkbox rows (selected row tinted blue, bold label).
 - Company D contains only **What we offer**. Do not show role headings, role cards, role descriptions, or role progress indicators. Existing personal work profiles are left unchanged by Company service edits.
-- Footer: selected-service count and blue **Next: company details**, disabled until at least one service is ticked. D saves nothing; service ticks live in a per-step draft so Back from CD returns to D unchanged. Leaving mid-flow asks save/discard.
+- Footer: selected-service count and blue **Next: company details** stays enabled so the user can open CD before selecting services. D saves nothing; service ticks live in a per-step draft so Back from CD returns to D unchanged. CD's save action stays disabled until at least one service is selected. Leaving mid-flow asks save/discard.
 
 ### CD: company details (new screen)
 Header: back + category name. Blue progress bar full, "STEP 2 OF 2". Heading "Tell us about your company"; sub "Everything here is optional. People see this before they contact you."
@@ -106,7 +106,7 @@ create table if not exists public.provider_company_profiles (
 | Area | Case |
 |---|---|
 | Flow | B -> B2 (Company) -> D -> CD -> save -> A; Back from CD returns to D with ticks intact; Back from D returns to B2 with value; leaving mid-flow asks save/discard |
-| D logic | Company shows only grouped service selections; saved services can be toggled; footer requires at least one service; Individual role flow remains unchanged |
+| D logic | Company shows only grouped service selections; saved services can be toggled; Continue opens CD even with zero selections; CD save requires a service; Individual role flow remains unchanged |
 | Atomic save | Services + company details saved in one transaction; non-empty role payload rejected; existing personal roles and other categories untouched |
 | Per category | Company in Transport and Individual in Technology: both persisted and each shows the right sections after reopen |
 | Individual guard | RPC rejects `service` items for a category saved as `individual`; roles accepted |

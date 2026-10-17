@@ -1311,7 +1311,6 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final showRoles = individualType && iWantJobs;
     final hasServices = companyType && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
-    final hasCompanySelections = hasServices;
 
     return Stack(
       children: [
@@ -1611,7 +1610,10 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: hasCompanySelections ? onSaveServices : null,
+                // Allow opening Company details (step 2) before selecting
+                // services; saving on that step remains disabled until a
+                // service is selected.
+                onPressed: onSaveServices,
                 child: Text(l10n.providerTypeNextCompanyDetails,
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 15)),

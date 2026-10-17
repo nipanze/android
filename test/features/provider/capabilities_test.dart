@@ -200,6 +200,20 @@ void main() {
     expect(find.text('STEP 1 OF 3'), findsNothing);
     expect(find.text('Machine Operator'), findsNothing);
 
+    await tester.tap(find.text('Next: company details'));
+    await tester.pumpAndSettle();
+    expect(find.text('Tell us about your company'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Save company profile'),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded).first);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Excavator Hire'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Next: company details'));
