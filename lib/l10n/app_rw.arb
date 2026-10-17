@@ -1615,5 +1615,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "companyLeaveTitle": "Uve mu igenamiterere ry’ikigo?",
+  "companyLeaveSelectionsMessage": "Serivisi n’imirimo wahisemo ntibirabikwa.",
+  "companyLeaveDetailsMessage": "Amakuru y’ikigo n’ibyo wahisemo ntibirabikwa.",
+  "companyLeaveKeepEditing": "Komeza guhindura",
+  "companyLeaveDiscard": "Hagarika ibyahinduwe"
 }

@@ -3616,4 +3616,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String providerOpenJobsMatch(int count) {
     return 'توجد $count وظائف مناسبة';
   }
+
+  @override
+  String get companyLeaveTitle => 'هل تريد مغادرة إعداد الشركة؟';
+
+  @override
+  String get companyLeaveSelectionsMessage =>
+      'لم يتم حفظ الخدمات والأدوار التي اخترتها.';
+
+  @override
+  String get companyLeaveDetailsMessage =>
+      'لم يتم حفظ تفاصيل الشركة واختياراتك.';
+
+  @override
+  String get companyLeaveKeepEditing => 'متابعة التعديل';
+
+  @override
+  String get companyLeaveDiscard => 'تجاهل التغييرات';
 }

@@ -196,8 +196,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   ProviderCompanyProfile? _companyProfile;
   List<Map<String, dynamic>> _companyRequirements = const [];
   List<Map<String, dynamic>> _companyEvidence = const [];
+  Map<String, String> _companyEvidenceDraftPaths = {};
   bool _loadingCompanyDetails = false;
   bool _savingCompanyDetails = false;
+  bool _allowCompanyExit = false;
 
   @override
   void initState() {
@@ -386,6 +388,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _companyProfile = null;
       _companyRequirements = const [];
       _companyEvidence = const [];
+      _companyEvidenceDraftPaths = {};
       _categoryWorkProfilesEnabled = false;
       _selectedCategory = cat;
       _showAudience = false;
@@ -620,7 +623,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         profile: profile,
         evidence: evidence,
       );
-      if (mounted) Navigator.of(context).pop(_selection());
+      if (mounted) {
+        setState(() => _allowCompanyExit = true);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) Navigator.of(context).pop(_selection());
+        });
+      }
     } finally {
       if (mounted) setState(() => _savingCompanyDetails = false);
     }
@@ -656,6 +664,67 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
   }
 
+  bool get _hasUnsavedCompanyDraft {
+    if (_providerType != ProviderCategoryType.company) return false;
+    if (_step == 5) return true;
+    if (_step != 1) return false;
+    final existingServices = _categoryCapabilities
+        .where((capability) => widget.existingSlugs.contains(capability.slug))
+        .map((capability) => capability.slug)
+        .toSet();
+    final existingRoles = _categoryRoles
+        .where((role) => widget.existingSlugs.contains(
+              role.capabilitySlug ?? 'work_${role.slug}',
+            ))
+        .map((role) => role.slug)
+        .toSet();
+    return !_sameSet(existingServices, _selected) ||
+        (_categoryWorkProfilesEnabled &&
+            !_sameSet(existingRoles, _selectedRoles));
+  }
+
+  static bool _sameSet(Set<String> first, Set<String> second) =>
+      first.length == second.length && first.containsAll(second);
+
+  Future<void> _confirmCompanyExit() async {
+    final l10n = AppLocalizations.of(context)!;
+    final continueToDetails = _step == 1;
+    final discard = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.companyLeaveTitle),
+        content: Text(continueToDetails
+            ? l10n.companyLeaveSelectionsMessage
+            : l10n.companyLeaveDetailsMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.companyLeaveKeepEditing),
+          ),
+          if (continueToDetails)
+            OutlinedButton(
+              onPressed: () => Navigator.pop(dialogContext, null),
+              child: Text(l10n.providerTypeNextCompanyDetails),
+            ),
+          FilledButton.tonal(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.companyLeaveDiscard),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (discard == true) {
+      setState(() => _allowCompanyExit = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+    } else if (discard == null && continueToDetails) {
+      await _openCompanyDetails();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -665,261 +734,283 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.45,
-      maxChildSize: 0.95,
-      builder: (_, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: border,
-                    borderRadius: BorderRadius.circular(2),
+    return PopScope<Object?>(
+      canPop: !_hasUnsavedCompanyDraft || _allowCompanyExit,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _hasUnsavedCompanyDraft) _confirmCompanyExit();
+      },
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.45,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              // Header
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(
-                  children: [
-                    if (_step > 0)
-                      IconButton(
-                        onPressed: _goBack,
-                        constraints:
-                            const BoxConstraints(minWidth: 44, minHeight: 44),
-                        padding: EdgeInsets.zero,
-                        icon: Icon(Icons.arrow_back_rounded,
-                            color: text2, size: 22),
-                      ),
-                    if (_step > 0) const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _step == 0
-                            ? l10n.chooseCategory
-                            : (_step == 2 || _step == 3)
-                                ? (_selectedRoles.isNotEmpty
-                                    ? _categoryRoles
-                                        .firstWhere(
-                                          (r) =>
-                                              r.slug ==
-                                              _selectedRoles.elementAtOrNull(
-                                                  _currentRoleIndex),
-                                          orElse: () => _categoryRoles.first,
-                                        )
-                                        .name
-                                    : (_selectedCategory
-                                            ?.localizedName(localeCode) ??
-                                        ''))
-                                : _showAudience
-                                    ? l10n.iHaveAnAudience
-                                    : (_selectedCategory
-                                            ?.localizedName(localeCode) ??
-                                        l10n.chooseCapabilities),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    if (_step == 0)
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 20),
-                        color: text2,
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-
-              // Content Area
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _step == 0
-                        ? _CategoryList(
-                            categories: _categories,
-                            existingCapabilities: widget.existingCapabilities,
-                            scrollController: scrollController,
-                            onSelect: _selectCategory,
-                          )
-                        : _step == 4
-                            ? _ProviderTypeStep(
-                                selected: _providerType,
-                                saving: _savingProviderType,
-                                error: _providerTypeError,
-                                onSelect: (value) => setState(() {
-                                  _providerType = value;
-                                  _providerTypeError = null;
-                                }),
-                                onContinue: _continueProviderType,
-                              )
-                            : _step == 5
-                                ? CompanyDetailsStep(
-                                    categorySlug: _selectedCategory?.slug ?? '',
-                                    serviceCount: _selected.length,
-                                    roleCount: _categoryWorkProfilesEnabled
-                                        ? _selectedRoles.length
-                                        : 0,
-                                    initialProfile: _companyProfile,
-                                    requirements: _companyRequirements,
-                                    existingEvidence: _companyEvidence,
-                                    providerRepository:
-                                        widget.providerRepository,
-                                    onSave: _saveCompanyDetails,
-                                  )
-                                : _step == 2
-                                    ? _KindStepView(
-                                        categorySlug: _selectedCategory?.slug,
-                                        role: _categoryRoles.firstWhere(
-                                          (r) =>
-                                              r.slug ==
-                                              _selectedRoles
-                                                  .elementAt(_currentRoleIndex),
-                                          orElse: () => _categoryRoles.first,
-                                        ),
-                                        roleIndex: _currentRoleIndex,
-                                        totalRoles: _selectedRoles.length,
-                                        selectedKinds: _kindsByRole.putIfAbsent(
-                                          _selectedRoles
-                                              .elementAt(_currentRoleIndex),
-                                          () => {},
-                                        ),
-                                        scrollController: scrollController,
-                                        onNext: () {
-                                          if (_currentRoleIndex <
-                                              _selectedRoles.length - 1) {
-                                            setState(() => _currentRoleIndex++);
-                                          } else {
-                                            setState(() => _step = 3);
-                                          }
-                                        },
-                                      )
-                                    : _step == 3
-                                        ? _QualificationsStepView(
-                                            roles: _categoryRoles
-                                                .where((r) => _selectedRoles
-                                                    .contains(r.slug))
-                                                .toList(),
-                                            qualificationsByRole:
-                                                _qualificationsByRole,
-                                            yearsExperienceByRole:
-                                                _yearsExperienceByRole,
-                                            availabilityByRole:
-                                                _availabilityByRole,
-                                            languagesByRole: _languagesByRole,
-                                            willingToTravelByRole:
-                                                _willingToTravelByRole,
-                                            expectedPayAmountByRole:
-                                                _expectedPayAmountByRole,
-                                            expectedPayPeriodByRole:
-                                                _expectedPayPeriodByRole,
-                                            scrollController: scrollController,
-                                            onSave: () => Navigator.of(context)
-                                                .pop(_selection()),
+                // Header
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(
+                    children: [
+                      if (_step > 0)
+                        IconButton(
+                          onPressed: _goBack,
+                          constraints:
+                              const BoxConstraints(minWidth: 44, minHeight: 44),
+                          padding: EdgeInsets.zero,
+                          icon: Icon(Icons.arrow_back_rounded,
+                              color: text2, size: 22),
+                        ),
+                      if (_step > 0) const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _step == 0
+                              ? l10n.chooseCategory
+                              : (_step == 2 || _step == 3)
+                                  ? (_selectedRoles.isNotEmpty
+                                      ? _categoryRoles
+                                          .firstWhere(
+                                            (r) =>
+                                                r.slug ==
+                                                _selectedRoles.elementAtOrNull(
+                                                    _currentRoleIndex),
+                                            orElse: () => _categoryRoles.first,
                                           )
-                                        : _showAudience
-                                            ? _AudienceEditorView(
-                                                audiencePlatforms:
-                                                    _audiencePlatforms,
-                                                audienceCountController:
-                                                    _audienceCountController,
-                                                audienceLocationController:
-                                                    _audienceLocationController,
-                                                audienceInterestController:
-                                                    _audienceInterestController,
-                                                scrollController:
-                                                    scrollController,
-                                                onPlatformToggle: (platform) =>
+                                          .name
+                                      : (_selectedCategory
+                                              ?.localizedName(localeCode) ??
+                                          ''))
+                                  : _showAudience
+                                      ? l10n.iHaveAnAudience
+                                      : (_selectedCategory
+                                              ?.localizedName(localeCode) ??
+                                          l10n.chooseCapabilities),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (_step == 0)
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          color: text2,
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                // Content Area
+                Expanded(
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _step == 0
+                          ? _CategoryList(
+                              categories: _categories,
+                              existingCapabilities: widget.existingCapabilities,
+                              scrollController: scrollController,
+                              onSelect: _selectCategory,
+                            )
+                          : _step == 4
+                              ? _ProviderTypeStep(
+                                  selected: _providerType,
+                                  saving: _savingProviderType,
+                                  error: _providerTypeError,
+                                  onSelect: (value) => setState(() {
+                                    _providerType = value;
+                                    _providerTypeError = null;
+                                  }),
+                                  onContinue: _continueProviderType,
+                                )
+                              : _step == 5
+                                  ? CompanyDetailsStep(
+                                      categorySlug:
+                                          _selectedCategory?.slug ?? '',
+                                      serviceCount: _selected.length,
+                                      roleCount: _categoryWorkProfilesEnabled
+                                          ? _selectedRoles.length
+                                          : 0,
+                                      initialProfile: _companyProfile,
+                                      requirements: _companyRequirements,
+                                      existingEvidence: _companyEvidence,
+                                      initialEvidenceDraftPaths:
+                                          _companyEvidenceDraftPaths,
+                                      providerRepository:
+                                          widget.providerRepository,
+                                      onDraftChanged: (profile) => setState(
+                                          () => _companyProfile = profile),
+                                      onEvidenceDraftChanged: (paths) =>
+                                          setState(() =>
+                                              _companyEvidenceDraftPaths =
+                                                  paths),
+                                      onSave: _saveCompanyDetails,
+                                    )
+                                  : _step == 2
+                                      ? _KindStepView(
+                                          categorySlug: _selectedCategory?.slug,
+                                          role: _categoryRoles.firstWhere(
+                                            (r) =>
+                                                r.slug ==
+                                                _selectedRoles.elementAt(
+                                                    _currentRoleIndex),
+                                            orElse: () => _categoryRoles.first,
+                                          ),
+                                          roleIndex: _currentRoleIndex,
+                                          totalRoles: _selectedRoles.length,
+                                          selectedKinds:
+                                              _kindsByRole.putIfAbsent(
+                                            _selectedRoles
+                                                .elementAt(_currentRoleIndex),
+                                            () => {},
+                                          ),
+                                          scrollController: scrollController,
+                                          onNext: () {
+                                            if (_currentRoleIndex <
+                                                _selectedRoles.length - 1) {
+                                              setState(
+                                                  () => _currentRoleIndex++);
+                                            } else {
+                                              setState(() => _step = 3);
+                                            }
+                                          },
+                                        )
+                                      : _step == 3
+                                          ? _QualificationsStepView(
+                                              roles: _categoryRoles
+                                                  .where((r) => _selectedRoles
+                                                      .contains(r.slug))
+                                                  .toList(),
+                                              qualificationsByRole:
+                                                  _qualificationsByRole,
+                                              yearsExperienceByRole:
+                                                  _yearsExperienceByRole,
+                                              availabilityByRole:
+                                                  _availabilityByRole,
+                                              languagesByRole: _languagesByRole,
+                                              willingToTravelByRole:
+                                                  _willingToTravelByRole,
+                                              expectedPayAmountByRole:
+                                                  _expectedPayAmountByRole,
+                                              expectedPayPeriodByRole:
+                                                  _expectedPayPeriodByRole,
+                                              scrollController:
+                                                  scrollController,
+                                              onSave: () =>
+                                                  Navigator.of(context)
+                                                      .pop(_selection()),
+                                            )
+                                          : _showAudience
+                                              ? _AudienceEditorView(
+                                                  audiencePlatforms:
+                                                      _audiencePlatforms,
+                                                  audienceCountController:
+                                                      _audienceCountController,
+                                                  audienceLocationController:
+                                                      _audienceLocationController,
+                                                  audienceInterestController:
+                                                      _audienceInterestController,
+                                                  scrollController:
+                                                      scrollController,
+                                                  onPlatformToggle:
+                                                      (platform) =>
+                                                          setState(() {
+                                                    if (_audiencePlatforms
+                                                        .contains(platform)) {
+                                                      _audiencePlatforms
+                                                          .remove(platform);
+                                                    } else {
+                                                      _audiencePlatforms
+                                                          .add(platform);
+                                                    }
+                                                  }),
+                                                  onDone: () => setState(() =>
+                                                      _showAudience = false),
+                                                )
+                                              : _CategoryCapabilitiesView(
+                                                  categorySlug:
+                                                      _selectedCategory?.slug,
+                                                  capabilities:
+                                                      _categoryCapabilities,
+                                                  roles: _categoryRoles,
+                                                  existingSlugs:
+                                                      widget.existingSlugs,
+                                                  selected: _selected,
+                                                  selectedRoles: _selectedRoles,
+                                                  iWantJobs:
+                                                      _categoryWorkProfilesEnabled,
+                                                  companyType: _providerType !=
+                                                      ProviderCategoryType
+                                                          .individual,
+                                                  providerType: _providerType,
+                                                  scrollController:
+                                                      scrollController,
+                                                  onToggleCapability: (slug) {
                                                     setState(() {
-                                                  if (_audiencePlatforms
-                                                      .contains(platform)) {
-                                                    _audiencePlatforms
-                                                        .remove(platform);
-                                                  } else {
-                                                    _audiencePlatforms
-                                                        .add(platform);
-                                                  }
-                                                }),
-                                                onDone: () => setState(() =>
-                                                    _showAudience = false),
-                                              )
-                                            : _CategoryCapabilitiesView(
-                                                categorySlug:
-                                                    _selectedCategory?.slug,
-                                                capabilities:
-                                                    _categoryCapabilities,
-                                                roles: _categoryRoles,
-                                                existingSlugs:
-                                                    widget.existingSlugs,
-                                                selected: _selected,
-                                                selectedRoles: _selectedRoles,
-                                                iWantJobs:
-                                                    _categoryWorkProfilesEnabled,
-                                                companyType: _providerType !=
-                                                    ProviderCategoryType
-                                                        .individual,
-                                                providerType: _providerType,
-                                                scrollController:
-                                                    scrollController,
-                                                onToggleCapability: (slug) {
-                                                  setState(() {
-                                                    if (_selected
-                                                        .contains(slug)) {
-                                                      _selected.remove(slug);
-                                                    } else {
-                                                      _selected.add(slug);
-                                                    }
-                                                  });
-                                                },
-                                                onToggleRole: (slug) {
-                                                  setState(() {
-                                                    if (_selectedRoles
-                                                        .contains(slug)) {
-                                                      _selectedRoles
-                                                          .remove(slug);
-                                                    } else {
-                                                      _selectedRoles.add(slug);
-                                                    }
-                                                  });
-                                                },
-                                                onChangeProviderType: () =>
-                                                    setState(() => _step = 4),
-                                                onSaveServices:
-                                                    _openCompanyDetails,
-                                                onNextKind: () {
-                                                  setState(() {
-                                                    _step = 2;
-                                                    _currentRoleIndex = 0;
-                                                  });
-                                                },
-                                                onAudienceTap: _openAudience,
-                                                audiencePlatforms:
-                                                    _audiencePlatforms,
-                                                audienceFollowersCount:
-                                                    int.tryParse(
-                                                        _audienceCountController
-                                                            .text
-                                                            .trim()),
-                                              ),
-              ),
-            ],
-          ),
-        );
-      },
+                                                      if (_selected
+                                                          .contains(slug)) {
+                                                        _selected.remove(slug);
+                                                      } else {
+                                                        _selected.add(slug);
+                                                      }
+                                                    });
+                                                  },
+                                                  onToggleRole: (slug) {
+                                                    setState(() {
+                                                      if (_selectedRoles
+                                                          .contains(slug)) {
+                                                        _selectedRoles
+                                                            .remove(slug);
+                                                      } else {
+                                                        _selectedRoles
+                                                            .add(slug);
+                                                      }
+                                                    });
+                                                  },
+                                                  onChangeProviderType: () =>
+                                                      setState(() => _step = 4),
+                                                  onSaveServices:
+                                                      _openCompanyDetails,
+                                                  onNextKind: () {
+                                                    setState(() {
+                                                      _step = 2;
+                                                      _currentRoleIndex = 0;
+                                                    });
+                                                  },
+                                                  onAudienceTap: _openAudience,
+                                                  audiencePlatforms:
+                                                      _audiencePlatforms,
+                                                  audienceFollowersCount:
+                                                      int.tryParse(
+                                                          _audienceCountController
+                                                              .text
+                                                              .trim()),
+                                                ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -1000,6 +1091,11 @@ class _ProviderTypeStep extends StatelessWidget {
                     width: double.infinity,
                     height: 48,
                     child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed:
                             selected == null || saving ? null : onContinue,
                         child: saving

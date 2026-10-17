@@ -110,6 +110,7 @@ declare
   v_path text;
   v_size bigint;
   v_mime text;
+  v_recent_uploads integer := 0;
   v_profile jsonb := coalesce(p_profile, '{}'::jsonb);
   v_areas text[] := array[]::text[];
   v_old_profile jsonb;
@@ -216,6 +217,16 @@ begin
     raise exception 'Maximum limit of % provider capabilities reached.', v_limit using errcode = 'P0206';
   end if;
 
+  if jsonb_array_length(coalesce(p_evidence, '[]'::jsonb)) > 0 then
+    select count(distinct e.file_url) into v_recent_uploads
+      from public.provider_capability_evidence e
+      join public.provider_capabilities pc on pc.id = e.provider_capability_id
+      where pc.user_id = v_user and e.created_at > now() - interval '1 hour';
+    if v_recent_uploads >= 20 then
+      raise exception 'Evidence upload limit reached. Try again later.' using errcode = 'P0213';
+    end if;
+  end if;
+
   v_all := v_services || case when lower(coalesce(v_work_enabled, 'false')) in ('true', '1')
     and lower(coalesce(v_category_work_enabled, 'true')) not in ('false', '0')
     then v_roles else array[]::text[] end;
@@ -277,11 +288,12 @@ begin
         or (r.scope_type = 'capability' and r.scope_id = any(v_services))
       ) and (
         v_key = any(coalesce(r.required_evidence, array[]::text[]))
-        or (jsonb_typeof(r.evidence_requirements) = 'array' and
-            exists (select 1 from jsonb_array_elements_text(r.evidence_requirements) ev(value)
+        or exists (select 1 from jsonb_array_elements_text(
+              case when jsonb_typeof(r.evidence_requirements) = 'array'
+                then r.evidence_requirements else '[]'::jsonb end
+            ) ev(value)
               where ev.value = v_key))
-      )
-    ) then
+      ) then
       raise exception 'Evidence type is not required for selected company services.' using errcode = 'P0205';
     end if;
     select (o.metadata->>'size')::bigint, lower(coalesce(o.metadata->>'mimetype', ''))
@@ -301,11 +313,12 @@ begin
           or (r.scope_type = 'capability' and r.scope_id = v_service)
         ) and (
           v_key = any(coalesce(r.required_evidence, array[]::text[]))
-          or (jsonb_typeof(r.evidence_requirements) = 'array' and
-              exists (select 1 from jsonb_array_elements_text(r.evidence_requirements) ev(value)
+          or exists (select 1 from jsonb_array_elements_text(
+                case when jsonb_typeof(r.evidence_requirements) = 'array'
+                  then r.evidence_requirements else '[]'::jsonb end
+              ) ev(value)
                 where ev.value = v_key))
-        )
-      ) then
+        ) then
         insert into public.provider_capability_evidence(
           provider_capability_id, requirement_key, file_url, status
         )
@@ -370,9 +383,6 @@ drop trigger if exists trg_delete_orphan_provider_evidence_object
 create trigger trg_delete_orphan_provider_evidence_object
   after delete on public.provider_capability_evidence
   for each row execute function private.delete_orphan_provider_evidence_object();
-
-update storage.buckets set public = false, file_size_limit = 5242880
-  where id = 'provider-evidence';
 
 commit;
 

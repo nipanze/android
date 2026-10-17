@@ -1711,5 +1711,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "companyLeaveTitle": "Leave company setup?",
+  "companyLeaveSelectionsMessage": "Your selected services and roles have not been saved.",
+  "companyLeaveDetailsMessage": "Your company details and selections have not been saved.",
+  "companyLeaveKeepEditing": "Keep editing",
+  "companyLeaveDiscard": "Discard changes"
 }

@@ -1622,5 +1622,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "companyLeaveTitle": "Quitter la configuration de l’entreprise ?",
+  "companyLeaveSelectionsMessage": "Les services et rôles sélectionnés ne sont pas enregistrés.",
+  "companyLeaveDetailsMessage": "Les détails de l’entreprise et vos sélections ne sont pas enregistrés.",
+  "companyLeaveKeepEditing": "Continuer la modification",
+  "companyLeaveDiscard": "Abandonner les modifications"
 }

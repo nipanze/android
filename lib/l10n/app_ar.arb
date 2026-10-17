@@ -1615,5 +1615,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "companyLeaveTitle": "هل تريد مغادرة إعداد الشركة؟",
+  "companyLeaveSelectionsMessage": "لم يتم حفظ الخدمات والأدوار التي اخترتها.",
+  "companyLeaveDetailsMessage": "لم يتم حفظ تفاصيل الشركة واختياراتك.",
+  "companyLeaveKeepEditing": "متابعة التعديل",
+  "companyLeaveDiscard": "تجاهل التغييرات"
 }

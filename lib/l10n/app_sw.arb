@@ -1615,5 +1615,10 @@
         "type": "int"
       }
     }
-  }
+  },
+  "companyLeaveTitle": "Uondoke kwenye usanidi wa kampuni?",
+  "companyLeaveSelectionsMessage": "Huduma na majukumu uliyochagua bado hayajahifadhiwa.",
+  "companyLeaveDetailsMessage": "Maelezo ya kampuni na chaguo zako bado hayajahifadhiwa.",
+  "companyLeaveKeepEditing": "Endelea kuhariri",
+  "companyLeaveDiscard": "Tupa mabadiliko"
 }

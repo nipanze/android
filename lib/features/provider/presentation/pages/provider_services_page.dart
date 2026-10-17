@@ -655,10 +655,10 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                   providerType: widget.categoryTypes[cap.categorySlug],
                   onEditCompanyDetails:
                       widget.categoryTypes[cap.categorySlug] ==
-                              ProviderCategoryType.company &&
-                          !cap.isWork
-                      ? () => widget.onEditCompanyDetails?.call(cap)
-                      : null,
+                                  ProviderCategoryType.company &&
+                              !cap.isWork
+                          ? () => widget.onEditCompanyDetails?.call(cap)
+                          : null,
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
                   onEdit: () => widget.onTapCapability(cap),

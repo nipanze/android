@@ -3630,4 +3630,21 @@ class AppLocalizationsRw extends AppLocalizations {
   String providerOpenJobsMatch(int count) {
     return 'Imirimo $count ihuye irafunguye';
   }
+
+  @override
+  String get companyLeaveTitle => 'Uve mu igenamiterere ry’ikigo?';
+
+  @override
+  String get companyLeaveSelectionsMessage =>
+      'Serivisi n’imirimo wahisemo ntibirabikwa.';
+
+  @override
+  String get companyLeaveDetailsMessage =>
+      'Amakuru y’ikigo n’ibyo wahisemo ntibirabikwa.';
+
+  @override
+  String get companyLeaveKeepEditing => 'Komeza guhindura';
+
+  @override
+  String get companyLeaveDiscard => 'Hagarika ibyahinduwe';
 }

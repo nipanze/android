@@ -3663,4 +3663,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String providerOpenJobsMatch(int count) {
     return '$count offres d’emploi correspondent';
   }
+
+  @override
+  String get companyLeaveTitle => 'Quitter la configuration de l’entreprise ?';
+
+  @override
+  String get companyLeaveSelectionsMessage =>
+      'Les services et rôles sélectionnés ne sont pas enregistrés.';
+
+  @override
+  String get companyLeaveDetailsMessage =>
+      'Les détails de l’entreprise et vos sélections ne sont pas enregistrés.';
+
+  @override
+  String get companyLeaveKeepEditing => 'Continuer la modification';
+
+  @override
+  String get companyLeaveDiscard => 'Abandonner les modifications';
 }

@@ -3623,4 +3623,21 @@ class AppLocalizationsSw extends AppLocalizations {
   String providerOpenJobsMatch(int count) {
     return 'Kazi $count zilizo wazi zinaendana';
   }
+
+  @override
+  String get companyLeaveTitle => 'Uondoke kwenye usanidi wa kampuni?';
+
+  @override
+  String get companyLeaveSelectionsMessage =>
+      'Huduma na majukumu uliyochagua bado hayajahifadhiwa.';
+
+  @override
+  String get companyLeaveDetailsMessage =>
+      'Maelezo ya kampuni na chaguo zako bado hayajahifadhiwa.';
+
+  @override
+  String get companyLeaveKeepEditing => 'Endelea kuhariri';
+
+  @override
+  String get companyLeaveDiscard => 'Tupa mabadiliko';
 }

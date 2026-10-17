@@ -6489,6 +6489,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} open jobs match'**
   String providerOpenJobsMatch(int count);
+
+  /// No description provided for @companyLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave company setup?'**
+  String get companyLeaveTitle;
+
+  /// No description provided for @companyLeaveSelectionsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your selected services and roles have not been saved.'**
+  String get companyLeaveSelectionsMessage;
+
+  /// No description provided for @companyLeaveDetailsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your company details and selections have not been saved.'**
+  String get companyLeaveDetailsMessage;
+
+  /// No description provided for @companyLeaveKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get companyLeaveKeepEditing;
+
+  /// No description provided for @companyLeaveDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes'**
+  String get companyLeaveDiscard;
 }
 
 class _AppLocalizationsDelegate

@@ -64,8 +64,7 @@ class CapabilityBadge extends StatelessWidget {
             name: capability.categoryName ?? capability.categorySlug!,
             icon: icon,
           ).localizedName(localeCode);
-    final categoryKind =
-        isJob && providerType == ProviderCategoryType.company
+    final categoryKind = isJob && providerType == ProviderCategoryType.company
         ? l10n.companyPersonalProfile
         : providerType == ProviderCategoryType.company
             ? l10n.providerTypeCompany

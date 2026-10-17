@@ -3609,4 +3609,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String providerOpenJobsMatch(int count) {
     return '$count open jobs match';
   }
+
+  @override
+  String get companyLeaveTitle => 'Leave company setup?';
+
+  @override
+  String get companyLeaveSelectionsMessage =>
+      'Your selected services and roles have not been saved.';
+
+  @override
+  String get companyLeaveDetailsMessage =>
+      'Your company details and selections have not been saved.';
+
+  @override
+  String get companyLeaveKeepEditing => 'Keep editing';
+
+  @override
+  String get companyLeaveDiscard => 'Discard changes';
 }

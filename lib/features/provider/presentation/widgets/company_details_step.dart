@@ -1,4 +1,4 @@
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/errors/app_exception.dart';
@@ -16,7 +16,10 @@ class CompanyDetailsStep extends StatefulWidget {
     required this.initialProfile,
     required this.requirements,
     required this.existingEvidence,
+    required this.initialEvidenceDraftPaths,
     required this.providerRepository,
+    required this.onDraftChanged,
+    required this.onEvidenceDraftChanged,
     required this.onSave,
   });
 
@@ -26,7 +29,10 @@ class CompanyDetailsStep extends StatefulWidget {
   final ProviderCompanyProfile? initialProfile;
   final List<Map<String, dynamic>> requirements;
   final List<Map<String, dynamic>> existingEvidence;
+  final Map<String, String> initialEvidenceDraftPaths;
   final IProviderRepository providerRepository;
+  final ValueChanged<ProviderCompanyProfile> onDraftChanged;
+  final ValueChanged<Map<String, String>> onEvidenceDraftChanged;
   final Future<void> Function({
     required Map<String, dynamic> profile,
     required List<Map<String, String>> evidence,
@@ -58,6 +64,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
     _teamSize = profile?.teamSize;
     _yearsInBusiness = profile?.yearsInBusiness;
+    _uploadedPaths.addAll(widget.initialEvidenceDraftPaths);
   }
 
   @override
@@ -96,6 +103,22 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         _ => userFacingErrorMessage(error),
       };
 
+  ProviderCompanyProfile _currentProfile() => ProviderCompanyProfile(
+        categorySlug: widget.categorySlug,
+        companyName: _nameController.text,
+        registrationNumber: _registrationController.text,
+        teamSize: _teamSize,
+        yearsInBusiness: _yearsInBusiness,
+        serviceAreas: _areasController.text
+            .split(',')
+            .map((area) => area.trim())
+            .where((area) => area.isNotEmpty)
+            .toSet()
+            .toList(),
+      );
+
+  void _notifyDraftChanged() => widget.onDraftChanged(_currentProfile());
+
   List<Map<String, dynamic>> _evidenceFor(String key) {
     final result = <Map<String, dynamic>>[];
     for (final capability in widget.existingEvidence) {
@@ -127,16 +150,21 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   Future<void> _pickEvidence(String key) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: const ['jpg', 'jpeg', 'png', 'pdf'],
+      const evidenceTypes = XTypeGroup(
+        label: 'Evidence',
+        extensions: ['jpg', 'jpeg', 'png', 'pdf'],
       );
+      final file = await openFile(acceptedTypeGroups: [evidenceTypes]);
       if (file == null) return;
+      final fileSize = await file.length();
+      if (fileSize > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
       final bytes = await file.readAsBytes();
       if (bytes.lengthInBytes > 5 * 1024 * 1024) {
         throw StateError(l10n.companyEvidenceTooLarge);
       }
-      final extension = file.extension?.toLowerCase();
+      final extension = file.name.split('.').last.toLowerCase();
       final mime = switch (extension) {
         'jpg' || 'jpeg' => 'image/jpeg',
         'png' => 'image/png',
@@ -156,6 +184,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         _uploadedPaths[key] = path;
         _saveError = null;
       });
+      widget.onEvidenceDraftChanged(Map.of(_uploadedPaths));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,19 +199,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
       _saving = true;
       _saveError = null;
     });
-    final profile = ProviderCompanyProfile(
-      categorySlug: widget.categorySlug,
-      companyName: _nameController.text,
-      registrationNumber: _registrationController.text,
-      teamSize: _teamSize,
-      yearsInBusiness: _yearsInBusiness,
-      serviceAreas: _areasController.text
-          .split(',')
-          .map((area) => area.trim())
-          .where((area) => area.isNotEmpty)
-          .toSet()
-          .toList(),
-    );
+    final profile = _currentProfile();
     try {
       await widget.onSave(
         profile: profile.toJson(),
@@ -241,6 +258,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   border: const OutlineInputBorder(),
                   counterText: '',
                 ),
+                onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -252,13 +270,17 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   counterText: '',
                   helperText: l10n.companyRegistrationPrivate,
                 ),
+                onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 8),
               _ChoiceChips(
                 label: l10n.companyTeamSize,
                 values: _teamSizes,
                 selected: _teamSize,
-                onSelected: (value) => setState(() => _teamSize = value),
+                onSelected: (value) {
+                  setState(() => _teamSize = value);
+                  _notifyDraftChanged();
+                },
                 labels: [
                   l10n.companyTeamOneToFive,
                   l10n.companyTeamSixToTwenty,
@@ -271,7 +293,10 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 label: l10n.companyYearsInBusiness,
                 values: _businessYears,
                 selected: _yearsInBusiness,
-                onSelected: (value) => setState(() => _yearsInBusiness = value),
+                onSelected: (value) {
+                  setState(() => _yearsInBusiness = value);
+                  _notifyDraftChanged();
+                },
                 labels: [
                   l10n.companyYearsUnderOne,
                   l10n.companyYearsOneToTwo,
@@ -289,6 +314,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   border: const OutlineInputBorder(),
                   helperText: l10n.companyServiceAreasHint,
                 ),
+                onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 20),
               Text(l10n.companyProofTitle,
