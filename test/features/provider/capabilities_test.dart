@@ -137,6 +137,61 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
+  testWidgets('Company category sheet shows services and hides role flow',
+      (tester) async {
+    final needsRepo = MockNeedsRepository();
+    when(needsRepo.getCategories).thenAnswer((_) async => const [
+          NeedCategory(
+            slug: 'machinery_equipment',
+            name: 'Machinery & Equipment',
+            icon: '🚜',
+          ),
+        ]);
+    when(() => needsRepo.getCapabilities(
+          categorySlug: any(named: 'categorySlug'),
+        )).thenAnswer((_) async => const [
+          NeedCapability(
+            slug: 'excavator_hire',
+            categorySlug: 'machinery_equipment',
+            name: 'Excavator Hire',
+          ),
+        ]);
+    when(() => mockRepo.capabilityProfilesEnabled())
+        .thenAnswer((_) async => true);
+    when(() => mockRepo.getMyCategoryTypes()).thenAnswer((_) async => {
+          'machinery_equipment': ProviderCategoryType.company,
+        });
+    when(() => mockRepo.setCategoryType(
+          'machinery_equipment',
+          ProviderCategoryType.company,
+        )).thenAnswer((_) async {});
+    when(() => mockRepo.workProfilesEnabled()).thenAnswer((_) async => true);
+    when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
+        .thenAnswer((_) async => true);
+
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: AddServiceSheet(
+          existingSlugs: const {},
+          preselectedCategorySlug: 'machinery_equipment',
+          needsRepository: needsRepo,
+          providerRepository: mockRepo,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('WHAT WE OFFER'), findsOneWidget);
+    expect(find.text('Excavator Hire'), findsOneWidget);
+    expect(find.text('What roles do you do?'), findsNothing);
+    expect(find.text('STEP 1 OF 3'), findsNothing);
+    expect(find.text('Machine Operator'), findsNothing);
+  });
+
   group('ProviderCapability Entity', () {
     test('parses fromMap correctly for self-declared', () {
       final map = {

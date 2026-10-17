@@ -393,7 +393,7 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 | D8 | Public Company badge | Superseded | 2026-10-17 | Public Company branding remains deferred; the revision requires hidden Individual services to be excluded from public badges. |
 | D9 | Company staff and operators | Decided | 2026-10-17 | Multiple staff/operators are out of scope. |
 | D10 | Company job-profile note | Decided | 2026-10-17 | Show: “Job profiles are personal and are saved under your own name.” |
-| D11 | Provider type controls category C/D | Decided | 2026-10-17 | Remove the jobs switch. Individual saves work roles only; Company can save services and optional roles together. Retain Company services after switching to Individual, hide them from matching and badges, and expose an explicit hidden marker on Screen A and detail. |
+| D11 | Provider type controls category C/D | Decided | 2026-10-17 | Remove the jobs switch. Individual sees and saves work roles only; Company sees and saves services only. Preserve hidden data for the other capability type when saving, and retain Company services after switching to Individual, hidden from matching and badges with a marker on Screen A and detail. |
 
 ### 3. Phase Table
 | Phase | Task | Files / SQL | Tests | Status | Date | Notes |
@@ -407,7 +407,7 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 | P6 | Admin portal queue & Settings | Admin portal pages | Integration | In Progress | 2026-10-16 | Settings flags & admin review policies seeded |
 | P7 | Localization, Themes & RTL | `app_en.arb`, `_sw`, `_fr`, `_rw`, `_ar` | L10n & Theme tests | Done | 2026-10-16 | Dynamic tokens, theme-adaptive cards, clean analyze (0 errors, 0 warnings) |
 | P2a | SQL provider category type + eligibility enforcement | `sql/patch_provider_category_type.sql` | SQL/RLS/idempotency checks | In Progress | 2026-10-17 | Standalone patch per `.agents/AGENTS.md`; includes Individual service rejection and excludes retained services from badges, opportunities, and offer matching. Runtime SQL checks remain pending. |
-| P3a | Sheet B2 + provider-type-driven C/D | `provider_type_sheet.dart`, `add_service_sheet.dart`, `provider_services_page.dart` | Flow/offline/l10n/widget checks | In Progress | 2026-10-17 | No jobs switch. Individual sees roles only; Company sees services plus optional roles. Type can be changed from C/D; prior Company services remain hidden and explicitly marked. |
+| P3a | Sheet B2 + provider-type-driven C/D | `provider_type_sheet.dart`, `add_service_sheet.dart`, `provider_services_page.dart` | Flow/offline/l10n/widget checks | In Progress | 2026-10-17 | No jobs switch. Individual sees roles only; Company sees services only. Type can be changed from C/D; hidden capabilities of the other type remain preserved, and Company services are marked while Individual is selected. |
 
 ### 4. Per-Category Tracker (14 Categories)
 | Category Slug | Catalog Seeded | Offer Sheet | Roles/Kinds/Quals | Evidence Rules | Hire Need | Flag State | Status |
@@ -484,6 +484,6 @@ This stage introduces no new database columns, tables, or migrations. All expiry
   - Responsiveness & Reliability: Wrapped `CapabilityDetailSheet` in `SingleChildScrollView` + `SafeArea` to prevent layout overflow across all screen sizes and test environments.
   - Verification: `flutter analyze lib/features/provider test/features/provider` passed with 0 issues; `flutter test test/features/provider/capabilities_test.dart` passed 24/24 tests.
 - 2026-10-17: Added the approved B2 provider-type step and private per-category `provider_category_profiles` preference. The revised flow makes provider type control service visibility; Company services are retained but hidden for Individual, and Company service/role selections save together. The capability flag controls visibility; provider type does not alter verification or personal job profiles.
-- 2026-10-17: Revised provider-type UI analysis passed (`flutter analyze lib/features/provider test/features/provider`, 0 issues); provider suite passed 27/27, including Individual hidden-service and badge-label checks. ARB JSON parses for all five locales. Live SQL/RLS execution, full app suite, RTL/theme/large-text visual checks, and Home snapshot comparison remain pending; keep P2a/P3a in progress until those run.
+- 2026-10-17: Revised provider-type UI analysis passed (`flutter analyze lib/features/provider test/features/provider`, 0 issues); provider suite passed 28/28, including Individual and Company section visibility, hidden-service, and badge-label checks. ARB JSON parses for all five locales. Live SQL/RLS execution, full app suite, RTL/theme/large-text visual checks, and Home snapshot comparison remain pending; keep P2a/P3a in progress until those run.
 
 

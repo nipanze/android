@@ -285,7 +285,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
 
     final workMetadataByRole = <String, Map<String, dynamic>>{};
-    if (_categoryWorkProfilesEnabled) {
+    final canEditWorkRoles = _categoryWorkProfilesEnabled &&
+        _providerType == ProviderCategoryType.individual;
+    if (canEditWorkRoles) {
       for (final roleSlug in _selectedRoles) {
         workMetadataByRole[roleSlug] = _buildWorkMetadata(roleSlug);
         final role = _categoryRoles.firstWhere(
@@ -306,18 +308,27 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       }
     } else {
       // Keep saved roles intact while the category's role feature is disabled.
+      // Company sheets do not expose role editing. Keep any existing work
+      // capability rows in the atomic category save without changing them.
       for (final role in _categoryRoles) {
         final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
         if (widget.existingSlugs.contains(capSlug)) slugs.add(capSlug);
+      }
+      for (final capability in widget.existingCapabilities) {
+        if (capability.isWork &&
+            capability.categorySlug == _selectedCategory?.slug &&
+            !slugs.contains(capability.capabilitySlug)) {
+          slugs.add(capability.capabilitySlug);
+        }
       }
     }
 
     return ProviderCapabilitySelection(
       slugs: slugs,
       metadataBySlug: metadataBySlug,
-      openWorkProfile: _categoryWorkProfilesEnabled,
+      openWorkProfile: canEditWorkRoles,
       categorySlug: _selectedCategory?.slug,
-      workRoles: _selectedRoles.toList(),
+      workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
     );
   }
@@ -1094,8 +1105,10 @@ class _CategoryCapabilitiesView extends StatelessWidget {
       orderedGroups.add((null, null, noGroup));
     }
 
+    final individualType = providerType == ProviderCategoryType.individual;
+    final showRoles = individualType && iWantJobs;
     final hasServices = companyType && selected.isNotEmpty;
-    final hasRoles = iWantJobs && selectedRoles.isNotEmpty;
+    final hasRoles = showRoles && selectedRoles.isNotEmpty;
 
     return Stack(
       children: [
@@ -1189,13 +1202,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
               ],
 
             // ── Jobs: role selection ───────────────────────────────
-            if (iWantJobs) ...[
-              if (companyType)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(l10n.providerTypeJobsPersonalNote,
-                      style: Theme.of(context).textTheme.bodySmall),
-                ),
+            if (showRoles) ...[
               const SizedBox(height: 16),
               Text(
                 l10n.providerTypeStepOneOfThree,
@@ -1250,10 +1257,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           bottom: 8,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(
-                '${l10n.servicesCount(companyType ? selected.length : 0)} · ${l10n.rolesCount(iWantJobs ? selectedRoles.length : 0)}',
+                individualType
+                    ? l10n.rolesCount(showRoles ? selectedRoles.length : 0)
+                    : l10n.servicesCount(selected.length),
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
-            if (hasRoles)
+            if (individualType)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.proPurple,
@@ -1266,9 +1275,11 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: onNextKind,
+                onPressed: hasRoles ? onNextKind : null,
                 child: Text(
-                  l10n.providerTypeNextKind,
+                  hasRoles
+                      ? l10n.providerTypeNextKind
+                      : l10n.selectAtLeastOneRole,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),
