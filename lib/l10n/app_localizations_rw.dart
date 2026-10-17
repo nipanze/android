@@ -3326,8 +3326,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerTypeNextKind => 'Komeza: hitamo ubwoko';
 
   @override
-  String providerTypeSaveServicesCount(int count) =>
-      'Bika serivisi' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(Object count) {
+    return 'Bika serivisi $count';
+  }
 
   @override
   String get providerTypeSelectService => 'Hitamo nibura serivisi imwe';
@@ -3340,37 +3341,37 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerTypeOfferingAs => 'Utanga nka';
 
   @override
-  String get providerTypeOffering => "Uratanga serivisi muri iki cyiciro";
+  String get providerTypeOffering => 'Utanga serivisi muri iki cyiciro';
 
   @override
-  String get providerTypeTitle => "Ni nde utanga serivisi?";
+  String get providerTypeTitle => 'Ni nde utanga serivisi?';
 
   @override
   String get providerTypeSubtitle =>
-      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+      'Ibi bifasha abantu kumenya niba bazakorana nawe cyangwa n’ubucuruzi bwawe. Ushobora kubihitamo ukundi kuri buri cyiciro.';
 
   @override
-  String get providerTypeIndividual => "Umuntu ku giti cye";
+  String get providerTypeIndividual => 'Umuntu ku giti cye';
 
   @override
   String get providerTypeIndividualDesc =>
       'Ntanga ubumenyi bwanjye ku bakiriya ku giti cyanjye, ndi umwigenga cyangwa umukozi.';
 
   @override
-  String get providerTypeCompany => "Ikigo / Umuryango";
+  String get providerTypeCompany => 'Ikigo / Umuryango';
 
   @override
   String get providerTypeCompanyDesc =>
-      'A registered business, agency, team or institution.';
+      'Ubucuruzi, ikigo cy’ubuhuza, itsinda cyangwa ikigo cyanditse.';
 
   @override
   String get providerTypeNotVerification =>
-      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+      'Guhitamo ibi ntibikugenzura. Igenzura ririhariye kandi risabwa gusa iyo serivisi irikeneye.';
 
   @override
-  String get providerTypeChooseOne => "Hitamo kimwe kugira ngo ukomeze";
+  String get providerTypeChooseOne => 'Hitamo kimwe kugira ngo ukomeze';
 
   @override
   String get providerTypeJobsPersonalNote =>
-      'Job profiles are personal and are saved under your own name.';
+      'Umwirondoro w’akazi ni uwawe ku giti cyawe kandi ubikwa mu izina ryawe.';
 }

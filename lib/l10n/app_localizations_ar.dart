@@ -3308,8 +3308,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerTypeNextKind => 'التالي: اختر تخصصك';
 
   @override
-  String providerTypeSaveServicesCount(int count) =>
-      'حفظ الخدمات' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(Object count) {
+    return 'حفظ الخدمات $count';
+  }
 
   @override
   String get providerTypeSelectService => 'اختر خدمة واحدة على الأقل';
@@ -3321,37 +3322,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerTypeOfferingAs => 'تقدم بصفتك';
 
   @override
-  String get providerTypeOffering => "تقديم الخدمات في هذه الفئة";
+  String get providerTypeOffering => 'تقدم في هذه الفئة';
 
   @override
-  String get providerTypeTitle => "من الذي يقدم الخدمة؟";
+  String get providerTypeTitle => 'من الذي يقدم الخدمة؟';
 
   @override
   String get providerTypeSubtitle =>
-      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+      'يوضح هذا للناس ما إذا كانوا سيتعاملون معك أو مع شركتك. يمكنك تحديد ذلك بشكل مختلف لكل فئة.';
 
   @override
-  String get providerTypeIndividual => "فرد";
+  String get providerTypeIndividual => 'فرد';
 
   @override
   String get providerTypeIndividualDesc =>
       'أقدم مهاراتي الشخصية مباشرةً للعملاء بصفتي مستقلاً أو عاملاً.';
 
   @override
-  String get providerTypeCompany => "شركة / مؤسسة";
+  String get providerTypeCompany => 'شركة / مؤسسة';
 
   @override
-  String get providerTypeCompanyDesc =>
-      'A registered business, agency, team or institution.';
+  String get providerTypeCompanyDesc => 'شركة أو وكالة أو فريق أو مؤسسة مسجلة.';
 
   @override
   String get providerTypeNotVerification =>
-      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+      'هذا الاختيار لا يعني التحقق من هويتك. التحقق منفصل ولا يُطلب إلا عندما تتطلبه خدمة معينة.';
 
   @override
-  String get providerTypeChooseOne => "اختر خياراً واحداً للمتابعة";
+  String get providerTypeChooseOne => 'اختر خياراً واحداً للمتابعة';
 
   @override
-  String get providerTypeJobsPersonalNote =>
-      'Job profiles are personal and are saved under your own name.';
+  String get providerTypeJobsPersonalNote => 'ملفات العمل شخصية وتُحفظ باسمك.';
 }

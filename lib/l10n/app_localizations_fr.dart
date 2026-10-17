@@ -3356,8 +3356,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerTypeNextKind => 'Suivant : choisir votre spécialité';
 
   @override
-  String providerTypeSaveServicesCount(int count) =>
-      'Enregistrer les services' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(Object count) {
+    return 'Enregistrer les services $count';
+  }
 
   @override
   String get providerTypeSelectService => 'Sélectionnez au moins un service';
@@ -3370,37 +3371,37 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerTypeOfferingAs => 'Vous proposez en tant que';
 
   @override
-  String get providerTypeOffering => "Proposez dans cette catégorie";
+  String get providerTypeOffering => 'Offre dans cette catégorie';
 
   @override
-  String get providerTypeTitle => "Qui propose le service ?";
+  String get providerTypeTitle => 'Qui propose le service ?';
 
   @override
   String get providerTypeSubtitle =>
-      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+      'Cela indique aux personnes si elles traiteront avec vous ou votre entreprise. Vous pouvez choisir différemment pour chaque catégorie.';
 
   @override
-  String get providerTypeIndividual => "Particulier";
+  String get providerTypeIndividual => 'Particulier';
 
   @override
   String get providerTypeIndividualDesc =>
       'Je propose directement mes compétences personnelles aux clients, en tant qu’indépendant ou salarié.';
 
   @override
-  String get providerTypeCompany => "Entreprise / Organisation";
+  String get providerTypeCompany => 'Entreprise / Organisation';
 
   @override
   String get providerTypeCompanyDesc =>
-      'A registered business, agency, team or institution.';
+      'Une entreprise, une agence, une équipe ou une institution enregistrée.';
 
   @override
   String get providerTypeNotVerification =>
-      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+      'Ce choix ne vous vérifie pas. La vérification est distincte et n’est demandée que si un service l’exige.';
 
   @override
-  String get providerTypeChooseOne => "Choisissez une option pour continuer";
+  String get providerTypeChooseOne => 'Choisissez une option pour continuer';
 
   @override
   String get providerTypeJobsPersonalNote =>
-      'Job profiles are personal and are saved under your own name.';
+      'Les profils professionnels sont personnels et enregistrés sous votre nom.';
 }

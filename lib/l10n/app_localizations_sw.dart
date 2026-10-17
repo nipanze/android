@@ -3321,8 +3321,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerTypeNextKind => 'Endelea: chagua aina';
 
   @override
-  String providerTypeSaveServicesCount(int count) =>
-      'Hifadhi huduma' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(Object count) {
+    return 'Hifadhi huduma $count';
+  }
 
   @override
   String get providerTypeSelectService => 'Chagua angalau huduma moja';
@@ -3335,37 +3336,37 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerTypeOfferingAs => 'Unatoa kama';
 
   @override
-  String get providerTypeOffering => "Kutoa huduma katika aina hii";
+  String get providerTypeOffering => 'Unatoa huduma katika kategoria hii';
 
   @override
-  String get providerTypeTitle => "Nani anayetoa huduma?";
+  String get providerTypeTitle => 'Nani anayetoa huduma?';
 
   @override
   String get providerTypeSubtitle =>
-      'This tells people whether they would deal with you or with your business. You can set it differently for each category.';
+      'Hii inawaeleza watu kama watawasiliana nawe au na biashara yako. Unaweza kuweka tofauti kwa kila aina.';
 
   @override
-  String get providerTypeIndividual => "Mtu binafsi";
+  String get providerTypeIndividual => 'Mtu binafsi';
 
   @override
   String get providerTypeIndividualDesc =>
       'Ninatoa ujuzi wangu binafsi moja kwa moja kwa wateja, kama mfanyakazi huru au mfanyakazi.';
 
   @override
-  String get providerTypeCompany => "Kampuni / Shirika";
+  String get providerTypeCompany => 'Kampuni / Shirika';
 
   @override
   String get providerTypeCompanyDesc =>
-      'A registered business, agency, team or institution.';
+      'Biashara, wakala, timu au taasisi iliyosajiliwa.';
 
   @override
   String get providerTypeNotVerification =>
-      'Selecting this does not verify you. Verification is separate and only asked where a service requires it.';
+      'Kuchagua hili hakuthibitishi utambulisho wako. Uthibitishaji ni tofauti na huombwa tu pale huduma inapohitaji.';
 
   @override
-  String get providerTypeChooseOne => "Chagua chaguo moja ili kuendelea";
+  String get providerTypeChooseOne => 'Chagua chaguo moja ili kuendelea';
 
   @override
   String get providerTypeJobsPersonalNote =>
-      'Job profiles are personal and are saved under your own name.';
+      'Wasifu wa kazi ni wa mtu binafsi na huhifadhiwa kwa jina lako.';
 }

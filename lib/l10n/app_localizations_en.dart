@@ -3309,8 +3309,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerTypeNextKind => 'Next: choose your kind';
 
   @override
-  String providerTypeSaveServicesCount(int count) =>
-      'Save services' + ' (' + count.toString() + ')';
+  String providerTypeSaveServicesCount(Object count) {
+    return 'Save services $count';
+  }
 
   @override
   String get providerTypeSelectService => 'Select at least one service';

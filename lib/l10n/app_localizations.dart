@@ -5973,25 +5973,125 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 role} other{{count} roles}}'**
   String rolesCount(int count);
+
+  /// No description provided for @providerTypeChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
   String get providerTypeChange;
+
+  /// No description provided for @providerTypeWhatWeOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'What we offer'**
   String get providerTypeWhatWeOffer;
+
+  /// No description provided for @providerTypeWhatRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'What roles do you do?'**
   String get providerTypeWhatRoles;
+
+  /// No description provided for @providerTypeStepOneOfThree.
+  ///
+  /// In en, this message translates to:
+  /// **'STEP 1 OF 3'**
   String get providerTypeStepOneOfThree;
+
+  /// No description provided for @providerTypePickRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick every role that fits you. You can add more later.'**
   String get providerTypePickRoles;
+
+  /// No description provided for @providerTypeNextKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: choose your kind'**
   String get providerTypeNextKind;
-  String providerTypeSaveServicesCount(int count);
+
+  /// No description provided for @providerTypeSaveServicesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Save services {count}'**
+  String providerTypeSaveServicesCount(Object count);
+
+  /// No description provided for @providerTypeSelectService.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one service'**
   String get providerTypeSelectService;
+
+  /// No description provided for @providerTypeHiddenCompanyOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden: offered as Company only'**
   String get providerTypeHiddenCompanyOnly;
+
+  /// No description provided for @providerTypeOfferingAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Offering as'**
   String get providerTypeOfferingAs;
+
+  /// No description provided for @providerTypeOffering.
+  ///
+  /// In en, this message translates to:
+  /// **'Offering in this category'**
   String get providerTypeOffering;
+
+  /// No description provided for @providerTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is offering?'**
   String get providerTypeTitle;
+
+  /// No description provided for @providerTypeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This tells people whether they would deal with you or with your business. You can set it differently for each category.'**
   String get providerTypeSubtitle;
+
+  /// No description provided for @providerTypeIndividual.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual'**
   String get providerTypeIndividual;
+
+  /// No description provided for @providerTypeIndividualDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'I offer my personal skills directly to clients, as a freelancer or worker.'**
   String get providerTypeIndividualDesc;
+
+  /// No description provided for @providerTypeCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company / Organization'**
   String get providerTypeCompany;
+
+  /// No description provided for @providerTypeCompanyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'A registered business, agency, team or institution.'**
   String get providerTypeCompanyDesc;
+
+  /// No description provided for @providerTypeNotVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Selecting this does not verify you. Verification is separate and only asked where a service requires it.'**
   String get providerTypeNotVerification;
+
+  /// No description provided for @providerTypeChooseOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one option to continue'**
   String get providerTypeChooseOne;
+
+  /// No description provided for @providerTypeJobsPersonalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Job profiles are personal and are saved under your own name.'**
   String get providerTypeJobsPersonalNote;
 }
 
