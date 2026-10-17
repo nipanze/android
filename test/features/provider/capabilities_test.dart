@@ -196,10 +196,9 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('Review services'), findsOneWidget);
-    expect(
-        find.text(
-            'These capabilities will be saved as self-declared. Verification applies separately to each service.'),
-        findsOneWidget);
+    expect(find.text('Company / organization name'), findsOneWidget);
+    expect(find.text('Business registration'), findsOneWidget);
+    expect(find.text('Portfolio or website'), findsOneWidget);
     expect(find.text('Excavator Hire'), findsOneWidget);
   });
 

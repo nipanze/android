@@ -252,15 +252,49 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     };
   }
 
-  ProviderCapabilitySelection _selection() {
+  ProviderCapabilitySelection _selection({
+    Map<String, dynamic> companyDetails = const {},
+  }) {
     final slugs = <String>[];
     if (_providerType != ProviderCategoryType.individual) {
       slugs.addAll(_selected);
     }
     final metadataBySlug = <String, Map<String, dynamic>>{};
 
+    if (_providerType == ProviderCategoryType.company &&
+        companyDetails.values
+            .any((value) => value.toString().trim().isNotEmpty)) {
+      for (final slug in _selected) {
+        final savedMetadata = widget.existingCapabilities
+            .where((capability) => capability.capabilitySlug == slug)
+            .map((capability) => capability.metadata)
+            .firstOrNull;
+        metadataBySlug[slug] = {
+          ...?savedMetadata,
+          if (companyDetails['organization_name']
+                  ?.toString()
+                  .trim()
+                  .isNotEmpty ==
+              true)
+            'organization_name':
+                companyDetails['organization_name'].toString().trim(),
+          if (companyDetails['business_registration']
+                  ?.toString()
+                  .trim()
+                  .isNotEmpty ==
+              true)
+            'business_registration':
+                companyDetails['business_registration'].toString().trim(),
+          if (companyDetails['portfolio_url']?.toString().trim().isNotEmpty ==
+              true)
+            'portfolio_url': companyDetails['portfolio_url'].toString().trim(),
+        };
+      }
+    }
+
     if (_selected.contains(_audienceCapabilitySlug)) {
       metadataBySlug[_audienceCapabilitySlug] = {
+        ...?metadataBySlug[_audienceCapabilitySlug],
         'audience_platforms': _audiencePlatforms.toList(),
         'audience_followers_count': int.tryParse(
           _audienceCountController.text.trim(),
@@ -276,6 +310,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       final role = _roleController.text.trim();
       for (final slug in financialSelected) {
         metadataBySlug[slug] = {
+          ...?metadataBySlug[slug],
           if (institution.isNotEmpty) 'institution': institution,
           if (role.isNotEmpty) 'role': role,
           'show_professional_tag': _showProfessionalTag,
@@ -647,8 +682,16 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                         .where((cap) =>
                                             _selected.contains(cap.slug))
                                         .toList(),
-                                    onSave: () =>
-                                        Navigator.of(context).pop(_selection()),
+                                    initialDetails: widget.existingCapabilities
+                                            .where((cap) =>
+                                                cap.categorySlug ==
+                                                _selectedCategory?.slug)
+                                            .map((cap) => cap.metadata)
+                                            .firstOrNull ??
+                                        const {},
+                                    onSave: (details) => Navigator.of(context)
+                                        .pop(_selection(
+                                            companyDetails: details)),
                                   )
                                 : _step == 2
                                     ? _KindStepView(
@@ -1043,12 +1086,44 @@ class _CategoryListState extends State<_CategoryList> {
 // ---------------------------------------------------------------------------
 // Sheet C (jobs OFF) and Sheet D (jobs ON) view
 // ---------------------------------------------------------------------------
-class _CompanyServiceReview extends StatelessWidget {
+class _CompanyServiceReview extends StatefulWidget {
   const _CompanyServiceReview(
-      {required this.capabilities, required this.onSave});
+      {required this.capabilities,
+      required this.initialDetails,
+      required this.onSave});
 
   final List<NeedCapability> capabilities;
-  final VoidCallback onSave;
+  final Map<String, dynamic> initialDetails;
+  final ValueChanged<Map<String, dynamic>> onSave;
+
+  @override
+  State<_CompanyServiceReview> createState() => _CompanyServiceReviewState();
+}
+
+class _CompanyServiceReviewState extends State<_CompanyServiceReview> {
+  final _formKey = GlobalKey<FormState>();
+  final _organizationController = TextEditingController();
+  final _registrationController = TextEditingController();
+  final _portfolioController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _organizationController.text =
+        widget.initialDetails['organization_name']?.toString() ?? '';
+    _registrationController.text =
+        widget.initialDetails['business_registration']?.toString() ?? '';
+    _portfolioController.text =
+        widget.initialDetails['portfolio_url']?.toString() ?? '';
+  }
+
+  @override
+  void dispose() {
+    _organizationController.dispose();
+    _registrationController.dispose();
+    _portfolioController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1069,10 +1144,55 @@ class _CompanyServiceReview extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               Text(
-                  'These capabilities will be saved as self-declared. Verification applies separately to each service.',
+                  'Add organization details that help customers understand who provides these services. These details are not verification.',
                   style: TextStyle(color: text2, fontSize: 13)),
               const SizedBox(height: 16),
-              for (final capability in capabilities)
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _organizationController,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'Company / organization name',
+                        hintText: 'Optional',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _registrationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Business registration',
+                        hintText: 'Optional',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _portfolioController,
+                      keyboardType: TextInputType.url,
+                      decoration: const InputDecoration(
+                        labelText: 'Portfolio or website',
+                        hintText: 'Optional · https://…',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        final input = value?.trim() ?? '';
+                        if (input.isEmpty) return null;
+                        final uri = Uri.tryParse(input);
+                        if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+                          return 'Enter a full URL, including https://';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              for (final capability in widget.capabilities)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.check_circle_outline_rounded,
@@ -1082,7 +1202,7 @@ class _CompanyServiceReview extends StatelessWidget {
                 ),
               const SizedBox(height: 12),
               Text(
-                  'After saving, open a service to add evidence when requirements are configured. Evidence remains private, and offers that require approval stay restricted until an administrator reviews it.',
+                  'Selected services are saved as self-declared. Open a service after saving to submit evidence required for that capability. Evidence remains private, and offers that require approval stay restricted until an administrator reviews it.',
                   style: TextStyle(color: text2, fontSize: 12)),
             ],
           ),
@@ -1092,9 +1212,16 @@ class _CompanyServiceReview extends StatelessWidget {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: onSave,
+              onPressed: () {
+                if (!_formKey.currentState!.validate()) return;
+                widget.onSave({
+                  'organization_name': _organizationController.text,
+                  'business_registration': _registrationController.text,
+                  'portfolio_url': _portfolioController.text,
+                });
+              },
               child: Text(AppLocalizations.of(context)!
-                  .providerTypeSaveServicesCount(capabilities.length)),
+                  .providerTypeSaveServicesCount(widget.capabilities.length)),
             ),
           ),
         ),
