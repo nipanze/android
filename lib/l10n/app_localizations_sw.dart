@@ -3369,4 +3369,198 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String get providerTypeJobsPersonalNote =>
       'Wasifu wa kazi ni wa mtu binafsi na huhifadhiwa kwa jina lako.';
+
+  @override
+  String get providerTypeStepOneOfTwo => 'HATUA YA 1 KATI YA 2';
+
+  @override
+  String get providerTypeCompanyServicesHint =>
+      'Chagua huduma zote zinazotolewa na kampuni yako.';
+
+  @override
+  String get providerTypeCompanyRolesHint => 'Majukumu ya hiari';
+
+  @override
+  String get providerTypeCompanyRolesSubtitle =>
+      'Chagua majukumu unayofanya. Wasifu huu wa kazi ni wako binafsi na utahifadhiwa kwa jina lako. Unaweza kuongeza mashine na sifa baadaye.';
+
+  @override
+  String providerTypeCompanySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: 'huduma $services',
+      one: 'huduma 1',
+      zero: 'Hakuna huduma',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: 'majukumu $roles',
+      one: 'jukumu 1',
+      zero: 'Hakuna majukumu',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyStepTwoOfTwo => 'HATUA YA 2 KATI YA 2';
+
+  @override
+  String get companyDetailsTitle => 'Tuambie kuhusu kampuni yako';
+
+  @override
+  String get companyDetailsSubtitle =>
+      'Kila kitu hapa ni hiari. Watu wataona maelezo haya kabla ya kuwasiliana nawe.';
+
+  @override
+  String get companyName => 'Jina la kampuni au biashara';
+
+  @override
+  String get companyRegistrationNumber => 'Nambari ya usajili';
+
+  @override
+  String get companyRegistrationPrivate =>
+      'Inaonekana kwako na kwa wasimamizi wa Nipanze pekee.';
+
+  @override
+  String get companyTeamSize => 'Idadi ya timu';
+
+  @override
+  String get companyYearsInBusiness => 'Miaka kwenye biashara';
+
+  @override
+  String get companyServiceAreas => 'Unafanya kazi wapi?';
+
+  @override
+  String get companyServiceAreasHint =>
+      'Wilaya au mji pekee. Anwani yako halisi haitaonyeshwa. Tenganisha maeneo kwa koma.';
+
+  @override
+  String get companyProofTitle => 'Ushahidi wa beji ya uthibitisho';
+
+  @override
+  String get companyProofIntro =>
+      'Hukaguliwa na Nipanze. Kupakia pekee hakukuthibitishi.';
+
+  @override
+  String get companyNoEvidenceRequirements =>
+      'Kwa sasa hakuna ushahidi unaohitajika kwa huduma hizi.';
+
+  @override
+  String get companyProofNote =>
+      'Unaweza kuhifadhi sasa na kuongeza ushahidi baadaye. JPG, PNG au PDF, hadi MB 5 kila moja.';
+
+  @override
+  String get companyEvidenceNotAdded => 'Haijaongezwa';
+
+  @override
+  String get companyEvidenceUploaded => 'Imepakiwa';
+
+  @override
+  String get companyEvidenceUnderReview => 'Inakaguliwa';
+
+  @override
+  String get companyEvidenceRejected => 'Imekataliwa';
+
+  @override
+  String get companyEvidenceExpired => 'Muda wake umeisha';
+
+  @override
+  String get companyEvidenceApproved => 'Imeidhinishwa';
+
+  @override
+  String get companyEvidenceAdd => 'Ongeza ushahidi';
+
+  @override
+  String get companyEvidenceReplace => 'Badilisha';
+
+  @override
+  String get companyEvidenceReadError =>
+      'Faili iliyochaguliwa haikusomeka. Jaribu faili nyingine.';
+
+  @override
+  String get companyEvidenceTooLarge => 'Chagua faili la hadi MB 5.';
+
+  @override
+  String get companyEvidenceUnsupported => 'Chagua faili la JPG, PNG au PDF.';
+
+  @override
+  String get companySave => 'Hifadhi wasifu wa kampuni';
+
+  @override
+  String companySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: 'huduma $services',
+      one: 'huduma 1',
+      zero: 'Hakuna huduma',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: 'majukumu $roles',
+      one: 'jukumu 1',
+      zero: 'Hakuna majukumu',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyTeamOneToFive => '1–5';
+
+  @override
+  String get companyTeamSixToTwenty => '6–20';
+
+  @override
+  String get companyTeamTwentyOneToFifty => '21–50';
+
+  @override
+  String get companyTeamFiftyPlus => '50+';
+
+  @override
+  String get companyYearsUnderOne => 'Chini ya 1';
+
+  @override
+  String get companyYearsOneToTwo => '1–2';
+
+  @override
+  String get companyYearsThreeToFive => '3–5';
+
+  @override
+  String get companyYearsSixToTen => '6–10';
+
+  @override
+  String get companyYearsTenPlus => '10+';
+
+  @override
+  String providerTypeGroupCount(Object selected, Object total) {
+    return '$selected kati ya $total';
+  }
+
+  @override
+  String get companyPersonalProfile => 'Wasifu binafsi';
+
+  @override
+  String get providerTypeJobNeedsDetails =>
+      'Ongeza mashine na sifa ili ulinganishwe na kazi.';
+
+  @override
+  String get providerTypeNextCompanyDetails => 'Endelea: maelezo ya kampuni';
+
+  @override
+  String providerSummaryAll(int count) {
+    return 'Zote $count';
+  }
+
+  @override
+  String providerSummaryServices(int count) {
+    return 'Huduma $count';
+  }
+
+  @override
+  String providerSummaryJobs(int count) {
+    return 'Kazi $count';
+  }
 }

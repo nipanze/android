@@ -263,6 +263,10 @@ class _ProviderServicesView extends StatelessWidget {
           : true,
       preselectedCategorySlug: preselectedCategorySlug,
     );
+    if (selection?.companyPath == true) {
+      await cubit.loadWithOpportunities();
+      return;
+    }
     if (selection != null &&
         (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {
       await cubit.addCapabilities(
@@ -585,20 +589,23 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: 'All (${caps.length})',
+                    label: widget.l10n.providerSummaryAll(caps.length),
                     selected: _filter == _CapFilter.all,
                     onTap: () => setState(() => _filter = _CapFilter.all),
                   ),
                   const SizedBox(width: 8),
+                  if (servicesCount > 0) ...[
+                    _FilterChip(
+                      label: widget.l10n.providerSummaryServices(servicesCount),
+                      selected: _filter == _CapFilter.services,
+                      color: AppColors.accent,
+                      onTap: () =>
+                          setState(() => _filter = _CapFilter.services),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   _FilterChip(
-                    label: 'Services ($servicesCount)',
-                    selected: _filter == _CapFilter.services,
-                    color: AppColors.accent,
-                    onTap: () => setState(() => _filter = _CapFilter.services),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterChip(
-                    label: 'Jobs ($jobsCount)',
+                    label: widget.l10n.providerSummaryJobs(jobsCount),
                     selected: _filter == _CapFilter.jobs,
                     color: AppColors.proPurple,
                     onTap: () => setState(() => _filter = _CapFilter.jobs),
@@ -633,6 +640,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                       widget.categoryTypes[cap.categorySlug] ==
                           ProviderCategoryType.individual,
                   showProfileDetails: true,
+                  providerType: widget.categoryTypes[cap.categorySlug],
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
                   onEdit: () => widget.onTapCapability(cap),

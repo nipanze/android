@@ -3404,4 +3404,201 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get providerTypeJobsPersonalNote =>
       'Les profils professionnels sont personnels et enregistrés sous votre nom.';
+
+  @override
+  String get providerTypeStepOneOfTwo => 'ÉTAPE 1 SUR 2';
+
+  @override
+  String get providerTypeCompanyServicesHint =>
+      'Cochez tous les services proposés par votre entreprise.';
+
+  @override
+  String get providerTypeCompanyRolesHint => 'Rôles facultatifs';
+
+  @override
+  String get providerTypeCompanyRolesSubtitle =>
+      'Cochez les rôles que vous exercez. Ces profils professionnels sont personnels et enregistrés à votre nom. Vous pourrez ajouter machines et qualifications plus tard.';
+
+  @override
+  String providerTypeCompanySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: '$services services',
+      one: '1 service',
+      zero: 'Aucun service',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: '$roles rôles',
+      one: '1 rôle',
+      zero: 'Aucun rôle',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyStepTwoOfTwo => 'ÉTAPE 2 SUR 2';
+
+  @override
+  String get companyDetailsTitle => 'Parlez-nous de votre entreprise';
+
+  @override
+  String get companyDetailsSubtitle =>
+      'Tout est facultatif. Les personnes verront ces informations avant de vous contacter.';
+
+  @override
+  String get companyName => 'Nom de l’entreprise ou de l’activité';
+
+  @override
+  String get companyRegistrationNumber => 'Numéro d’enregistrement';
+
+  @override
+  String get companyRegistrationPrivate =>
+      'Visible uniquement par vous et les administrateurs Nipanze.';
+
+  @override
+  String get companyTeamSize => 'Taille de l’équipe';
+
+  @override
+  String get companyYearsInBusiness => 'Années d’activité';
+
+  @override
+  String get companyServiceAreas => 'Où travaillez-vous ?';
+
+  @override
+  String get companyServiceAreasHint =>
+      'District ou ville uniquement. Votre adresse exacte ne sera jamais affichée. Séparez les zones par des virgules.';
+
+  @override
+  String get companyProofTitle => 'Justificatifs pour le badge vérifié';
+
+  @override
+  String get companyProofIntro =>
+      'Examinés par Nipanze. Le dépôt de fichiers ne vous vérifie pas automatiquement.';
+
+  @override
+  String get companyNoEvidenceRequirements =>
+      'Aucun justificatif n’est requis pour ces services actuellement.';
+
+  @override
+  String get companyProofNote =>
+      'Vous pouvez enregistrer maintenant et ajouter des justificatifs plus tard. JPG, PNG ou PDF, 5 Mo maximum chacun.';
+
+  @override
+  String get companyEvidenceNotAdded => 'Non ajouté';
+
+  @override
+  String get companyEvidenceUploaded => 'Envoyé';
+
+  @override
+  String get companyEvidenceUnderReview => 'En cours d’examen';
+
+  @override
+  String get companyEvidenceRejected => 'Refusé';
+
+  @override
+  String get companyEvidenceExpired => 'Expiré';
+
+  @override
+  String get companyEvidenceApproved => 'Approuvé';
+
+  @override
+  String get companyEvidenceAdd => 'Ajouter un justificatif';
+
+  @override
+  String get companyEvidenceReplace => 'Remplacer';
+
+  @override
+  String get companyEvidenceReadError =>
+      'Impossible de lire le fichier sélectionné. Essayez-en un autre.';
+
+  @override
+  String get companyEvidenceTooLarge =>
+      'Choisissez un fichier de 5 Mo maximum.';
+
+  @override
+  String get companyEvidenceUnsupported =>
+      'Choisissez un fichier JPG, PNG ou PDF.';
+
+  @override
+  String get companySave => 'Enregistrer le profil de l’entreprise';
+
+  @override
+  String companySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: '$services services',
+      one: '1 service',
+      zero: 'Aucun service',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: '$roles rôles',
+      one: '1 rôle',
+      zero: 'Aucun rôle',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyTeamOneToFive => '1–5';
+
+  @override
+  String get companyTeamSixToTwenty => '6–20';
+
+  @override
+  String get companyTeamTwentyOneToFifty => '21–50';
+
+  @override
+  String get companyTeamFiftyPlus => '50+';
+
+  @override
+  String get companyYearsUnderOne => 'Moins de 1';
+
+  @override
+  String get companyYearsOneToTwo => '1–2';
+
+  @override
+  String get companyYearsThreeToFive => '3–5';
+
+  @override
+  String get companyYearsSixToTen => '6–10';
+
+  @override
+  String get companyYearsTenPlus => '10+';
+
+  @override
+  String providerTypeGroupCount(Object selected, Object total) {
+    return '$selected sur $total';
+  }
+
+  @override
+  String get companyPersonalProfile => 'Profil personnel';
+
+  @override
+  String get providerTypeJobNeedsDetails =>
+      'Ajoutez vos machines et qualifications pour recevoir des correspondances.';
+
+  @override
+  String get providerTypeNextCompanyDetails =>
+      'Suivant : détails de l’entreprise';
+
+  @override
+  String providerSummaryAll(int count) {
+    return 'Tout $count';
+  }
+
+  @override
+  String providerSummaryServices(int count) {
+    return 'Services $count';
+  }
+
+  @override
+  String providerSummaryJobs(int count) {
+    return 'Emplois $count';
+  }
 }

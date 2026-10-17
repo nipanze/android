@@ -409,7 +409,7 @@
   "plansAndPricing": "Plans et tarifs",
   "chooseAccessTitle": "Choisissez l'accès dont vous avez besoin",
   "chooseAccessSubtitle": "Un seul compte peut publier des demandes et faire des offres. Les prix correspondent à votre région ({flag} {country}).",
-  "perMonth": " / mois",
+  "perMonth": "mois",
   "freePlanSubtitle": "Parcourir, suivre les annonces, publier des demandes de base et accepter des offres.",
   "freeFeature1": "Parcourir le marché",
   "freeFeature2": "Publier des demandes de prêt de base",
@@ -1340,7 +1340,6 @@
   "perHour": "heure",
   "perDay": "jour",
   "perWeek": "semaine",
-  "perMonth": "mois",
   "perProject": "projet",
   "languages": "Langues",
   "profileSummary": "Résumé du profil",
@@ -1509,5 +1508,94 @@
   "providerTypeCompanyDesc": "Une entreprise, une agence, une équipe ou une institution enregistrée.",
   "providerTypeNotVerification": "Ce choix ne vous vérifie pas. La vérification est distincte et n’est demandée que si un service l’exige.",
   "providerTypeChooseOne": "Choisissez une option pour continuer",
-  "providerTypeJobsPersonalNote": "Les profils professionnels sont personnels et enregistrés sous votre nom."
+  "providerTypeJobsPersonalNote": "Les profils professionnels sont personnels et enregistrés sous votre nom.",
+  "providerTypeStepOneOfTwo": "ÉTAPE 1 SUR 2",
+  "providerTypeCompanyServicesHint": "Cochez tous les services proposés par votre entreprise.",
+  "providerTypeCompanyRolesHint": "Rôles facultatifs",
+  "providerTypeCompanyRolesSubtitle": "Cochez les rôles que vous exercez. Ces profils professionnels sont personnels et enregistrés à votre nom. Vous pourrez ajouter machines et qualifications plus tard.",
+  "providerTypeCompanySelectionCount": "{services, plural, =0{Aucun service} =1{1 service} other{{services} services}} · {roles, plural, =0{Aucun rôle} =1{1 rôle} other{{roles} rôles}}",
+  "companyStepTwoOfTwo": "ÉTAPE 2 SUR 2",
+  "companyDetailsTitle": "Parlez-nous de votre entreprise",
+  "companyDetailsSubtitle": "Tout est facultatif. Les personnes verront ces informations avant de vous contacter.",
+  "companyName": "Nom de l’entreprise ou de l’activité",
+  "companyRegistrationNumber": "Numéro d’enregistrement",
+  "companyRegistrationPrivate": "Visible uniquement par vous et les administrateurs Nipanze.",
+  "companyTeamSize": "Taille de l’équipe",
+  "companyYearsInBusiness": "Années d’activité",
+  "companyServiceAreas": "Où travaillez-vous ?",
+  "companyServiceAreasHint": "District ou ville uniquement. Votre adresse exacte ne sera jamais affichée. Séparez les zones par des virgules.",
+  "companyProofTitle": "Justificatifs pour le badge vérifié",
+  "companyProofIntro": "Examinés par Nipanze. Le dépôt de fichiers ne vous vérifie pas automatiquement.",
+  "companyNoEvidenceRequirements": "Aucun justificatif n’est requis pour ces services actuellement.",
+  "companyProofNote": "Vous pouvez enregistrer maintenant et ajouter des justificatifs plus tard. JPG, PNG ou PDF, 5 Mo maximum chacun.",
+  "companyEvidenceNotAdded": "Non ajouté",
+  "companyEvidenceUploaded": "Envoyé",
+  "companyEvidenceUnderReview": "En cours d’examen",
+  "companyEvidenceRejected": "Refusé",
+  "companyEvidenceExpired": "Expiré",
+  "companyEvidenceApproved": "Approuvé",
+  "companyEvidenceAdd": "Ajouter un justificatif",
+  "companyEvidenceReplace": "Remplacer",
+  "companyEvidenceReadError": "Impossible de lire le fichier sélectionné. Essayez-en un autre.",
+  "companyEvidenceTooLarge": "Choisissez un fichier de 5 Mo maximum.",
+  "companyEvidenceUnsupported": "Choisissez un fichier JPG, PNG ou PDF.",
+  "companySave": "Enregistrer le profil de l’entreprise",
+  "companySelectionCount": "{services, plural, =0{Aucun service} =1{1 service} other{{services} services}} · {roles, plural, =0{Aucun rôle} =1{1 rôle} other{{roles} rôles}}",
+  "companyTeamOneToFive": "1–5",
+  "companyTeamSixToTwenty": "6–20",
+  "companyTeamTwentyOneToFifty": "21–50",
+  "companyTeamFiftyPlus": "50+",
+  "companyYearsUnderOne": "Moins de 1",
+  "companyYearsOneToTwo": "1–2",
+  "companyYearsThreeToFive": "3–5",
+  "companyYearsSixToTen": "6–10",
+  "companyYearsTenPlus": "10+",
+  "providerTypeGroupCount": "{selected} sur {total}",
+  "companyPersonalProfile": "Profil personnel",
+  "providerTypeJobNeedsDetails": "Ajoutez vos machines et qualifications pour recevoir des correspondances.",
+  "providerTypeNextCompanyDetails": "Suivant : détails de l’entreprise",
+  "@providerTypeCompanySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "@companySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryAll": "Tout {count}",
+  "@providerSummaryAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryServices": "Services {count}",
+  "@providerSummaryServices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryJobs": "Emplois {count}",
+  "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

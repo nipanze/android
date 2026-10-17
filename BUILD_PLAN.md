@@ -487,4 +487,72 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 - 2026-10-17: Added the approved B2 provider-type step and private per-category `provider_category_profiles` preference. The revised flow makes provider type control service visibility; Company services are retained but hidden for Individual, and Company service/role selections save together. The capability flag controls visibility; provider type does not alter verification or personal job profiles.
 - 2026-10-17: Revised provider-type UI analysis passed (`flutter analyze lib/features/provider test/features/provider`, 0 issues); provider suite passed 28/28, including Individual and Company section visibility, hidden-service, and badge-label checks. ARB JSON parses for all five locales. Live SQL/RLS execution, full app suite, RTL/theme/large-text visual checks, and Home snapshot comparison remain pending; keep P2a/P3a in progress until those run.
 
+## 17. Stage 4.15 — Company Provider Path
+
+### Scope
+
+Implement the Company path as `B → B2 → D → CD → A`, while preserving the Individual path. Reuse the existing provider capability rows and per-category provider type. Company D permits service and optional personal work-role selections; CD collects optional category-level company details and service evidence; one category-scoped save persists the company profile and selected capabilities atomically. Company profile fields remain private; public views, Home, and marketplace feed stay unchanged.
+
+### Findings (P0 discovery)
+
+- The repository already has B2 provider type selection, category-scoped `provider_category_profiles`, service/work catalog types, role/kind/qualification catalogs, `provider_capabilities`, provider evidence, `verification_requirements`, `v_my_capability_status`, and one shared Provider Services summary page.
+- Current Company flow shows services only and has a lightweight details review; work roles are hidden. Company metadata is currently attached to capability metadata instead of a private category profile. Save uses the general capability save path rather than a company-profile transaction.
+- Existing evidence is represented per capability. Company CD requirements ask for category-level evidence fan-out across selected service capabilities.
+- The configured Supabase REST endpoint was queried read-only using the existing public key. The live catalog returns 17 categories (14 active) and 204 active capabilities, including 8 capabilities under `weddings_celebrations` although that category is not active. The local v2 JSON has 14 categories and 196 service/role entries; it is not slug-aligned with the live DB. For `machinery_equipment`, the eight service slugs match, while the four live work slugs are prefixed `work_` (for example `work_machine_operator`) and the local role IDs are not. Other categories have additional service slug/name differences and renamed category slugs. The live catalog is not safe to treat as an exact mirror of the local JSON; implementation must use canonical DB slugs and explicitly map roles.
+- The API host is `lqfpeookpjtbiuhlhjut.supabase.co`; the Supabase CLI checkout is not linked to it, and the available CLI project list did not identify a matching ref. Live flags, policies, function definitions, private-table data, and production/staging status are therefore unverified. No writes were made. Home/feed baselines and schema dumps are not available yet.
+
+### Decisions Log
+
+| ID | Decision | Status | Date | Rationale |
+|---|---|---|---|---|
+| C1 | Company selections save services and optional personal work roles together; roles skip Individual's E/F wizard and start self-declared with empty metadata | Decided | 2026-10-18 | Provider type addendum, revision 2. |
+| C2 | Add one private `provider_company_profiles` row per user/category; do not place registration details in public capability metadata/views | Decided | 2026-10-18 | Keeps category-level details private and scoped. |
+| C3 | Company save uses one RPC/transaction for capability changes and profile fields | Decided | 2026-10-18 | Prevents partial saves and cross-category deletion. |
+| C4 | Category evidence fans out to one evidence row per selected service requiring that key, with a shared private object | Decided | 2026-10-18 | User approved recommendations; capability review remains independent. |
+| C5 | Company name and service areas remain private in this stage; registration number is admin/owner only | Decided | 2026-10-18 | Public exposure can be considered later through an additive view and privacy review. |
+| C6 | Always show B2 on category entry, prefilled from the saved per-category type | Decided | 2026-10-18 | Keeps type changes explicit and makes repeat visits one tap. |
+| C7 | Registration evidence is not required merely because provider type is Company; future rules belong in `verification_requirements` | Decided | 2026-10-18 | Avoids changing verification policy in this flow. |
+| C8 | Staff and multiple operators are out of scope | Decided | 2026-10-18 | One company profile per user/category. |
+| C9 | Migrations remain standalone; do not edit historical `patch.sql` or `merged.sql` | Decided | 2026-10-18 | Required by `.agents/AGENTS.md`; supersedes prompt instructions to fold patches into historical SQL. |
+| C10 | Company details are shown prefilled on repeat category entry; company name may be made public only in a later additive change | Decided | 2026-10-18 | User approved recommendations; this stage keeps all company fields private. |
+
+### Task Tracker
+
+| Phase | Task | Files / SQL | Tests | Status | Date | Notes |
+|---|---|---|---|---|---|---|
+| P0 | Repository, catalog, Supabase access, Home/feed baselines and plan | `BUILD_PLAN.md`, read-only inspection | Catalog/policy inventory; view/RPC signatures; Home snapshots/feed baseline | In progress | 2026-10-18 | Repository and local catalog inspected; public REST catalog read completed. CLI is not linked to the configured API host; obtain confirmed staging connection for policies/schema and baseline capture. Catalog slug mismatch must be resolved/mapped before RPC work. |
+| P1 | Private company profile schema, RLS, grants, timestamp trigger | `sql/patch_company_profiles.sql` | Owner/admin/other/anon RLS; privacy checks; rerun | Not started | — | No public view additions. |
+| P1 | Atomic company category save RPC and validation | `sql/patch_company_profiles.sql` | Services + roles + profile atomicity; invalid slugs/type/flags/cap; other categories untouched | Not started | — | Use private internal function and invoker wrapper; audit on changes. |
+| P2 | Provider category sheet D: company services and optional personal roles | `add_service_sheet.dart`, l10n | Service only, role only, both, empty footer; role flags; Back draft retention | Not started | — | No Individual changes. |
+| P3 | New CompanyDetailsStep (CD): optional fields, chips, areas, proof checklist | `company_details_step.dart`, models, l10n | Prefill/edit/validation; save later; 360px, RTL, dark, large text | Not started | — | Registration is private; all fields optional. |
+| P4 | Evidence fan-out, private image/PDF upload, per-capability status and replacement | provider repository/UI, standalone SQL if needed | Wrong owner/key/type/size, private object, independent admin review, resubmission | Not started | — | Fan-out approved; do not deploy SQL to production without explicit approval. |
+| P5 | Shared summary A labels, counts, notes, edit, jobs strip | `provider_services_page.dart`, capability cards | Immediate refresh, services/jobs chips, hidden service type, category edit | Not started | — | Do not fork the summary page. |
+| P6 | Localization, accessibility, offline/error paths, regression and docs | ARB files, tests, README, BUILD_PLAN | Five locales, RTL, 360px, 200% text, Loans/Forex/Needs regression | Not started | — | Run full Flutter tests/analyze; verify protected baselines if connections/assets exist. |
+
+### Test Tracker
+
+| Case | Status | Date | Evidence |
+|---|---|---|---|
+| B → B2 → D → CD → save → A | Pending | — | — |
+| Back from CD preserves service/role draft; B2 selection persists per category | Pending | — | — |
+| D footer with services only, roles only, both, or none | Pending | — | — |
+| Company role rows are personal, empty metadata, self-declared; no E/F in Company path | Pending | — | — |
+| Atomic company profile + service + work-role save and rollback on invalid item | Pending | — | — |
+| Company category data leaves other categories and Individual flow unchanged | Pending | — | — |
+| Company evidence upload fans out and approval remains capability-specific | Pending | — | — |
+| Owner/admin/other/anon access for company profile, evidence rows and private files | Pending | — | — |
+| Type switch retains/hides services and preserves jobs; matching/badges exclude hidden services | Pending | — | — |
+| Flags off, offline retry, 31st capability, category country enablement | Pending | — | — |
+| Home snapshots, views/RPC signatures, seed feed, Loans/Forex/Needs regression | Pending | — | — |
+| Localization, RTL, dark/light, 360px, 200% text scale | Pending | — | — |
+
+### Verification Log
+
+| Date | Check | Result |
+|---|---|---|
+| 2026-10-18 | Read `.agents/AGENTS.md`, provider prompts, Stage 4.14 tracker, relevant README and SQL | Read; historical SQL immutability rule overrides prompt's request to fold changes into `patch.sql`/`merged.sql`. |
+| 2026-10-18 | Supabase catalog inspection | Read-only REST query succeeded for categories and active capabilities. Catalog/local JSON differences recorded above. CLI project link, live flags, RLS policies and function signatures remain unverified. |
+| 2026-10-18 | Home/view/RPC/feed baselines | Not run; capture before implementation if a confirmed staging connection and baseline harness are available. |
+| — | `flutter analyze`, tests, SQL checks, manual responsive/localization checks | Pending implementation. |
+
 

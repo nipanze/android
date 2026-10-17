@@ -13,8 +13,10 @@ import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
+import '../../domain/entities/provider_company_profile.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
+import '../widgets/company_details_step.dart';
 import '../widgets/provider_type_sheet.dart';
 
 const _marketingServicesSlug = 'marketing_services';
@@ -61,6 +63,7 @@ class ProviderCapabilitySelection {
     this.categorySlug,
     this.workRoles = const [],
     this.workMetadataByRole = const {},
+    this.companyPath = false,
   });
 
   final List<String> slugs;
@@ -69,6 +72,7 @@ class ProviderCapabilitySelection {
   final String? categorySlug;
   final List<String> workRoles;
   final Map<String, Map<String, dynamic>> workMetadataByRole;
+  final bool companyPath;
 }
 
 /// Bottom sheet for adding provider capabilities and work profiles.
@@ -150,8 +154,8 @@ class AddServiceSheet extends StatefulWidget {
 }
 
 class _AddServiceSheetState extends State<AddServiceSheet> {
-  // Steps: 0 category list, 1 category capabilities, 2-3 individual role details,
-  // 4 provider type, 5 company service review.
+  // Steps: 0 category list, 1 category capabilities, 2-3 Individual role details,
+  // 4 provider type, 5 Company details and proof.
   int _step = 0;
   NeedCategory? _selectedCategory;
   List<NeedCategory> _categories = [];
@@ -189,6 +193,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _categoryWorkProfilesEnabled = false;
   bool _savingProviderType = false;
   String? _providerTypeError;
+  ProviderCompanyProfile? _companyProfile;
+  List<Map<String, dynamic>> _companyRequirements = const [];
+  List<Map<String, dynamic>> _companyEvidence = const [];
+  bool _loadingCompanyDetails = false;
+  bool _savingCompanyDetails = false;
 
   @override
   void initState() {
@@ -252,45 +261,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     };
   }
 
-  ProviderCapabilitySelection _selection({
-    Map<String, dynamic> companyDetails = const {},
-  }) {
+  ProviderCapabilitySelection _selection() {
     final slugs = <String>[];
     if (_providerType != ProviderCategoryType.individual) {
       slugs.addAll(_selected);
     }
     final metadataBySlug = <String, Map<String, dynamic>>{};
-
-    if (_providerType == ProviderCategoryType.company &&
-        companyDetails.values
-            .any((value) => value.toString().trim().isNotEmpty)) {
-      for (final slug in _selected) {
-        final savedMetadata = widget.existingCapabilities
-            .where((capability) => capability.capabilitySlug == slug)
-            .map((capability) => capability.metadata)
-            .firstOrNull;
-        metadataBySlug[slug] = {
-          ...?savedMetadata,
-          if (companyDetails['organization_name']
-                  ?.toString()
-                  .trim()
-                  .isNotEmpty ==
-              true)
-            'organization_name':
-                companyDetails['organization_name'].toString().trim(),
-          if (companyDetails['business_registration']
-                  ?.toString()
-                  .trim()
-                  .isNotEmpty ==
-              true)
-            'business_registration':
-                companyDetails['business_registration'].toString().trim(),
-          if (companyDetails['portfolio_url']?.toString().trim().isNotEmpty ==
-              true)
-            'portfolio_url': companyDetails['portfolio_url'].toString().trim(),
-        };
-      }
-    }
 
     if (_selected.contains(_audienceCapabilitySlug)) {
       metadataBySlug[_audienceCapabilitySlug] = {
@@ -320,6 +296,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
 
     final workMetadataByRole = <String, Map<String, dynamic>>{};
+    final companyPath = _providerType == ProviderCategoryType.company;
     final canEditWorkRoles = _categoryWorkProfilesEnabled &&
         _providerType == ProviderCategoryType.individual;
     if (canEditWorkRoles) {
@@ -340,6 +317,22 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           slugs.add(capSlug);
         }
         metadataBySlug[capSlug] = _buildWorkMetadata(roleSlug);
+      }
+    } else if (companyPath && _categoryWorkProfilesEnabled) {
+      for (final roleSlug in _selectedRoles) {
+        final role = _categoryRoles.firstWhere(
+          (r) => r.slug == roleSlug,
+          orElse: () => ProviderServiceRole(
+            slug: roleSlug,
+            name: roleSlug,
+            categorySlug: _selectedCategory?.slug ?? '',
+            capabilitySlug: 'work_$roleSlug',
+            kindQuestion: '',
+          ),
+        );
+        final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
+        if (!slugs.contains(capSlug)) slugs.add(capSlug);
+        metadataBySlug[capSlug] = const {};
       }
     } else {
       // Keep saved roles intact while the category's role feature is disabled.
@@ -365,6 +358,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       categorySlug: _selectedCategory?.slug,
       workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
+      companyPath: companyPath,
     );
   }
 
@@ -389,6 +383,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _selected.clear();
       _selectedRoles.clear();
+      _companyProfile = null;
+      _companyRequirements = const [];
+      _companyEvidence = const [];
       _categoryWorkProfilesEnabled = false;
       _selectedCategory = cat;
       _showAudience = false;
@@ -535,6 +532,82 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
   }
 
+  Future<void> _openCompanyDetails() async {
+    final categorySlug = _selectedCategory?.slug;
+    if (categorySlug == null || _loadingCompanyDetails) return;
+    setState(() {
+      _loadingCompanyDetails = true;
+      _providerTypeError = null;
+    });
+    try {
+      final services = _selected.toList();
+      final requirements =
+          await widget.providerRepository.getCompanyVerificationRequirements(
+        categorySlug: categorySlug,
+        serviceSlugs: services,
+      );
+      final evidence = await widget.providerRepository.getCompanyEvidence(
+        categorySlug: categorySlug,
+        serviceSlugs: services,
+      );
+      ProviderCompanyProfile? profile =
+          _companyProfile?.categorySlug == categorySlug
+              ? _companyProfile
+              : null;
+      profile ??=
+          await widget.providerRepository.getCompanyProfile(categorySlug);
+      if (!mounted) return;
+      setState(() {
+        _companyRequirements = requirements;
+        _companyEvidence = evidence;
+        _companyProfile = profile;
+        _step = 5;
+        _loadingCompanyDetails = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingCompanyDetails = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(e))),
+      );
+    }
+  }
+
+  Future<void> _saveCompanyDetails({
+    required Map<String, dynamic> profile,
+    required List<Map<String, String>> evidence,
+  }) async {
+    final categorySlug = _selectedCategory?.slug;
+    if (categorySlug == null || _savingCompanyDetails) return;
+    setState(() => _savingCompanyDetails = true);
+    final roles = <String>[];
+    for (final roleSlug in _selectedRoles) {
+      final role = _categoryRoles.firstWhere(
+        (r) => r.slug == roleSlug,
+        orElse: () => ProviderServiceRole(
+          slug: roleSlug,
+          name: roleSlug,
+          categorySlug: categorySlug,
+          capabilitySlug: 'work_$roleSlug',
+          kindQuestion: '',
+        ),
+      );
+      roles.add(role.capabilitySlug ?? 'work_${role.slug}');
+    }
+    try {
+      await widget.providerRepository.saveCompanyCategory(
+        categorySlug: categorySlug,
+        serviceSlugs: _selected.toList(),
+        roleCapabilitySlugs: _categoryWorkProfilesEnabled ? roles : const [],
+        profile: profile,
+        evidence: evidence,
+      );
+      if (mounted) Navigator.of(context).pop(_selection());
+    } finally {
+      if (mounted) setState(() => _savingCompanyDetails = false);
+    }
+  }
+
   void _openAudience() {
     setState(() => _showAudience = true);
   }
@@ -677,21 +750,18 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                 onContinue: _continueProviderType,
                               )
                             : _step == 5
-                                ? _CompanyServiceReview(
-                                    capabilities: _categoryCapabilities
-                                        .where((cap) =>
-                                            _selected.contains(cap.slug))
-                                        .toList(),
-                                    initialDetails: widget.existingCapabilities
-                                            .where((cap) =>
-                                                cap.categorySlug ==
-                                                _selectedCategory?.slug)
-                                            .map((cap) => cap.metadata)
-                                            .firstOrNull ??
-                                        const {},
-                                    onSave: (details) => Navigator.of(context)
-                                        .pop(_selection(
-                                            companyDetails: details)),
+                                ? CompanyDetailsStep(
+                                    categorySlug: _selectedCategory?.slug ?? '',
+                                    serviceCount: _selected.length,
+                                    roleCount: _categoryWorkProfilesEnabled
+                                        ? _selectedRoles.length
+                                        : 0,
+                                    initialProfile: _companyProfile,
+                                    requirements: _companyRequirements,
+                                    existingEvidence: _companyEvidence,
+                                    providerRepository:
+                                        widget.providerRepository,
+                                    onSave: _saveCompanyDetails,
                                   )
                                 : _step == 2
                                     ? _KindStepView(
@@ -810,8 +880,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                 },
                                                 onChangeProviderType: () =>
                                                     setState(() => _step = 4),
-                                                onSaveServices: () =>
-                                                    setState(() => _step = 5),
+                                                onSaveServices:
+                                                    _openCompanyDetails,
                                                 onNextKind: () {
                                                   setState(() {
                                                     _step = 2;
@@ -1084,152 +1154,8 @@ class _CategoryListState extends State<_CategoryList> {
 }
 
 // ---------------------------------------------------------------------------
-// Sheet C (jobs OFF) and Sheet D (jobs ON) view
+// Category capability selection for provider services and work roles.
 // ---------------------------------------------------------------------------
-class _CompanyServiceReview extends StatefulWidget {
-  const _CompanyServiceReview(
-      {required this.capabilities,
-      required this.initialDetails,
-      required this.onSave});
-
-  final List<NeedCapability> capabilities;
-  final Map<String, dynamic> initialDetails;
-  final ValueChanged<Map<String, dynamic>> onSave;
-
-  @override
-  State<_CompanyServiceReview> createState() => _CompanyServiceReviewState();
-}
-
-class _CompanyServiceReviewState extends State<_CompanyServiceReview> {
-  final _formKey = GlobalKey<FormState>();
-  final _organizationController = TextEditingController();
-  final _registrationController = TextEditingController();
-  final _portfolioController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _organizationController.text =
-        widget.initialDetails['organization_name']?.toString() ?? '';
-    _registrationController.text =
-        widget.initialDetails['business_registration']?.toString() ?? '';
-    _portfolioController.text =
-        widget.initialDetails['portfolio_url']?.toString() ?? '';
-  }
-
-  @override
-  void dispose() {
-    _organizationController.dispose();
-    _registrationController.dispose();
-    _portfolioController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final text2 = Theme.of(context).brightness == Brightness.dark
-        ? AppColors.text2Dark
-        : AppColors.text2Light;
-    final locale = Localizations.localeOf(context).languageCode;
-    return Column(
-      children: [
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text('Review services',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
-              Text(
-                  'Add organization details that help customers understand who provides these services. These details are not verification.',
-                  style: TextStyle(color: text2, fontSize: 13)),
-              const SizedBox(height: 16),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _organizationController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Company / organization name',
-                        hintText: 'Optional',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _registrationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Business registration',
-                        hintText: 'Optional',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _portfolioController,
-                      keyboardType: TextInputType.url,
-                      decoration: const InputDecoration(
-                        labelText: 'Portfolio or website',
-                        hintText: 'Optional · https://…',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        final input = value?.trim() ?? '';
-                        if (input.isEmpty) return null;
-                        final uri = Uri.tryParse(input);
-                        if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-                          return 'Enter a full URL, including https://';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              for (final capability in widget.capabilities)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.check_circle_outline_rounded,
-                      color: AppColors.accent),
-                  title: Text(capability.localizedName(locale)),
-                  subtitle: const Text('Self-declared until reviewed'),
-                ),
-              const SizedBox(height: 12),
-              Text(
-                  'Selected services are saved as self-declared. Open a service after saving to submit evidence required for that capability. Evidence remains private, and offers that require approval stay restricted until an administrator reviews it.',
-                  style: TextStyle(color: text2, fontSize: 12)),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                if (!_formKey.currentState!.validate()) return;
-                widget.onSave({
-                  'organization_name': _organizationController.text,
-                  'business_registration': _registrationController.text,
-                  'portfolio_url': _portfolioController.text,
-                });
-              },
-              child: Text(AppLocalizations.of(context)!
-                  .providerTypeSaveServicesCount(widget.capabilities.length)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _CategoryCapabilitiesView extends StatelessWidget {
   const _CategoryCapabilitiesView({
     this.categorySlug,
@@ -1309,9 +1235,11 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     }
 
     final individualType = providerType == ProviderCategoryType.individual;
-    final showRoles = individualType && iWantJobs;
+    final companyMode = providerType == ProviderCategoryType.company;
+    final showRoles = (individualType || companyMode) && iWantJobs;
     final hasServices = companyType && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
+    final hasCompanySelections = hasServices || hasRoles;
 
     return Stack(
       children: [
@@ -1337,31 +1265,87 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 ]),
               ),
 
-            // ── "WHAT I OFFER" section header ──────────────────────
-            if (companyType)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
-                child: Text(l10n.providerTypeWhatWeOffer.toUpperCase(),
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
-                        color: text2)),
-              ),
-
             // ── Service capability rows (grouped, flat list style) ──
+            if (companyType)
+              Row(children: [
+                Expanded(
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ]),
+            if (companyType) const SizedBox(height: 12),
+            if (companyType)
+              Text(
+                l10n.providerTypeStepOneOfTwo,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                  color: AppColors.accent,
+                ),
+              ),
+            if (companyType) const SizedBox(height: 8),
+            if (companyType)
+              Text(
+                l10n.providerTypeWhatWeOffer,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            if (companyType) const SizedBox(height: 4),
+            if (companyType)
+              Text(l10n.providerTypeCompanyServicesHint,
+                  style: TextStyle(fontSize: 12, color: text2)),
+            if (companyType) const SizedBox(height: 10),
+
             if (companyType)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
                 if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(2, 14, 2, 4),
-                    child: Text(
-                      groupName,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.accent,
-                            letterSpacing: 0.2,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(groupName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.accent,
+                                    letterSpacing: 0.2,
+                                  )),
+                        ),
+                        Text(
+                          l10n.providerTypeGroupCount(
+                            caps
+                                .where((cap) => selected.contains(cap.slug))
+                                .length,
+                            caps.length,
                           ),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: text2,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                      ],
                     ),
                   ),
                 ] else if (groupSlug == null && orderedGroups.length > 1) ...[
@@ -1407,15 +1391,20 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             // ── Jobs: role selection ───────────────────────────────
             if (showRoles) ...[
               const SizedBox(height: 16),
-              Text(
-                l10n.providerTypeStepOneOfThree,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                  color: text2,
+              if (individualType)
+                Text(
+                  l10n.providerTypeStepOneOfThree,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: text2,
+                  ),
                 ),
-              ),
+              if (companyMode) const Divider(height: 24),
+              if (companyMode)
+                Text(l10n.providerTypeCompanyRolesHint,
+                    style: TextStyle(fontSize: 12, color: text2)),
               const SizedBox(height: 8),
               Text(
                 l10n.providerTypeWhatRoles,
@@ -1425,7 +1414,9 @@ class _CategoryCapabilitiesView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                l10n.providerTypePickRoles,
+                companyMode
+                    ? l10n.providerTypeCompanyRolesSubtitle
+                    : l10n.providerTypePickRoles,
                 style: TextStyle(fontSize: 12, color: text2),
               ),
               const SizedBox(height: 12),
@@ -1462,7 +1453,11 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             Text(
                 individualType
                     ? l10n.rolesCount(showRoles ? selectedRoles.length : 0)
-                    : l10n.servicesCount(selected.length),
+                    : companyMode
+                        ? l10n.providerTypeCompanySelectionCount(
+                            selected.length,
+                            hasRoles ? selectedRoles.length : 0)
+                        : l10n.servicesCount(selected.length),
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
             if (individualType)
@@ -1487,6 +1482,25 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               )
+            else if (companyMode)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.accent.withValues(alpha: 0.35),
+                  disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                  minimumSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: hasCompanySelections ? onSaveServices : null,
+                child: Text(l10n.providerTypeNextCompanyDetails,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 15)),
+              )
             else
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -1502,7 +1516,9 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 ),
                 onPressed: hasServices ? onSaveServices : null,
                 child: Text(
-                  hasServices ? 'Continue' : l10n.providerTypeSelectService,
+                  hasServices
+                      ? l10n.btnContinue
+                      : l10n.providerTypeSelectService,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),

@@ -429,7 +429,7 @@
       }
     }
   },
-  "perMonth": " / month",
+  "perMonth": "month",
   "freePlanSubtitle": "Browse, watch listings, post basic requests, and accept offers.",
   "freeFeature1": "Browse the marketplace",
   "freeFeature2": "Post up to 2 active loan requests",
@@ -1394,7 +1394,6 @@
   "perHour": "hour",
   "perDay": "day",
   "perWeek": "week",
-  "perMonth": "month",
   "perProject": "project",
   "languages": "Languages",
   "profileSummary": "Profile summary",
@@ -1598,5 +1597,94 @@
   "providerTypeCompanyDesc": "A registered business, agency, team or institution.",
   "providerTypeNotVerification": "Selecting this does not verify you. Verification is separate and only asked where a service requires it.",
   "providerTypeChooseOne": "Choose one option to continue",
-  "providerTypeJobsPersonalNote": "Job profiles are personal and are saved under your own name."
+  "providerTypeJobsPersonalNote": "Job profiles are personal and are saved under your own name.",
+  "providerTypeStepOneOfTwo": "STEP 1 OF 2",
+  "providerTypeCompanyServicesHint": "Tick everything your company provides.",
+  "providerTypeCompanyRolesHint": "Optional roles",
+  "providerTypeCompanyRolesSubtitle": "Tick the roles you work in. These job profiles are personal and saved under your own name. Add machines and qualifications later.",
+  "providerTypeCompanySelectionCount": "{services, plural, =0{No services} =1{1 service} other{{services} services}} · {roles, plural, =0{No roles} =1{1 role} other{{roles} roles}} selected",
+  "companyStepTwoOfTwo": "STEP 2 OF 2",
+  "companyDetailsTitle": "Tell us about your company",
+  "companyDetailsSubtitle": "Everything here is optional. People see this before they contact you.",
+  "companyName": "Company or business name",
+  "companyRegistrationNumber": "Registration number",
+  "companyRegistrationPrivate": "Visible only to you and Nipanze administrators.",
+  "companyTeamSize": "Team size",
+  "companyYearsInBusiness": "Years in business",
+  "companyServiceAreas": "Where do you work?",
+  "companyServiceAreasHint": "District or city only. Your exact address is never shown. Separate areas with commas.",
+  "companyProofTitle": "Proof for the verified badge",
+  "companyProofIntro": "Reviewed by Nipanze. Uploads alone do not verify you.",
+  "companyNoEvidenceRequirements": "No proof is required for these services right now.",
+  "companyProofNote": "You can save now and add proof later. JPG, PNG, or PDF, up to 5 MB each.",
+  "companyEvidenceNotAdded": "Not added",
+  "companyEvidenceUploaded": "Uploaded",
+  "companyEvidenceUnderReview": "Under review",
+  "companyEvidenceRejected": "Rejected",
+  "companyEvidenceExpired": "Expired",
+  "companyEvidenceApproved": "Approved",
+  "companyEvidenceAdd": "Add proof",
+  "companyEvidenceReplace": "Replace",
+  "companyEvidenceReadError": "Could not read the selected file. Try another file.",
+  "companyEvidenceTooLarge": "Choose a file up to 5 MB.",
+  "companyEvidenceUnsupported": "Choose a JPG, PNG, or PDF file.",
+  "companySave": "Save company profile",
+  "companySelectionCount": "{services, plural, =0{No services} =1{1 service} other{{services} services}} · {roles, plural, =0{No roles} =1{1 role} other{{roles} roles}}",
+  "companyTeamOneToFive": "1–5",
+  "companyTeamSixToTwenty": "6–20",
+  "companyTeamTwentyOneToFifty": "21–50",
+  "companyTeamFiftyPlus": "50+",
+  "companyYearsUnderOne": "Under 1",
+  "companyYearsOneToTwo": "1–2",
+  "companyYearsThreeToFive": "3–5",
+  "companyYearsSixToTen": "6–10",
+  "companyYearsTenPlus": "10+",
+  "providerTypeGroupCount": "{selected} of {total}",
+  "companyPersonalProfile": "Personal profile",
+  "providerTypeJobNeedsDetails": "Add machines and qualifications to get matched.",
+  "providerTypeNextCompanyDetails": "Next: company details",
+  "@providerTypeCompanySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "@companySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryAll": "All {count}",
+  "@providerSummaryAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryServices": "Services {count}",
+  "@providerSummaryServices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryJobs": "Jobs {count}",
+  "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -1,5 +1,7 @@
 // lib/features/provider/data/repositories/provider_repository.dart
 
+import 'dart:typed_data';
+
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
@@ -8,6 +10,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
+import '../../domain/entities/provider_company_profile.dart';
 import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
@@ -61,6 +64,122 @@ class ProviderRepository implements IProviderRepository {
       });
       _categoryTypeCache ??= {};
       _categoryTypeCache![categorySlug] = type;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug) async {
+    try {
+      final row = await _client
+          .from(TableNames.providerCompanyProfiles)
+          .select()
+          .eq('category_slug', categorySlug)
+          .maybeSingle();
+      return row == null ? null : ProviderCompanyProfile.fromMap(row);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCompanyVerificationRequirements({
+    required String categorySlug,
+    required List<String> serviceSlugs,
+  }) async {
+    if (serviceSlugs.isEmpty) return const [];
+    try {
+      final scopeIds = {...serviceSlugs, categorySlug}.toList();
+      final rows = await _client
+          .from(TableNames.verificationRequirements)
+          .select(
+              'scope_type, scope_id, evidence_requirements, required_evidence')
+          .eq('is_active', true)
+          .inFilter('scope_type', ['category', 'capability']).inFilter(
+              'scope_id', scopeIds);
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCompanyEvidence({
+    required String categorySlug,
+    required List<String> serviceSlugs,
+  }) async {
+    final uid = _uid;
+    if (uid == null || serviceSlugs.isEmpty) return const [];
+    try {
+      final rows = await _client
+          .from(TableNames.providerCapabilities)
+          .select(
+              'id, capability_slug, provider_capability_evidence(id, requirement_key, file_url, status, reject_reason, expires_at, created_at)')
+          .eq('user_id', uid)
+          .inFilter('capability_slug', serviceSlugs);
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> saveCompanyCategory({
+    required String categorySlug,
+    required List<String> serviceSlugs,
+    required List<String> roleCapabilitySlugs,
+    required Map<String, dynamic> profile,
+    required List<Map<String, String>> evidence,
+  }) async {
+    try {
+      await _client.rpc(RpcNames.saveCompanyCategory, params: {
+        'p_category_slug': categorySlug,
+        'p_services': serviceSlugs,
+        'p_roles': roleCapabilitySlugs,
+        'p_profile': profile,
+        'p_evidence': evidence,
+      });
+      _clearCache();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<String> uploadCompanyEvidence({
+    required String categorySlug,
+    required String requirementKey,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not authenticated');
+    if (bytes.lengthInBytes > 5 * 1024 * 1024) {
+      throw const FormatException('Evidence files must be 5 MB or smaller.');
+    }
+    const allowed = {'image/jpeg', 'image/png', 'application/pdf'};
+    if (!allowed.contains(mimeType.toLowerCase())) {
+      throw const FormatException('Choose a JPG, PNG, or PDF file.');
+    }
+    final safeKey = Uri.encodeComponent(requirementKey.trim());
+    final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final path =
+        'evidence/$uid/$categorySlug/$safeKey/${DateTime.now().microsecondsSinceEpoch}_$safeName';
+    try {
+      await _client.storage.from('provider-evidence').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType, upsert: false),
+          );
+      return path;
     } catch (e) {
       throw parseSupabaseError(e);
     }

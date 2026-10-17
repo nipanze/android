@@ -20,6 +20,7 @@ class TableNames {
   static const String needContactReveals = 'need_contact_reveals';
   static const String providerCapabilities = 'provider_capabilities';
   static const String providerCategoryProfiles = 'provider_category_profiles';
+  static const String providerCompanyProfiles = 'provider_company_profiles';
   static const String providerCapabilityEvidence =
       'provider_capability_evidence';
   static const String capabilityRoles = 'capability_roles';
@@ -91,6 +92,7 @@ class RpcNames {
       'can_perform_marketplace_activity';
   static const String saveProviderCapabilities = 'save_provider_capabilities';
   static const String setProviderCategoryType = 'set_provider_category_type';
+  static const String saveCompanyCategory = 'save_company_category';
   static const String getMyProviderCategoryTypes =
       'get_my_provider_category_types';
   static const String adminGetVerificationRequirements =

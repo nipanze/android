@@ -6093,6 +6093,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Job profiles are personal and are saved under your own name.'**
   String get providerTypeJobsPersonalNote;
+
+  /// No description provided for @providerTypeStepOneOfTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'STEP 1 OF 2'**
+  String get providerTypeStepOneOfTwo;
+
+  /// No description provided for @providerTypeCompanyServicesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick everything your company provides.'**
+  String get providerTypeCompanyServicesHint;
+
+  /// No description provided for @providerTypeCompanyRolesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional roles'**
+  String get providerTypeCompanyRolesHint;
+
+  /// No description provided for @providerTypeCompanyRolesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick the roles you work in. These job profiles are personal and saved under your own name. Add machines and qualifications later.'**
+  String get providerTypeCompanyRolesSubtitle;
+
+  /// No description provided for @providerTypeCompanySelectionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{services, plural, =0{No services} =1{1 service} other{{services} services}} · {roles, plural, =0{No roles} =1{1 role} other{{roles} roles}} selected'**
+  String providerTypeCompanySelectionCount(int services, int roles);
+
+  /// No description provided for @companyStepTwoOfTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'STEP 2 OF 2'**
+  String get companyStepTwoOfTwo;
+
+  /// No description provided for @companyDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your company'**
+  String get companyDetailsTitle;
+
+  /// No description provided for @companyDetailsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything here is optional. People see this before they contact you.'**
+  String get companyDetailsSubtitle;
+
+  /// No description provided for @companyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Company or business name'**
+  String get companyName;
+
+  /// No description provided for @companyRegistrationNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration number'**
+  String get companyRegistrationNumber;
+
+  /// No description provided for @companyRegistrationPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible only to you and Nipanze administrators.'**
+  String get companyRegistrationPrivate;
+
+  /// No description provided for @companyTeamSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Team size'**
+  String get companyTeamSize;
+
+  /// No description provided for @companyYearsInBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Years in business'**
+  String get companyYearsInBusiness;
+
+  /// No description provided for @companyServiceAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you work?'**
+  String get companyServiceAreas;
+
+  /// No description provided for @companyServiceAreasHint.
+  ///
+  /// In en, this message translates to:
+  /// **'District or city only. Your exact address is never shown. Separate areas with commas.'**
+  String get companyServiceAreasHint;
+
+  /// No description provided for @companyProofTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof for the verified badge'**
+  String get companyProofTitle;
+
+  /// No description provided for @companyProofIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by Nipanze. Uploads alone do not verify you.'**
+  String get companyProofIntro;
+
+  /// No description provided for @companyNoEvidenceRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'No proof is required for these services right now.'**
+  String get companyNoEvidenceRequirements;
+
+  /// No description provided for @companyProofNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You can save now and add proof later. JPG, PNG, or PDF, up to 5 MB each.'**
+  String get companyProofNote;
+
+  /// No description provided for @companyEvidenceNotAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not added'**
+  String get companyEvidenceNotAdded;
+
+  /// No description provided for @companyEvidenceUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get companyEvidenceUploaded;
+
+  /// No description provided for @companyEvidenceUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get companyEvidenceUnderReview;
+
+  /// No description provided for @companyEvidenceRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get companyEvidenceRejected;
+
+  /// No description provided for @companyEvidenceExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get companyEvidenceExpired;
+
+  /// No description provided for @companyEvidenceApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get companyEvidenceApproved;
+
+  /// No description provided for @companyEvidenceAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add proof'**
+  String get companyEvidenceAdd;
+
+  /// No description provided for @companyEvidenceReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get companyEvidenceReplace;
+
+  /// No description provided for @companyEvidenceReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the selected file. Try another file.'**
+  String get companyEvidenceReadError;
+
+  /// No description provided for @companyEvidenceTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file up to 5 MB.'**
+  String get companyEvidenceTooLarge;
+
+  /// No description provided for @companyEvidenceUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a JPG, PNG, or PDF file.'**
+  String get companyEvidenceUnsupported;
+
+  /// No description provided for @companySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save company profile'**
+  String get companySave;
+
+  /// No description provided for @companySelectionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{services, plural, =0{No services} =1{1 service} other{{services} services}} · {roles, plural, =0{No roles} =1{1 role} other{{roles} roles}}'**
+  String companySelectionCount(int services, int roles);
+
+  /// No description provided for @companyTeamOneToFive.
+  ///
+  /// In en, this message translates to:
+  /// **'1–5'**
+  String get companyTeamOneToFive;
+
+  /// No description provided for @companyTeamSixToTwenty.
+  ///
+  /// In en, this message translates to:
+  /// **'6–20'**
+  String get companyTeamSixToTwenty;
+
+  /// No description provided for @companyTeamTwentyOneToFifty.
+  ///
+  /// In en, this message translates to:
+  /// **'21–50'**
+  String get companyTeamTwentyOneToFifty;
+
+  /// No description provided for @companyTeamFiftyPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'50+'**
+  String get companyTeamFiftyPlus;
+
+  /// No description provided for @companyYearsUnderOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 1'**
+  String get companyYearsUnderOne;
+
+  /// No description provided for @companyYearsOneToTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'1–2'**
+  String get companyYearsOneToTwo;
+
+  /// No description provided for @companyYearsThreeToFive.
+  ///
+  /// In en, this message translates to:
+  /// **'3–5'**
+  String get companyYearsThreeToFive;
+
+  /// No description provided for @companyYearsSixToTen.
+  ///
+  /// In en, this message translates to:
+  /// **'6–10'**
+  String get companyYearsSixToTen;
+
+  /// No description provided for @companyYearsTenPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'10+'**
+  String get companyYearsTenPlus;
+
+  /// No description provided for @providerTypeGroupCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} of {total}'**
+  String providerTypeGroupCount(Object selected, Object total);
+
+  /// No description provided for @companyPersonalProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal profile'**
+  String get companyPersonalProfile;
+
+  /// No description provided for @providerTypeJobNeedsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Add machines and qualifications to get matched.'**
+  String get providerTypeJobNeedsDetails;
+
+  /// No description provided for @providerTypeNextCompanyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: company details'**
+  String get providerTypeNextCompanyDetails;
+
+  /// No description provided for @providerSummaryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count}'**
+  String providerSummaryAll(int count);
+
+  /// No description provided for @providerSummaryServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services {count}'**
+  String providerSummaryServices(int count);
+
+  /// No description provided for @providerSummaryJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Jobs {count}'**
+  String providerSummaryJobs(int count);
 }
 
 class _AppLocalizationsDelegate

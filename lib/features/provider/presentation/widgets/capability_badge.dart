@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_category_type.dart';
 import 'provider_verification_chip.dart';
 
 class CapabilityBadge extends StatelessWidget {
@@ -20,6 +21,7 @@ class CapabilityBadge extends StatelessWidget {
     this.onTogglePause,
     this.onRemove,
     this.hiddenForCompanyOnly = false,
+    this.providerType,
   });
 
   final ProviderCapability capability;
@@ -30,6 +32,7 @@ class CapabilityBadge extends StatelessWidget {
   final ValueChanged<bool>? onTogglePause;
   final VoidCallback? onRemove;
   final bool hiddenForCompanyOnly;
+  final ProviderCategoryType? providerType;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +62,11 @@ class CapabilityBadge extends StatelessWidget {
             name: capability.categoryName ?? capability.categorySlug!,
             icon: icon,
           ).localizedName(localeCode);
+    final categoryKind = isJob
+        ? l10n.companyPersonalProfile
+        : providerType == ProviderCategoryType.company
+            ? l10n.providerTypeCompany
+            : null;
 
     // Compute one-line status note
     String statusNote;
@@ -71,6 +79,10 @@ class CapabilityBadge extends StatelessWidget {
           'Evidence rejected · Tap to resubmit';
     } else if (capability.status == ProviderCapabilityStatus.expired) {
       statusNote = 'Verification expired · Resubmit proof';
+    } else if (isJob &&
+        capability.qualificationIds.isEmpty &&
+        capability.kindIds.isEmpty) {
+      statusNote = l10n.providerTypeJobNeedsDetails;
     } else if (isJob && capability.qualificationIds.isNotEmpty) {
       statusNote =
           '${capability.qualificationIds.length} qualifications declared';
@@ -137,11 +149,14 @@ class CapabilityBadge extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (category.isNotEmpty) ...[
+                          if (category.isNotEmpty || categoryKind != null) ...[
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                category,
+                                [
+                                  category,
+                                  if (categoryKind != null) categoryKind
+                                ].where((part) => part.isNotEmpty).join(' · '),
                                 style: TextStyle(fontSize: 12, color: text2),
                                 overflow: TextOverflow.ellipsis,
                               ),

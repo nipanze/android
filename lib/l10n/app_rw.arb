@@ -409,7 +409,7 @@
   "plansAndPricing": "Ipulani n'Ibiciro",
   "chooseAccessTitle": "Hitamo ubushobozi ukeneye",
   "chooseAccessSubtitle": "Konti imwe ishobora gusaba no gutanga ibyifuzo. Ibiciro bihura n'akarere ka konti yawe ({flag} {country}).",
-  "perMonth": " / ukwezi",
+  "perMonth": "ukwezi",
   "freePlanSubtitle": "Shakisha, kurikirana, tangaza ubusabe bw'ibanze, no kwemera ibyifuzo.",
   "freeFeature1": "Shakisha ku isoko",
   "freeFeature2": "Tanga ubusabe bw'ibanze bwo kuguzwa",
@@ -1333,7 +1333,6 @@
   "perHour": "isaha",
   "perDay": "umunsi",
   "perWeek": "icyumweru",
-  "perMonth": "ukwezi",
   "perProject": "umushinga",
   "languages": "Indimi",
   "profileSummary": "Incamake ya profayili",
@@ -1502,5 +1501,94 @@
   "providerTypeCompanyDesc": "Ubucuruzi, ikigo cy’ubuhuza, itsinda cyangwa ikigo cyanditse.",
   "providerTypeNotVerification": "Guhitamo ibi ntibikugenzura. Igenzura ririhariye kandi risabwa gusa iyo serivisi irikeneye.",
   "providerTypeChooseOne": "Hitamo kimwe kugira ngo ukomeze",
-  "providerTypeJobsPersonalNote": "Umwirondoro w’akazi ni uwawe ku giti cyawe kandi ubikwa mu izina ryawe."
+  "providerTypeJobsPersonalNote": "Umwirondoro w’akazi ni uwawe ku giti cyawe kandi ubikwa mu izina ryawe.",
+  "providerTypeStepOneOfTwo": "INTAMBWE YA 1 MURI 2",
+  "providerTypeCompanyServicesHint": "Hitamo serivisi zose ikigo cyawe gitanga.",
+  "providerTypeCompanyRolesHint": "Imirimo ushobora guhitamo",
+  "providerTypeCompanyRolesSubtitle": "Hitamo imirimo ukora. Umwirondoro w’akazi ni uwawe bwite kandi ubikwa ku izina ryawe. Ushobora kongeraho imashini n’ubumenyi nyuma.",
+  "providerTypeCompanySelectionCount": "{services, plural, =0{Nta serivisi} =1{serivisi 1} other{serivisi {services}}} · {roles, plural, =0{Nta mirimo} =1{umurimo 1} other{imirimo {roles}}}",
+  "companyStepTwoOfTwo": "INTAMBWE YA 2 MURI 2",
+  "companyDetailsTitle": "Tubwire ibijyanye n’ikigo cyawe",
+  "companyDetailsSubtitle": "Ibi byose si itegeko. Abantu bazabibona mbere yo kukwandikira.",
+  "companyName": "Izina ry’ikigo cyangwa ubucuruzi",
+  "companyRegistrationNumber": "Nomero yo kwandikisha",
+  "companyRegistrationPrivate": "Bigaragara kuri wowe n’abayobozi ba Nipanze gusa.",
+  "companyTeamSize": "Umubare w’abakozi",
+  "companyYearsInBusiness": "Imyaka mu bucuruzi",
+  "companyServiceAreas": "Ukora he?",
+  "companyServiceAreasHint": "Akarere cyangwa umujyi gusa. Aderesi yawe nyayo ntizagaragara. Tandukanya ahantu ukoresheje koma.",
+  "companyProofTitle": "Ibyemezo byo kubona ikimenyetso cy’uko wemejwe",
+  "companyProofIntro": "Bisuzumwa na Nipanze. Kohereza inyandiko byonyine ntibikemeza.",
+  "companyNoEvidenceRequirements": "Ubu nta cyemezo gisabwa kuri izi serivisi.",
+  "companyProofNote": "Ushobora kubika ubu ukazongeraho ibimenyetso nyuma. JPG, PNG cyangwa PDF, bitarenze MB 5 kuri buri kimwe.",
+  "companyEvidenceNotAdded": "Ntabwo cyongeweho",
+  "companyEvidenceUploaded": "Cyoherejwe",
+  "companyEvidenceUnderReview": "Kirimo gusuzumwa",
+  "companyEvidenceRejected": "Cyanzwe",
+  "companyEvidenceExpired": "Igihe cyacyo cyarangiye",
+  "companyEvidenceApproved": "Cyemejwe",
+  "companyEvidenceAdd": "Ongeraho icyemezo",
+  "companyEvidenceReplace": "Simbuza",
+  "companyEvidenceReadError": "Ntibyashobotse gusoma dosiye wahisemo. Gerageza indi.",
+  "companyEvidenceTooLarge": "Hitamo dosiye itarengeje MB 5.",
+  "companyEvidenceUnsupported": "Hitamo dosiye ya JPG, PNG cyangwa PDF.",
+  "companySave": "Bika umwirondoro w’ikigo",
+  "companySelectionCount": "{services, plural, =0{Nta serivisi} =1{serivisi 1} other{serivisi {services}}} · {roles, plural, =0{Nta mirimo} =1{umurimo 1} other{imirimo {roles}}}",
+  "companyTeamOneToFive": "1–5",
+  "companyTeamSixToTwenty": "6–20",
+  "companyTeamTwentyOneToFifty": "21–50",
+  "companyTeamFiftyPlus": "50+",
+  "companyYearsUnderOne": "Munsi ya 1",
+  "companyYearsOneToTwo": "1–2",
+  "companyYearsThreeToFive": "3–5",
+  "companyYearsSixToTen": "6–10",
+  "companyYearsTenPlus": "10+",
+  "providerTypeGroupCount": "{selected} kuri {total}",
+  "companyPersonalProfile": "Umwirondoro bwite",
+  "providerTypeJobNeedsDetails": "Ongeraho imashini n’ubumenyi kugira ngo uhuze n’akazi.",
+  "providerTypeNextCompanyDetails": "Komeza: amakuru y’ikigo",
+  "@providerTypeCompanySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "@companySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryAll": "Byose {count}",
+  "@providerSummaryAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryServices": "Serivisi {count}",
+  "@providerSummaryServices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryJobs": "Imirimo {count}",
+  "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

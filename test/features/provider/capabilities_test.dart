@@ -137,7 +137,7 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
-  testWidgets('Company category sheet shows services and hides role flow',
+  testWidgets('Company category sheet shows services and optional roles then details',
       (tester) async {
     final needsRepo = MockNeedsRepository();
     when(needsRepo.getCategories).thenAnswer((_) async => const [
@@ -168,6 +168,15 @@ void main() {
     when(() => mockRepo.workProfilesEnabled()).thenAnswer((_) async => true);
     when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
         .thenAnswer((_) async => true);
+    when(() => mockRepo.getCompanyVerificationRequirements(
+          categorySlug: any(named: 'categorySlug'),
+          serviceSlugs: any(named: 'serviceSlugs'),
+        )).thenAnswer((_) async => []);
+    when(() => mockRepo.getCompanyEvidence(
+          categorySlug: any(named: 'categorySlug'),
+          serviceSlugs: any(named: 'serviceSlugs'),
+        )).thenAnswer((_) async => []);
+    when(() => mockRepo.getCompanyProfile(any())).thenAnswer((_) async => null);
 
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -185,21 +194,21 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    expect(find.text('WHAT WE OFFER'), findsOneWidget);
+    expect(find.text('What we offer'), findsOneWidget);
     expect(find.text('Excavator Hire'), findsOneWidget);
-    expect(find.text('What roles do you do?'), findsNothing);
+    expect(find.text('What roles do you do?'), findsOneWidget);
     expect(find.text('STEP 1 OF 3'), findsNothing);
-    expect(find.text('Machine Operator'), findsNothing);
+    expect(find.text('Machine Operator'), findsOneWidget);
 
     await tester.tap(find.text('Excavator Hire'));
+    await tester.tap(find.text('Machine Operator'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.text('Next: company details'));
     await tester.pumpAndSettle();
-    expect(find.text('Review services'), findsOneWidget);
-    expect(find.text('Company / organization name'), findsOneWidget);
-    expect(find.text('Business registration'), findsOneWidget);
-    expect(find.text('Portfolio or website'), findsOneWidget);
-    expect(find.text('Excavator Hire'), findsOneWidget);
+    expect(find.text('Tell us about your company'), findsOneWidget);
+    expect(find.text('Review services'), findsNothing);
+    expect(find.text('Company or business name'), findsOneWidget);
+    expect(find.text('Registration number'), findsOneWidget);
   });
 
   group('ProviderCapability Entity', () {

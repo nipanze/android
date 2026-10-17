@@ -409,7 +409,7 @@
   "plansAndPricing": "Mipango & Bei",
   "chooseAccessTitle": "Chagua ufikiaji unaohitaji",
   "chooseAccessSubtitle": "Akaunti moja inaweza kuchapisha maombi na kutoa dau. Bei zinarandana na eneo la akaunti yako ({flag} {country}).",
-  "perMonth": " / mwezi",
+  "perMonth": "mwezi",
   "freePlanSubtitle": "Vinjari, fuatilia orodha, chapisha maombi ya msingi, na ukubali dau.",
   "freeFeature1": "Vinjari soko",
   "freeFeature2": "Chapisha maombi ya msingi ya mkopo",
@@ -1333,7 +1333,6 @@
   "perHour": "saa",
   "perDay": "siku",
   "perWeek": "wiki",
-  "perMonth": "mwezi",
   "perProject": "mradi",
   "languages": "Lugha",
   "profileSummary": "Muhtasari wa wasifu",
@@ -1502,5 +1501,94 @@
   "providerTypeCompanyDesc": "Biashara, wakala, timu au taasisi iliyosajiliwa.",
   "providerTypeNotVerification": "Kuchagua hili hakuthibitishi utambulisho wako. Uthibitishaji ni tofauti na huombwa tu pale huduma inapohitaji.",
   "providerTypeChooseOne": "Chagua chaguo moja ili kuendelea",
-  "providerTypeJobsPersonalNote": "Wasifu wa kazi ni wa mtu binafsi na huhifadhiwa kwa jina lako."
+  "providerTypeJobsPersonalNote": "Wasifu wa kazi ni wa mtu binafsi na huhifadhiwa kwa jina lako.",
+  "providerTypeStepOneOfTwo": "HATUA YA 1 KATI YA 2",
+  "providerTypeCompanyServicesHint": "Chagua huduma zote zinazotolewa na kampuni yako.",
+  "providerTypeCompanyRolesHint": "Majukumu ya hiari",
+  "providerTypeCompanyRolesSubtitle": "Chagua majukumu unayofanya. Wasifu huu wa kazi ni wako binafsi na utahifadhiwa kwa jina lako. Unaweza kuongeza mashine na sifa baadaye.",
+  "providerTypeCompanySelectionCount": "{services, plural, =0{Hakuna huduma} =1{huduma 1} other{huduma {services}}} · {roles, plural, =0{Hakuna majukumu} =1{jukumu 1} other{majukumu {roles}}}",
+  "companyStepTwoOfTwo": "HATUA YA 2 KATI YA 2",
+  "companyDetailsTitle": "Tuambie kuhusu kampuni yako",
+  "companyDetailsSubtitle": "Kila kitu hapa ni hiari. Watu wataona maelezo haya kabla ya kuwasiliana nawe.",
+  "companyName": "Jina la kampuni au biashara",
+  "companyRegistrationNumber": "Nambari ya usajili",
+  "companyRegistrationPrivate": "Inaonekana kwako na kwa wasimamizi wa Nipanze pekee.",
+  "companyTeamSize": "Idadi ya timu",
+  "companyYearsInBusiness": "Miaka kwenye biashara",
+  "companyServiceAreas": "Unafanya kazi wapi?",
+  "companyServiceAreasHint": "Wilaya au mji pekee. Anwani yako halisi haitaonyeshwa. Tenganisha maeneo kwa koma.",
+  "companyProofTitle": "Ushahidi wa beji ya uthibitisho",
+  "companyProofIntro": "Hukaguliwa na Nipanze. Kupakia pekee hakukuthibitishi.",
+  "companyNoEvidenceRequirements": "Kwa sasa hakuna ushahidi unaohitajika kwa huduma hizi.",
+  "companyProofNote": "Unaweza kuhifadhi sasa na kuongeza ushahidi baadaye. JPG, PNG au PDF, hadi MB 5 kila moja.",
+  "companyEvidenceNotAdded": "Haijaongezwa",
+  "companyEvidenceUploaded": "Imepakiwa",
+  "companyEvidenceUnderReview": "Inakaguliwa",
+  "companyEvidenceRejected": "Imekataliwa",
+  "companyEvidenceExpired": "Muda wake umeisha",
+  "companyEvidenceApproved": "Imeidhinishwa",
+  "companyEvidenceAdd": "Ongeza ushahidi",
+  "companyEvidenceReplace": "Badilisha",
+  "companyEvidenceReadError": "Faili iliyochaguliwa haikusomeka. Jaribu faili nyingine.",
+  "companyEvidenceTooLarge": "Chagua faili la hadi MB 5.",
+  "companyEvidenceUnsupported": "Chagua faili la JPG, PNG au PDF.",
+  "companySave": "Hifadhi wasifu wa kampuni",
+  "companySelectionCount": "{services, plural, =0{Hakuna huduma} =1{huduma 1} other{huduma {services}}} · {roles, plural, =0{Hakuna majukumu} =1{jukumu 1} other{majukumu {roles}}}",
+  "companyTeamOneToFive": "1–5",
+  "companyTeamSixToTwenty": "6–20",
+  "companyTeamTwentyOneToFifty": "21–50",
+  "companyTeamFiftyPlus": "50+",
+  "companyYearsUnderOne": "Chini ya 1",
+  "companyYearsOneToTwo": "1–2",
+  "companyYearsThreeToFive": "3–5",
+  "companyYearsSixToTen": "6–10",
+  "companyYearsTenPlus": "10+",
+  "providerTypeGroupCount": "{selected} kati ya {total}",
+  "companyPersonalProfile": "Wasifu binafsi",
+  "providerTypeJobNeedsDetails": "Ongeza mashine na sifa ili ulinganishwe na kazi.",
+  "providerTypeNextCompanyDetails": "Endelea: maelezo ya kampuni",
+  "@providerTypeCompanySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "@companySelectionCount": {
+    "placeholders": {
+      "services": {
+        "type": "int"
+      },
+      "roles": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryAll": "Zote {count}",
+  "@providerSummaryAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryServices": "Huduma {count}",
+  "@providerSummaryServices": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "providerSummaryJobs": "Kazi {count}",
+  "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

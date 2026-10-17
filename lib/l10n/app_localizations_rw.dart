@@ -3374,4 +3374,200 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String get providerTypeJobsPersonalNote =>
       'Umwirondoro w’akazi ni uwawe ku giti cyawe kandi ubikwa mu izina ryawe.';
+
+  @override
+  String get providerTypeStepOneOfTwo => 'INTAMBWE YA 1 MURI 2';
+
+  @override
+  String get providerTypeCompanyServicesHint =>
+      'Hitamo serivisi zose ikigo cyawe gitanga.';
+
+  @override
+  String get providerTypeCompanyRolesHint => 'Imirimo ushobora guhitamo';
+
+  @override
+  String get providerTypeCompanyRolesSubtitle =>
+      'Hitamo imirimo ukora. Umwirondoro w’akazi ni uwawe bwite kandi ubikwa ku izina ryawe. Ushobora kongeraho imashini n’ubumenyi nyuma.';
+
+  @override
+  String providerTypeCompanySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: 'serivisi $services',
+      one: 'serivisi 1',
+      zero: 'Nta serivisi',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: 'imirimo $roles',
+      one: 'umurimo 1',
+      zero: 'Nta mirimo',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyStepTwoOfTwo => 'INTAMBWE YA 2 MURI 2';
+
+  @override
+  String get companyDetailsTitle => 'Tubwire ibijyanye n’ikigo cyawe';
+
+  @override
+  String get companyDetailsSubtitle =>
+      'Ibi byose si itegeko. Abantu bazabibona mbere yo kukwandikira.';
+
+  @override
+  String get companyName => 'Izina ry’ikigo cyangwa ubucuruzi';
+
+  @override
+  String get companyRegistrationNumber => 'Nomero yo kwandikisha';
+
+  @override
+  String get companyRegistrationPrivate =>
+      'Bigaragara kuri wowe n’abayobozi ba Nipanze gusa.';
+
+  @override
+  String get companyTeamSize => 'Umubare w’abakozi';
+
+  @override
+  String get companyYearsInBusiness => 'Imyaka mu bucuruzi';
+
+  @override
+  String get companyServiceAreas => 'Ukora he?';
+
+  @override
+  String get companyServiceAreasHint =>
+      'Akarere cyangwa umujyi gusa. Aderesi yawe nyayo ntizagaragara. Tandukanya ahantu ukoresheje koma.';
+
+  @override
+  String get companyProofTitle =>
+      'Ibyemezo byo kubona ikimenyetso cy’uko wemejwe';
+
+  @override
+  String get companyProofIntro =>
+      'Bisuzumwa na Nipanze. Kohereza inyandiko byonyine ntibikemeza.';
+
+  @override
+  String get companyNoEvidenceRequirements =>
+      'Ubu nta cyemezo gisabwa kuri izi serivisi.';
+
+  @override
+  String get companyProofNote =>
+      'Ushobora kubika ubu ukazongeraho ibimenyetso nyuma. JPG, PNG cyangwa PDF, bitarenze MB 5 kuri buri kimwe.';
+
+  @override
+  String get companyEvidenceNotAdded => 'Ntabwo cyongeweho';
+
+  @override
+  String get companyEvidenceUploaded => 'Cyoherejwe';
+
+  @override
+  String get companyEvidenceUnderReview => 'Kirimo gusuzumwa';
+
+  @override
+  String get companyEvidenceRejected => 'Cyanzwe';
+
+  @override
+  String get companyEvidenceExpired => 'Igihe cyacyo cyarangiye';
+
+  @override
+  String get companyEvidenceApproved => 'Cyemejwe';
+
+  @override
+  String get companyEvidenceAdd => 'Ongeraho icyemezo';
+
+  @override
+  String get companyEvidenceReplace => 'Simbuza';
+
+  @override
+  String get companyEvidenceReadError =>
+      'Ntibyashobotse gusoma dosiye wahisemo. Gerageza indi.';
+
+  @override
+  String get companyEvidenceTooLarge => 'Hitamo dosiye itarengeje MB 5.';
+
+  @override
+  String get companyEvidenceUnsupported =>
+      'Hitamo dosiye ya JPG, PNG cyangwa PDF.';
+
+  @override
+  String get companySave => 'Bika umwirondoro w’ikigo';
+
+  @override
+  String companySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: 'serivisi $services',
+      one: 'serivisi 1',
+      zero: 'Nta serivisi',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: 'imirimo $roles',
+      one: 'umurimo 1',
+      zero: 'Nta mirimo',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyTeamOneToFive => '1–5';
+
+  @override
+  String get companyTeamSixToTwenty => '6–20';
+
+  @override
+  String get companyTeamTwentyOneToFifty => '21–50';
+
+  @override
+  String get companyTeamFiftyPlus => '50+';
+
+  @override
+  String get companyYearsUnderOne => 'Munsi ya 1';
+
+  @override
+  String get companyYearsOneToTwo => '1–2';
+
+  @override
+  String get companyYearsThreeToFive => '3–5';
+
+  @override
+  String get companyYearsSixToTen => '6–10';
+
+  @override
+  String get companyYearsTenPlus => '10+';
+
+  @override
+  String providerTypeGroupCount(Object selected, Object total) {
+    return '$selected kuri $total';
+  }
+
+  @override
+  String get companyPersonalProfile => 'Umwirondoro bwite';
+
+  @override
+  String get providerTypeJobNeedsDetails =>
+      'Ongeraho imashini n’ubumenyi kugira ngo uhuze n’akazi.';
+
+  @override
+  String get providerTypeNextCompanyDetails => 'Komeza: amakuru y’ikigo';
+
+  @override
+  String providerSummaryAll(int count) {
+    return 'Byose $count';
+  }
+
+  @override
+  String providerSummaryServices(int count) {
+    return 'Serivisi $count';
+  }
+
+  @override
+  String providerSummaryJobs(int count) {
+    return 'Imirimo $count';
+  }
 }

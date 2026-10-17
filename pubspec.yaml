@@ -47,6 +47,8 @@ dependencies:
   # Image
   cached_network_image: ^3.3.1
   image_picker: ^1.1.2
+  # Enables PDF evidence alongside the existing image evidence flow.
+  file_picker: ^12.0.0
 
   # Local cache (UI layer only)
   hive_flutter: ^1.1.0

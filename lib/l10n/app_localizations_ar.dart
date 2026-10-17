@@ -3353,4 +3353,209 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get providerTypeJobsPersonalNote => 'ملفات العمل شخصية وتُحفظ باسمك.';
+
+  @override
+  String get providerTypeStepOneOfTwo => 'الخطوة 1 من 2';
+
+  @override
+  String get providerTypeCompanyServicesHint =>
+      'حدد كل الخدمات التي تقدمها شركتك.';
+
+  @override
+  String get providerTypeCompanyRolesHint => 'الأدوار اختيارية';
+
+  @override
+  String get providerTypeCompanyRolesSubtitle =>
+      'حدد الأدوار التي تعمل بها. ملفات الوظائف شخصية ومحفوظة باسمك. يمكنك إضافة الآلات والمؤهلات لاحقًا.';
+
+  @override
+  String providerTypeCompanySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: '$services خدمة',
+      many: '$services خدمة',
+      few: '$services خدمات',
+      two: 'خدمتان',
+      one: 'خدمة واحدة',
+      zero: 'لا توجد خدمات',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: '$roles دور',
+      many: '$roles دورًا',
+      few: '$roles أدوار',
+      two: 'دوران',
+      one: 'دور واحد',
+      zero: 'لا توجد أدوار',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyStepTwoOfTwo => 'الخطوة 2 من 2';
+
+  @override
+  String get companyDetailsTitle => 'أخبرنا عن شركتك';
+
+  @override
+  String get companyDetailsSubtitle =>
+      'كل المعلومات هنا اختيارية. ستظهر للناس قبل التواصل معك.';
+
+  @override
+  String get companyName => 'اسم الشركة أو النشاط التجاري';
+
+  @override
+  String get companyRegistrationNumber => 'رقم التسجيل';
+
+  @override
+  String get companyRegistrationPrivate => 'مرئي لك ولمسؤولي نيبانزي فقط.';
+
+  @override
+  String get companyTeamSize => 'حجم الفريق';
+
+  @override
+  String get companyYearsInBusiness => 'سنوات العمل';
+
+  @override
+  String get companyServiceAreas => 'أين تعمل؟';
+
+  @override
+  String get companyServiceAreasHint =>
+      'المنطقة أو المدينة فقط. لن يظهر عنوانك الدقيق. افصل المناطق بفواصل.';
+
+  @override
+  String get companyProofTitle => 'إثبات شارة التحقق';
+
+  @override
+  String get companyProofIntro =>
+      'يراجع نيبانزي المستندات. رفع الملفات وحده لا يمنحك التحقق.';
+
+  @override
+  String get companyNoEvidenceRequirements =>
+      'لا توجد مستندات مطلوبة لهذه الخدمات حاليًا.';
+
+  @override
+  String get companyProofNote =>
+      'يمكنك الحفظ الآن وإضافة الإثبات لاحقًا. JPG أو PNG أو PDF، بحد أقصى 5 ميغابايت لكل ملف.';
+
+  @override
+  String get companyEvidenceNotAdded => 'لم تتم الإضافة';
+
+  @override
+  String get companyEvidenceUploaded => 'تم الرفع';
+
+  @override
+  String get companyEvidenceUnderReview => 'قيد المراجعة';
+
+  @override
+  String get companyEvidenceRejected => 'مرفوض';
+
+  @override
+  String get companyEvidenceExpired => 'منتهي الصلاحية';
+
+  @override
+  String get companyEvidenceApproved => 'تمت الموافقة';
+
+  @override
+  String get companyEvidenceAdd => 'إضافة إثبات';
+
+  @override
+  String get companyEvidenceReplace => 'استبدال';
+
+  @override
+  String get companyEvidenceReadError =>
+      'تعذرت قراءة الملف المحدد. جرّب ملفًا آخر.';
+
+  @override
+  String get companyEvidenceTooLarge => 'اختر ملفًا لا يتجاوز 5 ميغابايت.';
+
+  @override
+  String get companyEvidenceUnsupported => 'اختر ملف JPG أو PNG أو PDF.';
+
+  @override
+  String get companySave => 'حفظ ملف الشركة';
+
+  @override
+  String companySelectionCount(int services, int roles) {
+    String _temp0 = intl.Intl.pluralLogic(
+      services,
+      locale: localeName,
+      other: '$services خدمة',
+      many: '$services خدمة',
+      few: '$services خدمات',
+      two: 'خدمتان',
+      one: 'خدمة واحدة',
+      zero: 'لا توجد خدمات',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      roles,
+      locale: localeName,
+      other: '$roles دور',
+      many: '$roles دورًا',
+      few: '$roles أدوار',
+      two: 'دوران',
+      one: 'دور واحد',
+      zero: 'لا توجد أدوار',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get companyTeamOneToFive => '1–5';
+
+  @override
+  String get companyTeamSixToTwenty => '6–20';
+
+  @override
+  String get companyTeamTwentyOneToFifty => '21–50';
+
+  @override
+  String get companyTeamFiftyPlus => '50+';
+
+  @override
+  String get companyYearsUnderOne => 'أقل من 1';
+
+  @override
+  String get companyYearsOneToTwo => '1–2';
+
+  @override
+  String get companyYearsThreeToFive => '3–5';
+
+  @override
+  String get companyYearsSixToTen => '6–10';
+
+  @override
+  String get companyYearsTenPlus => '10+';
+
+  @override
+  String providerTypeGroupCount(Object selected, Object total) {
+    return '$selected من $total';
+  }
+
+  @override
+  String get companyPersonalProfile => 'ملف شخصي';
+
+  @override
+  String get providerTypeJobNeedsDetails =>
+      'أضف الآلات والمؤهلات لتظهر لك فرص مناسبة.';
+
+  @override
+  String get providerTypeNextCompanyDetails => 'التالي: تفاصيل الشركة';
+
+  @override
+  String providerSummaryAll(int count) {
+    return 'الكل $count';
+  }
+
+  @override
+  String providerSummaryServices(int count) {
+    return 'الخدمات $count';
+  }
+
+  @override
+  String providerSummaryJobs(int count) {
+    return 'الوظائف $count';
+  }
 }
