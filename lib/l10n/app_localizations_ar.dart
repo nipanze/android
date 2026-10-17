@@ -3401,7 +3401,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'كل المعلومات هنا اختيارية. ستظهر للناس قبل التواصل معك.';
+      'كل المعلومات اختيارية. هذه التفاصيل خاصة بك وبمسؤولي نيبانزي فقط.';
 
   @override
   String get companyName => 'اسم الشركة أو النشاط التجاري';
@@ -3557,5 +3557,63 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String providerSummaryJobs(int count) {
     return 'الوظائف $count';
+  }
+
+  @override
+  String get companyProfileSaved => 'تم حفظ ملف الشركة.';
+
+  @override
+  String get providerEvidenceTab => 'أدلة مقدمي الخدمات';
+
+  @override
+  String get providerEvidenceHeader => 'أدلة قدرات مقدمي الخدمات قيد المراجعة';
+
+  @override
+  String get providerEvidenceEmpty =>
+      'لا توجد أدلة لمقدمي الخدمات بانتظار المراجعة.';
+
+  @override
+  String get providerEvidenceCapabilities => 'قدرات';
+
+  @override
+  String get providerEvidenceOpenFile => 'فتح ملف الإثبات المشترك';
+
+  @override
+  String get providerEvidenceCompanyDetails => 'تفاصيل الشركة (للمسؤولين فقط)';
+
+  @override
+  String get providerEvidenceApprove => 'الموافقة على هذه القدرة';
+
+  @override
+  String get providerEvidenceReject => 'رفض';
+
+  @override
+  String get providerEvidenceRejectReason => 'رفض الإثبات';
+
+  @override
+  String get providerEvidenceReason => 'سبب الرفض';
+
+  @override
+  String get providerEvidenceReviewSaved => 'تم حفظ مراجعة الإثبات.';
+
+  @override
+  String get providerTypeEditCompanyDetails => 'تعديل تفاصيل الشركة';
+
+  @override
+  String get providerTypeOtherGroup => 'أخرى';
+
+  @override
+  String get providerTypeNoRolesConfigured =>
+      'لا توجد أدوار وظيفية محددة لهذه الفئة حتى الآن.';
+
+  @override
+  String get providerNoJobRolesAdded => 'لم تتم إضافة أدوار وظيفية';
+
+  @override
+  String get providerAvailableForJobs => 'متاح للوظائف';
+
+  @override
+  String providerOpenJobsMatch(int count) {
+    return 'توجد $count وظائف مناسبة';
   }
 }

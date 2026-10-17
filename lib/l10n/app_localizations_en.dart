@@ -3398,7 +3398,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Everything here is optional. People see this before they contact you.';
+      'Everything here is optional. These details are private to you and Nipanze administrators.';
 
   @override
   String get companyName => 'Company or business name';
@@ -3549,5 +3549,64 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String providerSummaryJobs(int count) {
     return 'Jobs $count';
+  }
+
+  @override
+  String get companyProfileSaved => 'Company profile saved.';
+
+  @override
+  String get providerEvidenceTab => 'Provider evidence';
+
+  @override
+  String get providerEvidenceHeader =>
+      'Provider capability evidence waiting for review';
+
+  @override
+  String get providerEvidenceEmpty =>
+      'No provider evidence is waiting for review.';
+
+  @override
+  String get providerEvidenceCapabilities => 'capabilities';
+
+  @override
+  String get providerEvidenceOpenFile => 'Open shared evidence file';
+
+  @override
+  String get providerEvidenceCompanyDetails => 'Company details (admin only)';
+
+  @override
+  String get providerEvidenceApprove => 'Approve this capability';
+
+  @override
+  String get providerEvidenceReject => 'Reject';
+
+  @override
+  String get providerEvidenceRejectReason => 'Reject evidence';
+
+  @override
+  String get providerEvidenceReason => 'Reason for rejection';
+
+  @override
+  String get providerEvidenceReviewSaved => 'Evidence review saved.';
+
+  @override
+  String get providerTypeEditCompanyDetails => 'Edit company details';
+
+  @override
+  String get providerTypeOtherGroup => 'Other';
+
+  @override
+  String get providerTypeNoRolesConfigured =>
+      'No specific job roles are configured for this category yet.';
+
+  @override
+  String get providerNoJobRolesAdded => 'No job roles added';
+
+  @override
+  String get providerAvailableForJobs => 'Available for jobs';
+
+  @override
+  String providerOpenJobsMatch(int count) {
+    return '$count open jobs match';
   }
 }

@@ -1509,7 +1509,7 @@
   "providerTypeCompanySelectionCount": "{services, plural, =0{لا توجد خدمات} =1{خدمة واحدة} =2{خدمتان} few{{services} خدمات} many{{services} خدمة} other{{services} خدمة}} · {roles, plural, =0{لا توجد أدوار} =1{دور واحد} =2{دوران} few{{roles} أدوار} many{{roles} دورًا} other{{roles} دور}}",
   "companyStepTwoOfTwo": "الخطوة 2 من 2",
   "companyDetailsTitle": "أخبرنا عن شركتك",
-  "companyDetailsSubtitle": "كل المعلومات هنا اختيارية. ستظهر للناس قبل التواصل معك.",
+  "companyDetailsSubtitle": "كل المعلومات اختيارية. هذه التفاصيل خاصة بك وبمسؤولي نيبانزي فقط.",
   "companyName": "اسم الشركة أو النشاط التجاري",
   "companyRegistrationNumber": "رقم التسجيل",
   "companyRegistrationPrivate": "مرئي لك ولمسؤولي نيبانزي فقط.",
@@ -1585,6 +1585,31 @@
   },
   "providerSummaryJobs": "الوظائف {count}",
   "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companyProfileSaved": "تم حفظ ملف الشركة.",
+  "providerEvidenceTab": "أدلة مقدمي الخدمات",
+  "providerEvidenceHeader": "أدلة قدرات مقدمي الخدمات قيد المراجعة",
+  "providerEvidenceEmpty": "لا توجد أدلة لمقدمي الخدمات بانتظار المراجعة.",
+  "providerEvidenceCapabilities": "قدرات",
+  "providerEvidenceOpenFile": "فتح ملف الإثبات المشترك",
+  "providerEvidenceCompanyDetails": "تفاصيل الشركة (للمسؤولين فقط)",
+  "providerEvidenceApprove": "الموافقة على هذه القدرة",
+  "providerEvidenceReject": "رفض",
+  "providerEvidenceRejectReason": "رفض الإثبات",
+  "providerEvidenceReason": "سبب الرفض",
+  "providerEvidenceReviewSaved": "تم حفظ مراجعة الإثبات.",
+  "providerTypeEditCompanyDetails": "تعديل تفاصيل الشركة",
+  "providerTypeOtherGroup": "أخرى",
+  "providerTypeNoRolesConfigured": "لا توجد أدوار وظيفية محددة لهذه الفئة حتى الآن.",
+  "providerNoJobRolesAdded": "لم تتم إضافة أدوار وظيفية",
+  "providerAvailableForJobs": "متاح للوظائف",
+  "providerOpenJobsMatch": "توجد {count} وظائف مناسبة",
+  "@providerOpenJobsMatch": {
     "placeholders": {
       "count": {
         "type": "int"

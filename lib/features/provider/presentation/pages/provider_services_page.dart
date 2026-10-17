@@ -143,6 +143,10 @@ class _ProviderServicesView extends StatelessWidget {
                   opps: opps,
                   l10n: l10n,
                 ),
+                onEditCompanyDetails: (cap) => _showAddSheet(
+                  context,
+                  preselectedCategorySlug: cap.categorySlug,
+                ),
                 onRemoveCapability: (cap) => _confirmRemove(context, cap, l10n),
               ),
             ),
@@ -215,6 +219,7 @@ class _ProviderServicesView extends StatelessWidget {
     String? preselectedCategorySlug,
   }) async {
     final cubit = context.read<CapabilitiesCubit>();
+    final l10n = AppLocalizations.of(context)!;
     final loaded = cubit.state;
     final existingSlugs = loaded is CapabilitiesLoaded
         ? loaded.capabilities.map((c) => c.capabilitySlug).toSet()
@@ -265,6 +270,11 @@ class _ProviderServicesView extends StatelessWidget {
     );
     if (selection?.companyPath == true) {
       await cubit.loadWithOpportunities();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.companyProfileSaved)),
+        );
+      }
       return;
     }
     if (selection != null &&
@@ -535,6 +545,7 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.onAddService,
     required this.onTapCapability,
     this.onRemoveCapability,
+    this.onEditCompanyDetails,
   });
 
   final List<ProviderCapability> capabilities;
@@ -547,6 +558,7 @@ class _ScreenASummaryView extends StatefulWidget {
   final VoidCallback onAddService;
   final ValueChanged<ProviderCapability> onTapCapability;
   final ValueChanged<ProviderCapability>? onRemoveCapability;
+  final ValueChanged<ProviderCapability>? onEditCompanyDetails;
 
   @override
   State<_ScreenASummaryView> createState() => _ScreenASummaryViewState();
@@ -641,6 +653,12 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                           ProviderCategoryType.individual,
                   showProfileDetails: true,
                   providerType: widget.categoryTypes[cap.categorySlug],
+                  onEditCompanyDetails:
+                      widget.categoryTypes[cap.categorySlug] ==
+                              ProviderCategoryType.company &&
+                          !cap.isWork
+                      ? () => widget.onEditCompanyDetails?.call(cap)
+                      : null,
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
                   onEdit: () => widget.onTapCapability(cap),
@@ -738,6 +756,7 @@ class _WorkProfileStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
@@ -756,7 +775,7 @@ class _WorkProfileStrip extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Work profiles are not enabled yet',
+                l10n.workProfilesDisabled,
                 style: TextStyle(fontSize: 13, color: text2),
               ),
             ),
@@ -766,9 +785,9 @@ class _WorkProfileStrip extends StatelessWidget {
     }
 
     final summary = jobsCount == 0
-        ? 'No job roles added'
-        : '$jobsCount ${jobsCount == 1 ? 'role' : 'roles'} · Available for jobs'
-            '${totalJobMatches > 0 ? ' · $totalJobMatches open jobs match' : ''}';
+        ? l10n.providerNoJobRolesAdded
+        : '${l10n.rolesCount(jobsCount)} · ${l10n.providerAvailableForJobs}'
+            '${totalJobMatches > 0 ? ' · ${l10n.providerOpenJobsMatch(totalJobMatches)}' : ''}';
 
     return Container(
       decoration: BoxDecoration(
@@ -794,9 +813,9 @@ class _WorkProfileStrip extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Work Profile',
-                  style: TextStyle(
+                Text(
+                  l10n.workProfileTitle,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),

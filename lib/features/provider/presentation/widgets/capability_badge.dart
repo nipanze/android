@@ -22,6 +22,7 @@ class CapabilityBadge extends StatelessWidget {
     this.onRemove,
     this.hiddenForCompanyOnly = false,
     this.providerType,
+    this.onEditCompanyDetails,
   });
 
   final ProviderCapability capability;
@@ -33,6 +34,7 @@ class CapabilityBadge extends StatelessWidget {
   final VoidCallback? onRemove;
   final bool hiddenForCompanyOnly;
   final ProviderCategoryType? providerType;
+  final VoidCallback? onEditCompanyDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +64,8 @@ class CapabilityBadge extends StatelessWidget {
             name: capability.categoryName ?? capability.categorySlug!,
             icon: icon,
           ).localizedName(localeCode);
-    final categoryKind = isJob
+    final categoryKind =
+        isJob && providerType == ProviderCategoryType.company
         ? l10n.companyPersonalProfile
         : providerType == ProviderCategoryType.company
             ? l10n.providerTypeCompany
@@ -80,6 +83,7 @@ class CapabilityBadge extends StatelessWidget {
     } else if (capability.status == ProviderCapabilityStatus.expired) {
       statusNote = 'Verification expired · Resubmit proof';
     } else if (isJob &&
+        providerType == ProviderCategoryType.company &&
         capability.qualificationIds.isEmpty &&
         capability.kindIds.isEmpty) {
       statusNote = l10n.providerTypeJobNeedsDetails;
@@ -249,12 +253,19 @@ class CapabilityBadge extends StatelessWidget {
                   ),
                 ),
                 // Three-dot menu or remove button
-                if (onEdit != null || onTogglePause != null || onRemove != null)
+                if (onEdit != null ||
+                    onEditCompanyDetails != null ||
+                    onTogglePause != null ||
+                    onRemove != null)
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_vert_rounded, color: text2, size: 20),
                     padding: EdgeInsets.zero,
                     onSelected: (val) {
                       if (val == 'edit' && onEdit != null) onEdit!();
+                      if (val == 'company_details' &&
+                          onEditCompanyDetails != null) {
+                        onEditCompanyDetails!();
+                      }
                       if (val == 'pause' && onTogglePause != null) {
                         onTogglePause!(!capability.isPaused);
                       }
@@ -269,6 +280,17 @@ class CapabilityBadge extends StatelessWidget {
                               Icon(Icons.edit_outlined, size: 18),
                               SizedBox(width: 8),
                               Text('Edit'),
+                            ],
+                          ),
+                        ),
+                      if (onEditCompanyDetails != null)
+                        PopupMenuItem(
+                          value: 'company_details',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.business_outlined, size: 18),
+                              const SizedBox(width: 8),
+                              Text(l10n.providerTypeEditCompanyDetails),
                             ],
                           ),
                         ),

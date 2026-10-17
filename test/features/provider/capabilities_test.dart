@@ -137,7 +137,8 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
-  testWidgets('Company category sheet shows services and optional roles then details',
+  testWidgets(
+      'Company category sheet shows services and optional roles then details',
       (tester) async {
     final needsRepo = MockNeedsRepository();
     when(needsRepo.getCategories).thenAnswer((_) async => const [
@@ -201,6 +202,9 @@ void main() {
     expect(find.text('Machine Operator'), findsOneWidget);
 
     await tester.tap(find.text('Excavator Hire'));
+    await tester.drag(find.byType(ListView).last, const Offset(0, -280));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Machine Operator'));
     await tester.tap(find.text('Machine Operator'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Next: company details'));
@@ -986,10 +990,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Screen A elements:
-      // Filter chips: All (2), Services (1), Jobs (1)
-      expect(find.text('All (2)'), findsOneWidget);
-      expect(find.text('Services (1)'), findsOneWidget);
-      expect(find.text('Jobs (1)'), findsOneWidget);
+      // Filter chips: All 2, Services 1, Jobs 1
+      expect(find.text('All 2'), findsOneWidget);
+      expect(find.text('Services 1'), findsOneWidget);
+      expect(find.text('Jobs 1'), findsOneWidget);
 
       // Cards
       expect(find.text('Excavator Hire'), findsOneWidget);
@@ -1004,14 +1008,14 @@ void main() {
           find.textContaining('1 role · Available for jobs'), findsOneWidget);
 
       // Filter by Jobs only
-      await tester.tap(find.text('Jobs (1)'));
+      await tester.tap(find.text('Jobs 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Machine Operator'), findsOneWidget);
       expect(find.text('Excavator Hire'), findsNothing);
 
       // Filter by Services only
-      await tester.tap(find.text('Services (1)'));
+      await tester.tap(find.text('Services 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Excavator Hire'), findsOneWidget);

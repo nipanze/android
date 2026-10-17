@@ -6139,7 +6139,7 @@ abstract class AppLocalizations {
   /// No description provided for @companyDetailsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Everything here is optional. People see this before they contact you.'**
+  /// **'Everything here is optional. These details are private to you and Nipanze administrators.'**
   String get companyDetailsSubtitle;
 
   /// No description provided for @companyName.
@@ -6381,6 +6381,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Jobs {count}'**
   String providerSummaryJobs(int count);
+
+  /// No description provided for @companyProfileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Company profile saved.'**
+  String get companyProfileSaved;
+
+  /// No description provided for @providerEvidenceTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider evidence'**
+  String get providerEvidenceTab;
+
+  /// No description provided for @providerEvidenceHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider capability evidence waiting for review'**
+  String get providerEvidenceHeader;
+
+  /// No description provided for @providerEvidenceEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No provider evidence is waiting for review.'**
+  String get providerEvidenceEmpty;
+
+  /// No description provided for @providerEvidenceCapabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'capabilities'**
+  String get providerEvidenceCapabilities;
+
+  /// No description provided for @providerEvidenceOpenFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open shared evidence file'**
+  String get providerEvidenceOpenFile;
+
+  /// No description provided for @providerEvidenceCompanyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Company details (admin only)'**
+  String get providerEvidenceCompanyDetails;
+
+  /// No description provided for @providerEvidenceApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve this capability'**
+  String get providerEvidenceApprove;
+
+  /// No description provided for @providerEvidenceReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get providerEvidenceReject;
+
+  /// No description provided for @providerEvidenceRejectReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject evidence'**
+  String get providerEvidenceRejectReason;
+
+  /// No description provided for @providerEvidenceReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for rejection'**
+  String get providerEvidenceReason;
+
+  /// No description provided for @providerEvidenceReviewSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence review saved.'**
+  String get providerEvidenceReviewSaved;
+
+  /// No description provided for @providerTypeEditCompanyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit company details'**
+  String get providerTypeEditCompanyDetails;
+
+  /// No description provided for @providerTypeOtherGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get providerTypeOtherGroup;
+
+  /// No description provided for @providerTypeNoRolesConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'No specific job roles are configured for this category yet.'**
+  String get providerTypeNoRolesConfigured;
+
+  /// No description provided for @providerNoJobRolesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'No job roles added'**
+  String get providerNoJobRolesAdded;
+
+  /// No description provided for @providerAvailableForJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Available for jobs'**
+  String get providerAvailableForJobs;
+
+  /// No description provided for @providerOpenJobsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open jobs match'**
+  String providerOpenJobsMatch(int count);
 }
 
 class _AppLocalizationsDelegate

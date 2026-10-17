@@ -24,6 +24,7 @@ class ProviderRepository implements IProviderRepository {
   final SupabaseClient _client;
   final Map<String, List<ProviderCapability>> _capabilityCache = {};
   final Map<String, List<ProviderOpportunity>> _opportunityCache = {};
+  final Map<String, ProviderCompanyProfile> _companyProfileCache = {};
   bool? _capabilityProfilesEnabled;
   Map<String, ProviderCategoryType>? _categoryTypeCache;
 
@@ -32,6 +33,7 @@ class ProviderRepository implements IProviderRepository {
   void _clearCache() {
     _capabilityCache.clear();
     _opportunityCache.clear();
+    _companyProfileCache.clear();
     _capabilityProfilesEnabled = null;
     _categoryTypeCache = null;
   }
@@ -77,8 +79,15 @@ class ProviderRepository implements IProviderRepository {
           .select()
           .eq('category_slug', categorySlug)
           .maybeSingle();
-      return row == null ? null : ProviderCompanyProfile.fromMap(row);
+      if (row == null) return _companyProfileCache[categorySlug];
+      final profile = ProviderCompanyProfile.fromMap(row);
+      _companyProfileCache[categorySlug] = profile;
+      return profile;
     } catch (e) {
+      final cached = _companyProfileCache[categorySlug];
+      if (cached != null && parseSupabaseError(e) is NetworkException) {
+        return cached;
+      }
       throw parseSupabaseError(e);
     }
   }
@@ -147,6 +156,10 @@ class ProviderRepository implements IProviderRepository {
         'p_evidence': evidence,
       });
       _clearCache();
+      _companyProfileCache[categorySlug] = ProviderCompanyProfile.fromMap({
+        ...profile,
+        'category_slug': categorySlug,
+      });
     } catch (e) {
       throw parseSupabaseError(e);
     }

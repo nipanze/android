@@ -3411,7 +3411,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Kila kitu hapa ni hiari. Watu wataona maelezo haya kabla ya kuwasiliana nawe.';
+      'Kila kitu hapa ni hiari. Maelezo haya ni ya faragha kwako na wasimamizi wa Nipanze.';
 
   @override
   String get companyName => 'Jina la kampuni au biashara';
@@ -3562,5 +3562,65 @@ class AppLocalizationsSw extends AppLocalizations {
   @override
   String providerSummaryJobs(int count) {
     return 'Kazi $count';
+  }
+
+  @override
+  String get companyProfileSaved => 'Wasifu wa kampuni umehifadhiwa.';
+
+  @override
+  String get providerEvidenceTab => 'Ushahidi wa watoa huduma';
+
+  @override
+  String get providerEvidenceHeader =>
+      'Ushahidi wa uwezo wa watoa huduma unaosubiri kukaguliwa';
+
+  @override
+  String get providerEvidenceEmpty =>
+      'Hakuna ushahidi wa mtoa huduma unaosubiri kukaguliwa.';
+
+  @override
+  String get providerEvidenceCapabilities => 'uwezo';
+
+  @override
+  String get providerEvidenceOpenFile => 'Fungua faili la ushahidi';
+
+  @override
+  String get providerEvidenceCompanyDetails =>
+      'Maelezo ya kampuni (wasimamizi pekee)';
+
+  @override
+  String get providerEvidenceApprove => 'Idhinisha uwezo huu';
+
+  @override
+  String get providerEvidenceReject => 'Kataa';
+
+  @override
+  String get providerEvidenceRejectReason => 'Kataa ushahidi';
+
+  @override
+  String get providerEvidenceReason => 'Sababu ya kukataa';
+
+  @override
+  String get providerEvidenceReviewSaved => 'Ukaguzi wa ushahidi umehifadhiwa.';
+
+  @override
+  String get providerTypeEditCompanyDetails => 'Hariri maelezo ya kampuni';
+
+  @override
+  String get providerTypeOtherGroup => 'Nyingine';
+
+  @override
+  String get providerTypeNoRolesConfigured =>
+      'Hakuna majukumu maalum ya kazi yaliyowekwa kwa aina hii bado.';
+
+  @override
+  String get providerNoJobRolesAdded => 'Hakuna majukumu ya kazi yaliyoongezwa';
+
+  @override
+  String get providerAvailableForJobs => 'Inapatikana kwa kazi';
+
+  @override
+  String providerOpenJobsMatch(int count) {
+    return 'Kazi $count zilizo wazi zinaendana';
   }
 }

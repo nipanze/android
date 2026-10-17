@@ -3416,7 +3416,7 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Ibi byose si itegeko. Abantu bazabibona mbere yo kukwandikira.';
+      'Ibi byose si itegeko. Aya makuru abikwa mu ibanga kandi agaragara kuri wowe n’abayobozi ba Nipanze gusa.';
 
   @override
   String get companyName => 'Izina ry’ikigo cyangwa ubucuruzi';
@@ -3569,5 +3569,65 @@ class AppLocalizationsRw extends AppLocalizations {
   @override
   String providerSummaryJobs(int count) {
     return 'Imirimo $count';
+  }
+
+  @override
+  String get companyProfileSaved => 'Umwirondoro w’ikigo wabitswe.';
+
+  @override
+  String get providerEvidenceTab => 'Ibimenyetso by’abatanga serivisi';
+
+  @override
+  String get providerEvidenceHeader =>
+      'Ibimenyetso by’abatanga serivisi bitegereje gusuzumwa';
+
+  @override
+  String get providerEvidenceEmpty =>
+      'Nta bimenyetso by’abatanga serivisi bitegereje gusuzumwa.';
+
+  @override
+  String get providerEvidenceCapabilities => 'ubushobozi';
+
+  @override
+  String get providerEvidenceOpenFile => 'Fungura dosiye y’icyemezo';
+
+  @override
+  String get providerEvidenceCompanyDetails =>
+      'Amakuru y’ikigo (abayobozi gusa)';
+
+  @override
+  String get providerEvidenceApprove => 'Emeza ubu bushobozi';
+
+  @override
+  String get providerEvidenceReject => 'Anga';
+
+  @override
+  String get providerEvidenceRejectReason => 'Anga icyemezo';
+
+  @override
+  String get providerEvidenceReason => 'Impamvu yo kwanga';
+
+  @override
+  String get providerEvidenceReviewSaved => 'Isuzuma ry’icyemezo ryabitswe.';
+
+  @override
+  String get providerTypeEditCompanyDetails => 'Hindura amakuru y’ikigo';
+
+  @override
+  String get providerTypeOtherGroup => 'Ibindi';
+
+  @override
+  String get providerTypeNoRolesConfigured =>
+      'Nta mirimo yihariye yateganyijwe muri iki cyiciro kugeza ubu.';
+
+  @override
+  String get providerNoJobRolesAdded => 'Nta mirimo y’akazi yongeweho';
+
+  @override
+  String get providerAvailableForJobs => 'Aboneka ku kazi';
+
+  @override
+  String providerOpenJobsMatch(int count) {
+    return 'Imirimo $count ihuye irafunguye';
   }
 }

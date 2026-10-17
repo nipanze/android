@@ -1509,7 +1509,7 @@
   "providerTypeCompanySelectionCount": "{services, plural, =0{Nta serivisi} =1{serivisi 1} other{serivisi {services}}} · {roles, plural, =0{Nta mirimo} =1{umurimo 1} other{imirimo {roles}}}",
   "companyStepTwoOfTwo": "INTAMBWE YA 2 MURI 2",
   "companyDetailsTitle": "Tubwire ibijyanye n’ikigo cyawe",
-  "companyDetailsSubtitle": "Ibi byose si itegeko. Abantu bazabibona mbere yo kukwandikira.",
+  "companyDetailsSubtitle": "Ibi byose si itegeko. Aya makuru abikwa mu ibanga kandi agaragara kuri wowe n’abayobozi ba Nipanze gusa.",
   "companyName": "Izina ry’ikigo cyangwa ubucuruzi",
   "companyRegistrationNumber": "Nomero yo kwandikisha",
   "companyRegistrationPrivate": "Bigaragara kuri wowe n’abayobozi ba Nipanze gusa.",
@@ -1585,6 +1585,31 @@
   },
   "providerSummaryJobs": "Imirimo {count}",
   "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companyProfileSaved": "Umwirondoro w’ikigo wabitswe.",
+  "providerEvidenceTab": "Ibimenyetso by’abatanga serivisi",
+  "providerEvidenceHeader": "Ibimenyetso by’abatanga serivisi bitegereje gusuzumwa",
+  "providerEvidenceEmpty": "Nta bimenyetso by’abatanga serivisi bitegereje gusuzumwa.",
+  "providerEvidenceCapabilities": "ubushobozi",
+  "providerEvidenceOpenFile": "Fungura dosiye y’icyemezo",
+  "providerEvidenceCompanyDetails": "Amakuru y’ikigo (abayobozi gusa)",
+  "providerEvidenceApprove": "Emeza ubu bushobozi",
+  "providerEvidenceReject": "Anga",
+  "providerEvidenceRejectReason": "Anga icyemezo",
+  "providerEvidenceReason": "Impamvu yo kwanga",
+  "providerEvidenceReviewSaved": "Isuzuma ry’icyemezo ryabitswe.",
+  "providerTypeEditCompanyDetails": "Hindura amakuru y’ikigo",
+  "providerTypeOtherGroup": "Ibindi",
+  "providerTypeNoRolesConfigured": "Nta mirimo yihariye yateganyijwe muri iki cyiciro kugeza ubu.",
+  "providerNoJobRolesAdded": "Nta mirimo y’akazi yongeweho",
+  "providerAvailableForJobs": "Aboneka ku kazi",
+  "providerOpenJobsMatch": "Imirimo {count} ihuye irafunguye",
+  "@providerOpenJobsMatch": {
     "placeholders": {
       "count": {
         "type": "int"

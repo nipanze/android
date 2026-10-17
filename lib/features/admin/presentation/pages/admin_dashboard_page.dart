@@ -6,7 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../widgets/provider_evidence_review_tab.dart';
 
 /// Stage 5 moderation console. RLS remains the authority: every query and
 /// mutation below is allowed only when `private.is_admin()` is true.
@@ -25,7 +27,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 5, vsync: this);
+    _tabs = TabController(length: 6, vsync: this);
     _activity = _loadActivity();
   }
 
@@ -42,28 +44,33 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-              onPressed: () => context.pop()),
-          title: const Text('Admin dashboard'),
-          bottom: TabBar(controller: _tabs, isScrollable: true, tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'KYC'),
-            Tab(text: 'Users'),
-            Tab(text: 'Audit'),
-            Tab(text: 'Settings'),
-          ]),
-        ),
-        body: TabBarView(controller: _tabs, children: [
-          _Overview(activity: _activity, onRefresh: _refresh),
-          const _KycReview(),
-          const _Users(),
-          const _AuditLog(),
-          const _Settings(),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            onPressed: () => context.pop()),
+        title: const Text('Admin dashboard'),
+        bottom: TabBar(controller: _tabs, isScrollable: true, tabs: [
+          const Tab(text: 'Overview'),
+          const Tab(text: 'KYC'),
+          const Tab(text: 'Users'),
+          const Tab(text: 'Audit'),
+          const Tab(text: 'Settings'),
+          Tab(text: l10n.providerEvidenceTab),
         ]),
-      );
+      ),
+      body: TabBarView(controller: _tabs, children: [
+        _Overview(activity: _activity, onRefresh: _refresh),
+        const _KycReview(),
+        const _Users(),
+        const _AuditLog(),
+        const _Settings(),
+        const ProviderEvidenceReviewTab(),
+      ]),
+    );
+  }
 }
 
 class _Overview extends StatelessWidget {
@@ -130,11 +137,11 @@ class _Overview extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(
                     'Metrics are read from the security-invoker marketplace activity view.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.text3Dark
-                      : AppColors.text3Light)),
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.text3Dark
+                            : AppColors.text3Light)),
               ]));
         },
       );

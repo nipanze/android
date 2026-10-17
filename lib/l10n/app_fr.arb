@@ -1516,7 +1516,7 @@
   "providerTypeCompanySelectionCount": "{services, plural, =0{Aucun service} =1{1 service} other{{services} services}} · {roles, plural, =0{Aucun rôle} =1{1 rôle} other{{roles} rôles}}",
   "companyStepTwoOfTwo": "ÉTAPE 2 SUR 2",
   "companyDetailsTitle": "Parlez-nous de votre entreprise",
-  "companyDetailsSubtitle": "Tout est facultatif. Les personnes verront ces informations avant de vous contacter.",
+  "companyDetailsSubtitle": "Tout est facultatif. Ces informations restent privées et ne sont visibles que par vous et les administrateurs Nipanze.",
   "companyName": "Nom de l’entreprise ou de l’activité",
   "companyRegistrationNumber": "Numéro d’enregistrement",
   "companyRegistrationPrivate": "Visible uniquement par vous et les administrateurs Nipanze.",
@@ -1592,6 +1592,31 @@
   },
   "providerSummaryJobs": "Emplois {count}",
   "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companyProfileSaved": "Profil de l’entreprise enregistré.",
+  "providerEvidenceTab": "Justificatifs des prestataires",
+  "providerEvidenceHeader": "Justificatifs de prestataires en attente d’examen",
+  "providerEvidenceEmpty": "Aucun justificatif de prestataire n’attend un examen.",
+  "providerEvidenceCapabilities": "capacités",
+  "providerEvidenceOpenFile": "Ouvrir le justificatif partagé",
+  "providerEvidenceCompanyDetails": "Détails de l’entreprise (administrateurs uniquement)",
+  "providerEvidenceApprove": "Approuver cette capacité",
+  "providerEvidenceReject": "Refuser",
+  "providerEvidenceRejectReason": "Refuser le justificatif",
+  "providerEvidenceReason": "Motif du refus",
+  "providerEvidenceReviewSaved": "Examen du justificatif enregistré.",
+  "providerTypeEditCompanyDetails": "Modifier les détails de l’entreprise",
+  "providerTypeOtherGroup": "Autres",
+  "providerTypeNoRolesConfigured": "Aucun rôle professionnel spécifique n’est encore configuré pour cette catégorie.",
+  "providerNoJobRolesAdded": "Aucun rôle professionnel ajouté",
+  "providerAvailableForJobs": "Disponible pour des emplois",
+  "providerOpenJobsMatch": "{count} offres d’emploi correspondent",
+  "@providerOpenJobsMatch": {
     "placeholders": {
       "count": {
         "type": "int"

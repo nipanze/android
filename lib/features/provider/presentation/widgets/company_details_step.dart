@@ -92,7 +92,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   static String _errorText(Object error) => switch (error) {
         StateError(:final message) => message.toString(),
-        FormatException(:final message) => message ?? '',
+        FormatException(:final message) => message,
         _ => userFacingErrorMessage(error),
       };
 
@@ -159,8 +159,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(_errorText(error))),
+        SnackBar(content: Text(_errorText(error))),
       );
     }
   }

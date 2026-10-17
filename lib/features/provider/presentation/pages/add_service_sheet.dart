@@ -556,6 +556,24 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               : null;
       profile ??=
           await widget.providerRepository.getCompanyProfile(categorySlug);
+      if (profile == null) {
+        final legacy = widget.existingCapabilities
+            .where((capability) => capability.categorySlug == categorySlug)
+            .map((capability) => capability.metadata)
+            .firstWhere(
+              (metadata) =>
+                  metadata['organization_name'] != null ||
+                  metadata['business_registration'] != null,
+              orElse: () => const {},
+            );
+        if (legacy.isNotEmpty) {
+          profile = ProviderCompanyProfile(
+            categorySlug: categorySlug,
+            companyName: legacy['organization_name']?.toString(),
+            registrationNumber: legacy['business_registration']?.toString(),
+          );
+        }
+      }
       if (!mounted) return;
       setState(() {
         _companyRequirements = requirements;
@@ -1352,7 +1370,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(2, 14, 2, 4),
                     child: Text(
-                      'Other',
+                      l10n.providerTypeOtherGroup,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.accent,
@@ -1425,7 +1443,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Center(
                     child: Text(
-                      'No specific job roles configured for this category yet.',
+                      l10n.providerTypeNoRolesConfigured,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: text2),
                     ),

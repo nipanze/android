@@ -1605,7 +1605,7 @@
   "providerTypeCompanySelectionCount": "{services, plural, =0{No services} =1{1 service} other{{services} services}} · {roles, plural, =0{No roles} =1{1 role} other{{roles} roles}} selected",
   "companyStepTwoOfTwo": "STEP 2 OF 2",
   "companyDetailsTitle": "Tell us about your company",
-  "companyDetailsSubtitle": "Everything here is optional. People see this before they contact you.",
+  "companyDetailsSubtitle": "Everything here is optional. These details are private to you and Nipanze administrators.",
   "companyName": "Company or business name",
   "companyRegistrationNumber": "Registration number",
   "companyRegistrationPrivate": "Visible only to you and Nipanze administrators.",
@@ -1681,6 +1681,31 @@
   },
   "providerSummaryJobs": "Jobs {count}",
   "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companyProfileSaved": "Company profile saved.",
+  "providerEvidenceTab": "Provider evidence",
+  "providerEvidenceHeader": "Provider capability evidence waiting for review",
+  "providerEvidenceEmpty": "No provider evidence is waiting for review.",
+  "providerEvidenceCapabilities": "capabilities",
+  "providerEvidenceOpenFile": "Open shared evidence file",
+  "providerEvidenceCompanyDetails": "Company details (admin only)",
+  "providerEvidenceApprove": "Approve this capability",
+  "providerEvidenceReject": "Reject",
+  "providerEvidenceRejectReason": "Reject evidence",
+  "providerEvidenceReason": "Reason for rejection",
+  "providerEvidenceReviewSaved": "Evidence review saved.",
+  "providerTypeEditCompanyDetails": "Edit company details",
+  "providerTypeOtherGroup": "Other",
+  "providerTypeNoRolesConfigured": "No specific job roles are configured for this category yet.",
+  "providerNoJobRolesAdded": "No job roles added",
+  "providerAvailableForJobs": "Available for jobs",
+  "providerOpenJobsMatch": "{count} open jobs match",
+  "@providerOpenJobsMatch": {
     "placeholders": {
       "count": {
         "type": "int"

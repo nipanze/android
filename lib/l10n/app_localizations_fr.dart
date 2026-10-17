@@ -3446,7 +3446,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Tout est facultatif. Les personnes verront ces informations avant de vous contacter.';
+      'Tout est facultatif. Ces informations restent privées et ne sont visibles que par vous et les administrateurs Nipanze.';
 
   @override
   String get companyName => 'Nom de l’entreprise ou de l’activité';
@@ -3600,5 +3600,67 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String providerSummaryJobs(int count) {
     return 'Emplois $count';
+  }
+
+  @override
+  String get companyProfileSaved => 'Profil de l’entreprise enregistré.';
+
+  @override
+  String get providerEvidenceTab => 'Justificatifs des prestataires';
+
+  @override
+  String get providerEvidenceHeader =>
+      'Justificatifs de prestataires en attente d’examen';
+
+  @override
+  String get providerEvidenceEmpty =>
+      'Aucun justificatif de prestataire n’attend un examen.';
+
+  @override
+  String get providerEvidenceCapabilities => 'capacités';
+
+  @override
+  String get providerEvidenceOpenFile => 'Ouvrir le justificatif partagé';
+
+  @override
+  String get providerEvidenceCompanyDetails =>
+      'Détails de l’entreprise (administrateurs uniquement)';
+
+  @override
+  String get providerEvidenceApprove => 'Approuver cette capacité';
+
+  @override
+  String get providerEvidenceReject => 'Refuser';
+
+  @override
+  String get providerEvidenceRejectReason => 'Refuser le justificatif';
+
+  @override
+  String get providerEvidenceReason => 'Motif du refus';
+
+  @override
+  String get providerEvidenceReviewSaved =>
+      'Examen du justificatif enregistré.';
+
+  @override
+  String get providerTypeEditCompanyDetails =>
+      'Modifier les détails de l’entreprise';
+
+  @override
+  String get providerTypeOtherGroup => 'Autres';
+
+  @override
+  String get providerTypeNoRolesConfigured =>
+      'Aucun rôle professionnel spécifique n’est encore configuré pour cette catégorie.';
+
+  @override
+  String get providerNoJobRolesAdded => 'Aucun rôle professionnel ajouté';
+
+  @override
+  String get providerAvailableForJobs => 'Disponible pour des emplois';
+
+  @override
+  String providerOpenJobsMatch(int count) {
+    return '$count offres d’emploi correspondent';
   }
 }

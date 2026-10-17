@@ -27,6 +27,47 @@ create policy provider_company_profile_admin_select
   on public.provider_company_profiles for select to authenticated
   using (private.is_admin());
 
+-- Move details from the previous Company review form into the private table,
+-- then remove those values from capability metadata where summaries/views may
+-- expose them. Re-running is safe because the profile insert is conflict-safe
+-- and the metadata cleanup is idempotent.
+with legacy_company_details as (
+  select distinct on (pc.user_id, nc.category_slug)
+    pc.user_id,
+    nc.category_slug,
+    nullif(btrim(pc.metadata->>'organization_name'), '') as company_name,
+    nullif(btrim(pc.metadata->>'business_registration'), '') as registration_number
+  from public.provider_capabilities pc
+  join public.need_capabilities nc on nc.slug = pc.capability_slug
+  join public.provider_category_profiles pcp
+    on pcp.user_id = pc.user_id and pcp.category_slug = nc.category_slug
+  where pcp.provider_type = 'company'
+    and (pc.metadata ? 'organization_name' or pc.metadata ? 'business_registration')
+  order by pc.user_id, nc.category_slug, pc.created_at desc
+), migrated as (
+  insert into public.provider_company_profiles(
+    user_id, category_slug, company_name, registration_number
+  )
+  select user_id, category_slug, company_name, registration_number
+    from legacy_company_details
+  on conflict (user_id, category_slug) do update set
+    company_name = coalesce(provider_company_profiles.company_name, excluded.company_name),
+    registration_number = coalesce(provider_company_profiles.registration_number, excluded.registration_number)
+  returning user_id, category_slug
+)
+insert into public.audit_logs(user_id, event_type, entity_type, action, new_values)
+select user_id, 'admin_action', 'provider_company_profile',
+  'migrate_legacy_company_details',
+  jsonb_build_object('category_slug', category_slug, 'source', 'capability_metadata')
+from migrated;
+
+update public.provider_capabilities pc
+set metadata = coalesce(pc.metadata, '{}'::jsonb)
+  - array['organization_name', 'business_registration', 'portfolio_url']::text[]
+where coalesce(pc.metadata, '{}'::jsonb) ?| array[
+  'organization_name', 'business_registration', 'portfolio_url'
+];
+
 create or replace function private.touch_provider_company_profile_updated_at()
 returns trigger language plpgsql set search_path = public, pg_temp as $$
 begin

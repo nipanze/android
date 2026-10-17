@@ -1509,7 +1509,7 @@
   "providerTypeCompanySelectionCount": "{services, plural, =0{Hakuna huduma} =1{huduma 1} other{huduma {services}}} · {roles, plural, =0{Hakuna majukumu} =1{jukumu 1} other{majukumu {roles}}}",
   "companyStepTwoOfTwo": "HATUA YA 2 KATI YA 2",
   "companyDetailsTitle": "Tuambie kuhusu kampuni yako",
-  "companyDetailsSubtitle": "Kila kitu hapa ni hiari. Watu wataona maelezo haya kabla ya kuwasiliana nawe.",
+  "companyDetailsSubtitle": "Kila kitu hapa ni hiari. Maelezo haya ni ya faragha kwako na wasimamizi wa Nipanze.",
   "companyName": "Jina la kampuni au biashara",
   "companyRegistrationNumber": "Nambari ya usajili",
   "companyRegistrationPrivate": "Inaonekana kwako na kwa wasimamizi wa Nipanze pekee.",
@@ -1585,6 +1585,31 @@
   },
   "providerSummaryJobs": "Kazi {count}",
   "@providerSummaryJobs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companyProfileSaved": "Wasifu wa kampuni umehifadhiwa.",
+  "providerEvidenceTab": "Ushahidi wa watoa huduma",
+  "providerEvidenceHeader": "Ushahidi wa uwezo wa watoa huduma unaosubiri kukaguliwa",
+  "providerEvidenceEmpty": "Hakuna ushahidi wa mtoa huduma unaosubiri kukaguliwa.",
+  "providerEvidenceCapabilities": "uwezo",
+  "providerEvidenceOpenFile": "Fungua faili la ushahidi",
+  "providerEvidenceCompanyDetails": "Maelezo ya kampuni (wasimamizi pekee)",
+  "providerEvidenceApprove": "Idhinisha uwezo huu",
+  "providerEvidenceReject": "Kataa",
+  "providerEvidenceRejectReason": "Kataa ushahidi",
+  "providerEvidenceReason": "Sababu ya kukataa",
+  "providerEvidenceReviewSaved": "Ukaguzi wa ushahidi umehifadhiwa.",
+  "providerTypeEditCompanyDetails": "Hariri maelezo ya kampuni",
+  "providerTypeOtherGroup": "Nyingine",
+  "providerTypeNoRolesConfigured": "Hakuna majukumu maalum ya kazi yaliyowekwa kwa aina hii bado.",
+  "providerNoJobRolesAdded": "Hakuna majukumu ya kazi yaliyoongezwa",
+  "providerAvailableForJobs": "Inapatikana kwa kazi",
+  "providerOpenJobsMatch": "Kazi {count} zilizo wazi zinaendana",
+  "@providerOpenJobsMatch": {
     "placeholders": {
       "count": {
         "type": "int"
