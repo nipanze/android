@@ -64,11 +64,13 @@ class CapabilityBadge extends StatelessWidget {
             name: capability.categoryName ?? capability.categorySlug!,
             icon: icon,
           ).localizedName(localeCode);
-    final categoryKind = isJob && providerType == ProviderCategoryType.company
+    final categoryKind = isJob
         ? l10n.companyPersonalProfile
         : providerType == ProviderCategoryType.company
             ? l10n.providerTypeCompany
-            : null;
+            : providerType == ProviderCategoryType.individual
+                ? l10n.providerTypeIndividual
+                : null;
 
     // Compute one-line status note
     String statusNote;

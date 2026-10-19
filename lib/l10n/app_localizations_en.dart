@@ -3293,6 +3293,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerTypeChange => 'Change';
 
   @override
+  String get providerIdentityRequiredInfo =>
+      'Enter the display details and confirm representation authority to continue.';
+
+  @override
+  String get providerIdentitySwitchSuccess =>
+      'Your provider identity was switched.';
+
+  @override
+  String get providerIdentityCurrent => 'Current';
+
+  @override
+  String get providerIdentityDisplayHeading => 'How should you be shown?';
+
+  @override
+  String get providerIdentityDisplayName => 'Display name';
+
+  @override
+  String get providerIdentityCompanyName => 'Company or business name';
+
+  @override
+  String get providerIdentityCompanyOnly => 'Company name';
+
+  @override
+  String get providerIdentityCompanyRepresentative =>
+      'Company with representative';
+
+  @override
+  String get providerIdentityRepresentativeName => 'Representative name';
+
+  @override
+  String get providerIdentityAuthority =>
+      'I am authorized to represent this business';
+
+  @override
+  String providerIdentityRepresentedBy(String name) {
+    return 'Represented by $name';
+  }
+
+  @override
+  String providerIdentitySwitchTitle(String identity) {
+    return 'Switch to $identity?';
+  }
+
+  @override
+  String get providerIdentitySwitchBody =>
+      'This changes only this category. Your other categories stay as they are.';
+
+  @override
+  String get providerIdentityDataKept =>
+      'Your service information is kept. Nothing is deleted.';
+
+  @override
+  String providerIdentityOldServicesInactive(String identity) {
+    return 'Your $identity services here become inactive and can be restored.';
+  }
+
+  @override
+  String providerIdentityNewOffers(String identity) {
+    return 'New offers will use your $identity identity.';
+  }
+
+  @override
+  String get providerIdentityVerificationReset =>
+      'Verification requirements may change. Verification does not carry over.';
+
+  @override
+  String get providerIdentityHistoryKept =>
+      'Accepted deals, reviews, history, and personal job roles stay as they are.';
+
+  @override
+  String providerIdentityPendingOffers(int count) {
+    return 'You have $count pending offers. They stay as sent; you can withdraw them yourself.';
+  }
+
+  @override
+  String get providerIdentityReviewTitle => 'Review your switch';
+
+  @override
+  String get providerIdentityCategory => 'Category';
+
+  @override
+  String get providerIdentityNewIdentity => 'New identity';
+
+  @override
+  String get providerIdentityPublicName => 'Public name';
+
+  @override
+  String get providerIdentityReused => 'Reused from your current setup';
+
+  @override
+  String get providerIdentityNeedsAttention => 'Needs attention';
+
+  @override
+  String get providerIdentityCompanyVerificationStatus =>
+      'Company verification is separate and does not carry over.';
+
+  @override
+  String get providerIdentityNoActiveWarning =>
+      'No services will be active in this category after the switch.';
+
+  @override
+  String get providerIdentityConfirm => 'Confirm switch';
+
+  @override
   String get providerTypeWhatWeOffer => 'What we offer';
 
   @override

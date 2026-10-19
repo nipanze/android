@@ -72,6 +72,54 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> getMyProviderIdentity(String categorySlug) async {
+    try {
+      final result = await _client.rpc(RpcNames.getMyProviderIdentity,
+          params: {'p_category_slug': categorySlug});
+      return result is Map ? result.cast<String, dynamic>() : const {};
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> saveProviderIdentityPresentation({
+    required String categorySlug,
+    required ProviderCategoryType type,
+    required Map<String, dynamic> presentation,
+  }) async {
+    try {
+      await _client.rpc(RpcNames.saveProviderIdentityPresentation, params: {
+        'p_category_slug': categorySlug,
+        'p_identity_type': type.name,
+        'p_presentation': presentation,
+      });
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> switchProviderIdentity({
+    required String categorySlug,
+    required ProviderCategoryType type,
+    required Map<String, dynamic> presentation,
+  }) async {
+    try {
+      final result = await _client.rpc(RpcNames.switchProviderIdentity,
+          params: {
+            'p_category_slug': categorySlug,
+            'p_to_identity': type.name,
+            'p_presentation': presentation,
+          });
+      _clearCache();
+      return result is Map ? result.cast<String, dynamic>() : const {};
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug) async {
     try {
       final row = await _client
@@ -378,9 +426,42 @@ class ProviderRepository implements IProviderRepository {
           final capabilities = (data as List)
               .map((e) => ProviderCapability.fromMap(e as Map<String, dynamic>))
               .toList();
-          _capabilityCache[uid] = capabilities;
+          final identityRows = await _client.from(TableNames.providerCapabilities)
+              .select('id, identity_type').eq('user_id', uid);
+          final identityById = {
+            for (final row in (identityRows as List).whereType<Map>())
+              row['id'].toString(): row['identity_type']?.toString(),
+          };
+          final withIdentity = capabilities.map((cap) => ProviderCapability(
+                id: cap.id,
+                userId: cap.userId,
+                capabilitySlug: cap.capabilitySlug,
+                capabilityType: cap.capabilityType,
+                identityType: identityById[cap.id],
+                verificationLevel: cap.verificationLevel,
+                evidenceUrl: cap.evidenceUrl,
+                metadata: cap.metadata,
+                verifiedBy: cap.verifiedBy,
+                verifiedAt: cap.verifiedAt,
+                createdAt: cap.createdAt,
+                updatedAt: cap.updatedAt,
+                capabilityName: cap.capabilityName,
+                categorySlug: cap.categorySlug,
+                categoryName: cap.categoryName,
+                categoryIcon: cap.categoryIcon,
+                status: cap.status,
+                pendingEvidenceCount: cap.pendingEvidenceCount,
+                approvedEvidenceCount: cap.approvedEvidenceCount,
+                rejectedEvidenceCount: cap.rejectedEvidenceCount,
+                expiredEvidenceCount: cap.expiredEvidenceCount,
+                latestRejectReason: cap.latestRejectReason,
+                roleQualificationClaims: cap.roleQualificationClaims,
+                verificationPolicy: cap.verificationPolicy,
+                isActive: cap.isActive,
+              )).toList();
+          _capabilityCache[uid] = withIdentity;
           OfflineService().reportRequestSuccess();
-          return capabilities;
+          return withIdentity;
         } catch (_) {
           // Fall back to the stable base-table query when the SQL patch has
           // not landed yet or the view is temporarily unavailable.
@@ -392,7 +473,7 @@ class ProviderRepository implements IProviderRepository {
         data = await _client
             .from(TableNames.providerCapabilities)
             .select(
-              'id, user_id, capability_slug, verification_level, is_active, evidence_url, '
+              'id, user_id, capability_slug, identity_type, verification_level, is_active, evidence_url, '
               'metadata, verified_by, verified_at, created_at, '
               'need_capabilities!capability_slug(name, category_slug, verification_policy, '
               'need_categories!category_slug(name, icon))',

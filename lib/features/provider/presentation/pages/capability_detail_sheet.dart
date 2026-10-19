@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_capability.dart';
+import '../../domain/entities/provider_category_type.dart';
 import '../widgets/provider_verification_chip.dart';
 
 class CapabilityDetailSheet extends StatelessWidget {
@@ -17,6 +18,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required this.onRemove,
     this.onAddProof,
     this.hiddenForCompanyOnly = false,
+    this.providerType,
   });
 
   final ProviderCapability capability;
@@ -26,6 +28,7 @@ class CapabilityDetailSheet extends StatelessWidget {
   final VoidCallback onRemove;
   final VoidCallback? onAddProof;
   final bool hiddenForCompanyOnly;
+  final ProviderCategoryType? providerType;
 
   static Future<void> show(
     BuildContext context, {
@@ -36,6 +39,7 @@ class CapabilityDetailSheet extends StatelessWidget {
     required VoidCallback onRemove,
     VoidCallback? onAddProof,
     bool hiddenForCompanyOnly = false,
+    ProviderCategoryType? providerType,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -49,6 +53,7 @@ class CapabilityDetailSheet extends StatelessWidget {
         onRemove: onRemove,
         onAddProof: onAddProof,
         hiddenForCompanyOnly: hiddenForCompanyOnly,
+        providerType: providerType,
       ),
     );
   }
@@ -168,6 +173,23 @@ class CapabilityDetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+
+              if (providerType != null || isJob)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(
+                        '${l10n.providerTypeOfferingAs}  ${isJob ? l10n.companyPersonalProfile : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                        style: TextStyle(fontSize: 12, color: text2),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: onEdit,
+                      child: Text(l10n.providerTypeChange),
+                    ),
+                  ]),
+                ),
 
               // Open jobs / opportunities match banner (matches Image G)
               Padding(

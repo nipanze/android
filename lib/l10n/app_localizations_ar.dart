@@ -3292,6 +3292,108 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerTypeChange => 'تغيير';
 
   @override
+  String get providerIdentityRequiredInfo =>
+      'أدخل الاسم المعروض وأكد صلاحية التمثيل للمتابعة.';
+
+  @override
+  String get providerIdentitySwitchSuccess => 'تم تبديل هوية مقدم الخدمة.';
+
+  @override
+  String get providerIdentityCurrent => 'الحالي';
+
+  @override
+  String get providerIdentityDisplayHeading => 'كيف تريد أن تظهر؟';
+
+  @override
+  String get providerIdentityDisplayName => 'الاسم المعروض';
+
+  @override
+  String get providerIdentityCompanyName => 'اسم الشركة أو النشاط التجاري';
+
+  @override
+  String get providerIdentityCompanyOnly => 'اسم الشركة';
+
+  @override
+  String get providerIdentityCompanyRepresentative => 'شركة مع ممثل';
+
+  @override
+  String get providerIdentityRepresentativeName => 'اسم الممثل';
+
+  @override
+  String get providerIdentityAuthority => 'لدي صلاحية تمثيل هذا النشاط التجاري';
+
+  @override
+  String providerIdentityRepresentedBy(String name) {
+    return 'يمثله $name';
+  }
+
+  @override
+  String providerIdentitySwitchTitle(String identity) {
+    return 'التبديل إلى $identity؟';
+  }
+
+  @override
+  String get providerIdentitySwitchBody =>
+      'سيغيّر هذا القسم الحالي فقط. ستبقى أقسامك الأخرى كما هي.';
+
+  @override
+  String get providerIdentityDataKept =>
+      'ستبقى معلومات خدماتك محفوظة. لن يُحذف شيء.';
+
+  @override
+  String providerIdentityOldServicesInactive(String identity) {
+    return 'ستصبح خدمات $identity هنا غير نشطة ويمكن استعادتها.';
+  }
+
+  @override
+  String providerIdentityNewOffers(String identity) {
+    return 'ستستخدم العروض الجديدة هوية $identity.';
+  }
+
+  @override
+  String get providerIdentityVerificationReset =>
+      'قد تتغير متطلبات التحقق. لا ينتقل التحقق إلى الهوية الجديدة.';
+
+  @override
+  String get providerIdentityHistoryKept =>
+      'تبقى الصفقات المقبولة والمراجعات والسجل والأدوار الشخصية كما هي.';
+
+  @override
+  String providerIdentityPendingOffers(int count) {
+    return 'لديك $count عروض معلقة. ستبقى كما أُرسلت ويمكنك سحبها بنفسك.';
+  }
+
+  @override
+  String get providerIdentityReviewTitle => 'راجع التبديل';
+
+  @override
+  String get providerIdentityCategory => 'الفئة';
+
+  @override
+  String get providerIdentityNewIdentity => 'الهوية الجديدة';
+
+  @override
+  String get providerIdentityPublicName => 'الاسم العام';
+
+  @override
+  String get providerIdentityReused =>
+      'المعلومات المعاد استخدامها من إعدادك الحالي';
+
+  @override
+  String get providerIdentityNeedsAttention => 'يتطلب الانتباه';
+
+  @override
+  String get providerIdentityCompanyVerificationStatus =>
+      'تحقق الشركة منفصل ولا ينتقل إلى الهوية الأخرى.';
+
+  @override
+  String get providerIdentityNoActiveWarning =>
+      'لن تكون هناك خدمات نشطة في هذه الفئة بعد التبديل.';
+
+  @override
+  String get providerIdentityConfirm => 'تأكيد التبديل';
+
+  @override
   String get providerTypeWhatWeOffer => 'ما نقدمه';
 
   @override

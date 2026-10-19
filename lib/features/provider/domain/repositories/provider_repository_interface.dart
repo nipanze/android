@@ -12,6 +12,17 @@ abstract class IProviderRepository {
   Future<bool> capabilityProfilesEnabled();
   Future<Map<String, ProviderCategoryType>> getMyCategoryTypes();
   Future<void> setCategoryType(String categorySlug, ProviderCategoryType type);
+  Future<Map<String, dynamic>> getMyProviderIdentity(String categorySlug);
+  Future<void> saveProviderIdentityPresentation({
+    required String categorySlug,
+    required ProviderCategoryType type,
+    required Map<String, dynamic> presentation,
+  });
+  Future<Map<String, dynamic>> switchProviderIdentity({
+    required String categorySlug,
+    required ProviderCategoryType type,
+    required Map<String, dynamic> presentation,
+  });
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug);
   Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
       String categorySlug);

@@ -69,6 +69,7 @@ class ProviderCapability {
     required this.capabilitySlug,
     required this.verificationLevel,
     this.capabilityType = 'service',
+    this.identityType,
     this.evidenceUrl,
     this.metadata = const {},
     this.verifiedBy,
@@ -107,6 +108,7 @@ class ProviderCapability {
       userId: map['user_id'] as String,
       capabilitySlug: rawSlug,
       capabilityType: determinedType,
+      identityType: map['identity_type'] as String?,
       verificationLevel: verificationLevel,
       evidenceUrl: map['evidence_url'] as String?,
       metadata: (map['metadata'] as Map<String, dynamic>?) ?? const {},
@@ -154,10 +156,7 @@ class ProviderCapability {
     final status = map['capability_status'] as String?;
     if (status != null && status != 'self_declared') return status;
     final active = map['is_active'] as bool? ?? true;
-    final policy = ProviderVerificationPolicy.fromString(
-      map['verification_policy'] as String?,
-    );
-    if (!active && policy == ProviderVerificationPolicy.requiredProof) {
+    if (!active) {
       return 'inactive';
     }
     if (verificationLevel == ProviderVerificationLevel.providerVerified) {
@@ -170,6 +169,7 @@ class ProviderCapability {
   final String userId;
   final String capabilitySlug;
   final String capabilityType;
+  final String? identityType;
   final ProviderVerificationLevel verificationLevel;
   final String? evidenceUrl;
   final Map<String, dynamic> metadata;

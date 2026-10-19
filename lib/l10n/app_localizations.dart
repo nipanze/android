@@ -5980,6 +5980,174 @@ abstract class AppLocalizations {
   /// **'Change'**
   String get providerTypeChange;
 
+  /// No description provided for @providerIdentityRequiredInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the display details and confirm representation authority to continue.'**
+  String get providerIdentityRequiredInfo;
+
+  /// No description provided for @providerIdentitySwitchSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your provider identity was switched.'**
+  String get providerIdentitySwitchSuccess;
+
+  /// No description provided for @providerIdentityCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get providerIdentityCurrent;
+
+  /// No description provided for @providerIdentityDisplayHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'How should you be shown?'**
+  String get providerIdentityDisplayHeading;
+
+  /// No description provided for @providerIdentityDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get providerIdentityDisplayName;
+
+  /// No description provided for @providerIdentityCompanyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Company or business name'**
+  String get providerIdentityCompanyName;
+
+  /// No description provided for @providerIdentityCompanyOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Company name'**
+  String get providerIdentityCompanyOnly;
+
+  /// No description provided for @providerIdentityCompanyRepresentative.
+  ///
+  /// In en, this message translates to:
+  /// **'Company with representative'**
+  String get providerIdentityCompanyRepresentative;
+
+  /// No description provided for @providerIdentityRepresentativeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Representative name'**
+  String get providerIdentityRepresentativeName;
+
+  /// No description provided for @providerIdentityAuthority.
+  ///
+  /// In en, this message translates to:
+  /// **'I am authorized to represent this business'**
+  String get providerIdentityAuthority;
+
+  /// No description provided for @providerIdentityRepresentedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Represented by {name}'**
+  String providerIdentityRepresentedBy(String name);
+
+  /// No description provided for @providerIdentitySwitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to {identity}?'**
+  String providerIdentitySwitchTitle(String identity);
+
+  /// No description provided for @providerIdentitySwitchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This changes only this category. Your other categories stay as they are.'**
+  String get providerIdentitySwitchBody;
+
+  /// No description provided for @providerIdentityDataKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Your service information is kept. Nothing is deleted.'**
+  String get providerIdentityDataKept;
+
+  /// No description provided for @providerIdentityOldServicesInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {identity} services here become inactive and can be restored.'**
+  String providerIdentityOldServicesInactive(String identity);
+
+  /// No description provided for @providerIdentityNewOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'New offers will use your {identity} identity.'**
+  String providerIdentityNewOffers(String identity);
+
+  /// No description provided for @providerIdentityVerificationReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification requirements may change. Verification does not carry over.'**
+  String get providerIdentityVerificationReset;
+
+  /// No description provided for @providerIdentityHistoryKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted deals, reviews, history, and personal job roles stay as they are.'**
+  String get providerIdentityHistoryKept;
+
+  /// No description provided for @providerIdentityPendingOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} pending offers. They stay as sent; you can withdraw them yourself.'**
+  String providerIdentityPendingOffers(int count);
+
+  /// No description provided for @providerIdentityReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your switch'**
+  String get providerIdentityReviewTitle;
+
+  /// No description provided for @providerIdentityCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get providerIdentityCategory;
+
+  /// No description provided for @providerIdentityNewIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'New identity'**
+  String get providerIdentityNewIdentity;
+
+  /// No description provided for @providerIdentityPublicName.
+  ///
+  /// In en, this message translates to:
+  /// **'Public name'**
+  String get providerIdentityPublicName;
+
+  /// No description provided for @providerIdentityReused.
+  ///
+  /// In en, this message translates to:
+  /// **'Reused from your current setup'**
+  String get providerIdentityReused;
+
+  /// No description provided for @providerIdentityNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get providerIdentityNeedsAttention;
+
+  /// No description provided for @providerIdentityCompanyVerificationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Company verification is separate and does not carry over.'**
+  String get providerIdentityCompanyVerificationStatus;
+
+  /// No description provided for @providerIdentityNoActiveWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'No services will be active in this category after the switch.'**
+  String get providerIdentityNoActiveWarning;
+
+  /// No description provided for @providerIdentityConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm switch'**
+  String get providerIdentityConfirm;
+
   /// No description provided for @providerTypeWhatWeOffer.
   ///
   /// In en, this message translates to:

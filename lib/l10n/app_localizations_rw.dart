@@ -3310,6 +3310,108 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerTypeChange => 'Hindura';
 
   @override
+  String get providerIdentityRequiredInfo =>
+      'Andika izina rigaragara kandi wemeze uburenganzira bwo guhagararira kugira ukomeze.';
+
+  @override
+  String get providerIdentitySwitchSuccess =>
+      'Umwirondoro w’utanga serivisi wahinduwe.';
+
+  @override
+  String get providerIdentityCurrent => 'Iriho';
+
+  @override
+  String get providerIdentityDisplayHeading => 'Wifuza kugaragazwa ute?';
+
+  @override
+  String get providerIdentityDisplayName => 'Izina rigaragara';
+
+  @override
+  String get providerIdentityCompanyName => 'Izina ry’ikigo cyangwa ubucuruzi';
+
+  @override
+  String get providerIdentityCompanyOnly => 'Izina ry’ikigo';
+
+  @override
+  String get providerIdentityCompanyRepresentative => 'Ikigo gihagarariwe';
+
+  @override
+  String get providerIdentityRepresentativeName => 'Izina ry’uhagarariye ikigo';
+
+  @override
+  String get providerIdentityAuthority => 'Nemerewe guhagararira ubu bucuruzi';
+
+  @override
+  String providerIdentityRepresentedBy(String name) {
+    return 'Uhagarariwe na $name';
+  }
+
+  @override
+  String providerIdentitySwitchTitle(String identity) {
+    return 'Hindura ube $identity?';
+  }
+
+  @override
+  String get providerIdentitySwitchBody =>
+      'Ibi bihindura iki cyiciro gusa. Ibindi byiciro ntibihinduka.';
+
+  @override
+  String get providerIdentityDataKept =>
+      'Amakuru ya serivisi aragumana. Nta kintu gisibwa.';
+
+  @override
+  String providerIdentityOldServicesInactive(String identity) {
+    return 'Serivisi za $identity muri iki cyiciro zirahagarara ariko zishobora kongera gukorwa.';
+  }
+
+  @override
+  String providerIdentityNewOffers(String identity) {
+    return 'Amasoko mashya azakoresha umwirondoro wawe wa $identity.';
+  }
+
+  @override
+  String get providerIdentityVerificationReset =>
+      'Ibisabwa mu igenzura bishobora guhinduka. Igenzura ntiryimurwa.';
+
+  @override
+  String get providerIdentityHistoryKept =>
+      'Amasezerano, ibitekerezo, amateka n’imyanya y’akazi bwite bigumana uko biri.';
+
+  @override
+  String providerIdentityPendingOffers(int count) {
+    return 'Ufite amasoko $count ategereje. Azaguma uko yoherejwe; ushobora kuyakuraho.';
+  }
+
+  @override
+  String get providerIdentityReviewTitle => 'Suzuma ihinduka';
+
+  @override
+  String get providerIdentityCategory => 'Icyiciro';
+
+  @override
+  String get providerIdentityNewIdentity => 'Umwirondoro mushya';
+
+  @override
+  String get providerIdentityPublicName => 'Izina rigaragara ku bandi';
+
+  @override
+  String get providerIdentityReused => 'Ibyakoreshejwe mu mwirondoro usanzwe';
+
+  @override
+  String get providerIdentityNeedsAttention => 'Ibyo kwitaho';
+
+  @override
+  String get providerIdentityCompanyVerificationStatus =>
+      'Igenzura ry’ikigo ririhariye kandi ntiryimurwa.';
+
+  @override
+  String get providerIdentityNoActiveWarning =>
+      'Nta serivisi izaba ikora muri iki cyiciro nyuma yo guhindura.';
+
+  @override
+  String get providerIdentityConfirm => 'Emeza ihinduka';
+
+  @override
   String get providerTypeWhatWeOffer => 'Ibyo dutanga';
 
   @override

@@ -107,6 +107,10 @@ class RpcNames {
       'admin_review_provider_role_qualification';
   static const String getMyProviderCategoryTypes =
       'get_my_provider_category_types';
+  static const String getMyProviderIdentity = 'get_my_provider_identity';
+  static const String saveProviderIdentityPresentation =
+      'save_provider_identity_presentation';
+  static const String switchProviderIdentity = 'switch_provider_identity';
   static const String adminGetVerificationRequirements =
       'admin_get_verification_requirements';
   static const String adminUpdateVerificationRequirement =

@@ -66,6 +66,7 @@ class ProviderCapabilitySelection {
     this.workMetadataByRole = const {},
     this.companyPath = false,
     this.roleEvidenceDrafts = const [],
+    this.identitySwitchCompleted = false,
   });
 
   final List<String> slugs;
@@ -76,6 +77,7 @@ class ProviderCapabilitySelection {
   final Map<String, Map<String, dynamic>> workMetadataByRole;
   final bool companyPath;
   final List<PendingRoleEvidenceDraft> roleEvidenceDrafts;
+  final bool identitySwitchCompleted;
 }
 
 class PendingRoleEvidenceDraft {
@@ -105,6 +107,7 @@ class AddServiceSheet extends StatefulWidget {
     this.existingAudienceMetadata,
     this.existingFinancialMetadata,
     this.preselectedCategorySlug,
+    this.initialPersonalName,
     required this.needsRepository,
     required this.providerRepository,
     this.capabilityProfilesEnabled = true,
@@ -117,6 +120,7 @@ class AddServiceSheet extends StatefulWidget {
   final Map<String, dynamic>? existingAudienceMetadata;
   final Map<String, dynamic>? existingFinancialMetadata;
   final String? preselectedCategorySlug;
+  final String? initialPersonalName;
   final NeedsRepository needsRepository;
   final IProviderRepository providerRepository;
   final bool capabilityProfilesEnabled;
@@ -135,6 +139,7 @@ class AddServiceSheet extends StatefulWidget {
     bool workProfilesEnabled = true,
     bool initialJobsMode = false,
     String? preselectedCategorySlug,
+    String? initialPersonalName,
   }) {
     return showModalBottomSheet<ProviderCapabilitySelection>(
       context: context,
@@ -158,6 +163,7 @@ class AddServiceSheet extends StatefulWidget {
               existingAudienceMetadata: existingAudienceMetadata,
               existingFinancialMetadata: existingFinancialMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
+              initialPersonalName: initialPersonalName,
               needsRepository: needsRepository,
               providerRepository: providerRepository,
               capabilityProfilesEnabled: capabilityProfilesEnabled,
@@ -220,6 +226,14 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _loadingCompanyDetails = false;
   bool _savingCompanyDetails = false;
   bool _allowCompanyExit = false;
+  ProviderCategoryType? _savedProviderType;
+  Map<String, dynamic> _identityPresentation = {};
+  int _pendingIdentityOffers = 0;
+  int _activeIdentityCapabilities = 0;
+  Map<String, int> _identityActiveCounts = const {};
+  bool _representativeAuthorized = false;
+  String _personalDisplayName = '';
+  String _companyDisplayName = '';
 
   @override
   void initState() {
@@ -414,6 +428,28 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         // Continue to the category sheet if the preference lookup is unavailable.
       }
     }
+    Map<String, dynamic> identityInfo = const {};
+    if (needsProviderType && providerType != null) {
+      try {
+        identityInfo = await widget.providerRepository.getMyProviderIdentity(cat.slug);
+      } catch (_) {
+        // Keep the chooser usable if the additive identity RPC is not deployed.
+      }
+    }
+    final savedPresentation = identityInfo['presentation'] is Map
+        ? (identityInfo['presentation'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+    final companyData = identityInfo['company_profile'] is Map
+        ? (identityInfo['company_profile'] as Map).cast<String, dynamic>()
+        : const <String, dynamic>{};
+    final initialCompanyName = providerType == ProviderCategoryType.company &&
+            savedPresentation['display_name']?.toString().trim().isNotEmpty == true
+        ? savedPresentation['display_name'].toString()
+        : (companyData['company_name']?.toString() ?? '');
+    final personalName = savedPresentation['display_name']?.toString().trim().isNotEmpty == true &&
+            providerType == ProviderCategoryType.individual
+        ? savedPresentation['display_name'].toString()
+        : (widget.initialPersonalName ?? '');
     var roles = await widget.providerRepository.getServiceRoles(
       categorySlug: cat.slug,
     );
@@ -492,6 +528,26 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _categoryRoles = roles;
       _providerTypeRequired = needsProviderType;
       _providerType = providerType;
+      _savedProviderType = providerType;
+      _identityPresentation = {
+        'display_mode': savedPresentation['display_mode']?.toString() ??
+            (providerType == ProviderCategoryType.individual ? 'personal' : 'company'),
+        'display_name': providerType == ProviderCategoryType.company
+            ? initialCompanyName
+            : personalName,
+        'representative_name': savedPresentation['representative_name']?.toString() ??
+            (widget.initialPersonalName ?? ''),
+        'representative_authorized': savedPresentation['representative_authorized'] == true,
+      };
+      _personalDisplayName = personalName;
+      _companyDisplayName = initialCompanyName;
+      _representativeAuthorized = savedPresentation['representative_authorized'] == true;
+      _pendingIdentityOffers = int.tryParse(identityInfo['pending_offers']?.toString() ?? '') ?? 0;
+      _activeIdentityCapabilities = int.tryParse(identityInfo['active_capabilities']?.toString() ?? '') ?? 0;
+      _identityActiveCounts = {
+        'individual': int.tryParse(identityInfo['individual_active_capabilities']?.toString() ?? '') ?? 0,
+        'company': int.tryParse(identityInfo['company_active_capabilities']?.toString() ?? '') ?? 0,
+      };
       _categoryWorkProfilesEnabled = categoryWorkEnabled;
       _providerTypeError = null;
       _loading = false;
@@ -503,12 +559,39 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final type = _providerType;
     final slug = _selectedCategory?.slug;
     if (type == null || slug == null || _savingProviderType) return;
+    final presentation = <String, dynamic>{
+      ..._identityPresentation,
+      'representative_authorized': _representativeAuthorized,
+    };
     setState(() {
       _savingProviderType = true;
       _providerTypeError = null;
     });
     try {
-      await widget.providerRepository.setCategoryType(slug, type);
+      if (_savedProviderType != null && _savedProviderType != type) {
+        if (type == ProviderCategoryType.company &&
+            (presentation['display_name'] as String? ?? '').trim().isEmpty) {
+          throw const FormatException('A company name is required.');
+        }
+        if (presentation['display_mode'] == 'company_with_representative' &&
+            (!_representativeAuthorized ||
+                (presentation['representative_name'] as String? ?? '').trim().isEmpty)) {
+          throw const FormatException('Representative authorization is required.');
+        }
+        setState(() {
+          _step = 6;
+          _savingProviderType = false;
+        });
+        return;
+      }
+      if (_savedProviderType == null) {
+        await widget.providerRepository.setCategoryType(slug, type);
+      }
+      await widget.providerRepository.saveProviderIdentityPresentation(
+        categorySlug: slug,
+        type: type,
+        presentation: presentation,
+      );
       if (mounted) {
         setState(() {
           if (type == ProviderCategoryType.individual) {
@@ -521,6 +604,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
             }
           }
           _step = 1;
+          _savedProviderType = type;
           _savingProviderType = false;
         });
       }
@@ -536,6 +620,39 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         setState(() => _providerTypeError = userFacingErrorMessage(e));
       }
       setState(() => _savingProviderType = false);
+    }
+  }
+
+  Future<void> _confirmIdentitySwitch() async {
+    final category = _selectedCategory;
+    final type = _providerType;
+    if (category == null || type == null || _savingProviderType) return;
+    setState(() {
+      _savingProviderType = true;
+      _providerTypeError = null;
+    });
+    try {
+      await widget.providerRepository.switchProviderIdentity(
+        categorySlug: category.slug,
+        type: type,
+        presentation: {
+          ..._identityPresentation,
+          'representative_authorized': _representativeAuthorized,
+        },
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(ProviderCapabilitySelection(
+        slugs: const [],
+        categorySlug: category.slug,
+        identitySwitchCompleted: true,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      OfflineService().reportRequestFailure(e);
+      setState(() {
+        _providerTypeError = userFacingErrorMessage(e);
+        _savingProviderType = false;
+      });
     }
   }
 
@@ -629,6 +746,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         _step = 2;
       } else if (_step == 5) {
         _step = 1;
+      } else if (_step == 7) {
+        _step = 6;
+        _providerTypeError = null;
+      } else if (_step == 6) {
+        _step = 4;
+        _providerTypeError = null;
       } else if (_step == 2) {
         if (_currentRoleIndex > 0) {
           _currentRoleIndex--;
@@ -819,12 +942,56 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                   selected: _providerType,
                                   saving: _savingProviderType,
                                   error: _providerTypeError,
+                                  initialDisplayName: _identityPresentation['display_name']?.toString() ??
+                                      (widget.initialPersonalName ?? ''),
+                                  initialRepresentativeName: _identityPresentation['representative_name']?.toString() ??
+                                      (widget.initialPersonalName ?? ''),
+                                  initialDisplayMode: _identityPresentation['display_mode']?.toString() ?? 'personal',
+                                  representativeAuthorized: _representativeAuthorized,
+                                  isCurrent: _savedProviderType == _providerType,
+                                  onPresentationChanged: (value) => setState(() {
+                                    _identityPresentation = value;
+                                    _representativeAuthorized = value['representative_authorized'] == true;
+                                  }),
                                   onSelect: (value) => setState(() {
                                     _providerType = value;
+                                    _activeIdentityCapabilities = _identityActiveCounts[value.name] ?? 0;
                                     _providerTypeError = null;
+                                    _identityPresentation = {
+                                      ..._identityPresentation,
+                                      'display_mode': value == ProviderCategoryType.individual
+                                          ? 'personal'
+                                          : (_identityPresentation['display_mode'] == 'company_with_representative'
+                                              ? 'company_with_representative'
+                                              : 'company'),
+                                      'display_name': value == ProviderCategoryType.individual
+                                          ? _personalDisplayName
+                                          : _companyDisplayName,
+                                    };
                                   }),
                                   onContinue: _continueProviderType,
                                 )
+                              : _step == 6
+                                  ? _IdentitySwitchConfirmStep(
+                                      from: _savedProviderType!,
+                                      to: _providerType!,
+                                      pendingOffers: _pendingIdentityOffers,
+                                      onContinue: () => setState(() => _step = 7),
+                                      onCancel: _goBack,
+                                    )
+                                  : _step == 7
+                                      ? _IdentitySwitchReviewStep(
+                                          categoryName: _selectedCategory?.localizedName(localeCode) ?? '',
+                                          from: _savedProviderType!,
+                                          to: _providerType!,
+                                          presentation: _identityPresentation,
+                                          pendingOffers: _pendingIdentityOffers,
+                                          activeCapabilities: _activeIdentityCapabilities,
+                                          error: _providerTypeError,
+                                          saving: _savingProviderType,
+                                          onBack: _goBack,
+                                          onConfirm: _confirmIdentitySwitch,
+                                        )
                               : _step == 5
                                   ? CompanyDetailsStep(
                                       categorySlug:
@@ -992,13 +1159,19 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 }
 
-class _ProviderTypeStep extends StatelessWidget {
+class _ProviderTypeStep extends StatefulWidget {
   const _ProviderTypeStep({
     required this.selected,
     required this.saving,
     required this.error,
     required this.onSelect,
     required this.onContinue,
+    required this.initialDisplayName,
+    required this.initialRepresentativeName,
+    required this.initialDisplayMode,
+    required this.representativeAuthorized,
+    required this.isCurrent,
+    required this.onPresentationChanged,
   });
 
   final ProviderCategoryType? selected;
@@ -1006,6 +1179,69 @@ class _ProviderTypeStep extends StatelessWidget {
   final String? error;
   final ValueChanged<ProviderCategoryType> onSelect;
   final VoidCallback onContinue;
+  final String initialDisplayName;
+  final String initialRepresentativeName;
+  final String initialDisplayMode;
+  final bool representativeAuthorized;
+  final bool isCurrent;
+  final ValueChanged<Map<String, dynamic>> onPresentationChanged;
+
+  @override
+  State<_ProviderTypeStep> createState() => _ProviderTypeStepState();
+}
+
+class _ProviderTypeStepState extends State<_ProviderTypeStep> {
+  late final TextEditingController _displayName;
+  late final TextEditingController _representativeName;
+  late String _displayMode;
+  late bool _authorized;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayName = TextEditingController(text: widget.initialDisplayName);
+    _representativeName = TextEditingController(text: widget.initialRepresentativeName);
+    _displayMode = widget.initialDisplayMode;
+    _authorized = widget.representativeAuthorized;
+    _displayName.addListener(_notify);
+    _representativeName.addListener(_notify);
+  }
+
+  void _notify() => widget.onPresentationChanged({
+        'display_mode': widget.selected == ProviderCategoryType.individual
+            ? 'personal'
+            : _displayMode,
+        'display_name': _displayName.text.trim(),
+        'representative_name': _representativeName.text.trim(),
+        'representative_authorized': _authorized,
+      });
+
+  bool get _presentationIsValid {
+    if (widget.selected == null || _displayName.text.trim().isEmpty) return false;
+    if (widget.selected == ProviderCategoryType.company &&
+        _displayMode == 'company_with_representative') {
+      return _representativeName.text.trim().isNotEmpty && _authorized;
+    }
+    return true;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProviderTypeStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selected != widget.selected) {
+      _displayName.text = widget.initialDisplayName;
+      _representativeName.text = widget.initialRepresentativeName;
+      _displayMode = widget.initialDisplayMode;
+      _authorized = widget.representativeAuthorized;
+    }
+  }
+
+  @override
+  void dispose() {
+    _displayName.dispose();
+    _representativeName.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1035,26 +1271,108 @@ class _ProviderTypeStep extends StatelessWidget {
                 type: ProviderCategoryType.individual,
                 title: l10n.providerTypeIndividual,
                 description: l10n.providerTypeIndividualDesc,
-                selected: selected == ProviderCategoryType.individual,
-                onTap: () => onSelect(ProviderCategoryType.individual)),
+                selected: widget.selected == ProviderCategoryType.individual,
+                onTap: () => widget.onSelect(ProviderCategoryType.individual)),
             const SizedBox(height: 10),
             ProviderTypeCard(
                 type: ProviderCategoryType.company,
                 title: l10n.providerTypeCompany,
                 description: l10n.providerTypeCompanyDesc,
-                selected: selected == ProviderCategoryType.company,
-                onTap: () => onSelect(ProviderCategoryType.company)),
+                selected: widget.selected == ProviderCategoryType.company,
+                onTap: () => widget.onSelect(ProviderCategoryType.company)),
           ]),
         ),
+        if (widget.isCurrent) ...[
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Chip(
+              avatar: const Icon(Icons.check_circle, size: 16),
+              label: Text(l10n.providerIdentityCurrent),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+        ],
+        if (widget.selected != null) ...[
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(l10n.providerIdentityDisplayHeading,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _displayName,
+            maxLength: 80,
+            decoration: InputDecoration(
+              labelText: widget.selected == ProviderCategoryType.company
+                  ? l10n.providerIdentityCompanyName
+                  : l10n.providerIdentityDisplayName,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          if (widget.selected == ProviderCategoryType.company) ...[
+            RadioGroup<String>(
+              groupValue: _displayMode,
+              onChanged: (value) {
+                setState(() => _displayMode = value ?? 'company');
+                _notify();
+              },
+              child: Column(children: [
+                RadioListTile<String>(
+                  contentPadding: EdgeInsets.zero,
+                  value: 'company',
+                  title: Text(l10n.providerIdentityCompanyOnly),
+                ),
+                RadioListTile<String>(
+                  contentPadding: EdgeInsets.zero,
+                  value: 'company_with_representative',
+                  title: Text(l10n.providerIdentityCompanyRepresentative),
+                ),
+              ]),
+            ),
+            if (_displayMode == 'company_with_representative') ...[
+              TextFormField(
+                controller: _representativeName,
+                maxLength: 80,
+                decoration: InputDecoration(
+                  labelText: l10n.providerIdentityRepresentativeName,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _authorized,
+                title: Text(l10n.providerIdentityAuthority),
+                onChanged: (value) {
+                  setState(() => _authorized = value ?? false);
+                  _notify();
+                },
+              ),
+            ],
+          ],
+          if (_displayName.text.trim().isNotEmpty)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.visibility_outlined),
+                title: Text(_displayName.text.trim()),
+                subtitle: widget.selected == ProviderCategoryType.company &&
+                        _displayMode == 'company_with_representative' &&
+                        _representativeName.text.trim().isNotEmpty
+                    ? Text(l10n.providerIdentityRepresentedBy(_representativeName.text.trim()))
+                    : null,
+              ),
+            ),
+        ],
         const SizedBox(height: 14),
         Text(l10n.providerTypeNotVerification,
             style: Theme.of(context).textTheme.bodySmall),
-        if (error != null) ...[
+        if (widget.error != null) ...[
           const SizedBox(height: 12),
-          Text(error!,
+          Text(widget.error!,
               style: TextStyle(color: Theme.of(context).colorScheme.error)),
           TextButton.icon(
-              onPressed: saving ? null : onContinue,
+              onPressed: widget.saving ? null : widget.onContinue,
               icon: const Icon(Icons.refresh),
               label: Text(l10n.retry)),
         ],
@@ -1073,23 +1391,201 @@ class _ProviderTypeStep extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed:
-                            selected == null || saving ? null : onContinue,
-                        child: saving
+                        onPressed: widget.selected == null ||
+                                !_presentationIsValid || widget.saving
+                            ? null
+                            : widget.onContinue,
+                        child: widget.saving
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2))
                             : Text(l10n.btnContinue))),
-                if (selected == null)
+                if (widget.selected == null)
                   Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(l10n.providerTypeChooseOne,
                           style: Theme.of(context).textTheme.bodySmall)),
+                if (widget.selected != null && !_presentationIsValid)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(l10n.providerIdentityRequiredInfo,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.error)),
+                  ),
               ]))),
     ]);
   }
+}
+
+class _IdentitySwitchConfirmStep extends StatelessWidget {
+  const _IdentitySwitchConfirmStep({
+    required this.from,
+    required this.to,
+    required this.pendingOffers,
+    required this.onContinue,
+    required this.onCancel,
+  });
+
+  final ProviderCategoryType from;
+  final ProviderCategoryType to;
+  final int pendingOffers;
+  final VoidCallback onContinue;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final toName = to == ProviderCategoryType.company
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
+    final fromName = from == ProviderCategoryType.company
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
+    final notes = <String>[
+      l10n.providerIdentityDataKept,
+      l10n.providerIdentityOldServicesInactive(fromName),
+      l10n.providerIdentityNewOffers(toName),
+      l10n.providerIdentityVerificationReset,
+      l10n.providerIdentityHistoryKept,
+      if (pendingOffers > 0) l10n.providerIdentityPendingOffers(pendingOffers),
+    ];
+    return Column(children: [
+      Expanded(
+        child: ListView(padding: const EdgeInsets.all(20), children: [
+          Text(l10n.providerIdentitySwitchTitle(toName),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 10),
+          Text(l10n.providerIdentitySwitchBody),
+          const SizedBox(height: 18),
+          for (final note in notes)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.check_circle_outline),
+              title: Text(note),
+            ),
+        ]),
+      ),
+      SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: Column(children: [
+            SizedBox(width: double.infinity, height: 48,
+              child: FilledButton(onPressed: onContinue, child: Text(l10n.btnContinue))),
+            TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
+          ]),
+        ),
+      ),
+    ]);
+  }
+}
+
+class _IdentitySwitchReviewStep extends StatelessWidget {
+  const _IdentitySwitchReviewStep({
+    required this.categoryName,
+    required this.from,
+    required this.to,
+    required this.presentation,
+    required this.pendingOffers,
+    required this.activeCapabilities,
+    required this.error,
+    required this.saving,
+    required this.onBack,
+    required this.onConfirm,
+  });
+
+  final String categoryName;
+  final ProviderCategoryType from;
+  final ProviderCategoryType to;
+  final Map<String, dynamic> presentation;
+  final int pendingOffers;
+  final int activeCapabilities;
+  final String? error;
+  final bool saving;
+  final VoidCallback onBack;
+  final VoidCallback onConfirm;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    final fromName = from == ProviderCategoryType.company
+        ? l10n.providerTypeCompany : l10n.providerTypeIndividual;
+    final toName = to == ProviderCategoryType.company
+        ? l10n.providerTypeCompany : l10n.providerTypeIndividual;
+    final displayName = (presentation['display_name'] as String? ?? '').trim();
+    final rep = (presentation['representative_name'] as String? ?? '').trim();
+    final withRep = to == ProviderCategoryType.company &&
+        presentation['display_mode'] == 'company_with_representative' && rep.isNotEmpty;
+    return Column(children: [
+      Expanded(
+        child: ListView(padding: const EdgeInsets.all(20), children: [
+          Text(l10n.providerIdentityReviewTitle,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 14),
+          _IdentityReviewRow(label: l10n.providerIdentityCategory, value: categoryName),
+          _IdentityReviewRow(label: l10n.providerIdentityNewIdentity, value: '$toName (was $fromName)'),
+          _IdentityReviewRow(
+            label: l10n.providerIdentityPublicName,
+            value: withRep ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}' : displayName,
+          ),
+          const SizedBox(height: 16),
+          Text(l10n.providerIdentityReused,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colors.primary)),
+          ListTile(dense: true, leading: const Icon(Icons.check), title: Text(l10n.providerIdentityDataKept)),
+          const SizedBox(height: 8),
+          Text(l10n.providerIdentityNeedsAttention,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colors.primary)),
+          ListTile(dense: true, leading: const Icon(Icons.pending_actions),
+              title: Text(l10n.providerIdentityCompanyVerificationStatus)),
+          if (pendingOffers > 0)
+            ListTile(dense: true, leading: const Icon(Icons.mark_email_unread_outlined),
+                title: Text(l10n.providerIdentityPendingOffers(pendingOffers))),
+          if (activeCapabilities == 0)
+            ListTile(dense: true, leading: Icon(Icons.info_outline, color: colors.tertiary),
+                title: Text(l10n.providerIdentityNoActiveWarning)),
+          const SizedBox(height: 8),
+          Text(l10n.providerIdentityOldServicesInactive(fromName)),
+          if (error != null) ...[
+            const SizedBox(height: 12),
+            Text(error!, style: TextStyle(color: colors.error)),
+            TextButton.icon(onPressed: saving ? null : onConfirm,
+                icon: const Icon(Icons.refresh), label: Text(l10n.retry)),
+          ],
+        ]),
+      ),
+      SafeArea(top: false, child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(children: [
+          SizedBox(width: double.infinity, height: 48,
+            child: FilledButton(onPressed: saving ? null : onConfirm,
+              child: saving
+                  ? const SizedBox(width: 20,height: 20,child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(l10n.providerIdentityConfirm))),
+          TextButton(onPressed: saving ? null : onBack, child: Text(l10n.btnBack)),
+        ]),
+      )),
+    ]);
+  }
+}
+
+class _IdentityReviewRow extends StatelessWidget {
+  const _IdentityReviewRow({required this.label, required this.value});
+  final String label;
+  final String value;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
+      const SizedBox(width: 12),
+      Expanded(child: Text(value, textAlign: TextAlign.end,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
+    ]),
+  );
 }
 
 // ---------------------------------------------------------------------------

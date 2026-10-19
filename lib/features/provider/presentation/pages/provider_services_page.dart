@@ -242,6 +242,9 @@ class _ProviderServicesView extends StatelessWidget {
         : null;
 
     final profileState = context.read<ProfileCubit>().state;
+    final initialPersonalName = profileState is ProfileCubitLoaded
+        ? profileState.profile.displayName
+        : '';
     final defaultCurrency = profileState is ProfileCubitLoaded
         ? profileState.profile.incomeCurrency
         : 'UGX';
@@ -269,7 +272,17 @@ class _ProviderServicesView extends StatelessWidget {
               loaded.capabilities.any((c) => c.isWork))
           : true,
       preselectedCategorySlug: preselectedCategorySlug,
+      initialPersonalName: initialPersonalName,
     );
+    if (selection?.identitySwitchCompleted == true) {
+      await cubit.loadWithOpportunities();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.providerIdentitySwitchSuccess)),
+        );
+      }
+      return;
+    }
     if (selection?.companyPath == true) {
       await cubit.loadWithOpportunities();
       if (context.mounted) {
@@ -467,10 +480,15 @@ class _ProviderServicesView extends StatelessWidget {
       capability: capability,
       opportunityCount: oppCount,
       hiddenForCompanyOnly: !capability.isWork &&
+          capability.identityType == null &&
           (cubit.state is CapabilitiesLoaded) &&
           (cubit.state as CapabilitiesLoaded)
                   .categoryTypes[capability.categorySlug] ==
               ProviderCategoryType.individual,
+      providerType: ProviderCategoryType.fromValue(capability.identityType) ??
+          ((cubit.state is CapabilitiesLoaded)
+              ? (cubit.state as CapabilitiesLoaded).categoryTypes[capability.categorySlug]
+              : null),
       onEdit: () => _showAddSheet(
         context,
         preselectedCategorySlug: capability.categorySlug,
@@ -746,13 +764,16 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                 return CapabilityBadge(
                   capability: cap,
                   hiddenForCompanyOnly: !cap.isWork &&
+                      cap.identityType == null &&
                       widget.categoryTypes[cap.categorySlug] ==
                           ProviderCategoryType.individual,
                   showProfileDetails: true,
-                  providerType: widget.categoryTypes[cap.categorySlug],
+                  providerType: ProviderCategoryType.fromValue(cap.identityType) ??
+                      widget.categoryTypes[cap.categorySlug],
                   onEditCompanyDetails:
-                      widget.categoryTypes[cap.categorySlug] ==
-                                  ProviderCategoryType.company &&
+                      (ProviderCategoryType.fromValue(cap.identityType) ??
+                                  widget.categoryTypes[cap.categorySlug]) ==
+                              ProviderCategoryType.company &&
                               !cap.isWork
                           ? () => widget.onEditCompanyDetails?.call(cap)
                           : null,

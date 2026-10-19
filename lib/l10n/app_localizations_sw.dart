@@ -3305,6 +3305,110 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerTypeChange => 'Badilisha';
 
   @override
+  String get providerIdentityRequiredInfo =>
+      'Weka maelezo ya jina na uthibitishe mamlaka ya uwakilishi ili kuendelea.';
+
+  @override
+  String get providerIdentitySwitchSuccess =>
+      'Utambulisho wa mtoa huduma umebadilishwa.';
+
+  @override
+  String get providerIdentityCurrent => 'Ya sasa';
+
+  @override
+  String get providerIdentityDisplayHeading => 'Utaonyeshwaje?';
+
+  @override
+  String get providerIdentityDisplayName => 'Jina la kuonyesha';
+
+  @override
+  String get providerIdentityCompanyName => 'Jina la kampuni au biashara';
+
+  @override
+  String get providerIdentityCompanyOnly => 'Jina la kampuni';
+
+  @override
+  String get providerIdentityCompanyRepresentative =>
+      'Kampuni yenye mwakilishi';
+
+  @override
+  String get providerIdentityRepresentativeName => 'Jina la mwakilishi';
+
+  @override
+  String get providerIdentityAuthority =>
+      'Nina mamlaka ya kuiwakilisha biashara hii';
+
+  @override
+  String providerIdentityRepresentedBy(String name) {
+    return 'Inawakilishwa na $name';
+  }
+
+  @override
+  String providerIdentitySwitchTitle(String identity) {
+    return 'Badilisha kuwa $identity?';
+  }
+
+  @override
+  String get providerIdentitySwitchBody =>
+      'Hii hubadilisha aina ya utambulisho katika kategoria hii pekee. Kategoria nyingine hazibadiliki.';
+
+  @override
+  String get providerIdentityDataKept =>
+      'Taarifa zako za huduma zitahifadhiwa. Hakuna kitakachofutwa.';
+
+  @override
+  String providerIdentityOldServicesInactive(String identity) {
+    return 'Huduma zako za $identity hapa hazitakuwa amilifu na zinaweza kurejeshwa.';
+  }
+
+  @override
+  String providerIdentityNewOffers(String identity) {
+    return 'Ofa mpya zitatumia utambulisho wako wa $identity.';
+  }
+
+  @override
+  String get providerIdentityVerificationReset =>
+      'Mahitaji ya uthibitisho yanaweza kubadilika. Uthibitisho hauhamishwi.';
+
+  @override
+  String get providerIdentityHistoryKept =>
+      'Mikataba iliyokubaliwa, maoni, historia na majukumu binafsi ya kazi vitabaki.';
+
+  @override
+  String providerIdentityPendingOffers(int count) {
+    return 'Una ofa $count zinazosubiri. Zitabaki kama zilivyotumwa; unaweza kuziondoa mwenyewe.';
+  }
+
+  @override
+  String get providerIdentityReviewTitle => 'Kagua mabadiliko yako';
+
+  @override
+  String get providerIdentityCategory => 'Kategoria';
+
+  @override
+  String get providerIdentityNewIdentity => 'Utambulisho mpya';
+
+  @override
+  String get providerIdentityPublicName => 'Jina la umma';
+
+  @override
+  String get providerIdentityReused => 'Kilichotumika tena kutoka usanidi wako';
+
+  @override
+  String get providerIdentityNeedsAttention => 'Yanayohitaji kuangaliwa';
+
+  @override
+  String get providerIdentityCompanyVerificationStatus =>
+      'Uthibitisho wa kampuni ni tofauti na hauhamishwi.';
+
+  @override
+  String get providerIdentityNoActiveWarning =>
+      'Hakuna huduma itakayokuwa amilifu katika kategoria hii baada ya kubadilisha.';
+
+  @override
+  String get providerIdentityConfirm => 'Thibitisha mabadiliko';
+
+  @override
   String get providerTypeWhatWeOffer => 'Tunachotoa';
 
   @override

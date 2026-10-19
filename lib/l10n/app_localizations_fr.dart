@@ -3340,6 +3340,112 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerTypeChange => 'Modifier';
 
   @override
+  String get providerIdentityRequiredInfo =>
+      'Saisissez le nom affiché et confirmez l’autorisation de représentation pour continuer.';
+
+  @override
+  String get providerIdentitySwitchSuccess =>
+      'Votre identité de prestataire a été modifiée.';
+
+  @override
+  String get providerIdentityCurrent => 'Actuel';
+
+  @override
+  String get providerIdentityDisplayHeading =>
+      'Comment souhaitez-vous apparaître ?';
+
+  @override
+  String get providerIdentityDisplayName => 'Nom affiché';
+
+  @override
+  String get providerIdentityCompanyName => 'Nom de l’entreprise';
+
+  @override
+  String get providerIdentityCompanyOnly => 'Nom de l’entreprise';
+
+  @override
+  String get providerIdentityCompanyRepresentative =>
+      'Entreprise avec représentant';
+
+  @override
+  String get providerIdentityRepresentativeName => 'Nom du représentant';
+
+  @override
+  String get providerIdentityAuthority =>
+      'Je suis autorisé à représenter cette entreprise';
+
+  @override
+  String providerIdentityRepresentedBy(String name) {
+    return 'Représenté par $name';
+  }
+
+  @override
+  String providerIdentitySwitchTitle(String identity) {
+    return 'Passer à $identity ?';
+  }
+
+  @override
+  String get providerIdentitySwitchBody =>
+      'Cela ne change que cette catégorie. Vos autres catégories restent inchangées.';
+
+  @override
+  String get providerIdentityDataKept =>
+      'Vos informations de service sont conservées. Rien n’est supprimé.';
+
+  @override
+  String providerIdentityOldServicesInactive(String identity) {
+    return 'Vos services $identity dans cette catégorie deviennent inactifs et pourront être réactivés.';
+  }
+
+  @override
+  String providerIdentityNewOffers(String identity) {
+    return 'Les nouvelles offres utiliseront votre identité $identity.';
+  }
+
+  @override
+  String get providerIdentityVerificationReset =>
+      'Les exigences de vérification peuvent changer. La vérification n’est pas transférée.';
+
+  @override
+  String get providerIdentityHistoryKept =>
+      'Les contrats acceptés, avis, historique et rôles professionnels personnels restent inchangés.';
+
+  @override
+  String providerIdentityPendingOffers(int count) {
+    return 'Vous avez $count offres en attente. Elles restent envoyées ; vous pouvez les retirer vous-même.';
+  }
+
+  @override
+  String get providerIdentityReviewTitle => 'Vérifier votre changement';
+
+  @override
+  String get providerIdentityCategory => 'Catégorie';
+
+  @override
+  String get providerIdentityNewIdentity => 'Nouvelle identité';
+
+  @override
+  String get providerIdentityPublicName => 'Nom public';
+
+  @override
+  String get providerIdentityReused =>
+      'Réutilisé depuis votre configuration actuelle';
+
+  @override
+  String get providerIdentityNeedsAttention => 'À vérifier';
+
+  @override
+  String get providerIdentityCompanyVerificationStatus =>
+      'La vérification de l’entreprise est distincte et n’est pas transférée.';
+
+  @override
+  String get providerIdentityNoActiveWarning =>
+      'Aucun service ne sera actif dans cette catégorie après le changement.';
+
+  @override
+  String get providerIdentityConfirm => 'Confirmer le changement';
+
+  @override
   String get providerTypeWhatWeOffer => 'Nos services';
 
   @override
