@@ -958,8 +958,8 @@ class ProviderServiceRole {
         ProviderRoleOption(slug: 'concrete_mixer_pump', name: 'Concrete mixer / pump'),
       ],
       qualifications: [
-        ProviderRoleQualification(slug: 'operator_licence_certificate', name: 'Operator licence / certificate', isEvidence: false),
-        ProviderRoleQualification(slug: 'safety_osha_certificate', name: 'Safety / OSHA certificate', isEvidence: false),
+        ProviderRoleQualification(slug: 'operator_licence_certificate', name: 'Operator licence / certificate', isEvidence: true),
+        ProviderRoleQualification(slug: 'safety_osha_certificate', name: 'Safety / OSHA certificate', isEvidence: true),
         ProviderRoleQualification(slug: '3_years_experience', name: '3+ years experience', isEvidence: false),
         ProviderRoleQualification(slug: 'medical_fitness', name: 'Medical fitness', isEvidence: false),
         ProviderRoleQualification(slug: 'can_work_away_from_home', name: 'Can work away from home', isEvidence: false),

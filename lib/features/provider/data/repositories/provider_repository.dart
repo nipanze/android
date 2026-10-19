@@ -199,6 +199,40 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<String> uploadRoleQualificationEvidence({
+    required String capabilitySlug,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not authenticated');
+    if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+      throw const FormatException(
+          'Evidence files must be between 1 byte and 5 MB.');
+    }
+    const allowed = {'image/jpeg', 'image/png', 'application/pdf'};
+    if (!allowed.contains(mimeType.toLowerCase())) {
+      throw const FormatException('Choose a JPG, PNG, or PDF file.');
+    }
+    final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final path =
+        'evidence/$uid/$capabilitySlug/qualifications/$roleSlug/$qualificationSlug/${DateTime.now().microsecondsSinceEpoch}_$safeName';
+    try {
+      await _client.storage.from('provider-evidence').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType, upsert: false),
+          );
+      return path;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<bool> capabilityProfilesEnabled() async {
     if (_capabilityProfilesEnabled != null) {
       return _capabilityProfilesEnabled!;

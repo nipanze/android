@@ -1,5 +1,8 @@
 // lib/features/provider/presentation/pages/add_service_sheet.dart
 
+import 'dart:typed_data';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -64,6 +67,7 @@ class ProviderCapabilitySelection {
     this.workRoles = const [],
     this.workMetadataByRole = const {},
     this.companyPath = false,
+    this.roleEvidenceDrafts = const [],
   });
 
   final List<String> slugs;
@@ -73,6 +77,25 @@ class ProviderCapabilitySelection {
   final List<String> workRoles;
   final Map<String, Map<String, dynamic>> workMetadataByRole;
   final bool companyPath;
+  final List<PendingRoleEvidenceDraft> roleEvidenceDrafts;
+}
+
+class PendingRoleEvidenceDraft {
+  const PendingRoleEvidenceDraft({
+    required this.roleSlug,
+    required this.roleCapabilitySlug,
+    required this.qualificationSlug,
+    required this.fileName,
+    required this.mimeType,
+    required this.bytes,
+  });
+
+  final String roleSlug;
+  final String roleCapabilitySlug;
+  final String qualificationSlug;
+  final String fileName;
+  final String mimeType;
+  final Uint8List bytes;
 }
 
 /// Bottom sheet for adding provider capabilities and work profiles.
@@ -174,6 +197,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final Map<String, bool> _willingToTravelByRole = {};
   final Map<String, String> _expectedPayAmountByRole = {};
   final Map<String, String> _expectedPayPeriodByRole = {};
+  final List<PendingRoleEvidenceDraft> _roleEvidenceDrafts = [];
 
   // Audience metadata
   final Set<String> _audiencePlatforms = {};
@@ -342,6 +366,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       categorySlug: _selectedCategory?.slug,
       workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
+      roleEvidenceDrafts: List.unmodifiable(_roleEvidenceDrafts),
       companyPath: companyPath,
     );
   }
@@ -871,6 +896,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                   _expectedPayAmountByRole,
                                               expectedPayPeriodByRole:
                                                   _expectedPayPeriodByRole,
+                                              evidenceDrafts:
+                                                  _roleEvidenceDrafts,
                                               scrollController:
                                                   scrollController,
                                               onSave: () =>
@@ -2190,6 +2217,7 @@ class _QualificationsStepView extends StatefulWidget {
     required this.willingToTravelByRole,
     required this.expectedPayAmountByRole,
     required this.expectedPayPeriodByRole,
+    required this.evidenceDrafts,
     required this.scrollController,
     required this.onSave,
   });
@@ -2202,6 +2230,7 @@ class _QualificationsStepView extends StatefulWidget {
   final Map<String, bool> willingToTravelByRole;
   final Map<String, String> expectedPayAmountByRole;
   final Map<String, String> expectedPayPeriodByRole;
+  final List<PendingRoleEvidenceDraft> evidenceDrafts;
   final ScrollController scrollController;
   final VoidCallback onSave;
 
@@ -2241,6 +2270,110 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
   void dispose() {
     _amountController.dispose();
     super.dispose();
+  }
+
+  String _proofKey(String roleSlug, String qualificationSlug) =>
+      '$roleSlug::$qualificationSlug';
+
+  Future<void> _pickQualificationEvidence() async {
+    final evidenceQualifications =
+        <(ProviderServiceRole, ProviderRoleQualification)>[];
+    for (final role in widget.roles) {
+      final checked =
+          widget.qualificationsByRole[role.slug] ?? const <String>{};
+      for (final qualification in role.qualifications) {
+        if (qualification.isEvidence && checked.contains(qualification.slug)) {
+          evidenceQualifications.add((role, qualification));
+        }
+      }
+    }
+    if (evidenceQualifications.isEmpty) {
+      for (final role in widget.roles) {
+        for (final qualification in role.qualifications) {
+          if (qualification.isEvidence) {
+            evidenceQualifications.add((role, qualification));
+          }
+        }
+      }
+    }
+    if (evidenceQualifications.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'There are no proof-enabled qualifications for these roles.')),
+      );
+      return;
+    }
+
+    final selectedProof = evidenceQualifications.length == 1
+        ? evidenceQualifications.single
+        : await showDialog<(ProviderServiceRole, ProviderRoleQualification)>(
+            context: context,
+            builder: (dialogContext) => SimpleDialog(
+              title: const Text('What does this file prove?'),
+              children: [
+                for (final item in evidenceQualifications)
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(dialogContext, item),
+                    child: Text('${item.$1.name} · ${item.$2.name}'),
+                  ),
+              ],
+            ),
+          );
+    if (selectedProof == null || !mounted) return;
+    final (role, qualification) = selectedProof;
+
+    try {
+      const evidenceFiles = XTypeGroup(
+        label: 'Licence or certificate',
+        extensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      final file = await openFile(acceptedTypeGroups: [evidenceFiles]);
+      if (file == null || !mounted) return;
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+        throw const FormatException('Choose a file no larger than 5 MB.');
+      }
+      final extension = file.name.split('.').last.toLowerCase();
+      final mimeType = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'pdf' => 'application/pdf',
+        _ => '',
+      };
+      if (mimeType.isEmpty) {
+        throw const FormatException('Choose a JPG, PNG, or PDF file.');
+      }
+      final key = _proofKey(role.slug, qualification.slug);
+      final index = widget.evidenceDrafts.indexWhere(
+        (draft) => _proofKey(draft.roleSlug, draft.qualificationSlug) == key,
+      );
+      final draft = PendingRoleEvidenceDraft(
+        roleSlug: role.slug,
+        roleCapabilitySlug: role.capabilitySlug ?? 'work_${role.slug}',
+        qualificationSlug: qualification.slug,
+        fileName: file.name,
+        mimeType: mimeType,
+        bytes: bytes,
+      );
+      setState(() {
+        if (index == -1) {
+          widget.evidenceDrafts.add(draft);
+        } else {
+          widget.evidenceDrafts[index] = draft;
+        }
+        widget.qualificationsByRole
+            .putIfAbsent(role.slug, () => {})
+            .add(qualification.slug);
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text(error.toString().replaceFirst('FormatException: ', ''))),
+      );
+    }
   }
 
   @override
@@ -2309,6 +2442,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                           setState(() {
                             if (isChecked) {
                               roleQuals.remove(qual.slug);
+                              widget.evidenceDrafts.removeWhere((draft) =>
+                                  draft.roleSlug == role.slug &&
+                                  draft.qualificationSlug == qual.slug);
                             } else {
                               roleQuals.add(qual.slug);
                             }
@@ -2362,42 +2498,67 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
               const SizedBox(height: 16),
             ],
 
-            // Dashed upload card for licences / proof
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+            // Dashed upload card for qualification documents, matching Screen F.
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _pickQualificationEvidence,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: AppColors.proPurple.withValues(alpha: 0.4),
-                  style: BorderStyle.solid,
-                ),
-                color: AppColors.proPurple.withValues(alpha: 0.04),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.file_upload_outlined,
-                      color: AppColors.proPurple, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                child: CustomPaint(
+                  painter: _DashedRoundedBorderPainter(
+                    color: AppColors.proPurple.withValues(alpha: 0.5),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 11),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: AppColors.proPurple.withValues(alpha: 0.035),
+                    ),
+                    child: Row(
                       children: [
-                        const Text(
-                          'Evidence and review',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
+                        const Icon(Icons.file_upload_outlined,
+                            color: AppColors.proPurple, size: 23),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.evidenceDrafts.isEmpty
+                                    ? 'Upload licence or certificates'
+                                    : 'Add or replace proof (${widget.evidenceDrafts.length})',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'JPG, PNG or PDF, up to 5 MB. Reviewed by Nipanze. Approved proofs earn a badge.',
+                                style: TextStyle(fontSize: 10, color: text2),
+                              ),
+                              for (final draft in widget.evidenceDrafts)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    '${draft.fileName} · ${draft.qualificationSlug.replaceAll('_', ' ')}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.proPurple,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Your role and qualifications are saved as claims. Add configured evidence from the saved capability details; only an administrator can verify it.',
-                          style: TextStyle(fontSize: 11, color: text2),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -2609,6 +2770,36 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
       ],
     );
   }
+}
+
+class _DashedRoundedBorderPainter extends CustomPainter {
+  const _DashedRoundedBorderPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+          rect.deflate(0.75), const Radius.circular(10)));
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final end = (distance + 5).clamp(0.0, metric.length).toDouble();
+        canvas.drawPath(metric.extractPath(distance, end), paint);
+        distance = end + 3.5;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedRoundedBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 // ---------------------------------------------------------------------------

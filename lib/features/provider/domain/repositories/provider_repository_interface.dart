@@ -35,6 +35,14 @@ abstract class IProviderRepository {
     required String mimeType,
     required Uint8List bytes,
   });
+  Future<String> uploadRoleQualificationEvidence({
+    required String capabilitySlug,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  });
   Future<bool> workProfilesEnabled();
   Future<bool> isCategoryWorkProfileEnabled(String categorySlug);
   Future<List<ProviderCapability>> getProviderCapabilities();

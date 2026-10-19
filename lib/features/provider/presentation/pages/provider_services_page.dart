@@ -338,6 +338,53 @@ class _ProviderServicesView extends StatelessWidget {
       if (context.mounted) {
         await cubit.loadWithOpportunities();
       }
+
+      var submittedProofs = 0;
+      String? proofError;
+      for (final proof in selection.roleEvidenceDrafts) {
+        try {
+          final state = cubit.state;
+          final capability = state is CapabilitiesLoaded
+              ? state.capabilities
+                  .where(
+                      (item) => item.capabilitySlug == proof.roleCapabilitySlug)
+                  .firstOrNull
+              : null;
+          if (capability == null) {
+            throw StateError(
+                'Could not find the saved work profile for ${proof.roleSlug}.');
+          }
+          final path = await providerRepo.uploadRoleQualificationEvidence(
+            capabilitySlug: proof.roleCapabilitySlug,
+            roleSlug: proof.roleSlug,
+            qualificationSlug: proof.qualificationSlug,
+            fileName: proof.fileName,
+            mimeType: proof.mimeType,
+            bytes: proof.bytes,
+          );
+          await providerRepo.submitRoleQualificationEvidence(
+            providerCapabilityId: capability.id,
+            roleSlug: proof.roleSlug,
+            qualificationSlug: proof.qualificationSlug,
+            evidenceObjectPath: path,
+          );
+          submittedProofs++;
+        } catch (error) {
+          proofError ??= error.toString();
+        }
+      }
+      if (submittedProofs > 0 && context.mounted) {
+        await cubit.loadWithOpportunities();
+      }
+      if (context.mounted && selection.roleEvidenceDrafts.isNotEmpty) {
+        final message = proofError == null
+            ? '$submittedProofs proof${submittedProofs == 1 ? '' : 's'} submitted for review.'
+            : submittedProofs > 0
+                ? '$submittedProofs proof${submittedProofs == 1 ? '' : 's'} submitted. One or more files could not be submitted: $proofError'
+                : 'Work profile saved, but proof could not be submitted: $proofError';
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
     } else if (selection != null &&
         selection.openWorkProfile &&
         context.mounted) {
