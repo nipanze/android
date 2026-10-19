@@ -573,6 +573,7 @@ Implement the two provider-type paths as `B → B2 → C → E → F → A` for 
 | 2026-10-19 | Verification policy implementation | Added `sql/patch_provider_verification_policies.sql`; `pglast` grammar parse passed. Provider entity/UI handles open, optional pending, and required inactive states; company documents have a separate private submission/review path. No database was available for semantic execution. |
 | 2026-10-19 | Company path prompt refresh | Company D now allows optional roles when flags permit and saves them in the company transaction with blank onboarding metadata; roles bypass Individual E/F. Provider widget suite passed 30/30. |
 | 2026-10-18 | SQL/ARB static checks | `pglast` grammar parse passed for the standalone SQL patch; all `app_*.arb` files parse as JSON. No live or local database execution. |
+| 2026-10-19 | Final provider verification implementation checks | Scoped `flutter analyze` passed; provider suite passed 30/30; all five ARB files parse; `git diff --check` passed. Serial full suite passed 433 tests and failed two existing Kinyarwanda localization cases (`events_celebrations` untranslated text and missing `rw` Material delegate). Full `flutter analyze` reports nine unrelated info lints. PostgreSQL grammar parsing passed; SQL/RLS execution and screenshot baseline checks remain pending staging access. |
 | — | SQL/RLS execution, RTL/theme/responsive checks, protected Home/feed baselines | Pending staging connection and visual test harness. |
 
 

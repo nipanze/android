@@ -16,6 +16,45 @@ alter table public.provider_capabilities
 create index if not exists idx_provider_capabilities_active_slug
   on public.provider_capabilities(capability_slug, is_active);
 
+create or replace function private.validate_provider_capability_evidence_object()
+returns trigger language plpgsql security definer
+set search_path = public, private, storage, pg_temp as $$
+declare
+  v_user uuid;
+  v_slug text;
+  v_owner text;
+  v_size bigint;
+  v_mime text;
+begin
+  select pc.user_id, pc.capability_slug into v_user, v_slug
+  from public.provider_capabilities pc
+  where pc.id = new.provider_capability_id;
+  if not found then raise exception 'Provider capability not found.' using errcode = 'P0212'; end if;
+  if new.file_url not like 'evidence/' || v_user::text || '/' || v_slug || '/%' then
+    raise exception 'Evidence must use the provider capability folder.' using errcode = 'P0205';
+  end if;
+  select o.owner_id, (o.metadata->>'size')::bigint,
+         lower(coalesce(o.metadata->>'mimetype', ''))
+    into v_owner, v_size, v_mime
+  from storage.objects o
+  where o.bucket_id = 'provider-evidence' and o.name = new.file_url;
+  if not found or v_owner is distinct from v_user::text then
+    raise exception 'Evidence file is not owned by the capability provider.' using errcode = 'P0205';
+  end if;
+  if v_size is null or v_size < 1 or v_size > 5242880
+     or v_mime not in ('image/jpeg', 'image/png', 'application/pdf') then
+    raise exception 'Evidence must be JPG, PNG, or PDF and no larger than 5 MB.' using errcode = 'P0205';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists trg_validate_provider_capability_evidence_object
+  on public.provider_capability_evidence;
+create trigger trg_validate_provider_capability_evidence_object
+  before insert or update of file_url, provider_capability_id
+  on public.provider_capability_evidence
+  for each row execute function private.validate_provider_capability_evidence_object();
+
 -- Keep the initial matrix limited to individual capabilities where proof is
 -- legally or operationally significant. Administrators may tune it later.
 update public.need_capabilities
@@ -397,6 +436,8 @@ declare
   v_user uuid := auth.uid();
   v_size bigint;
   v_mime text;
+  v_country text;
+  v_enabled text;
 begin
   if v_user is null then raise exception 'Not authenticated' using errcode = '42501'; end if;
   if p_document_type not in ('business_registration', 'business_licence') then
@@ -410,6 +451,14 @@ begin
   if not exists (select 1 from public.need_categories c
       where c.slug = p_category_slug and c.is_active) then
     raise exception 'This provider category is not active.' using errcode = 'P0201';
+  end if;
+  select country into v_country from public.profiles where id = v_user;
+  select setting_value into v_enabled from public.system_settings
+    where setting_key = 'capability_profiles_enabled' and is_public
+      and (country = v_country or country is null)
+    order by (country = v_country) desc nulls last limit 1;
+  if lower(coalesce(v_enabled, 'false')) not in ('true', '1') then
+    raise exception 'Provider services are not enabled in your market.' using errcode = 'P0202';
   end if;
   if p_file_path not like 'evidence/' || v_user::text || '/' || p_category_slug || '/company/%' then
     raise exception 'Company verification file path is invalid.' using errcode = 'P0205';
