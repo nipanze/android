@@ -491,7 +491,7 @@ This stage introduces no new database columns, tables, or migrations. All expiry
 
 ### Scope
 
-Implement the Company path as `B → B2 → D → CD → A`, while preserving the Individual path. Reuse the existing provider capability rows and per-category provider type. Company D permits service selections only; CD collects optional category-level company details and service evidence; one category-scoped save persists the company profile and selected services atomically while leaving existing personal work profiles unchanged. Company profile fields remain private; public views, Home, and marketplace feed stay unchanged.
+Implement the two provider-type paths as `B → B2 → C → E → F → A` for Individuals and `B → B2 → D → CD → A` for Companies. Company D contains grouped services and optional personal work roles; CD saves the company profile and selections atomically. Company documents are reviewed separately and never authorize a regulated service. Capability policies are configured per service/role. Company profile fields and documents remain private; Home and Marketplace feed layouts stay unchanged.
 
 ### Findings (P0 discovery)
 
@@ -505,17 +505,20 @@ Implement the Company path as `B → B2 → D → CD → A`, while preserving th
 
 | ID | Decision | Status | Date | Rationale |
 |---|---|---|---|---|
-| C1 | Company selections save services and optional personal work roles together | Superseded | 2026-10-18 | Updated by C11 after the revised screenshot request. |
+| C1 | Company selections save services and optional personal work roles together | Decided | 2026-10-19 | Reaffirmed by current Company path prompt; Company roles stay personal and skip Individual E/F during onboarding. |
 | C2 | Add one private `provider_company_profiles` row per user/category; do not place registration details in public capability metadata/views | Decided | 2026-10-18 | Keeps category-level details private and scoped. |
 | C3 | Company save uses one RPC/transaction for capability changes and profile fields | Decided | 2026-10-18 | Prevents partial saves and cross-category deletion. |
-| C4 | Category evidence fans out to one evidence row per selected service requiring that key, with a shared private object | Decided | 2026-10-18 | User approved recommendations; capability review remains independent. |
+| C4 | Company verification is separate from per-capability service evidence | Superseded | 2026-10-19 | The verification spec explicitly says a company certificate never verifies or activates a regulated service. |
 | C5 | Company name and service areas remain private in this stage; registration number is admin/owner only | Decided | 2026-10-18 | Public exposure can be considered later through an additive view and privacy review. |
 | C6 | Always show B2 on category entry, prefilled from the saved per-category type | Decided | 2026-10-18 | Keeps type changes explicit and makes repeat visits one tap. |
-| C7 | Registration evidence is not required merely because provider type is Company; future rules belong in `verification_requirements` | Decided | 2026-10-18 | Avoids changing verification policy in this flow. |
+| C7 | Company registration and authorization documents are optional manual company verification | Decided | 2026-10-19 | They remain separate from required per-capability proof. |
 | C8 | Staff and multiple operators are out of scope | Decided | 2026-10-18 | One company profile per user/category. |
 | C9 | Migrations remain standalone; do not edit historical `patch.sql` or `merged.sql` | Decided | 2026-10-18 | Required by `.agents/AGENTS.md`; supersedes prompt instructions to fold patches into historical SQL. |
 | C10 | Company details are shown prefilled on repeat category entry; company name may be made public only in a later additive change | Decided | 2026-10-18 | User approved recommendations; this stage keeps all company fields private. |
-| C11 | Company D offers services only; saving company services leaves existing personal work profiles unchanged | Decided | 2026-10-18 | Revised screenshot request: remove all role UI from Company and keep service selections theme-consistent with CD. |
+| C11 | Company D offers services only | Superseded | 2026-10-19 | Current build prompt restores optional personal work-role selection for Company. |
+| C12 | Company D offers grouped services plus optional personal roles when role flags allow | Decided | 2026-10-19 | Company roles save with empty metadata and skip Individual kind/qualification steps. |
+| C13 | Policies are `open`, `optional_proof`, or `required_proof` per capability | Decided | 2026-10-19 | Required proof stays inactive until every configured requirement is approved server-side. |
+| C14 | Company verification submissions have their own status, reviewer, and rejection reason | Decided | 2026-10-19 | Company documents do not activate capability rows. |
 
 ### Task Tracker
 
@@ -523,14 +526,15 @@ Implement the Company path as `B → B2 → D → CD → A`, while preserving th
 |---|---|---|---|---|---|---|
 | P0 | Repository, catalog, Supabase access, Home/feed baselines and plan | `BUILD_PLAN.md`, read-only inspection | Catalog/policy inventory; view/RPC signatures; Home snapshots/feed baseline | In progress | 2026-10-18 | Repository and local catalog inspected; public REST catalog read completed. CLI is not linked to the configured API host; obtain confirmed staging connection for policies/schema and baseline capture. Catalog slug mismatch must be resolved/mapped before RPC work. |
 | P1 | Private company profile schema, RLS, grants, timestamp trigger; legacy details migration | `sql/patch_company_provider_path.sql` | Owner/admin/other/anon RLS; privacy checks; rerun | Implemented locally | 2026-10-18 | New standalone additive patch. Moves existing organization name/registration from capability metadata into the owner/admin table and removes legacy detail keys from capability metadata. Cloud application and owner/admin RLS checks pending. |
-| P1 | Atomic company category save RPC and validation | `sql/patch_company_provider_path.sql` | Services + profile atomicity; reject role payloads; invalid slugs/type/flags/cap; other categories untouched | Implemented locally | 2026-10-18 | `private.save_company_category_internal` plus invoker wrapper; service-only Company save preserves personal work rows; SQL is not deployed. |
-| P2 | Company evidence fan-out, private upload path, limits and cleanup | `sql/patch_company_provider_path.sql`, provider repository | Wrong owner/key/type/size, private object, independent admin review, replacement | Implemented locally | 2026-10-18 | Shared category proof path fans out to selected service capabilities whose active rules require the key; Company upload and save enforce 5 MB and 20 distinct files per hour without changing the shared bucket limit. SQL behavior remains staging-unverified. |
-| P3 | Provider category sheet D: Company services only | `add_service_sheet.dart`, l10n | Grouped service styling, saved-service toggles, Continue to CD with zero selections; CD save guard; Back draft retention; Individual role flow | Implemented locally | 2026-10-19 | Company D opens CD immediately; profile and evidence reads continue after navigation and cannot block access to G. Save stays disabled until a service is selected. Existing work profiles remain untouched. Individual sections remain unchanged. |
+| P1 | Atomic company category save RPC and validation | `sql/patch_company_provider_path.sql`, `sql/patch_provider_verification_policies.sql` | Services + roles + profile atomicity; invalid slugs/type/flags/cap; other categories untouched | Implemented locally | 2026-10-19 | Company selections are saved through one transaction. The verification patch ignores legacy service-evidence fan-out payloads. SQL is not deployed. |
+| P2 | Separate company verification documents, private upload, and review | `sql/patch_provider_verification_policies.sql`, provider repository | Wrong owner/type/size, private object, admin approval/rejection/replacement | Implemented locally | 2026-10-19 | One row per category/document type; company review status never changes a capability's verification state. Staging checks pending. |
+| P3 | Provider category sheet D: Company services and optional roles | `add_service_sheet.dart`, l10n | Grouped service styling, saved-service toggles, gated roles, footer counts/disabled state; Individual role flow unchanged | Implemented locally | 2026-10-19 | Company roles stay personal, save empty metadata, and bypass Individual E/F in this flow. |
 | P3 | Company details CD with optional fields and proof checklist | `company_details_step.dart`, company profile model, l10n | Prefill/edit/validation; save and retry; 360px, RTL, dark, large text | Implemented locally | 2026-10-18 | Direct D → CD transition replaces Review services. Details and evidence save atomically; profile fields remain private. |
-| P4 | Company evidence checklist/upload and per-capability review display | `company_details_step.dart`, provider repository | Wrong owner/key/type/size, private object, independent admin review, resubmission | Implemented locally | 2026-10-18 | JPG/PNG/PDF picker, client and server size/type checks, status/rejection display; cloud tests pending. |
+| P4 | Company details CD with optional company verification documents | `company_details_step.dart`, provider repository, l10n | Prefill/edit/validation; save/retry; upload/resubmission; 360px, RTL, dark, large text | Implemented locally | 2026-10-19 | Two optional upload rows display per-document and aggregate company verification status, including rejection reason. |
 | P5 | Shared summary A labels, counts, company detail edit entry | `provider_services_page.dart`, `capability_badge.dart` | Immediate refresh, services/jobs chips, hidden service type, category edit | Implemented locally | 2026-10-18 | One shared summary; Company service/job labels, optional Services chip, company details menu action, and success toast. |
-| P6 | Admin evidence queue grouped by shared file | `provider_evidence_review_tab.dart`, Admin dashboard | Admin-only reads; separate approve/reject; shared-file grouping; profile privacy | Implemented locally | 2026-10-18 | New Provider evidence tab groups shared objects and keeps each capability review separate. Admin schema/RLS validation pending. |
+| P6 | Admin evidence queue for capability and company submissions | `provider_evidence_review_tab.dart`, Admin dashboard | Admin-only reads; signed file access; separate approve/reject; required rejection reason; reviewer audit | Implemented locally | 2026-10-19 | Capability reviews remain independent. Company documents have a separate review RPC and status. Admin schema/RLS validation pending. |
 | P7 | Localization, accessibility, offline/error paths, regression and docs | ARB files, tests, README, BUILD_PLAN | Five locales, RTL, 360px, 200% text, Loans/Forex/Needs regression | In progress | 2026-10-18 | Added five-locale strings and Flutter `file_selector` 1.0.3 for PDF evidence while preserving the declared Flutter 3.10 minimum; full-suite, theme/RTL/large-text, SQL/staging, and protected baseline checks remain. |
+| P8 | Per-capability policy state, admin approval gate, and offer/matching enforcement | `sql/patch_provider_verification_policies.sql`, provider/admin UI, model | Open/optional/required; pending/reject/resubmit; owner cannot self-activate; inactive capability cannot offer or match; company docs do not activate services | Implemented locally | 2026-10-19 | Adds policy/activity columns, eligibility function, active-offer trigger, filtered opportunity and badge outputs, separate company submission queue. SQL semantics and RLS await staging. |
 
 ### Test Tracker
 
@@ -538,11 +542,13 @@ Implement the Company path as `B → B2 → D → CD → A`, while preserving th
 |---|---|---|---|
 | B → B2 → D → CD → save → A | Pending | — | — |
 | Back from CD preserves service/role draft; B2 selection persists per category | Pending | — | — |
-| Company D only shows grouped service rows and Continue opens CD even if data reads fail | Verified | 2026-10-19 | Provider widget test simulates a verification-requirements lookup failure and confirms G still opens; role heading/cards are absent and Save is disabled with zero services. |
+| Company D shows grouped services and optional roles; Next requires a selection | Verified | 2026-10-19 | Provider widget test confirms the Company role section, required-proof tag, disabled empty footer, and direct CD transition after a service is selected. |
 | Existing personal work capabilities are unchanged by Company service save | Pending | — | — | SQL is grammar-checked; database execution is unavailable locally. |
 | Atomic company profile + service save and rollback on invalid item; role payload rejection | Pending | — | — | SQL is grammar-checked; database execution is unavailable locally. |
 | Company category data leaves other categories and Individual flow unchanged | Pending | — | — |
-| Company evidence upload fans out and approval remains capability-specific | Pending | — | — |
+| Company documents are separate from capability approval and status | Pending | — | — |
+| Open, optional-proof, required-proof policy states and required-proof server gate | Partially verified | 2026-10-19 | Flutter entity tests cover active/open, pending optional, and inactive required states; database transition/offer checks need staging. |
+| Company documents and individual capability evidence have separate admin review | Partially implemented | 2026-10-19 | Admin UI and SQL RPCs are present; RLS, signed URL, rejection/resubmission execution need staging. |
 | Owner/admin/other/anon access for company profile, evidence rows and private files | Pending | — | — |
 | Type switch retains/hides services and preserves jobs; matching/badges exclude hidden services | Pending | — | — |
 | Flags off, offline retry, 31st capability, category country enablement | Pending | — | — |
@@ -564,6 +570,8 @@ Implement the Company path as `B → B2 → D → CD → A`, while preserving th
 | 2026-10-18 | Evidence picker compatibility | Replaced `file_picker` 12 with Flutter `file_selector` 1.0.3 because its Flutter 3.10 minimum matches this repository and avoids changing the unrelated `share_plus`/`win32` dependency resolution. `flutter pub get` succeeded. |
 | 2026-10-18 | Final scoped Provider/Admin checks | `flutter analyze lib/features/provider lib/features/admin` passed with no issues; `flutter test test/features/provider/capabilities_test.dart` passed 28/28; `git diff --check` passed. |
 | 2026-10-18 | Revised Company selection screen | Company D now omits all role UI, uses grouped theme-aware service rows, and saves services without modifying existing personal work rows. Scoped analyzer passed; provider suite passed 28/28; full SQL/PLpgSQL grammar parse passed. |
+| 2026-10-19 | Verification policy implementation | Added `sql/patch_provider_verification_policies.sql`; `pglast` grammar parse passed. Provider entity/UI handles open, optional pending, and required inactive states; company documents have a separate private submission/review path. No database was available for semantic execution. |
+| 2026-10-19 | Company path prompt refresh | Company D now allows optional roles when flags permit and saves them in the company transaction with blank onboarding metadata; roles bypass Individual E/F. Provider widget suite passed 30/30. |
 | 2026-10-18 | SQL/ARB static checks | `pglast` grammar parse passed for the standalone SQL patch; all `app_*.arb` files parse as JSON. No live or local database execution. |
 | — | SQL/RLS execution, RTL/theme/responsive checks, protected Home/feed baselines | Pending staging connection and visual test harness. |
 

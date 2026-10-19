@@ -116,12 +116,15 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _uploadingDocumentType = documentType);
     try {
-      const group = XTypeGroup(
-        label: 'Company verification',
+      final group = XTypeGroup(
+        label: l10n.companyVerificationTitle,
         extensions: ['jpg', 'jpeg', 'png', 'pdf'],
       );
       final file = await openFile(acceptedTypeGroups: [group]);
       if (file == null) return;
+      if (await file.length() > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
       final bytes = await file.readAsBytes();
       final extension = file.name.split('.').last.toLowerCase();
       final mime = switch (extension) {

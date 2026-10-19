@@ -3615,6 +3615,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Needs proof';
 
   @override
+  String get providerPolicyUploadDocuments => 'Upload documents';
+
+  @override
+  String get providerEvidenceNoRequirements =>
+      'No evidence is configured for this capability.';
+
+  @override
+  String get providerEvidenceSubmitted => 'Evidence submitted for review.';
+
+  @override
   String get companyVerificationTitle => 'Company verification';
 
   @override

@@ -140,10 +140,15 @@ begin
     new.is_active := true;
   end if;
   if not v_admin and new.verification_level = 'provider_verified' then
-    new.verification_level := 'self_declared';
-    new.verified_by := null;
-    new.verified_at := null;
-    if v_policy = 'required_proof' then new.is_active := false; end if;
+    if tg_op = 'UPDATE' and old.verification_level = 'provider_verified' then
+      new.verified_by := old.verified_by;
+      new.verified_at := old.verified_at;
+    else
+      new.verification_level := 'self_declared';
+      new.verified_by := null;
+      new.verified_at := null;
+      if v_policy = 'required_proof' then new.is_active := false; end if;
+    end if;
   end if;
   return new;
 end;
@@ -153,6 +158,35 @@ create trigger trg_enforce_provider_capability_policy
   before insert or update on public.provider_capabilities
   for each row execute function private.enforce_provider_capability_policy();
 
+-- Preserve an existing admin grant when an owner edits capability metadata;
+-- still reject any attempt to elevate an unverified row themselves.
+create or replace function private.trg_enforce_provider_capability_verification()
+returns trigger language plpgsql security definer
+set search_path = public, private, pg_temp as $$
+declare
+  v_is_admin boolean := private.is_admin();
+begin
+  if not v_is_admin then
+    if tg_op = 'UPDATE'
+       and old.verification_level = 'provider_verified'
+       and new.verification_level = 'provider_verified' then
+      new.verification_level := old.verification_level;
+      new.verified_by := old.verified_by;
+      new.verified_at := old.verified_at;
+    else
+      new.verification_level := 'self_declared';
+      new.verified_by := null;
+      new.verified_at := null;
+    end if;
+  elsif new.verification_level = 'provider_verified'
+        and (tg_op = 'INSERT' or old.verification_level <> 'provider_verified') then
+    new.verified_by := auth.uid();
+    new.verified_at := coalesce(new.verified_at, now());
+  end if;
+  return new;
+end;
+$$;
+
 -- An approved, current capability evidence decision is the only event that can
 -- activate a required-proof capability. A company document never touches this.
 create or replace function private.refresh_provider_capability_policy_state()
@@ -160,12 +194,14 @@ returns trigger language plpgsql security definer
 set search_path = public, private, pg_temp as $$
 declare
   v_policy text;
+  v_capability_type text;
   v_provider_type text := 'both';
   v_rule_provider_type text := 'both';
   v_required text[];
   v_approved text[];
 begin
-  select nc.verification_policy into v_policy
+  select nc.verification_policy, nc.capability_type
+    into v_policy, v_capability_type
   from public.provider_capabilities pc
   join public.need_capabilities nc on nc.slug = pc.capability_slug
   where pc.id = new.provider_capability_id;
@@ -207,11 +243,24 @@ begin
     and e.status = 'approved' and (e.expires_at is null or e.expires_at > now());
 
   if v_policy = 'required_proof' then
-    update public.provider_capabilities pc set
-      is_active = cardinality(v_required) > 0
-        and v_approved @> v_required
-        and pc.verification_level = 'provider_verified'
-    where pc.id = new.provider_capability_id;
+    if v_capability_type = 'work' and cardinality(v_required) > 0
+       and v_approved @> v_required then
+      update public.provider_capabilities pc set
+        verification_level = 'provider_verified',
+        verified_by = auth.uid(), verified_at = now(), is_active = true
+      where pc.id = new.provider_capability_id;
+    elsif new.status in ('pending', 'rejected', 'expired') then
+      update public.provider_capabilities pc set
+        verification_level = case when v_capability_type = 'work'
+          then 'self_declared' else pc.verification_level end,
+        verified_by = case when v_capability_type = 'work' then null else pc.verified_by end,
+        verified_at = case when v_capability_type = 'work' then null else pc.verified_at end,
+        is_active = false
+      where pc.id = new.provider_capability_id;
+    else
+      update public.provider_capabilities pc set is_active = false
+      where pc.id = new.provider_capability_id;
+    end if;
   end if;
   return new;
 end;
@@ -222,11 +271,64 @@ create trigger trg_refresh_provider_capability_policy_state
   after insert or update of status, expires_at on public.provider_capability_evidence
   for each row execute function private.refresh_provider_capability_policy_state();
 
+-- Qualification uploads in Individual F are mirrored to the common evidence
+-- table so capability policy, status, and admin reporting share one source.
+create or replace function private.sync_role_claim_to_capability_evidence()
+returns trigger language plpgsql security definer
+set search_path = public, private, pg_temp as $$
+declare
+  v_key text := new.qualification_slug;
+  v_status text;
+  v_provider_type text := 'both';
+  v_category text;
+begin
+  if new.evidence_object_path is null or new.status not in
+      ('pending_review', 'verified', 'rejected', 'expired') then
+    return new;
+  end if;
+  v_status := case new.status
+    when 'pending_review' then 'pending'
+    when 'verified' then 'approved'
+    when 'rejected' then 'rejected'
+    else 'expired' end;
+  select nc.category_slug, coalesce(pcp.provider_type, 'both')
+    into v_category, v_provider_type
+  from public.provider_capabilities pc
+  join public.need_capabilities nc on nc.slug = pc.capability_slug
+  left join public.provider_category_profiles pcp
+    on pcp.user_id = pc.user_id and pcp.category_slug = nc.category_slug
+  where pc.id = new.provider_capability_id;
+
+  update public.provider_capability_evidence set
+    status = v_status, reject_reason = new.reject_reason,
+    reviewed_by = new.reviewed_by, reviewed_at = new.reviewed_at,
+    expires_at = new.expires_at, updated_at = now()
+  where provider_capability_id = new.provider_capability_id
+    and requirement_key = v_key and file_url = new.evidence_object_path;
+  if not found then
+    insert into public.provider_capability_evidence(
+      provider_capability_id, requirement_key, file_url, status,
+      reject_reason, expires_at, reviewed_by, reviewed_at, provider_type
+    ) values (
+      new.provider_capability_id, v_key, new.evidence_object_path, v_status,
+      new.reject_reason, new.expires_at, new.reviewed_by, new.reviewed_at,
+      v_provider_type
+    );
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists trg_sync_role_claim_to_capability_evidence
+  on public.provider_role_qualification_claims;
+create trigger trg_sync_role_claim_to_capability_evidence
+  after insert or update of status, evidence_object_path
+  on public.provider_role_qualification_claims
+  for each row execute function private.sync_role_claim_to_capability_evidence();
+
 create or replace function private.provider_capability_is_eligible(p_capability_id uuid)
 returns boolean language plpgsql security definer stable
 set search_path = public, private, pg_temp as $$
 declare
-  v_user uuid;
   v_slug text;
   v_policy text;
   v_type text := 'both';
@@ -235,13 +337,12 @@ declare
   v_has_requirements boolean := false;
   v_key text;
 begin
-  select pc.user_id, pc.capability_slug, nc.verification_policy, pc.is_active
-    into v_user, v_slug, v_policy, v_active
+  select pc.capability_slug, nc.verification_policy, pc.is_active
+    into v_slug, v_policy, v_active
   from public.provider_capabilities pc
   join public.need_capabilities nc on nc.slug = pc.capability_slug
   where pc.id = p_capability_id;
   if not found or not v_active then return false; end if;
-  if v_user <> auth.uid() and not private.is_admin() then return false; end if;
   if v_policy <> 'required_proof' then return true; end if;
 
   select coalesce(pcp.provider_type, 'both') into v_type
@@ -284,8 +385,9 @@ begin
   );
 end;
 $$;
-revoke all on function private.provider_capability_is_eligible(uuid) from public, anon;
-grant execute on function private.provider_capability_is_eligible(uuid) to authenticated;
+revoke all on function private.provider_capability_is_eligible(uuid) from public;
+grant execute on function private.provider_capability_is_eligible(uuid)
+  to authenticated, anon;
 
 create or replace function public.submit_provider_company_verification(
   p_category_slug text, p_document_type text, p_file_path text

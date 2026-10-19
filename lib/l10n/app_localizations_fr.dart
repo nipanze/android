@@ -3669,6 +3669,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Justificatif requis';
 
   @override
+  String get providerPolicyUploadDocuments => 'Envoyer des documents';
+
+  @override
+  String get providerEvidenceNoRequirements =>
+      'Aucun justificatif n’est configuré pour cette capacité.';
+
+  @override
+  String get providerEvidenceSubmitted => 'Justificatif envoyé pour examen.';
+
+  @override
   String get companyVerificationTitle => 'Vérification de l’entreprise';
 
   @override

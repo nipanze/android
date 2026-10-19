@@ -1408,13 +1408,13 @@ class _OfferCard extends StatelessWidget {
                   ],
                 ),
               if (offer.providerPhoneVerified)
-                Row(
+                const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.phone_android_rounded,
+                    Icon(Icons.phone_android_rounded,
                         size: 13, color: AppColors.success),
-                    const SizedBox(width: 2),
-                    const Text(
+                    SizedBox(width: 2),
+                    Text(
                       'Phone verified',
                       style:
                           TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
@@ -1445,7 +1445,7 @@ class _OfferCard extends StatelessWidget {
                         capabilityName != null
                             ? '$capabilityName · Provider Verified'
                             : 'Provider Verified',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: AppColors.accent,

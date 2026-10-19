@@ -1,12 +1,13 @@
 // lib/features/provider/presentation/pages/provider_services_page.dart
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -537,9 +538,7 @@ class _ProviderServicesView extends StatelessWidget {
           if (keys.isEmpty) {
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content:
-                      Text('No evidence is configured for this capability.')),
+              SnackBar(content: Text(l10n.providerEvidenceNoRequirements)),
             );
             return;
           }
@@ -561,19 +560,37 @@ class _ProviderServicesView extends StatelessWidget {
                   ),
                 );
           if (key == null) return;
-          final picked =
-              await ImagePicker().pickImage(source: ImageSource.gallery);
+          final evidenceTypes = XTypeGroup(
+            label: l10n.companyVerificationTitle,
+            extensions: ['jpg', 'jpeg', 'png', 'pdf'],
+          );
+          final picked = await openFile(acceptedTypeGroups: [evidenceTypes]);
           if (picked == null) return;
+          if (await picked.length() > 5 * 1024 * 1024) {
+            throw StateError(l10n.companyEvidenceTooLarge);
+          }
+          final bytes = await picked.readAsBytes();
+          if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+            throw StateError(l10n.companyEvidenceTooLarge);
+          }
+          final extension = picked.name.split('.').last.toLowerCase();
+          final mime = switch (extension) {
+            'jpg' || 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'pdf' => 'application/pdf',
+            _ => '',
+          };
+          if (mime.isEmpty) throw StateError(l10n.companyEvidenceUnsupported);
           final uid = client.auth.currentUser?.id;
           if (uid == null) return;
-          final extension =
-              picked.name.contains('.') ? picked.name.split('.').last : 'jpg';
-          final path =
-              'evidence/$uid/${capability.capabilitySlug}/${DateTime.now().microsecondsSinceEpoch}.$extension';
+          final safeName =
+              picked.name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+          final path = 'evidence/$uid/${capability.capabilitySlug}/'
+              '${DateTime.now().microsecondsSinceEpoch}_$safeName';
           await client.storage.from('provider-evidence').uploadBinary(
                 path,
-                await picked.readAsBytes(),
-                fileOptions: supabase.FileOptions(contentType: picked.mimeType),
+                bytes,
+                fileOptions: supabase.FileOptions(contentType: mime),
               );
           await getIt<IProviderRepository>().submitCapabilityEvidence(
             providerCapabilityId: capability.id,
@@ -583,13 +600,13 @@ class _ProviderServicesView extends StatelessWidget {
           await cubit.loadWithOpportunities();
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Evidence submitted for review.')),
+              SnackBar(content: Text(l10n.providerEvidenceSubmitted)),
             );
           }
         } catch (e) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Could not submit evidence: $e')),
+              SnackBar(content: Text(userFacingErrorMessage(e))),
             );
           }
         }

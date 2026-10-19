@@ -137,7 +137,7 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
-  testWidgets('Company category sheet shows services only then details',
+  testWidgets('Company category sheet shows services and optional roles',
       (tester) async {
     final needsRepo = MockNeedsRepository();
     when(needsRepo.getCategories).thenAnswer((_) async => const [
@@ -154,6 +154,7 @@ void main() {
             slug: 'excavator_hire',
             categorySlug: 'machinery_equipment',
             name: 'Excavator Hire',
+            verificationPolicy: 'required_proof',
           ),
         ]);
     when(() => mockRepo.capabilityProfilesEnabled())
@@ -190,9 +191,21 @@ void main() {
 
     expect(find.text('What we offer'), findsOneWidget);
     expect(find.text('Excavator Hire'), findsOneWidget);
-    expect(find.text('What roles do you do?'), findsNothing);
+    expect(find.text('Needs proof'), findsOneWidget);
+    expect(find.text('What roles do you do?'), findsOneWidget);
     expect(find.text('STEP 1 OF 3'), findsNothing);
-    expect(find.text('Machine Operator'), findsNothing);
+    expect(find.text('Machine Operator'), findsOneWidget);
+
+    expect(
+      tester
+          .widget<ElevatedButton>(
+            find.widgetWithText(ElevatedButton, 'Next: company details'),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.text('Excavator Hire'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Next: company details'));
     await tester.pumpAndSettle();
@@ -203,7 +216,7 @@ void main() {
             find.widgetWithText(FilledButton, 'Save company profile'),
           )
           .onPressed,
-      isNull,
+      isNotNull,
     );
     expect(find.text('Review services'), findsNothing);
     expect(find.text('Company or business name'), findsOneWidget);

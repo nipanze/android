@@ -321,6 +321,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final companyPath = _providerType == ProviderCategoryType.company;
     final canEditWorkRoles = _categoryWorkProfilesEnabled &&
         _providerType == ProviderCategoryType.individual;
+    final canSelectCompanyRoles = _categoryWorkProfilesEnabled && companyPath;
     if (canEditWorkRoles) {
       for (final roleSlug in _selectedRoles) {
         workMetadataByRole[roleSlug] = _buildWorkMetadata(roleSlug);
@@ -360,7 +361,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       metadataBySlug: metadataBySlug,
       openWorkProfile: canEditWorkRoles,
       categorySlug: _selectedCategory?.slug,
-      workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
+      workRoles: canEditWorkRoles || canSelectCompanyRoles
+          ? _selectedRoles.toList()
+          : const [],
       workMetadataByRole: workMetadataByRole,
       roleEvidenceDrafts: List.unmodifiable(_roleEvidenceDrafts),
       companyPath: companyPath,
@@ -596,7 +599,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       await widget.providerRepository.saveCompanyCategory(
         categorySlug: categorySlug,
         serviceSlugs: _selected.toList(),
-        roleCapabilitySlugs: const [],
+        roleCapabilitySlugs: _selectedRoles.map((roleSlug) {
+          final role = _categoryRoles.firstWhere(
+            (candidate) => candidate.slug == roleSlug,
+          );
+          return role.capabilitySlug ?? 'work_$roleSlug';
+        }).toList(),
         profile: profile,
         evidence: const [],
       );
@@ -649,7 +657,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         .where((capability) => widget.existingSlugs.contains(capability.slug))
         .map((capability) => capability.slug)
         .toSet();
-    return !_sameSet(existingServices, _selected);
+    final existingRoles = _categoryRoles
+        .where((role) => widget.existingSlugs
+            .contains(role.capabilitySlug ?? 'work_${role.slug}'))
+        .map((role) => role.slug)
+        .toSet();
+    return !_sameSet(existingServices, _selected) ||
+        !_sameSet(existingRoles, _selectedRoles);
   }
 
   static bool _sameSet(Set<String> first, Set<String> second) =>
@@ -816,7 +830,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       categorySlug:
                                           _selectedCategory?.slug ?? '',
                                       serviceCount: _selected.length,
-                                      roleCount: 0,
+                                      roleCount: _selectedRoles.length,
                                       initialProfile: _companyProfile,
                                       verificationSubmissions:
                                           _companyVerificationSubmissions,
@@ -1313,7 +1327,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
     final individualType = providerType == ProviderCategoryType.individual;
     final companyMode = providerType == ProviderCategoryType.company;
-    final showRoles = individualType && iWantJobs;
+    final showRoles = iWantJobs && (individualType || companyMode);
     final hasServices = companyType && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
 
@@ -1615,10 +1629,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                // Allow opening Company details (step 2) before selecting
-                // services; saving on that step remains disabled until a
-                // service is selected.
-                onPressed: onSaveServices,
+                onPressed: hasServices || hasRoles ? onSaveServices : null,
                 child: Text(l10n.providerTypeNextCompanyDetails,
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 15)),

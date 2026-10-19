@@ -3621,6 +3621,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'يتطلب إثباتاً';
 
   @override
+  String get providerPolicyUploadDocuments => 'إرسال المستندات';
+
+  @override
+  String get providerEvidenceNoRequirements =>
+      'لم يتم تحديد إثبات لهذه الخدمة.';
+
+  @override
+  String get providerEvidenceSubmitted => 'تم إرسال الإثبات للمراجعة.';
+
+  @override
   String get companyVerificationTitle => 'التحقق من الشركة';
 
   @override

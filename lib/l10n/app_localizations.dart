@@ -6502,6 +6502,24 @@ abstract class AppLocalizations {
   /// **'Needs proof'**
   String get providerPolicyNeedsProofTag;
 
+  /// No description provided for @providerPolicyUploadDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents'**
+  String get providerPolicyUploadDocuments;
+
+  /// No description provided for @providerEvidenceNoRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'No evidence is configured for this capability.'**
+  String get providerEvidenceNoRequirements;
+
+  /// No description provided for @providerEvidenceSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence submitted for review.'**
+  String get providerEvidenceSubmitted;
+
   /// No description provided for @companyVerificationTitle.
   ///
   /// In en, this message translates to:

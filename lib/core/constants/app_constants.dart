@@ -19,6 +19,8 @@ class TableNames {
   static const String needOffers = 'need_offers';
   static const String needContactReveals = 'need_contact_reveals';
   static const String providerCapabilities = 'provider_capabilities';
+  static const String providerRoleQualificationClaims =
+      'provider_role_qualification_claims';
   static const String providerCategoryProfiles = 'provider_category_profiles';
   static const String providerCompanyProfiles = 'provider_company_profiles';
   static const String providerCompanyVerificationSubmissions =
@@ -101,6 +103,8 @@ class RpcNames {
       'submit_provider_company_verification';
   static const String adminReviewProviderCompanyVerification =
       'admin_review_provider_company_verification';
+  static const String adminReviewProviderRoleQualification =
+      'admin_review_provider_role_qualification';
   static const String getMyProviderCategoryTypes =
       'get_my_provider_category_types';
   static const String adminGetVerificationRequirements =

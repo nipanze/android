@@ -3629,6 +3629,16 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Uthibitisho unahitajika';
 
   @override
+  String get providerPolicyUploadDocuments => 'Pakia hati';
+
+  @override
+  String get providerEvidenceNoRequirements =>
+      'Hakuna uthibitisho uliowekwa kwa uwezo huu.';
+
+  @override
+  String get providerEvidenceSubmitted => 'Uthibitisho umetumwa kwa ukaguzi.';
+
+  @override
   String get companyVerificationTitle => 'Uthibitishaji wa kampuni';
 
   @override

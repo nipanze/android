@@ -34,10 +34,24 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         .eq('status', 'pending')
         .order('created_at');
     final rows = List<Map<String, dynamic>>.from(evidence);
-    final capIds = rows
-        .map((row) => row['provider_capability_id'].toString())
-        .toSet()
-        .toList();
+    final roleRows = List<Map<String, dynamic>>.from(await _client
+        .from(TableNames.providerRoleQualificationClaims)
+        .select(
+            'id, provider_capability_id, role_slug, qualification_slug, evidence_object_path, reject_reason, updated_at')
+        .eq('status', 'pending_review')
+        .eq('is_claimed', true));
+    final roleProofs = roleRows
+        .map((row) =>
+            '${row['provider_capability_id']}|${row['qualification_slug']}|${row['evidence_object_path']}')
+        .toSet();
+    final capabilityEvidenceRows = rows.where((row) => !roleProofs.contains(
+        '${row['provider_capability_id']}|${row['requirement_key']}|${row['file_url']}'));
+    final capIds = {
+      ...capabilityEvidenceRows
+          .map((row) => row['provider_capability_id'].toString())
+          .toSet(),
+      ...roleRows.map((row) => row['provider_capability_id'].toString()),
+    }.toList();
     final capabilities = capIds.isEmpty
         ? <Map<String, dynamic>>[]
         : List<Map<String, dynamic>>.from(await _client
@@ -85,11 +99,20 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                 'user_id, category_slug, company_name, registration_number, team_size, years_in_business, service_areas')
             .inFilter('user_id', allUserIds.toList())
             .inFilter('category_slug', allCategorySlugs.toList()));
+    final categories = allCategorySlugs.isEmpty
+        ? <Map<String, dynamic>>[]
+        : List<Map<String, dynamic>>.from(await _client
+            .from(TableNames.needCategories)
+            .select('slug, name')
+            .inFilter('slug', allCategorySlugs.toList()));
+    final categoryNames = {
+      for (final row in categories) row['slug'].toString(): row['name']
+    };
     final companyByOwnerCategory = {
       for (final row in companies)
         '${row['user_id']}|${row['category_slug']}': row,
     };
-    final capabilityItems = rows.map((row) {
+    final capabilityItems = capabilityEvidenceRows.map((row) {
       final cap = capById[row['provider_capability_id'].toString()] ?? {};
       final need = cap['need_capabilities'] as Map?;
       final category = need?['need_categories'] as Map?;
@@ -104,6 +127,25 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         'company': companyByOwnerCategory['$userId|$categorySlug'],
       };
     }).toList();
+    final roleItems = roleRows.map((row) {
+      final cap = capById[row['provider_capability_id'].toString()] ?? {};
+      final need = cap['need_capabilities'] as Map?;
+      final category = need?['need_categories'] as Map?;
+      final userId = cap['user_id']?.toString() ?? '';
+      final categorySlug = need?['category_slug']?.toString() ?? '';
+      final capabilityName = need?['name'] ?? cap['capability_slug'] ?? '';
+      return {
+        ...row,
+        'kind': 'role',
+        'file_url': row['evidence_object_path'],
+        'requirement_key': row['qualification_slug'],
+        'provider_type': 'individual',
+        'capability_name':
+            '$capabilityName · ${row['role_slug']} · ${row['qualification_slug']}',
+        'category_name': category?['name'] ?? categorySlug,
+        'provider_name': profilesById[userId]?['full_name'] ?? '',
+      };
+    }).toList();
     final companyItems = companyRows.map((row) {
       final userId = row['user_id'].toString();
       final categorySlug = row['category_slug'].toString();
@@ -113,11 +155,11 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         'kind': 'company',
         'id': '$userId|$categorySlug|${row['document_type']}',
         'provider_name': profilesById[userId]?['full_name'] ?? '',
-        'category_name': categorySlug,
+        'category_name': categoryNames[categorySlug] ?? categorySlug,
         'company': company,
       };
     }).toList();
-    return [...capabilityItems, ...companyItems];
+    return [...capabilityItems, ...roleItems, ...companyItems];
   }
 
   Future<void> _refresh() async => setState(() => _items = _load());
@@ -227,6 +269,31 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
     }
   }
 
+  Future<void> _reviewRole(Map<String, dynamic> item, bool approve) async {
+    final id = item['id'].toString();
+    final reason = approve ? null : await _rejectReason();
+    if (!approve && reason == null) return;
+    setState(() => _busy.add(id));
+    try {
+      await _client.rpc(RpcNames.adminReviewProviderRoleQualification, params: {
+        'p_claim_id': id,
+        'p_action': approve ? 'approve' : 'reject',
+        'p_reject_reason': reason,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.providerEvidenceReviewSaved)));
+      setState(() => _items = _load());
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userFacingErrorMessage(error))));
+    } finally {
+      if (mounted) setState(() => _busy.remove(id));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -303,6 +370,43 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                                 _reviewCompany(entry.value.first, true),
                             onReject: () =>
                                 _reviewCompany(entry.value.first, false),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (entry.value.first['kind'] == 'role')
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(entry.value.first['capability_name'].toString(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                              '${entry.value.first['provider_name']} · ${entry.value.first['category_name']}',
+                              style: Theme.of(context).textTheme.bodySmall),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: TextButton.icon(
+                              onPressed: () => _openFile(entry.key),
+                              icon: const Icon(Icons.open_in_new, size: 18),
+                              label: Text(l10n.providerEvidenceOpenFile),
+                            ),
+                          ),
+                          const Divider(height: 16),
+                          _CapabilityReviewRow(
+                            item: entry.value.first,
+                            busy: _busy
+                                .contains(entry.value.first['id'].toString()),
+                            onApprove: () =>
+                                _reviewRole(entry.value.first, true),
+                            onReject: () =>
+                                _reviewRole(entry.value.first, false),
                           ),
                         ],
                       ),

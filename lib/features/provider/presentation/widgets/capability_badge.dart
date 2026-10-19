@@ -241,6 +241,25 @@ class CapabilityBadge extends StatelessWidget {
                             fontStyle: FontStyle.italic,
                           ),
                         ),
+                      if (onTap != null &&
+                          capability.verificationPolicy !=
+                              ProviderVerificationPolicy.open &&
+                          capability.status !=
+                              ProviderCapabilityStatus.providerVerified)
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: TextButton.icon(
+                            onPressed: onTap,
+                            icon: const Icon(Icons.upload_file_outlined,
+                                size: 16),
+                            label: Text(l10n.providerPolicyUploadDocuments),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(44, 44),
+                              padding: const EdgeInsetsDirectional.only(
+                                  start: 0, end: 8),
+                            ),
+                          ),
+                        ),
                       if (capability.capabilitySlug ==
                           'i_have_an_audience') ...[
                         const SizedBox(height: 8),

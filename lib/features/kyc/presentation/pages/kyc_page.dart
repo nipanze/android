@@ -455,26 +455,25 @@ class _ProfilePictureSection extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(width: 8),
-                    if (isVerified)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: hasPhoto
-                              ? AppColors.success.withValues(alpha: 0.12)
-                              : AppColors.accent.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          hasPhoto ? 'Uploaded' : 'Required',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                hasPhoto ? AppColors.success : AppColors.accent,
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: hasPhoto
+                            ? AppColors.success.withValues(alpha: 0.12)
+                            : AppColors.accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        hasPhoto ? 'Uploaded' : 'Required',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              hasPhoto ? AppColors.success : AppColors.accent,
                         ),
                       ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -961,22 +960,23 @@ class _AdditionalVerificationSectionState
                         ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.providerVerified,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.success,
+                    if (isVerified)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.providerVerified,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               );
