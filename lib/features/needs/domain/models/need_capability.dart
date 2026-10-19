@@ -12,6 +12,7 @@ class NeedCapability {
     this.serviceGroupSlug,
     this.serviceGroupName,
     this.serviceSortOrder = 1000,
+    this.verificationPolicy = 'open',
   });
 
   factory NeedCapability.fromMap(
@@ -34,6 +35,7 @@ class NeedCapability {
       serviceGroupSlug: map['service_group_slug'] as String?,
       serviceGroupName: map['service_group_name'] as String?,
       serviceSortOrder: (map['service_sort_order'] as num?)?.toInt() ?? 1000,
+      verificationPolicy: map['verification_policy'] as String? ?? 'open',
     );
   }
 
@@ -47,6 +49,7 @@ class NeedCapability {
   final String? serviceGroupSlug;
   final String? serviceGroupName;
   final int serviceSortOrder;
+  final String verificationPolicy;
 
   String nameForCountry(String? countryCode) {
     final labels = countryLabels[countryCode?.toUpperCase()];

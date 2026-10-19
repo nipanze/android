@@ -3604,6 +3604,70 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerEvidenceReviewSaved => 'Ukaguzi wa ushahidi umehifadhiwa.';
 
   @override
+  String get providerCapabilityActive => 'Inatumika';
+
+  @override
+  String get providerCapabilityInactive => 'Haijatumika';
+
+  @override
+  String get providerCapabilityPendingReview => 'Inasubiri ukaguzi';
+
+  @override
+  String get providerCapabilityRejected => 'Imekataliwa';
+
+  @override
+  String get providerPolicyNoProof => 'Hakuna uthibitisho unaohitajika';
+
+  @override
+  String get providerPolicyProofLater => 'Unaweza kuongeza uthibitisho baadaye';
+
+  @override
+  String get providerPolicyProofRequired =>
+      'Uthibitisho unahitajika kabla ya kuanza';
+
+  @override
+  String get providerPolicyNeedsProofTag => 'Uthibitisho unahitajika';
+
+  @override
+  String get companyVerificationTitle => 'Uthibitishaji wa kampuni';
+
+  @override
+  String get companyVerificationIntro =>
+      'Hiari. Pakia hati moja au zote mbili zikaguliwe na Nipanze.';
+
+  @override
+  String get companyVerificationRegistration => 'Cheti cha usajili wa biashara';
+
+  @override
+  String get companyVerificationLicence => 'Leseni au hati za idhini';
+
+  @override
+  String get companyVerificationNotSubmitted => 'Haijawasilishwa';
+
+  @override
+  String get companyVerificationPending => 'Inasubiri ukaguzi';
+
+  @override
+  String get companyVerificationVerified => 'Imethibitishwa';
+
+  @override
+  String get companyVerificationRejected => 'Imekataliwa';
+
+  @override
+  String get companyVerificationSeparateNote =>
+      'Cheti cha usajili hakiruhusu huduma zinazodhibitiwa. Hizo hukaguliwa kando kwa kila huduma.';
+
+  @override
+  String get companyVerificationFileHint =>
+      'JPG, PNG au PDF, hadi MB 5 kila moja. Unaweza kuhifadhi sasa na kuongeza uthibitisho baadaye.';
+
+  @override
+  String get companyVerificationUpload => 'Pakia hati';
+
+  @override
+  String get companyVerificationUploaded => 'Hati imewasilishwa';
+
+  @override
   String get providerTypeEditCompanyDetails => 'Hariri maelezo ya kampuni';
 
   @override

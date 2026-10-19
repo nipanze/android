@@ -34,16 +34,17 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         .eq('status', 'pending')
         .order('created_at');
     final rows = List<Map<String, dynamic>>.from(evidence);
-    if (rows.isEmpty) return rows;
     final capIds = rows
         .map((row) => row['provider_capability_id'].toString())
         .toSet()
         .toList();
-    final capabilities = await _client
-        .from(TableNames.providerCapabilities)
-        .select(
-            'id, user_id, capability_slug, need_capabilities!capability_slug(name, category_slug, need_categories!category_slug(name))')
-        .inFilter('id', capIds);
+    final capabilities = capIds.isEmpty
+        ? <Map<String, dynamic>>[]
+        : List<Map<String, dynamic>>.from(await _client
+            .from(TableNames.providerCapabilities)
+            .select(
+                'id, user_id, capability_slug, need_capabilities!capability_slug(name, category_slug, need_categories!category_slug(name))')
+            .inFilter('id', capIds));
     final capById = {
       for (final cap in List<Map<String, dynamic>>.from(capabilities))
         cap['id'].toString(): cap,
@@ -54,28 +55,41 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         .map((row) => (row['need_capabilities'] as Map?)?['category_slug'])
         .whereType<String>()
         .toSet();
-    final profiles = userIds.isEmpty
+    final companyRows = List<Map<String, dynamic>>.from(await _client
+        .from(TableNames.providerCompanyVerificationSubmissions)
+        .select(
+            'user_id, category_slug, document_type, file_path, status, reject_reason, created_at')
+        .eq('status', 'pending')
+        .order('created_at'));
+    final companyUserIds =
+        companyRows.map((row) => row['user_id'].toString()).toSet();
+    final allUserIds = {...userIds, ...companyUserIds};
+    final allCategorySlugs = {
+      ...categorySlugs,
+      ...companyRows.map((row) => row['category_slug'].toString()),
+    };
+    final profiles = allUserIds.isEmpty
         ? <Map<String, dynamic>>[]
         : List<Map<String, dynamic>>.from(await _client
             .from(TableNames.profiles)
             .select('id, full_name')
-            .inFilter('id', userIds.toList()));
+            .inFilter('id', allUserIds.toList()));
     final profilesById = {
       for (final row in profiles) row['id'].toString(): row
     };
-    final companies = userIds.isEmpty || categorySlugs.isEmpty
+    final companies = allUserIds.isEmpty || allCategorySlugs.isEmpty
         ? <Map<String, dynamic>>[]
         : List<Map<String, dynamic>>.from(await _client
             .from(TableNames.providerCompanyProfiles)
             .select(
                 'user_id, category_slug, company_name, registration_number, team_size, years_in_business, service_areas')
-            .inFilter('user_id', userIds.toList())
-            .inFilter('category_slug', categorySlugs.toList()));
+            .inFilter('user_id', allUserIds.toList())
+            .inFilter('category_slug', allCategorySlugs.toList()));
     final companyByOwnerCategory = {
       for (final row in companies)
         '${row['user_id']}|${row['category_slug']}': row,
     };
-    return rows.map((row) {
+    final capabilityItems = rows.map((row) {
       final cap = capById[row['provider_capability_id'].toString()] ?? {};
       final need = cap['need_capabilities'] as Map?;
       final category = need?['need_categories'] as Map?;
@@ -90,6 +104,20 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         'company': companyByOwnerCategory['$userId|$categorySlug'],
       };
     }).toList();
+    final companyItems = companyRows.map((row) {
+      final userId = row['user_id'].toString();
+      final categorySlug = row['category_slug'].toString();
+      final company = companyByOwnerCategory['$userId|$categorySlug'];
+      return {
+        ...row,
+        'kind': 'company',
+        'id': '$userId|$categorySlug|${row['document_type']}',
+        'provider_name': profilesById[userId]?['full_name'] ?? '',
+        'category_name': categorySlug,
+        'company': company,
+      };
+    }).toList();
+    return [...capabilityItems, ...companyItems];
   }
 
   Future<void> _refresh() async => setState(() => _items = _load());
@@ -171,6 +199,34 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
     }
   }
 
+  Future<void> _reviewCompany(Map<String, dynamic> item, bool approve) async {
+    final id = item['id'].toString();
+    final reason = approve ? null : await _rejectReason();
+    if (!approve && reason == null) return;
+    setState(() => _busy.add(id));
+    try {
+      await _client
+          .rpc(RpcNames.adminReviewProviderCompanyVerification, params: {
+        'p_user_id': item['user_id'],
+        'p_category_slug': item['category_slug'],
+        'p_document_type': item['document_type'],
+        'p_action': approve ? 'approve' : 'reject',
+        'p_reject_reason': reason,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.providerEvidenceReviewSaved)));
+      setState(() => _items = _load());
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(userFacingErrorMessage(error))));
+    } finally {
+      if (mounted) setState(() => _busy.remove(id));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -205,63 +261,113 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                     style: Theme.of(context).textTheme.titleMedium),
               ),
               for (final entry in byPath.entries)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(entry.value.first['requirement_key'].toString(),
+                if (entry.value.first['kind'] == 'company')
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.value.first['document_type'] ==
+                                    'business_registration'
+                                ? l10n.companyVerificationRegistration
+                                : l10n.companyVerificationLicence,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w700)),
-                        Text(
-                          entry.value.first['provider_type'] == 'company'
-                              ? 'Company / Organization proof'
-                              : 'Individual proof',
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                        Text(
-                          '${entry.value.first['provider_name']} · ${entry.value.length} ${l10n.providerEvidenceCapabilities}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: TextButton.icon(
-                            onPressed: () => _openFile(entry.key),
-                            icon: const Icon(Icons.open_in_new, size: 18),
-                            label: Text(l10n.providerEvidenceOpenFile),
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
-                        ),
-                        for (final item in entry.value) ...[
-                          const Divider(height: 16),
-                          _CapabilityReviewRow(
-                            item: item,
-                            busy: _busy.contains(item['id'].toString()),
-                            onApprove: () => _review(item, true),
-                            onReject: () => _review(item, false),
-                          ),
-                        ],
-                        if (entry.value.first['company'] is Map)
-                          Padding(
-                            padding: const EdgeInsetsDirectional.only(
-                                start: 8, top: 4),
-                            child: ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              title: Text(l10n.providerEvidenceCompanyDetails),
-                              children: [
-                                _CompanyProfileDetails(
-                                  profile: (entry.value.first['company'] as Map)
-                                      .cast<String, dynamic>(),
-                                ),
-                              ],
+                          Text(
+                              '${entry.value.first['provider_name']} · ${entry.value.first['category_name']}',
+                              style: Theme.of(context).textTheme.bodySmall),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: TextButton.icon(
+                              onPressed: () => _openFile(entry.key),
+                              icon: const Icon(Icons.open_in_new, size: 18),
+                              label: Text(l10n.providerEvidenceOpenFile),
                             ),
                           ),
-                      ],
+                          if (entry.value.first['company'] is Map)
+                            _CompanyProfileDetails(
+                              profile: (entry.value.first['company'] as Map)
+                                  .cast<String, dynamic>(),
+                            ),
+                          const Divider(height: 16),
+                          _CapabilityReviewRow(
+                            item: entry.value.first,
+                            busy: _busy
+                                .contains(entry.value.first['id'].toString()),
+                            onApprove: () =>
+                                _reviewCompany(entry.value.first, true),
+                            onReject: () =>
+                                _reviewCompany(entry.value.first, false),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(entry.value.first['requirement_key'].toString(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700)),
+                          Text(
+                            entry.value.first['provider_type'] == 'company'
+                                ? l10n.providerTypeCompany
+                                : l10n.providerTypeIndividual,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                          Text(
+                            '${entry.value.first['provider_name']} · ${entry.value.length} ${l10n.providerEvidenceCapabilities}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: TextButton.icon(
+                              onPressed: () => _openFile(entry.key),
+                              icon: const Icon(Icons.open_in_new, size: 18),
+                              label: Text(l10n.providerEvidenceOpenFile),
+                            ),
+                          ),
+                          for (final item in entry.value) ...[
+                            const Divider(height: 16),
+                            _CapabilityReviewRow(
+                              item: item,
+                              busy: _busy.contains(item['id'].toString()),
+                              onApprove: () => _review(item, true),
+                              onReject: () => _review(item, false),
+                            ),
+                          ],
+                          if (entry.value.first['company'] is Map)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                  start: 8, top: 4),
+                              child: ExpansionTile(
+                                tilePadding: EdgeInsets.zero,
+                                title:
+                                    Text(l10n.providerEvidenceCompanyDetails),
+                                children: [
+                                  _CompanyProfileDetails(
+                                    profile:
+                                        (entry.value.first['company'] as Map)
+                                            .cast<String, dynamic>(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
             ],
           ),
         );

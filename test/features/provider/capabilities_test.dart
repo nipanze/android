@@ -168,14 +168,8 @@ void main() {
     when(() => mockRepo.workProfilesEnabled()).thenAnswer((_) async => true);
     when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
         .thenAnswer((_) async => true);
-    when(() => mockRepo.getCompanyVerificationRequirements(
-          categorySlug: any(named: 'categorySlug'),
-          serviceSlugs: any(named: 'serviceSlugs'),
-        )).thenThrow(StateError('Verification requirement lookup failed'));
-    when(() => mockRepo.getCompanyEvidence(
-          categorySlug: any(named: 'categorySlug'),
-          serviceSlugs: any(named: 'serviceSlugs'),
-        )).thenAnswer((_) async => []);
+    when(() => mockRepo.getCompanyVerificationSubmissions(any()))
+        .thenAnswer((_) async => []);
     when(() => mockRepo.getCompanyProfile(any())).thenAnswer((_) async => null);
 
     await tester.pumpWidget(MaterialApp(
@@ -217,7 +211,7 @@ void main() {
   });
 
   group('ProviderCapability Entity', () {
-    test('parses fromMap correctly for self-declared', () {
+    test('shows an open unverified capability as active', () {
       final map = {
         'id': 'cap-1',
         'user_id': 'u-1',
@@ -234,6 +228,7 @@ void main() {
       expect(cap.userId, 'u-1');
       expect(cap.capabilitySlug, 'excavator_hire');
       expect(cap.verificationLevel, ProviderVerificationLevel.selfDeclared);
+      expect(cap.status, ProviderCapabilityStatus.active);
       expect(cap.isVerified, false);
       expect(cap.capabilityName, 'Excavator Hire');
       expect(cap.categoryName, 'Machinery & Equipment');
@@ -301,11 +296,43 @@ void main() {
         ],
       });
 
-      expect(cap.status, ProviderCapabilityStatus.selfDeclared);
+      expect(cap.status, ProviderCapabilityStatus.active);
       expect(cap.isVerified, isFalse);
       expect(cap.roleQualificationClaims, hasLength(2));
       expect(cap.roleQualificationClaims.first['status'], 'verified');
       expect(cap.roleQualificationClaims.last['status'], 'pending_review');
+    });
+
+    test('required proof capability remains inactive until approved', () {
+      final cap = ProviderCapability.fromMap({
+        'id': 'cap-required',
+        'user_id': 'u-1',
+        'capability_slug': 'architecture_services',
+        'verification_level': 'self_declared',
+        'verification_policy': 'required_proof',
+        'is_active': false,
+        'capability_status': 'self_declared',
+        'created_at': '2026-09-01T12:00:00Z',
+      });
+      expect(cap.verificationPolicy, ProviderVerificationPolicy.requiredProof);
+      expect(cap.isActive, isFalse);
+      expect(cap.status, ProviderCapabilityStatus.inactive);
+    });
+
+    test('pending optional proof remains active and has no verified badge', () {
+      final cap = ProviderCapability.fromMap({
+        'id': 'cap-optional',
+        'user_id': 'u-1',
+        'capability_slug': 'cybersecurity_services',
+        'verification_level': 'self_declared',
+        'verification_policy': 'optional_proof',
+        'is_active': true,
+        'capability_status': 'pending_review',
+        'created_at': '2026-09-01T12:00:00Z',
+      });
+      expect(cap.isActive, isTrue);
+      expect(cap.status, ProviderCapabilityStatus.pendingReview);
+      expect(cap.isVerified, isFalse);
     });
   });
 
@@ -730,7 +757,7 @@ void main() {
       expect(find.text('Provider Verified'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip renders self-declared state',
+    testWidgets('ProviderVerificationChip renders active state',
         (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
@@ -739,11 +766,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
-      expect(find.text('Self-declared'), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline_rounded), findsOneWidget);
+      expect(find.text('Active'), findsOneWidget);
     });
 
-    testWidgets('ProviderVerificationChip keeps capability self-declared',
+    testWidgets('ProviderVerificationChip hides self-declared label',
         (tester) async {
       await tester.pumpWidget(createLocalizedWidget(
         const ProviderVerificationChip(
@@ -752,8 +779,9 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
-      expect(find.text('Self-declared'), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline_rounded), findsOneWidget);
+      expect(find.text('Active'), findsOneWidget);
+      expect(find.text('Self-declared'), findsNothing);
     });
 
     testWidgets('CapabilityBadge renders capability details and chip',
@@ -848,7 +876,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('Self-declared'), findsOneWidget);
+      expect(find.text('Self-declared'), findsNothing);
       expect(find.textContaining('Portfolio or GitHub link'), findsOneWidget);
       expect(find.textContaining('Nipanze verified'), findsOneWidget);
       expect(find.textContaining('Nipanze review pending'), findsOneWidget);

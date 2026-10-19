@@ -93,6 +93,79 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
+      String categorySlug) async {
+    try {
+      final rows = await _client
+          .from(TableNames.providerCompanyVerificationSubmissions)
+          .select(
+              'document_type, status, reject_reason, reviewed_at, created_at')
+          .eq('category_slug', categorySlug);
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<String> uploadCompanyVerificationDocument({
+    required String categorySlug,
+    required String documentType,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not authenticated');
+    if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+      throw const FormatException(
+          'Evidence files must be between 1 byte and 5 MB.');
+    }
+    const allowed = {'image/jpeg', 'image/png', 'application/pdf'};
+    if (!allowed.contains(mimeType.toLowerCase())) {
+      throw const FormatException('Choose a JPG, PNG, or PDF file.');
+    }
+    if (!const {'business_registration', 'business_licence'}
+        .contains(documentType)) {
+      throw const FormatException(
+          'Company verification document type is invalid.');
+    }
+    final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final path = 'evidence/$uid/$categorySlug/company/$documentType/'
+        '${DateTime.now().microsecondsSinceEpoch}_$safeName';
+    try {
+      await _client.storage.from('provider-evidence').uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType, upsert: false),
+          );
+      return path;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> submitCompanyVerificationDocument({
+    required String categorySlug,
+    required String documentType,
+    required String filePath,
+  }) async {
+    try {
+      await _client.rpc(RpcNames.submitProviderCompanyVerification, params: {
+        'p_category_slug': categorySlug,
+        'p_document_type': documentType,
+        'p_file_path': filePath,
+      });
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getCompanyVerificationRequirements({
     required String categorySlug,
     required List<String> serviceSlugs,
@@ -298,7 +371,7 @@ class ProviderRepository implements IProviderRepository {
       if (await capabilityProfilesEnabled()) {
         try {
           final data = await _client
-              .from(ViewNames.myCapabilityStatus)
+              .from(ViewNames.myCapabilityPolicyStatus)
               .select()
               .eq('user_id', uid)
               .order('created_at');
@@ -314,16 +387,30 @@ class ProviderRepository implements IProviderRepository {
         }
       }
 
-      final data = await _client
-          .from(TableNames.providerCapabilities)
-          .select(
-            'id, user_id, capability_slug, verification_level, evidence_url, '
-            'metadata, verified_by, verified_at, created_at, '
-            'need_capabilities!capability_slug(name, category_slug, '
-            'need_categories!category_slug(name, icon))',
-          )
-          .eq('user_id', uid)
-          .order('created_at');
+      dynamic data;
+      try {
+        data = await _client
+            .from(TableNames.providerCapabilities)
+            .select(
+              'id, user_id, capability_slug, verification_level, is_active, evidence_url, '
+              'metadata, verified_by, verified_at, created_at, '
+              'need_capabilities!capability_slug(name, category_slug, verification_policy, '
+              'need_categories!category_slug(name, icon))',
+            )
+            .eq('user_id', uid)
+            .order('created_at');
+      } catch (_) {
+        data = await _client
+            .from(TableNames.providerCapabilities)
+            .select(
+              'id, user_id, capability_slug, verification_level, evidence_url, '
+              'metadata, verified_by, verified_at, created_at, '
+              'need_capabilities!capability_slug(name, category_slug, '
+              'need_categories!category_slug(name, icon))',
+            )
+            .eq('user_id', uid)
+            .order('created_at');
+      }
 
       final capabilities = (data as List).map((e) {
         final nc = e['need_capabilities'] as Map<String, dynamic>?;
@@ -333,6 +420,7 @@ class ProviderRepository implements IProviderRepository {
           ...e,
           'capability_name': nc?['name'],
           'category_slug': nc?['category_slug'],
+          'verification_policy': nc?['verification_policy'],
           'category_name': cat?['name'],
           'category_icon': cat?['icon'],
         });

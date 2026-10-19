@@ -73,24 +73,30 @@ class CapabilityBadge extends StatelessWidget {
     // Compute one-line status note
     String statusNote;
     if (capability.status == ProviderCapabilityStatus.providerVerified) {
-      statusNote = 'Verified by Nipanze';
+      statusNote = '';
     } else if (capability.status == ProviderCapabilityStatus.pendingReview) {
-      statusNote = 'Documents submitted · Under review';
+      statusNote = l10n.providerCapabilityPendingReview;
     } else if (capability.status == ProviderCapabilityStatus.rejected) {
-      statusNote = capability.latestRejectReason ??
-          'Evidence rejected · Tap to resubmit';
+      statusNote =
+          capability.latestRejectReason ?? l10n.providerCapabilityRejected;
     } else if (capability.status == ProviderCapabilityStatus.expired) {
-      statusNote = 'Verification expired · Resubmit proof';
+      statusNote = l10n.expired;
     } else if (isJob &&
         providerType == ProviderCategoryType.company &&
         capability.qualificationIds.isEmpty &&
         capability.kindIds.isEmpty) {
       statusNote = l10n.providerTypeJobNeedsDetails;
+    } else if (capability.verificationPolicy ==
+        ProviderVerificationPolicy.requiredProof) {
+      statusNote = l10n.providerPolicyProofRequired;
+    } else if (capability.verificationPolicy ==
+        ProviderVerificationPolicy.optionalProof) {
+      statusNote = l10n.providerPolicyProofLater;
     } else if (isJob && capability.qualificationIds.isNotEmpty) {
       statusNote =
           '${capability.qualificationIds.length} qualifications declared';
     } else {
-      statusNote = 'Self-declared · Add proof to verify';
+      statusNote = l10n.providerPolicyNoProof;
     }
 
     return Container(
@@ -226,14 +232,15 @@ class CapabilityBadge extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        statusNote,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: text2,
-                          fontStyle: FontStyle.italic,
+                      if (statusNote.isNotEmpty)
+                        Text(
+                          statusNote,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: text2,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
-                      ),
                       if (capability.capabilitySlug ==
                           'i_have_an_audience') ...[
                         const SizedBox(height: 8),
@@ -385,7 +392,7 @@ class _CapabilityProfileSummary extends StatelessWidget {
         'verified' => 'Nipanze verified',
         'rejected' => 'Evidence rejected',
         'expired' => 'Verification expired',
-        _ => 'Self-declared',
+        _ => AppLocalizations.of(context)!.providerCapabilityActive,
       };
       return '$name · $status';
     }).toList();

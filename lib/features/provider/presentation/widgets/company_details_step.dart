@@ -14,12 +14,9 @@ class CompanyDetailsStep extends StatefulWidget {
     required this.serviceCount,
     required this.roleCount,
     required this.initialProfile,
-    required this.requirements,
-    required this.existingEvidence,
-    required this.initialEvidenceDraftPaths,
+    this.verificationSubmissions = const [],
     required this.providerRepository,
     required this.onDraftChanged,
-    required this.onEvidenceDraftChanged,
     required this.onSave,
   });
 
@@ -27,16 +24,10 @@ class CompanyDetailsStep extends StatefulWidget {
   final int serviceCount;
   final int roleCount;
   final ProviderCompanyProfile? initialProfile;
-  final List<Map<String, dynamic>> requirements;
-  final List<Map<String, dynamic>> existingEvidence;
-  final Map<String, String> initialEvidenceDraftPaths;
+  final List<Map<String, dynamic>> verificationSubmissions;
   final IProviderRepository providerRepository;
   final ValueChanged<ProviderCompanyProfile> onDraftChanged;
-  final ValueChanged<Map<String, String>> onEvidenceDraftChanged;
-  final Future<void> Function({
-    required Map<String, dynamic> profile,
-    required List<Map<String, String>> evidence,
-  }) onSave;
+  final Future<void> Function({required Map<String, dynamic> profile}) onSave;
 
   @override
   State<CompanyDetailsStep> createState() => _CompanyDetailsStepState();
@@ -48,7 +39,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   final _areasController = TextEditingController();
   String? _teamSize;
   String? _yearsInBusiness;
-  final Map<String, String> _uploadedPaths = {};
+  late List<Map<String, dynamic>> _verificationSubmissions;
+  String? _uploadingDocumentType;
   bool _saving = false;
   String? _saveError;
 
@@ -64,7 +56,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
     _teamSize = profile?.teamSize;
     _yearsInBusiness = profile?.yearsInBusiness;
-    _uploadedPaths.addAll(widget.initialEvidenceDraftPaths);
+    _verificationSubmissions = List.of(widget.verificationSubmissions);
   }
 
   @override
@@ -98,28 +90,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     super.dispose();
   }
 
-  List<_EvidenceRequirement> get _evidenceRequirements {
-    final byKey = <String, _EvidenceRequirement>{};
-    for (final row in widget.requirements) {
-      final raw = row['required_evidence'] as List? ?? const [];
-      final extra = row['evidence_requirements'] as List? ?? const [];
-      for (final item in [...raw, ...extra]) {
-        final key = item.toString().trim();
-        if (key.isEmpty) continue;
-        byKey.putIfAbsent(key, () => _EvidenceRequirement(key));
-      }
-    }
-    return byKey.values.toList()
-      ..sort((a, b) => _label(a.key).compareTo(_label(b.key)));
-  }
-
-  static String _label(String key) => key
-      .replaceAll(RegExp(r'[_-]+'), ' ')
-      .split(' ')
-      .where((part) => part.isNotEmpty)
-      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-      .join(' ');
-
   static String _errorText(Object error) => switch (error) {
         StateError(:final message) => message.toString(),
         FormatException(:final message) => message,
@@ -142,51 +112,17 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   void _notifyDraftChanged() => widget.onDraftChanged(_currentProfile());
 
-  List<Map<String, dynamic>> _evidenceFor(String key) {
-    final result = <Map<String, dynamic>>[];
-    for (final capability in widget.existingEvidence) {
-      for (final raw
-          in capability['provider_capability_evidence'] as List? ?? const []) {
-        if (raw is Map && raw['requirement_key'] == key) {
-          result.add(raw.cast<String, dynamic>());
-        }
-      }
-    }
-    result.sort((a, b) => (b['created_at']?.toString() ?? '')
-        .compareTo(a['created_at']?.toString() ?? ''));
-    return result;
-  }
-
-  String _statusLabel(BuildContext context, String key) {
+  Future<void> _pickCompanyDocument(String documentType) async {
     final l10n = AppLocalizations.of(context)!;
-    if (_uploadedPaths.containsKey(key)) return l10n.companyEvidenceUploaded;
-    final rows = _evidenceFor(key);
-    if (rows.isEmpty) return l10n.companyEvidenceNotAdded;
-    final statuses = rows.map((row) => row['status']?.toString()).toSet();
-    if (statuses.contains('pending')) return l10n.companyEvidenceUnderReview;
-    if (statuses.contains('rejected')) return l10n.companyEvidenceRejected;
-    if (statuses.contains('expired')) return l10n.companyEvidenceExpired;
-    if (statuses.contains('approved')) return l10n.companyEvidenceApproved;
-    return l10n.companyEvidenceNotAdded;
-  }
-
-  Future<void> _pickEvidence(String key) async {
-    final l10n = AppLocalizations.of(context)!;
+    setState(() => _uploadingDocumentType = documentType);
     try {
-      const evidenceTypes = XTypeGroup(
-        label: 'Evidence',
+      const group = XTypeGroup(
+        label: 'Company verification',
         extensions: ['jpg', 'jpeg', 'png', 'pdf'],
       );
-      final file = await openFile(acceptedTypeGroups: [evidenceTypes]);
+      final file = await openFile(acceptedTypeGroups: [group]);
       if (file == null) return;
-      final fileSize = await file.length();
-      if (fileSize > 5 * 1024 * 1024) {
-        throw StateError(l10n.companyEvidenceTooLarge);
-      }
       final bytes = await file.readAsBytes();
-      if (bytes.lengthInBytes > 5 * 1024 * 1024) {
-        throw StateError(l10n.companyEvidenceTooLarge);
-      }
       final extension = file.name.split('.').last.toLowerCase();
       final mime = switch (extension) {
         'jpg' || 'jpeg' => 'image/jpeg',
@@ -195,25 +131,50 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         _ => '',
       };
       if (mime.isEmpty) throw StateError(l10n.companyEvidenceUnsupported);
-      final path = await widget.providerRepository.uploadCompanyEvidence(
+      final path =
+          await widget.providerRepository.uploadCompanyVerificationDocument(
         categorySlug: widget.categorySlug,
-        requirementKey: key,
+        documentType: documentType,
         fileName: file.name,
         mimeType: mime,
         bytes: bytes,
       );
+      await widget.providerRepository.submitCompanyVerificationDocument(
+        categorySlug: widget.categorySlug,
+        documentType: documentType,
+        filePath: path,
+      );
+      final submissions = await widget.providerRepository
+          .getCompanyVerificationSubmissions(widget.categorySlug);
       if (!mounted) return;
-      setState(() {
-        _uploadedPaths[key] = path;
-        _saveError = null;
-      });
-      widget.onEvidenceDraftChanged(Map.of(_uploadedPaths));
+      setState(() => _verificationSubmissions = submissions);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.companyVerificationUploaded)),
+      );
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_errorText(error))),
       );
+    } finally {
+      if (mounted) setState(() => _uploadingDocumentType = null);
     }
+  }
+
+  Map<String, dynamic>? _submission(String documentType) {
+    return _verificationSubmissions
+        .where((row) => row['document_type'] == documentType)
+        .firstOrNull;
+  }
+
+  String _companyStatusLabel(AppLocalizations l10n) {
+    final statuses = _verificationSubmissions
+        .map((row) => row['status']?.toString())
+        .toSet();
+    if (statuses.contains('pending')) return l10n.companyVerificationPending;
+    if (statuses.contains('rejected')) return l10n.companyVerificationRejected;
+    if (statuses.contains('approved')) return l10n.companyVerificationVerified;
+    return l10n.companyVerificationNotSubmitted;
   }
 
   Future<void> _save() async {
@@ -226,10 +187,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     try {
       await widget.onSave(
         profile: profile.toJson(),
-        evidence: _uploadedPaths.entries
-            .map((entry) =>
-                {'requirement_key': entry.key, 'file_path': entry.value})
-            .toList(),
       );
     } catch (error) {
       if (!mounted) return;
@@ -340,34 +297,44 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 20),
-              Text(l10n.companyProofTitle,
+              Text(l10n.companyVerificationTitle,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text(l10n.companyProofIntro,
+              Text(l10n.companyVerificationIntro,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-              if (_evidenceRequirements.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(l10n.companyNoEvidenceRequirements,
-                      style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-                )
-              else
-                for (final requirement in _evidenceRequirements)
-                  _EvidenceRow(
-                    label: _label(requirement.key),
-                    status: _statusLabel(context, requirement.key),
-                    reason: _evidenceFor(requirement.key)
-                        .where((row) => row['status'] == 'rejected')
-                        .map((row) => row['reject_reason']?.toString())
-                        .whereType<String>()
-                        .firstOrNull,
-                    hasUpload: _uploadedPaths.containsKey(requirement.key),
-                    hasExisting: _evidenceFor(requirement.key).isNotEmpty,
-                    onTap: () => _pickEvidence(requirement.key),
-                  ),
               const SizedBox(height: 8),
-              Text(l10n.companyProofNote,
+              Text(_companyStatusLabel(l10n),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w700)),
+              for (final item in [
+                ('business_registration', l10n.companyVerificationRegistration),
+                ('business_licence', l10n.companyVerificationLicence),
+              ]) ...[
+                const SizedBox(height: 8),
+                _EvidenceRow(
+                  label: item.$2,
+                  status: _submission(item.$1)?['status'] == 'approved'
+                      ? l10n.companyVerificationVerified
+                      : _submission(item.$1)?['status'] == 'rejected'
+                          ? l10n.companyVerificationRejected
+                          : _submission(item.$1)?['status'] == 'pending'
+                              ? l10n.companyVerificationPending
+                              : l10n.companyVerificationNotSubmitted,
+                  reason: _submission(item.$1)?['reject_reason']?.toString(),
+                  hasUpload: false,
+                  hasExisting: _submission(item.$1) != null,
+                  onTap: _uploadingDocumentType == null
+                      ? () => _pickCompanyDocument(item.$1)
+                      : null,
+                ),
+              ],
+              const SizedBox(height: 8),
+              Text(l10n.companyVerificationSeparateNote,
+                  style: theme.textTheme.bodySmall?.copyWith(color: text2)),
+              const SizedBox(height: 4),
+              Text(l10n.companyVerificationFileHint,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
               if (_saveError != null) ...[
                 const SizedBox(height: 12),
@@ -429,11 +396,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
       );
 }
 
-class _EvidenceRequirement {
-  _EvidenceRequirement(this.key);
-  final String key;
-}
-
 class _ChoiceChips extends StatelessWidget {
   const _ChoiceChips({
     required this.label,
@@ -491,7 +453,7 @@ class _EvidenceRow extends StatelessWidget {
   final String? reason;
   final bool hasUpload;
   final bool hasExisting;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -529,7 +491,7 @@ class _EvidenceRow extends StatelessWidget {
             onPressed: onTap,
             child: Text(hasUpload || hasExisting
                 ? l10n.companyEvidenceReplace
-                : l10n.companyEvidenceAdd),
+                : l10n.companyVerificationUpload),
           ),
         ]),
       ),

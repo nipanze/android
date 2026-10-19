@@ -62,7 +62,7 @@ RPC, following the repo pattern (`private.*_internal` + `SECURITY INVOKER` wrapp
 - `public.get_my_provider_category_types()` returns `(category_slug, provider_type)` for the caller. Used by B2 to prefill and by G.
 - Rate limit: reuse the per-user capability rate limiter.
 - Rollback note: `drop function ...; drop table public.provider_category_profiles;` loses only this preference.
-- Also fold into `sql/patch.sql` and `sql/merged.sql` as earlier stages did, unless AGENTS.md says otherwise.
+- Ship this as its own standalone, descriptively named SQL patch. Do NOT modify the monolithic `sql/patch.sql` (or `sql/merged.sql`) for schema, function or policy changes.
 - Cascade: if a user is deleted the rows go. Removing the last capability in a category keeps the saved type (it is a preference).
 
 ## 5. Flutter
@@ -126,7 +126,7 @@ The design canvas now shows the two paths as separate rows. Build them as two fl
 **Company path (services + roles + company details):** A -> FAB -> B (category) -> B2 (choose Company / Organization) -> D (What we offer, then What roles do you do?, blue STEP 1 OF 2) -> company details (blue STEP 2 OF 2) -> save -> A (summary shows Service cards labelled "<Category> · Company", plus Job cards labelled "Personal profile").
 
 Rules:
-1. Company roles do NOT go through E and F. Ticked roles are saved as `capability_type='work'` rows with empty metadata and status Self-declared. The user adds machines (kinds) and qualifications later from the Job card (it opens the same E and F screens). The Job card note says "Add machines and qualifications to get matched".
+1. Company roles do NOT go through E and F. Ticked roles are saved as `capability_type='work'` rows with empty metadata. Their status follows the capability's verification policy (section 11); a "Self-declared" label is never shown. The user adds machines (kinds) and qualifications later from the Job card (it opens the same E and F screens). The Job card note says "Add machines and qualifications to get matched".
 2. D's footer is "Next: company details" (blue) whenever at least one service or role is ticked; disabled otherwise. D saves nothing by itself. Ticks are kept as a per-step draft so Back from the company details step returns to D unchanged.
 3. The company details step has these fields, all optional: company or business name, registration number, team size (1–5, 6–20, 21–50, 50+), years in business (Under 1, 1–2, 3–5, 6–10, 10+), where you work (district or city only), and a "Proof for the verified badge" checklist (for Machinery: Fleet photos, Ownership or logbook, Business registration) with Add proof actions. Helper text: uploads alone do not verify; JPG, PNG or PDF up to 5 MB; you can save now and add proof later.
 4. The footer button "Save company profile" performs ONE atomic save of services, roles and company details (see `COMPANY_PATH_BUILD_PROMPT.md`).
@@ -134,3 +134,16 @@ Rules:
 6. The individual summary screen and the company summary screen are the same Provider Services page (screen A); only the data differs. Do not fork the page.
 
 Files: see the canvas "Provider Type Screen" (artboards: B2 chooser, C, E, F, individual A; B2 Company, D, company details, company A).
+
+## 11. REVISION 3: verification policy (supersedes anything above that says "Self-declared" or per-service evidence fan-out)
+Source of truth: `VERIFICATION_SPEC.md` (the simple provider and capability verification spec). It wins over earlier sections on any conflict. Effects on this flow:
+1. **Three policies, configured per capability** (never per whole category): `open` (active immediately, no proof, no label), `optional_proof` (active immediately, proof can be added later, badge only after admin approval), `required_proof` (inactive until proof is approved).
+2. **No "Self-declared" label anywhere.** Remove it from screen A cards, card details and the roles flow. A verified badge appears only after an admin approves that capability's evidence.
+3. **Card states** are Active, Inactive, Pending Review, Rejected. Open: Active, "No proof required". Optional proof: Active, "Proof can be added later", upload action. Required proof: Inactive, "Proof required before it goes live", "Upload documents"; Pending Review stays inactive; Rejected shows the reason and allows resubmission. Inactive capabilities cannot receive offers or be advertised, enforced in the backend (offer/matching functions and views), not only in the UI.
+4. **Individuals:** evidence is per capability. This includes work roles when a role's policy requires proof; the qualification uploads in screen F feed the same evidence rows.
+5. **Companies:** company verification is separate from capability verification. A company can submit a business registration certificate and/or licences or authorization documents, with statuses Not Submitted, Pending Review, Verified, Rejected (with reason). A company certificate never activates or verifies a regulated service. Services under `required_proof` still need their own approved evidence. This replaces the "evidence fan-out per ticked service" idea in `COMPANY_PATH_BUILD_PROMPT.md`.
+6. **Screen D:** show a small "Needs proof" tag only on `required_proof` services, so the user knows they start inactive. No tag on open or optional services. The company details step shows the Company verification block (status pill, two optional uploads, the note that a registration certificate does not authorize regulated services).
+7. **Storage and admin:** private storage, admin-only access, signed URLs. Basic admin queue for company submissions and individual capability submissions: open documents, approve or reject with a reason, record reviewer and time. No paid APIs or automated document checks.
+8. **SQL:** inspect the existing `provider_capabilities` fields (`verification_level`, `evidence_url`, `verified_by`, `verified_at`) first and extend rather than duplicate. Standalone patch only; do not modify the monolithic `patch.sql`.
+9. **Launch scope:** non-custodial; Loans and Forex unchanged; keep it simple and cheap.
+10. **Tests to add:** each of the three policies; approval, rejection and resubmission; a provider cannot self-verify or self-activate a required-proof capability; unauthorized users and anon cannot read documents; a required-proof capability receives no offers before approval; a company certificate does not activate a regulated service.

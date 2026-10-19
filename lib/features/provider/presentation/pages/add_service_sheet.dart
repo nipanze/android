@@ -1,7 +1,5 @@
 // lib/features/provider/presentation/pages/add_service_sheet.dart
 
-import 'dart:typed_data';
-
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -218,9 +216,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _savingProviderType = false;
   String? _providerTypeError;
   ProviderCompanyProfile? _companyProfile;
-  List<Map<String, dynamic>> _companyRequirements = const [];
-  List<Map<String, dynamic>> _companyEvidence = const [];
-  Map<String, String> _companyEvidenceDraftPaths = {};
+  List<Map<String, dynamic>> _companyVerificationSubmissions = const [];
   bool _loadingCompanyDetails = false;
   bool _savingCompanyDetails = false;
   bool _allowCompanyExit = false;
@@ -393,9 +389,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _selected.clear();
       _selectedRoles.clear();
       _companyProfile = null;
-      _companyRequirements = const [];
-      _companyEvidence = const [];
-      _companyEvidenceDraftPaths = {};
+      _companyVerificationSubmissions = const [];
       _categoryWorkProfilesEnabled = false;
       _selectedCategory = cat;
       _showAudience = false;
@@ -551,16 +545,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _step = 5;
     });
     try {
-      final services = _selected.toList();
-      final requirements =
-          await widget.providerRepository.getCompanyVerificationRequirements(
-        categorySlug: categorySlug,
-        serviceSlugs: services,
-      );
-      final evidence = await widget.providerRepository.getCompanyEvidence(
-        categorySlug: categorySlug,
-        serviceSlugs: services,
-      );
+      final submissions = await widget.providerRepository
+          .getCompanyVerificationSubmissions(categorySlug);
       ProviderCompanyProfile? profile =
           _companyProfile?.categorySlug == categorySlug
               ? _companyProfile
@@ -587,8 +573,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       }
       if (!mounted) return;
       setState(() {
-        _companyRequirements = requirements;
-        _companyEvidence = evidence;
+        _companyVerificationSubmissions = submissions;
         _companyProfile = profile;
         _loadingCompanyDetails = false;
       });
@@ -603,7 +588,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   Future<void> _saveCompanyDetails({
     required Map<String, dynamic> profile,
-    required List<Map<String, String>> evidence,
   }) async {
     final categorySlug = _selectedCategory?.slug;
     if (categorySlug == null || _savingCompanyDetails) return;
@@ -614,7 +598,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         serviceSlugs: _selected.toList(),
         roleCapabilitySlugs: const [],
         profile: profile,
-        evidence: evidence,
+        evidence: const [],
       );
       if (mounted) {
         setState(() => _allowCompanyExit = true);
@@ -834,18 +818,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       serviceCount: _selected.length,
                                       roleCount: 0,
                                       initialProfile: _companyProfile,
-                                      requirements: _companyRequirements,
-                                      existingEvidence: _companyEvidence,
-                                      initialEvidenceDraftPaths:
-                                          _companyEvidenceDraftPaths,
+                                      verificationSubmissions:
+                                          _companyVerificationSubmissions,
                                       providerRepository:
                                           widget.providerRepository,
                                       onDraftChanged: (profile) => setState(
                                           () => _companyProfile = profile),
-                                      onEvidenceDraftChanged: (paths) =>
-                                          setState(() =>
-                                              _companyEvidenceDraftPaths =
-                                                  paths),
                                       onSave: _saveCompanyDetails,
                                     )
                                   : _step == 2
@@ -1796,6 +1774,19 @@ class _CapabilityRow extends StatelessWidget {
                             color: alreadyOwned ? text2 : null,
                           ),
                         ),
+                        if (companyStyle &&
+                            cap.verificationPolicy == 'required_proof') ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            AppLocalizations.of(context)!
+                                .providerPolicyNeedsProofTag,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.tertiary,
+                            ),
+                          ),
+                        ],
                         if (subtitle != null && subtitle.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(

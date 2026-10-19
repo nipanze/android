@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -698,6 +699,15 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
           ),
         ),
 
+        if (widget.categoryTypes.values.contains(ProviderCategoryType.company))
+          SliverToBoxAdapter(
+            child: _CompanyVerificationSummary(
+              categoryTypes: widget.categoryTypes,
+              capabilities: caps,
+              l10n: widget.l10n,
+            ),
+          ),
+
         // ── Capability cards ──
         if (_filtered.isEmpty)
           SliverToBoxAdapter(
@@ -762,6 +772,103 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
         // Bottom padding for FAB
         const SliverToBoxAdapter(child: SizedBox(height: 96)),
       ],
+    );
+  }
+}
+
+class _CompanyVerificationSummary extends StatelessWidget {
+  const _CompanyVerificationSummary({
+    required this.categoryTypes,
+    required this.capabilities,
+    required this.l10n,
+  });
+
+  final Map<String, ProviderCategoryType> categoryTypes;
+  final List<ProviderCapability> capabilities;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = categoryTypes.entries
+        .where((entry) => entry.value == ProviderCategoryType.company)
+        .map((entry) => entry.key)
+        .toList();
+    final userId = supabase.Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null || categories.isEmpty) return const SizedBox.shrink();
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: supabase.Supabase.instance.client
+          .from(TableNames.providerCompanyVerificationSubmissions)
+          .select('category_slug, document_type, status, reject_reason')
+          .eq('user_id', userId)
+          .inFilter('category_slug', categories),
+      builder: (context, snapshot) {
+        final rows = (snapshot.data ?? const <Map<String, dynamic>>[]);
+        final theme = Theme.of(context);
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.companyVerificationTitle,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  for (final slug in categories) ...[
+                    const SizedBox(height: 6),
+                    Builder(builder: (context) {
+                      final docs = rows
+                          .where((row) => row['category_slug'] == slug)
+                          .toList();
+                      final statuses = docs.map((row) => row['status']).toSet();
+                      final status = statuses.contains('pending')
+                          ? l10n.companyVerificationPending
+                          : statuses.contains('rejected')
+                              ? l10n.companyVerificationRejected
+                              : statuses.contains('approved')
+                                  ? l10n.companyVerificationVerified
+                                  : l10n.companyVerificationNotSubmitted;
+                      final categoryName = capabilities
+                              .where((cap) => cap.categorySlug == slug)
+                              .map((cap) => cap.categoryName)
+                              .firstOrNull ??
+                          slug.replaceAll('_', ' ');
+                      final reason = docs
+                          .where((row) => row['status'] == 'rejected')
+                          .map((row) => row['reject_reason']?.toString())
+                          .whereType<String>()
+                          .firstOrNull;
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.business_outlined, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(categoryName,
+                                    style: theme.textTheme.bodyMedium),
+                                Text(
+                                    reason == null
+                                        ? status
+                                        : '$status · $reason',
+                                    style: theme.textTheme.bodySmall),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

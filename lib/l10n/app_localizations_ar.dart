@@ -3597,6 +3597,69 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerEvidenceReviewSaved => 'تم حفظ مراجعة الإثبات.';
 
   @override
+  String get providerCapabilityActive => 'نشط';
+
+  @override
+  String get providerCapabilityInactive => 'غير نشط';
+
+  @override
+  String get providerCapabilityPendingReview => 'قيد المراجعة';
+
+  @override
+  String get providerCapabilityRejected => 'مرفوض';
+
+  @override
+  String get providerPolicyNoProof => 'لا يلزم إثبات';
+
+  @override
+  String get providerPolicyProofLater => 'يمكنك إضافة الإثبات لاحقاً';
+
+  @override
+  String get providerPolicyProofRequired => 'يلزم الإثبات قبل التفعيل';
+
+  @override
+  String get providerPolicyNeedsProofTag => 'يتطلب إثباتاً';
+
+  @override
+  String get companyVerificationTitle => 'التحقق من الشركة';
+
+  @override
+  String get companyVerificationIntro =>
+      'اختياري. أرسل مستنداً واحداً أو كليهما لمراجعة يدوية من Nipanze.';
+
+  @override
+  String get companyVerificationRegistration => 'شهادة تسجيل النشاط التجاري';
+
+  @override
+  String get companyVerificationLicence => 'التراخيص أو مستندات التفويض';
+
+  @override
+  String get companyVerificationNotSubmitted => 'لم يُرسل';
+
+  @override
+  String get companyVerificationPending => 'قيد المراجعة';
+
+  @override
+  String get companyVerificationVerified => 'تم التحقق';
+
+  @override
+  String get companyVerificationRejected => 'مرفوض';
+
+  @override
+  String get companyVerificationSeparateNote =>
+      'شهادة التسجيل لا تسمح بالخدمات المنظمة. يتم التحقق من كل خدمة على حدة.';
+
+  @override
+  String get companyVerificationFileHint =>
+      'JPG أو PNG أو PDF، بحد أقصى 5 ميغابايت لكل ملف. يمكنك الحفظ وإضافة الإثبات لاحقاً.';
+
+  @override
+  String get companyVerificationUpload => 'إرسال مستند';
+
+  @override
+  String get companyVerificationUploaded => 'تم إرسال المستند';
+
+  @override
   String get providerTypeEditCompanyDetails => 'تعديل تفاصيل الشركة';
 
   @override

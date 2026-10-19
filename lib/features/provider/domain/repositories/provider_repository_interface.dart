@@ -13,6 +13,20 @@ abstract class IProviderRepository {
   Future<Map<String, ProviderCategoryType>> getMyCategoryTypes();
   Future<void> setCategoryType(String categorySlug, ProviderCategoryType type);
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug);
+  Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
+      String categorySlug);
+  Future<String> uploadCompanyVerificationDocument({
+    required String categorySlug,
+    required String documentType,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  });
+  Future<void> submitCompanyVerificationDocument({
+    required String categorySlug,
+    required String documentType,
+    required String filePath,
+  });
   Future<List<Map<String, dynamic>>> getCompanyVerificationRequirements({
     required String categorySlug,
     required List<String> serviceSlugs,

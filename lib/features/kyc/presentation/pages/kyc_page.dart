@@ -455,25 +455,26 @@ class _ProfilePictureSection extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: hasPhoto
-                            ? AppColors.success.withValues(alpha: 0.12)
-                            : AppColors.accent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        hasPhoto ? 'Uploaded' : 'Required',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              hasPhoto ? AppColors.success : AppColors.accent,
+                    if (isVerified)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: hasPhoto
+                              ? AppColors.success.withValues(alpha: 0.12)
+                              : AppColors.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          hasPhoto ? 'Uploaded' : 'Required',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                hasPhoto ? AppColors.success : AppColors.accent,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -768,8 +769,7 @@ class _MarketplaceAccessSection extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isVerified
                       ? AppColors.success.withValues(alpha: 0.12)
@@ -832,8 +832,7 @@ class _MarketplaceAccessSection extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: isVerified
                           ? AppColors.success
-                          : theme.colorScheme.onSurface
-                              .withValues(alpha: 0.45),
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.45),
                     ),
                   ),
                 ],
@@ -966,19 +965,15 @@ class _AdditionalVerificationSectionState
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: isVerified
-                            ? AppColors.success.withValues(alpha: 0.12)
-                            : AppColors.warning.withValues(alpha: 0.12),
+                        color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        isVerified ? 'Provider Verified' : 'Self-declared',
+                        AppLocalizations.of(context)!.providerVerified,
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: isVerified
-                              ? AppColors.success
-                              : AppColors.warning,
+                          color: AppColors.success,
                         ),
                       ),
                     ),

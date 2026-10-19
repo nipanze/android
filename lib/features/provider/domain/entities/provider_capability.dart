@@ -24,6 +24,8 @@ enum ProviderVerificationLevel {
 }
 
 enum ProviderCapabilityStatus {
+  active,
+  inactive,
   selfDeclared,
   pendingReview,
   providerVerified,
@@ -31,11 +33,32 @@ enum ProviderCapabilityStatus {
   expired;
 
   static ProviderCapabilityStatus fromString(String? value) => switch (value) {
+        'active' => ProviderCapabilityStatus.active,
+        'inactive' => ProviderCapabilityStatus.inactive,
         'pending_review' => ProviderCapabilityStatus.pendingReview,
         'provider_verified' => ProviderCapabilityStatus.providerVerified,
         'rejected' => ProviderCapabilityStatus.rejected,
         'expired' => ProviderCapabilityStatus.expired,
         _ => ProviderCapabilityStatus.selfDeclared,
+      };
+}
+
+enum ProviderVerificationPolicy {
+  open,
+  optionalProof,
+  requiredProof;
+
+  static ProviderVerificationPolicy fromString(String? value) =>
+      switch (value) {
+        'optional_proof' => ProviderVerificationPolicy.optionalProof,
+        'required_proof' => ProviderVerificationPolicy.requiredProof,
+        _ => ProviderVerificationPolicy.open,
+      };
+
+  String get dbValue => switch (this) {
+        ProviderVerificationPolicy.open => 'open',
+        ProviderVerificationPolicy.optionalProof => 'optional_proof',
+        ProviderVerificationPolicy.requiredProof => 'required_proof',
       };
 }
 
@@ -64,10 +87,12 @@ class ProviderCapability {
     this.expiredEvidenceCount = 0,
     this.latestRejectReason,
     this.roleQualificationClaims = const [],
+    this.verificationPolicy = ProviderVerificationPolicy.open,
+    this.isActive = true,
   }) : status = status ??
             (verificationLevel == ProviderVerificationLevel.providerVerified
                 ? ProviderCapabilityStatus.providerVerified
-                : ProviderCapabilityStatus.selfDeclared);
+                : ProviderCapabilityStatus.active);
 
   factory ProviderCapability.fromMap(Map<String, dynamic> map) {
     final verificationLevel = ProviderVerificationLevel.fromString(
@@ -99,7 +124,7 @@ class ProviderCapability {
       categoryName: map['category_name'] as String?,
       categoryIcon: map['category_icon'] as String?,
       status: ProviderCapabilityStatus.fromString(
-        map['capability_status'] as String? ?? verificationLevel.dbValue,
+        _resolvedStatus(map, verificationLevel),
       ),
       pendingEvidenceCount:
           (map['pending_evidence_count'] as num?)?.toInt() ?? 0,
@@ -115,7 +140,30 @@ class ProviderCapability {
               .whereType<Map>()
               .map((claim) => claim.cast<String, dynamic>())
               .toList(),
+      verificationPolicy: ProviderVerificationPolicy.fromString(
+        map['verification_policy'] as String?,
+      ),
+      isActive: map['is_active'] as bool? ?? true,
     );
+  }
+
+  static String _resolvedStatus(
+    Map<String, dynamic> map,
+    ProviderVerificationLevel verificationLevel,
+  ) {
+    final status = map['capability_status'] as String?;
+    if (status != null && status != 'self_declared') return status;
+    final active = map['is_active'] as bool? ?? true;
+    final policy = ProviderVerificationPolicy.fromString(
+      map['verification_policy'] as String?,
+    );
+    if (!active && policy == ProviderVerificationPolicy.requiredProof) {
+      return 'inactive';
+    }
+    if (verificationLevel == ProviderVerificationLevel.providerVerified) {
+      return 'provider_verified';
+    }
+    return 'active';
   }
 
   final String id;
@@ -142,6 +190,8 @@ class ProviderCapability {
   final int expiredEvidenceCount;
   final String? latestRejectReason;
   final List<Map<String, dynamic>> roleQualificationClaims;
+  final ProviderVerificationPolicy verificationPolicy;
+  final bool isActive;
 
   bool get isVerified =>
       verificationLevel == ProviderVerificationLevel.providerVerified ||

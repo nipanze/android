@@ -365,8 +365,8 @@ class _VerificationChecklist extends StatelessWidget {
               title: qName,
               icon: Icons.add_circle_outline_rounded,
               iconColor: Colors.grey,
-              subtitle: 'Self-declared',
-              trailingAction: 'Add proof',
+              subtitle: AppLocalizations.of(context)!.providerPolicyProofLater,
+              trailingAction: AppLocalizations.of(context)!.companyEvidenceAdd,
             ));
           }
         }
@@ -381,7 +381,7 @@ class _VerificationChecklist extends StatelessWidget {
               : text2,
           subtitle: capability.pendingEvidenceCount > 0
               ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
-              : 'Role details are self-declared',
+              : AppLocalizations.of(context)!.providerCapabilityActive,
         ));
       }
     } else {
@@ -393,13 +393,27 @@ class _VerificationChecklist extends StatelessWidget {
               : Icons.add_circle_outline_rounded,
           iconColor: isVerified ? AppColors.success : Colors.grey,
           subtitle: isVerified
-              ? 'Provider verified by Nipanze'
+              ? AppLocalizations.of(context)!.providerVerified
               : capability.pendingEvidenceCount > 0
-                  ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
+                  ? AppLocalizations.of(context)!
+                      .providerCapabilityPendingReview
                   : capability.rejectedEvidenceCount > 0
-                      ? 'Evidence was rejected. Review the reason and resubmit.'
-                      : 'Self-declared. Verification depends on this service’s requirements.',
-          trailingAction: isVerified ? null : 'Add proof',
+                      ? AppLocalizations.of(context)!.providerCapabilityRejected
+                      : capability.verificationPolicy ==
+                              ProviderVerificationPolicy.requiredProof
+                          ? AppLocalizations.of(context)!
+                              .providerPolicyProofRequired
+                          : capability.verificationPolicy ==
+                                  ProviderVerificationPolicy.optionalProof
+                              ? AppLocalizations.of(context)!
+                                  .providerPolicyProofLater
+                              : AppLocalizations.of(context)!
+                                  .providerPolicyNoProof,
+          trailingAction: isVerified ||
+                  capability.verificationPolicy ==
+                      ProviderVerificationPolicy.open
+              ? null
+              : AppLocalizations.of(context)!.companyEvidenceAdd,
         ),
       );
     }

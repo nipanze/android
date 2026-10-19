@@ -6454,6 +6454,126 @@ abstract class AppLocalizations {
   /// **'Evidence review saved.'**
   String get providerEvidenceReviewSaved;
 
+  /// No description provided for @providerCapabilityActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get providerCapabilityActive;
+
+  /// No description provided for @providerCapabilityInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get providerCapabilityInactive;
+
+  /// No description provided for @providerCapabilityPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get providerCapabilityPendingReview;
+
+  /// No description provided for @providerCapabilityRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get providerCapabilityRejected;
+
+  /// No description provided for @providerPolicyNoProof.
+  ///
+  /// In en, this message translates to:
+  /// **'No proof required'**
+  String get providerPolicyNoProof;
+
+  /// No description provided for @providerPolicyProofLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof can be added later'**
+  String get providerPolicyProofLater;
+
+  /// No description provided for @providerPolicyProofRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof required before it goes live'**
+  String get providerPolicyProofRequired;
+
+  /// No description provided for @providerPolicyNeedsProofTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs proof'**
+  String get providerPolicyNeedsProofTag;
+
+  /// No description provided for @companyVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Company verification'**
+  String get companyVerificationTitle;
+
+  /// No description provided for @companyVerificationIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional. Upload one or both documents for manual review by Nipanze.'**
+  String get companyVerificationIntro;
+
+  /// No description provided for @companyVerificationRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Business registration certificate'**
+  String get companyVerificationRegistration;
+
+  /// No description provided for @companyVerificationLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Licences or authorization documents'**
+  String get companyVerificationLicence;
+
+  /// No description provided for @companyVerificationNotSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not submitted'**
+  String get companyVerificationNotSubmitted;
+
+  /// No description provided for @companyVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get companyVerificationPending;
+
+  /// No description provided for @companyVerificationVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get companyVerificationVerified;
+
+  /// No description provided for @companyVerificationRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get companyVerificationRejected;
+
+  /// No description provided for @companyVerificationSeparateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A registration certificate does not authorize regulated services. Those are verified separately, per service.'**
+  String get companyVerificationSeparateNote;
+
+  /// No description provided for @companyVerificationFileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'JPG, PNG or PDF, up to 5 MB each. You can save now and add proof later.'**
+  String get companyVerificationFileHint;
+
+  /// No description provided for @companyVerificationUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload document'**
+  String get companyVerificationUpload;
+
+  /// No description provided for @companyVerificationUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Document submitted'**
+  String get companyVerificationUploaded;
+
   /// No description provided for @providerTypeEditCompanyDetails.
   ///
   /// In en, this message translates to:

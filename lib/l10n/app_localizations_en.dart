@@ -3590,6 +3590,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerEvidenceReviewSaved => 'Evidence review saved.';
 
   @override
+  String get providerCapabilityActive => 'Active';
+
+  @override
+  String get providerCapabilityInactive => 'Inactive';
+
+  @override
+  String get providerCapabilityPendingReview => 'Pending review';
+
+  @override
+  String get providerCapabilityRejected => 'Rejected';
+
+  @override
+  String get providerPolicyNoProof => 'No proof required';
+
+  @override
+  String get providerPolicyProofLater => 'Proof can be added later';
+
+  @override
+  String get providerPolicyProofRequired =>
+      'Proof required before it goes live';
+
+  @override
+  String get providerPolicyNeedsProofTag => 'Needs proof';
+
+  @override
+  String get companyVerificationTitle => 'Company verification';
+
+  @override
+  String get companyVerificationIntro =>
+      'Optional. Upload one or both documents for manual review by Nipanze.';
+
+  @override
+  String get companyVerificationRegistration =>
+      'Business registration certificate';
+
+  @override
+  String get companyVerificationLicence =>
+      'Licences or authorization documents';
+
+  @override
+  String get companyVerificationNotSubmitted => 'Not submitted';
+
+  @override
+  String get companyVerificationPending => 'Pending review';
+
+  @override
+  String get companyVerificationVerified => 'Verified';
+
+  @override
+  String get companyVerificationRejected => 'Rejected';
+
+  @override
+  String get companyVerificationSeparateNote =>
+      'A registration certificate does not authorize regulated services. Those are verified separately, per service.';
+
+  @override
+  String get companyVerificationFileHint =>
+      'JPG, PNG or PDF, up to 5 MB each. You can save now and add proof later.';
+
+  @override
+  String get companyVerificationUpload => 'Upload document';
+
+  @override
+  String get companyVerificationUploaded => 'Document submitted';
+
+  @override
   String get providerTypeEditCompanyDetails => 'Edit company details';
 
   @override

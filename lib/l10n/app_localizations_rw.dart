@@ -3611,6 +3611,72 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerEvidenceReviewSaved => 'Isuzuma ry’icyemezo ryabitswe.';
 
   @override
+  String get providerCapabilityActive => 'Birakora';
+
+  @override
+  String get providerCapabilityInactive => 'Ntibikora';
+
+  @override
+  String get providerCapabilityPendingReview => 'Bitegereje gusuzumwa';
+
+  @override
+  String get providerCapabilityRejected => 'Byanzwe';
+
+  @override
+  String get providerPolicyNoProof => 'Nta cyemezo gikenewe';
+
+  @override
+  String get providerPolicyProofLater => 'Ushobora kongeraho icyemezo nyuma';
+
+  @override
+  String get providerPolicyProofRequired =>
+      'Icyemezo kirakenewe mbere yo gutangira';
+
+  @override
+  String get providerPolicyNeedsProofTag => 'Icyemezo kirakenewe';
+
+  @override
+  String get companyVerificationTitle => 'Igenzura ry’ikigo';
+
+  @override
+  String get companyVerificationIntro =>
+      'Si ngombwa. Ohereza inyandiko imwe cyangwa zombi kugira ngo Nipanze izisuzume.';
+
+  @override
+  String get companyVerificationRegistration =>
+      'Icyemezo cy’iyandikisha ry’ubucuruzi';
+
+  @override
+  String get companyVerificationLicence =>
+      'Impushya cyangwa inyandiko z’uburenganzira';
+
+  @override
+  String get companyVerificationNotSubmitted => 'Ntabwo byoherejwe';
+
+  @override
+  String get companyVerificationPending => 'Bitegereje gusuzumwa';
+
+  @override
+  String get companyVerificationVerified => 'Byemejwe';
+
+  @override
+  String get companyVerificationRejected => 'Byanzwe';
+
+  @override
+  String get companyVerificationSeparateNote =>
+      'Icyemezo cy’iyandikisha nticyemeza serivisi zigengwa n’amategeko. Zisuzumwa ukwazo kuri buri serivisi.';
+
+  @override
+  String get companyVerificationFileHint =>
+      'JPG, PNG cyangwa PDF, bitarenze MB 5 buri imwe. Ushobora kubika ubu ukazohereza ibimenyetso nyuma.';
+
+  @override
+  String get companyVerificationUpload => 'Ohereza inyandiko';
+
+  @override
+  String get companyVerificationUploaded => 'Inyandiko yoherejwe';
+
+  @override
   String get providerTypeEditCompanyDetails => 'Hindura amakuru y’ikigo';
 
   @override

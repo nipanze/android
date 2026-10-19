@@ -3643,6 +3643,71 @@ class AppLocalizationsFr extends AppLocalizations {
       'Examen du justificatif enregistré.';
 
   @override
+  String get providerCapabilityActive => 'Actif';
+
+  @override
+  String get providerCapabilityInactive => 'Inactif';
+
+  @override
+  String get providerCapabilityPendingReview => 'En attente d’examen';
+
+  @override
+  String get providerCapabilityRejected => 'Refusé';
+
+  @override
+  String get providerPolicyNoProof => 'Aucun justificatif requis';
+
+  @override
+  String get providerPolicyProofLater =>
+      'Vous pouvez ajouter un justificatif plus tard';
+
+  @override
+  String get providerPolicyProofRequired =>
+      'Justificatif requis avant activation';
+
+  @override
+  String get providerPolicyNeedsProofTag => 'Justificatif requis';
+
+  @override
+  String get companyVerificationTitle => 'Vérification de l’entreprise';
+
+  @override
+  String get companyVerificationIntro =>
+      'Facultatif. Envoyez un ou deux documents pour examen manuel par Nipanze.';
+
+  @override
+  String get companyVerificationRegistration => 'Certificat d’immatriculation';
+
+  @override
+  String get companyVerificationLicence => 'Licences ou autorisations';
+
+  @override
+  String get companyVerificationNotSubmitted => 'Non envoyé';
+
+  @override
+  String get companyVerificationPending => 'En attente d’examen';
+
+  @override
+  String get companyVerificationVerified => 'Vérifié';
+
+  @override
+  String get companyVerificationRejected => 'Refusé';
+
+  @override
+  String get companyVerificationSeparateNote =>
+      'Un certificat d’immatriculation n’autorise pas les services réglementés. Chaque service est vérifié séparément.';
+
+  @override
+  String get companyVerificationFileHint =>
+      'JPG, PNG ou PDF, 5 Mo maximum chacun. Vous pouvez enregistrer et ajouter les justificatifs plus tard.';
+
+  @override
+  String get companyVerificationUpload => 'Envoyer un document';
+
+  @override
+  String get companyVerificationUploaded => 'Document envoyé';
+
+  @override
   String get providerTypeEditCompanyDetails =>
       'Modifier les détails de l’entreprise';
 

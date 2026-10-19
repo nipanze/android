@@ -21,6 +21,8 @@ class TableNames {
   static const String providerCapabilities = 'provider_capabilities';
   static const String providerCategoryProfiles = 'provider_category_profiles';
   static const String providerCompanyProfiles = 'provider_company_profiles';
+  static const String providerCompanyVerificationSubmissions =
+      'provider_company_verification_submissions';
   static const String providerCapabilityEvidence =
       'provider_capability_evidence';
   static const String capabilityRoles = 'capability_roles';
@@ -60,6 +62,8 @@ class ViewNames {
   static const String needsListings = 'v_needs_listings';
   static const String providerBadges = 'v_provider_badges';
   static const String myCapabilityStatus = 'v_my_capability_status';
+  static const String myCapabilityPolicyStatus =
+      'v_my_capability_policy_status';
   static const String myJobProfiles = 'v_my_job_profiles';
   static const String userMarketplaceActivity = 'v_user_marketplace_activity';
   static const String lenderOffers = 'v_lender_offers';
@@ -93,6 +97,10 @@ class RpcNames {
   static const String saveProviderCapabilities = 'save_provider_capabilities';
   static const String setProviderCategoryType = 'set_provider_category_type';
   static const String saveCompanyCategory = 'save_company_category';
+  static const String submitProviderCompanyVerification =
+      'submit_provider_company_verification';
+  static const String adminReviewProviderCompanyVerification =
+      'admin_review_provider_company_verification';
   static const String getMyProviderCategoryTypes =
       'get_my_provider_category_types';
   static const String adminGetVerificationRequirements =

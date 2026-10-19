@@ -1421,47 +1421,39 @@ class _OfferCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: (offer.isProviderVerified
-                          ? AppColors.accent
-                          : AppColors.warning)
-                      .withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      offer.isProviderVerified
-                          ? Icons.verified_rounded
-                          : Icons.info_outline_rounded,
-                      size: 11,
-                      color: offer.isProviderVerified
-                          ? AppColors.accent
-                          : AppColors.warning,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      offer.isProviderVerified
-                          ? (capabilityName != null
-                              ? '$capabilityName · Provider Verified'
-                              : 'Provider Verified')
-                          : (capabilityName != null
-                              ? '$capabilityName · Self-declared'
-                              : 'Self-declared'),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: offer.isProviderVerified
+              if (offer.isProviderVerified)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: (offer.isProviderVerified
                             ? AppColors.accent
-                            : AppColors.warning,
+                            : AppColors.warning)
+                        .withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.verified_rounded,
+                        size: 11,
+                        color: AppColors.accent,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 3),
+                      Text(
+                        capabilityName != null
+                            ? '$capabilityName · Provider Verified'
+                            : 'Provider Verified',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
 
