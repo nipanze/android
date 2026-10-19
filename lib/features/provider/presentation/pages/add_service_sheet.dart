@@ -523,6 +523,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _loadingCompanyDetails = true;
       _providerTypeError = null;
+      _step = 5;
     });
     try {
       final services = _selected.toList();
@@ -564,7 +565,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         _companyRequirements = requirements;
         _companyEvidence = evidence;
         _companyProfile = profile;
-        _step = 5;
         _loadingCompanyDetails = false;
       });
     } catch (e) {

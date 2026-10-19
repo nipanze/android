@@ -171,7 +171,7 @@ void main() {
     when(() => mockRepo.getCompanyVerificationRequirements(
           categorySlug: any(named: 'categorySlug'),
           serviceSlugs: any(named: 'serviceSlugs'),
-        )).thenAnswer((_) async => []);
+        )).thenThrow(StateError('Verification requirement lookup failed'));
     when(() => mockRepo.getCompanyEvidence(
           categorySlug: any(named: 'categorySlug'),
           serviceSlugs: any(named: 'serviceSlugs'),
@@ -211,14 +211,6 @@ void main() {
           .onPressed,
       isNull,
     );
-    await tester.tap(find.byIcon(Icons.arrow_back_rounded).first);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Excavator Hire'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Next: company details'));
-    await tester.pumpAndSettle();
-    expect(find.text('Tell us about your company'), findsOneWidget);
     expect(find.text('Review services'), findsNothing);
     expect(find.text('Company or business name'), findsOneWidget);
     expect(find.text('Registration number'), findsOneWidget);

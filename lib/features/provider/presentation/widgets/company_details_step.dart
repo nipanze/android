@@ -68,6 +68,29 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   }
 
   @override
+  void didUpdateWidget(covariant CompanyDetailsStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final profile = widget.initialProfile;
+    if (profile == null ||
+        oldWidget.initialProfile != null ||
+        oldWidget.categorySlug != widget.categorySlug) {
+      return;
+    }
+    if (_nameController.text.isEmpty && profile.companyName != null) {
+      _nameController.text = profile.companyName!;
+    }
+    if (_registrationController.text.isEmpty &&
+        profile.registrationNumber != null) {
+      _registrationController.text = profile.registrationNumber!;
+    }
+    if (_areasController.text.isEmpty && profile.serviceAreas.isNotEmpty) {
+      _areasController.text = profile.serviceAreas.join(', ');
+    }
+    _teamSize ??= profile.teamSize;
+    _yearsInBusiness ??= profile.yearsInBusiness;
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _registrationController.dispose();
