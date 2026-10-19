@@ -437,10 +437,33 @@ class _ProviderServicesView extends StatelessWidget {
           final rules = await client
               .from('verification_requirements')
               .select(
-                  'scope_type, scope_id, evidence_requirements, required_evidence')
+                  'scope_type, scope_id, provider_type, evidence_requirements, required_evidence')
               .eq('is_active', true)
-              .inFilter('scope_type', ['capability', 'category']);
-          final matching = (rules as List).cast<Map<String, dynamic>>();
+              .inFilter('provider_type', [
+            ((cubit.state is CapabilitiesLoaded)
+                        ? (cubit.state as CapabilitiesLoaded)
+                            .categoryTypes[capability.categorySlug]
+                        : null) ==
+                    ProviderCategoryType.company
+                ? 'company'
+                : 'individual',
+            'both',
+          ]).inFilter('scope_type', ['capability', 'category']);
+          final providerType = (cubit.state is CapabilitiesLoaded
+                      ? (cubit.state as CapabilitiesLoaded)
+                          .categoryTypes[capability.categorySlug]
+                      : null) ==
+                  ProviderCategoryType.company
+              ? 'company'
+              : 'individual';
+          final matching = (rules as List)
+              .cast<Map<String, dynamic>>()
+              .where((row) =>
+                  row['provider_type'] == providerType ||
+                  row['provider_type'] == 'both')
+              .toList()
+            ..sort((a, b) => (b['provider_type'] == providerType ? 1 : 0)
+                .compareTo(a['provider_type'] == providerType ? 1 : 0));
           Map<String, dynamic>? rule;
           for (final type in ['capability', 'category']) {
             rule = matching.cast<Map<String, dynamic>?>().firstWhere(

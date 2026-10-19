@@ -2,6 +2,11 @@
 -- and capability-specific evidence fan-out. Safe to rerun; this patch is additive.
 begin;
 
+alter table public.verification_requirements
+  add column if not exists provider_type text not null default 'both';
+alter table public.provider_capability_evidence
+  add column if not exists provider_type text not null default 'both';
+
 create table if not exists public.provider_company_profiles (
   user_id uuid not null references public.profiles(id) on delete cascade,
   category_slug text not null references public.need_categories(slug) on delete cascade,
@@ -247,6 +252,12 @@ begin
     if not exists (
       select 1 from public.verification_requirements r
       where r.is_active and (
+        r.provider_type = 'company' or (r.provider_type = 'both' and not exists (
+          select 1 from public.verification_requirements specific
+          where specific.scope_type = r.scope_type and specific.scope_id = r.scope_id
+            and specific.provider_type = 'company' and specific.is_active
+        ))
+      ) and (
         (r.scope_type = 'category' and r.scope_id = p_category_slug)
         or (r.scope_type = 'capability' and r.scope_id = any(v_services))
       ) and (
@@ -272,6 +283,12 @@ begin
       if exists (
         select 1 from public.verification_requirements r
         where r.is_active and (
+          r.provider_type = 'company' or (r.provider_type = 'both' and not exists (
+            select 1 from public.verification_requirements specific
+            where specific.scope_type = r.scope_type and specific.scope_id = r.scope_id
+              and specific.provider_type = 'company' and specific.is_active
+          ))
+        ) and (
           (r.scope_type = 'category' and r.scope_id = p_category_slug)
           or (r.scope_type = 'capability' and r.scope_id = v_service)
         ) and (
@@ -283,9 +300,9 @@ begin
                 where ev.value = v_key))
         ) then
         insert into public.provider_capability_evidence(
-          provider_capability_id, requirement_key, file_url, status
+          provider_capability_id, requirement_key, file_url, status, provider_type
         )
-        select pc.id, v_key, v_path, 'pending'
+        select pc.id, v_key, v_path, 'pending', 'company'
           from public.provider_capabilities pc
           where pc.user_id = v_user and pc.capability_slug = v_service
             and not exists (select 1 from public.provider_capability_evidence e

@@ -103,10 +103,10 @@ class ProviderRepository implements IProviderRepository {
       final rows = await _client
           .from(TableNames.verificationRequirements)
           .select(
-              'scope_type, scope_id, evidence_requirements, required_evidence')
+              'scope_type, scope_id, provider_type, evidence_requirements, required_evidence')
           .eq('is_active', true)
-          .inFilter('scope_type', ['category', 'capability']).inFilter(
-              'scope_id', scopeIds);
+          .inFilter('provider_type', ['company', 'both']).inFilter('scope_type',
+              ['category', 'capability']).inFilter('scope_id', scopeIds);
       return (rows as List)
           .whereType<Map>()
           .map((row) => row.cast<String, dynamic>())

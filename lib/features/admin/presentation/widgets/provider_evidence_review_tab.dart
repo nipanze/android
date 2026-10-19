@@ -30,7 +30,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
     final evidence = await _client
         .from(TableNames.providerCapabilityEvidence)
         .select(
-            'id, provider_capability_id, requirement_key, file_url, status, reject_reason, created_at')
+            'id, provider_capability_id, requirement_key, provider_type, file_url, status, reject_reason, created_at')
         .eq('status', 'pending')
         .order('created_at');
     final rows = List<Map<String, dynamic>>.from(evidence);
@@ -216,6 +216,12 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                                 .textTheme
                                 .titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w700)),
+                        Text(
+                          entry.value.first['provider_type'] == 'company'
+                              ? 'Company / Organization proof'
+                              : 'Individual proof',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
                         Text(
                           '${entry.value.first['provider_name']} · ${entry.value.length} ${l10n.providerEvidenceCapabilities}',
                           style: Theme.of(context).textTheme.bodySmall,
