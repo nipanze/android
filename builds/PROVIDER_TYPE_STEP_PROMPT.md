@@ -21,7 +21,7 @@ Same sheet chrome as B and C: back arrow, category name as title (e.g. "Machiner
 - Sticky primary blue button **Continue**. Disabled state shows the reason beneath it: "Choose one option to continue".
 - Behaviour on Continue: call `set_provider_category_type`; on success go to C. On failure show an inline error with Retry and stay on B2 (the selection is kept). Offline: show the existing offline SnackBar pattern, button stays enabled for retry, no queued write.
 - Back from B2 returns to B with no change saved. Back from C returns to B2 with the saved value shown.
-- Always shown when entering a category (prefilled when a value exists, so repeat visits are one tap). Alternative to confirm: skip B2 on revisit and show a "Offering as: Individual · Change" row in C. Default is to always show B2, because it leaves C untouched.
+- Always shown after a category is chosen (it also holds the old S3 presentation fields). A saved identity is preselected and tagged "Current". Keeping it continues to C or D; picking the other one opens the switch flow (S2 confirm, S4 review); Change opens the identity switch flow (section 12). Back from C or D then returns to B (category list).
 
 Optional, small and additive (confirm before building): in sheet G (card details) show a read-only "Offered as: Individual / Company" row with a Change action that reopens B2 for that category.
 
@@ -95,7 +95,7 @@ RPC, following the repo pattern (`private.*_internal` + `SECURITY INVOKER` wrapp
 Add to Stage 4.14 in `BUILD_PLAN.md`: a decisions-log entry for each open question below; phase rows "P2 SQL provider_category_profiles + RPCs" and "P3 sheet B2 + navigation"; the tests above; verification log (analyze, tests, SQL checks, Home baseline diff). Do not mark Done without passing tests.
 
 ## 8. Open questions (recommend, then wait)
-1. Always show B2 (recommended, prefilled) vs skip on revisit with a "Change" row in C.
+1. RESOLVED: B2 is always shown; the saved identity is preselected; a changed identity goes B2 -> S2 -> S4 (see `PROVIDER_FLOW_BUILD_ORDER.md`).
 2. Should Company later require business registration evidence for regulated categories? (Recommended: yes, via `verification_requirements`, in a separate change.)
 3. Show a public "Company" tag on provider badges and offers? (Recommended later; needs a privacy decision and an additive change to `v_provider_badges` only.)
 4. Should a Company be able to list staff or multiple operators? (Out of scope here.)
@@ -113,7 +113,7 @@ The provider type now drives sheets C and D. The "Available for jobs" switch is 
 Rules:
 1. Footer button adapts: roles ticked -> purple "Next: choose your kind" (services ticked at the same time are saved in the same atomic save when the flow finishes); only services ticked -> blue "Save services (N)"; nothing ticked -> disabled. Summary line above it: "2 services · 1 role selected".
 2. Server-enforced: `save_provider_capabilities` reads the caller's `provider_category_profiles.provider_type` for the category and rejects `service` items for `individual` (new `P02xx` code). Work roles are accepted for both types. Still bulk, atomic, and never touches other categories.
-3. Changing the type later: Individual -> Company keeps all roles and adds the services section. Company -> Individual does NOT delete saved services; they are kept, hidden from the category sheet, excluded from matching and public badges, and shown on screen A / sheet G as "Hidden: offered as Company only" until the user switches back. Removing them is an explicit user action.
+3. Changing the type later: superseded by section 12. A category's identity is changed only through the switch flow (Provider Services -> Choose Category -> B2 -> S2 -> S4). The previous identity's services are set Inactive (kept, restorable), not hidden.
 4. The "Job profiles are personal" note stays for Company, in the roles section subtitle.
 5. Individuals can no longer list services or equipment hire. A sole trader who hires out machines must choose Company / Organization, so review the B2 wording ("Individual" = "I work myself, for others") against the business rules.
 6. Tests to add: Individual sees no "What we offer" and cannot save services through the RPC; Company sees both and saves both in one transaction; type change keeps data and hides services; Company with roles only and with services only both save; footer states; other categories unchanged; roles flag/regional rules unchanged.
@@ -146,4 +146,11 @@ Source of truth: `VERIFICATION_SPEC.md` (the simple provider and capability veri
 7. **Storage and admin:** private storage, admin-only access, signed URLs. Basic admin queue for company submissions and individual capability submissions: open documents, approve or reject with a reason, record reviewer and time. No paid APIs or automated document checks.
 8. **SQL:** inspect the existing `provider_capabilities` fields (`verification_level`, `evidence_url`, `verified_by`, `verified_at`) first and extend rather than duplicate. Standalone patch only; do not modify the monolithic `patch.sql`.
 9. **Launch scope:** non-custodial; Loans and Forex unchanged; keep it simple and cheap.
-10. **Tests to add:** each of the three policies; approval, rejection and resubmission; a provider cannot self-verify or self-activate a required-proof capability; unauthorized users and anon cannot read documents; a required-proof capability receives no offers before approval; a company certificate does not activate a regulated service.
+10. **Tests to add (verification):** each of the three policies; approval, rejection and resubmission; a provider cannot self-verify or self-activate a required-proof capability; unauthorized users and anon cannot read documents; a required-proof capability receives no offers before approval; a company certificate does not activate a regulated service.
+
+## 12. REVISION 4: identity switching (source: `IDENTITY_SWITCH_SPEC.md`, build prompt: `IDENTITY_SWITCH_BUILD_PROMPT.md`)
+- B2 is always shown and merges the old S3 (identity plus how you are shown). If the identity changes, the flow is B2 -> S2 confirm -> S4 review, and every "Change" pill opens B2: Provider Services -> Choose Category -> B2 -> confirm dialog -> presentation -> review -> save.
+- One active identity per user per category, enforced on the server and safe under concurrent requests. Switching is one atomic transaction, deletes nothing, creates no duplicates, and deactivates only the previous identity's capabilities in that category (kept, restorable).
+- Verification never transfers between identities. Reviews, completed deals and history stay; accepted deals keep the identity and terms they were created with. Inactive capabilities cannot make offers.
+- The presentation step defaults from existing data: Individual uses the personal display name; Company offers "Company name" or "Company with representative" and asks for the company name only if missing, with a live preview. Choosing Company never implies a verified business.
+- This supersedes section 9 rule 3 and the "hidden services" open question.

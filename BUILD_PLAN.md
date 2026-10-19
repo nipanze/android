@@ -576,4 +576,74 @@ Implement the two provider-type paths as `B → B2 → C → E → F → A` for 
 | 2026-10-19 | Final provider verification implementation checks | Scoped `flutter analyze` passed; provider suite passed 30/30; all five ARB files parse; `git diff --check` passed. Serial full suite passed 433 tests and failed two existing Kinyarwanda localization cases (`events_celebrations` untranslated text and missing `rw` Material delegate). Full `flutter analyze` reports nine unrelated info lints. PostgreSQL grammar parsing passed; SQL/RLS execution and screenshot baseline checks remain pending staging access. |
 | — | SQL/RLS execution, RTL/theme/responsive checks, protected Home/feed baselines | Pending staging connection and visual test harness. |
 
+## 18. Stage 4.16 — Category-specific provider identity switching
+
+### Scope
+
+Implement the confirmed Individual ↔ Company switch for one provider category at a time. S1 (Provider Services + Choose Category) remains visually unchanged. B2 stays in the category flow, preselects the current identity, edits the identity presentation, and routes changed identities through S2 confirmation and S4 review before a single atomic save. The previous identity's service capabilities remain stored but inactive; personal work roles, other categories, verification records, history, pending offers, and accepted deals are preserved. Home and Marketplace feed code and existing public view/RPC signatures are protected.
+
+### Proposed decisions (pending inspection and user approval)
+
+| ID | Decision | Status | Rationale |
+|---|---|---|---|
+| I1 | Always show B2 for category setup and identity management; preselect and mark the saved identity Current | Proposed | The identity-switch prompt says B2 is always shown; this supersedes the contradictory flow-order row that sends returning users straight to C/D. |
+| I2 | Rate limit identity switches to 5 per user/category per day | Proposed | Limits identity flapping while allowing corrections. |
+| I3 | Warn on S4 when switching leaves no active capabilities; do not block | Proposed | Makes the offering impact clear while allowing setup changes. |
+| I4 | Company-with-representative requires an authorization checkbox; record consent in switch audit data | Proposed | Avoids implying representation authority without user confirmation. |
+| I5 | Label reviews earned under a prior identity with the identity used at the time | Proposed | Keeps reputation attached to the person while preventing company verification from inheriting individual credentials. |
+| I6 | Leave historical offer/deal identity snapshots null unless identity at creation can be proven | Proposed | Avoids rewriting history from current profile state. |
+| I7 | Personal work-role capabilities remain active across identity switches; only service capabilities are identity-bound | Proposed | Matches the revised Company flow where work roles are the user's personal profile. |
+| I8 | Resolve existing flow-order conflict in favor of always showing B2 | Proposed | Identity switch build prompt is the latest and explicit about B2 on every entry. |
+
+### Task tracker
+
+| Phase | Task | Files / SQL | Tests | Status | Date | Notes |
+|---|---|---|---|---|---|---|
+| P0 | Inspect UI, schema, offers/deals, views, RLS, triggers, audit and Admin review; capture protected Home/feed baseline; present findings and wait for approval | `BUILD_PLAN.md`, relevant provider/account/repository files, `sql/*.sql` | Baseline snapshots/signatures; schema and dependency inventory | Complete (local inspection) | 2026-10-20 | Findings recorded below. Live staging schema and Home visual baseline unavailable from this checkout. No implementation changes before user approval. |
+| P1 | Add identity ownership to provider capabilities and private per-identity presentations; guard active state; read identities RPC | New standalone `sql/patch_provider_identity_switch.sql` | RLS; no anon; owner/admin reads; identity/policy constraints; RPC result shape; rerun | Not started | — | Exact schema and unused P02xx codes must be confirmed from local SQL and staging availability. |
+| P2 | Atomic switch RPC, locking, rate limit, audit, pending-offer counts, pending/accepted offer snapshots and public identity output | Standalone SQL patch(es) only | concurrency; rollback; no cross-category changes; offer guard; historical rows unchanged; signatures preserved | Not started | — | Inspect actual offer/deal tables, triggers and RPCs before design. |
+| P3 | B2 identity presentation, S2 confirmation, S4 review and all switch states | Provider presentation/navigation/repository/cubit files; five ARBs | validation; Cancel; disabled/loading/double-submit; retry/offline; pending proof; no false success | Not started | — | S1 and Home/feed remain untouched. |
+| P4 | Read-only identity context in Admin verification queue | Admin review UI and repository, if needed | identity shown correctly; approvals remain identity-scoped; signed document access unchanged | Not started | — | Do not grant identity verification through this display. |
+| P5 | Accessibility, RTL, themes, responsive behavior, docs and regression verification | five ARBs, tests, `README.md`, `BUILD_PLAN.md` | en/sw/fr/rw/ar; RTL; dark/light; 360px; 200% text; provider and unrelated-flow regressions | Not started | — | Run full validation after implementation and compare protected baselines. |
+
+### Test tracker
+
+| Case | Status | Evidence / notes |
+|---|---|---|
+| Individual → Company and Company → Individual; presentation defaults retained per identity | Pending | Include both directions in one category and independent category identities. |
+| Preserve capability metadata/evidence, company profile, descriptions, locations, media, contact preferences and saved forms | Pending | No deletes or duplicate capability/profile rows. |
+| Exactly one active service identity per category under direct calls and concurrent switches | Pending | Include forced mid-transaction failure/rollback. |
+| Switching one category leaves every other category unchanged | Pending | Include Individual Technology + Company Transport. |
+| Personal work roles stay active; only identity-bound service capabilities switch | Pending | Validate against the actual capability model and RPCs. |
+| Required-proof state is recomputed from that identity's own approved evidence | Pending | No evidence or company-verification transfer. |
+| Inactive or wrong-identity capability cannot create an offer through UI or direct RPC | Pending | Existing offer API/trigger must be inspected first. |
+| Pending offers and accepted deals keep creation-time identity/name; no history rewrite | Pending | Verify nullable snapshots and legacy rendering. |
+| Pending offer count appears in S4 and no offers are withdrawn automatically | Pending | Test zero and nonzero counts. |
+| Public identity presentation has no private IDs, registration data, or document URLs | Pending | Existing public view signatures and data exposure unchanged. |
+| Company name required; representative consent; B2 preview and validation | Pending | Includes personal/company presentation defaults. |
+| Cancel/no-op, explicit confirmation, loading and double-submit guard | Pending | Switch success only after RPC success. |
+| Flag off, offline, retry, and same-identity behavior | Pending | No queued switch writes. |
+| RLS for owner, other user, admin, and anon; admin decisions remain identity-scoped | Pending | Every new table/RPC/storage path. |
+| Locales, RTL, light/dark, 360px and 200% text scale | Pending | No overflow or hard-coded UI strings. |
+| Home/feed snapshots, existing view/RPC signatures and Loans/Forex/Needs regressions | Pending | No protected file edits; compare against captured baseline. |
+
+### Verification log
+
+| Date | Check | Result |
+|---|---|---|
+| 2026-10-20 | Read `.agents/AGENTS.md`, identity-switch prompt, provider flow order, provider-type prompt and existing Stage 4.15 notes | Completed. Source prompt mandates inspection report and explicit user approval before implementation. B2 flow-order conflict recorded above. |
+| 2026-10-20 | Local Account/Provider Services, SQL schema/policies/triggers, offers/deals/views, audit and Admin queue inspection | Completed from repository source. Live staging schema and Home visual baseline unavailable; no database writes. Findings summarized below. |
+| — | SQL/RLS, Flutter tests/analyze, locale/theme/accessibility and protected baseline comparison | Pending approval and implementation. |
+
+### P0 inspection findings
+
+- **Reusable UI and flow:** Account's “Your Services” card routes to `/account/services`; `ProviderServicesPage` is screen A, and `AddServiceSheet` owns category selection/B2. B2 currently writes the category type immediately and proceeds to C/D. There is no S2 confirmation, S4 review, presentation preview, or Manage identity entry point. The C/D Change action returns to B2. `CompanyDetailsStep` already collects company information. Existing provider repository/interface and Cubit/state are integration points; reuse the five locale ARBs and theme conventions.
+- **Admin:** `ProviderEvidenceReviewTab` already queues capability, role and company-verification claims, with private signed evidence URLs and approval/rejection RPCs. Identity presentation can be read-only without changing review authority.
+- **Local data/security:** `provider_category_profiles` has one `(user_id, category_slug)` row and owner/admin SELECT policies; its setter RPC allows direct type changes and must be guarded against bypassing the switch flow. `provider_company_profiles` stores private company details with owner/admin SELECT and an existing save RPC. `provider_capabilities` is unique per user/capability and has no identity ownership column; owner-write RLS and existing public exposure require server-side enforcement. Evidence and role claims attach to capability rows. Company verification submissions are separate and must not transfer.
+- **Offers/history/public output:** `need_offers` has pending/accepted states and acceptance triggers/RPCs, but no identity or display-name snapshots. Accepted deals and reviews use existing agreement/history tables. `get_public_need_offers` has a fixed return signature and `v_provider_badges` is an existing public view; preserve both and add output separately. Existing public badge output contains a user ID; do not expose additional internal IDs or private company/evidence fields. Loans and Forex need no changes.
+- **Audit and DB availability:** `audit_logs(user_id, entity_type, action, old_values, new_values, ...)` is the append-only pattern. Local SQL uses P0214/P0215; P0216 appears unused locally, but deployment state is unknown. Supabase CLI is not linked to the configured API host, so live RLS/policy state and a staging Home/feed baseline could not be captured. Do not apply SQL until a staging target is available and confirmed; production execution requires separate explicit approval.
+- **Conflicts and missing source:** `IDENTITY_SWITCH_SPEC.md` referenced by the identity prompt is absent. `PROVIDER_FLOW_BUILD_ORDER.md` says returning identities skip B2, while the identity prompt explicitly requires B2 every time; recommend the always-show-B2 rule. Earlier company-path work kept the company name private, while identity switching needs a public display name; expose only the approved display name through additive output. Individual roles are personal and remain active; only identity-bound service capabilities switch. One capability row per slug cannot hold separate evidence states, so bind service rows to an identity and retain evidence in place; switching deactivates/reactivates without transferring approval.
+- **Implementation plan:** Add standalone `sql/patch_provider_identity_switch.sql` (or split standalone patches if necessary) for identity presentations, owner/admin reads, invoker wrappers/private internals, serialized atomic switch, audit/rate limit, active-capability and offer guards, and additive offer snapshots/public identity output. Then wire provider models/repository/Cubit, B2 presentation, S2, S4 and entry points; add read-only identity context to Admin; localize en/sw/fr/rw/ar; add focused tests and update README/trackers. Keep Home/feed widgets and existing view/RPC signatures untouched.
+- **Recommended decisions awaiting approval:** 5 switches per user/category/day; warn, do not block, if no active capabilities remain; require and audit representative authorization; label reviews by identity at earning time; leave unprovable historical offer/deal snapshots null; always show B2; preserve personal roles. Keep old identity service capabilities/evidence stored and inactive, with proof evaluated only for that identity.
+
 
