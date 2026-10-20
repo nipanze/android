@@ -595,10 +595,11 @@ class _ForexRequestMetric extends StatelessWidget {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final foreground = color ?? muted;
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 17, color: foreground),
         const SizedBox(width: 6),
-        Expanded(
+        Flexible(
           child: Text(
             value,
             maxLines: 1,
