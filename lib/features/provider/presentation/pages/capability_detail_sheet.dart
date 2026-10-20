@@ -250,9 +250,8 @@ class CapabilityDetailSheet extends StatelessWidget {
                     _VerificationChecklist(
                       capability: capability,
                       onAddProof: onAddProof,
-                      onAddRoleProof: isJob && !capability.isVerified
-                          ? onAddProof
-                          : null,
+                      onAddRoleProof:
+                          isJob && !capability.isVerified ? onAddProof : null,
                     ),
                   ],
                 ),

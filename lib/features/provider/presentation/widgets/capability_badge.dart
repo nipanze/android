@@ -17,6 +17,7 @@ class CapabilityBadge extends StatelessWidget {
     this.showProfileDetails = false,
     this.opportunityCount,
     this.onTap,
+    this.onAddProof,
     this.onEdit,
     this.onTogglePause,
     this.onRemove,
@@ -29,6 +30,7 @@ class CapabilityBadge extends StatelessWidget {
   final bool showProfileDetails;
   final int? opportunityCount;
   final VoidCallback? onTap;
+  final VoidCallback? onAddProof;
   final VoidCallback? onEdit;
   final ValueChanged<bool>? onTogglePause;
   final VoidCallback? onRemove;
@@ -234,31 +236,49 @@ class CapabilityBadge extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      if (statusNote.isNotEmpty)
-                        Text(
-                          statusNote,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: text2,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      if (onTap != null &&
-                          capability.status !=
-                              ProviderCapabilityStatus.providerVerified)
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: TextButton.icon(
-                            onPressed: onTap,
-                            icon: const Icon(Icons.upload_file_outlined,
-                                size: 16),
-                            label: Text(l10n.companyEvidenceAdd),
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(44, 44),
-                              padding: const EdgeInsetsDirectional.only(
-                                  start: 0, end: 8),
-                            ),
-                          ),
+                      if (statusNote.isNotEmpty ||
+                          (onAddProof != null &&
+                              capability.status !=
+                                  ProviderCapabilityStatus.providerVerified))
+                        Row(
+                          children: [
+                            if (statusNote.isNotEmpty)
+                              Expanded(
+                                child: Text(
+                                  statusNote,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: text2,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            if (onAddProof != null &&
+                                capability.status !=
+                                    ProviderCapabilityStatus
+                                        .providerVerified) ...[
+                              if (statusNote.isNotEmpty)
+                                const SizedBox(width: 8),
+                              InkWell(
+                                onTap: onAddProof,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 2, horizontal: 1),
+                                  child: Text(
+                                    l10n.companyEvidenceAdd,
+                                    style: const TextStyle(
+                                      color: AppColors.accent,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       if (capability.capabilitySlug ==
                           'i_have_an_audience') ...[

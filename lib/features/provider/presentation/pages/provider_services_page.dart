@@ -145,6 +145,11 @@ class _ProviderServicesView extends StatelessWidget {
                   opps: opps,
                   l10n: l10n,
                 ),
+                onAddProof: (cap) => _openCapabilityProofDestination(
+                  context,
+                  capability: cap,
+                  l10n: l10n,
+                ),
                 onEditCompanyDetails: (cap) => _showAddSheet(
                   context,
                   preselectedCategorySlug: cap.categorySlug,
@@ -219,6 +224,8 @@ class _ProviderServicesView extends StatelessWidget {
   Future<void> _showAddSheet(
     BuildContext context, {
     String? preselectedCategorySlug,
+    String? initialProofRoleSlug,
+    bool initialCompanyCertification = false,
   }) async {
     final cubit = context.read<CapabilitiesCubit>();
     final l10n = AppLocalizations.of(context)!;
@@ -273,6 +280,8 @@ class _ProviderServicesView extends StatelessWidget {
           : true,
       preselectedCategorySlug: preselectedCategorySlug,
       initialPersonalName: initialPersonalName,
+      initialProofRoleSlug: initialProofRoleSlug,
+      initialCompanyCertification: initialCompanyCertification,
     );
     if (selection?.identitySwitchCompleted == true) {
       await cubit.loadWithOpportunities();
@@ -487,7 +496,8 @@ class _ProviderServicesView extends StatelessWidget {
               ProviderCategoryType.individual,
       providerType: ProviderCategoryType.fromValue(capability.identityType) ??
           ((cubit.state is CapabilitiesLoaded)
-              ? (cubit.state as CapabilitiesLoaded).categoryTypes[capability.categorySlug]
+              ? (cubit.state as CapabilitiesLoaded)
+                  .categoryTypes[capability.categorySlug]
               : null),
       onEdit: () => _showAddSheet(
         context,
@@ -499,137 +509,186 @@ class _ProviderServicesView extends StatelessWidget {
       ),
       onRemove: () => _confirmRemove(context, capability, l10n),
       onAddProof: () async {
-        try {
-          final client = getIt<supabase.SupabaseClient>();
-          final rules = await client
-              .from('verification_requirements')
-              .select(
-                  'scope_type, scope_id, provider_type, evidence_requirements, required_evidence')
-              .eq('is_active', true)
-              .inFilter('provider_type', [
-            ((cubit.state is CapabilitiesLoaded)
-                        ? (cubit.state as CapabilitiesLoaded)
-                            .categoryTypes[capability.categorySlug]
-                        : null) ==
-                    ProviderCategoryType.company
-                ? 'company'
-                : 'individual',
-            'both',
-          ]).inFilter('scope_type', ['capability', 'category']);
-          final providerType = (cubit.state is CapabilitiesLoaded
-                      ? (cubit.state as CapabilitiesLoaded)
-                          .categoryTypes[capability.categorySlug]
-                      : null) ==
-                  ProviderCategoryType.company
-              ? 'company'
-              : 'individual';
-          final matching = (rules as List)
-              .cast<Map<String, dynamic>>()
-              .where((row) =>
-                  row['provider_type'] == providerType ||
-                  row['provider_type'] == 'both')
-              .toList()
-            ..sort((a, b) => (b['provider_type'] == providerType ? 1 : 0)
-                .compareTo(a['provider_type'] == providerType ? 1 : 0));
-          Map<String, dynamic>? rule;
-          for (final type in ['capability', 'category']) {
-            rule = matching.cast<Map<String, dynamic>?>().firstWhere(
-                  (r) =>
-                      r?['scope_type'] == type &&
-                      r?['scope_id'] ==
-                          (type == 'capability'
-                              ? capability.capabilitySlug
-                              : capability.categorySlug),
-                  orElse: () => null,
-                );
-            if (rule != null) break;
-          }
-          final raw = rule?['evidence_requirements'];
-          final labels =
-              raw is List ? raw.map((e) => e.toString()).toList() : <String>[];
-          final required = (rule?['required_evidence'] as List? ?? const [])
-              .map((e) => e.toString())
-              .toList();
-          final keys = {...required, ...labels}
-              .where((key) => key.trim().isNotEmpty)
-              .toList();
-          if (keys.isEmpty) {
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.providerEvidenceNoRequirements)),
-            );
-            return;
-          }
-          if (!context.mounted) return;
-          final key = keys.length == 1
-              ? keys.single
-              : await showDialog<String>(
-                  context: context,
-                  builder: (dialogContext) => SimpleDialog(
-                    title: const Text('Choose evidence type'),
-                    children: [
-                      for (final evidenceKey in keys)
-                        SimpleDialogOption(
-                          onPressed: () =>
-                              Navigator.pop(dialogContext, evidenceKey),
-                          child: Text(evidenceKey),
-                        ),
-                    ],
-                  ),
-                );
-          if (key == null) return;
-          final evidenceTypes = XTypeGroup(
-            label: l10n.companyVerificationTitle,
-            extensions: ['jpg', 'jpeg', 'png', 'pdf'],
-          );
-          final picked = await openFile(acceptedTypeGroups: [evidenceTypes]);
-          if (picked == null) return;
-          if (await picked.length() > 5 * 1024 * 1024) {
-            throw StateError(l10n.companyEvidenceTooLarge);
-          }
-          final bytes = await picked.readAsBytes();
-          if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
-            throw StateError(l10n.companyEvidenceTooLarge);
-          }
-          final extension = picked.name.split('.').last.toLowerCase();
-          final mime = switch (extension) {
-            'jpg' || 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-            'pdf' => 'application/pdf',
-            _ => '',
-          };
-          if (mime.isEmpty) throw StateError(l10n.companyEvidenceUnsupported);
-          final uid = client.auth.currentUser?.id;
-          if (uid == null) return;
-          final safeName =
-              picked.name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
-          final path = 'evidence/$uid/${capability.capabilitySlug}/'
-              '${DateTime.now().microsecondsSinceEpoch}_$safeName';
-          await client.storage.from('provider-evidence').uploadBinary(
-                path,
-                bytes,
-                fileOptions: supabase.FileOptions(contentType: mime),
-              );
-          await getIt<IProviderRepository>().submitCapabilityEvidence(
-            providerCapabilityId: capability.id,
-            requirementKey: key,
-            fileUrl: path,
-          );
-          await cubit.loadWithOpportunities();
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.providerEvidenceSubmitted)),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(userFacingErrorMessage(e))),
-            );
-          }
-        }
+        Navigator.of(context).pop();
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        if (!context.mounted) return;
+        await _openCapabilityProofDestination(
+          context,
+          capability: capability,
+          l10n: l10n,
+        );
       },
     );
+  }
+
+  Future<void> _openCapabilityProofDestination(
+    BuildContext context, {
+    required ProviderCapability capability,
+    required AppLocalizations l10n,
+  }) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    final loaded = cubit.state;
+    final providerType = loaded is CapabilitiesLoaded
+        ? (ProviderCategoryType.fromValue(capability.identityType) ??
+            loaded.categoryTypes[capability.categorySlug])
+        : ProviderCategoryType.fromValue(capability.identityType);
+
+    if (capability.isWork) {
+      final roleSlug = capability.metadata['role_id']?.toString() ??
+          capability.capabilitySlug.replaceFirst('work_', '');
+      await _showAddSheet(
+        context,
+        preselectedCategorySlug: capability.categorySlug,
+        initialProofRoleSlug: roleSlug,
+      );
+      return;
+    }
+    if (providerType == ProviderCategoryType.company) {
+      await _showAddSheet(
+        context,
+        preselectedCategorySlug: capability.categorySlug,
+        initialCompanyCertification: true,
+      );
+      return;
+    }
+
+    await _uploadCapabilityProof(context, capability: capability, l10n: l10n);
+  }
+
+  Future<void> _uploadCapabilityProof(
+    BuildContext context, {
+    required ProviderCapability capability,
+    required AppLocalizations l10n,
+  }) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    try {
+      final client = getIt<supabase.SupabaseClient>();
+      final rules = await client
+          .from('verification_requirements')
+          .select(
+              'scope_type, scope_id, provider_type, evidence_requirements, required_evidence')
+          .eq('is_active', true)
+          .inFilter('provider_type', [
+        ((cubit.state is CapabilitiesLoaded)
+                    ? (cubit.state as CapabilitiesLoaded)
+                        .categoryTypes[capability.categorySlug]
+                    : null) ==
+                ProviderCategoryType.company
+            ? 'company'
+            : 'individual',
+        'both',
+      ]).inFilter('scope_type', ['capability', 'category']);
+      final providerType = (cubit.state is CapabilitiesLoaded
+                  ? (cubit.state as CapabilitiesLoaded)
+                      .categoryTypes[capability.categorySlug]
+                  : null) ==
+              ProviderCategoryType.company
+          ? 'company'
+          : 'individual';
+      final matching = (rules as List)
+          .cast<Map<String, dynamic>>()
+          .where((row) =>
+              row['provider_type'] == providerType ||
+              row['provider_type'] == 'both')
+          .toList()
+        ..sort((a, b) => (b['provider_type'] == providerType ? 1 : 0)
+            .compareTo(a['provider_type'] == providerType ? 1 : 0));
+      Map<String, dynamic>? rule;
+      for (final type in ['capability', 'category']) {
+        rule = matching.cast<Map<String, dynamic>?>().firstWhere(
+              (r) =>
+                  r?['scope_type'] == type &&
+                  r?['scope_id'] ==
+                      (type == 'capability'
+                          ? capability.capabilitySlug
+                          : capability.categorySlug),
+              orElse: () => null,
+            );
+        if (rule != null) break;
+      }
+      final raw = rule?['evidence_requirements'];
+      final labels =
+          raw is List ? raw.map((e) => e.toString()).toList() : <String>[];
+      final required = (rule?['required_evidence'] as List? ?? const [])
+          .map((e) => e.toString())
+          .toList();
+      final keys = {...required, ...labels}
+          .where((key) => key.trim().isNotEmpty)
+          .toList();
+      if (keys.isEmpty) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.providerEvidenceNoRequirements)),
+        );
+        return;
+      }
+      if (!context.mounted) return;
+      final key = keys.length == 1
+          ? keys.single
+          : await showDialog<String>(
+              context: context,
+              builder: (dialogContext) => SimpleDialog(
+                title: const Text('Choose evidence type'),
+                children: [
+                  for (final evidenceKey in keys)
+                    SimpleDialogOption(
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, evidenceKey),
+                      child: Text(evidenceKey),
+                    ),
+                ],
+              ),
+            );
+      if (key == null) return;
+      final evidenceTypes = XTypeGroup(
+        label: l10n.companyVerificationTitle,
+        extensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      final picked = await openFile(acceptedTypeGroups: [evidenceTypes]);
+      if (picked == null) return;
+      if (await picked.length() > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
+      final bytes = await picked.readAsBytes();
+      if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
+      final extension = picked.name.split('.').last.toLowerCase();
+      final mime = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'pdf' => 'application/pdf',
+        _ => '',
+      };
+      if (mime.isEmpty) throw StateError(l10n.companyEvidenceUnsupported);
+      final uid = client.auth.currentUser?.id;
+      if (uid == null) return;
+      final safeName = picked.name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+      final path = 'evidence/$uid/${capability.capabilitySlug}/'
+          '${DateTime.now().microsecondsSinceEpoch}_$safeName';
+      await client.storage.from('provider-evidence').uploadBinary(
+            path,
+            bytes,
+            fileOptions: supabase.FileOptions(contentType: mime),
+          );
+      await getIt<IProviderRepository>().submitCapabilityEvidence(
+        providerCapabilityId: capability.id,
+        requirementKey: key,
+        fileUrl: path,
+      );
+      await cubit.loadWithOpportunities();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.providerEvidenceSubmitted)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingErrorMessage(e))),
+        );
+      }
+    }
   }
 }
 
@@ -650,6 +709,7 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.l10n,
     required this.onAddService,
     required this.onTapCapability,
+    required this.onAddProof,
     this.onRemoveCapability,
     this.onEditCompanyDetails,
   });
@@ -663,6 +723,7 @@ class _ScreenASummaryView extends StatefulWidget {
   final AppLocalizations l10n;
   final VoidCallback onAddService;
   final ValueChanged<ProviderCapability> onTapCapability;
+  final ValueChanged<ProviderCapability> onAddProof;
   final ValueChanged<ProviderCapability>? onRemoveCapability;
   final ValueChanged<ProviderCapability>? onEditCompanyDetails;
 
@@ -768,17 +829,19 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                       widget.categoryTypes[cap.categorySlug] ==
                           ProviderCategoryType.individual,
                   showProfileDetails: true,
-                  providerType: ProviderCategoryType.fromValue(cap.identityType) ??
-                      widget.categoryTypes[cap.categorySlug],
+                  providerType:
+                      ProviderCategoryType.fromValue(cap.identityType) ??
+                          widget.categoryTypes[cap.categorySlug],
                   onEditCompanyDetails:
                       (ProviderCategoryType.fromValue(cap.identityType) ??
-                                  widget.categoryTypes[cap.categorySlug]) ==
-                              ProviderCategoryType.company &&
+                                      widget.categoryTypes[cap.categorySlug]) ==
+                                  ProviderCategoryType.company &&
                               !cap.isWork
                           ? () => widget.onEditCompanyDetails?.call(cap)
                           : null,
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
+                  onAddProof: () => widget.onAddProof(cap),
                   onEdit: () => widget.onTapCapability(cap),
                   onTogglePause: (val) {
                     context.read<CapabilitiesCubit>().setCapabilityPaused(

@@ -113,6 +113,8 @@ class AddServiceSheet extends StatefulWidget {
     this.capabilityProfilesEnabled = true,
     this.workProfilesEnabled = true,
     this.initialJobsMode = false,
+    this.initialProofRoleSlug,
+    this.initialCompanyCertification = false,
   });
 
   final Set<String> existingSlugs;
@@ -126,6 +128,8 @@ class AddServiceSheet extends StatefulWidget {
   final bool capabilityProfilesEnabled;
   final bool workProfilesEnabled;
   final bool initialJobsMode;
+  final String? initialProofRoleSlug;
+  final bool initialCompanyCertification;
 
   static Future<ProviderCapabilitySelection?> show(
     BuildContext context, {
@@ -138,6 +142,8 @@ class AddServiceSheet extends StatefulWidget {
     bool capabilityProfilesEnabled = true,
     bool workProfilesEnabled = true,
     bool initialJobsMode = false,
+    String? initialProofRoleSlug,
+    bool initialCompanyCertification = false,
     String? preselectedCategorySlug,
     String? initialPersonalName,
   }) {
@@ -169,6 +175,8 @@ class AddServiceSheet extends StatefulWidget {
               capabilityProfilesEnabled: capabilityProfilesEnabled,
               workProfilesEnabled: workProfilesEnabled,
               initialJobsMode: initialJobsMode,
+              initialProofRoleSlug: initialProofRoleSlug,
+              initialCompanyCertification: initialCompanyCertification,
             ),
           ),
         ],
@@ -232,6 +240,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   int _activeIdentityCapabilities = 0;
   Map<String, int> _identityActiveCounts = const {};
   bool _representativeAuthorized = false;
+  bool _initialProofDestinationOpened = false;
   String _personalDisplayName = '';
   String _companyDisplayName = '';
 
@@ -332,9 +341,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
 
     final workMetadataByRole = <String, Map<String, dynamic>>{};
-    final companyPath = _providerType == ProviderCategoryType.company;
+    final companyPath = _providerType == ProviderCategoryType.company &&
+        widget.initialProofRoleSlug == null;
     final canEditWorkRoles = _categoryWorkProfilesEnabled &&
-        _providerType == ProviderCategoryType.individual;
+        (_providerType == ProviderCategoryType.individual ||
+            widget.initialProofRoleSlug != null);
     final canSelectCompanyRoles = _categoryWorkProfilesEnabled && companyPath;
     if (canEditWorkRoles) {
       for (final roleSlug in _selectedRoles) {
@@ -521,9 +532,48 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
     for (final role in roles) {
       final capSlug = role.capabilitySlug ?? 'work_${role.slug}';
+      final existingRole = widget.existingCapabilities
+          .where((capability) =>
+              capability.isWork && capability.capabilitySlug == capSlug)
+          .firstOrNull;
       if (widget.existingSlugs.contains(capSlug) ||
           widget.existingSlugs.contains(role.slug)) {
         _selectedRoles.add(role.slug);
+        if (existingRole != null) {
+          final metadata = existingRole.metadata;
+          _kindsByRole[role.slug] = (metadata['kind_ids'] as List? ?? const [])
+              .map((value) => value.toString())
+              .toSet();
+          _qualificationsByRole[role.slug] =
+              (metadata['qualification_ids'] as List? ?? const [])
+                  .map((value) => value.toString())
+                  .toSet();
+          if (metadata['years_experience'] != null) {
+            _yearsExperienceByRole[role.slug] =
+                metadata['years_experience'].toString();
+          }
+          if (metadata['availability'] != null) {
+            _availabilityByRole[role.slug] =
+                metadata['availability'].toString();
+          }
+          _languagesByRole[role.slug] =
+              (metadata['languages'] as List? ?? const ['English'])
+                  .map((value) => value.toString())
+                  .toSet();
+          _willingToTravelByRole[role.slug] =
+              metadata['willing_to_travel'] as bool? ?? false;
+          final expectedPay = metadata['expected_pay'];
+          if (expectedPay is Map) {
+            if (expectedPay['amount'] != null) {
+              _expectedPayAmountByRole[role.slug] =
+                  expectedPay['amount'].toString();
+            }
+            if (expectedPay['period'] != null) {
+              _expectedPayPeriodByRole[role.slug] =
+                  expectedPay['period'].toString();
+            }
+          }
+        }
       }
     }
 
@@ -569,8 +619,22 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _categoryWorkProfilesEnabled = categoryWorkEnabled;
       _providerTypeError = null;
       _loading = false;
-      _step = needsProviderType ? 4 : 1;
+      _step = widget.initialCompanyCertification
+          ? 5
+          : widget.initialProofRoleSlug != null && _selectedRoles.isNotEmpty
+              ? 3
+              : needsProviderType
+                  ? 4
+                  : 1;
+      final requestedRoleIndex = widget.initialProofRoleSlug == null
+          ? -1
+          : _selectedRoles.toList().indexOf(widget.initialProofRoleSlug!);
+      if (requestedRoleIndex >= 0) _currentRoleIndex = requestedRoleIndex;
     });
+    if (widget.initialCompanyCertification && !_initialProofDestinationOpened) {
+      _initialProofDestinationOpened = true;
+      await _openCompanyDetails();
+    }
   }
 
   Future<void> _continueProviderType() async {
