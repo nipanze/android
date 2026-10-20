@@ -98,7 +98,7 @@ class CapabilityBadge extends StatelessWidget {
       statusNote =
           '${capability.qualificationIds.length} qualifications declared';
     } else {
-      statusNote = l10n.providerPolicyNoProof;
+      statusNote = l10n.providerPolicyProofLater;
     }
 
     return Container(
@@ -244,8 +244,6 @@ class CapabilityBadge extends StatelessWidget {
                           ),
                         ),
                       if (onTap != null &&
-                          capability.verificationPolicy !=
-                              ProviderVerificationPolicy.open &&
                           capability.status !=
                               ProviderCapabilityStatus.providerVerified)
                         Align(
@@ -254,7 +252,7 @@ class CapabilityBadge extends StatelessWidget {
                             onPressed: onTap,
                             icon: const Icon(Icons.upload_file_outlined,
                                 size: 16),
-                            label: Text(l10n.providerPolicyUploadDocuments),
+                            label: Text(l10n.companyEvidenceAdd),
                             style: TextButton.styleFrom(
                               minimumSize: const Size(44, 44),
                               padding: const EdgeInsetsDirectional.only(

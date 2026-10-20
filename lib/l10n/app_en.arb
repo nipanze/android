@@ -1737,7 +1737,7 @@
   "providerCapabilityPendingReview": "Pending review",
   "providerCapabilityRejected": "Rejected",
   "providerPolicyNoProof": "No proof required",
-  "providerPolicyProofLater": "Proof can be added later",
+  "providerPolicyProofLater": "Add proof to be considered for a Nipanze badge",
   "providerPolicyProofRequired": "Proof required before it goes live",
   "providerPolicyNeedsProofTag": "Needs proof",
   "providerPolicyUploadDocuments": "Upload documents",

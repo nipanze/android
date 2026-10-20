@@ -1641,7 +1641,7 @@
   "providerCapabilityPendingReview": "Bitegereje gusuzumwa",
   "providerCapabilityRejected": "Byanzwe",
   "providerPolicyNoProof": "Nta cyemezo gikenewe",
-  "providerPolicyProofLater": "Ushobora kongeraho icyemezo nyuma",
+  "providerPolicyProofLater": "Ongeraho icyemezo kugira ngo usuzumirwe kubona ikirango cya Nipanze",
   "providerPolicyProofRequired": "Icyemezo kirakenewe mbere yo gutangira",
   "providerPolicyNeedsProofTag": "Icyemezo kirakenewe",
   "providerPolicyUploadDocuments": "Ohereza inyandiko",

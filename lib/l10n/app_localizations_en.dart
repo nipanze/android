@@ -3709,7 +3709,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerPolicyNoProof => 'No proof required';
 
   @override
-  String get providerPolicyProofLater => 'Proof can be added later';
+  String get providerPolicyProofLater =>
+      'Add proof to be considered for a Nipanze badge';
 
   @override
   String get providerPolicyProofRequired =>

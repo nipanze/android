@@ -3714,7 +3714,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerPolicyNoProof => 'لا يلزم إثبات';
 
   @override
-  String get providerPolicyProofLater => 'يمكنك إضافة الإثبات لاحقاً';
+  String get providerPolicyProofLater =>
+      'أضف إثباتًا للنظر في منحك شارة Nipanze';
 
   @override
   String get providerPolicyProofRequired => 'يلزم الإثبات قبل التفعيل';

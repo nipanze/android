@@ -3765,7 +3765,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get providerPolicyProofLater =>
-      'Vous pouvez ajouter un justificatif plus tard';
+      'Ajoutez un justificatif pour être considéré pour un badge Nipanze';
 
   @override
   String get providerPolicyProofRequired =>

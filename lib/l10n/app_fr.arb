@@ -1648,7 +1648,7 @@
   "providerCapabilityPendingReview": "En attente d’examen",
   "providerCapabilityRejected": "Refusé",
   "providerPolicyNoProof": "Aucun justificatif requis",
-  "providerPolicyProofLater": "Vous pouvez ajouter un justificatif plus tard",
+  "providerPolicyProofLater": "Ajoutez un justificatif pour être considéré pour un badge Nipanze",
   "providerPolicyProofRequired": "Justificatif requis avant activation",
   "providerPolicyNeedsProofTag": "Justificatif requis",
   "providerPolicyUploadDocuments": "Envoyer des documents",

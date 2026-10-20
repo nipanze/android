@@ -3728,7 +3728,8 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerPolicyNoProof => 'Nta cyemezo gikenewe';
 
   @override
-  String get providerPolicyProofLater => 'Ushobora kongeraho icyemezo nyuma';
+  String get providerPolicyProofLater =>
+      'Ongeraho icyemezo kugira ngo usuzumirwe kubona ikirango cya Nipanze';
 
   @override
   String get providerPolicyProofRequired =>

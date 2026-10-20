@@ -6655,7 +6655,7 @@ abstract class AppLocalizations {
   /// No description provided for @providerPolicyProofLater.
   ///
   /// In en, this message translates to:
-  /// **'Proof can be added later'**
+  /// **'Add proof to be considered for a Nipanze badge'**
   String get providerPolicyProofLater;
 
   /// No description provided for @providerPolicyProofRequired.

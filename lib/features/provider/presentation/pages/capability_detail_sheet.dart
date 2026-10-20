@@ -251,10 +251,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                       capability: capability,
                       onAddProof: onAddProof,
                       onAddRoleProof: isJob && !capability.isVerified
-                          ? () {
-                              Navigator.of(context).pop();
-                              onEdit();
-                            }
+                          ? onAddProof
                           : null,
                     ),
                   ],
@@ -446,10 +443,8 @@ class _VerificationChecklist extends StatelessWidget {
                               ? AppLocalizations.of(context)!
                                   .providerPolicyProofLater
                               : AppLocalizations.of(context)!
-                                  .providerPolicyNoProof,
-          trailingAction: isVerified ||
-                  capability.verificationPolicy ==
-                      ProviderVerificationPolicy.open
+                                  .providerPolicyProofLater,
+          trailingAction: isVerified || onAddProof == null
               ? null
               : AppLocalizations.of(context)!.companyEvidenceAdd,
         ),

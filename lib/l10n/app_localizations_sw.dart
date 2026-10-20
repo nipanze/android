@@ -3723,7 +3723,8 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerPolicyNoProof => 'Hakuna uthibitisho unaohitajika';
 
   @override
-  String get providerPolicyProofLater => 'Unaweza kuongeza uthibitisho baadaye';
+  String get providerPolicyProofLater =>
+      'Ongeza uthibitisho ili uzingatiwe kwa beji ya Nipanze';
 
   @override
   String get providerPolicyProofRequired =>

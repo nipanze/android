@@ -75,7 +75,7 @@ class ProviderTypeCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppColors.success.withValues(alpha: .12),
                             border: Border.all(
@@ -83,18 +83,14 @@ class ProviderTypeCard extends StatelessWidget {
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.check_circle_rounded,
-                                size: 13, color: AppColors.success),
-                            const SizedBox(width: 4),
-                            Text(currentLabel!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(
-                                        color: AppColors.success,
-                                        fontWeight: FontWeight.w700)),
-                          ]),
+                          child: Text(currentLabel!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 10)),
                         ),
                       ],
                     ]),
