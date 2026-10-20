@@ -3307,6 +3307,48 @@ class AppLocalizationsFr extends AppLocalizations {
   String get searchCategories => 'Rechercher des catégories';
 
   @override
+  String get searchCatalog => 'Rechercher des catégories, services et rôles';
+
+  @override
+  String get catalogNoMatch => 'Aucun résultat';
+
+  @override
+  String get requestService => 'Demander un service';
+
+  @override
+  String get catalogRequestSubmitted => 'Demande de service envoyée';
+
+  @override
+  String get reportContent => 'Signaler le contenu';
+
+  @override
+  String get contentReportSubmitted => 'Signalement envoyé';
+
+  @override
+  String get providerSafetyMedical =>
+      'Nipanze ne fournit pas de conseils médicaux et ne garantit pas les soins. Les actes exigent un professionnel agréé, le consentement et un établissement d\'urgence.';
+
+  @override
+  String get providerSafetyInvestment =>
+      'Nipanze ne détient pas de fonds, ne donne pas de conseils d\'investissement et ne garantit aucun rendement.';
+
+  @override
+  String get providerSafetyTraditional =>
+      'Ne promettez pas de guérir une maladie ni de garantir un résultat. Les soins traditionnels suivent les règles locales.';
+
+  @override
+  String get providerSafetyWellness =>
+      'Les annonces de massage et de spa concernent uniquement le bien-être thérapeutique. Les services sexuels sont interdits.';
+
+  @override
+  String get providerSafetyAcademic =>
+      'Obtenez des conseils et des retours. Présenter le travail d\'autrui comme le vôtre peut entraîner l\'expulsion.';
+
+  @override
+  String get providerSafetyDomestic =>
+      'N\'indiquez jamais une adresse exacte dans un profil ou une annonce publique.';
+
+  @override
   String get noMatchingJobOpportunities =>
       'Aucune opportunité d\'emploi correspondante pour le moment. Les opportunités apparaîtront ici dès que des demandes seront publiées.';
 

@@ -38,6 +38,14 @@ class MockProfileRepository extends Mock implements ProfileRepository {}
 void main() {
   late MockProviderRepository mockRepo;
 
+  test('Foreman trade test certificate is proof-enabled', () {
+    final role = ProviderServiceRole.defaults
+        .singleWhere((item) => item.slug == 'foreman_supervisor');
+    final certificate = role.qualifications
+        .singleWhere((item) => item.slug == 'trade_test_certificate');
+    expect(certificate.isEvidence, isTrue);
+  });
+
   setUp(() {
     mockRepo = MockProviderRepository();
     when(() => mockRepo.capabilityProfilesEnabled())
@@ -49,6 +57,8 @@ void main() {
         )).thenAnswer((_) async => []);
     when(() => mockRepo.isCategoryWorkProfileEnabled(any()))
         .thenAnswer((_) async => false);
+    when(() => mockRepo.getMyCategoryIdentityUpdatedAt())
+        .thenAnswer((_) async => {});
   });
 
   testWidgets(

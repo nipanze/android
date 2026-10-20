@@ -318,6 +318,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 const SizedBox(height: 8),
                 _EvidenceRow(
                   label: item.$2,
+                  busy: _uploadingDocumentType == item.$1,
                   status: _submission(item.$1)?['status'] == 'approved'
                       ? l10n.companyVerificationVerified
                       : _submission(item.$1)?['status'] == 'rejected'
@@ -444,6 +445,7 @@ class _ChoiceChips extends StatelessWidget {
 class _EvidenceRow extends StatelessWidget {
   const _EvidenceRow({
     required this.label,
+    required this.busy,
     required this.status,
     required this.hasUpload,
     required this.hasExisting,
@@ -452,6 +454,7 @@ class _EvidenceRow extends StatelessWidget {
   });
 
   final String label;
+  final bool busy;
   final String status;
   final String? reason;
   final bool hasUpload;
@@ -479,6 +482,14 @@ class _EvidenceRow extends StatelessWidget {
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: 9),
+          if (busy) ...[
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(width: 9),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

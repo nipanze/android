@@ -651,4 +651,52 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 - **Implementation plan:** Add standalone `sql/patch_provider_identity_switch.sql` (or split standalone patches if necessary) for identity presentations, owner/admin reads, invoker wrappers/private internals, serialized atomic switch, audit/rate limit, active-capability and offer guards, and additive offer snapshots/public identity output. Then wire provider models/repository/Cubit, B2 presentation, S2, S4 and entry points; add read-only identity context to Admin; localize en/sw/fr/rw/ar; add focused tests and update README/trackers. Keep Home/feed widgets and existing view/RPC signatures untouched.
 - **Confirmed decisions:** 5 switches per user/category per rolling 24 hours; warn rather than block when a switch leaves no active services; require and audit representative authorization; preserve personal work roles; always show B2. Old service capabilities and evidence stay stored and inactive under their identity. Historical offer/reveal snapshots are not backfilled. The public identity lookup is additive and leaves existing feed view/RPC signatures untouched.
 
+## 18. Stage 4.16 — Catalog expansion, ordering, search, and proof upload
+
+### Scope and decisions
+
+- Home, Marketplace feed, historical SQL patches, and existing slugs remain protected. All database work is in the standalone, rerunnable `sql/patch_catalog_expansion_v3.sql`.
+- Active-first ordering on Choose Category is approved: categories with saved capabilities sort by most recently updated capability, followed by the original catalog order. The selected-count badge is unchanged.
+- O-2: keep Driver and Chauffeur in Transport & Logistics; discover them with aliases.
+- O-3: require proof for Nanny; Home Carer remains optional proof. O-8: new regulated categories are seeded inactive until per-category rollout and legal review. O-6: discovery remains through Needs, offers, and search; no public directory.
+- O-1 remains open. Duwah service and practitioner labels are disabled placeholders; no practitioner kinds are seeded. O-4/O-5 still require country legal/regulatory review before enabling Health, Investment, or Traditional & Cultural.
+- Health content rules require private HIV/health Needs, no stored test results or public condition details, consent and licensing notices, no abortion provider matching, and facility-only medical procedures at launch. At-home medical service modes are deferred. Massage/Spa are therapeutic only; coursework help is guidance only. Content moderation and Need privacy release checks remain launch blockers until verified.
+
+### Findings and implementation
+
+- The Foreman default and existing SQL catalog both marked `trade_test_certificate` as non-evidence. Screen F filters proof choices to evidence-enabled qualifications, so Foreman had no proof item to upload. The app fallback now marks it evidence-enabled; the new SQL patch corrects the catalog row.
+- Individual role proof is staged in memory on Screen F, then uploaded after capability save. Company verification uses an upload followed by an RPC record. Local source shows a private `provider-evidence` bucket, owner-path storage policies, and owner-scoped evidence submission. The bucket definition allowed 50 MB while the app accepts 5 MB; the new patch aligns the bucket limit and creates it if missing.
+- Neither Individual nor Company could be exercised against staging during this implementation. Exact runtime upload errors, deployed policies, and other-user reads remain unverified; do not treat static findings as reproduction results.
+- The additive patch adds search aliases, catalog request storage with owner insert/admin read RLS, inactive catalog rows for regulated categories, role/kind/qualification data, and a read-only catalog search view. Search is integrated in Choose Category with a 250 ms debounce, parent category labels, preselection, and request submission on no match.
+- The live database catalog was not queried. Prior Stage 4.15 notes report 17 total categories and 204 active capabilities in the cloud, while the local reference has 14 categories, 129 capabilities, and 61 roles. Slug differences still require staging comparison before applying the patch.
+
+### Phase and test tracker
+
+| Phase / test | Status | Evidence / remaining work |
+|---|---|---|
+| P1 shared upload component with progress/success/retry across Individual and Company | Incomplete | Existing paths remain separate; staging reproduction and a shared uploader are still required. |
+| Foreman trade-test evidence choice | Implemented locally | Default role and SQL patch corrected; end-to-end upload awaits staging. |
+| P2 additive catalog, aliases, role data, catalog_requests RLS, search view | Implemented in patch | SQL grammar and idempotency require live staging execution. |
+| P3 active-first Choose Category ordering | Implemented | Uses capability updated/created timestamp; Home/feed untouched. |
+| P4 global catalog search and request flow | Implemented locally | Search view must be installed; locale-specific catalog labels still fall back to English. |
+| P5 sensitive-category notices and report action | Implemented in provider sheets | Moderation hooks and private health Need behavior still require dedicated work and launch review. Health, Investment, and Traditional remain disabled. |
+| Upload success/progress/retry, oversize, wrong type, offline, other-user isolation | Pending | Requires provider upload integration tests and staging users. |
+| Slugs preserved; rerun stable; existing-user selections unchanged | Pending | Validate patch on staging before apply. |
+| Alias/kind/localized search and selection pre-tick | Pending | Add focused widget and repository tests. |
+| Identity rules, atomic save, soft cap 30, proof expiry and policy activation | Pending | Add SQL/RPC tests; verify existing identity save behavior on staging. |
+| Safety notices, moderation rejection, private fields, Needs matching | Partial | Notices/report capture are local; moderation rejection and private-field rules remain unimplemented and unverified. |
+| Home baseline, protected view/RPC signatures, Loans/Forex/Needs regression | Pending | No Home/feed file was edited; the full test run exposed two unrelated localization failures. |
+
+### Verification log
+
+| Date | Check | Result |
+|---|---|---|
+| 2026-10-21 | `flutter gen-l10n` | Completed; added en/sw/fr/rw/ar strings for search empty state and request action. |
+| 2026-10-21 | `dart format` on edited Dart files | Passed. |
+| 2026-10-21 | `flutter analyze` | No errors; nine informational lints remain in unrelated existing files. |
+| 2026-10-21 | Focused provider test file | Passed: 32 tests, including Foreman proof availability. |
+| 2026-10-21 | Full Flutter test suite | Failed on two existing localization issues: missing Kinyarwanda `events_celebrations` description and unsupported `rw` localization delegate in the post-duration test. |
+| 2026-10-21 | SQL grammar parse and `git diff --check` | Passed: 80 SQL statements parsed; no whitespace errors. Syntax-only, not live semantic execution. |
+| — | SQL execution/idempotency/RLS, Home snapshots, staging upload reproduction | Pending. |
+
 

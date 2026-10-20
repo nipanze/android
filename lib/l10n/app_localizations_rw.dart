@@ -3277,6 +3277,48 @@ class AppLocalizationsRw extends AppLocalizations {
   String get searchCategories => 'Shakisha ibyiciro';
 
   @override
+  String get searchCatalog => 'Shakisha ibyiciro, serivisi n\'imirimo';
+
+  @override
+  String get catalogNoMatch => 'Nta bihuye bibonetse';
+
+  @override
+  String get requestService => 'Saba serivisi';
+
+  @override
+  String get catalogRequestSubmitted => 'Icyifuzo cya serivisi cyoherejwe';
+
+  @override
+  String get reportContent => 'Tanga raporo y\'ibirimo';
+
+  @override
+  String get contentReportSubmitted => 'Raporo yoherejwe';
+
+  @override
+  String get providerSafetyMedical =>
+      'Nipanze ntitanga inama z\'ubuvuzi cyangwa ngo yemeze ubuvuzi. Uburyo bwo kuvura busaba inzobere ibifitiye uruhushya, uburenganzira n\'ivuriro ry\'ibyihutirwa.';
+
+  @override
+  String get providerSafetyInvestment =>
+      'Nipanze ntiyishyuza cyangwa ngo ibike amafaranga, itange inama z\'ishoramari cyangwa yemeze inyungu.';
+
+  @override
+  String get providerSafetyTraditional =>
+      'Ntukavuge ko ukiza indwara cyangwa wemeza ibisubizo. Ubuvuzi gakondo bugengwa n\'amategeko y\'aho uri.';
+
+  @override
+  String get providerSafetyWellness =>
+      'Kwamamaza massage na spa bigenewe ubuzima bwiza n\'ubuvuzi gusa. Serivisi z\'imibonano mpuzabitsina zirabujijwe.';
+
+  @override
+  String get providerSafetyAcademic =>
+      'Shaka ubuyobozi n\'ibitekerezo. Gutanga umurimo w\'undi nk\'uwawe bishobora kugutera kwirukanwa.';
+
+  @override
+  String get providerSafetyDomestic =>
+      'Ntushyire aderesi nyayo y\'urugo mu mwirondoro cyangwa itangazo bigaragarira bose.';
+
+  @override
   String get noMatchingJobOpportunities =>
       'Nta mahirwe y\'akazi ahwanye arahari ubu. Amahirwe azagaragara hano abakoresha nibashyiraho ibyifuzo.';
 

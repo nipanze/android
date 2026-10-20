@@ -7,6 +7,7 @@ import '../../../core/services/offline_service.dart';
 import '../../marketplace/domain/models/marketplace_item.dart';
 import '../domain/models/need_capability.dart';
 import '../domain/models/need_category.dart';
+import '../domain/models/need_catalog_localizations.dart';
 import '../domain/models/need_offer.dart';
 
 @lazySingleton
@@ -59,6 +60,72 @@ class NeedsRepository {
     } catch (_) {
       return _dedupeBySlug(NeedCategory.defaultCategories);
     }
+  }
+
+  Future<List<Map<String, dynamic>>> searchProviderCatalog(
+    String query, {
+    String? localeCode,
+  }) async {
+    final normalized = query.trim().toLowerCase();
+    if (normalized.isEmpty) return const [];
+    try {
+      final rows = await _client.from('v_catalog_search').select();
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) {
+            final item = row.cast<String, dynamic>();
+            final slug = item['slug']?.toString() ?? '';
+            final type = item['result_type']?.toString();
+            final localizedParent = NeedCatalogLocalizations.categoryName(
+              localeCode,
+              item['category_slug']?.toString() ?? '',
+            );
+            final translated = type == 'category'
+                ? NeedCatalogLocalizations.categoryName(localeCode, slug)
+                : (type == 'service' || type == 'role')
+                    ? NeedCatalogLocalizations.capabilityName(localeCode, slug)
+                    : null;
+            if (translated != null) item['localized_label'] = translated;
+            if (localizedParent != null) {
+              item['localized_parent_category'] = localizedParent;
+            }
+            return item;
+          })
+          .where((row) {
+            final haystack = [
+              row['label']?.toString() ?? '',
+              row['localized_label']?.toString() ?? '',
+              row['parent_category']?.toString() ?? '',
+              row['localized_parent_category']?.toString() ?? '',
+              ...((row['aliases'] as List?) ?? const [])
+                  .map((v) => v.toString()),
+            ].join(' ').toLowerCase();
+            return haystack.contains(normalized);
+          })
+          .take(50)
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> requestCatalogItem(String query) async {
+    final uid = currentViewerId;
+    final value = query.trim();
+    if (uid == null || value.isEmpty) return;
+    await _client.from('catalog_requests').insert({
+      'user_id': uid,
+      'query': value.length > 160 ? value.substring(0, 160) : value,
+    });
+  }
+
+  Future<void> reportProviderCatalogContent(String categorySlug) async {
+    final uid = currentViewerId;
+    if (uid == null) return;
+    await _client.from('provider_content_reports').insert({
+      'user_id': uid,
+      'category_slug': categorySlug,
+    });
   }
 
   /// Fetch capabilities for a category

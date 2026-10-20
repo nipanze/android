@@ -30,6 +30,19 @@ class ProviderRepository implements IProviderRepository {
 
   String? get _uid => _client.auth.currentUser?.id;
 
+  Future<void> _uploadProviderEvidenceObject({
+    required String path,
+    required Uint8List bytes,
+    required String mimeType,
+  }) async {
+    await _client.storage.from('provider-evidence').uploadBinary(
+          path,
+          bytes,
+          retryAttempts: 2,
+          fileOptions: FileOptions(contentType: mimeType, upsert: false),
+        );
+  }
+
   void _clearCache() {
     _capabilityCache.clear();
     _opportunityCache.clear();
@@ -57,6 +70,26 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<Map<String, DateTime>> getMyCategoryIdentityUpdatedAt() async {
+    final uid = _uid;
+    if (uid == null) return const {};
+    try {
+      final rows = await _client
+          .from(TableNames.providerCategoryProfiles)
+          .select('category_slug, updated_at')
+          .eq('user_id', uid);
+      return {
+        for (final row in (rows as List).whereType<Map>())
+          row['category_slug'].toString():
+              DateTime.tryParse(row['updated_at']?.toString() ?? '') ??
+                  DateTime.fromMillisecondsSinceEpoch(0),
+      };
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<void> setCategoryType(
       String categorySlug, ProviderCategoryType type) async {
     try {
@@ -72,7 +105,8 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getMyProviderIdentity(String categorySlug) async {
+  Future<Map<String, dynamic>> getMyProviderIdentity(
+      String categorySlug) async {
     try {
       final result = await _client.rpc(RpcNames.getMyProviderIdentity,
           params: {'p_category_slug': categorySlug});
@@ -106,12 +140,12 @@ class ProviderRepository implements IProviderRepository {
     required Map<String, dynamic> presentation,
   }) async {
     try {
-      final result = await _client.rpc(RpcNames.switchProviderIdentity,
-          params: {
-            'p_category_slug': categorySlug,
-            'p_to_identity': type.name,
-            'p_presentation': presentation,
-          });
+      final result =
+          await _client.rpc(RpcNames.switchProviderIdentity, params: {
+        'p_category_slug': categorySlug,
+        'p_to_identity': type.name,
+        'p_presentation': presentation,
+      });
       _clearCache();
       return result is Map ? result.cast<String, dynamic>() : const {};
     } catch (e) {
@@ -185,11 +219,11 @@ class ProviderRepository implements IProviderRepository {
     final path = 'evidence/$uid/$categorySlug/company/$documentType/'
         '${DateTime.now().microsecondsSinceEpoch}_$safeName';
     try {
-      await _client.storage.from('provider-evidence').uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(contentType: mimeType, upsert: false),
-          );
+      await _uploadProviderEvidenceObject(
+        path: path,
+        bytes: bytes,
+        mimeType: mimeType,
+      );
       return path;
     } catch (e) {
       throw parseSupabaseError(e);
@@ -209,6 +243,7 @@ class ProviderRepository implements IProviderRepository {
         'p_file_path': filePath,
       });
     } catch (e) {
+      await _cleanupUnrecordedEvidence(filePath);
       throw parseSupabaseError(e);
     }
   }
@@ -308,11 +343,11 @@ class ProviderRepository implements IProviderRepository {
     final path =
         'evidence/$uid/$categorySlug/$safeKey/${DateTime.now().microsecondsSinceEpoch}_$safeName';
     try {
-      await _client.storage.from('provider-evidence').uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(contentType: mimeType, upsert: false),
-          );
+      await _uploadProviderEvidenceObject(
+        path: path,
+        bytes: bytes,
+        mimeType: mimeType,
+      );
       return path;
     } catch (e) {
       throw parseSupabaseError(e);
@@ -342,11 +377,11 @@ class ProviderRepository implements IProviderRepository {
     final path =
         'evidence/$uid/$capabilitySlug/qualifications/$roleSlug/$qualificationSlug/${DateTime.now().microsecondsSinceEpoch}_$safeName';
     try {
-      await _client.storage.from('provider-evidence').uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(contentType: mimeType, upsert: false),
-          );
+      await _uploadProviderEvidenceObject(
+        path: path,
+        bytes: bytes,
+        mimeType: mimeType,
+      );
       return path;
     } catch (e) {
       throw parseSupabaseError(e);
@@ -426,39 +461,43 @@ class ProviderRepository implements IProviderRepository {
           final capabilities = (data as List)
               .map((e) => ProviderCapability.fromMap(e as Map<String, dynamic>))
               .toList();
-          final identityRows = await _client.from(TableNames.providerCapabilities)
-              .select('id, identity_type').eq('user_id', uid);
+          final identityRows = await _client
+              .from(TableNames.providerCapabilities)
+              .select('id, identity_type')
+              .eq('user_id', uid);
           final identityById = {
             for (final row in (identityRows as List).whereType<Map>())
               row['id'].toString(): row['identity_type']?.toString(),
           };
-          final withIdentity = capabilities.map((cap) => ProviderCapability(
-                id: cap.id,
-                userId: cap.userId,
-                capabilitySlug: cap.capabilitySlug,
-                capabilityType: cap.capabilityType,
-                identityType: identityById[cap.id],
-                verificationLevel: cap.verificationLevel,
-                evidenceUrl: cap.evidenceUrl,
-                metadata: cap.metadata,
-                verifiedBy: cap.verifiedBy,
-                verifiedAt: cap.verifiedAt,
-                createdAt: cap.createdAt,
-                updatedAt: cap.updatedAt,
-                capabilityName: cap.capabilityName,
-                categorySlug: cap.categorySlug,
-                categoryName: cap.categoryName,
-                categoryIcon: cap.categoryIcon,
-                status: cap.status,
-                pendingEvidenceCount: cap.pendingEvidenceCount,
-                approvedEvidenceCount: cap.approvedEvidenceCount,
-                rejectedEvidenceCount: cap.rejectedEvidenceCount,
-                expiredEvidenceCount: cap.expiredEvidenceCount,
-                latestRejectReason: cap.latestRejectReason,
-                roleQualificationClaims: cap.roleQualificationClaims,
-                verificationPolicy: cap.verificationPolicy,
-                isActive: cap.isActive,
-              )).toList();
+          final withIdentity = capabilities
+              .map((cap) => ProviderCapability(
+                    id: cap.id,
+                    userId: cap.userId,
+                    capabilitySlug: cap.capabilitySlug,
+                    capabilityType: cap.capabilityType,
+                    identityType: identityById[cap.id],
+                    verificationLevel: cap.verificationLevel,
+                    evidenceUrl: cap.evidenceUrl,
+                    metadata: cap.metadata,
+                    verifiedBy: cap.verifiedBy,
+                    verifiedAt: cap.verifiedAt,
+                    createdAt: cap.createdAt,
+                    updatedAt: cap.updatedAt,
+                    capabilityName: cap.capabilityName,
+                    categorySlug: cap.categorySlug,
+                    categoryName: cap.categoryName,
+                    categoryIcon: cap.categoryIcon,
+                    status: cap.status,
+                    pendingEvidenceCount: cap.pendingEvidenceCount,
+                    approvedEvidenceCount: cap.approvedEvidenceCount,
+                    rejectedEvidenceCount: cap.rejectedEvidenceCount,
+                    expiredEvidenceCount: cap.expiredEvidenceCount,
+                    latestRejectReason: cap.latestRejectReason,
+                    roleQualificationClaims: cap.roleQualificationClaims,
+                    verificationPolicy: cap.verificationPolicy,
+                    isActive: cap.isActive,
+                  ))
+              .toList();
           _capabilityCache[uid] = withIdentity;
           OfflineService().reportRequestSuccess();
           return withIdentity;
@@ -677,6 +716,7 @@ class ProviderRepository implements IProviderRepository {
       _clearCache();
       return result as String;
     } catch (e) {
+      await _cleanupUnrecordedEvidence(fileUrl);
       throw parseSupabaseError(e);
     }
   }
@@ -701,7 +741,18 @@ class ProviderRepository implements IProviderRepository {
       _clearCache();
       return result as String;
     } catch (e) {
+      await _cleanupUnrecordedEvidence(evidenceObjectPath);
       throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> _cleanupUnrecordedEvidence(String objectPath) async {
+    try {
+      await _client.rpc('cleanup_unrecorded_provider_evidence', params: {
+        'p_object_path': objectPath,
+      });
+    } catch (_) {
+      // Keep the original submission error; cleanup is best-effort.
     }
   }
 

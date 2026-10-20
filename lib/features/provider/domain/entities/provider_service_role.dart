@@ -1052,7 +1052,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'trade_test_certificate',
             name: 'Trade test certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'managed_10_workers',
             name: 'Managed 10+ workers',

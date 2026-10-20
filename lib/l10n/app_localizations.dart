@@ -5950,6 +5950,78 @@ abstract class AppLocalizations {
   /// **'Search categories'**
   String get searchCategories;
 
+  /// No description provided for @searchCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories, services and roles'**
+  String get searchCatalog;
+
+  /// No description provided for @catalogNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No match'**
+  String get catalogNoMatch;
+
+  /// No description provided for @requestService.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a service'**
+  String get requestService;
+
+  /// No description provided for @catalogRequestSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Service request submitted'**
+  String get catalogRequestSubmitted;
+
+  /// No description provided for @reportContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Report content'**
+  String get reportContent;
+
+  /// No description provided for @contentReportSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Report submitted'**
+  String get contentReportSubmitted;
+
+  /// No description provided for @providerSafetyMedical.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze does not provide medical advice or guarantee care. Procedures require a licensed provider, consent, and an emergency referral facility.'**
+  String get providerSafetyMedical;
+
+  /// No description provided for @providerSafetyInvestment.
+  ///
+  /// In en, this message translates to:
+  /// **'Nipanze does not hold funds, give investment advice, or guarantee returns.'**
+  String get providerSafetyInvestment;
+
+  /// No description provided for @providerSafetyTraditional.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not claim to cure illness or guarantee outcomes. Traditional healing is subject to local rules.'**
+  String get providerSafetyTraditional;
+
+  /// No description provided for @providerSafetyWellness.
+  ///
+  /// In en, this message translates to:
+  /// **'Massage and spa listings are for therapeutic and wellness services only. Sexual services are prohibited.'**
+  String get providerSafetyWellness;
+
+  /// No description provided for @providerSafetyAcademic.
+  ///
+  /// In en, this message translates to:
+  /// **'Get guidance and feedback. Submitting someone else\'s work as your own can get you expelled.'**
+  String get providerSafetyAcademic;
+
+  /// No description provided for @providerSafetyDomestic.
+  ///
+  /// In en, this message translates to:
+  /// **'Never include an exact home address in a public profile or listing.'**
+  String get providerSafetyDomestic;
+
   /// No description provided for @noMatchingJobOpportunities.
   ///
   /// In en, this message translates to:

@@ -11,6 +11,7 @@ import '../entities/provider_service_role.dart';
 abstract class IProviderRepository {
   Future<bool> capabilityProfilesEnabled();
   Future<Map<String, ProviderCategoryType>> getMyCategoryTypes();
+  Future<Map<String, DateTime>> getMyCategoryIdentityUpdatedAt();
   Future<void> setCategoryType(String categorySlug, ProviderCategoryType type);
   Future<Map<String, dynamic>> getMyProviderIdentity(String categorySlug);
   Future<void> saveProviderIdentityPresentation({

@@ -3252,6 +3252,48 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchCategories => 'البحث في الفئات';
 
   @override
+  String get searchCatalog => 'ابحث عن الفئات والخدمات والأدوار';
+
+  @override
+  String get catalogNoMatch => 'لا توجد نتائج مطابقة';
+
+  @override
+  String get requestService => 'اطلب خدمة';
+
+  @override
+  String get catalogRequestSubmitted => 'تم إرسال طلب الخدمة';
+
+  @override
+  String get reportContent => 'الإبلاغ عن المحتوى';
+
+  @override
+  String get contentReportSubmitted => 'تم إرسال البلاغ';
+
+  @override
+  String get providerSafetyMedical =>
+      'لا تقدم نيبانزي نصائح طبية ولا تضمن الرعاية. تتطلب الإجراءات مقدمًا مرخصًا وموافقة ومرفقًا للإحالة الطارئة.';
+
+  @override
+  String get providerSafetyInvestment =>
+      'لا تحتفظ نيبانزي بالأموال ولا تقدم نصائح استثمارية ولا تضمن العوائد.';
+
+  @override
+  String get providerSafetyTraditional =>
+      'لا تدّعِ علاج الأمراض أو ضمان النتائج. تخضع ممارسات العلاج التقليدي للقوانين المحلية.';
+
+  @override
+  String get providerSafetyWellness =>
+      'إعلانات التدليك والمنتجعات مخصصة للعلاج والاستجمام فقط. الخدمات الجنسية محظورة.';
+
+  @override
+  String get providerSafetyAcademic =>
+      'اطلب الإرشاد والملاحظات. قد يؤدي تقديم عمل شخص آخر على أنه عملك إلى فصلك.';
+
+  @override
+  String get providerSafetyDomestic =>
+      'لا تعرض عنوان المنزل الدقيق في ملف أو إعلان عام.';
+
+  @override
   String get noMatchingJobOpportunities =>
       'لا توجد فرص عمل مطابقة متاحة حتى الآن. ستظهر الفرص هنا عند نشر أصحاب العمل للطلبات.';
 

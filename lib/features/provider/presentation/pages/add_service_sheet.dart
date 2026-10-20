@@ -1,5 +1,7 @@
 // lib/features/provider/presentation/pages/add_service_sheet.dart
 
+import 'dart:async';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,6 +57,17 @@ const _financialOrderedSlugs = [
   'sacco_microfinance',
   'other_financial_services',
 ];
+
+String? _providerSafetyNotice(AppLocalizations l10n, String? slug) =>
+    switch (slug) {
+      'health_medical' => l10n.providerSafetyMedical,
+      'business_investment' => l10n.providerSafetyInvestment,
+      'traditional_cultural' => l10n.providerSafetyTraditional,
+      'beauty_fashion_styling' => l10n.providerSafetyWellness,
+      'education_training' => l10n.providerSafetyAcademic,
+      'domestic_household' => l10n.providerSafetyDomestic,
+      _ => null,
+    };
 
 class ProviderCapabilitySelection {
   const ProviderCapabilitySelection({
@@ -396,8 +409,43 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 
   Future<void> _loadCategories() async {
-    final cats = await widget.needsRepository.getCategories();
+    final cats = List<NeedCategory>.of(
+      await widget.needsRepository.getCategories(),
+    );
     if (!mounted) return;
+    final mostRecentByCategory = <String, DateTime>{};
+    for (final capability in widget.existingCapabilities) {
+      final categorySlug = capability.categorySlug ??
+          capability.metadata['category_slug']?.toString();
+      if (categorySlug == null) continue;
+      final updatedAt = capability.updatedAt ?? capability.createdAt;
+      final previous = mostRecentByCategory[categorySlug];
+      if (previous == null || updatedAt.isAfter(previous)) {
+        mostRecentByCategory[categorySlug] = updatedAt;
+      }
+    }
+    if (widget.capabilityProfilesEnabled) {
+      try {
+        final identities =
+            await widget.providerRepository.getMyCategoryIdentityUpdatedAt();
+        for (final entry in identities.entries) {
+          final previous = mostRecentByCategory[entry.key];
+          if (previous == null || entry.value.isAfter(previous)) {
+            mostRecentByCategory[entry.key] = entry.value;
+          }
+        }
+      } catch (_) {
+        // Keep category browsing available if the identity lookup is offline.
+      }
+    }
+    cats.sort((a, b) {
+      final aRecent = mostRecentByCategory[a.slug];
+      final bRecent = mostRecentByCategory[b.slug];
+      if (aRecent != null && bRecent != null) return bRecent.compareTo(aRecent);
+      if (aRecent != null) return -1;
+      if (bRecent != null) return 1;
+      return a.sortOrder.compareTo(b.sortOrder);
+    });
     setState(() {
       _categories = cats;
       _loading = false;
@@ -634,6 +682,55 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     if (widget.initialCompanyCertification && !_initialProofDestinationOpened) {
       _initialProofDestinationOpened = true;
       await _openCompanyDetails();
+    }
+  }
+
+  Future<void> _openCatalogResult(Map<String, dynamic> result) async {
+    final type = result['result_type']?.toString();
+    final slug = result['slug']?.toString() ?? '';
+    final categorySlug = result['category_slug']?.toString();
+    final category = _categories
+        .where(
+            (item) => item.slug == (type == 'category' ? slug : categorySlug))
+        .firstOrNull;
+    if (category == null) return;
+    await _selectCategory(category);
+    if (!mounted || type == 'category') return;
+    setState(() {
+      if (type == 'service') {
+        _selected.add(slug);
+      } else if (type == 'role') {
+        _selectedRoles.add(slug.startsWith('work_') ? slug.substring(5) : slug);
+      } else if (type == 'kind') {
+        final split = slug.split(':');
+        if (split.length == 2) {
+          _selectedRoles.add(split[0]);
+          _kindsByRole.putIfAbsent(split[0], () => {}).add(split[1]);
+        }
+      }
+      if (type == 'service' &&
+          _savedProviderType == ProviderCategoryType.individual) {
+        _step = 4;
+      } else if (!_providerTypeRequired || _savedProviderType != null) {
+        _step = 1;
+      }
+    });
+  }
+
+  Future<void> _reportProviderContent() async {
+    final slug = _selectedCategory?.slug;
+    if (slug == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await widget.needsRepository.reportProviderCatalogContent(slug);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.contentReportSubmitted)));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
     }
   }
 
@@ -1039,6 +1136,15 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                               existingCapabilities: widget.existingCapabilities,
                               scrollController: scrollController,
                               onSelect: _selectCategory,
+                              onSearch: (query) =>
+                                  widget.needsRepository.searchProviderCatalog(
+                                query,
+                                localeCode: Localizations.localeOf(context)
+                                    .languageCode,
+                              ),
+                              onRequest:
+                                  widget.needsRepository.requestCatalogItem,
+                              onCatalogResult: _openCatalogResult,
                             )
                           : _step == 4
                               ? _ProviderTypeStep(
@@ -1301,6 +1407,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                   0;
                                                             });
                                                           },
+                                                          onReportContent:
+                                                              _reportProviderContent,
                                                           onAudienceTap:
                                                               _openAudience,
                                                           audiencePlatforms:
@@ -1893,12 +2001,18 @@ class _CategoryList extends StatefulWidget {
     required this.existingCapabilities,
     required this.scrollController,
     required this.onSelect,
+    required this.onSearch,
+    required this.onRequest,
+    required this.onCatalogResult,
   });
 
   final List<NeedCategory> categories;
   final List<ProviderCapability> existingCapabilities;
   final ScrollController scrollController;
   final void Function(NeedCategory) onSelect;
+  final Future<List<Map<String, dynamic>>> Function(String) onSearch;
+  final Future<void> Function(String) onRequest;
+  final Future<void> Function(Map<String, dynamic>) onCatalogResult;
 
   @override
   State<_CategoryList> createState() => _CategoryListState();
@@ -1907,9 +2021,13 @@ class _CategoryList extends StatefulWidget {
 class _CategoryListState extends State<_CategoryList> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
+  Future<List<Map<String, dynamic>>>? _results;
+  bool _requesting = false;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -1937,7 +2055,7 @@ class _CategoryListState extends State<_CategoryList> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: l10n.searchCategories,
+              hintText: l10n.searchCatalog,
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -1957,79 +2075,166 @@ class _CategoryListState extends State<_CategoryList> {
                 borderSide: BorderSide.none,
               ),
             ),
-            onChanged: (val) => setState(() => _searchQuery = val),
+            onChanged: (val) {
+              _searchDebounce?.cancel();
+              _searchDebounce = Timer(const Duration(milliseconds: 250), () {
+                if (!mounted) return;
+                setState(() {
+                  _searchQuery = val;
+                  _results =
+                      val.trim().isEmpty ? null : widget.onSearch(val.trim());
+                });
+              });
+            },
           ),
         ),
         Expanded(
-          child: ListView.separated(
-            controller: widget.scrollController,
-            itemCount: filtered.length,
-            separatorBuilder: (_, __) => Divider(height: 1, color: border),
-            itemBuilder: (_, i) {
-              final cat = filtered[i];
-              final description = cat.localizedDescription(localeCode);
-              final count = widget.existingCapabilities
-                  .where((c) =>
-                      c.categorySlug == cat.slug ||
-                      c.metadata['category_slug'] == cat.slug)
-                  .length;
+          child: _searchQuery.trim().isNotEmpty
+              ? FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _results,
+                  builder: (context, snapshot) {
+                    final results = snapshot.data ?? const [];
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (results.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(l10n.catalogNoMatch),
+                            TextButton(
+                              onPressed: _requesting
+                                  ? null
+                                  : () async {
+                                      setState(() => _requesting = true);
+                                      try {
+                                        await widget.onRequest(_searchQuery);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  l10n.catalogRequestSubmitted),
+                                            ),
+                                          );
+                                        }
+                                      } catch (error) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  userFacingErrorMessage(
+                                                      error)),
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _requesting = false);
+                                        }
+                                      }
+                                    },
+                              child: Text(l10n.requestService),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) =>
+                          Divider(height: 1, color: border),
+                      itemBuilder: (context, index) {
+                        final result = results[index];
+                        final type = result['result_type']?.toString() ?? '';
+                        final title = type.isEmpty
+                            ? ''
+                            : '${type[0].toUpperCase()}${type.substring(1)}';
+                        return ListTile(
+                          title: Text(result['localized_label']?.toString() ??
+                              result['label']?.toString() ??
+                              ''),
+                          subtitle: Text(
+                              '$title · ${result['localized_parent_category'] ?? result['parent_category'] ?? ''}'),
+                          onTap: () => widget.onCatalogResult(result),
+                        );
+                      },
+                    );
+                  },
+                )
+              : ListView.separated(
+                  controller: widget.scrollController,
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, __) =>
+                      Divider(height: 1, color: border),
+                  itemBuilder: (_, i) {
+                    final cat = filtered[i];
+                    final description = cat.localizedDescription(localeCode);
+                    final count = widget.existingCapabilities
+                        .where((c) =>
+                            c.categorySlug == cat.slug ||
+                            c.metadata['category_slug'] == cat.slug)
+                        .length;
 
-              return ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: bg3,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
-                ),
-                title: Text(cat.localizedName(localeCode),
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: description == null || description.isEmpty
-                    ? null
-                    : Text(
-                        description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.text2Dark
-                              : AppColors.text2Light,
-                        ),
-                      ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (count > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        margin: const EdgeInsets.only(right: 6),
+                    return ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.15),
+                          color: bg3,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                              color: Colors.green.withValues(alpha: 0.4)),
                         ),
-                        child: Text(
-                          '$count',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.green,
-                          ),
-                        ),
+                        alignment: Alignment.center,
+                        child: Text(cat.icon,
+                            style: const TextStyle(fontSize: 20)),
                       ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
+                      title: Text(cat.localizedName(localeCode),
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: description == null || description.isEmpty
+                          ? null
+                          : Text(
+                              description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.text2Dark
+                                    : AppColors.text2Light,
+                              ),
+                            ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (count > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              margin: const EdgeInsets.only(right: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.green.withValues(alpha: 0.4)),
+                              ),
+                              child: Text(
+                                '$count',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ),
+                          const Icon(Icons.chevron_right_rounded),
+                        ],
+                      ),
+                      onTap: () => widget.onSelect(cat),
+                    );
+                  },
                 ),
-                onTap: () => widget.onSelect(cat),
-              );
-            },
-          ),
         ),
       ],
     );
@@ -2056,6 +2261,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.onChangeProviderType,
     required this.onSaveServices,
     required this.onNextKind,
+    required this.onReportContent,
     this.onAudienceTap,
     this.audiencePlatforms = const {},
     this.audienceFollowersCount,
@@ -2076,6 +2282,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final VoidCallback onChangeProviderType;
   final VoidCallback onSaveServices;
   final VoidCallback onNextKind;
+  final VoidCallback onReportContent;
   final VoidCallback? onAudienceTap;
   final Set<String> audiencePlatforms;
   final int? audienceFollowersCount;
@@ -2129,6 +2336,29 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           controller: scrollController,
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
+            if (_providerSafetyNotice(l10n, categorySlug)
+                case final String notice)
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(notice,
+                          style: Theme.of(context).textTheme.bodySmall),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton.icon(
+                          onPressed: onReportContent,
+                          icon: const Icon(Icons.flag_outlined, size: 16),
+                          label: Text(l10n.reportContent),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             // Provider type is category scoped and can be changed from C/D.
             if (providerType != null)
               Padding(

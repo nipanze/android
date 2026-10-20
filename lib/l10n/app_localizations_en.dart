@@ -3261,6 +3261,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchCategories => 'Search categories';
 
   @override
+  String get searchCatalog => 'Search categories, services and roles';
+
+  @override
+  String get catalogNoMatch => 'No match';
+
+  @override
+  String get requestService => 'Request a service';
+
+  @override
+  String get catalogRequestSubmitted => 'Service request submitted';
+
+  @override
+  String get reportContent => 'Report content';
+
+  @override
+  String get contentReportSubmitted => 'Report submitted';
+
+  @override
+  String get providerSafetyMedical =>
+      'Nipanze does not provide medical advice or guarantee care. Procedures require a licensed provider, consent, and an emergency referral facility.';
+
+  @override
+  String get providerSafetyInvestment =>
+      'Nipanze does not hold funds, give investment advice, or guarantee returns.';
+
+  @override
+  String get providerSafetyTraditional =>
+      'Do not claim to cure illness or guarantee outcomes. Traditional healing is subject to local rules.';
+
+  @override
+  String get providerSafetyWellness =>
+      'Massage and spa listings are for therapeutic and wellness services only. Sexual services are prohibited.';
+
+  @override
+  String get providerSafetyAcademic =>
+      'Get guidance and feedback. Submitting someone else\'s work as your own can get you expelled.';
+
+  @override
+  String get providerSafetyDomestic =>
+      'Never include an exact home address in a public profile or listing.';
+
+  @override
   String get noMatchingJobOpportunities =>
       'No matching job opportunities available yet. Opportunities will appear here as requests are posted.';
 

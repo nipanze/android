@@ -3272,6 +3272,48 @@ class AppLocalizationsSw extends AppLocalizations {
   String get searchCategories => 'Tafuta aina za huduma';
 
   @override
+  String get searchCatalog => 'Tafuta kategoria, huduma na kazi';
+
+  @override
+  String get catalogNoMatch => 'Hakuna kinacholingana';
+
+  @override
+  String get requestService => 'Omba huduma';
+
+  @override
+  String get catalogRequestSubmitted => 'Ombi la huduma limetumwa';
+
+  @override
+  String get reportContent => 'Ripoti maudhui';
+
+  @override
+  String get contentReportSubmitted => 'Ripoti imetumwa';
+
+  @override
+  String get providerSafetyMedical =>
+      'Nipanze haitoi ushauri wa matibabu wala dhamana ya huduma. Taratibu zinahitaji mtoa huduma mwenye leseni, ridhaa na kituo cha dharura.';
+
+  @override
+  String get providerSafetyInvestment =>
+      'Nipanze haihifadhi fedha, haitoi ushauri wa uwekezaji wala dhamana ya faida.';
+
+  @override
+  String get providerSafetyTraditional =>
+      'Usidai kutibu magonjwa au kuhakikishia matokeo. Uponyaji wa jadi hufuata sheria za eneo.';
+
+  @override
+  String get providerSafetyWellness =>
+      'Huduma za masaji na spa ni za matibabu na ustawi pekee. Huduma za ngono haziruhusiwi.';
+
+  @override
+  String get providerSafetyAcademic =>
+      'Pata mwongozo na maoni. Kuwasilisha kazi ya mtu mwingine kama yako kunaweza kukufukuzwa.';
+
+  @override
+  String get providerSafetyDomestic =>
+      'Usiweke anwani kamili ya nyumbani kwenye wasifu au tangazo la umma.';
+
+  @override
   String get noMatchingJobOpportunities =>
       'Hakuna nafasi za kazi zinazolingana bado. Nafasi zitaonekana hapa waajiri wanapochapisha maombi.';
 
