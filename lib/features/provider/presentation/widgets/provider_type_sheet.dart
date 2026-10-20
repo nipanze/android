@@ -9,6 +9,8 @@ class ProviderTypeCard extends StatelessWidget {
     required this.description,
     required this.selected,
     required this.onTap,
+    this.isCurrent = false,
+    this.currentLabel,
     super.key,
   });
 
@@ -17,6 +19,8 @@ class ProviderTypeCard extends StatelessWidget {
   final String description;
   final bool selected;
   final VoidCallback onTap;
+  final bool isCurrent;
+  final String? currentLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +28,8 @@ class ProviderTypeCard extends StatelessWidget {
     return Semantics(
       inMutuallyExclusiveGroup: true,
       selected: selected,
-      label: title,
+      label:
+          isCurrent && currentLabel != null ? '$title, $currentLabel' : title,
       hint: description,
       button: true,
       onTap: onTap,
@@ -57,11 +62,33 @@ class ProviderTypeCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                    Text(title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    Row(children: [
+                      Expanded(
+                        child: Text(title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w700)),
+                      ),
+                      if (isCurrent && currentLabel != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: .1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(currentLabel!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                      color: colors.primary,
+                                      fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ]),
                     const SizedBox(height: 3),
                     Text(description,
                         style: Theme.of(context).textTheme.bodySmall),

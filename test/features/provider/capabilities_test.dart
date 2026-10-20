@@ -63,17 +63,20 @@ void main() {
             title: 'Company / Organization',
             description: 'A registered business, agency, team or institution.',
             selected: selected,
+            isCurrent: true,
+            currentLabel: 'Current',
             onTap: () => setState(() => selected = true),
           ),
         ),
       ),
     ));
     final semantics = tester.getSemantics(find.byType(ProviderTypeCard));
-    expect(semantics.label, 'Company / Organization');
+    expect(semantics.label, 'Company / Organization, Current');
     expect(
         semantics.hint, 'A registered business, agency, team or institution.');
     expect(semantics.getSemanticsData().flagsCollection.isSelected,
         Tristate.isFalse);
+    expect(find.text('Current'), findsOneWidget);
     await tester.tap(find.byType(ProviderTypeCard));
     await tester.pump();
     final selectedSemantics =
@@ -108,6 +111,13 @@ void main() {
     when(() => mockRepo.getMyCategoryTypes()).thenAnswer((_) async => {
           'machinery_equipment': ProviderCategoryType.individual,
         });
+    when(() => mockRepo.getMyProviderIdentity('machinery_equipment'))
+        .thenAnswer((_) async => const {});
+    when(() => mockRepo.saveProviderIdentityPresentation(
+          categorySlug: any(named: 'categorySlug'),
+          type: ProviderCategoryType.individual,
+          presentation: any(named: 'presentation'),
+        )).thenAnswer((_) async {});
     when(() => mockRepo.setCategoryType(
           'machinery_equipment',
           ProviderCategoryType.individual,
@@ -162,6 +172,13 @@ void main() {
     when(() => mockRepo.getMyCategoryTypes()).thenAnswer((_) async => {
           'machinery_equipment': ProviderCategoryType.company,
         });
+    when(() => mockRepo.getMyProviderIdentity('machinery_equipment'))
+        .thenAnswer((_) async => const {});
+    when(() => mockRepo.saveProviderIdentityPresentation(
+          categorySlug: any(named: 'categorySlug'),
+          type: ProviderCategoryType.company,
+          presentation: any(named: 'presentation'),
+        )).thenAnswer((_) async {});
     when(() => mockRepo.setCategoryType(
           'machinery_equipment',
           ProviderCategoryType.company,

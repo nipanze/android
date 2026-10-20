@@ -57,7 +57,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         : List<Map<String, dynamic>>.from(await _client
             .from(TableNames.providerCapabilities)
             .select(
-                'id, user_id, capability_slug, need_capabilities!capability_slug(name, category_slug, need_categories!category_slug(name))')
+                'id, user_id, capability_slug, identity_type, need_capabilities!capability_slug(name, category_slug, need_categories!category_slug(name))')
             .inFilter('id', capIds));
     final capById = {
       for (final cap in List<Map<String, dynamic>>.from(capabilities))
@@ -112,12 +112,68 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
       for (final row in companies)
         '${row['user_id']}|${row['category_slug']}': row,
     };
+    final identityRows = allUserIds.isEmpty || allCategorySlugs.isEmpty
+        ? <Map<String, dynamic>>[]
+        : List<Map<String, dynamic>>.from(await _client
+            .from(TableNames.providerCategoryProfiles)
+            .select('user_id, category_slug, provider_type')
+            .inFilter('user_id', allUserIds.toList())
+            .inFilter('category_slug', allCategorySlugs.toList()));
+    final presentations = allUserIds.isEmpty || allCategorySlugs.isEmpty
+        ? <Map<String, dynamic>>[]
+        : List<Map<String, dynamic>>.from(await _client
+            .from(TableNames.providerIdentityPresentations)
+            .select(
+                'user_id, category_slug, identity_type, display_mode, display_name, representative_name')
+            .inFilter('user_id', allUserIds.toList())
+            .inFilter('category_slug', allCategorySlugs.toList()));
+    final identityByOwnerCategory = {
+      for (final row in identityRows)
+        '${row['user_id']}|${row['category_slug']}': row,
+    };
+    final presentationByOwnerCategoryIdentity = {
+      for (final row in presentations)
+        '${row['user_id']}|${row['category_slug']}|${row['identity_type']}':
+            row,
+    };
+    Map<String, dynamic> identityContext(String userId, String categorySlug,
+        {String? identityType}) {
+      final identity =
+          identityByOwnerCategory['$userId|$categorySlug'] ?? const {};
+      final type = identityType ?? identity['provider_type']?.toString();
+      final presentation = type == null
+          ? const <String, dynamic>{}
+          : presentationByOwnerCategoryIdentity[
+                  '$userId|$categorySlug|$type'] ??
+              const <String, dynamic>{};
+      final company = companyByOwnerCategory['$userId|$categorySlug'];
+      final fallbackName = type == 'company'
+          ? company?.cast<String, dynamic>()['company_name']
+          : profilesById[userId]?.cast<String, dynamic>()['full_name'];
+      final displayName = presentation['display_name']?.toString().trim();
+      final representative =
+          presentation['representative_name']?.toString().trim();
+      return {
+        'identity_type': type,
+        'identity_display_name': (displayName?.isNotEmpty == true
+                ? displayName
+                : fallbackName?.toString()) ??
+            '',
+        'identity_representative':
+            presentation['display_mode'] == 'company_with_representative'
+                ? representative ?? ''
+                : '',
+      };
+    }
+
     final capabilityItems = capabilityEvidenceRows.map((row) {
       final cap = capById[row['provider_capability_id'].toString()] ?? {};
       final need = cap['need_capabilities'] as Map?;
       final category = need?['need_categories'] as Map?;
       final userId = cap['user_id']?.toString() ?? '';
       final categorySlug = need?['category_slug']?.toString() ?? '';
+      final identity = identityContext(userId, categorySlug,
+          identityType: cap['identity_type']?.toString());
       return {
         ...row,
         'capability': cap,
@@ -125,6 +181,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         'category_name': category?['name'] ?? categorySlug,
         'provider_name': profilesById[userId]?['full_name'] ?? '',
         'company': companyByOwnerCategory['$userId|$categorySlug'],
+        ...identity,
       };
     }).toList();
     final roleItems = roleRows.map((row) {
@@ -133,6 +190,8 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
       final category = need?['need_categories'] as Map?;
       final userId = cap['user_id']?.toString() ?? '';
       final categorySlug = need?['category_slug']?.toString() ?? '';
+      final identity =
+          identityContext(userId, categorySlug, identityType: 'individual');
       final capabilityName = need?['name'] ?? cap['capability_slug'] ?? '';
       return {
         ...row,
@@ -144,12 +203,15 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
             '$capabilityName · ${row['role_slug']} · ${row['qualification_slug']}',
         'category_name': category?['name'] ?? categorySlug,
         'provider_name': profilesById[userId]?['full_name'] ?? '',
+        ...identity,
       };
     }).toList();
     final companyItems = companyRows.map((row) {
       final userId = row['user_id'].toString();
       final categorySlug = row['category_slug'].toString();
       final company = companyByOwnerCategory['$userId|$categorySlug'];
+      final identity =
+          identityContext(userId, categorySlug, identityType: 'company');
       return {
         ...row,
         'kind': 'company',
@@ -157,6 +219,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
         'provider_name': profilesById[userId]?['full_name'] ?? '',
         'category_name': categoryNames[categorySlug] ?? categorySlug,
         'company': company,
+        ...identity,
       };
     }).toList();
     return [...capabilityItems, ...roleItems, ...companyItems];
@@ -348,6 +411,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                           Text(
                               '${entry.value.first['provider_name']} · ${entry.value.first['category_name']}',
                               style: Theme.of(context).textTheme.bodySmall),
+                          _ProviderIdentityContext(item: entry.value.first),
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: TextButton.icon(
@@ -387,6 +451,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                                   .textTheme
                                   .titleSmall
                                   ?.copyWith(fontWeight: FontWeight.w700)),
+                          _ProviderIdentityContext(item: entry.value.first),
                           Text(
                               '${entry.value.first['provider_name']} · ${entry.value.first['category_name']}',
                               style: Theme.of(context).textTheme.bodySmall),
@@ -430,6 +495,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                                 : l10n.providerTypeIndividual,
                             style: Theme.of(context).textTheme.labelSmall,
                           ),
+                          _ProviderIdentityContext(item: entry.value.first),
                           Text(
                             '${entry.value.first['provider_name']} · ${entry.value.length} ${l10n.providerEvidenceCapabilities}',
                             style: Theme.of(context).textTheme.bodySmall,
@@ -522,6 +588,32 @@ class _CapabilityReviewRow extends StatelessWidget {
             ),
           ]),
       ],
+    );
+  }
+}
+
+class _ProviderIdentityContext extends StatelessWidget {
+  const _ProviderIdentityContext({required this.item});
+  final Map<String, dynamic> item;
+
+  @override
+  Widget build(BuildContext context) {
+    final type = item['identity_type']?.toString();
+    if (type == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final name = item['identity_display_name']?.toString().trim() ?? '';
+    final representative =
+        item['identity_representative']?.toString().trim() ?? '';
+    final identityLabel = type == 'company'
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
+    final details = [
+      if (name.isNotEmpty) name,
+      if (representative.isNotEmpty) representative,
+    ].join(' · ');
+    return Text(
+      details.isEmpty ? identityLabel : '$identityLabel · $details',
+      style: Theme.of(context).textTheme.labelSmall,
     );
   }
 }

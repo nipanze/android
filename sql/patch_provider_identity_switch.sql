@@ -14,6 +14,87 @@ alter table public.provider_capabilities
   add constraint provider_capabilities_identity_type_check
   check (identity_type is null or identity_type in ('individual','company'));
 
+-- Keep the verification policy calculation, but let the identity guard below
+-- retain legacy Individual service rows as inactive instead of aborting every
+-- update to them. The previous policy trigger rejected the row before it
+-- could be made inactive, which also blocked Company -> Individual switches.
+create or replace function private.enforce_provider_capability_policy()
+returns trigger language plpgsql security definer
+set search_path = public, private, pg_temp as $$
+declare
+  v_category text;
+  v_policy text;
+  v_type text;
+  v_admin boolean := private.is_admin();
+begin
+  select nc.category_slug, nc.verification_policy, nc.capability_type
+    into v_category, v_policy, v_type
+    from public.need_capabilities nc where nc.slug = new.capability_slug;
+  if not found then
+    raise exception 'Provider capability is unavailable.' using errcode = 'P0203';
+  end if;
+  if v_policy = 'required_proof' then
+    new.is_active := new.verification_level = 'provider_verified'
+      and (v_admin or exists (
+        select 1 from public.provider_capability_evidence e
+        where e.provider_capability_id = new.id and e.status = 'approved'
+          and (e.expires_at is null or e.expires_at > now())
+      ));
+  else
+    new.is_active := true;
+  end if;
+  if not v_admin and new.verification_level = 'provider_verified' then
+    if tg_op = 'UPDATE' and old.verification_level = 'provider_verified' then
+      new.verified_by := old.verified_by;
+      new.verified_at := old.verified_at;
+    else
+      new.verification_level := 'self_declared';
+      new.verified_by := null;
+      new.verified_at := null;
+      if v_policy = 'required_proof' then new.is_active := false; end if;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+-- Apply identity ownership and inactive-state enforcement before the backfill,
+-- so migration updates are evaluated under the same identity rules as writes.
+create or replace function private.enforce_provider_identity_capability()
+returns trigger language plpgsql security definer
+set search_path=public,private,pg_temp as $$
+declare v_category text; v_kind text; v_current text;
+begin
+  select category_slug,capability_type into v_category,v_kind
+    from public.need_capabilities where slug=new.capability_slug;
+  if v_kind='service' then
+    if tg_op='UPDATE' and old.identity_type is not null
+       and new.identity_type is distinct from old.identity_type
+       and not private.is_admin() then
+      raise exception 'A service identity cannot be changed directly.' using errcode='P0216';
+    end if;
+    select provider_type into v_current from public.provider_category_profiles
+      where user_id=new.user_id and category_slug=v_category;
+    if new.identity_type is null then new.identity_type:=coalesce(v_current,'company'); end if;
+    if new.identity_type not in ('individual','company') then
+      raise exception 'Invalid capability identity.' using errcode='P0216';
+    end if;
+    -- Individual providers offer personal roles, not company service tiles.
+    if new.is_active and (v_current='individual' or new.identity_type is distinct from v_current) then
+      new.is_active:=false;
+    end if;
+  else
+    new.identity_type:=null;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function private.enforce_provider_identity_capability() from public,anon,authenticated;
+drop trigger if exists trg_z_enforce_provider_identity_capability on public.provider_capabilities;
+create trigger trg_z_enforce_provider_identity_capability
+  before insert or update on public.provider_capabilities
+  for each row execute function private.enforce_provider_identity_capability();
+
 -- Work-role capabilities belong to the person's own profile. Service rows are
 -- identity-bound; legacy rows inherit the category's saved identity.
 update public.provider_capabilities pc
@@ -229,10 +310,11 @@ begin
   if not exists(select 1 from public.need_categories where slug=p_category_slug and is_active) then
     raise exception 'Provider category is unavailable.' using errcode='P0216';
   end if;
-  perform private.save_provider_identity_presentation_internal(p_category_slug,p_to_identity,p_presentation);
-
   update public.provider_category_profiles set provider_type=p_to_identity, identity_changed_at=now(), updated_at=now()
     where user_id=v_user and category_slug=p_category_slug;
+  -- The presentation helper verifies the category's selected identity. Set it
+  -- first; the transaction still rolls back both changes together on error.
+  perform private.save_provider_identity_presentation_internal(p_category_slug,p_to_identity,p_presentation);
   update public.provider_capabilities pc set is_active=false
     from public.need_capabilities nc where nc.slug=pc.capability_slug and pc.user_id=v_user
       and nc.category_slug=p_category_slug and nc.capability_type='service'
@@ -272,34 +354,6 @@ set search_path=public,private,pg_temp as $$ begin
 end; $$;
 revoke all on function public.switch_provider_identity(text,text,jsonb) from public,anon;
 grant execute on function public.switch_provider_identity(text,text,jsonb) to authenticated;
-
--- Applied after the capability verification trigger: a service row cannot be
--- active unless it belongs to the category's current identity.
-create or replace function private.enforce_provider_identity_capability()
-returns trigger language plpgsql security definer
-set search_path=public,private,pg_temp as $$
-declare v_category text; v_kind text; v_current text;
-begin
-  select category_slug,capability_type into v_category,v_kind from public.need_capabilities where slug=new.capability_slug;
-  if v_kind='service' then
-    if tg_op='UPDATE' and new.identity_type is distinct from old.identity_type and not private.is_admin() then
-      raise exception 'A service identity cannot be changed directly.' using errcode='P0216';
-    end if;
-    select provider_type into v_current from public.provider_category_profiles
-      where user_id=new.user_id and category_slug=v_category;
-    if new.identity_type is null then new.identity_type:=coalesce(v_current,'company'); end if;
-    if new.identity_type not in ('individual','company') then raise exception 'Invalid capability identity.' using errcode='P0216'; end if;
-    if new.is_active and new.identity_type is distinct from v_current then new.is_active:=false; end if;
-  else
-    new.identity_type:=null;
-  end if;
-  return new;
-end; $$;
-revoke all on function private.enforce_provider_identity_capability() from public,anon,authenticated;
-drop trigger if exists trg_z_enforce_provider_identity_capability on public.provider_capabilities;
-create trigger trg_z_enforce_provider_identity_capability
-  before insert or update on public.provider_capabilities
-  for each row execute function private.enforce_provider_identity_capability();
 
 create or replace function private.snapshot_need_offer_provider_identity()
 returns trigger language plpgsql security definer
@@ -346,8 +400,10 @@ begin
     where p.user_id=new.offer_maker_id and p.category_slug=v_need.category_slug and p.identity_type=v_type;
   if v_display is null then
     select case when v_type='company' then cp.company_name else pr.full_name end into v_display
-    from public.provider_company_profiles cp full join public.profiles pr on pr.id=new.offer_maker_id
-    where cp.user_id=new.offer_maker_id or pr.id=new.offer_maker_id;
+    from public.profiles pr
+    left join public.provider_company_profiles cp
+      on cp.user_id=pr.id and cp.category_slug=v_need.category_slug
+    where pr.id=new.offer_maker_id;
   end if;
   new.provider_display_name:=nullif(v_display,'');
   return new;

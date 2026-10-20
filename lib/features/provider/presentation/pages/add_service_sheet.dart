@@ -431,7 +431,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     Map<String, dynamic> identityInfo = const {};
     if (needsProviderType && providerType != null) {
       try {
-        identityInfo = await widget.providerRepository.getMyProviderIdentity(cat.slug);
+        identityInfo =
+            await widget.providerRepository.getMyProviderIdentity(cat.slug);
       } catch (_) {
         // Keep the chooser usable if the additive identity RPC is not deployed.
       }
@@ -443,13 +444,16 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         ? (identityInfo['company_profile'] as Map).cast<String, dynamic>()
         : const <String, dynamic>{};
     final initialCompanyName = providerType == ProviderCategoryType.company &&
-            savedPresentation['display_name']?.toString().trim().isNotEmpty == true
+            savedPresentation['display_name']?.toString().trim().isNotEmpty ==
+                true
         ? savedPresentation['display_name'].toString()
         : (companyData['company_name']?.toString() ?? '');
-    final personalName = savedPresentation['display_name']?.toString().trim().isNotEmpty == true &&
-            providerType == ProviderCategoryType.individual
-        ? savedPresentation['display_name'].toString()
-        : (widget.initialPersonalName ?? '');
+    final personalName =
+        savedPresentation['display_name']?.toString().trim().isNotEmpty ==
+                    true &&
+                providerType == ProviderCategoryType.individual
+            ? savedPresentation['display_name'].toString()
+            : (widget.initialPersonalName ?? '');
     var roles = await widget.providerRepository.getServiceRoles(
       categorySlug: cat.slug,
     );
@@ -531,22 +535,36 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _savedProviderType = providerType;
       _identityPresentation = {
         'display_mode': savedPresentation['display_mode']?.toString() ??
-            (providerType == ProviderCategoryType.individual ? 'personal' : 'company'),
+            (providerType == ProviderCategoryType.individual
+                ? 'personal'
+                : 'company'),
         'display_name': providerType == ProviderCategoryType.company
             ? initialCompanyName
             : personalName,
-        'representative_name': savedPresentation['representative_name']?.toString() ??
-            (widget.initialPersonalName ?? ''),
-        'representative_authorized': savedPresentation['representative_authorized'] == true,
+        'representative_name':
+            savedPresentation['representative_name']?.toString() ??
+                (widget.initialPersonalName ?? ''),
+        'representative_authorized':
+            savedPresentation['representative_authorized'] == true,
       };
       _personalDisplayName = personalName;
       _companyDisplayName = initialCompanyName;
-      _representativeAuthorized = savedPresentation['representative_authorized'] == true;
-      _pendingIdentityOffers = int.tryParse(identityInfo['pending_offers']?.toString() ?? '') ?? 0;
-      _activeIdentityCapabilities = int.tryParse(identityInfo['active_capabilities']?.toString() ?? '') ?? 0;
+      _representativeAuthorized =
+          savedPresentation['representative_authorized'] == true;
+      _pendingIdentityOffers =
+          int.tryParse(identityInfo['pending_offers']?.toString() ?? '') ?? 0;
+      _activeIdentityCapabilities =
+          int.tryParse(identityInfo['active_capabilities']?.toString() ?? '') ??
+              0;
       _identityActiveCounts = {
-        'individual': int.tryParse(identityInfo['individual_active_capabilities']?.toString() ?? '') ?? 0,
-        'company': int.tryParse(identityInfo['company_active_capabilities']?.toString() ?? '') ?? 0,
+        'individual': int.tryParse(
+                identityInfo['individual_active_capabilities']?.toString() ??
+                    '') ??
+            0,
+        'company': int.tryParse(
+                identityInfo['company_active_capabilities']?.toString() ??
+                    '') ??
+            0,
       };
       _categoryWorkProfilesEnabled = categoryWorkEnabled;
       _providerTypeError = null;
@@ -575,8 +593,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
         if (presentation['display_mode'] == 'company_with_representative' &&
             (!_representativeAuthorized ||
-                (presentation['representative_name'] as String? ?? '').trim().isEmpty)) {
-          throw const FormatException('Representative authorization is required.');
+                (presentation['representative_name'] as String? ?? '')
+                    .trim()
+                    .isEmpty)) {
+          throw const FormatException(
+              'Representative authorization is required.');
         }
         setState(() {
           _step = 6;
@@ -587,11 +608,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       if (_savedProviderType == null) {
         await widget.providerRepository.setCategoryType(slug, type);
       }
-      await widget.providerRepository.saveProviderIdentityPresentation(
-        categorySlug: slug,
-        type: type,
-        presentation: presentation,
-      );
+      if ((presentation['display_name'] as String? ?? '').trim().isNotEmpty) {
+        await widget.providerRepository.saveProviderIdentityPresentation(
+          categorySlug: slug,
+          type: type,
+          presentation: presentation,
+        );
+      }
       if (mounted) {
         setState(() {
           if (type == ProviderCategoryType.individual) {
@@ -725,6 +748,22 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         profile: profile,
         evidence: const [],
       );
+      final companyName = (profile['company_name'] as String? ?? '').trim();
+      if (companyName.isNotEmpty) {
+        await widget.providerRepository.saveProviderIdentityPresentation(
+          categorySlug: categorySlug,
+          type: ProviderCategoryType.company,
+          presentation: {
+            'display_mode': _identityPresentation['display_mode'] ==
+                    'company_with_representative'
+                ? 'company_with_representative'
+                : 'company',
+            'display_name': companyName,
+            'representative_name': _identityPresentation['representative_name'],
+            'representative_authorized': _representativeAuthorized,
+          },
+        );
+      }
       if (mounted) {
         setState(() => _allowCompanyExit = true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -942,29 +981,52 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                   selected: _providerType,
                                   saving: _savingProviderType,
                                   error: _providerTypeError,
-                                  initialDisplayName: _identityPresentation['display_name']?.toString() ??
-                                      (widget.initialPersonalName ?? ''),
-                                  initialRepresentativeName: _identityPresentation['representative_name']?.toString() ??
-                                      (widget.initialPersonalName ?? ''),
-                                  initialDisplayMode: _identityPresentation['display_mode']?.toString() ?? 'personal',
-                                  representativeAuthorized: _representativeAuthorized,
-                                  isCurrent: _savedProviderType == _providerType,
-                                  onPresentationChanged: (value) => setState(() {
+                                  initialDisplayName:
+                                      _identityPresentation['display_name']
+                                              ?.toString() ??
+                                          (widget.initialPersonalName ?? ''),
+                                  initialRepresentativeName:
+                                      _identityPresentation[
+                                                  'representative_name']
+                                              ?.toString() ??
+                                          (widget.initialPersonalName ?? ''),
+                                  initialDisplayMode:
+                                      _identityPresentation['display_mode']
+                                              ?.toString() ??
+                                          'personal',
+                                  representativeAuthorized:
+                                      _representativeAuthorized,
+                                  isCurrent:
+                                      _savedProviderType == _providerType,
+                                  requireCompanyName:
+                                      _savedProviderType != null &&
+                                          _savedProviderType != _providerType &&
+                                          _providerType ==
+                                              ProviderCategoryType.company,
+                                  onPresentationChanged: (value) =>
+                                      setState(() {
                                     _identityPresentation = value;
-                                    _representativeAuthorized = value['representative_authorized'] == true;
+                                    _representativeAuthorized =
+                                        value['representative_authorized'] ==
+                                            true;
                                   }),
                                   onSelect: (value) => setState(() {
                                     _providerType = value;
-                                    _activeIdentityCapabilities = _identityActiveCounts[value.name] ?? 0;
+                                    _activeIdentityCapabilities =
+                                        _identityActiveCounts[value.name] ?? 0;
                                     _providerTypeError = null;
                                     _identityPresentation = {
                                       ..._identityPresentation,
-                                      'display_mode': value == ProviderCategoryType.individual
+                                      'display_mode': value ==
+                                              ProviderCategoryType.individual
                                           ? 'personal'
-                                          : (_identityPresentation['display_mode'] == 'company_with_representative'
+                                          : (_identityPresentation[
+                                                      'display_mode'] ==
+                                                  'company_with_representative'
                                               ? 'company_with_representative'
                                               : 'company'),
-                                      'display_name': value == ProviderCategoryType.individual
+                                      'display_name': value ==
+                                              ProviderCategoryType.individual
                                           ? _personalDisplayName
                                           : _companyDisplayName,
                                     };
@@ -976,179 +1038,215 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       from: _savedProviderType!,
                                       to: _providerType!,
                                       pendingOffers: _pendingIdentityOffers,
-                                      onContinue: () => setState(() => _step = 7),
+                                      onContinue: () =>
+                                          setState(() => _step = 7),
                                       onCancel: _goBack,
                                     )
                                   : _step == 7
                                       ? _IdentitySwitchReviewStep(
-                                          categoryName: _selectedCategory?.localizedName(localeCode) ?? '',
+                                          categoryName: _selectedCategory
+                                                  ?.localizedName(localeCode) ??
+                                              '',
                                           from: _savedProviderType!,
                                           to: _providerType!,
                                           presentation: _identityPresentation,
                                           pendingOffers: _pendingIdentityOffers,
-                                          activeCapabilities: _activeIdentityCapabilities,
+                                          activeCapabilities:
+                                              _activeIdentityCapabilities,
                                           error: _providerTypeError,
                                           saving: _savingProviderType,
                                           onBack: _goBack,
                                           onConfirm: _confirmIdentitySwitch,
                                         )
-                              : _step == 5
-                                  ? CompanyDetailsStep(
-                                      categorySlug:
-                                          _selectedCategory?.slug ?? '',
-                                      serviceCount: _selected.length,
-                                      roleCount: _selectedRoles.length,
-                                      initialProfile: _companyProfile,
-                                      verificationSubmissions:
-                                          _companyVerificationSubmissions,
-                                      providerRepository:
-                                          widget.providerRepository,
-                                      onDraftChanged: (profile) => setState(
-                                          () => _companyProfile = profile),
-                                      onSave: _saveCompanyDetails,
-                                    )
-                                  : _step == 2
-                                      ? _KindStepView(
-                                          categorySlug: _selectedCategory?.slug,
-                                          role: _categoryRoles.firstWhere(
-                                            (r) =>
-                                                r.slug ==
-                                                _selectedRoles.elementAt(
-                                                    _currentRoleIndex),
-                                            orElse: () => _categoryRoles.first,
-                                          ),
-                                          roleIndex: _currentRoleIndex,
-                                          totalRoles: _selectedRoles.length,
-                                          selectedKinds:
-                                              _kindsByRole.putIfAbsent(
-                                            _selectedRoles
-                                                .elementAt(_currentRoleIndex),
-                                            () => {},
-                                          ),
-                                          scrollController: scrollController,
-                                          onNext: () {
-                                            if (_currentRoleIndex <
-                                                _selectedRoles.length - 1) {
-                                              setState(
-                                                  () => _currentRoleIndex++);
-                                            } else {
-                                              setState(() => _step = 3);
-                                            }
-                                          },
-                                        )
-                                      : _step == 3
-                                          ? _QualificationsStepView(
-                                              roles: _categoryRoles
-                                                  .where((r) => _selectedRoles
-                                                      .contains(r.slug))
-                                                  .toList(),
-                                              qualificationsByRole:
-                                                  _qualificationsByRole,
-                                              yearsExperienceByRole:
-                                                  _yearsExperienceByRole,
-                                              availabilityByRole:
-                                                  _availabilityByRole,
-                                              languagesByRole: _languagesByRole,
-                                              willingToTravelByRole:
-                                                  _willingToTravelByRole,
-                                              expectedPayAmountByRole:
-                                                  _expectedPayAmountByRole,
-                                              expectedPayPeriodByRole:
-                                                  _expectedPayPeriodByRole,
-                                              evidenceDrafts:
-                                                  _roleEvidenceDrafts,
-                                              scrollController:
-                                                  scrollController,
-                                              onSave: () =>
-                                                  Navigator.of(context)
-                                                      .pop(_selection()),
+                                      : _step == 5
+                                          ? CompanyDetailsStep(
+                                              categorySlug:
+                                                  _selectedCategory?.slug ?? '',
+                                              serviceCount: _selected.length,
+                                              roleCount: _selectedRoles.length,
+                                              initialProfile: _companyProfile,
+                                              verificationSubmissions:
+                                                  _companyVerificationSubmissions,
+                                              providerRepository:
+                                                  widget.providerRepository,
+                                              onDraftChanged: (profile) =>
+                                                  setState(() =>
+                                                      _companyProfile =
+                                                          profile),
+                                              onSave: _saveCompanyDetails,
                                             )
-                                          : _showAudience
-                                              ? _AudienceEditorView(
-                                                  audiencePlatforms:
-                                                      _audiencePlatforms,
-                                                  audienceCountController:
-                                                      _audienceCountController,
-                                                  audienceLocationController:
-                                                      _audienceLocationController,
-                                                  audienceInterestController:
-                                                      _audienceInterestController,
-                                                  scrollController:
-                                                      scrollController,
-                                                  onPlatformToggle:
-                                                      (platform) =>
-                                                          setState(() {
-                                                    if (_audiencePlatforms
-                                                        .contains(platform)) {
-                                                      _audiencePlatforms
-                                                          .remove(platform);
-                                                    } else {
-                                                      _audiencePlatforms
-                                                          .add(platform);
-                                                    }
-                                                  }),
-                                                  onDone: () => setState(() =>
-                                                      _showAudience = false),
-                                                )
-                                              : _CategoryCapabilitiesView(
+                                          : _step == 2
+                                              ? _KindStepView(
                                                   categorySlug:
                                                       _selectedCategory?.slug,
-                                                  capabilities:
-                                                      _categoryCapabilities,
-                                                  roles: _categoryRoles,
-                                                  existingSlugs:
-                                                      widget.existingSlugs,
-                                                  selected: _selected,
-                                                  selectedRoles: _selectedRoles,
-                                                  iWantJobs:
-                                                      _categoryWorkProfilesEnabled,
-                                                  companyType: _providerType !=
-                                                      ProviderCategoryType
-                                                          .individual,
-                                                  providerType: _providerType,
+                                                  role:
+                                                      _categoryRoles.firstWhere(
+                                                    (r) =>
+                                                        r.slug ==
+                                                        _selectedRoles.elementAt(
+                                                            _currentRoleIndex),
+                                                    orElse: () =>
+                                                        _categoryRoles.first,
+                                                  ),
+                                                  roleIndex: _currentRoleIndex,
+                                                  totalRoles:
+                                                      _selectedRoles.length,
+                                                  selectedKinds:
+                                                      _kindsByRole.putIfAbsent(
+                                                    _selectedRoles.elementAt(
+                                                        _currentRoleIndex),
+                                                    () => {},
+                                                  ),
                                                   scrollController:
                                                       scrollController,
-                                                  onToggleCapability: (slug) {
-                                                    setState(() {
-                                                      if (_selected
-                                                          .contains(slug)) {
-                                                        _selected.remove(slug);
-                                                      } else {
-                                                        _selected.add(slug);
-                                                      }
-                                                    });
+                                                  onNext: () {
+                                                    if (_currentRoleIndex <
+                                                        _selectedRoles.length -
+                                                            1) {
+                                                      setState(() =>
+                                                          _currentRoleIndex++);
+                                                    } else {
+                                                      setState(() => _step = 3);
+                                                    }
                                                   },
-                                                  onToggleRole: (slug) {
-                                                    setState(() {
-                                                      if (_selectedRoles
-                                                          .contains(slug)) {
-                                                        _selectedRoles
-                                                            .remove(slug);
-                                                      } else {
-                                                        _selectedRoles
-                                                            .add(slug);
-                                                      }
-                                                    });
-                                                  },
-                                                  onChangeProviderType: () =>
-                                                      setState(() => _step = 4),
-                                                  onSaveServices:
-                                                      _openCompanyDetails,
-                                                  onNextKind: () {
-                                                    setState(() {
-                                                      _step = 2;
-                                                      _currentRoleIndex = 0;
-                                                    });
-                                                  },
-                                                  onAudienceTap: _openAudience,
-                                                  audiencePlatforms:
-                                                      _audiencePlatforms,
-                                                  audienceFollowersCount:
-                                                      int.tryParse(
-                                                          _audienceCountController
-                                                              .text
-                                                              .trim()),
-                                                ),
+                                                )
+                                              : _step == 3
+                                                  ? _QualificationsStepView(
+                                                      roles: _categoryRoles
+                                                          .where((r) =>
+                                                              _selectedRoles
+                                                                  .contains(
+                                                                      r.slug))
+                                                          .toList(),
+                                                      qualificationsByRole:
+                                                          _qualificationsByRole,
+                                                      yearsExperienceByRole:
+                                                          _yearsExperienceByRole,
+                                                      availabilityByRole:
+                                                          _availabilityByRole,
+                                                      languagesByRole:
+                                                          _languagesByRole,
+                                                      willingToTravelByRole:
+                                                          _willingToTravelByRole,
+                                                      expectedPayAmountByRole:
+                                                          _expectedPayAmountByRole,
+                                                      expectedPayPeriodByRole:
+                                                          _expectedPayPeriodByRole,
+                                                      evidenceDrafts:
+                                                          _roleEvidenceDrafts,
+                                                      scrollController:
+                                                          scrollController,
+                                                      onSave: () =>
+                                                          Navigator.of(context)
+                                                              .pop(
+                                                                  _selection()),
+                                                    )
+                                                  : _showAudience
+                                                      ? _AudienceEditorView(
+                                                          audiencePlatforms:
+                                                              _audiencePlatforms,
+                                                          audienceCountController:
+                                                              _audienceCountController,
+                                                          audienceLocationController:
+                                                              _audienceLocationController,
+                                                          audienceInterestController:
+                                                              _audienceInterestController,
+                                                          scrollController:
+                                                              scrollController,
+                                                          onPlatformToggle:
+                                                              (platform) =>
+                                                                  setState(() {
+                                                            if (_audiencePlatforms
+                                                                .contains(
+                                                                    platform)) {
+                                                              _audiencePlatforms
+                                                                  .remove(
+                                                                      platform);
+                                                            } else {
+                                                              _audiencePlatforms
+                                                                  .add(
+                                                                      platform);
+                                                            }
+                                                          }),
+                                                          onDone: () =>
+                                                              setState(() =>
+                                                                  _showAudience =
+                                                                      false),
+                                                        )
+                                                      : _CategoryCapabilitiesView(
+                                                          categorySlug:
+                                                              _selectedCategory
+                                                                  ?.slug,
+                                                          capabilities:
+                                                              _categoryCapabilities,
+                                                          roles: _categoryRoles,
+                                                          existingSlugs: widget
+                                                              .existingSlugs,
+                                                          selected: _selected,
+                                                          selectedRoles:
+                                                              _selectedRoles,
+                                                          iWantJobs:
+                                                              _categoryWorkProfilesEnabled,
+                                                          companyType:
+                                                              _providerType !=
+                                                                  ProviderCategoryType
+                                                                      .individual,
+                                                          providerType:
+                                                              _providerType,
+                                                          scrollController:
+                                                              scrollController,
+                                                          onToggleCapability:
+                                                              (slug) {
+                                                            setState(() {
+                                                              if (_selected
+                                                                  .contains(
+                                                                      slug)) {
+                                                                _selected
+                                                                    .remove(
+                                                                        slug);
+                                                              } else {
+                                                                _selected
+                                                                    .add(slug);
+                                                              }
+                                                            });
+                                                          },
+                                                          onToggleRole: (slug) {
+                                                            setState(() {
+                                                              if (_selectedRoles
+                                                                  .contains(
+                                                                      slug)) {
+                                                                _selectedRoles
+                                                                    .remove(
+                                                                        slug);
+                                                              } else {
+                                                                _selectedRoles
+                                                                    .add(slug);
+                                                              }
+                                                            });
+                                                          },
+                                                          onChangeProviderType:
+                                                              () => setState(
+                                                                  () => _step =
+                                                                      4),
+                                                          onSaveServices:
+                                                              _openCompanyDetails,
+                                                          onNextKind: () {
+                                                            setState(() {
+                                                              _step = 2;
+                                                              _currentRoleIndex =
+                                                                  0;
+                                                            });
+                                                          },
+                                                          onAudienceTap:
+                                                              _openAudience,
+                                                          audiencePlatforms:
+                                                              _audiencePlatforms,
+                                                          audienceFollowersCount:
+                                                              int.tryParse(
+                                                                  _audienceCountController
+                                                                      .text
+                                                                      .trim()),
+                                                        ),
                 ),
               ],
             ),
@@ -1171,6 +1269,7 @@ class _ProviderTypeStep extends StatefulWidget {
     required this.initialDisplayMode,
     required this.representativeAuthorized,
     required this.isCurrent,
+    required this.requireCompanyName,
     required this.onPresentationChanged,
   });
 
@@ -1184,6 +1283,7 @@ class _ProviderTypeStep extends StatefulWidget {
   final String initialDisplayMode;
   final bool representativeAuthorized;
   final bool isCurrent;
+  final bool requireCompanyName;
   final ValueChanged<Map<String, dynamic>> onPresentationChanged;
 
   @override
@@ -1200,11 +1300,10 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
   void initState() {
     super.initState();
     _displayName = TextEditingController(text: widget.initialDisplayName);
-    _representativeName = TextEditingController(text: widget.initialRepresentativeName);
+    _representativeName =
+        TextEditingController(text: widget.initialRepresentativeName);
     _displayMode = widget.initialDisplayMode;
     _authorized = widget.representativeAuthorized;
-    _displayName.addListener(_notify);
-    _representativeName.addListener(_notify);
   }
 
   void _notify() => widget.onPresentationChanged({
@@ -1217,11 +1316,21 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
       });
 
   bool get _presentationIsValid {
-    if (widget.selected == null || _displayName.text.trim().isEmpty) return false;
+    if (widget.selected == null) return false;
     if (widget.selected == ProviderCategoryType.company &&
         _displayMode == 'company_with_representative') {
-      return _representativeName.text.trim().isNotEmpty && _authorized;
+      if (_representativeName.text.trim().isEmpty || !_authorized) return false;
     }
+    if (widget.selected == ProviderCategoryType.company &&
+        !widget.requireCompanyName &&
+        _displayName.text.trim().isEmpty) {
+      return true;
+    }
+    if (_displayName.text.trim().isEmpty &&
+        widget.selected == ProviderCategoryType.individual) {
+      return true;
+    }
+    if (_displayName.text.trim().isEmpty) return false;
     return true;
   }
 
@@ -1272,6 +1381,9 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                 title: l10n.providerTypeIndividual,
                 description: l10n.providerTypeIndividualDesc,
                 selected: widget.selected == ProviderCategoryType.individual,
+                isCurrent: widget.isCurrent &&
+                    widget.selected == ProviderCategoryType.individual,
+                currentLabel: l10n.providerIdentityCurrent,
                 onTap: () => widget.onSelect(ProviderCategoryType.individual)),
             const SizedBox(height: 10),
             ProviderTypeCard(
@@ -1279,30 +1391,29 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                 title: l10n.providerTypeCompany,
                 description: l10n.providerTypeCompanyDesc,
                 selected: widget.selected == ProviderCategoryType.company,
+                isCurrent: widget.isCurrent &&
+                    widget.selected == ProviderCategoryType.company,
+                currentLabel: l10n.providerIdentityCurrent,
                 onTap: () => widget.onSelect(ProviderCategoryType.company)),
           ]),
         ),
-        if (widget.isCurrent) ...[
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Chip(
-              avatar: const Icon(Icons.check_circle, size: 16),
-              label: Text(l10n.providerIdentityCurrent),
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-        ],
         if (widget.selected != null) ...[
           const SizedBox(height: 20),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(l10n.providerIdentityDisplayHeading,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 8),
           TextFormField(
             controller: _displayName,
+            onChanged: (_) {
+              setState(() {});
+              _notify();
+            },
             maxLength: 80,
             decoration: InputDecoration(
               labelText: widget.selected == ProviderCategoryType.company
@@ -1334,6 +1445,10 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
             if (_displayMode == 'company_with_representative') ...[
               TextFormField(
                 controller: _representativeName,
+                onChanged: (_) {
+                  setState(() {});
+                  _notify();
+                },
                 maxLength: 80,
                 decoration: InputDecoration(
                   labelText: l10n.providerIdentityRepresentativeName,
@@ -1359,7 +1474,8 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                 subtitle: widget.selected == ProviderCategoryType.company &&
                         _displayMode == 'company_with_representative' &&
                         _representativeName.text.trim().isNotEmpty
-                    ? Text(l10n.providerIdentityRepresentedBy(_representativeName.text.trim()))
+                    ? Text(l10n.providerIdentityRepresentedBy(
+                        _representativeName.text.trim()))
                     : null,
               ),
             ),
@@ -1392,7 +1508,8 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                           ),
                         ),
                         onPressed: widget.selected == null ||
-                                !_presentationIsValid || widget.saving
+                                !_presentationIsValid ||
+                                widget.saving
                             ? null
                             : widget.onContinue,
                         child: widget.saving
@@ -1456,7 +1573,10 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
       Expanded(
         child: ListView(padding: const EdgeInsets.all(20), children: [
           Text(l10n.providerIdentitySwitchTitle(toName),
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           Text(l10n.providerIdentitySwitchBody),
           const SizedBox(height: 18),
@@ -1473,8 +1593,11 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(children: [
-            SizedBox(width: double.infinity, height: 48,
-              child: FilledButton(onPressed: onContinue, child: Text(l10n.btnContinue))),
+            SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                    onPressed: onContinue, child: Text(l10n.btnContinue))),
             TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
           ]),
         ),
@@ -1513,61 +1636,98 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final fromName = from == ProviderCategoryType.company
-        ? l10n.providerTypeCompany : l10n.providerTypeIndividual;
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
     final toName = to == ProviderCategoryType.company
-        ? l10n.providerTypeCompany : l10n.providerTypeIndividual;
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
     final displayName = (presentation['display_name'] as String? ?? '').trim();
     final rep = (presentation['representative_name'] as String? ?? '').trim();
     final withRep = to == ProviderCategoryType.company &&
-        presentation['display_mode'] == 'company_with_representative' && rep.isNotEmpty;
+        presentation['display_mode'] == 'company_with_representative' &&
+        rep.isNotEmpty;
     return Column(children: [
       Expanded(
         child: ListView(padding: const EdgeInsets.all(20), children: [
           Text(l10n.providerIdentityReviewTitle,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 14),
-          _IdentityReviewRow(label: l10n.providerIdentityCategory, value: categoryName),
-          _IdentityReviewRow(label: l10n.providerIdentityNewIdentity, value: '$toName (was $fromName)'),
+          _IdentityReviewRow(
+              label: l10n.providerIdentityCategory, value: categoryName),
+          _IdentityReviewRow(
+              label: l10n.providerIdentityNewIdentity,
+              value: '$toName (was $fromName)'),
           _IdentityReviewRow(
             label: l10n.providerIdentityPublicName,
-            value: withRep ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}' : displayName,
+            value: withRep
+                ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}'
+                : displayName,
           ),
           const SizedBox(height: 16),
           Text(l10n.providerIdentityReused,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colors.primary)),
-          ListTile(dense: true, leading: const Icon(Icons.check), title: Text(l10n.providerIdentityDataKept)),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: colors.primary)),
+          ListTile(
+              dense: true,
+              leading: const Icon(Icons.check),
+              title: Text(l10n.providerIdentityDataKept)),
           const SizedBox(height: 8),
           Text(l10n.providerIdentityNeedsAttention,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colors.primary)),
-          ListTile(dense: true, leading: const Icon(Icons.pending_actions),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: colors.primary)),
+          ListTile(
+              dense: true,
+              leading: const Icon(Icons.pending_actions),
               title: Text(l10n.providerIdentityCompanyVerificationStatus)),
           if (pendingOffers > 0)
-            ListTile(dense: true, leading: const Icon(Icons.mark_email_unread_outlined),
+            ListTile(
+                dense: true,
+                leading: const Icon(Icons.mark_email_unread_outlined),
                 title: Text(l10n.providerIdentityPendingOffers(pendingOffers))),
           if (activeCapabilities == 0)
-            ListTile(dense: true, leading: Icon(Icons.info_outline, color: colors.tertiary),
+            ListTile(
+                dense: true,
+                leading: Icon(Icons.info_outline, color: colors.tertiary),
                 title: Text(l10n.providerIdentityNoActiveWarning)),
           const SizedBox(height: 8),
           Text(l10n.providerIdentityOldServicesInactive(fromName)),
           if (error != null) ...[
             const SizedBox(height: 12),
             Text(error!, style: TextStyle(color: colors.error)),
-            TextButton.icon(onPressed: saving ? null : onConfirm,
-                icon: const Icon(Icons.refresh), label: Text(l10n.retry)),
+            TextButton.icon(
+                onPressed: saving ? null : onConfirm,
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.retry)),
           ],
         ]),
       ),
-      SafeArea(top: false, child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: Column(children: [
-          SizedBox(width: double.infinity, height: 48,
-            child: FilledButton(onPressed: saving ? null : onConfirm,
-              child: saving
-                  ? const SizedBox(width: 20,height: 20,child: CircularProgressIndicator(strokeWidth: 2))
-                  : Text(l10n.providerIdentityConfirm))),
-          TextButton(onPressed: saving ? null : onBack, child: Text(l10n.btnBack)),
-        ]),
-      )),
+      SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Column(children: [
+              SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                      onPressed: saving ? null : onConfirm,
+                      child: saving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text(l10n.providerIdentityConfirm))),
+              TextButton(
+                  onPressed: saving ? null : onBack, child: Text(l10n.btnBack)),
+            ]),
+          )),
     ]);
   }
 }
@@ -1578,14 +1738,20 @@ class _IdentityReviewRow extends StatelessWidget {
   final String value;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Expanded(child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
-      const SizedBox(width: 12),
-      Expanded(child: Text(value, textAlign: TextAlign.end,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
-    ]),
-  );
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+              child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text(value,
+                  textAlign: TextAlign.end,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600))),
+        ]),
+      );
 }
 
 // ---------------------------------------------------------------------------

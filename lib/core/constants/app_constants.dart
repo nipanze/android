@@ -22,6 +22,8 @@ class TableNames {
   static const String providerRoleQualificationClaims =
       'provider_role_qualification_claims';
   static const String providerCategoryProfiles = 'provider_category_profiles';
+  static const String providerIdentityPresentations =
+      'provider_identity_presentations';
   static const String providerCompanyProfiles = 'provider_company_profiles';
   static const String providerCompanyVerificationSubmissions =
       'provider_company_verification_submissions';

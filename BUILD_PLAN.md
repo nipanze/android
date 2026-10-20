@@ -582,29 +582,29 @@ Implement the two provider-type paths as `B → B2 → C → E → F → A` for 
 
 Implement the confirmed Individual ↔ Company switch for one provider category at a time. S1 (Provider Services + Choose Category) remains visually unchanged. B2 stays in the category flow, preselects the current identity, edits the identity presentation, and routes changed identities through S2 confirmation and S4 review before a single atomic save. The previous identity's service capabilities remain stored but inactive; personal work roles, other categories, verification records, history, pending offers, and accepted deals are preserved. Home and Marketplace feed code and existing public view/RPC signatures are protected.
 
-### Proposed decisions (pending inspection and user approval)
+### Confirmed decisions
 
 | ID | Decision | Status | Rationale |
 |---|---|---|---|
-| I1 | Always show B2 for category setup and identity management; preselect and mark the saved identity Current | Proposed | The identity-switch prompt says B2 is always shown; this supersedes the contradictory flow-order row that sends returning users straight to C/D. |
-| I2 | Rate limit identity switches to 5 per user/category per day | Proposed | Limits identity flapping while allowing corrections. |
-| I3 | Warn on S4 when switching leaves no active capabilities; do not block | Proposed | Makes the offering impact clear while allowing setup changes. |
-| I4 | Company-with-representative requires an authorization checkbox; record consent in switch audit data | Proposed | Avoids implying representation authority without user confirmation. |
-| I5 | Label reviews earned under a prior identity with the identity used at the time | Proposed | Keeps reputation attached to the person while preventing company verification from inheriting individual credentials. |
-| I6 | Leave historical offer/deal identity snapshots null unless identity at creation can be proven | Proposed | Avoids rewriting history from current profile state. |
-| I7 | Personal work-role capabilities remain active across identity switches; only service capabilities are identity-bound | Proposed | Matches the revised Company flow where work roles are the user's personal profile. |
-| I8 | Resolve existing flow-order conflict in favor of always showing B2 | Proposed | Identity switch build prompt is the latest and explicit about B2 on every entry. |
+| I1 | Always show B2 for category setup and identity management; preselect and mark the saved identity Current | Accepted | User approved the identity-switch flow. |
+| I2 | Rate limit identity switches to 5 per user/category per day | Accepted | Implemented as five switches in a rolling 24-hour period per category. |
+| I3 | Warn on S4 when switching leaves no active capabilities; do not block | Accepted | Review shows current/pending counts and leaves activation to policy. |
+| I4 | Company-with-representative requires an authorization checkbox; record consent in switch audit data | Accepted | Required by form validation; consent recorded in switch audit payload. |
+| I5 | Label reviews earned under a prior identity with the identity used at the time | Accepted | Admin queue now displays the active category identity and its presentation read-only. |
+| I6 | Leave historical offer/deal identity snapshots null unless identity at creation can be proven | Accepted | No historical offer/reveal backfill is performed. |
+| I7 | Personal work-role capabilities remain active across identity switches; only service capabilities are identity-bound | Accepted | Work rows are not deactivated by the switch path. |
+| I8 | Resolve existing flow-order conflict in favor of always showing B2 | Accepted | B2 is retained as the switch entry point. |
 
 ### Task tracker
 
 | Phase | Task | Files / SQL | Tests | Status | Date | Notes |
 |---|---|---|---|---|---|---|
 | P0 | Inspect UI, schema, offers/deals, views, RLS, triggers, audit and Admin review; capture protected Home/feed baseline; present findings and wait for approval | `BUILD_PLAN.md`, relevant provider/account/repository files, `sql/*.sql` | Baseline snapshots/signatures; schema and dependency inventory | Complete (local inspection) | 2026-10-20 | Findings recorded below. Live staging schema and Home visual baseline unavailable from this checkout. No implementation changes before user approval. |
-| P1 | Add identity ownership to provider capabilities and private per-identity presentations; guard active state; read identities RPC | New standalone `sql/patch_provider_identity_switch.sql` | RLS; no anon; owner/admin reads; identity/policy constraints; RPC result shape; rerun | Not started | — | Exact schema and unused P02xx codes must be confirmed from local SQL and staging availability. |
-| P2 | Atomic switch RPC, locking, rate limit, audit, pending-offer counts, pending/accepted offer snapshots and public identity output | Standalone SQL patch(es) only | concurrency; rollback; no cross-category changes; offer guard; historical rows unchanged; signatures preserved | Not started | — | Inspect actual offer/deal tables, triggers and RPCs before design. |
-| P3 | B2 identity presentation, S2 confirmation, S4 review and all switch states | Provider presentation/navigation/repository/cubit files; five ARBs | validation; Cancel; disabled/loading/double-submit; retry/offline; pending proof; no false success | Not started | — | S1 and Home/feed remain untouched. |
-| P4 | Read-only identity context in Admin verification queue | Admin review UI and repository, if needed | identity shown correctly; approvals remain identity-scoped; signed document access unchanged | Not started | — | Do not grant identity verification through this display. |
-| P5 | Accessibility, RTL, themes, responsive behavior, docs and regression verification | five ARBs, tests, `README.md`, `BUILD_PLAN.md` | en/sw/fr/rw/ar; RTL; dark/light; 360px; 200% text; provider and unrelated-flow regressions | Not started | — | Run full validation after implementation and compare protected baselines. |
+| P1 | Add identity ownership to provider capabilities and private per-identity presentations; guard active state; read identity RPC | `sql/patch_provider_identity_switch.sql` | SQL parse; RLS and RPC semantic staging checks | Implemented locally | 2026-10-20 | Additive patch; owner/admin reads, no anon grants, audited writes. No live database was modified. |
+| P2 | Atomic switch RPC, locking, rate limit, audit, pending-offer counts, offer snapshots and public identity output | `sql/patch_provider_identity_switch.sql` | SQL parse; concurrency, policy, participant and history integration checks | Implemented locally; staging pending | 2026-10-20 | Switch RPC serializes by user/category, flips only service rows, and snapshots new offers/reveals. Historical snapshots remain null. |
+| P3 | B2 identity presentation, S2 confirmation, S4 review and switch states | provider sheet/repository/model/page, five ARBs | focused provider tests and analyzer | Implemented locally | 2026-10-20 | S1 and protected feed files were not edited. |
+| P4 | Read-only identity context in Admin verification queue | Admin evidence review tab | analyzer; staging RLS and identity-scoping review | Implemented locally; staging pending | 2026-10-20 | Adds display-only identity and public presentation context; review actions stay on existing RPCs. |
+| P5 | Accessibility, RTL, themes, responsive behavior, docs and regression verification | five ARBs, tests, `README.md`, `BUILD_PLAN.md` | full analyze/test, locale/theme/accessibility matrix, Home/feed baseline | Partial; staging and visual matrix pending | 2026-10-20 | Focused tests pass; no staging DB or captured visual baselines are available in this checkout. |
 
 ### Test tracker
 
@@ -631,9 +631,14 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 
 | Date | Check | Result |
 |---|---|---|
-| 2026-10-20 | Read `.agents/AGENTS.md`, identity-switch prompt, provider flow order, provider-type prompt and existing Stage 4.15 notes | Completed. Source prompt mandates inspection report and explicit user approval before implementation. B2 flow-order conflict recorded above. |
+| 2026-10-20 | Read `.agents/AGENTS.md`, identity-switch prompt, provider flow order, provider-type prompt and existing Stage 4.15 notes | Completed. User approved implementation. B2 flow-order conflict resolved in favor of always showing B2. |
 | 2026-10-20 | Local Account/Provider Services, SQL schema/policies/triggers, offers/deals/views, audit and Admin queue inspection | Completed from repository source. Live staging schema and Home visual baseline unavailable; no database writes. Findings summarized below. |
-| — | SQL/RLS, Flutter tests/analyze, locale/theme/accessibility and protected baseline comparison | Pending approval and implementation. |
+| 2026-10-20 | Focused provider test file | Passed: 30 tests, including Individual/Company service-sheet cases. |
+| 2026-10-20 | Scoped provider/Admin analyzer | Passed with no issues. |
+| 2026-10-20 | Full Flutter analyzer | No errors; nine informational lints in unrelated Account, Forex, job profile, listing and watchlist files. |
+| 2026-10-20 | Full Flutter test suite | Failed on existing `needs_categories_test.dart`: Kinyarwanda `events_celebrations` description is still English. Provider capability tests passed independently. |
+| 2026-10-20 | SQL grammar parse and `git diff --check` | Passed: 59 statements parsed; no whitespace errors. Syntax-only, not live semantic execution. |
+| — | Full Flutter suite, staging SQL/RLS, locale/theme/accessibility matrix and protected baseline comparison | Pending; no staging target or captured visual baselines in this checkout. |
 
 ### P0 inspection findings
 
@@ -644,6 +649,6 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 - **Audit and DB availability:** `audit_logs(user_id, entity_type, action, old_values, new_values, ...)` is the append-only pattern. Local SQL uses P0214/P0215; P0216 appears unused locally, but deployment state is unknown. Supabase CLI is not linked to the configured API host, so live RLS/policy state and a staging Home/feed baseline could not be captured. Do not apply SQL until a staging target is available and confirmed; production execution requires separate explicit approval.
 - **Conflicts and missing source:** `IDENTITY_SWITCH_SPEC.md` referenced by the identity prompt is absent. `PROVIDER_FLOW_BUILD_ORDER.md` says returning identities skip B2, while the identity prompt explicitly requires B2 every time; recommend the always-show-B2 rule. Earlier company-path work kept the company name private, while identity switching needs a public display name; expose only the approved display name through additive output. Individual roles are personal and remain active; only identity-bound service capabilities switch. One capability row per slug cannot hold separate evidence states, so bind service rows to an identity and retain evidence in place; switching deactivates/reactivates without transferring approval.
 - **Implementation plan:** Add standalone `sql/patch_provider_identity_switch.sql` (or split standalone patches if necessary) for identity presentations, owner/admin reads, invoker wrappers/private internals, serialized atomic switch, audit/rate limit, active-capability and offer guards, and additive offer snapshots/public identity output. Then wire provider models/repository/Cubit, B2 presentation, S2, S4 and entry points; add read-only identity context to Admin; localize en/sw/fr/rw/ar; add focused tests and update README/trackers. Keep Home/feed widgets and existing view/RPC signatures untouched.
-- **Recommended decisions awaiting approval:** 5 switches per user/category/day; warn, do not block, if no active capabilities remain; require and audit representative authorization; label reviews by identity at earning time; leave unprovable historical offer/deal snapshots null; always show B2; preserve personal roles. Keep old identity service capabilities/evidence stored and inactive, with proof evaluated only for that identity.
+- **Confirmed decisions:** 5 switches per user/category per rolling 24 hours; warn rather than block when a switch leaves no active services; require and audit representative authorization; preserve personal work roles; always show B2. Old service capabilities and evidence stay stored and inactive under their identity. Historical offer/reveal snapshots are not backfilled. The public identity lookup is additive and leaves existing feed view/RPC signatures untouched.
 
 
