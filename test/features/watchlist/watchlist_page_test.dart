@@ -146,6 +146,15 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(find.text('Watchlist'), findsWidgets);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Icon &&
+            widget.icon == Icons.star_rounded &&
+            widget.size == 22,
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Business Expansion Loan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

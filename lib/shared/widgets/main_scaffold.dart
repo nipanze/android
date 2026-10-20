@@ -91,6 +91,7 @@ class MainScaffold extends StatelessWidget {
                   _buildNavTab(
                     context,
                     icon: Icons.star_outline_rounded,
+                    selectedIcon: Icons.star_rounded,
                     label: AppLocalizations.of(context)!.navWatchlist,
                     isSelected: currentIndex == 1,
                     onTap: () => context.go(AppRoutes.watchlist),
@@ -150,6 +151,7 @@ class MainScaffold extends StatelessWidget {
   Widget _buildNavTab(
     BuildContext context, {
     required IconData icon,
+    IconData? selectedIcon,
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
@@ -163,7 +165,8 @@ class MainScaffold extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 22, color: color),
+            Icon(isSelected ? selectedIcon ?? icon : icon,
+                size: 22, color: color),
             const SizedBox(height: 2),
             Text(
               label,
