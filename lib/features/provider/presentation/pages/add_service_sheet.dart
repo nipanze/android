@@ -1569,23 +1569,57 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
       l10n.providerIdentityHistoryKept,
       if (pendingOffers > 0) l10n.providerIdentityPendingOffers(pendingOffers),
     ];
+    final colors = Theme.of(context).colorScheme;
     return Column(children: [
       Expanded(
         child: ListView(padding: const EdgeInsets.all(20), children: [
           Text(l10n.providerIdentitySwitchTitle(toName),
               style: Theme.of(context)
                   .textTheme
-                  .headlineSmall
+                  .titleLarge
                   ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
-          Text(l10n.providerIdentitySwitchBody),
-          const SizedBox(height: 18),
-          for (final note in notes)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.check_circle_outline),
-              title: Text(note),
+          Text(l10n.providerIdentitySwitchBody,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
+          const SizedBox(height: 20),
+          for (var i = 0; i < notes.length; i++) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                border: Border.all(color: colors.outlineVariant),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Icon(
+                      i == notes.length - 1 && pendingOffers > 0
+                          ? Icons.pending_actions_rounded
+                          : Icons.check_circle_outline_rounded,
+                      size: 20,
+                      color: i == notes.length - 1 && pendingOffers > 0
+                          ? colors.tertiary
+                          : colors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(notes[i],
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              height: 1.35,
+                            )),
+                  ),
+                ],
+              ),
             ),
+          ],
         ]),
       ),
       SafeArea(
@@ -1597,8 +1631,25 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
-                    onPressed: onContinue, child: Text(l10n.btnContinue))),
-            TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
+                    style: FilledButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: onContinue,
+                    child: Text(l10n.btnContinue))),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: onCancel,
+                child: Text(l10n.cancel),
+              ),
+            ),
           ]),
         ),
       ),
@@ -1717,6 +1768,10 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                   width: double.infinity,
                   height: 48,
                   child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
                       onPressed: saving ? null : onConfirm,
                       child: saving
                           ? const SizedBox(
@@ -1724,8 +1779,19 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2))
                           : Text(l10n.providerIdentityConfirm))),
-              TextButton(
-                  onPressed: saving ? null : onBack, child: Text(l10n.btnBack)),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: saving ? null : onBack,
+                  child: Text(l10n.btnBack),
+                ),
+              ),
             ]),
           )),
     ]);

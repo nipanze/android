@@ -250,6 +250,12 @@ class CapabilityDetailSheet extends StatelessWidget {
                     _VerificationChecklist(
                       capability: capability,
                       onAddProof: onAddProof,
+                      onAddRoleProof: isJob && !capability.isVerified
+                          ? () {
+                              Navigator.of(context).pop();
+                              onEdit();
+                            }
+                          : null,
                     ),
                   ],
                 ),
@@ -343,10 +349,12 @@ class _VerificationChecklist extends StatelessWidget {
   const _VerificationChecklist({
     required this.capability,
     this.onAddProof,
+    this.onAddRoleProof,
   });
 
   final ProviderCapability capability;
   final VoidCallback? onAddProof;
+  final VoidCallback? onAddRoleProof;
 
   @override
   Widget build(BuildContext context) {
@@ -362,8 +370,13 @@ class _VerificationChecklist extends StatelessWidget {
     final isJob = capability.isWork;
 
     final items = <_ChecklistItem>[];
+    var canAddRoleProof = false;
 
     if (isJob) {
+      canAddRoleProof = !isVerified &&
+          (claims.isEmpty ||
+              claims.any((claim) => !['verified', 'pending_review']
+                  .contains(claim['status']?.toString())));
       if (claims.isNotEmpty) {
         for (final c in claims) {
           final qName = c['qualification_name']?.toString() ?? 'Qualification';
@@ -404,6 +417,9 @@ class _VerificationChecklist extends StatelessWidget {
           subtitle: capability.pendingEvidenceCount > 0
               ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
               : AppLocalizations.of(context)!.providerCapabilityActive,
+          trailingAction: canAddRoleProof
+              ? AppLocalizations.of(context)!.companyEvidenceAdd
+              : null,
         ));
       }
     } else {
@@ -440,48 +456,54 @@ class _VerificationChecklist extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border),
-      ),
-      child: Column(
-        children: items.map((item) {
-          return ListTile(
-            dense: true,
-            leading: Icon(
-              item.icon,
-              size: 20,
-              color: item.iconColor,
-            ),
-            title: Text(
-              item.title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(
-              item.subtitle,
-              style: TextStyle(fontSize: 11, color: text2),
-            ),
-            trailing: item.trailingAction != null
-                ? InkWell(
-                    onTap: onAddProof,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 4),
-                      child: Text(
-                        item.trailingAction!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.proPurple,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: border),
+          ),
+          child: Column(
+            children: items.map((item) {
+              return ListTile(
+                dense: true,
+                leading: Icon(
+                  item.icon,
+                  size: 20,
+                  color: item.iconColor,
+                ),
+                title: Text(
+                  item.title,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  item.subtitle,
+                  style: TextStyle(fontSize: 11, color: text2),
+                ),
+                trailing: item.trailingAction != null
+                    ? InkWell(
+                        onTap: isJob ? onAddRoleProof : onAddProof,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 4),
+                          child: Text(
+                            item.trailingAction!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.proPurple,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                : null,
-          );
-        }).toList(),
-      ),
+                      )
+                    : null,
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1119,6 +1119,42 @@ void main() {
       expect(travelRole.kinds.any((k) => k.slug == 'visas'), isTrue);
     });
 
+    test('ProviderServiceRole removes duplicate qualification labels', () {
+      final role = ProviderServiceRole.fromMap({
+        'slug': 'developer',
+        'name': 'Developer',
+        'role_qualifications': [
+          {
+            'slug': 'degree_diploma_in_it_or_cs',
+            'name': 'Degree / Diploma in IT or CS',
+            'is_evidence': false,
+          },
+          {
+            'slug': 'it_cs_degree_diploma',
+            'name': 'Degree / Diploma in IT or CS',
+            'is_evidence': true,
+          },
+          {
+            'slug': 'cloud_certification',
+            'name': 'Cloud certification',
+            'is_evidence': false,
+          },
+          {
+            'slug': 'cloud_certification_aws_azure_gcp',
+            'name': 'Cloud certification (AWS/Azure/GCP)',
+            'is_evidence': true,
+          },
+        ],
+      });
+
+      expect(role.qualifications, hasLength(2));
+      expect(role.qualifications[0].slug, 'degree_diploma_in_it_or_cs');
+      expect(role.qualifications[0].isEvidence, isTrue);
+      expect(
+          role.qualifications[1].name, 'Cloud certification (AWS/Azure/GCP)');
+      expect(role.qualifications[1].isEvidence, isTrue);
+    });
+
     testWidgets(
         'CapabilityDetailSheet renders work profile for job role with Edit work profile action',
         (tester) async {
@@ -1163,6 +1199,7 @@ void main() {
       expect(find.text('Remove'), findsOneWidget);
       expect(
           find.text('WHAT IS NEEDED FOR THE VERIFIED BADGE'), findsOneWidget);
+      expect(find.text('Add proof'), findsOneWidget);
     });
 
     testWidgets(
