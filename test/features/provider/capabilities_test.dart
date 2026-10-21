@@ -157,7 +157,7 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
-  testWidgets('Company category sheet shows services and optional roles',
+  testWidgets('Company category sheet shows services without roles',
       (tester) async {
     final needsRepo = MockNeedsRepository();
     when(needsRepo.getCategories).thenAnswer((_) async => const [
@@ -219,9 +219,9 @@ void main() {
     expect(find.text('What we offer'), findsOneWidget);
     expect(find.text('Excavator Hire'), findsOneWidget);
     expect(find.text('Needs proof'), findsOneWidget);
-    expect(find.text('What roles do you do?'), findsOneWidget);
+    expect(find.text('What roles do you do?'), findsNothing);
     expect(find.text('STEP 1 OF 3'), findsNothing);
-    expect(find.text('Machine Operator'), findsOneWidget);
+    expect(find.text('Machine Operator'), findsNothing);
 
     expect(
       tester
@@ -231,6 +231,7 @@ void main() {
           .onPressed,
       isNull,
     );
+    await tester.ensureVisible(find.text('Excavator Hire'));
     await tester.tap(find.text('Excavator Hire'));
     await tester.pumpAndSettle();
 

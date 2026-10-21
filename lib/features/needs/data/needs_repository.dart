@@ -6,9 +6,36 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/services/offline_service.dart';
 import '../../marketplace/domain/models/marketplace_item.dart';
 import '../domain/models/need_capability.dart';
-import '../domain/models/need_category.dart';
 import '../domain/models/need_catalog_localizations.dart';
+import '../domain/models/need_category.dart';
 import '../domain/models/need_offer.dart';
+
+List<Map<String, dynamic>> deduplicateCatalogSearchResults(
+  Iterable<Map<String, dynamic>> results,
+) {
+  final unique = <String, Map<String, dynamic>>{};
+  for (final result in results) {
+    final type = result['result_type']?.toString() ?? '';
+    final category = result['category_slug']?.toString() ?? '';
+    final slug = result['slug']?.toString() ?? '';
+    final label = result['label']?.toString() ??
+        result['localized_label']?.toString() ??
+        '';
+    final normalizedLabel = label.trim().toLowerCase();
+    final key = type == 'kind'
+        ? '$type|$category|$slug'
+        : '$type|$category|$normalizedLabel';
+
+    final existing = unique[key];
+    if (existing == null ||
+        (type == 'service' &&
+            slug == 'driving_school' &&
+            existing['slug'] != 'driving_school')) {
+      unique[key] = result;
+    }
+  }
+  return unique.values.toList();
+}
 
 @lazySingleton
 class NeedsRepository {
@@ -70,40 +97,35 @@ class NeedsRepository {
     if (normalized.isEmpty) return const [];
     try {
       final rows = await _client.from('v_catalog_search').select();
-      return (rows as List)
-          .whereType<Map>()
-          .map((row) {
-            final item = row.cast<String, dynamic>();
-            final slug = item['slug']?.toString() ?? '';
-            final type = item['result_type']?.toString();
-            final localizedParent = NeedCatalogLocalizations.categoryName(
-              localeCode,
-              item['category_slug']?.toString() ?? '',
-            );
-            final translated = type == 'category'
-                ? NeedCatalogLocalizations.categoryName(localeCode, slug)
-                : (type == 'service' || type == 'role')
-                    ? NeedCatalogLocalizations.capabilityName(localeCode, slug)
-                    : null;
-            if (translated != null) item['localized_label'] = translated;
-            if (localizedParent != null) {
-              item['localized_parent_category'] = localizedParent;
-            }
-            return item;
-          })
-          .where((row) {
-            final haystack = [
-              row['label']?.toString() ?? '',
-              row['localized_label']?.toString() ?? '',
-              row['parent_category']?.toString() ?? '',
-              row['localized_parent_category']?.toString() ?? '',
-              ...((row['aliases'] as List?) ?? const [])
-                  .map((v) => v.toString()),
-            ].join(' ').toLowerCase();
-            return haystack.contains(normalized);
-          })
-          .take(50)
-          .toList();
+      final matchingResults = (rows as List).whereType<Map>().map((row) {
+        final item = row.cast<String, dynamic>();
+        final slug = item['slug']?.toString() ?? '';
+        final type = item['result_type']?.toString();
+        final localizedParent = NeedCatalogLocalizations.categoryName(
+          localeCode,
+          item['category_slug']?.toString() ?? '',
+        );
+        final translated = type == 'category'
+            ? NeedCatalogLocalizations.categoryName(localeCode, slug)
+            : (type == 'service' || type == 'role')
+                ? NeedCatalogLocalizations.capabilityName(localeCode, slug)
+                : null;
+        if (translated != null) item['localized_label'] = translated;
+        if (localizedParent != null) {
+          item['localized_parent_category'] = localizedParent;
+        }
+        return item;
+      }).where((row) {
+        final haystack = [
+          row['label']?.toString() ?? '',
+          row['localized_label']?.toString() ?? '',
+          row['parent_category']?.toString() ?? '',
+          row['localized_parent_category']?.toString() ?? '',
+          ...((row['aliases'] as List?) ?? const []).map((v) => v.toString()),
+        ].join(' ').toLowerCase();
+        return haystack.contains(normalized);
+      }).toList();
+      return deduplicateCatalogSearchResults(matchingResults).take(50).toList();
     } catch (_) {
       return const [];
     }

@@ -3,14 +3,14 @@
   "global": {
     "account_modes": [
       {
-        "id": "business",
-        "name": "Offer services / hire out",
-        "description": "Businesses or individuals listing what they provide."
+        "id": "individual",
+        "name": "Individual profile",
+        "description": "Select work roles you personally do. Individuals do not list company services."
       },
       {
-        "id": "work",
-        "name": "Available for jobs",
-        "description": "People who want to be hired as operators, managers, technicians etc."
+        "id": "company",
+        "name": "Company / Organization",
+        "description": "Select the services your organization offers. Company settings do not include work roles."
       }
     ],
     "common_qualifications": [
@@ -88,14 +88,20 @@
       "Other"
     ],
     "flow": [
-      "1. Pick category",
-      "2. Toggle 'Work roles': Yes/No",
-      "3. If yes, pick one or more roles (Operator, Manager, Project Manager ...)",
-      "4. For each role, answer the kind question (e.g. 'Which machine do you operate?') with options",
-      "5. Tick qualifications for that role + common qualifications; upload proofs",
-      "6. Employer posts a job with category + role + kind + required qualifications; matching uses these fields",
-      "Services are ticked separately under 'What I offer'"
-    ]
+      "Choose a category and provider identity.",
+      "Individual: select work roles, then add role kinds and qualifications.",
+      "Company / Organization: select services and complete company details; work roles are not shown in company settings.",
+      "Verification and category rollout policies are enforced by the catalog and database configuration."
+    ],
+    "catalog_rules": {
+      "service_owner": "company",
+      "work_role_owner": "individual",
+      "policy_values": [
+        "open",
+        "optional_proof",
+        "required_proof"
+      ]
+    }
   },
   "categories": [
     {
@@ -110,19 +116,27 @@
           "services": [
             {
               "id": "software_development",
-              "name": "Software Development"
+              "name": "Software Development",
+              "is_active": true,
+              "database_slug": "software_development"
             },
             {
               "id": "website_development",
-              "name": "Website Development"
+              "name": "Website Development",
+              "is_active": true,
+              "database_slug": "website_development"
             },
             {
               "id": "mobile_app_development",
-              "name": "Mobile App Development"
+              "name": "Mobile App Development",
+              "is_active": true,
+              "database_slug": "mobile_app_development"
             },
             {
               "id": "automation",
-              "name": "Automation"
+              "name": "Automation",
+              "is_active": true,
+              "database_slug": "automation_services"
             }
           ]
         },
@@ -132,15 +146,21 @@
           "services": [
             {
               "id": "it_support",
-              "name": "IT Support"
+              "name": "IT Support",
+              "is_active": true,
+              "database_slug": "it_support"
             },
             {
               "id": "networking",
-              "name": "Networking"
+              "name": "Networking",
+              "is_active": true,
+              "database_slug": "networking_services"
             },
             {
               "id": "cybersecurity",
-              "name": "Cybersecurity"
+              "name": "Cybersecurity",
+              "is_active": true,
+              "database_slug": "cybersecurity_services"
             }
           ]
         },
@@ -150,7 +170,9 @@
           "services": [
             {
               "id": "other_technology",
-              "name": "Other Technology"
+              "name": "Other Technology",
+              "is_active": true,
+              "database_slug": "other_technology"
             }
           ]
         }
@@ -189,21 +211,27 @@
           "qualifications": [
             {
               "id": "degree_diploma_in_it_or_cs",
-              "name": "Degree / Diploma in IT or CS"
+              "name": "Degree / Diploma in IT or CS",
+              "is_evidence": false
             },
             {
               "id": "portfolio_or_github_link",
-              "name": "Portfolio or GitHub link"
+              "name": "Portfolio or GitHub link",
+              "is_evidence": false
             },
             {
               "id": "cloud_certification_aws_azure_gcp",
-              "name": "Cloud certification (AWS/Azure/GCP)"
+              "name": "Cloud certification (AWS/Azure/GCP)",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_developer"
         },
         {
           "id": "it_technician",
@@ -230,21 +258,27 @@
           "qualifications": [
             {
               "id": "comptia_a_n",
-              "name": "CompTIA A+ / N+"
+              "name": "CompTIA A+ / N+",
+              "is_evidence": false
             },
             {
               "id": "ccna",
-              "name": "CCNA"
+              "name": "CCNA",
+              "is_evidence": false
             },
             {
               "id": "own_toolkit",
-              "name": "Own toolkit"
+              "name": "Own toolkit",
+              "is_evidence": false
             },
             {
               "id": "2_years_experience",
-              "name": "2+ years experience"
+              "name": "2+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_it_technician"
         },
         {
           "id": "security_specialist",
@@ -267,21 +301,27 @@
           "qualifications": [
             {
               "id": "ceh",
-              "name": "CEH"
+              "name": "CEH",
+              "is_evidence": false
             },
             {
               "id": "cissp_cism",
-              "name": "CISSP / CISM"
+              "name": "CISSP / CISM",
+              "is_evidence": false
             },
             {
               "id": "iso_27001",
-              "name": "ISO 27001"
+              "name": "ISO 27001",
+              "is_evidence": false
             },
             {
               "id": "police_clearance",
-              "name": "Police clearance"
+              "name": "Police clearance",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_security_specialist"
         },
         {
           "id": "project_manager",
@@ -304,21 +344,27 @@
           "qualifications": [
             {
               "id": "pmp_prince2",
-              "name": "PMP / PRINCE2"
+              "name": "PMP / PRINCE2",
+              "is_evidence": false
             },
             {
               "id": "agile_scrum_certified",
-              "name": "Agile / Scrum certified"
+              "name": "Agile / Scrum certified",
+              "is_evidence": false
             },
             {
               "id": "led_3_projects",
-              "name": "Led 3+ projects"
+              "name": "Led 3+ projects",
+              "is_evidence": false
             },
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_project_manager"
         },
         {
           "id": "team_lead_manager",
@@ -341,19 +387,27 @@
           "qualifications": [
             {
               "id": "managed_5_people",
-              "name": "Managed 5+ people"
+              "name": "Managed 5+ people",
+              "is_evidence": false
             },
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "3_years_leadership",
-              "name": "3+ years leadership"
+              "name": "3+ years leadership",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_team_lead_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "technology_digital"
     },
     {
       "id": "marketing_promotion",
@@ -367,27 +421,39 @@
           "services": [
             {
               "id": "digital_marketing",
-              "name": "Digital Marketing"
+              "name": "Digital Marketing",
+              "is_active": true,
+              "database_slug": "digital_marketing"
             },
             {
               "id": "social_media_marketing",
-              "name": "Social Media Marketing"
+              "name": "Social Media Marketing",
+              "is_active": true,
+              "database_slug": "social_media_marketing"
             },
             {
               "id": "advertising_campaigns",
-              "name": "Advertising Campaigns"
+              "name": "Advertising Campaigns",
+              "is_active": true,
+              "database_slug": "advertising_campaigns"
             },
             {
               "id": "brand_promotion",
-              "name": "Brand Promotion"
+              "name": "Brand Promotion",
+              "is_active": true,
+              "database_slug": "brand_promotion"
             },
             {
               "id": "event_promotion",
-              "name": "Event Promotion"
+              "name": "Event Promotion",
+              "is_active": true,
+              "database_slug": "event_promotion"
             },
             {
               "id": "affiliate_marketing",
-              "name": "Affiliate Marketing"
+              "name": "Affiliate Marketing",
+              "is_active": true,
+              "database_slug": "affiliate_marketing"
             }
           ]
         },
@@ -397,19 +463,27 @@
           "services": [
             {
               "id": "content_creation",
-              "name": "Content Creation"
+              "name": "Content Creation",
+              "is_active": true,
+              "database_slug": "content_creation"
             },
             {
               "id": "influencer_marketing",
-              "name": "Influencer Marketing"
+              "name": "Influencer Marketing",
+              "is_active": true,
+              "database_slug": "influencer_marketing"
             },
             {
               "id": "product_reviews",
-              "name": "Product Reviews"
+              "name": "Product Reviews",
+              "is_active": true,
+              "database_slug": "product_reviews"
             },
             {
               "id": "i_have_an_audience",
-              "name": "I Have an Audience"
+              "name": "I Have an Audience",
+              "is_active": true,
+              "database_slug": "i_have_an_audience"
             }
           ]
         },
@@ -419,7 +493,9 @@
           "services": [
             {
               "id": "other_marketing_services",
-              "name": "Other Marketing Services"
+              "name": "Other Marketing Services",
+              "is_active": true,
+              "database_slug": "other_marketing_services"
             }
           ]
         }
@@ -454,21 +530,27 @@
           "qualifications": [
             {
               "id": "marketing_diploma_degree",
-              "name": "Marketing diploma / degree"
+              "name": "Marketing diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "google_ads_meta_certified",
-              "name": "Google Ads / Meta certified"
+              "name": "Google Ads / Meta certified",
+              "is_evidence": false
             },
             {
               "id": "case_studies_or_portfolio",
-              "name": "Case studies or portfolio"
+              "name": "Case studies or portfolio",
+              "is_evidence": false
             },
             {
               "id": "2_years_experience",
-              "name": "2+ years experience"
+              "name": "2+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_marketer_specialist"
         },
         {
           "id": "content_creator",
@@ -499,17 +581,22 @@
           "qualifications": [
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "own_equipment",
-              "name": "Own equipment"
+              "name": "Own equipment",
+              "is_evidence": false
             },
             {
               "id": "audience_size_proof",
-              "name": "Audience size proof"
+              "name": "Audience size proof",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_content_creator"
         },
         {
           "id": "marketing_manager",
@@ -532,17 +619,22 @@
           "qualifications": [
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "managed_budgets",
-              "name": "Managed budgets"
+              "name": "Managed budgets",
+              "is_evidence": false
             },
             {
               "id": "managed_3_people",
-              "name": "Managed 3+ people"
+              "name": "Managed 3+ people",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_marketing_manager"
         },
         {
           "id": "campaign_project_manager",
@@ -565,15 +657,22 @@
           "qualifications": [
             {
               "id": "pmp_prince2",
-              "name": "PMP / PRINCE2"
+              "name": "PMP / PRINCE2",
+              "is_evidence": false
             },
             {
               "id": "led_3_campaigns",
-              "name": "Led 3+ campaigns"
+              "name": "Led 3+ campaigns",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_campaign_project_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "marketing_promotion"
     },
     {
       "id": "business_professional_services",
@@ -587,15 +686,21 @@
           "services": [
             {
               "id": "accounting_tax",
-              "name": "Accounting & Tax"
+              "name": "Accounting & Tax",
+              "is_active": true,
+              "database_slug": "accounting_tax"
             },
             {
               "id": "legal_services",
-              "name": "Legal Services"
+              "name": "Legal Services",
+              "is_active": true,
+              "database_slug": "legal_services"
             },
             {
               "id": "company_registration",
-              "name": "Company Registration"
+              "name": "Company Registration",
+              "is_active": true,
+              "database_slug": "company_registration"
             }
           ]
         },
@@ -605,11 +710,15 @@
           "services": [
             {
               "id": "business_consulting",
-              "name": "Business Consulting"
+              "name": "Business Consulting",
+              "is_active": true,
+              "database_slug": "business_consulting"
             },
             {
               "id": "hr_services",
-              "name": "HR Services"
+              "name": "HR Services",
+              "is_active": true,
+              "database_slug": "hr_services"
             }
           ]
         },
@@ -619,15 +728,22 @@
           "services": [
             {
               "id": "architecture",
-              "name": "Architecture"
+              "name": "Architecture",
+              "is_active": true,
+              "database_slug": "architecture_services"
             },
             {
               "id": "engineering",
-              "name": "Engineering"
+              "name": "Engineering",
+              "is_active": true,
+              "database_slug": "engineering_consulting"
             },
             {
               "id": "driving_school_driver_training",
-              "name": "Driving School / Driver Training"
+              "name": "Driving School / Driver Training",
+              "is_active": true,
+              "policy": "required_proof",
+              "database_slug": "driving_school_driver_training"
             }
           ]
         },
@@ -637,7 +753,9 @@
           "services": [
             {
               "id": "other_professional_services",
-              "name": "Other Professional Services"
+              "name": "Other Professional Services",
+              "is_active": true,
+              "database_slug": "other_professional"
             }
           ]
         }
@@ -668,21 +786,27 @@
           "qualifications": [
             {
               "id": "cpa_acca_cpa_u",
-              "name": "CPA / ACCA / CPA-U"
+              "name": "CPA / ACCA / CPA-U",
+              "is_evidence": false
             },
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "practising_certificate",
-              "name": "Practising certificate"
+              "name": "Practising certificate",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_accountant_finance_officer"
         },
         {
           "id": "lawyer_legal_officer",
@@ -709,17 +833,22 @@
           "qualifications": [
             {
               "id": "bar_admission_practising_certificate",
-              "name": "Bar admission / practising certificate"
+              "name": "Bar admission / practising certificate",
+              "is_evidence": false
             },
             {
               "id": "llb",
-              "name": "LLB"
+              "name": "LLB",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_lawyer_legal_officer"
         },
         {
           "id": "engineer",
@@ -746,17 +875,22 @@
           "qualifications": [
             {
               "id": "degree_in_engineering",
-              "name": "Degree in engineering"
+              "name": "Degree in engineering",
+              "is_evidence": false
             },
             {
               "id": "registered_with_engineers_board",
-              "name": "Registered with engineers board"
+              "name": "Registered with engineers board",
+              "is_evidence": false
             },
             {
               "id": "site_experience",
-              "name": "Site experience"
+              "name": "Site experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_engineer"
         },
         {
           "id": "architect_designer",
@@ -779,17 +913,22 @@
           "qualifications": [
             {
               "id": "registered_architect",
-              "name": "Registered architect"
+              "name": "Registered architect",
+              "is_evidence": false
             },
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "cad_bim_skills",
-              "name": "CAD/BIM skills"
+              "name": "CAD/BIM skills",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_architect_designer"
         },
         {
           "id": "hr_officer_manager",
@@ -812,17 +951,22 @@
           "qualifications": [
             {
               "id": "hr_diploma_degree",
-              "name": "HR diploma / degree"
+              "name": "HR diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "ihrm_cipd",
-              "name": "IHRM / CIPD"
+              "name": "IHRM / CIPD",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_hr_officer_manager"
         },
         {
           "id": "business_administrator_office_manager",
@@ -849,21 +993,27 @@
           "qualifications": [
             {
               "id": "diploma_degree_in_business_administration",
-              "name": "Diploma / degree in business administration"
+              "name": "Diploma / degree in business administration",
+              "is_evidence": false
             },
             {
               "id": "office_software_skills_documents_spreadsheets_email",
-              "name": "Office software skills (documents, spreadsheets, email)"
+              "name": "Office software skills (documents, spreadsheets, email)",
+              "is_evidence": false
             },
             {
               "id": "2_years_experience",
-              "name": "2+ years experience"
+              "name": "2+ years experience",
+              "is_evidence": false
             },
             {
               "id": "references",
-              "name": "References"
+              "name": "References",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_business_administrator_office_manager"
         },
         {
           "id": "consultant",
@@ -890,17 +1040,22 @@
           "qualifications": [
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "case_studies",
-              "name": "Case studies"
+              "name": "Case studies",
+              "is_evidence": false
             },
             {
               "id": "5_years_experience",
-              "name": "5+ years experience"
+              "name": "5+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_consultant"
         },
         {
           "id": "project_manager",
@@ -923,15 +1078,22 @@
           "qualifications": [
             {
               "id": "pmp_prince2",
-              "name": "PMP / PRINCE2"
+              "name": "PMP / PRINCE2",
+              "is_evidence": false
             },
             {
               "id": "led_3_projects",
-              "name": "Led 3+ projects"
+              "name": "Led 3+ projects",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_professional_services_project_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "professional_services"
     },
     {
       "id": "education_training",
@@ -945,35 +1107,51 @@
           "services": [
             {
               "id": "private_tutoring",
-              "name": "Private Tutoring"
+              "name": "Private Tutoring",
+              "is_active": true,
+              "database_slug": "private_tutoring"
             },
             {
               "id": "online_classes",
-              "name": "Online Classes"
+              "name": "Online Classes",
+              "is_active": true,
+              "database_slug": "online_classes"
             },
             {
               "id": "exam_preparation",
-              "name": "Exam Preparation"
+              "name": "Exam Preparation",
+              "is_active": true,
+              "database_slug": "exam_preparation"
             },
             {
               "id": "language_training",
-              "name": "Language Training"
+              "name": "Language Training",
+              "is_active": true,
+              "database_slug": "language_training"
             },
             {
               "id": "computer_training",
-              "name": "Computer Training"
+              "name": "Computer Training",
+              "is_active": true,
+              "database_slug": "computer_training"
             },
             {
               "id": "professional_training",
-              "name": "Professional Training"
+              "name": "Professional Training",
+              "is_active": true,
+              "database_slug": "professional_training"
             },
             {
               "id": "vocational_training",
-              "name": "Vocational Training"
+              "name": "Vocational Training",
+              "is_active": true,
+              "database_slug": "vocational_training"
             },
             {
               "id": "academic_consulting",
-              "name": "Academic Consulting"
+              "name": "Academic Consulting",
+              "is_active": true,
+              "database_slug": "academic_consulting"
             }
           ]
         },
@@ -983,19 +1161,92 @@
           "services": [
             {
               "id": "university_admissions",
-              "name": "University Admissions"
+              "name": "University Admissions",
+              "is_active": true,
+              "database_slug": "university_admissions"
             },
             {
               "id": "study_abroad_guidance",
-              "name": "Study Abroad Guidance"
+              "name": "Study Abroad Guidance",
+              "is_active": true,
+              "database_slug": "study_abroad_guidance"
             },
             {
               "id": "internship_placement",
-              "name": "Internship Placement"
+              "name": "Internship Placement",
+              "is_active": true,
+              "database_slug": "internship_placement"
             },
             {
               "id": "health_nursing_placements",
-              "name": "Health / Nursing Placements"
+              "name": "Health / Nursing Placements",
+              "is_active": true,
+              "database_slug": "health_nursing_placements"
+            }
+          ]
+        },
+        {
+          "id": "coursework",
+          "name": "Coursework & projects",
+          "services": [
+            {
+              "id": "final_year_project_support",
+              "name": "Final Year Project Support",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "FYP",
+                "capstone",
+                "project defence"
+              ],
+              "database_slug": "final_year_project_support"
+            },
+            {
+              "id": "research_dissertation_guidance",
+              "name": "Research Proposal & Dissertation Guidance",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "thesis",
+                "research paper",
+                "proposal"
+              ],
+              "database_slug": "research_dissertation_guidance"
+            },
+            {
+              "id": "data_analysis_help",
+              "name": "Data Analysis & Statistics Help",
+              "is_active": true,
+              "policy": "open",
+              "aliases": [
+                "SPSS",
+                "statistics",
+                "STATA"
+              ],
+              "database_slug": "data_analysis_help"
+            },
+            {
+              "id": "proofreading_editing",
+              "name": "Proofreading & Editing",
+              "is_active": true,
+              "policy": "open",
+              "aliases": [
+                "editing"
+              ],
+              "database_slug": "proofreading_editing"
+            },
+            {
+              "id": "coursework_tutoring",
+              "name": "Coursework Tutoring",
+              "is_active": true,
+              "policy": "open",
+              "aliases": [
+                "course work",
+                "coursework",
+                "assignment help",
+                "homework"
+              ],
+              "database_slug": "coursework_tutoring"
             }
           ]
         }
@@ -1030,21 +1281,27 @@
           "qualifications": [
             {
               "id": "teaching_certificate_degree",
-              "name": "Teaching certificate / degree"
+              "name": "Teaching certificate / degree",
+              "is_evidence": false
             },
             {
               "id": "registered_with_teaching_board",
-              "name": "Registered with teaching board"
+              "name": "Registered with teaching board",
+              "is_evidence": false
             },
             {
               "id": "2_years_teaching",
-              "name": "2+ years teaching"
+              "name": "2+ years teaching",
+              "is_evidence": false
             },
             {
               "id": "subject_specialisation",
-              "name": "Subject specialisation"
+              "name": "Subject specialisation",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_teacher_tutor"
         },
         {
           "id": "trainer_instructor",
@@ -1071,17 +1328,22 @@
           "qualifications": [
             {
               "id": "trade_certificate",
-              "name": "Trade certificate"
+              "name": "Trade certificate",
+              "is_evidence": false
             },
             {
               "id": "trainer_of_trainers_tot",
-              "name": "Trainer-of-trainers (ToT)"
+              "name": "Trainer-of-trainers (ToT)",
+              "is_evidence": false
             },
             {
               "id": "industry_experience_3_years",
-              "name": "Industry experience 3+ years"
+              "name": "Industry experience 3+ years",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_trainer_instructor"
         },
         {
           "id": "placement_coordinator",
@@ -1108,17 +1370,22 @@
           "qualifications": [
             {
               "id": "education_or_hr_background",
-              "name": "Education or HR background"
+              "name": "Education or HR background",
+              "is_evidence": false
             },
             {
               "id": "partner_network",
-              "name": "Partner network"
+              "name": "Partner network",
+              "is_evidence": false
             },
             {
               "id": "counselling_certificate",
-              "name": "Counselling certificate"
+              "name": "Counselling certificate",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_placement_coordinator"
         },
         {
           "id": "programme_manager",
@@ -1137,15 +1404,94 @@
           "qualifications": [
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "managed_3_programmes",
-              "name": "Managed 3+ programmes"
+              "name": "Managed 3+ programmes",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_programme_manager"
+        },
+        {
+          "id": "research_mentor",
+          "name": "Project / Research Mentor",
+          "kind_question": "What do you help with?",
+          "kinds": [
+            {
+              "id": "final_year_project",
+              "name": "Final year project"
+            },
+            {
+              "id": "dissertation",
+              "name": "Dissertation or thesis"
+            },
+            {
+              "id": "research_proposal",
+              "name": "Research proposal"
+            },
+            {
+              "id": "data_analysis",
+              "name": "Data analysis (SPSS, R, Excel, Stata)"
+            },
+            {
+              "id": "proofreading",
+              "name": "Proofreading & editing"
+            },
+            {
+              "id": "presentation_defence",
+              "name": "Presentation & defence coaching"
+            },
+            {
+              "id": "software_it_project",
+              "name": "Software/IT project guidance"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "degree_in_field",
+              "name": "Degree in the field",
+              "is_evidence": true
+            },
+            {
+              "id": "masters_phd",
+              "name": "Master’s or PhD",
+              "is_evidence": true
+            },
+            {
+              "id": "published_work",
+              "name": "Published work or portfolio",
+              "is_evidence": false
+            },
+            {
+              "id": "subject_specialisation",
+              "name": "Subject specialisation",
+              "is_evidence": false
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [
+            "FYP",
+            "capstone",
+            "thesis",
+            "research paper",
+            "proposal"
+          ],
+          "database_slug": "work_research_mentor"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "education_training"
     },
     {
       "id": "events_celebrations",
@@ -1159,19 +1505,27 @@
           "services": [
             {
               "id": "event_planning",
-              "name": "Event Planning"
+              "name": "Event Planning",
+              "is_active": true,
+              "database_slug": "event_planning"
             },
             {
               "id": "decoration",
-              "name": "Decoration"
+              "name": "Decoration",
+              "is_active": true,
+              "database_slug": "event_decoration"
             },
             {
               "id": "cakes",
-              "name": "Cakes"
+              "name": "Cakes",
+              "is_active": true,
+              "database_slug": "celebration_cakes"
             },
             {
               "id": "catering",
-              "name": "Catering"
+              "name": "Catering",
+              "is_active": true,
+              "database_slug": "celebration_catering"
             }
           ]
         },
@@ -1181,19 +1535,27 @@
           "services": [
             {
               "id": "tents",
-              "name": "Tents"
+              "name": "Tents",
+              "is_active": true,
+              "database_slug": "tent_hire"
             },
             {
               "id": "event_equipment",
-              "name": "Event Equipment"
+              "name": "Event Equipment",
+              "is_active": true,
+              "database_slug": "event_equipment"
             },
             {
               "id": "sound_systems",
-              "name": "Sound Systems"
+              "name": "Sound Systems",
+              "is_active": true,
+              "database_slug": "sound_systems"
             },
             {
               "id": "lighting",
-              "name": "Lighting"
+              "name": "Lighting",
+              "is_active": true,
+              "database_slug": "lighting_hire"
             }
           ]
         },
@@ -1203,11 +1565,15 @@
           "services": [
             {
               "id": "djs_mcs",
-              "name": "DJs / MCs"
+              "name": "DJs / MCs",
+              "is_active": true,
+              "database_slug": "celebration_mc_dj"
             },
             {
               "id": "event_transport",
-              "name": "Event Transport"
+              "name": "Event Transport",
+              "is_active": true,
+              "database_slug": "event_transport"
             }
           ]
         },
@@ -1217,7 +1583,9 @@
           "services": [
             {
               "id": "other_events",
-              "name": "Other Events"
+              "name": "Other Events",
+              "is_active": true,
+              "database_slug": "other_events"
             }
           ]
         }
@@ -1252,21 +1620,27 @@
           "qualifications": [
             {
               "id": "event_planning_certificate",
-              "name": "Event planning certificate"
+              "name": "Event planning certificate",
+              "is_evidence": false
             },
             {
               "id": "portfolio_of_5_events",
-              "name": "Portfolio of 5+ events"
+              "name": "Portfolio of 5+ events",
+              "is_evidence": false
             },
             {
               "id": "insurance_permit",
-              "name": "Insurance / permit"
+              "name": "Insurance / permit",
+              "is_evidence": false
             },
             {
               "id": "team_of_3_staff",
-              "name": "Team of 3+ staff"
+              "name": "Team of 3+ staff",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_event_manager_planner"
         },
         {
           "id": "mc_dj",
@@ -1289,17 +1663,22 @@
           "qualifications": [
             {
               "id": "own_equipment",
-              "name": "Own equipment"
+              "name": "Own equipment",
+              "is_evidence": false
             },
             {
               "id": "sample_mix_video",
-              "name": "Sample mix / video"
+              "name": "Sample mix / video",
+              "is_evidence": false
             },
             {
               "id": "references",
-              "name": "References"
+              "name": "References",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_mc_dj"
         },
         {
           "id": "event_crew_technician",
@@ -1326,17 +1705,22 @@
           "qualifications": [
             {
               "id": "technical_training",
-              "name": "Technical training"
+              "name": "Technical training",
+              "is_evidence": false
             },
             {
               "id": "own_tools",
-              "name": "Own tools"
+              "name": "Own tools",
+              "is_evidence": false
             },
             {
               "id": "event_experience_1_year",
-              "name": "Event experience 1+ year"
+              "name": "Event experience 1+ year",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_event_crew_technician"
         },
         {
           "id": "caterer_chef",
@@ -1359,17 +1743,22 @@
           "qualifications": [
             {
               "id": "food_handler_certificate",
-              "name": "Food handler certificate"
+              "name": "Food handler certificate",
+              "is_evidence": false
             },
             {
               "id": "health_permit",
-              "name": "Health permit"
+              "name": "Health permit",
+              "is_evidence": false
             },
             {
               "id": "culinary_diploma",
-              "name": "Culinary diploma"
+              "name": "Culinary diploma",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_caterer_chef"
         },
         {
           "id": "event_supervisor",
@@ -1392,15 +1781,22 @@
           "qualifications": [
             {
               "id": "managed_5_events",
-              "name": "Managed 5+ events"
+              "name": "Managed 5+ events",
+              "is_evidence": false
             },
             {
               "id": "team_leadership",
-              "name": "Team leadership"
+              "name": "Team leadership",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_event_supervisor"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "events_production"
     },
     {
       "id": "photo_video_music_talent",
@@ -1414,15 +1810,21 @@
           "services": [
             {
               "id": "photography",
-              "name": "Photography"
+              "name": "Photography",
+              "is_active": true,
+              "database_slug": "photography_services"
             },
             {
               "id": "videography",
-              "name": "Videography"
+              "name": "Videography",
+              "is_active": true,
+              "database_slug": "videography_services"
             },
             {
               "id": "video_editors",
-              "name": "Video Editors"
+              "name": "Video Editors",
+              "is_active": true,
+              "database_slug": "video_editors"
             }
           ]
         },
@@ -1432,23 +1834,33 @@
           "services": [
             {
               "id": "recording_studios",
-              "name": "Recording Studios"
+              "name": "Recording Studios",
+              "is_active": true,
+              "database_slug": "recording_studios"
             },
             {
               "id": "music_producers",
-              "name": "Music Producers"
+              "name": "Music Producers",
+              "is_active": true,
+              "database_slug": "music_producers"
             },
             {
               "id": "mixing_mastering",
-              "name": "Mixing & Mastering"
+              "name": "Mixing & Mastering",
+              "is_active": true,
+              "database_slug": "mixing_mastering"
             },
             {
               "id": "songwriters",
-              "name": "Songwriters"
+              "name": "Songwriters",
+              "is_active": true,
+              "database_slug": "songwriters"
             },
             {
               "id": "singers_vocalists",
-              "name": "Singers / Vocalists"
+              "name": "Singers / Vocalists",
+              "is_active": true,
+              "database_slug": "singers_vocalists"
             }
           ]
         },
@@ -1458,19 +1870,27 @@
           "services": [
             {
               "id": "actors_actresses",
-              "name": "Actors / Actresses"
+              "name": "Actors / Actresses",
+              "is_active": true,
+              "database_slug": "actors_actresses"
             },
             {
               "id": "dancers",
-              "name": "Dancers"
+              "name": "Dancers",
+              "is_active": true,
+              "database_slug": "dancers"
             },
             {
               "id": "background_extras",
-              "name": "Background Extras"
+              "name": "Background Extras",
+              "is_active": true,
+              "database_slug": "background_extras"
             },
             {
               "id": "music_video_models",
-              "name": "Music Video Models"
+              "name": "Music Video Models",
+              "is_active": true,
+              "database_slug": "music_video_models"
             }
           ]
         }
@@ -1509,21 +1929,27 @@
           "qualifications": [
             {
               "id": "portfolio_link",
-              "name": "Portfolio link"
+              "name": "Portfolio link",
+              "is_evidence": false
             },
             {
               "id": "own_camera_drone_kit",
-              "name": "Own camera / drone kit"
+              "name": "Own camera / drone kit",
+              "is_evidence": false
             },
             {
               "id": "drone_licence",
-              "name": "Drone licence"
+              "name": "Drone licence",
+              "is_evidence": false
             },
             {
               "id": "editing_skills",
-              "name": "Editing skills"
+              "name": "Editing skills",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_photographer_videographer"
         },
         {
           "id": "audio_engineer_producer",
@@ -1550,17 +1976,22 @@
           "qualifications": [
             {
               "id": "own_studio_daw",
-              "name": "Own studio / DAW"
+              "name": "Own studio / DAW",
+              "is_evidence": false
             },
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "audio_engineering_diploma",
-              "name": "Audio engineering diploma"
+              "name": "Audio engineering diploma",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_audio_engineer_producer"
         },
         {
           "id": "performer_talent",
@@ -1591,17 +2022,22 @@
           "qualifications": [
             {
               "id": "showreel_audition_clip",
-              "name": "Showreel / audition clip"
+              "name": "Showreel / audition clip",
+              "is_evidence": false
             },
             {
               "id": "agency_representation",
-              "name": "Agency representation"
+              "name": "Agency representation",
+              "is_evidence": false
             },
             {
               "id": "performance_experience",
-              "name": "Performance experience"
+              "name": "Performance experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_performer_talent"
         },
         {
           "id": "production_manager",
@@ -1624,25 +2060,33 @@
           "qualifications": [
             {
               "id": "managed_3_productions",
-              "name": "Managed 3+ productions"
+              "name": "Managed 3+ productions",
+              "is_evidence": false
             },
             {
               "id": "budget_handling",
-              "name": "Budget handling"
+              "name": "Budget handling",
+              "is_evidence": false
             },
             {
               "id": "crew_network",
-              "name": "Crew network"
+              "name": "Crew network",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_production_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "photo_video_music_talent"
     },
     {
       "id": "beauty_fashion_styling",
-      "name": "Beauty, Fashion & Styling",
+      "name": "Beauty, Fashion, Styling & Wellness",
       "icon": "💄",
-      "description": "Makeup, hair, styling and clothing",
+      "description": "Makeup, hair, styling, clothing, massage, spa, and wellness services",
       "service_groups": [
         {
           "id": "beauty",
@@ -1650,11 +2094,15 @@
           "services": [
             {
               "id": "makeup_artists",
-              "name": "Makeup Artists"
+              "name": "Makeup Artists",
+              "is_active": true,
+              "database_slug": "celebration_makeup"
             },
             {
               "id": "hair_stylists",
-              "name": "Hair Stylists"
+              "name": "Hair Stylists",
+              "is_active": true,
+              "database_slug": "hair_styling"
             }
           ]
         },
@@ -1664,15 +2112,87 @@
           "services": [
             {
               "id": "bridal_styling",
-              "name": "Bridal Styling"
+              "name": "Bridal Styling",
+              "is_active": true,
+              "database_slug": "bridal_styling"
             },
             {
               "id": "stylists",
-              "name": "Stylists"
+              "name": "Stylists",
+              "is_active": true,
+              "database_slug": "music_video_stylists"
             },
             {
               "id": "wedding_dresses_bridesmaid_outfits",
-              "name": "Wedding Dresses / Bridesmaid Outfits"
+              "name": "Wedding Dresses / Bridesmaid Outfits",
+              "is_active": true,
+              "database_slug": "dresses_bridesmaid_outfits"
+            }
+          ]
+        },
+        {
+          "id": "wellness_spa",
+          "name": "Wellness & Spa",
+          "services": [
+            {
+              "id": "massage_therapy",
+              "name": "Massage Therapy",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "massage",
+                "masseuse",
+                "masseur",
+                "therapeutic body rub"
+              ],
+              "database_slug": "massage_therapy"
+            },
+            {
+              "id": "spa_services",
+              "name": "Spa Services",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "wellness",
+                "sauna",
+                "steam"
+              ],
+              "database_slug": "spa_services"
+            },
+            {
+              "id": "salon_barber_services",
+              "name": "Salons & Barber Shops",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "salon",
+                "barber",
+                "barbershop"
+              ],
+              "database_slug": "salon_barber_services"
+            },
+            {
+              "id": "nails_skincare_services",
+              "name": "Nails & Skincare",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "manicure",
+                "pedicure",
+                "skincare"
+              ],
+              "database_slug": "nails_skincare_services"
+            },
+            {
+              "id": "sauna_steam_services",
+              "name": "Sauna & Steam",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "sauna",
+                "steam room"
+              ],
+              "database_slug": "sauna_steam_services"
             }
           ]
         }
@@ -1703,21 +2223,27 @@
           "qualifications": [
             {
               "id": "cosmetology_certificate",
-              "name": "Cosmetology certificate"
+              "name": "Cosmetology certificate",
+              "is_evidence": false
             },
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "own_kit",
-              "name": "Own kit"
+              "name": "Own kit",
+              "is_evidence": false
             },
             {
               "id": "hygiene_certification",
-              "name": "Hygiene certification"
+              "name": "Hygiene certification",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_makeup_artist"
         },
         {
           "id": "hair_stylist",
@@ -1744,17 +2270,22 @@
           "qualifications": [
             {
               "id": "cosmetology_certificate",
-              "name": "Cosmetology certificate"
+              "name": "Cosmetology certificate",
+              "is_evidence": false
             },
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "salon_licence",
-              "name": "Salon licence"
+              "name": "Salon licence",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_hair_stylist"
         },
         {
           "id": "stylist_designer",
@@ -1777,17 +2308,22 @@
           "qualifications": [
             {
               "id": "fashion_diploma",
-              "name": "Fashion diploma"
+              "name": "Fashion diploma",
+              "is_evidence": false
             },
             {
               "id": "portfolio",
-              "name": "Portfolio"
+              "name": "Portfolio",
+              "is_evidence": false
             },
             {
               "id": "own_workshop",
-              "name": "Own workshop"
+              "name": "Own workshop",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_stylist_designer"
         },
         {
           "id": "salon_studio_manager",
@@ -1806,15 +2342,157 @@
           "qualifications": [
             {
               "id": "managed_3_staff",
-              "name": "Managed 3+ staff"
+              "name": "Managed 3+ staff",
+              "is_evidence": false
             },
             {
               "id": "business_licence",
-              "name": "Business licence"
+              "name": "Business licence",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_salon_studio_manager"
+        },
+        {
+          "id": "massage_therapist",
+          "name": "Massage Therapist",
+          "kind_question": "Which massage?",
+          "kinds": [
+            {
+              "id": "relaxation",
+              "name": "Relaxation"
+            },
+            {
+              "id": "deep_tissue",
+              "name": "Deep tissue"
+            },
+            {
+              "id": "sports",
+              "name": "Sports"
+            },
+            {
+              "id": "prenatal",
+              "name": "Prenatal"
+            },
+            {
+              "id": "mobile",
+              "name": "Mobile / at-home"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "massage_therapy_certificate",
+              "name": "Massage therapy certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "hygiene_certification",
+              "name": "Hygiene certification",
+              "is_evidence": true
+            },
+            {
+              "id": "own_equipment",
+              "name": "Own equipment",
+              "is_evidence": false
+            },
+            {
+              "id": "experience_one_year",
+              "name": "Experience 1+ year",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [
+            "masseuse",
+            "masseur"
+          ],
+          "database_slug": "work_massage_therapist"
+        },
+        {
+          "id": "spa_therapist",
+          "name": "Spa Therapist",
+          "kind_question": "What treatments?",
+          "kinds": [
+            {
+              "id": "facials",
+              "name": "Facials"
+            },
+            {
+              "id": "body_treatments",
+              "name": "Body treatments"
+            },
+            {
+              "id": "nails",
+              "name": "Nails"
+            },
+            {
+              "id": "waxing",
+              "name": "Waxing"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "cosmetology_spa_certificate",
+              "name": "Cosmetology or spa certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "hygiene_certification",
+              "name": "Hygiene certification",
+              "is_evidence": true
+            },
+            {
+              "id": "portfolio",
+              "name": "Portfolio",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [],
+          "database_slug": "work_spa_therapist"
+        },
+        {
+          "id": "spa_manager",
+          "name": "Spa / Wellness Manager",
+          "kind_question": "What do you manage?",
+          "kinds": [
+            {
+              "id": "spa",
+              "name": "Spa"
+            },
+            {
+              "id": "salon",
+              "name": "Salon"
+            },
+            {
+              "id": "wellness_centre",
+              "name": "Wellness centre"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "business_licence",
+              "name": "Business licence",
+              "is_evidence": true
+            },
+            {
+              "id": "managed_three_staff",
+              "name": "Managed 3+ staff",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [],
+          "database_slug": "work_spa_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "beauty_fashion_styling"
     },
     {
       "id": "construction_building",
@@ -1828,19 +2506,27 @@
           "services": [
             {
               "id": "building_contractors",
-              "name": "Building Contractors"
+              "name": "Building Contractors",
+              "is_active": true,
+              "database_slug": "building_contractors"
             },
             {
               "id": "roofing",
-              "name": "Roofing"
+              "name": "Roofing",
+              "is_active": true,
+              "database_slug": "roofing_services"
             },
             {
               "id": "excavation",
-              "name": "Excavation"
+              "name": "Excavation",
+              "is_active": true,
+              "database_slug": "excavation_works"
             },
             {
               "id": "concrete",
-              "name": "Concrete"
+              "name": "Concrete",
+              "is_active": true,
+              "database_slug": "concrete_works"
             }
           ]
         },
@@ -1850,11 +2536,15 @@
           "services": [
             {
               "id": "plumbing",
-              "name": "Plumbing"
+              "name": "Plumbing",
+              "is_active": true,
+              "database_slug": "plumbing_services"
             },
             {
               "id": "electrical_works",
-              "name": "Electrical Works"
+              "name": "Electrical Works",
+              "is_active": true,
+              "database_slug": "electrical_works"
             }
           ]
         },
@@ -1864,11 +2554,15 @@
           "services": [
             {
               "id": "construction_materials",
-              "name": "Construction Materials"
+              "name": "Construction Materials",
+              "is_active": true,
+              "database_slug": "construction_materials"
             },
             {
               "id": "surveying",
-              "name": "Surveying"
+              "name": "Surveying",
+              "is_active": true,
+              "database_slug": "surveying_services"
             }
           ]
         },
@@ -1878,7 +2572,9 @@
           "services": [
             {
               "id": "other_construction",
-              "name": "Other Construction"
+              "name": "Other Construction",
+              "is_active": true,
+              "database_slug": "other_construction"
             }
           ]
         }
@@ -1905,21 +2601,27 @@
           "qualifications": [
             {
               "id": "civil_construction_diploma_or_degree",
-              "name": "Civil/Construction diploma or degree"
+              "name": "Civil/Construction diploma or degree",
+              "is_evidence": false
             },
             {
               "id": "registered_with_engineers_contractors_board",
-              "name": "Registered with engineers/contractors board"
+              "name": "Registered with engineers/contractors board",
+              "is_evidence": false
             },
             {
               "id": "5_years_on_site",
-              "name": "5+ years on site"
+              "name": "5+ years on site",
+              "is_evidence": false
             },
             {
               "id": "safety_certification_osha",
-              "name": "Safety certification (OSHA)"
+              "name": "Safety certification (OSHA)",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_site_manager"
         },
         {
           "id": "project_manager",
@@ -1942,17 +2644,21 @@
           "qualifications": [
             {
               "id": "pmp_prince2",
-              "name": "PMP / PRINCE2"
+              "name": "PMP / PRINCE2",
+              "is_evidence": false
             },
             {
               "id": "degree",
-              "name": "Degree"
+              "name": "Degree",
+              "is_evidence": false
             },
             {
               "id": "delivered_3_projects",
               "name": "Delivered 3+ projects"
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_construction_building_project_manager"
         },
         {
           "id": "foreman_supervisor",
@@ -1979,17 +2685,22 @@
           "qualifications": [
             {
               "id": "trade_test_certificate",
-              "name": "Trade test certificate"
+              "name": "Trade test certificate",
+              "is_evidence": false
             },
             {
               "id": "managed_10_workers",
-              "name": "Managed 10+ workers"
+              "name": "Managed 10+ workers",
+              "is_evidence": false
             },
             {
               "id": "safety_training",
-              "name": "Safety training"
+              "name": "Safety training",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_foreman_supervisor"
         },
         {
           "id": "skilled_tradesperson",
@@ -2028,21 +2739,27 @@
           "qualifications": [
             {
               "id": "trade_test_grade_i_ii_iii",
-              "name": "Trade test (Grade I/II/III)"
+              "name": "Trade test (Grade I/II/III)",
+              "is_evidence": false
             },
             {
               "id": "licence_electrical_plumbing",
-              "name": "Licence (electrical/plumbing)"
+              "name": "Licence (electrical/plumbing)",
+              "is_evidence": false
             },
             {
               "id": "own_tools",
-              "name": "Own tools"
+              "name": "Own tools",
+              "is_evidence": false
             },
             {
               "id": "2_years_experience",
-              "name": "2+ years experience"
+              "name": "2+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_skilled_tradesperson"
         },
         {
           "id": "surveyor",
@@ -2065,19 +2782,27 @@
           "qualifications": [
             {
               "id": "registered_surveyor",
-              "name": "Registered surveyor"
+              "name": "Registered surveyor",
+              "is_evidence": false
             },
             {
               "id": "degree_diploma",
-              "name": "Degree / diploma"
+              "name": "Degree / diploma",
+              "is_evidence": false
             },
             {
               "id": "own_instruments",
-              "name": "Own instruments"
+              "name": "Own instruments",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_surveyor"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "construction_building"
     },
     {
       "id": "energy_water",
@@ -2091,23 +2816,33 @@
           "services": [
             {
               "id": "solar_systems",
-              "name": "Solar Systems"
+              "name": "Solar Systems",
+              "is_active": true,
+              "database_slug": "solar_systems"
             },
             {
               "id": "batteries",
-              "name": "Batteries"
+              "name": "Batteries",
+              "is_active": true,
+              "database_slug": "battery_supply"
             },
             {
               "id": "backup_power",
-              "name": "Backup Power"
+              "name": "Backup Power",
+              "is_active": true,
+              "database_slug": "backup_power"
             },
             {
               "id": "generators",
-              "name": "Generators"
+              "name": "Generators",
+              "is_active": true,
+              "database_slug": "generator_supply"
             },
             {
               "id": "electrical_installation",
-              "name": "Electrical Installation"
+              "name": "Electrical Installation",
+              "is_active": true,
+              "database_slug": "electrical_installation"
             }
           ]
         },
@@ -2117,11 +2852,15 @@
           "services": [
             {
               "id": "boreholes",
-              "name": "Boreholes"
+              "name": "Boreholes",
+              "is_active": true,
+              "database_slug": "borehole_drilling"
             },
             {
               "id": "water_systems",
-              "name": "Water Systems"
+              "name": "Water Systems",
+              "is_active": true,
+              "database_slug": "water_systems"
             }
           ]
         },
@@ -2131,11 +2870,15 @@
           "services": [
             {
               "id": "energy_consulting",
-              "name": "Energy Consulting"
+              "name": "Energy Consulting",
+              "is_active": true,
+              "database_slug": "energy_consulting"
             },
             {
               "id": "other_energy_services",
-              "name": "Other Energy Services"
+              "name": "Other Energy Services",
+              "is_active": true,
+              "database_slug": "other_energy_services"
             }
           ]
         }
@@ -2166,21 +2909,27 @@
           "qualifications": [
             {
               "id": "electrical_licence",
-              "name": "Electrical licence"
+              "name": "Electrical licence",
+              "is_evidence": false
             },
             {
               "id": "solar_installer_certificate",
-              "name": "Solar installer certificate"
+              "name": "Solar installer certificate",
+              "is_evidence": false
             },
             {
               "id": "safety_training",
-              "name": "Safety training"
+              "name": "Safety training",
+              "is_evidence": false
             },
             {
               "id": "own_tools",
-              "name": "Own tools"
+              "name": "Own tools",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_solar_electrical_technician"
         },
         {
           "id": "borehole_water_technician",
@@ -2207,17 +2956,22 @@
           "qualifications": [
             {
               "id": "water_technician_certificate",
-              "name": "Water technician certificate"
+              "name": "Water technician certificate",
+              "is_evidence": false
             },
             {
               "id": "drilling_permit",
-              "name": "Drilling permit"
+              "name": "Drilling permit",
+              "is_evidence": false
             },
             {
               "id": "own_equipment",
-              "name": "Own equipment"
+              "name": "Own equipment",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_borehole_water_technician"
         },
         {
           "id": "energy_engineer",
@@ -2240,17 +2994,22 @@
           "qualifications": [
             {
               "id": "engineering_degree",
-              "name": "Engineering degree"
+              "name": "Engineering degree",
+              "is_evidence": false
             },
             {
               "id": "registered_engineer",
-              "name": "Registered engineer"
+              "name": "Registered engineer",
+              "is_evidence": false
             },
             {
               "id": "design_software_skills",
-              "name": "Design software skills"
+              "name": "Design software skills",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_energy_engineer"
         },
         {
           "id": "project_manager",
@@ -2273,15 +3032,21 @@
           "qualifications": [
             {
               "id": "pmp_prince2",
-              "name": "PMP / PRINCE2"
+              "name": "PMP / PRINCE2",
+              "is_evidence": false
             },
             {
               "id": "delivered_3_projects",
               "name": "Delivered 3+ projects"
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_energy_utilities_project_manager"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "energy_utilities"
     },
     {
       "id": "transport_logistics",
@@ -2295,23 +3060,33 @@
           "services": [
             {
               "id": "cargo_transport",
-              "name": "Cargo Transport"
+              "name": "Cargo Transport",
+              "is_active": true,
+              "database_slug": "cargo_transport"
             },
             {
               "id": "bulk_delivery",
-              "name": "Bulk Delivery"
+              "name": "Bulk Delivery",
+              "is_active": true,
+              "database_slug": "bulk_delivery"
             },
             {
               "id": "heavy_haulage",
-              "name": "Heavy Haulage"
+              "name": "Heavy Haulage",
+              "is_active": true,
+              "database_slug": "heavy_haulage"
             },
             {
               "id": "agricultural_transport",
-              "name": "Agricultural Transport"
+              "name": "Agricultural Transport",
+              "is_active": true,
+              "database_slug": "agricultural_transport"
             },
             {
               "id": "cold_chain_refrigerated",
-              "name": "Cold Chain & Refrigerated"
+              "name": "Cold Chain & Refrigerated",
+              "is_active": true,
+              "database_slug": "cold_chain_transport"
             }
           ]
         },
@@ -2321,11 +3096,15 @@
           "services": [
             {
               "id": "courier",
-              "name": "Courier"
+              "name": "Courier",
+              "is_active": true,
+              "database_slug": "courier_delivery"
             },
             {
               "id": "moving_services",
-              "name": "Moving Services"
+              "name": "Moving Services",
+              "is_active": true,
+              "database_slug": "moving_services"
             }
           ]
         },
@@ -2335,11 +3114,15 @@
           "services": [
             {
               "id": "truck_hire",
-              "name": "Truck Hire"
+              "name": "Truck Hire",
+              "is_active": true,
+              "database_slug": "truck_hire"
             },
             {
               "id": "vehicle_transport",
-              "name": "Vehicle Transport"
+              "name": "Vehicle Transport",
+              "is_active": true,
+              "database_slug": "vehicle_transport"
             }
           ]
         },
@@ -2349,7 +3132,49 @@
           "services": [
             {
               "id": "other_logistics",
-              "name": "Other Logistics"
+              "name": "Other Logistics",
+              "is_active": true,
+              "database_slug": "other_logistics"
+            }
+          ]
+        },
+        {
+          "id": "passenger",
+          "name": "Passenger transport",
+          "services": [
+            {
+              "id": "chauffeur_services",
+              "name": "Chauffeur Services",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "chauffeur",
+                "executive driver"
+              ],
+              "database_slug": "chauffeur_services"
+            },
+            {
+              "id": "personal_driver_hire",
+              "name": "Personal Driver Hire",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "personal driver",
+                "private driver"
+              ],
+              "database_slug": "personal_driver_hire"
+            },
+            {
+              "id": "boda_taxi_services",
+              "name": "Boda Boda / Motorcycle Taxi",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "boda",
+                "boda boda",
+                "motorcycle taxi"
+              ],
+              "database_slug": "boda_taxi_services"
             }
           ]
         }
@@ -2379,30 +3204,63 @@
             {
               "id": "tanker",
               "name": "Tanker"
+            },
+            {
+              "id": "personal_driver",
+              "name": "Personal driver"
+            },
+            {
+              "id": "chauffeur_executive",
+              "name": "Chauffeur (executive)"
+            },
+            {
+              "id": "boda_rider",
+              "name": "Boda rider"
+            },
+            {
+              "id": "airport_school_runs",
+              "name": "Airport / school runs"
             }
           ],
           "qualifications": [
             {
               "id": "valid_driving_licence_class",
-              "name": "Valid driving licence (class)"
+              "name": "Valid driving licence (class)",
+              "is_evidence": false
             },
             {
               "id": "psv_badge",
-              "name": "PSV badge"
+              "name": "PSV badge",
+              "is_evidence": false
             },
             {
               "id": "clean_driving_record",
-              "name": "Clean driving record"
+              "name": "Clean driving record",
+              "is_evidence": false
             },
             {
               "id": "defensive_driving_certificate",
-              "name": "Defensive driving certificate"
+              "name": "Defensive driving certificate",
+              "is_evidence": false
             },
             {
               "id": "own_vehicle",
-              "name": "Own vehicle"
+              "name": "Own vehicle",
+              "is_evidence": false
+            },
+            {
+              "id": "chauffeur_executive_experience",
+              "name": "Chauffeur or executive driving experience",
+              "is_evidence": false
+            },
+            {
+              "id": "certificate_good_conduct",
+              "name": "Certificate of good conduct",
+              "is_evidence": true
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_driver"
         },
         {
           "id": "fleet_operations_manager",
@@ -2425,17 +3283,22 @@
           "qualifications": [
             {
               "id": "logistics_diploma_degree",
-              "name": "Logistics diploma / degree"
+              "name": "Logistics diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "managed_10_vehicles",
-              "name": "Managed 10+ vehicles"
+              "name": "Managed 10+ vehicles",
+              "is_evidence": false
             },
             {
               "id": "transport_licence",
-              "name": "Transport licence"
+              "name": "Transport licence",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_fleet_operations_manager"
         },
         {
           "id": "dispatcher_coordinator",
@@ -2458,13 +3321,17 @@
           "qualifications": [
             {
               "id": "logistics_experience",
-              "name": "Logistics experience"
+              "name": "Logistics experience",
+              "is_evidence": false
             },
             {
               "id": "customs_clearing_licence",
-              "name": "Customs clearing licence"
+              "name": "Customs clearing licence",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_dispatcher_coordinator"
         },
         {
           "id": "loader_mover",
@@ -2487,15 +3354,69 @@
           "qualifications": [
             {
               "id": "physical_fitness",
-              "name": "Physical fitness"
+              "name": "Physical fitness",
+              "is_evidence": false
             },
             {
               "id": "experience_1_year",
-              "name": "Experience 1+ year"
+              "name": "Experience 1+ year",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_loader_mover"
+        },
+        {
+          "id": "driving_instructor",
+          "name": "Driving Instructor",
+          "kind_question": "What do you teach?",
+          "kinds": [
+            {
+              "id": "cars",
+              "name": "Cars"
+            },
+            {
+              "id": "motorcycles",
+              "name": "Motorcycles"
+            },
+            {
+              "id": "trucks",
+              "name": "Trucks"
+            },
+            {
+              "id": "defensive_driving",
+              "name": "Defensive driving"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "instructor_licence",
+              "name": "Instructor licence",
+              "is_evidence": true
+            },
+            {
+              "id": "valid_driving_licence",
+              "name": "Valid driving licence",
+              "is_evidence": true
+            },
+            {
+              "id": "teaching_experience",
+              "name": "2+ years teaching",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "required_proof",
+          "aliases": [
+            "driving lessons",
+            "instructor"
+          ],
+          "database_slug": "work_driving_instructor"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "transport_logistics"
     },
     {
       "id": "machinery_equipment",
@@ -2509,15 +3430,21 @@
           "services": [
             {
               "id": "excavator_hire",
-              "name": "Excavator Hire"
+              "name": "Excavator Hire",
+              "is_active": true,
+              "database_slug": "excavator_hire"
             },
             {
               "id": "loader_hire",
-              "name": "Loader Hire"
+              "name": "Loader Hire",
+              "is_active": true,
+              "database_slug": "loader_hire"
             },
             {
               "id": "grader_hire",
-              "name": "Grader Hire"
+              "name": "Grader Hire",
+              "is_active": true,
+              "database_slug": "grader_hire"
             }
           ]
         },
@@ -2527,11 +3454,15 @@
           "services": [
             {
               "id": "crane_hire",
-              "name": "Crane Hire"
+              "name": "Crane Hire",
+              "is_active": true,
+              "database_slug": "crane_hire"
             },
             {
               "id": "generator_hire",
-              "name": "Generator Hire"
+              "name": "Generator Hire",
+              "is_active": true,
+              "database_slug": "generator_hire"
             }
           ]
         },
@@ -2541,11 +3472,15 @@
           "services": [
             {
               "id": "tractor_hire",
-              "name": "Tractor Hire"
+              "name": "Tractor Hire",
+              "is_active": true,
+              "database_slug": "tractor_hire"
             },
             {
               "id": "industrial_equipment",
-              "name": "Industrial Equipment"
+              "name": "Industrial Equipment",
+              "is_active": true,
+              "database_slug": "industrial_equipment"
             }
           ]
         },
@@ -2555,7 +3490,9 @@
           "services": [
             {
               "id": "other_machinery",
-              "name": "Other Machinery"
+              "name": "Other Machinery",
+              "is_active": true,
+              "database_slug": "other_machinery"
             }
           ]
         }
@@ -2606,25 +3543,32 @@
           "qualifications": [
             {
               "id": "operator_licence_certificate",
-              "name": "Operator licence / certificate"
+              "name": "Operator licence / certificate",
+              "is_evidence": false
             },
             {
               "id": "safety_osha_certificate",
-              "name": "Safety / OSHA certificate"
+              "name": "Safety / OSHA certificate",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             },
             {
               "id": "medical_fitness",
-              "name": "Medical fitness"
+              "name": "Medical fitness",
+              "is_evidence": false
             },
             {
               "id": "can_work_away_from_home",
-              "name": "Can work away from home"
+              "name": "Can work away from home",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_machine_operator"
         },
         {
           "id": "equipment_mechanic",
@@ -2651,17 +3595,22 @@
           "qualifications": [
             {
               "id": "mechanic_trade_certificate",
-              "name": "Mechanic trade certificate"
+              "name": "Mechanic trade certificate",
+              "is_evidence": false
             },
             {
               "id": "own_tools",
-              "name": "Own tools"
+              "name": "Own tools",
+              "is_evidence": false
             },
             {
               "id": "field_repair_experience",
-              "name": "Field repair experience"
+              "name": "Field repair experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_equipment_mechanic"
         },
         {
           "id": "fleet_equipment_manager",
@@ -2684,17 +3633,22 @@
           "qualifications": [
             {
               "id": "managed_fleet_of_5_machines",
-              "name": "Managed fleet of 5+ machines"
+              "name": "Managed fleet of 5+ machines",
+              "is_evidence": false
             },
             {
               "id": "diploma_degree",
-              "name": "Diploma / degree"
+              "name": "Diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "maintenance_scheduling",
-              "name": "Maintenance scheduling"
+              "name": "Maintenance scheduling",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_fleet_equipment_manager"
         },
         {
           "id": "site_supervisor",
@@ -2717,19 +3671,27 @@
           "qualifications": [
             {
               "id": "plant_experience",
-              "name": "Plant experience"
+              "name": "Plant experience",
+              "is_evidence": false
             },
             {
               "id": "team_leadership",
-              "name": "Team leadership"
+              "name": "Team leadership",
+              "is_evidence": false
             },
             {
               "id": "safety_certification",
-              "name": "Safety certification"
+              "name": "Safety certification",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_site_supervisor"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "machinery_equipment"
     },
     {
       "id": "agriculture_agribusiness",
@@ -2743,11 +3705,15 @@
           "services": [
             {
               "id": "farm_services",
-              "name": "Farm Services"
+              "name": "Farm Services",
+              "is_active": true,
+              "database_slug": "farm_services"
             },
             {
               "id": "irrigation",
-              "name": "Irrigation"
+              "name": "Irrigation",
+              "is_active": true,
+              "database_slug": "irrigation_services"
             }
           ]
         },
@@ -2757,11 +3723,15 @@
           "services": [
             {
               "id": "seeds_inputs",
-              "name": "Seeds & Inputs"
+              "name": "Seeds & Inputs",
+              "is_active": true,
+              "database_slug": "seeds_inputs"
             },
             {
               "id": "livestock_sourcing",
-              "name": "Livestock Sourcing"
+              "name": "Livestock Sourcing",
+              "is_active": true,
+              "database_slug": "livestock_sourcing"
             }
           ]
         },
@@ -2771,11 +3741,15 @@
           "services": [
             {
               "id": "produce_buyers",
-              "name": "Produce Buyers"
+              "name": "Produce Buyers",
+              "is_active": true,
+              "database_slug": "produce_buyers"
             },
             {
               "id": "other_agriculture",
-              "name": "Other Agriculture"
+              "name": "Other Agriculture",
+              "is_active": true,
+              "database_slug": "other_agriculture"
             }
           ]
         }
@@ -2806,17 +3780,22 @@
           "qualifications": [
             {
               "id": "agriculture_diploma_degree",
-              "name": "Agriculture diploma / degree"
+              "name": "Agriculture diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "managed_5_workers",
-              "name": "Managed 5+ workers"
+              "name": "Managed 5+ workers",
+              "is_evidence": false
             },
             {
               "id": "5_years_farming_experience",
-              "name": "5+ years farming experience"
+              "name": "5+ years farming experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_farm_manager"
         },
         {
           "id": "agronomist_extension_officer",
@@ -2839,13 +3818,17 @@
           "qualifications": [
             {
               "id": "degree_diploma_in_agronomy",
-              "name": "Degree / diploma in agronomy"
+              "name": "Degree / diploma in agronomy",
+              "is_evidence": false
             },
             {
               "id": "field_experience",
-              "name": "Field experience"
+              "name": "Field experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_agronomist_extension_officer"
         },
         {
           "id": "veterinary_livestock_officer",
@@ -2868,17 +3851,22 @@
           "qualifications": [
             {
               "id": "veterinary_licence",
-              "name": "Veterinary licence"
+              "name": "Veterinary licence",
+              "is_evidence": false
             },
             {
               "id": "diploma_degree",
-              "name": "Diploma / degree"
+              "name": "Diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "vaccination_certification",
-              "name": "Vaccination certification"
+              "name": "Vaccination certification",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_veterinary_livestock_officer"
         },
         {
           "id": "farm_worker_operator",
@@ -2905,19 +3893,27 @@
           "qualifications": [
             {
               "id": "tractor_licence",
-              "name": "Tractor licence"
+              "name": "Tractor licence",
+              "is_evidence": false
             },
             {
               "id": "pesticide_handling_certificate",
-              "name": "Pesticide handling certificate"
+              "name": "Pesticide handling certificate",
+              "is_evidence": false
             },
             {
               "id": "experience_1_year",
-              "name": "Experience 1+ year"
+              "name": "Experience 1+ year",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_farm_worker_operator"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "agriculture_agribusiness"
     },
     {
       "id": "procurement_sourcing",
@@ -2931,19 +3927,27 @@
           "services": [
             {
               "id": "bulk_procurement",
-              "name": "Bulk Procurement"
+              "name": "Bulk Procurement",
+              "is_active": true,
+              "database_slug": "bulk_procurement"
             },
             {
               "id": "equipment_sourcing",
-              "name": "Equipment Sourcing"
+              "name": "Equipment Sourcing",
+              "is_active": true,
+              "database_slug": "equipment_sourcing"
             },
             {
               "id": "imported_products",
-              "name": "Imported Products"
+              "name": "Imported Products",
+              "is_active": true,
+              "database_slug": "imported_products"
             },
             {
               "id": "hard_to_find_products",
-              "name": "Hard-to-Find Products"
+              "name": "Hard-to-Find Products",
+              "is_active": true,
+              "database_slug": "hard_to_find_products"
             }
           ]
         },
@@ -2953,19 +3957,27 @@
           "services": [
             {
               "id": "electronics_procurement",
-              "name": "Electronics Procurement"
+              "name": "Electronics Procurement",
+              "is_active": true,
+              "database_slug": "electronics_procurement"
             },
             {
               "id": "industrial_parts",
-              "name": "Industrial Parts"
+              "name": "Industrial Parts",
+              "is_active": true,
+              "database_slug": "industrial_parts"
             },
             {
               "id": "spare_parts",
-              "name": "Spare Parts"
+              "name": "Spare Parts",
+              "is_active": true,
+              "database_slug": "spare_parts"
             },
             {
               "id": "medical_lab_supplies",
-              "name": "Medical & Lab Supplies"
+              "name": "Medical & Lab Supplies",
+              "is_active": true,
+              "database_slug": "medical_lab_supplies"
             }
           ]
         },
@@ -2975,7 +3987,9 @@
           "services": [
             {
               "id": "other_procurement",
-              "name": "Other Procurement"
+              "name": "Other Procurement",
+              "is_active": true,
+              "database_slug": "other_procurement"
             }
           ]
         }
@@ -3006,17 +4020,22 @@
           "qualifications": [
             {
               "id": "procurement_diploma_cips_or_similar",
-              "name": "Procurement diploma (CIPS or similar)"
+              "name": "Procurement diploma (CIPS or similar)",
+              "is_evidence": false
             },
             {
               "id": "supplier_network",
-              "name": "Supplier network"
+              "name": "Supplier network",
+              "is_evidence": false
             },
             {
               "id": "3_years_experience",
-              "name": "3+ years experience"
+              "name": "3+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_procurement_officer_manager"
         },
         {
           "id": "sourcing_agent",
@@ -3047,17 +4066,22 @@
           "qualifications": [
             {
               "id": "import_export_experience",
-              "name": "Import/export experience"
+              "name": "Import/export experience",
+              "is_evidence": false
             },
             {
               "id": "language_skills",
-              "name": "Language skills"
+              "name": "Language skills",
+              "is_evidence": false
             },
             {
               "id": "supplier_contacts",
-              "name": "Supplier contacts"
+              "name": "Supplier contacts",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_sourcing_agent"
         },
         {
           "id": "clearing_customs_agent",
@@ -3080,15 +4104,22 @@
           "qualifications": [
             {
               "id": "customs_clearing_licence",
-              "name": "Customs clearing licence"
+              "name": "Customs clearing licence",
+              "is_evidence": false
             },
             {
               "id": "logistics_experience",
-              "name": "Logistics experience"
+              "name": "Logistics experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_clearing_customs_agent"
         }
-      ]
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "specialized_products"
     },
     {
       "id": "travel_international",
@@ -3102,19 +4133,27 @@
           "services": [
             {
               "id": "flight_tickets_bookings",
-              "name": "Flight Tickets & Bookings"
+              "name": "Flight Tickets & Bookings",
+              "is_active": true,
+              "database_slug": "flight_tickets"
             },
             {
               "id": "accommodation",
-              "name": "Accommodation"
+              "name": "Accommodation",
+              "is_active": true,
+              "database_slug": "accommodation"
             },
             {
               "id": "airport_transfers",
-              "name": "Airport Transfers"
+              "name": "Airport Transfers",
+              "is_active": true,
+              "database_slug": "airport_transfers"
             },
             {
               "id": "tour_packages",
-              "name": "Tour Packages"
+              "name": "Tour Packages",
+              "is_active": true,
+              "database_slug": "tour_packages"
             }
           ]
         },
@@ -3124,15 +4163,21 @@
           "services": [
             {
               "id": "visa_assistance",
-              "name": "Visa Assistance"
+              "name": "Visa Assistance",
+              "is_active": true,
+              "database_slug": "visa_assistance"
             },
             {
               "id": "travel_documentation",
-              "name": "Travel Documentation"
+              "name": "Travel Documentation",
+              "is_active": true,
+              "database_slug": "travel_documentation"
             },
             {
               "id": "travel_insurance",
-              "name": "Travel Insurance"
+              "name": "Travel Insurance",
+              "is_active": true,
+              "database_slug": "travel_insurance"
             }
           ]
         },
@@ -3142,19 +4187,27 @@
           "services": [
             {
               "id": "hajj_umrah",
-              "name": "Hajj & Umrah"
+              "name": "Hajj & Umrah",
+              "is_active": true,
+              "database_slug": "hajj_umrah"
             },
             {
               "id": "international_relocation",
-              "name": "International Relocation"
+              "name": "International Relocation",
+              "is_active": true,
+              "database_slug": "international_relocation"
             },
             {
               "id": "travel_consultation",
-              "name": "Travel Consultation"
+              "name": "Travel Consultation",
+              "is_active": true,
+              "database_slug": "travel_consultation"
             },
             {
               "id": "other_travel_services",
-              "name": "Other Travel Services"
+              "name": "Other Travel Services",
+              "is_active": true,
+              "database_slug": "other_travel_services"
             }
           ]
         }
@@ -3189,17 +4242,22 @@
           "qualifications": [
             {
               "id": "iata_certification",
-              "name": "IATA certification"
+              "name": "IATA certification",
+              "is_evidence": false
             },
             {
               "id": "travel_agency_licence",
-              "name": "Travel agency licence"
+              "name": "Travel agency licence",
+              "is_evidence": false
             },
             {
               "id": "2_years_experience",
-              "name": "2+ years experience"
+              "name": "2+ years experience",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_travel_agent_consultant"
         },
         {
           "id": "tour_guide",
@@ -3226,17 +4284,22 @@
           "qualifications": [
             {
               "id": "tourism_board_guide_licence",
-              "name": "Tourism board guide licence"
+              "name": "Tourism board guide licence",
+              "is_evidence": false
             },
             {
               "id": "first_aid_certificate",
-              "name": "First aid certificate"
+              "name": "First aid certificate",
+              "is_evidence": false
             },
             {
               "id": "languages_spoken",
-              "name": "Languages spoken"
+              "name": "Languages spoken",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_tour_guide"
         },
         {
           "id": "driver_guide",
@@ -3259,17 +4322,22 @@
           "qualifications": [
             {
               "id": "valid_driving_licence_class",
-              "name": "Valid driving licence (class)"
+              "name": "Valid driving licence (class)",
+              "is_evidence": false
             },
             {
               "id": "tourism_licence",
-              "name": "Tourism licence"
+              "name": "Tourism licence",
+              "is_evidence": false
             },
             {
               "id": "clean_driving_record",
-              "name": "Clean driving record"
+              "name": "Clean driving record",
+              "is_evidence": false
             }
-          ]
+          ],
+          "is_active": true,
+          "database_slug": "work_driver_guide"
         },
         {
           "id": "operations_manager",
@@ -3292,15 +4360,1675 @@
           "qualifications": [
             {
               "id": "tourism_diploma_degree",
-              "name": "Tourism diploma / degree"
+              "name": "Tourism diploma / degree",
+              "is_evidence": false
             },
             {
               "id": "managed_3_staff",
-              "name": "Managed 3+ staff"
+              "name": "Managed 3+ staff",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_operations_manager"
+        }
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "travel_international"
+    },
+    {
+      "id": "domestic_household",
+      "name": "Domestic & Household",
+      "icon": "🏠",
+      "description": "House help, childcare, home cooking and care at home",
+      "is_active": false,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "service_groups": [
+        {
+          "id": "home_help",
+          "name": "Home help",
+          "services": [
+            {
+              "id": "house_help_services",
+              "name": "Maids & House Help",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "maid",
+                "house help",
+                "housegirl",
+                "dada",
+                "domestic worker"
+              ],
+              "database_slug": "house_help_services"
+            },
+            {
+              "id": "housekeeping_services",
+              "name": "Housekeeping & Cleaning",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "cleaner",
+                "house cleaner"
+              ],
+              "database_slug": "housekeeping_services"
+            },
+            {
+              "id": "laundry_services",
+              "name": "Laundry & Ironing",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [
+                "laundry",
+                "ironing"
+              ],
+              "database_slug": "laundry_services"
+            },
+            {
+              "id": "gardening_services",
+              "name": "Gardening & Compound Care",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [
+                "gardener",
+                "compound care"
+              ],
+              "database_slug": "gardening_services"
+            }
+          ]
+        },
+        {
+          "id": "family",
+          "name": "Family",
+          "services": [
+            {
+              "id": "childcare_nanny_services",
+              "name": "Nannies & Childcare",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "nanny",
+                "babysitter",
+                "childcare"
+              ],
+              "database_slug": "childcare_nanny_services"
+            },
+            {
+              "id": "home_cooking_services",
+              "name": "Home Cooks",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "home cook",
+                "private cook"
+              ],
+              "database_slug": "home_cooking_services"
+            },
+            {
+              "id": "elderly_home_care",
+              "name": "Elderly Home Care",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "home carer",
+                "elder care"
+              ],
+              "database_slug": "elderly_home_care"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_domestic",
+              "name": "Other Domestic",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "other_domestic"
             }
           ]
         }
-      ]
+      ],
+      "work_roles": [
+        {
+          "id": "house_help",
+          "name": "House Help / Maid",
+          "kind_question": "What kind of help?",
+          "kinds": [
+            {
+              "id": "live_in",
+              "name": "Live-in"
+            },
+            {
+              "id": "live_out",
+              "name": "Live-out"
+            },
+            {
+              "id": "day_work",
+              "name": "Day work"
+            },
+            {
+              "id": "part_time",
+              "name": "Part-time"
+            },
+            {
+              "id": "cleaning_only",
+              "name": "Cleaning only"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "national_id",
+              "name": "National ID",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            },
+            {
+              "id": "experience_one_year",
+              "name": "Experience 1+ year",
+              "is_evidence": false
+            },
+            {
+              "id": "languages",
+              "name": "Languages",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [
+            "maid",
+            "housegirl",
+            "dada",
+            "domestic worker"
+          ],
+          "database_slug": "work_house_help"
+        },
+        {
+          "id": "nanny",
+          "name": "Nanny / Childcare",
+          "kind_question": "Which ages?",
+          "kinds": [
+            {
+              "id": "newborn",
+              "name": "Newborn"
+            },
+            {
+              "id": "toddler",
+              "name": "Toddler"
+            },
+            {
+              "id": "school_age",
+              "name": "School age"
+            },
+            {
+              "id": "special_needs",
+              "name": "Special needs"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "national_id",
+              "name": "National ID",
+              "is_evidence": true
+            },
+            {
+              "id": "police_clearance",
+              "name": "Police clearance",
+              "is_evidence": true
+            },
+            {
+              "id": "first_aid",
+              "name": "First aid",
+              "is_evidence": true
+            },
+            {
+              "id": "childcare_certificate",
+              "name": "Childcare certificate",
+              "is_evidence": false
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "nanny",
+            "babysitter"
+          ],
+          "database_slug": "work_nanny"
+        },
+        {
+          "id": "home_cook",
+          "name": "Home Cook",
+          "kind_question": "What do you cook?",
+          "kinds": [
+            {
+              "id": "family_meals",
+              "name": "Family meals"
+            },
+            {
+              "id": "special_diets",
+              "name": "Special diets"
+            },
+            {
+              "id": "event_cooking",
+              "name": "Event cooking"
+            },
+            {
+              "id": "baking",
+              "name": "Baking"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "food_handler_certificate",
+              "name": "Food handler certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            },
+            {
+              "id": "experience_two_years",
+              "name": "Experience 2+ years",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [
+            "cook"
+          ],
+          "database_slug": "work_home_cook"
+        },
+        {
+          "id": "gardener",
+          "name": "Gardener / Groundskeeper",
+          "kind_question": "What work?",
+          "kinds": [
+            {
+              "id": "lawn_garden",
+              "name": "Lawn & garden"
+            },
+            {
+              "id": "landscaping",
+              "name": "Landscaping"
+            },
+            {
+              "id": "compound_upkeep",
+              "name": "Compound upkeep"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "experience",
+              "name": "Experience",
+              "is_evidence": false
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            },
+            {
+              "id": "own_tools",
+              "name": "Own tools",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "open",
+          "aliases": [
+            "gardener"
+          ],
+          "database_slug": "work_gardener"
+        },
+        {
+          "id": "home_carer",
+          "name": "Home Carer",
+          "kind_question": "Whom do you care for?",
+          "kinds": [
+            {
+              "id": "elderly",
+              "name": "Elderly"
+            },
+            {
+              "id": "disabled",
+              "name": "Disabled"
+            },
+            {
+              "id": "post_surgery",
+              "name": "Post-surgery"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "caregiving_certificate",
+              "name": "Caregiving certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "first_aid",
+              "name": "First aid",
+              "is_evidence": true
+            },
+            {
+              "id": "national_id",
+              "name": "National ID",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [
+            "caregiver",
+            "home care"
+          ],
+          "database_slug": "work_home_carer"
+        }
+      ],
+      "database_slug": "domestic_household"
+    },
+    {
+      "id": "health_medical",
+      "name": "Health & Medical",
+      "icon": "⚕️",
+      "description": "Nurses, doctors, specialists, clinics and care",
+      "is_active": false,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "service_groups": [
+        {
+          "id": "facilities",
+          "name": "Facilities",
+          "services": [
+            {
+              "id": "clinic_services",
+              "name": "Clinics & Health Centres",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "clinic",
+                "health centre",
+                "dispensary"
+              ],
+              "database_slug": "clinic_services"
+            },
+            {
+              "id": "hospital_services",
+              "name": "Hospitals",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "hospital"
+              ],
+              "database_slug": "hospital_services"
+            },
+            {
+              "id": "eye_clinic_optical",
+              "name": "Eye Clinics & Opticals",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "optician",
+                "optometrist",
+                "eye doctor",
+                "glasses"
+              ],
+              "database_slug": "eye_clinic_optical"
+            },
+            {
+              "id": "dental_clinic",
+              "name": "Dental Clinics",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "dentist"
+              ],
+              "database_slug": "dental_clinic"
+            },
+            {
+              "id": "diagnostic_lab",
+              "name": "Diagnostic Labs & Imaging",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "lab",
+                "x-ray",
+                "imaging"
+              ],
+              "database_slug": "diagnostic_lab"
+            },
+            {
+              "id": "pharmacy_services",
+              "name": "Pharmacies",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "chemist",
+                "drug shop"
+              ],
+              "database_slug": "pharmacy_services"
+            },
+            {
+              "id": "physiotherapy_clinic",
+              "name": "Physiotherapy Clinics",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "physio"
+              ],
+              "database_slug": "physiotherapy_clinic"
+            },
+            {
+              "id": "orthopaedic_care",
+              "name": "Orthopaedic & Bone Care",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "bone doctor",
+                "fracture",
+                "broken bone",
+                "back pain",
+                "joint pain",
+                "knee",
+                "arthritis",
+                "x-ray",
+                "physio"
+              ],
+              "database_slug": "orthopaedic_care"
+            }
+          ]
+        },
+        {
+          "id": "staffing",
+          "name": "Staffing & home care",
+          "services": [
+            {
+              "id": "home_nursing_agency",
+              "name": "Home Nursing Agencies",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "home nurse"
+              ],
+              "database_slug": "home_nursing_agency"
+            },
+            {
+              "id": "medical_staffing_agency",
+              "name": "Medical Staffing Agencies",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [],
+              "database_slug": "medical_staffing_agency"
+            },
+            {
+              "id": "mobile_health_outreach",
+              "name": "Mobile Health Outreach",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "home visit"
+              ],
+              "database_slug": "mobile_health_outreach"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_health",
+              "name": "Other Health Services",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [],
+              "database_slug": "other_health"
+            }
+          ]
+        },
+        {
+          "id": "procedures",
+          "name": "Procedures",
+          "services": [
+            {
+              "id": "circumcision_services",
+              "name": "Circumcision Services",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "male circumcision",
+                "VMMC",
+                "mobile circumcision"
+              ],
+              "database_slug": "circumcision_services"
+            }
+          ]
+        },
+        {
+          "id": "reproductive",
+          "name": "Reproductive health",
+          "services": [
+            {
+              "id": "maternity_care_services",
+              "name": "Antenatal & Maternity Care",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "pregnancy",
+                "antenatal",
+                "ANC",
+                "maternity",
+                "midwife",
+                "prenatal",
+                "delivery",
+                "post-abortion care"
+              ],
+              "database_slug": "maternity_care_services"
+            },
+            {
+              "id": "family_planning_services",
+              "name": "Family Planning & Reproductive Health",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "contraception",
+                "family planning"
+              ],
+              "database_slug": "family_planning_services"
+            },
+            {
+              "id": "hiv_testing_services",
+              "name": "HIV Testing & Counselling",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "HIV test",
+                "HCT",
+                "VCT",
+                "PrEP",
+                "PEP",
+                "STI test",
+                "sexual health"
+              ],
+              "database_slug": "hiv_testing_services"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "nurse",
+          "name": "Nurse / Midwife",
+          "kind_question": "What nursing?",
+          "kinds": [
+            {
+              "id": "general",
+              "name": "General"
+            },
+            {
+              "id": "theatre",
+              "name": "Theatre"
+            },
+            {
+              "id": "paediatric",
+              "name": "Paediatric"
+            },
+            {
+              "id": "icu",
+              "name": "ICU / critical care"
+            },
+            {
+              "id": "midwifery",
+              "name": "Midwifery"
+            },
+            {
+              "id": "community_health",
+              "name": "Community health"
+            },
+            {
+              "id": "antenatal_postnatal",
+              "name": "Antenatal & postnatal care"
+            },
+            {
+              "id": "family_planning",
+              "name": "Family planning"
+            },
+            {
+              "id": "hiv_testing_counselling",
+              "name": "HIV testing & counselling"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "council_registration",
+              "name": "Nursing council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "diploma_degree",
+              "name": "Diploma / degree",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Current practising certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "experience_two_years",
+              "name": "2+ years",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "sister",
+            "RN",
+            "enrolled nurse"
+          ],
+          "database_slug": "work_nurse"
+        },
+        {
+          "id": "doctor",
+          "name": "Doctor",
+          "kind_question": "What do you practise?",
+          "kinds": [
+            {
+              "id": "general_practitioner",
+              "name": "General practitioner"
+            },
+            {
+              "id": "surgeon",
+              "name": "Surgeon"
+            },
+            {
+              "id": "emergency",
+              "name": "Emergency"
+            },
+            {
+              "id": "locum",
+              "name": "Locum"
+            },
+            {
+              "id": "circumcision_adult_infant",
+              "name": "Circumcision (adult and infant)"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "council_registration",
+              "name": "Medical council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "medical_degree",
+              "name": "MBChB / MD",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "internship_completed",
+              "name": "Internship completed",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "physician",
+            "MD",
+            "medical officer"
+          ],
+          "database_slug": "work_doctor"
+        },
+        {
+          "id": "clinician",
+          "name": "Clinical Officer / Clinician",
+          "kind_question": "What area?",
+          "kinds": [
+            {
+              "id": "general_clinical",
+              "name": "General clinical"
+            },
+            {
+              "id": "anaesthesia",
+              "name": "Anaesthesia"
+            },
+            {
+              "id": "orthopaedic",
+              "name": "Orthopaedic"
+            },
+            {
+              "id": "ophthalmic",
+              "name": "Ophthalmic"
+            },
+            {
+              "id": "community",
+              "name": "Community"
+            },
+            {
+              "id": "circumcision",
+              "name": "Circumcision (adult and infant)"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "council_registration",
+              "name": "Clinical officers council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "diploma",
+              "name": "Diploma",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_licence",
+              "name": "Practising licence",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_clinician"
+        },
+        {
+          "id": "medical_specialist",
+          "name": "Medical Specialist",
+          "kind_question": "Which specialty?",
+          "kinds": [
+            {
+              "id": "oncologist",
+              "name": "Oncologist"
+            },
+            {
+              "id": "cardiologist",
+              "name": "Cardiologist"
+            },
+            {
+              "id": "paediatrician",
+              "name": "Paediatrician"
+            },
+            {
+              "id": "gynaecologist",
+              "name": "Gynaecologist"
+            },
+            {
+              "id": "dermatologist",
+              "name": "Dermatologist"
+            },
+            {
+              "id": "ent",
+              "name": "ENT"
+            },
+            {
+              "id": "neurologist",
+              "name": "Neurologist"
+            },
+            {
+              "id": "orthopaedic_surgeon",
+              "name": "Orthopaedic surgeon"
+            },
+            {
+              "id": "urologist",
+              "name": "Urologist"
+            },
+            {
+              "id": "psychiatrist",
+              "name": "Psychiatrist"
+            },
+            {
+              "id": "radiologist",
+              "name": "Radiologist"
+            },
+            {
+              "id": "other_specialist",
+              "name": "Other specialist"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "specialist_registration",
+              "name": "Specialist registration",
+              "is_evidence": true
+            },
+            {
+              "id": "postgraduate_degree",
+              "name": "Postgraduate degree or fellowship",
+              "is_evidence": true
+            },
+            {
+              "id": "medical_council_registration",
+              "name": "Medical council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "years_specialty",
+              "name": "Years in specialty",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "oncologist",
+            "cancer specialist"
+          ],
+          "database_slug": "work_medical_specialist"
+        },
+        {
+          "id": "optometrist",
+          "name": "Optician / Optometrist",
+          "kind_question": "What do you do?",
+          "kinds": [
+            {
+              "id": "eye_tests",
+              "name": "Eye tests"
+            },
+            {
+              "id": "contact_lenses",
+              "name": "Contact lenses"
+            },
+            {
+              "id": "dispensing_optician",
+              "name": "Dispensing optician"
+            },
+            {
+              "id": "low_vision",
+              "name": "Low vision"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "optometry_registration",
+              "name": "Optometry registration",
+              "is_evidence": true
+            },
+            {
+              "id": "diploma_degree",
+              "name": "Diploma / degree",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "optician",
+            "eye doctor",
+            "glasses"
+          ],
+          "database_slug": "work_optometrist"
+        },
+        {
+          "id": "dentist",
+          "name": "Dentist",
+          "kind_question": "What dentistry?",
+          "kinds": [
+            {
+              "id": "general",
+              "name": "General"
+            },
+            {
+              "id": "orthodontics",
+              "name": "Orthodontics"
+            },
+            {
+              "id": "oral_surgery",
+              "name": "Oral surgery"
+            },
+            {
+              "id": "paediatric",
+              "name": "Paediatric"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "dental_council_registration",
+              "name": "Dental council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "bds",
+              "name": "BDS",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_dentist"
+        },
+        {
+          "id": "pharmacist",
+          "name": "Pharmacist",
+          "kind_question": "Where do you work?",
+          "kinds": [
+            {
+              "id": "retail",
+              "name": "Retail"
+            },
+            {
+              "id": "hospital",
+              "name": "Hospital"
+            },
+            {
+              "id": "dispensing",
+              "name": "Dispensing"
+            },
+            {
+              "id": "locum",
+              "name": "Locum"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "pharmacy_board_registration",
+              "name": "Pharmacy board registration",
+              "is_evidence": true
+            },
+            {
+              "id": "degree",
+              "name": "Degree",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_pharmacist"
+        },
+        {
+          "id": "lab_technician",
+          "name": "Lab Technician",
+          "kind_question": "What lab work?",
+          "kinds": [
+            {
+              "id": "medical_lab",
+              "name": "Medical lab"
+            },
+            {
+              "id": "radiography",
+              "name": "Radiography"
+            },
+            {
+              "id": "ultrasound",
+              "name": "Ultrasound"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "lab_council_registration",
+              "name": "Lab council registration",
+              "is_evidence": true
+            },
+            {
+              "id": "diploma",
+              "name": "Diploma",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_lab_technician"
+        },
+        {
+          "id": "physiotherapist",
+          "name": "Physiotherapist",
+          "kind_question": "What therapy?",
+          "kinds": [
+            {
+              "id": "sports",
+              "name": "Sports"
+            },
+            {
+              "id": "neuro",
+              "name": "Neuro"
+            },
+            {
+              "id": "paediatric",
+              "name": "Paediatric"
+            },
+            {
+              "id": "geriatric",
+              "name": "Geriatric"
+            },
+            {
+              "id": "home_visits",
+              "name": "Home visits"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "physiotherapy_registration",
+              "name": "Physiotherapy registration",
+              "is_evidence": true
+            },
+            {
+              "id": "degree",
+              "name": "Degree",
+              "is_evidence": true
+            },
+            {
+              "id": "practising_certificate",
+              "name": "Practising certificate",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_physiotherapist"
+        },
+        {
+          "id": "counsellor",
+          "name": "Counsellor / Psychologist",
+          "kind_question": "What support?",
+          "kinds": [
+            {
+              "id": "individual",
+              "name": "Individual"
+            },
+            {
+              "id": "couples_family",
+              "name": "Couples & family"
+            },
+            {
+              "id": "trauma",
+              "name": "Trauma"
+            },
+            {
+              "id": "child_adolescent",
+              "name": "Child & adolescent"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "professional_registration",
+              "name": "Counselling or psychology registration",
+              "is_evidence": true
+            },
+            {
+              "id": "degree",
+              "name": "Degree",
+              "is_evidence": true
+            },
+            {
+              "id": "supervised_hours",
+              "name": "Supervised hours",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_counsellor"
+        },
+        {
+          "id": "nursing_assistant",
+          "name": "Nursing Assistant / Caregiver",
+          "kind_question": "What care?",
+          "kinds": [
+            {
+              "id": "bedside",
+              "name": "Bedside"
+            },
+            {
+              "id": "home_care",
+              "name": "Home care"
+            },
+            {
+              "id": "elderly",
+              "name": "Elderly"
+            },
+            {
+              "id": "post_surgery",
+              "name": "Post-surgery"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "assistant_certificate",
+              "name": "Nursing assistant certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "first_aid",
+              "name": "First aid",
+              "is_evidence": true
+            },
+            {
+              "id": "national_id",
+              "name": "National ID",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [],
+          "database_slug": "work_nursing_assistant"
+        },
+        {
+          "id": "hiv_counsellor",
+          "name": "HIV Counsellor / Testing Officer",
+          "kind_question": "What do you do?",
+          "kinds": [
+            {
+              "id": "testing_counselling",
+              "name": "Testing & counselling"
+            },
+            {
+              "id": "peer_educator",
+              "name": "Peer educator"
+            },
+            {
+              "id": "community_outreach",
+              "name": "Community outreach"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "counselling_certificate",
+              "name": "Counselling certificate",
+              "is_evidence": true
+            },
+            {
+              "id": "hiv_training",
+              "name": "HIV testing and counselling training",
+              "is_evidence": true
+            },
+            {
+              "id": "facility_authorisation",
+              "name": "Ministry of Health or facility authorisation",
+              "is_evidence": true
+            },
+            {
+              "id": "national_id",
+              "name": "National ID",
+              "is_evidence": true
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "HIV testing counsellor",
+            "HCT"
+          ],
+          "database_slug": "work_hiv_counsellor"
+        }
+      ],
+      "database_slug": "health_medical"
+    },
+    {
+      "id": "business_investment",
+      "name": "Business & Investment",
+      "icon": "💼",
+      "description": "Angel investors, mentors and startup support",
+      "is_active": false,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "service_groups": [
+        {
+          "id": "funding",
+          "name": "Investor support",
+          "services": [
+            {
+              "id": "angel_investor_network",
+              "name": "Angel Investor Networks",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "angel investor",
+                "investor",
+                "seed funding",
+                "startup funding"
+              ],
+              "database_slug": "angel_investor_network"
+            },
+            {
+              "id": "startup_advisory",
+              "name": "Startup Advisory",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "startup mentor"
+              ],
+              "database_slug": "startup_advisory"
+            },
+            {
+              "id": "investor_introductions",
+              "name": "Investor Introductions",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "investor introduction"
+              ],
+              "database_slug": "investor_introductions"
+            },
+            {
+              "id": "incubator_accelerator",
+              "name": "Incubators & Accelerators",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "startup incubator",
+                "accelerator"
+              ],
+              "database_slug": "incubator_accelerator"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_investment",
+              "name": "Other Investment Support",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "other_investment"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "angel_investor",
+          "name": "Angel Investor",
+          "kind_question": "Which sectors?",
+          "kinds": [
+            {
+              "id": "technology",
+              "name": "Technology"
+            },
+            {
+              "id": "agriculture",
+              "name": "Agriculture"
+            },
+            {
+              "id": "retail_trade",
+              "name": "Retail & trade"
+            },
+            {
+              "id": "health",
+              "name": "Health"
+            },
+            {
+              "id": "energy",
+              "name": "Energy"
+            },
+            {
+              "id": "real_estate",
+              "name": "Real estate"
+            },
+            {
+              "id": "creative",
+              "name": "Creative"
+            },
+            {
+              "id": "general",
+              "name": "General"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "identity_verification",
+              "name": "Identity verification",
+              "is_evidence": true
+            },
+            {
+              "id": "investment_track_record",
+              "name": "Proof of investment track record or portfolio",
+              "is_evidence": true
+            },
+            {
+              "id": "ticket_size_range",
+              "name": "Ticket size range",
+              "is_evidence": false
+            },
+            {
+              "id": "stage_focus",
+              "name": "Stage focus",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "investor",
+            "seed funding"
+          ],
+          "database_slug": "work_angel_investor"
+        },
+        {
+          "id": "business_mentor",
+          "name": "Business Mentor",
+          "kind_question": "What do you help with?",
+          "kinds": [
+            {
+              "id": "startup",
+              "name": "Startup"
+            },
+            {
+              "id": "sme_growth",
+              "name": "SME growth"
+            },
+            {
+              "id": "export",
+              "name": "Export"
+            },
+            {
+              "id": "agribusiness",
+              "name": "Agribusiness"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "experience_five_years",
+              "name": "Experience 5+ years",
+              "is_evidence": false
+            },
+            {
+              "id": "case_studies",
+              "name": "Case studies",
+              "is_evidence": false
+            },
+            {
+              "id": "referees",
+              "name": "Referees",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [
+            "startup mentor"
+          ],
+          "database_slug": "work_business_mentor"
+        }
+      ],
+      "database_slug": "business_investment"
+    },
+    {
+      "id": "traditional_cultural",
+      "name": "Traditional & Cultural Services",
+      "icon": "🪘",
+      "description": "Traditional ceremonies, prayers, healing and culture",
+      "is_active": false,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "service_groups": [
+        {
+          "id": "culture",
+          "name": "Culture",
+          "services": [
+            {
+              "id": "duwah_services",
+              "name": "Duwah Services",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [
+                "duwa",
+                "duwah"
+              ],
+              "database_slug": "duwah_services"
+            },
+            {
+              "id": "traditional_ceremony_services",
+              "name": "Traditional Ceremonies",
+              "is_active": false,
+              "policy": "optional_proof",
+              "aliases": [],
+              "database_slug": "traditional_ceremony_services"
+            },
+            {
+              "id": "traditional_dance_drumming",
+              "name": "Traditional Dance & Drumming",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "traditional_dance_drumming"
+            },
+            {
+              "id": "traditional_attire_crafts",
+              "name": "Traditional Attire & Crafts",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "traditional_attire_crafts"
+            }
+          ]
+        },
+        {
+          "id": "healing",
+          "name": "Healing",
+          "services": [
+            {
+              "id": "traditional_healing_herbal",
+              "name": "Herbal & Traditional Healing",
+              "is_active": false,
+              "policy": "required_proof",
+              "aliases": [
+                "traditional healer",
+                "herbalist"
+              ],
+              "database_slug": "traditional_healing_herbal"
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Other",
+          "services": [
+            {
+              "id": "other_traditional",
+              "name": "Other Traditional",
+              "is_active": false,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "other_traditional"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "duwah_practitioner",
+          "name": "Duwah Practitioner",
+          "kind_question": "What is your practice?",
+          "kinds": [],
+          "qualifications": [
+            {
+              "id": "endorsement",
+              "name": "Community or religious endorsement letter",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            },
+            {
+              "id": "experience",
+              "name": "Experience years",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [
+            "duwa",
+            "duwah"
+          ],
+          "database_slug": "work_duwah_practitioner"
+        },
+        {
+          "id": "ceremony_officiant",
+          "name": "Ceremony Officiant / Elder",
+          "kind_question": "Which ceremonies?",
+          "kinds": [
+            {
+              "id": "introduction_marriage",
+              "name": "Introduction & marriage"
+            },
+            {
+              "id": "naming",
+              "name": "Naming"
+            },
+            {
+              "id": "funeral_memorial",
+              "name": "Funeral & memorial"
+            },
+            {
+              "id": "cultural_rites",
+              "name": "Cultural rites"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "endorsement",
+              "name": "Endorsement",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "optional_proof",
+          "aliases": [],
+          "database_slug": "work_ceremony_officiant"
+        },
+        {
+          "id": "traditional_performer",
+          "name": "Traditional Performer",
+          "kind_question": "What do you perform?",
+          "kinds": [
+            {
+              "id": "dancer",
+              "name": "Dancer"
+            },
+            {
+              "id": "drummer",
+              "name": "Drummer"
+            },
+            {
+              "id": "singer",
+              "name": "Singer"
+            },
+            {
+              "id": "storyteller",
+              "name": "Storyteller"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "showreel",
+              "name": "Showreel",
+              "is_evidence": false
+            },
+            {
+              "id": "group_membership",
+              "name": "Group membership",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "open",
+          "aliases": [],
+          "database_slug": "work_traditional_performer"
+        },
+        {
+          "id": "traditional_healer",
+          "name": "Traditional Healer / Herbalist",
+          "kind_question": "What is your practice?",
+          "kinds": [
+            {
+              "id": "herbalist",
+              "name": "Herbalist"
+            },
+            {
+              "id": "bone_setter",
+              "name": "Bone setter"
+            },
+            {
+              "id": "birth_attendant",
+              "name": "Birth attendant"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "association_registration",
+              "name": "Registration with relevant association or local authority",
+              "is_evidence": true
+            },
+            {
+              "id": "referees",
+              "name": "Referees",
+              "is_evidence": false
+            }
+          ],
+          "is_active": false,
+          "policy": "required_proof",
+          "aliases": [
+            "traditional healer",
+            "herbalist"
+          ],
+          "database_slug": "work_traditional_healer"
+        }
+      ],
+      "database_slug": "traditional_cultural"
     }
-  ]
+  ],
+  "catalog_safety": {
+    "beauty_fashion_styling": "Massage and spa listings are therapeutic and wellness services only; sexual services are prohibited.",
+    "domestic_household": "Inactive pending rollout. Never expose exact home addresses; an ID-checked badge requires admin approval.",
+    "health_medical": "Inactive pending legal and country licensing review. Do not collect or store HIV results; sensitive Needs must remain private.",
+    "business_investment": "Inactive pending legal review. Nipanze does not hold funds, provide investment advice, or guarantee returns.",
+    "traditional_cultural": "Inactive pending regulation review. Listings must not claim to cure illness or guarantee outcomes.",
+    "education_training": "Academic services are guidance, tutoring, mentoring, editing, and analysis only; ghost-writing/submitting work as a student is prohibited."
+  }
 }

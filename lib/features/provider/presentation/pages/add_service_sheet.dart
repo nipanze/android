@@ -359,7 +359,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final canEditWorkRoles = _categoryWorkProfilesEnabled &&
         (_providerType == ProviderCategoryType.individual ||
             widget.initialProofRoleSlug != null);
-    final canSelectCompanyRoles = _categoryWorkProfilesEnabled && companyPath;
     if (canEditWorkRoles) {
       for (final roleSlug in _selectedRoles) {
         workMetadataByRole[roleSlug] = _buildWorkMetadata(roleSlug);
@@ -399,9 +398,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       metadataBySlug: metadataBySlug,
       openWorkProfile: canEditWorkRoles,
       categorySlug: _selectedCategory?.slug,
-      workRoles: canEditWorkRoles || canSelectCompanyRoles
-          ? _selectedRoles.toList()
-          : const [],
+      workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
       roleEvidenceDrafts: List.unmodifiable(_roleEvidenceDrafts),
       companyPath: companyPath,
@@ -2326,7 +2323,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
     final individualType = providerType == ProviderCategoryType.individual;
     final companyMode = providerType == ProviderCategoryType.company;
-    final showRoles = iWantJobs && (individualType || companyMode);
+    final showRoles = iWantJobs && individualType;
     final hasServices = companyType && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
 
@@ -2338,25 +2335,50 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           children: [
             if (_providerSafetyNotice(l10n, categorySlug)
                 case final String notice)
-              Card(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(notice,
-                          style: Theme.of(context).textTheme.bodySmall),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton.icon(
-                          onPressed: onReportContent,
-                          icon: const Icon(Icons.flag_outlined, size: 16),
-                          label: Text(l10n.reportContent),
-                        ),
-                      ),
-                    ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.warning.withValues(alpha: 0.3),
                   ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: AppColors.warning,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notice,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                          ),
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton.icon(
+                              onPressed: onReportContent,
+                              icon: const Icon(Icons.flag_outlined, size: 16),
+                              label: Text(l10n.reportContent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             // Provider type is category scoped and can be changed from C/D.
