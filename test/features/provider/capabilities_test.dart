@@ -46,6 +46,18 @@ void main() {
     expect(certificate.isEvidence, isTrue);
   });
 
+  test('Hair stylist certificate and salon licence accept proof uploads', () {
+    final role = ProviderServiceRole.defaults
+        .singleWhere((item) => item.slug == 'hair_stylist');
+    final proofQualifications = role.qualifications
+        .where((item) =>
+            item.slug == 'cosmetology_certificate' ||
+            item.slug == 'salon_licence')
+        .toList();
+    expect(proofQualifications, hasLength(2));
+    expect(proofQualifications.every((item) => item.isEvidence), isTrue);
+  });
+
   setUp(() {
     mockRepo = MockProviderRepository();
     when(() => mockRepo.capabilityProfilesEnabled())

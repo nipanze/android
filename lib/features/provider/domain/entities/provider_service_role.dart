@@ -901,7 +901,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'cosmetology_certificate',
             name: 'Cosmetology certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'portfolio', name: 'Portfolio', isEvidence: false),
         ProviderRoleQualification(
@@ -929,11 +929,11 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'cosmetology_certificate',
             name: 'Cosmetology certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'portfolio', name: 'Portfolio', isEvidence: false),
         ProviderRoleQualification(
-            slug: 'salon_licence', name: 'Salon licence', isEvidence: false),
+            slug: 'salon_licence', name: 'Salon licence', isEvidence: true),
       ],
     ),
     ProviderServiceRole(

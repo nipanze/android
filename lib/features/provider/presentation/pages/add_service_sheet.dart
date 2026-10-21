@@ -1225,12 +1225,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           profile),
                                               onSave: _saveCompanyDetails,
                                             )
-                                          : _step == 2
-                                              ? _KindStepView(
-                                                  categorySlug:
-                                                      _selectedCategory?.slug,
-                                                  role:
-                                                      _categoryRoles.firstWhere(
+                                            : _step == 2
+                                                ? _KindStepView(
+                                                    role:
+                                                        _categoryRoles.firstWhere(
                                                     (r) =>
                                                         r.slug ==
                                                         _selectedRoles.elementAt(
@@ -2999,7 +2997,6 @@ class _KindStepView extends StatefulWidget {
     required this.selectedKinds,
     required this.scrollController,
     required this.onNext,
-    this.categorySlug,
   });
 
   final ProviderServiceRole role;
@@ -3008,7 +3005,6 @@ class _KindStepView extends StatefulWidget {
   final Set<String> selectedKinds;
   final ScrollController scrollController;
   final VoidCallback onNext;
-  final String? categorySlug;
 
   @override
   State<_KindStepView> createState() => _KindStepViewState();
@@ -3037,41 +3033,6 @@ class _KindStepViewState extends State<_KindStepView> {
       return 'Pick all that apply. Employers search by marketing channel.';
     }
     return 'Pick all that apply. Employers search by specialty.';
-  }
-
-  String _getCalloutNote(String? categorySlug) {
-    return switch (categorySlug) {
-      'construction_building' =>
-        'The question changes with the role. A Tradesperson is asked "Which trade?" and a Site Manager is asked "What type of sites?"',
-      'machinery_equipment' =>
-        'The question changes with the role. A Mechanic is asked "What do you service?" and a Fleet Manager is asked "What fleet?"',
-      'technology_digital' =>
-        'The question changes with the role. A Developer is asked "What do you build?" and an IT Technician is asked "What do you do?"',
-      'transport_logistics' =>
-        'The question changes with the role. A Driver is asked "What do you drive?" and a Fleet Manager is asked "What fleet?"',
-      'energy_utilities' =>
-        'The question changes with the role. A Solar Tech is asked "What do you install?" and a Water Tech is asked "What do you do?"',
-      'marketing_promotion' =>
-        'The question changes with the role. A Marketer is asked "Which channel?" and a Content Creator is asked "What do you produce?"',
-      'professional_services' =>
-        'The question changes with the role. An Engineer is asked "Which discipline?" and an Accountant is asked "What area?"',
-      'events_celebrations' ||
-      'events_production' =>
-        'The question changes with the role. An Event Planner is asked "What events?" and an MC/DJ is asked "Which role?"',
-      'photo_video_talent' ||
-      'photo_video_music_talent' =>
-        'The question changes with the role. A Photographer is asked "What do you shoot?" and an Audio Producer is asked "What do you do?"',
-      'beauty_fashion_styling' =>
-        'The question changes with the role. A Stylist is asked "Specialty?" and a Manager is asked "What scope?"',
-      'agriculture_agribusiness' =>
-        'The question changes with the role. An Agronomist is asked "What focus?" and a Livestock Officer is asked "What animals?"',
-      'specialized_products' =>
-        'The question changes with the role. A Procurement Officer is asked "What do you buy?" and a Sourcing Agent is asked "Where do you source?"',
-      'travel_international' =>
-        'The question changes with the role. A Tour Guide is asked "What tours?" and a Driver-Guide is asked "What vehicle?"',
-      _ =>
-        'The question changes with the role to help employers find your exact specialty.',
-    };
   }
 
   String _getSelectionCountLabel(ProviderServiceRole role, int count) {
@@ -3167,9 +3128,26 @@ class _KindStepViewState extends State<_KindStepView> {
                   color: border.withValues(alpha: 0.6),
                 ),
               ),
-              child: Text(
-                _getCalloutNote(widget.categorySlug),
-                style: TextStyle(fontSize: 11, color: text2, height: 1.3),
+              child: Row(
+                children: [
+                  Icon(
+                    widget.selectedKinds.isEmpty
+                        ? Icons.auto_awesome_outlined
+                        : Icons.check_circle_outline_rounded,
+                    size: 16,
+                    color: AppColors.proPurple,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.selectedKinds.isEmpty
+                          ? 'Show employers what you do best—pick the specialties that fit you.'
+                          : 'Great picks! These specialties help the right employers find you.',
+                      style:
+                          TextStyle(fontSize: 11, color: text2, height: 1.3),
+                    ),
+                  ),
+                ],
               ),
             ),
             Center(
@@ -3283,15 +3261,20 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
   String _proofKey(String roleSlug, String qualificationSlug) =>
       '$roleSlug::$qualificationSlug';
 
-  Future<void> _pickQualificationEvidence() async {
-    final evidenceQualifications =
-        <(ProviderServiceRole, ProviderRoleQualification)>[];
-    for (final role in widget.roles) {
-      final checked =
-          widget.qualificationsByRole[role.slug] ?? const <String>{};
-      for (final qualification in role.qualifications) {
-        if (qualification.isEvidence && checked.contains(qualification.slug)) {
-          evidenceQualifications.add((role, qualification));
+  Future<void> _pickQualificationEvidence({
+    (ProviderServiceRole, ProviderRoleQualification)? target,
+  }) async {
+    final evidenceQualifications = target == null
+        ? <(ProviderServiceRole, ProviderRoleQualification)>[]
+        : <(ProviderServiceRole, ProviderRoleQualification)>[target];
+    if (target == null) {
+      for (final role in widget.roles) {
+        final checked =
+            widget.qualificationsByRole[role.slug] ?? const <String>{};
+        for (final qualification in role.qualifications) {
+          if (qualification.isEvidence && checked.contains(qualification.slug)) {
+            evidenceQualifications.add((role, qualification));
+          }
         }
       }
     }
@@ -3492,6 +3475,26 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                   ),
                                 ),
                               ),
+                              if (qual.isEvidence)
+                                IconButton(
+                                  tooltip: 'Upload proof for ${qual.name}',
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () =>
+                                      _pickQualificationEvidence(
+                                    target: (role, qual),
+                                  ),
+                                  icon: Icon(
+                                    widget.evidenceDrafts.any(
+                                      (draft) =>
+                                          draft.roleSlug == role.slug &&
+                                          draft.qualificationSlug == qual.slug,
+                                    )
+                                        ? Icons.edit_outlined
+                                        : Icons.file_upload_outlined,
+                                    color: AppColors.proPurple,
+                                    size: 20,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
