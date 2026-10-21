@@ -714,23 +714,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
   }
 
-  Future<void> _reportProviderContent() async {
-    final slug = _selectedCategory?.slug;
-    if (slug == null) return;
-    final l10n = AppLocalizations.of(context)!;
-    try {
-      await widget.needsRepository.reportProviderCatalogContent(slug);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.contentReportSubmitted)));
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingErrorMessage(error))),
-      );
-    }
-  }
-
   Future<void> _continueProviderType() async {
     final type = _providerType;
     final slug = _selectedCategory?.slug;
@@ -1404,8 +1387,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                   0;
                                                             });
                                                           },
-                                                          onReportContent:
-                                                              _reportProviderContent,
                                                           onAudienceTap:
                                                               _openAudience,
                                                           audiencePlatforms:
@@ -2258,7 +2239,6 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.onChangeProviderType,
     required this.onSaveServices,
     required this.onNextKind,
-    required this.onReportContent,
     this.onAudienceTap,
     this.audiencePlatforms = const {},
     this.audienceFollowersCount,
@@ -2279,7 +2259,6 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final VoidCallback onChangeProviderType;
   final VoidCallback onSaveServices;
   final VoidCallback onNextKind;
-  final VoidCallback onReportContent;
   final VoidCallback? onAudienceTap;
   final Set<String> audiencePlatforms;
   final int? audienceFollowersCount;
@@ -2354,28 +2333,11 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            notice,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                          ),
-                          Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: TextButton.icon(
-                              onPressed: onReportContent,
-                              icon: const Icon(Icons.flag_outlined, size: 16),
-                              label: Text(l10n.reportContent),
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        notice,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ],
