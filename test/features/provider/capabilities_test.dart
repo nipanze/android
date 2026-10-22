@@ -810,6 +810,33 @@ void main() {
       expect(find.text('Provider Verified'), findsOneWidget);
     });
 
+    testWidgets('CapabilityDetailSheet styles the selected provider type row',
+        (tester) async {
+      final cap = ProviderCapability(
+        id: 'cap-identity-1',
+        userId: 'u-1',
+        capabilitySlug: 'excavator_hire',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        capabilityName: 'Excavator Hire',
+        categoryName: 'Machinery & Equipment',
+        categoryIcon: '🚜',
+      );
+
+      await tester.pumpWidget(createLocalizedWidget(CapabilityDetailSheet(
+        capability: cap,
+        onEdit: () {},
+        onTogglePause: (_) {},
+        onRemove: () {},
+        providerType: ProviderCategoryType.company,
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Offering as Company / Organization'), findsOneWidget);
+      expect(find.text('Change'), findsOneWidget);
+      expect(find.byIcon(Icons.badge_outlined), findsOneWidget);
+    });
+
     testWidgets('ProviderVerificationChip renders active state',
         (tester) async {
       await tester.pumpWidget(createLocalizedWidget(

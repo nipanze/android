@@ -177,18 +177,47 @@ class CapabilityDetailSheet extends StatelessWidget {
               if (providerType != null || isJob)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(children: [
-                    Expanded(
-                      child: Text(
-                        '${l10n.providerTypeOfferingAs}  ${isJob ? l10n.companyPersonalProfile : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
-                        style: TextStyle(fontSize: 12, color: text2),
-                      ),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.bg3Dark.withValues(alpha: 0.7)
+                          : const Color(0xFFF5F6F8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    TextButton(
-                      onPressed: onEdit,
-                      child: Text(l10n.providerTypeChange),
+                    child: Row(
+                      children: [
+                        Icon(Icons.badge_outlined,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${l10n.providerTypeOfferingAs} ${isJob ? l10n.companyPersonalProfile : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: onEdit,
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            l10n.providerTypeChange,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ]),
+                  ),
                 ),
 
               // Open jobs / opportunities match banner (matches Image G)

@@ -2345,18 +2345,52 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             if (providerType != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: Row(children: [
-                  const Icon(Icons.badge_outlined,
-                      size: 16, color: AppColors.accent),
-                  const SizedBox(width: 6),
-                  Text(
-                      '${l10n.providerTypeOfferingAs}  ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
-                      style: Theme.of(context).textTheme.bodySmall),
-                  const Spacer(),
-                  TextButton(
-                      onPressed: onChangeProviderType,
-                      child: Text(l10n.providerTypeChange)),
-                ]),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.bg3Dark.withValues(alpha: 0.7)
+                        : const Color(0xFFF5F6F8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.badge_outlined,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${l10n.providerTypeOfferingAs} ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: onChangeProviderType,
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          l10n.providerTypeChange,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
             // ── Service capability rows (grouped, flat list style) ──
