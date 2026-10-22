@@ -17,6 +17,8 @@ class CapabilityDetailSheet extends StatelessWidget {
     required this.onTogglePause,
     required this.onRemove,
     this.onAddProof,
+    this.onAddRoleProof,
+    this.onRemoveRoleProof,
     this.hiddenForCompanyOnly = false,
     this.providerType,
   });
@@ -27,6 +29,10 @@ class CapabilityDetailSheet extends StatelessWidget {
   final ValueChanged<bool> onTogglePause;
   final VoidCallback onRemove;
   final VoidCallback? onAddProof;
+  final void Function(String? roleSlug, String? qualificationSlug)?
+      onAddRoleProof;
+  final void Function(String? roleSlug, String? qualificationSlug)?
+      onRemoveRoleProof;
   final bool hiddenForCompanyOnly;
   final ProviderCategoryType? providerType;
 
@@ -38,6 +44,9 @@ class CapabilityDetailSheet extends StatelessWidget {
     required ValueChanged<bool> onTogglePause,
     required VoidCallback onRemove,
     VoidCallback? onAddProof,
+    void Function(String? roleSlug, String? qualificationSlug)? onAddRoleProof,
+    void Function(String? roleSlug, String? qualificationSlug)?
+        onRemoveRoleProof,
     bool hiddenForCompanyOnly = false,
     ProviderCategoryType? providerType,
   }) {
@@ -52,6 +61,8 @@ class CapabilityDetailSheet extends StatelessWidget {
         onTogglePause: onTogglePause,
         onRemove: onRemove,
         onAddProof: onAddProof,
+        onAddRoleProof: onAddRoleProof,
+        onRemoveRoleProof: onRemoveRoleProof,
         hiddenForCompanyOnly: hiddenForCompanyOnly,
         providerType: providerType,
       ),
@@ -195,9 +206,14 @@ class CapabilityDetailSheet extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${l10n.providerTypeOfferingAs} ${isJob ? l10n.companyPersonalProfile : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                           ),
                         ),
                         TextButton(
@@ -279,8 +295,12 @@ class CapabilityDetailSheet extends StatelessWidget {
                     _VerificationChecklist(
                       capability: capability,
                       onAddProof: onAddProof,
-                      onAddRoleProof:
-                          isJob && !capability.isVerified ? onAddProof : null,
+                      onAddRoleProof: isJob && !capability.isVerified
+                          ? onAddRoleProof
+                          : null,
+                      onRemoveRoleProof: isJob && !capability.isVerified
+                          ? onRemoveRoleProof
+                          : null,
                     ),
                   ],
                 ),
@@ -375,11 +395,15 @@ class _VerificationChecklist extends StatelessWidget {
     required this.capability,
     this.onAddProof,
     this.onAddRoleProof,
+    this.onRemoveRoleProof,
   });
 
   final ProviderCapability capability;
   final VoidCallback? onAddProof;
-  final VoidCallback? onAddRoleProof;
+  final void Function(String? roleSlug, String? qualificationSlug)?
+      onAddRoleProof;
+  final void Function(String? roleSlug, String? qualificationSlug)?
+      onRemoveRoleProof;
 
   @override
   Widget build(BuildContext context) {
@@ -395,38 +419,70 @@ class _VerificationChecklist extends StatelessWidget {
     final isJob = capability.isWork;
 
     final items = <_ChecklistItem>[];
-    var canAddRoleProof = false;
-
     if (isJob) {
-      canAddRoleProof = !isVerified &&
-          (claims.isEmpty ||
-              claims.any((claim) => !['verified', 'pending_review']
-                  .contains(claim['status']?.toString())));
-      if (claims.isNotEmpty) {
-        for (final c in claims) {
+      final evidenceClaims =
+          claims.where((claim) => claim['is_evidence'] == true).toList();
+      if (evidenceClaims.isNotEmpty) {
+        for (final c in evidenceClaims) {
           final qName = c['qualification_name']?.toString() ?? 'Qualification';
+          final roleSlug = c['role_slug']?.toString() ?? '';
+          final qualificationSlug = c['qualification_slug']?.toString() ?? '';
           final st = c['status']?.toString();
+          final hasEvidence = c['has_evidence'] == true;
+          final statusLabel = switch (st) {
+            'verified' => AppLocalizations.of(context)!.companyEvidenceApproved,
+            'pending_review' =>
+              AppLocalizations.of(context)!.companyVerificationPending,
+            'rejected' => AppLocalizations.of(context)!.companyEvidenceRejected,
+            'expired' => AppLocalizations.of(context)!.companyEvidenceExpired,
+            _ => hasEvidence
+                ? AppLocalizations.of(context)!.companyEvidenceUploaded
+                : AppLocalizations.of(context)!.companyEvidenceNotAdded,
+          };
+          final rejectReason = c['reject_reason']?.toString();
+          final actionLabel = hasEvidence
+              ? AppLocalizations.of(context)!.companyEvidenceReplace
+              : AppLocalizations.of(context)!.companyEvidenceAdd;
           if (st == 'verified') {
             items.add(_ChecklistItem(
               title: qName,
               icon: Icons.check_circle_rounded,
               iconColor: AppColors.success,
-              subtitle: 'Approved',
+              subtitle: statusLabel,
             ));
           } else if (st == 'pending_review') {
             items.add(_ChecklistItem(
               title: qName,
               icon: Icons.schedule_rounded,
               iconColor: Colors.amber.shade800,
-              subtitle: 'Under review, usually within 2 days',
+              subtitle: statusLabel,
+              trailingAction: actionLabel,
+              onAction: onAddRoleProof == null
+                  ? null
+                  : () => onAddRoleProof!(roleSlug, qualificationSlug),
+              onRemove: hasEvidence && onRemoveRoleProof != null
+                  ? () => onRemoveRoleProof!(roleSlug, qualificationSlug)
+                  : null,
             ));
           } else {
             items.add(_ChecklistItem(
               title: qName,
-              icon: Icons.add_circle_outline_rounded,
-              iconColor: Colors.grey,
-              subtitle: AppLocalizations.of(context)!.providerPolicyProofLater,
-              trailingAction: AppLocalizations.of(context)!.companyEvidenceAdd,
+              icon: st == 'rejected'
+                  ? Icons.error_outline_rounded
+                  : Icons.add_circle_outline_rounded,
+              iconColor: st == 'rejected'
+                  ? Theme.of(context).colorScheme.error
+                  : Colors.grey,
+              subtitle: rejectReason == null
+                  ? statusLabel
+                  : '$statusLabel · $rejectReason',
+              trailingAction: onAddRoleProof == null ? null : actionLabel,
+              onAction: onAddRoleProof == null
+                  ? null
+                  : () => onAddRoleProof!(roleSlug, qualificationSlug),
+              onRemove: hasEvidence && onRemoveRoleProof != null
+                  ? () => onRemoveRoleProof!(roleSlug, qualificationSlug)
+                  : null,
             ));
           }
         }
@@ -442,9 +498,15 @@ class _VerificationChecklist extends StatelessWidget {
           subtitle: capability.pendingEvidenceCount > 0
               ? '${capability.pendingEvidenceCount} evidence item(s) pending review'
               : AppLocalizations.of(context)!.providerCapabilityActive,
-          trailingAction: canAddRoleProof
-              ? AppLocalizations.of(context)!.companyEvidenceAdd
-              : null,
+          trailingAction: isVerified
+              ? null
+              : AppLocalizations.of(context)!.companyEvidenceAdd,
+          onAction: onAddRoleProof == null
+              ? null
+              : () => onAddRoleProof!(
+                    null,
+                    null,
+                  ),
         ));
       }
     } else {
@@ -505,21 +567,25 @@ class _VerificationChecklist extends StatelessWidget {
                   item.subtitle,
                   style: TextStyle(fontSize: 11, color: text2),
                 ),
-                trailing: item.trailingAction != null
-                    ? InkWell(
-                        onTap: isJob ? onAddRoleProof : onAddProof,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 4),
-                          child: Text(
-                            item.trailingAction!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.proPurple,
+                trailing: item.trailingAction != null || item.onRemove != null
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (item.trailingAction != null)
+                            TextButton(
+                              onPressed:
+                                  item.onAction ?? (isJob ? null : onAddProof),
+                              child: Text(item.trailingAction!),
                             ),
-                          ),
-                        ),
+                          if (item.onRemove != null)
+                            IconButton(
+                              tooltip: AppLocalizations.of(context)!
+                                  .companyDocumentRemove,
+                              visualDensity: VisualDensity.compact,
+                              onPressed: item.onRemove,
+                              icon: const Icon(Icons.delete_outline),
+                            ),
+                        ],
                       )
                     : null,
               );
@@ -538,6 +604,8 @@ class _ChecklistItem {
     required this.iconColor,
     required this.subtitle,
     this.trailingAction,
+    this.onAction,
+    this.onRemove,
   });
 
   final String title;
@@ -545,4 +613,6 @@ class _ChecklistItem {
   final Color iconColor;
   final String subtitle;
   final String? trailingAction;
+  final VoidCallback? onAction;
+  final VoidCallback? onRemove;
 }

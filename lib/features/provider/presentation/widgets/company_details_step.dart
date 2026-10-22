@@ -2,7 +2,6 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/provider_company_profile.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
@@ -41,6 +40,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   String? _yearsInBusiness;
   late List<Map<String, dynamic>> _verificationSubmissions;
   String? _uploadingDocumentType;
+  String _selectedDocumentType = 'business_registration';
   bool _saving = false;
   String? _saveError;
 
@@ -112,12 +112,15 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   void _notifyDraftChanged() => widget.onDraftChanged(_currentProfile());
 
-  Future<void> _pickCompanyDocument(String documentType) async {
+  Future<void> _pickCompanyDocument({Map<String, dynamic>? existing}) async {
     final l10n = AppLocalizations.of(context)!;
-    setState(() => _uploadingDocumentType = documentType);
+    final documentType =
+        existing?['document_type']?.toString() ?? _selectedDocumentType;
+    final submissionId = existing?['id']?.toString();
+    setState(() => _uploadingDocumentType = submissionId ?? documentType);
     try {
       final group = XTypeGroup(
-        label: l10n.companyVerificationTitle,
+        label: l10n.companyDocumentsTitle,
         extensions: ['jpg', 'jpeg', 'png', 'pdf'],
       );
       final file = await openFile(acceptedTypeGroups: [group]);
@@ -142,10 +145,12 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         mimeType: mime,
         bytes: bytes,
       );
-      await widget.providerRepository.submitCompanyVerificationDocument(
+      await widget.providerRepository.saveCompanyDocument(
         categorySlug: widget.categorySlug,
         documentType: documentType,
         filePath: path,
+        fileName: file.name,
+        submissionId: submissionId,
       );
       final submissions = await widget.providerRepository
           .getCompanyVerificationSubmissions(widget.categorySlug);
@@ -164,10 +169,65 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     }
   }
 
-  Map<String, dynamic>? _submission(String documentType) {
-    return _verificationSubmissions
-        .where((row) => row['document_type'] == documentType)
-        .firstOrNull;
+  Future<void> _addCompanyDocument() => _pickCompanyDocument();
+
+  Future<void> _removeCompanyDocument(Map<String, dynamic> submission) async {
+    final l10n = AppLocalizations.of(context)!;
+    final id = submission['id']?.toString();
+    if (id == null || submission['status'] == 'approved') return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.companyDocumentRemove),
+        content: Text(l10n.providerEvidenceRemoveConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.companyDocumentRemove),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await widget.providerRepository.removeCompanyDocument(id);
+      final submissions = await widget.providerRepository
+          .getCompanyVerificationSubmissions(widget.categorySlug);
+      if (!mounted) return;
+      setState(() => _verificationSubmissions = submissions);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(_errorText(error))));
+    }
+  }
+
+  String _documentTypeLabel(AppLocalizations l10n, String? type) =>
+      switch (type) {
+        'business_registration' => l10n.companyVerificationRegistration,
+        'business_licence' => l10n.companyVerificationLicence,
+        'certificate' => l10n.companyDocumentTypeCertificate,
+        'other' => l10n.companyDocumentTypeOther,
+        _ => type ?? l10n.companyDocumentTypeOther,
+      };
+
+  String _documentStatusLabel(AppLocalizations l10n, String? status) =>
+      switch (status) {
+        'pending' => l10n.companyVerificationPending,
+        'approved' => l10n.companyVerificationVerified,
+        'rejected' => l10n.companyVerificationRejected,
+        _ => l10n.companyVerificationNotSubmitted,
+      };
+
+  List<Map<String, dynamic>> get _orderedSubmissions {
+    final sorted = List<Map<String, dynamic>>.of(_verificationSubmissions);
+    sorted.sort((a, b) => (b['created_at']?.toString() ?? '')
+        .compareTo(a['created_at']?.toString() ?? ''));
+    return sorted;
   }
 
   String _companyStatusLabel(AppLocalizations l10n) {
@@ -300,38 +360,156 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 20),
-              Text(l10n.companyVerificationTitle,
+              Text(l10n.companyDocumentsTitle,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              Text(l10n.companyVerificationIntro,
+              Text(l10n.companyDocumentsSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
               const SizedBox(height: 8),
               Text(_companyStatusLabel(l10n),
                   style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w700)),
-              for (final item in [
-                ('business_registration', l10n.companyVerificationRegistration),
-                ('business_licence', l10n.companyVerificationLicence),
-              ]) ...[
-                const SizedBox(height: 8),
-                _EvidenceRow(
-                  label: item.$2,
-                  busy: _uploadingDocumentType == item.$1,
-                  status: _submission(item.$1)?['status'] == 'approved'
-                      ? l10n.companyVerificationVerified
-                      : _submission(item.$1)?['status'] == 'rejected'
-                          ? l10n.companyVerificationRejected
-                          : _submission(item.$1)?['status'] == 'pending'
-                              ? l10n.companyVerificationPending
-                              : l10n.companyVerificationNotSubmitted,
-                  reason: _submission(item.$1)?['reject_reason']?.toString(),
-                  hasUpload: false,
-                  hasExisting: _submission(item.$1) != null,
-                  onTap: _uploadingDocumentType == null
-                      ? () => _pickCompanyDocument(item.$1)
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: _selectedDocumentType,
+                decoration: InputDecoration(
+                  labelText: l10n.companyDocumentTypeLabel,
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'business_registration',
+                    child: Text(l10n.companyVerificationRegistration),
+                  ),
+                  DropdownMenuItem(
+                    value: 'business_licence',
+                    child: Text(l10n.companyVerificationLicence),
+                  ),
+                  DropdownMenuItem(
+                    value: 'certificate',
+                    child: Text(l10n.companyDocumentTypeCertificate),
+                  ),
+                  DropdownMenuItem(
+                    value: 'other',
+                    child: Text(l10n.companyDocumentTypeOther),
+                  ),
+                ],
+                onChanged: _uploadingDocumentType == null
+                    ? (value) {
+                        if (value != null) {
+                          setState(() => _selectedDocumentType = value);
+                        }
+                      }
+                    : null,
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: FilledButton.icon(
+                  onPressed: _uploadingDocumentType == null
+                      ? _addCompanyDocument
                       : null,
+                  icon: _uploadingDocumentType == _selectedDocumentType
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.upload_file_outlined),
+                  label: Text(l10n.companyVerificationUpload),
+                ),
+              ),
+              for (final submission in _orderedSubmissions) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            submission['status'] == 'approved'
+                                ? Icons.check_circle_outline_rounded
+                                : submission['status'] == 'rejected'
+                                    ? Icons.error_outline_rounded
+                                    : Icons.description_outlined,
+                            size: 18,
+                            color: submission['status'] == 'approved'
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _documentTypeLabel(
+                                    l10n,
+                                    submission['document_type']?.toString(),
+                                  ),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  submission['file_name']?.toString() ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                Text(
+                                  submission['reject_reason'] == null
+                                      ? _documentStatusLabel(
+                                          l10n,
+                                          submission['status']?.toString(),
+                                        )
+                                      : '${_documentStatusLabel(l10n, submission['status']?.toString())} · ${submission['reject_reason']}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: submission['status'] == 'rejected'
+                                        ? theme.colorScheme.error
+                                        : text2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: Wrap(
+                          spacing: 4,
+                          children: [
+                            TextButton(
+                              onPressed: _uploadingDocumentType == null
+                                  ? () =>
+                                      _pickCompanyDocument(existing: submission)
+                                  : null,
+                              child: Text(l10n.companyEvidenceReplace),
+                            ),
+                            if (submission['status'] != 'approved')
+                              IconButton(
+                                tooltip: l10n.companyDocumentRemove,
+                                visualDensity: VisualDensity.compact,
+                                onPressed: _uploadingDocumentType == null
+                                    ? () => _removeCompanyDocument(submission)
+                                    : null,
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
               const SizedBox(height: 8),
@@ -440,75 +618,4 @@ class _ChoiceChips extends StatelessWidget {
           ),
         ],
       );
-}
-
-class _EvidenceRow extends StatelessWidget {
-  const _EvidenceRow({
-    required this.label,
-    required this.busy,
-    required this.status,
-    required this.hasUpload,
-    required this.hasExisting,
-    required this.onTap,
-    this.reason,
-  });
-
-  final String label;
-  final bool busy;
-  final String status;
-  final String? reason;
-  final bool hasUpload;
-  final bool hasExisting;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border:
-              Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(children: [
-          Icon(
-            hasUpload ? Icons.check_circle_outline : Icons.info_outline,
-            size: 18,
-            color: hasUpload
-                ? AppColors.accent
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 9),
-          if (busy) ...[
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(width: 9),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text(reason == null ? status : '$status · $reason',
-                    style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: onTap,
-            child: Text(hasUpload || hasExisting
-                ? l10n.companyEvidenceReplace
-                : l10n.companyVerificationUpload),
-          ),
-        ]),
-      ),
-    );
-  }
 }

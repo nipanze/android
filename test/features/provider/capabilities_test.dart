@@ -24,6 +24,7 @@ import 'package:nipanze/features/provider/presentation/pages/add_service_sheet.d
 import 'package:nipanze/features/provider/presentation/pages/capability_detail_sheet.dart';
 import 'package:nipanze/features/provider/presentation/pages/provider_services_page.dart';
 import 'package:nipanze/features/provider/presentation/widgets/capability_badge.dart';
+import 'package:nipanze/features/provider/presentation/widgets/company_details_step.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_opportunities_section.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_type_sheet.dart';
 import 'package:nipanze/features/provider/presentation/widgets/provider_verification_chip.dart';
@@ -835,6 +836,122 @@ void main() {
       expect(find.text('Offering as Company / Organization'), findsOneWidget);
       expect(find.text('Change'), findsOneWidget);
       expect(find.byIcon(Icons.badge_outlined), findsOneWidget);
+    });
+
+    testWidgets('CompanyDetailsStep lists individually typed company documents',
+        (tester) async {
+      await tester.pumpWidget(createLocalizedWidget(CompanyDetailsStep(
+        categorySlug: 'machinery_equipment',
+        serviceCount: 1,
+        roleCount: 0,
+        initialProfile: null,
+        verificationSubmissions: const [
+          {
+            'id': 'doc-1',
+            'document_type': 'certificate',
+            'file_name': 'safety-certificate.pdf',
+            'status': 'pending',
+            'created_at': '2026-01-01T00:00:00Z',
+          },
+          {
+            'id': 'doc-2',
+            'document_type': 'other',
+            'file_name': 'supporting-document.pdf',
+            'status': 'rejected',
+            'reject_reason': 'The document is unclear.',
+            'created_at': '2026-01-02T00:00:00Z',
+          },
+        ],
+        providerRepository: mockRepo,
+        onDraftChanged: (_) {},
+        onSave: ({required profile}) async {},
+      )));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Upload company documents'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      expect(find.text('Upload company documents'), findsOneWidget);
+      expect(
+        find.text(
+            'Upload business registration, trading licences, certificates, and other relevant company documents.'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text('safety-certificate.pdf'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('safety-certificate.pdf'), findsOneWidget);
+      expect(find.text('supporting-document.pdf'), findsOneWidget);
+      expect(find.text('Certificate'), findsOneWidget);
+      expect(find.text('Other'), findsOneWidget);
+      expect(find.text('Pending review'), findsWidgets);
+      expect(find.textContaining('Rejected · The document is unclear.'),
+          findsOneWidget);
+      expect(find.text('Replace'), findsNWidgets(2));
+      expect(find.byTooltip('Remove'), findsNWidgets(2));
+
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      expect(find.text('Certificate'), findsWidgets);
+      expect(find.text('Other'), findsWidgets);
+    });
+
+    testWidgets('Qualification evidence status has specific replace and remove',
+        (tester) async {
+      final capability = ProviderCapability(
+        id: 'cap-role-evidence',
+        userId: 'u-1',
+        capabilitySlug: 'work_machine_operator',
+        capabilityType: 'work',
+        verificationLevel: ProviderVerificationLevel.selfDeclared,
+        createdAt: DateTime.now(),
+        roleQualificationClaims: const [
+          {
+            'role_slug': 'machine_operator',
+            'qualification_slug': 'operator_licence',
+            'qualification_name': 'Operator licence',
+            'is_evidence': true,
+            'status': 'pending_review',
+            'has_evidence': true,
+          },
+        ],
+      );
+      String? proofRole;
+      String? proofQualification;
+      String? removedRole;
+      String? removedQualification;
+
+      await tester.pumpWidget(createLocalizedWidget(CapabilityDetailSheet(
+        capability: capability,
+        onEdit: () {},
+        onTogglePause: (_) {},
+        onRemove: () {},
+        onAddRoleProof: (role, qualification) {
+          proofRole = role;
+          proofQualification = qualification;
+        },
+        onRemoveRoleProof: (role, qualification) {
+          removedRole = role;
+          removedQualification = qualification;
+        },
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Operator licence'), findsOneWidget);
+      expect(find.text('Pending review'), findsOneWidget);
+      expect(find.text('Replace'), findsOneWidget);
+      expect(find.byTooltip('Remove'), findsOneWidget);
+
+      await tester.tap(find.text('Replace'));
+      expect(proofRole, 'machine_operator');
+      expect(proofQualification, 'operator_licence');
+      await tester.tap(find.byTooltip('Remove'));
+      expect(removedRole, 'machine_operator');
+      expect(removedQualification, 'operator_licence');
     });
 
     testWidgets('ProviderVerificationChip renders active state',

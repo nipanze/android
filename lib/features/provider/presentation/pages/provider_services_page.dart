@@ -518,7 +518,142 @@ class _ProviderServicesView extends StatelessWidget {
           l10n: l10n,
         );
       },
+      onAddRoleProof: (roleSlug, qualificationSlug) async {
+        Navigator.of(context).pop();
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        if (!context.mounted) return;
+        if (roleSlug == null || qualificationSlug == null) {
+          await _openCapabilityProofDestination(
+            context,
+            capability: capability,
+            l10n: l10n,
+          );
+        } else {
+          await _uploadRoleQualificationEvidence(
+            context,
+            capability: capability,
+            roleSlug: roleSlug,
+            qualificationSlug: qualificationSlug,
+            l10n: l10n,
+          );
+        }
+      },
+      onRemoveRoleProof: (roleSlug, qualificationSlug) async {
+        if (roleSlug == null || qualificationSlug == null) return;
+        Navigator.of(context).pop();
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        if (!context.mounted) return;
+        await _removeRoleQualificationEvidence(
+          context,
+          capability: capability,
+          roleSlug: roleSlug,
+          qualificationSlug: qualificationSlug,
+          l10n: l10n,
+        );
+      },
     );
+  }
+
+  Future<void> _uploadRoleQualificationEvidence(
+    BuildContext context, {
+    required ProviderCapability capability,
+    required String roleSlug,
+    required String qualificationSlug,
+    required AppLocalizations l10n,
+  }) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    try {
+      const evidenceTypes = XTypeGroup(
+        label: 'Qualification document',
+        extensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      final file = await openFile(acceptedTypeGroups: [evidenceTypes]);
+      if (file == null) return;
+      if (await file.length() > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
+        throw StateError(l10n.companyEvidenceTooLarge);
+      }
+      final extension = file.name.split('.').last.toLowerCase();
+      final mimeType = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'pdf' => 'application/pdf',
+        _ => '',
+      };
+      if (mimeType.isEmpty) {
+        throw StateError(l10n.companyEvidenceUnsupported);
+      }
+      final repository = getIt<IProviderRepository>();
+      final path = await repository.uploadRoleQualificationEvidence(
+        capabilitySlug: capability.capabilitySlug,
+        roleSlug: roleSlug,
+        qualificationSlug: qualificationSlug,
+        fileName: file.name,
+        mimeType: mimeType,
+        bytes: bytes,
+      );
+      await repository.submitRoleQualificationEvidence(
+        providerCapabilityId: capability.id,
+        roleSlug: roleSlug,
+        qualificationSlug: qualificationSlug,
+        evidenceObjectPath: path,
+      );
+      await cubit.loadWithOpportunities();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.providerEvidenceSubmitted)),
+        );
+      }
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
+    }
+  }
+
+  Future<void> _removeRoleQualificationEvidence(
+    BuildContext context, {
+    required ProviderCapability capability,
+    required String roleSlug,
+    required String qualificationSlug,
+    required AppLocalizations l10n,
+  }) async {
+    final cubit = context.read<CapabilitiesCubit>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.companyDocumentRemove),
+        content: Text(l10n.providerEvidenceRemoveConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.companyDocumentRemove),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await getIt<IProviderRepository>().removeRoleQualificationEvidence(
+        providerCapabilityId: capability.id,
+        roleSlug: roleSlug,
+        qualificationSlug: qualificationSlug,
+      );
+      await cubit.loadWithOpportunities();
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
+    }
   }
 
   Future<void> _openCapabilityProofDestination(

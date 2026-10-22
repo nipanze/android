@@ -103,8 +103,16 @@ class RpcNames {
   static const String saveCompanyCategory = 'save_company_category';
   static const String submitProviderCompanyVerification =
       'submit_provider_company_verification';
+  static const String saveProviderCompanyDocument =
+      'save_provider_company_document';
+  static const String deleteProviderCompanyDocument =
+      'delete_provider_company_document';
   static const String adminReviewProviderCompanyVerification =
       'admin_review_provider_company_verification';
+  static const String adminReviewProviderCompanyDocument =
+      'admin_review_provider_company_document';
+  static const String removeProviderRoleQualificationEvidence =
+      'remove_provider_role_qualification_evidence';
   static const String adminReviewProviderRoleQualification =
       'admin_review_provider_role_qualification';
   static const String getMyProviderCategoryTypes =

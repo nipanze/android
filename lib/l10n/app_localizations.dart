@@ -6451,7 +6451,7 @@ abstract class AppLocalizations {
   /// No description provided for @companyEvidenceNotAdded.
   ///
   /// In en, this message translates to:
-  /// **'Not added'**
+  /// **'Not uploaded'**
   String get companyEvidenceNotAdded;
 
   /// No description provided for @companyEvidenceUploaded.
@@ -6495,6 +6495,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Replace'**
   String get companyEvidenceReplace;
+
+  /// No description provided for @companyDocumentRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get companyDocumentRemove;
+
+  /// No description provided for @providerEvidenceRemoveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this uploaded document? This cannot be undone.'**
+  String get providerEvidenceRemoveConfirm;
+
+  /// No description provided for @companyDocumentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload company documents'**
+  String get companyDocumentsTitle;
+
+  /// No description provided for @companyDocumentsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload business registration, trading licences, certificates, and other relevant company documents.'**
+  String get companyDocumentsSubtitle;
+
+  /// No description provided for @companyDocumentTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Document type'**
+  String get companyDocumentTypeLabel;
+
+  /// No description provided for @companyDocumentTypeCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get companyDocumentTypeCertificate;
+
+  /// No description provided for @companyDocumentTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get companyDocumentTypeOther;
 
   /// No description provided for @companyEvidenceReadError.
   ///

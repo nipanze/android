@@ -3635,7 +3635,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vous pouvez enregistrer maintenant et ajouter des justificatifs plus tard. JPG, PNG ou PDF, 5 Mo maximum chacun.';
 
   @override
-  String get companyEvidenceNotAdded => 'Non ajouté';
+  String get companyEvidenceNotAdded => 'Non téléversé';
 
   @override
   String get companyEvidenceUploaded => 'Envoyé';
@@ -3657,6 +3657,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get companyEvidenceReplace => 'Remplacer';
+
+  @override
+  String get companyDocumentRemove => 'Supprimer';
+
+  @override
+  String get providerEvidenceRemoveConfirm =>
+      'Supprimer ce document téléversé ? Cette action est irréversible.';
+
+  @override
+  String get companyDocumentsTitle =>
+      'Téléverser les documents de l’entreprise';
+
+  @override
+  String get companyDocumentsSubtitle =>
+      'Téléversez l’enregistrement commercial, les licences, les certificats et tout autre document pertinent de l’entreprise.';
+
+  @override
+  String get companyDocumentTypeLabel => 'Type de document';
+
+  @override
+  String get companyDocumentTypeCertificate => 'Certificat';
+
+  @override
+  String get companyDocumentTypeOther => 'Autre';
 
   @override
   String get companyEvidenceReadError =>

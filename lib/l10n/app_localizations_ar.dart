@@ -3585,7 +3585,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'يمكنك الحفظ الآن وإضافة الإثبات لاحقًا. JPG أو PNG أو PDF، بحد أقصى 5 ميغابايت لكل ملف.';
 
   @override
-  String get companyEvidenceNotAdded => 'لم تتم الإضافة';
+  String get companyEvidenceNotAdded => 'لم يتم تحميله';
 
   @override
   String get companyEvidenceUploaded => 'تم الرفع';
@@ -3607,6 +3607,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get companyEvidenceReplace => 'استبدال';
+
+  @override
+  String get companyDocumentRemove => 'إزالة';
+
+  @override
+  String get providerEvidenceRemoveConfirm =>
+      'هل تريد إزالة هذا المستند المرفوع؟ لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get companyDocumentsTitle => 'تحميل مستندات الشركة';
+
+  @override
+  String get companyDocumentsSubtitle =>
+      'حمّل تسجيل النشاط التجاري والتراخيص والشهادات ومستندات الشركة الأخرى ذات الصلة.';
+
+  @override
+  String get companyDocumentTypeLabel => 'نوع المستند';
+
+  @override
+  String get companyDocumentTypeCertificate => 'شهادة';
+
+  @override
+  String get companyDocumentTypeOther => 'أخرى';
 
   @override
   String get companyEvidenceReadError =>

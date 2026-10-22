@@ -39,6 +39,14 @@ abstract class IProviderRepository {
     required String documentType,
     required String filePath,
   });
+  Future<String> saveCompanyDocument({
+    required String categorySlug,
+    required String documentType,
+    required String filePath,
+    required String fileName,
+    String? submissionId,
+  });
+  Future<void> removeCompanyDocument(String submissionId);
   Future<List<Map<String, dynamic>>> getCompanyVerificationRequirements({
     required String categorySlug,
     required List<String> serviceSlugs,
@@ -97,6 +105,11 @@ abstract class IProviderRepository {
     required String roleSlug,
     required String qualificationSlug,
     required String evidenceObjectPath,
+  });
+  Future<void> removeRoleQualificationEvidence({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
   });
   Future<List<ProviderOpportunity>> getProviderOpportunities();
   Future<List<ProviderServiceRole>> getServiceRoles({

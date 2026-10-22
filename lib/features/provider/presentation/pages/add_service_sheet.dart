@@ -1225,10 +1225,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           profile),
                                               onSave: _saveCompanyDetails,
                                             )
-                                            : _step == 2
-                                                ? _KindStepView(
-                                                    role:
-                                                        _categoryRoles.firstWhere(
+                                          : _step == 2
+                                              ? _KindStepView(
+                                                  role:
+                                                      _categoryRoles.firstWhere(
                                                     (r) =>
                                                         r.slug ==
                                                         _selectedRoles.elementAt(
@@ -1266,6 +1266,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                   .contains(
                                                                       r.slug))
                                                           .toList(),
+                                                      existingCapabilities: widget
+                                                          .existingCapabilities,
                                                       qualificationsByRole:
                                                           _qualificationsByRole,
                                                       yearsExperienceByRole:
@@ -2332,14 +2334,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                       Expanded(
                         child: Text(
                           '${l10n.providerTypeOfferingAs} ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                         ),
                       ),
                       TextButton(
@@ -2387,9 +2387,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                       Expanded(
                         child: Text(
                           notice,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                         ),
                       ),
                     ],
@@ -3181,8 +3184,7 @@ class _KindStepViewState extends State<_KindStepView> {
                       widget.selectedKinds.isEmpty
                           ? 'Show employers what you do best—pick the specialties that fit you.'
                           : 'Great picks! These specialties help the right employers find you.',
-                      style:
-                          TextStyle(fontSize: 11, color: text2, height: 1.3),
+                      style: TextStyle(fontSize: 11, color: text2, height: 1.3),
                     ),
                   ),
                 ],
@@ -3234,6 +3236,7 @@ class _KindStepViewState extends State<_KindStepView> {
 class _QualificationsStepView extends StatefulWidget {
   const _QualificationsStepView({
     required this.roles,
+    required this.existingCapabilities,
     required this.qualificationsByRole,
     required this.yearsExperienceByRole,
     required this.availabilityByRole,
@@ -3247,6 +3250,7 @@ class _QualificationsStepView extends StatefulWidget {
   });
 
   final List<ProviderServiceRole> roles;
+  final List<ProviderCapability> existingCapabilities;
   final Map<String, Set<String>> qualificationsByRole;
   final Map<String, String> yearsExperienceByRole;
   final Map<String, String> availabilityByRole;
@@ -3300,57 +3304,17 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
       '$roleSlug::$qualificationSlug';
 
   Future<void> _pickQualificationEvidence({
-    (ProviderServiceRole, ProviderRoleQualification)? target,
+    required (ProviderServiceRole, ProviderRoleQualification) target,
   }) async {
-    final evidenceQualifications = target == null
-        ? <(ProviderServiceRole, ProviderRoleQualification)>[]
-        : <(ProviderServiceRole, ProviderRoleQualification)>[target];
-    if (target == null) {
-      for (final role in widget.roles) {
-        final checked =
-            widget.qualificationsByRole[role.slug] ?? const <String>{};
-        for (final qualification in role.qualifications) {
-          if (qualification.isEvidence && checked.contains(qualification.slug)) {
-            evidenceQualifications.add((role, qualification));
-          }
-        }
-      }
-    }
-    if (evidenceQualifications.isEmpty) {
-      for (final role in widget.roles) {
-        for (final qualification in role.qualifications) {
-          if (qualification.isEvidence) {
-            evidenceQualifications.add((role, qualification));
-          }
-        }
-      }
-    }
-    if (evidenceQualifications.isEmpty) {
+    final (role, qualification) = target;
+    if (!qualification.isEvidence) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text(
-                'There are no proof-enabled qualifications for these roles.')),
+            content:
+                Text('This qualification does not accept document evidence.')),
       );
       return;
     }
-
-    final selectedProof = evidenceQualifications.length == 1
-        ? evidenceQualifications.single
-        : await showDialog<(ProviderServiceRole, ProviderRoleQualification)>(
-            context: context,
-            builder: (dialogContext) => SimpleDialog(
-              title: const Text('What does this file prove?'),
-              children: [
-                for (final item in evidenceQualifications)
-                  SimpleDialogOption(
-                    onPressed: () => Navigator.pop(dialogContext, item),
-                    child: Text('${item.$1.name} · ${item.$2.name}'),
-                  ),
-              ],
-            ),
-          );
-    if (selectedProof == null || !mounted) return;
-    final (role, qualification) = selectedProof;
 
     try {
       const evidenceFiles = XTypeGroup(
@@ -3457,6 +3421,40 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   final roleQuals = widget.qualificationsByRole
                       .putIfAbsent(role.slug, () => {});
                   final isChecked = roleQuals.contains(qual.slug);
+                  final evidenceDraft = widget.evidenceDrafts
+                      .where((draft) =>
+                          draft.roleSlug == role.slug &&
+                          draft.qualificationSlug == qual.slug)
+                      .firstOrNull;
+                  final capabilitySlug =
+                      role.capabilitySlug ?? 'work_${role.slug}';
+                  final existingCapability = widget.existingCapabilities
+                      .where((capability) =>
+                          capability.capabilitySlug == capabilitySlug)
+                      .firstOrNull;
+                  final existingClaim = existingCapability
+                      ?.roleQualificationClaims
+                      .where((claim) =>
+                          claim['role_slug'] == role.slug &&
+                          claim['qualification_slug'] == qual.slug)
+                      .firstOrNull;
+                  final existingStatus = existingClaim?['status']?.toString();
+                  final evidenceStatus = evidenceDraft != null
+                      ? AppLocalizations.of(context)!.companyEvidenceUploaded
+                      : switch (existingStatus) {
+                          'pending_review' => AppLocalizations.of(context)!
+                              .companyVerificationPending,
+                          'verified' => AppLocalizations.of(context)!
+                              .companyEvidenceApproved,
+                          'rejected' => AppLocalizations.of(context)!
+                              .companyEvidenceRejected,
+                          'expired' => AppLocalizations.of(context)!
+                              .companyEvidenceExpired,
+                          _ => AppLocalizations.of(context)!
+                              .companyEvidenceNotAdded,
+                        };
+                  final isExistingEvidenceApproved =
+                      existingStatus == 'verified' && evidenceDraft == null;
 
                   final isDark =
                       Theme.of(context).brightness == Brightness.dark;
@@ -3505,30 +3503,58 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  qual.name,
-                                  style: const TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      qual.name,
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    if (qual.isEvidence)
+                                      Text(
+                                        evidenceStatus,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: evidenceDraft != null
+                                              ? AppColors.proPurple
+                                              : existingStatus == 'rejected'
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .error
+                                                  : text2,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               if (qual.isEvidence)
                                 IconButton(
                                   tooltip: 'Upload proof for ${qual.name}',
                                   visualDensity: VisualDensity.compact,
-                                  onPressed: () =>
-                                      _pickQualificationEvidence(
-                                    target: (role, qual),
+                                  onPressed: isExistingEvidenceApproved
+                                      ? null
+                                      : () => _pickQualificationEvidence(
+                                            target: (role, qual),
+                                          ),
+                                  icon: const Icon(
+                                    Icons.file_upload_outlined,
+                                    color: AppColors.proPurple,
+                                    size: 20,
                                   ),
-                                  icon: Icon(
-                                    widget.evidenceDrafts.any(
-                                      (draft) =>
-                                          draft.roleSlug == role.slug &&
-                                          draft.qualificationSlug == qual.slug,
-                                    )
-                                        ? Icons.edit_outlined
-                                        : Icons.file_upload_outlined,
+                                ),
+                              if (evidenceDraft != null)
+                                IconButton(
+                                  tooltip: AppLocalizations.of(context)!
+                                      .companyDocumentRemove,
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () => setState(() {
+                                    widget.evidenceDrafts.remove(evidenceDraft);
+                                  }),
+                                  icon: const Icon(
+                                    Icons.delete_outline,
                                     color: AppColors.proPurple,
                                     size: 20,
                                   ),
@@ -3546,71 +3572,6 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 }),
               const SizedBox(height: 16),
             ],
-
-            // Dashed upload card for qualification documents, matching Screen F.
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _pickQualificationEvidence,
-                borderRadius: BorderRadius.circular(10),
-                child: CustomPaint(
-                  painter: _DashedRoundedBorderPainter(
-                    color: AppColors.proPurple.withValues(alpha: 0.5),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 11),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.proPurple.withValues(alpha: 0.035),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.file_upload_outlined,
-                            color: AppColors.proPurple, size: 23),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.evidenceDrafts.isEmpty
-                                    ? 'Upload licence or certificates'
-                                    : 'Add or replace proof (${widget.evidenceDrafts.length})',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'JPG, PNG or PDF, up to 5 MB. Reviewed by Nipanze. Approved proofs earn a badge.',
-                                style: TextStyle(fontSize: 10, color: text2),
-                              ),
-                              for (final draft in widget.evidenceDrafts)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    '${draft.fileName} · ${draft.qualificationSlug.replaceAll('_', ' ')}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.proPurple,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
 
             // Years of experience
             const Text(
@@ -3819,36 +3780,6 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
       ],
     );
   }
-}
-
-class _DashedRoundedBorderPainter extends CustomPainter {
-  const _DashedRoundedBorderPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-          rect.deflate(0.75), const Radius.circular(10)));
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final end = (distance + 5).clamp(0.0, metric.length).toDouble();
-        canvas.drawPath(metric.extractPath(distance, end), paint);
-        distance = end + 3.5;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedRoundedBorderPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 // ---------------------------------------------------------------------------

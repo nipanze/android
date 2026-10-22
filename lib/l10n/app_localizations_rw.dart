@@ -3602,7 +3602,7 @@ class AppLocalizationsRw extends AppLocalizations {
       'Ushobora kubika ubu ukazongeraho ibimenyetso nyuma. JPG, PNG cyangwa PDF, bitarenze MB 5 kuri buri kimwe.';
 
   @override
-  String get companyEvidenceNotAdded => 'Ntabwo cyongeweho';
+  String get companyEvidenceNotAdded => 'Nticyoherejwe';
 
   @override
   String get companyEvidenceUploaded => 'Cyoherejwe';
@@ -3624,6 +3624,29 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get companyEvidenceReplace => 'Simbuza';
+
+  @override
+  String get companyDocumentRemove => 'Kuraho';
+
+  @override
+  String get providerEvidenceRemoveConfirm =>
+      'Ushaka gukuraho iyi nyandiko wohereje? Ntushobora kubisubiza inyuma.';
+
+  @override
+  String get companyDocumentsTitle => 'Ohereza inyandiko z’ikigo';
+
+  @override
+  String get companyDocumentsSubtitle =>
+      'Ohereza inyandiko z’iyandikisha ry’ubucuruzi, impushya, ibyemezo n’izindi nyandiko zijyanye n’ikigo.';
+
+  @override
+  String get companyDocumentTypeLabel => 'Ubwoko bw’inyandiko';
+
+  @override
+  String get companyDocumentTypeCertificate => 'Icyemezo';
+
+  @override
+  String get companyDocumentTypeOther => 'Ibindi';
 
   @override
   String get companyEvidenceReadError =>

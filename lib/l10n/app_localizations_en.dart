@@ -3585,7 +3585,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can save now and add proof later. JPG, PNG, or PDF, up to 5 MB each.';
 
   @override
-  String get companyEvidenceNotAdded => 'Not added';
+  String get companyEvidenceNotAdded => 'Not uploaded';
 
   @override
   String get companyEvidenceUploaded => 'Uploaded';
@@ -3607,6 +3607,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get companyEvidenceReplace => 'Replace';
+
+  @override
+  String get companyDocumentRemove => 'Remove';
+
+  @override
+  String get providerEvidenceRemoveConfirm =>
+      'Remove this uploaded document? This cannot be undone.';
+
+  @override
+  String get companyDocumentsTitle => 'Upload company documents';
+
+  @override
+  String get companyDocumentsSubtitle =>
+      'Upload business registration, trading licences, certificates, and other relevant company documents.';
+
+  @override
+  String get companyDocumentTypeLabel => 'Document type';
+
+  @override
+  String get companyDocumentTypeCertificate => 'Certificate';
+
+  @override
+  String get companyDocumentTypeOther => 'Other';
 
   @override
   String get companyEvidenceReadError =>

@@ -3598,7 +3598,7 @@ class AppLocalizationsSw extends AppLocalizations {
       'Unaweza kuhifadhi sasa na kuongeza ushahidi baadaye. JPG, PNG au PDF, hadi MB 5 kila moja.';
 
   @override
-  String get companyEvidenceNotAdded => 'Haijaongezwa';
+  String get companyEvidenceNotAdded => 'Haijapakiwa';
 
   @override
   String get companyEvidenceUploaded => 'Imepakiwa';
@@ -3620,6 +3620,29 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get companyEvidenceReplace => 'Badilisha';
+
+  @override
+  String get companyDocumentRemove => 'Ondoa';
+
+  @override
+  String get providerEvidenceRemoveConfirm =>
+      'Ondoa hati hii iliyopakiwa? Huwezi kutendua hatua hii.';
+
+  @override
+  String get companyDocumentsTitle => 'Pakia nyaraka za kampuni';
+
+  @override
+  String get companyDocumentsSubtitle =>
+      'Pakia usajili wa biashara, leseni za biashara, vyeti na nyaraka nyingine muhimu za kampuni.';
+
+  @override
+  String get companyDocumentTypeLabel => 'Aina ya hati';
+
+  @override
+  String get companyDocumentTypeCertificate => 'Cheti';
+
+  @override
+  String get companyDocumentTypeOther => 'Nyingine';
 
   @override
   String get companyEvidenceReadError =>

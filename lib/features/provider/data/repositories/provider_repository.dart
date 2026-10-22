@@ -181,7 +181,7 @@ class ProviderRepository implements IProviderRepository {
       final rows = await _client
           .from(TableNames.providerCompanyVerificationSubmissions)
           .select(
-              'document_type, status, reject_reason, reviewed_at, created_at')
+              'id, document_type, file_name, file_path, status, reject_reason, reviewed_at, created_at')
           .eq('category_slug', categorySlug);
       return (rows as List)
           .whereType<Map>()
@@ -210,10 +210,13 @@ class ProviderRepository implements IProviderRepository {
     if (!allowed.contains(mimeType.toLowerCase())) {
       throw const FormatException('Choose a JPG, PNG, or PDF file.');
     }
-    if (!const {'business_registration', 'business_licence'}
-        .contains(documentType)) {
-      throw const FormatException(
-          'Company verification document type is invalid.');
+    if (!const {
+      'business_registration',
+      'business_licence',
+      'certificate',
+      'other'
+    }.contains(documentType)) {
+      throw const FormatException('Company document type is invalid.');
     }
     final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
     final path = 'evidence/$uid/$categorySlug/company/$documentType/'
@@ -244,6 +247,40 @@ class ProviderRepository implements IProviderRepository {
       });
     } catch (e) {
       await _cleanupUnrecordedEvidence(filePath);
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<String> saveCompanyDocument({
+    required String categorySlug,
+    required String documentType,
+    required String filePath,
+    required String fileName,
+    String? submissionId,
+  }) async {
+    try {
+      final result =
+          await _client.rpc(RpcNames.saveProviderCompanyDocument, params: {
+        'p_category_slug': categorySlug,
+        'p_document_type': documentType,
+        'p_file_path': filePath,
+        'p_file_name': fileName,
+        'p_submission_id': submissionId,
+      });
+      return result as String;
+    } catch (e) {
+      await _cleanupUnrecordedEvidence(filePath);
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> removeCompanyDocument(String submissionId) async {
+    try {
+      await _client.rpc(RpcNames.deleteProviderCompanyDocument,
+          params: {'p_submission_id': submissionId});
+    } catch (e) {
       throw parseSupabaseError(e);
     }
   }
@@ -742,6 +779,25 @@ class ProviderRepository implements IProviderRepository {
       return result as String;
     } catch (e) {
       await _cleanupUnrecordedEvidence(evidenceObjectPath);
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> removeRoleQualificationEvidence({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
+  }) async {
+    try {
+      await _client
+          .rpc(RpcNames.removeProviderRoleQualificationEvidence, params: {
+        'p_provider_capability_id': providerCapabilityId,
+        'p_role_slug': roleSlug,
+        'p_qualification_slug': qualificationSlug,
+      });
+      _clearCache();
+    } catch (e) {
       throw parseSupabaseError(e);
     }
   }

@@ -72,7 +72,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
     final companyRows = List<Map<String, dynamic>>.from(await _client
         .from(TableNames.providerCompanyVerificationSubmissions)
         .select(
-            'user_id, category_slug, document_type, file_path, status, reject_reason, created_at')
+            'id, user_id, category_slug, document_type, file_name, file_path, status, reject_reason, created_at')
         .eq('status', 'pending')
         .order('created_at'));
     final companyUserIds =
@@ -215,7 +215,7 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
       return {
         ...row,
         'kind': 'company',
-        'id': '$userId|$categorySlug|${row['document_type']}',
+        'file_url': row['file_path'],
         'provider_name': profilesById[userId]?['full_name'] ?? '',
         'category_name': categoryNames[categorySlug] ?? categorySlug,
         'company': company,
@@ -310,11 +310,8 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
     if (!approve && reason == null) return;
     setState(() => _busy.add(id));
     try {
-      await _client
-          .rpc(RpcNames.adminReviewProviderCompanyVerification, params: {
-        'p_user_id': item['user_id'],
-        'p_category_slug': item['category_slug'],
-        'p_document_type': item['document_type'],
+      await _client.rpc(RpcNames.adminReviewProviderCompanyDocument, params: {
+        'p_submission_id': item['id'],
         'p_action': approve ? 'approve' : 'reject',
         'p_reject_reason': reason,
       });
@@ -399,14 +396,23 @@ class _ProviderEvidenceReviewTabState extends State<ProviderEvidenceReviewTab> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            entry.value.first['document_type'] ==
-                                    'business_registration'
-                                ? l10n.companyVerificationRegistration
-                                : l10n.companyVerificationLicence,
+                            switch (entry.value.first['document_type']) {
+                              'business_registration' =>
+                                l10n.companyVerificationRegistration,
+                              'business_licence' =>
+                                l10n.companyVerificationLicence,
+                              'certificate' =>
+                                l10n.companyDocumentTypeCertificate,
+                              _ => l10n.companyDocumentTypeOther,
+                            },
                             style: Theme.of(context)
                                 .textTheme
                                 .titleSmall
                                 ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            entry.value.first['file_name']?.toString() ?? '',
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                           Text(
                               '${entry.value.first['provider_name']} · ${entry.value.first['category_name']}',
