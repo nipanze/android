@@ -2224,7 +2224,7 @@
             {
               "id": "cosmetology_certificate",
               "name": "Cosmetology certificate",
-              "is_evidence": false
+              "is_evidence": true
             },
             {
               "id": "portfolio",
@@ -2239,7 +2239,7 @@
             {
               "id": "hygiene_certification",
               "name": "Hygiene certification",
-              "is_evidence": false
+              "is_evidence": true
             }
           ],
           "is_active": true,
@@ -2271,7 +2271,7 @@
             {
               "id": "cosmetology_certificate",
               "name": "Cosmetology certificate",
-              "is_evidence": false
+              "is_evidence": true
             },
             {
               "id": "portfolio",
@@ -2281,7 +2281,7 @@
             {
               "id": "salon_licence",
               "name": "Salon licence",
-              "is_evidence": false
+              "is_evidence": true
             }
           ],
           "is_active": true,

@@ -64,10 +64,11 @@ for that capability.
 Apply SQL in this order after the base schema/catalog is present:
 
 1. `patch_provider_services_work_profiles.sql`
-2. `patch_provider_category_type.sql`
-3. `patch_provider_type_verification_matrix.sql`
-4. Reapply `patch_provider_capability_evidence_security.sql`
-5. Reapply `patch_company_provider_path.sql`
+2. `patch_role_qualification_evidence_flags.sql`
+3. `patch_provider_category_type.sql`
+4. `patch_provider_type_verification_matrix.sql`
+5. Reapply `patch_provider_capability_evidence_security.sql`
+6. Reapply `patch_company_provider_path.sql`
 
 The last two reapplications install the provider-type-aware evidence and
 company-save checks. Confirm the app is deployed with matching provider service

@@ -909,7 +909,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'hygiene_certification',
             name: 'Hygiene certification',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
