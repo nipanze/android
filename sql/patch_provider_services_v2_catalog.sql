@@ -802,9 +802,15 @@ begin
   from public.need_capabilities nc
   where nc.slug = new.capability_slug;
 
+  -- Work profiles are stored one role per provider_capabilities row by the
+  -- app (role_id + qualification_ids at the metadata root). Keep accepting
+  -- the older/multi-role `roles` array shape as well so existing clients and
+  -- rows can still be synchronized into individual claims.
   v_roles := case
     when jsonb_typeof(coalesce(new.metadata, '{}'::jsonb)->'roles') = 'array'
       then coalesce(new.metadata, '{}'::jsonb)->'roles'
+    when jsonb_typeof(coalesce(new.metadata, '{}'::jsonb)->'role_id') = 'string'
+      then jsonb_build_array(coalesce(new.metadata, '{}'::jsonb))
     else '[]'::jsonb
   end;
 
