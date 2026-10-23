@@ -123,9 +123,8 @@ class ProviderServiceRole {
       ],
       qualifications: [
         ProviderRoleQualification(
-            slug: 'comptia_a_n', name: 'CompTIA A+ / N+', isEvidence: false),
-        ProviderRoleQualification(
-            slug: 'ccna', name: 'CCNA', isEvidence: false),
+            slug: 'comptia_a_n', name: 'CompTIA A+ / N+', isEvidence: true),
+        ProviderRoleQualification(slug: 'ccna', name: 'CCNA', isEvidence: true),
         ProviderRoleQualification(
             slug: 'own_toolkit', name: 'Own toolkit', isEvidence: false),
         ProviderRoleQualification(
@@ -179,7 +178,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'agile_scrum_certified',
             name: 'Agile / Scrum certified',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'led_3_projects', name: 'Led 3+ projects', isEvidence: false),
         ProviderRoleQualification(
@@ -234,7 +233,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'google_ads_meta_certified',
             name: 'Google Ads / Meta certified',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'case_studies_or_portfolio',
             name: 'Case studies or portfolio',
@@ -341,7 +340,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'practising_certificate',
             name: 'Practising certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: '3_years_experience',
             name: '3+ years experience',
@@ -365,7 +364,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'bar_admission_practising_certificate',
             name: 'Bar admission / practising certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(slug: 'llb', name: 'LLB', isEvidence: false),
         ProviderRoleQualification(
             slug: '3_years_experience',
@@ -394,7 +393,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'registered_with_engineers_board',
             name: 'Registered with engineers board',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'site_experience',
             name: 'Site experience',
@@ -417,7 +416,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'registered_architect',
             name: 'Registered architect',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'portfolio', name: 'Portfolio', isEvidence: false),
         ProviderRoleQualification(
@@ -546,11 +545,11 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'teaching_certificate_degree',
             name: 'Teaching certificate / degree',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'registered_with_teaching_board',
             name: 'Registered with teaching board',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: '2_years_teaching',
             name: '2+ years teaching',
@@ -580,7 +579,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'trade_certificate',
             name: 'Trade certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'trainer_of_trainers_tot',
             name: 'Trainer-of-trainers (ToT)',
@@ -616,7 +615,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'counselling_certificate',
             name: 'Counselling certificate',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -661,7 +660,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'event_planning_certificate',
             name: 'Event planning certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'portfolio_of_5_events',
             name: 'Portfolio of 5+ events',
@@ -741,7 +740,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'food_handler_certificate',
             name: 'Food handler certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'health_permit', name: 'Health permit', isEvidence: false),
         ProviderRoleQualification(
@@ -797,7 +796,7 @@ class ProviderServiceRole {
             name: 'Own camera / drone kit',
             isEvidence: false),
         ProviderRoleQualification(
-            slug: 'drone_licence', name: 'Drone licence', isEvidence: false),
+            slug: 'drone_licence', name: 'Drone licence', isEvidence: true),
         ProviderRoleQualification(
             slug: 'editing_skills', name: 'Editing skills', isEvidence: false),
       ],
@@ -978,7 +977,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'business_licence',
             name: 'Business licence',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -1001,7 +1000,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'registered_with_engineers_contractors_board',
             name: 'Registered with engineers/contractors board',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: '5_years_on_site',
             name: '5+ years on site',
@@ -1112,7 +1111,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'registered_surveyor',
             name: 'Registered surveyor',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'degree_diploma',
             name: 'Degree / diploma',
@@ -1141,11 +1140,11 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'electrical_licence',
             name: 'Electrical licence',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'solar_installer_certificate',
             name: 'Solar installer certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'safety_training',
             name: 'Safety training',
@@ -1172,7 +1171,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'water_technician_certificate',
             name: 'Water technician certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'drilling_permit',
             name: 'Drilling permit',
@@ -1201,7 +1200,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'registered_engineer',
             name: 'Registered engineer',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'design_software_skills',
             name: 'Design software skills',
@@ -1258,7 +1257,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'defensive_driving_certificate',
             name: 'Defensive driving certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'own_vehicle', name: 'Own vehicle', isEvidence: false),
       ],
@@ -1287,7 +1286,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'transport_licence',
             name: 'Transport licence',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -1311,7 +1310,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'customs_clearing_licence',
             name: 'Customs clearing licence',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -1397,7 +1396,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'mechanic_trade_certificate',
             name: 'Mechanic trade certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'own_tools', name: 'Own tools', isEvidence: false),
         ProviderRoleQualification(
@@ -1459,7 +1458,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'safety_certification',
             name: 'Safety certification',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -1529,7 +1528,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'veterinary_licence',
             name: 'Veterinary licence',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'diploma_degree',
             name: 'Diploma / degree',
@@ -1537,7 +1536,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'vaccination_certification',
             name: 'Vaccination certification',
-            isEvidence: false),
+            isEvidence: true),
       ],
     ),
     ProviderServiceRole(
@@ -1556,13 +1555,11 @@ class ProviderServiceRole {
       ],
       qualifications: [
         ProviderRoleQualification(
-            slug: 'tractor_licence',
-            name: 'Tractor licence',
-            isEvidence: false),
+            slug: 'tractor_licence', name: 'Tractor licence', isEvidence: true),
         ProviderRoleQualification(
             slug: 'pesticide_handling_certificate',
             name: 'Pesticide handling certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'experience_1_year',
             name: 'Experience 1+ year',
@@ -1643,7 +1640,7 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'customs_clearing_licence',
             name: 'Customs clearing licence',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'logistics_experience',
             name: 'Logistics experience',
@@ -1668,11 +1665,11 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'iata_certification',
             name: 'IATA certification',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'travel_agency_licence',
             name: 'Travel agency licence',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: '2_years_experience',
             name: '2+ years experience',
@@ -1696,11 +1693,11 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'tourism_board_guide_licence',
             name: 'Tourism board guide licence',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'first_aid_certificate',
             name: 'First aid certificate',
-            isEvidence: false),
+            isEvidence: true),
         ProviderRoleQualification(
             slug: 'languages_spoken',
             name: 'Languages spoken',
@@ -1726,9 +1723,7 @@ class ProviderServiceRole {
             name: 'Valid driving licence (class)',
             isEvidence: false),
         ProviderRoleQualification(
-            slug: 'tourism_licence',
-            name: 'Tourism licence',
-            isEvidence: false),
+            slug: 'tourism_licence', name: 'Tourism licence', isEvidence: true),
         ProviderRoleQualification(
             slug: 'clean_driving_record',
             name: 'Clean driving record',

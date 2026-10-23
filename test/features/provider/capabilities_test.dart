@@ -59,6 +59,30 @@ void main() {
     expect(proofQualifications.every((item) => item.isEvidence), isTrue);
   });
 
+  test('IT Technician certification qualifications accept proof uploads', () {
+    final role = ProviderServiceRole.defaults
+        .singleWhere((item) => item.slug == 'it_technician');
+    final qualifications = role.qualifications
+        .where((item) => item.slug == 'comptia_a_n' || item.slug == 'ccna')
+        .toList();
+
+    expect(qualifications, hasLength(2));
+    expect(qualifications.every((item) => item.isEvidence), isTrue);
+    expect(
+      role.qualifications
+          .singleWhere((item) => item.slug == 'own_toolkit')
+          .isEvidence,
+      isFalse,
+    );
+    expect(
+      ProviderServiceRole.defaults
+          .expand((role) => role.qualifications)
+          .where((qualification) => qualification.isEvidence)
+          .length,
+      44,
+    );
+  });
+
   setUp(() {
     mockRepo = MockProviderRepository();
     when(() => mockRepo.capabilityProfilesEnabled())
