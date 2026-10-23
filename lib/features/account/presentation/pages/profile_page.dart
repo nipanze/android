@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -15,6 +15,8 @@ import '../../../account/data/profile_repository.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../kyc/presentation/cubit/kyc_cubit.dart';
+import '../../../kyc/presentation/widgets/kyc_required_documents_section.dart';
 import '../../../kyc/presentation/widgets/marketplace_access_widget.dart';
 import '../../../provider/presentation/widgets/additional_verification_section.dart';
 
@@ -25,7 +27,10 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<ProfileCubit>()..load(),
-      child: const _ProfileView(),
+      child: BlocProvider(
+        create: (_) => getIt<KycCubit>()..load(),
+        child: const _ProfileView(),
+      ),
     );
   }
 }
@@ -533,60 +538,71 @@ class _ProfileViewState extends State<_ProfileView> {
                                 : AppColors.borderLight),
                       ),
                     ),
-                    child: InkWell(
-                      onTap: () => context.push(AppRoutes.kyc),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                        child: Row(
-                          children: [
-                            Icon(
-                              isKycApproved
-                                  ? Icons.verified_rounded
-                                  : Icons.verified_user_outlined,
-                              color: isKycApproved
-                                  ? const Color(0xFF4ADE80)
-                                  : AppColors.accent,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isKycApproved
-                                        ? 'KYC Approved'
-                                        : 'Identity Verification',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isKycApproved
+                                ? Icons.verified_rounded
+                                : Icons.verified_user_outlined,
+                            color: isKycApproved
+                                ? const Color(0xFF4ADE80)
+                                : AppColors.accent,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isKycApproved
+                                      ? 'KYC Approved'
+                                      : 'Identity Verification',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  isKycApproved
+                                      ? 'Identity verified. You can now create listings.'
+                                      : (kycStatus == 'pending'
+                                          ? 'Your identity verification is being reviewed.'
+                                          : kycStatus == 'rejected'
+                                              ? 'Verification needs attention. Review the documents below.'
+                                              : 'Upload ID document for full access.'),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? AppColors.text2Dark
+                                        : AppColors.text2Light,
+                                  ),
+                                ),
+                                if (isKycApproved &&
+                                    loadedState?.profile.kycExpiresAt != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      'Expires ${DateFormat('dd/MM/yyyy').format(loadedState!.profile.kycExpiresAt!)}',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? AppColors.text3Dark
+                                            : AppColors.text3Light,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    isKycApproved
-                                        ? 'Identity verified. You can now create listings.'
-                                        : (kycStatus == 'pending'
-                                            ? 'Your identity verification is being reviewed.'
-                                            : kycStatus == 'rejected'
-                                                ? 'Verification needs attention. Tap to review.'
-                                                : 'Upload ID document for full access.'),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? AppColors.text2Dark
-                                          : AppColors.text2Light,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
-                            _buildKycBadge(context, kycStatus),
-                          ],
-                        ),
+                          ),
+                          _buildKycBadge(context, kycStatus),
+                        ],
                       ),
                     ),
                   ),
@@ -600,6 +616,10 @@ class _ProfileViewState extends State<_ProfileView> {
                             ? KycStatus.approved
                             : KycStatus.notSubmitted,
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    KycRequiredDocumentsSection(
+                      hasProfilePhoto: avatarUrl?.isNotEmpty == true,
                     ),
                     const SizedBox(height: 16),
                   ],

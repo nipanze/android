@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/user_avatar.dart';
-import '../../../account/data/profile_repository.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../provider/presentation/widgets/additional_verification_section.dart';
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
+import '../widgets/kyc_required_documents_section.dart';
 import '../widgets/marketplace_access_widget.dart';
 
 class KycPage extends StatelessWidget {
@@ -47,17 +44,6 @@ class _KycView extends StatelessWidget {
           if (state is KycLoaded && state.kyc != null) {
             context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
           }
-          if (state is KycError && !isNetworkErrorMessage(state.message)) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppColors.danger,
-              action: SnackBarAction(
-                label: l10n.kycDismiss,
-                textColor: Colors.white,
-                onPressed: () => context.read<KycCubit>().clearError(),
-              ),
-            ));
-          }
         },
         builder: (context, state) {
           if (state is KycLoading || state is KycInitial) {
@@ -76,25 +62,11 @@ class _KycView extends StatelessWidget {
           final user = authState is AuthAuthenticated ? authState.user : null;
           final hasProfilePhoto = user?.avatarUrl?.isNotEmpty == true;
 
-          final isUploading = state is KycUploading;
-          final isSubmitting = state is KycSubmitting;
-          final uploadingDoc = isUploading ? state.docType : null;
-          final canSubmit = !isSubmitting &&
-              !isUploading &&
-              kyc?.allDocsUploaded == true &&
-              hasProfilePhoto;
-
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Status banner
-              _ProfilePictureSection(
-                onPick: () => _pickProfilePicture(context),
-                onRemove: () => _removeProfilePicture(context),
-              ),
-              const SizedBox(height: 20),
-
+              // Verification details remain available through this legacy route.
               _StatusBanner(kyc: kyc),
               const SizedBox(height: 24),
 
@@ -134,39 +106,6 @@ class _KycView extends StatelessWidget {
                 const SizedBox(height: 20),
               ],
 
-              // Already approved — show expiry
-              if (kyc?.isApproved == true) ...[
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.success.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.verified_rounded,
-                        color: AppColors.success, size: 20),
-                    const SizedBox(width: 12),
-                    Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l10n.kycIdentityVerified,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.success,
-                                  fontSize: 13)),
-                          if (kyc?.expiresAt != null)
-                            Text(
-                              l10n.kycExpires(_fmtDate(kyc!.expiresAt!)),
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                        ]),
-                  ]),
-                ),
-                const SizedBox(height: 16),
-              ],
-
               // Pending notice
               if (kyc?.isPending == true) ...[
                 Container(
@@ -201,309 +140,13 @@ class _KycView extends StatelessWidget {
               const AdditionalVerificationSection(),
               const SizedBox(height: 24),
 
-              // Document upload section
-              if (kyc?.isApproved != true) ...[
-                Text(l10n.kycRequiredDocs,
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.kycRequiredDocsSubtitle,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 14),
-
-                _DocUploadTile(
-                  docType: 'national_id_front',
-                  icon: Icons.badge_outlined,
-                  title: l10n.kycDocNationalIdFront,
-                  subtitle: l10n.kycDocNationalIdFrontSubtitle,
-                  uploadedLabel: kyc?.isPending == true
-                      ? l10n.kycDocUploadedUnderReview
-                      : l10n.kycDocUploadedTapReplace,
-                  uploadedUrl: kyc?.nationalIdFrontUrl,
-                  isUploading: uploadingDoc == 'national_id_front',
-                  enabled: !isSubmitting && kyc?.isPending != true,
-                  onPick: () => _pickAndUpload(context, 'national_id_front'),
-                ),
-
-                _DocUploadTile(
-                  docType: 'national_id_back',
-                  icon: Icons.badge_outlined,
-                  title: l10n.kycDocNationalIdBack,
-                  subtitle: l10n.kycDocNationalIdBackSubtitle,
-                  uploadedLabel: kyc?.isPending == true
-                      ? l10n.kycDocUploadedUnderReview
-                      : l10n.kycDocUploadedTapReplace,
-                  uploadedUrl: kyc?.nationalIdBackUrl,
-                  isUploading: uploadingDoc == 'national_id_back',
-                  enabled: !isSubmitting && kyc?.isPending != true,
-                  onPick: () => _pickAndUpload(context, 'national_id_back'),
-                ),
-
-                _DocUploadTile(
-                  docType: 'selfie',
-                  icon: Icons.face_outlined,
-                  title: l10n.kycDocSelfie,
-                  subtitle: l10n.kycDocSelfieSubtitle,
-                  uploadedLabel: kyc?.isPending == true
-                      ? l10n.kycDocUploadedUnderReview
-                      : l10n.kycDocUploadedTapReplace,
-                  uploadedUrl: kyc?.selfieUrl,
-                  isUploading: uploadingDoc == 'selfie',
-                  enabled: !isSubmitting && kyc?.isPending != true,
-                  onPick: () =>
-                      _pickAndUpload(context, 'selfie', preferCamera: true),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Privacy note
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.lock_outline_rounded,
-                        size: 14, color: AppColors.accent),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: Text(
-                      l10n.kycPrivacyNote,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.accent),
-                    )),
-                  ]),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Submit button — disabled until profile picture and all 3 docs uploaded
-                if (kyc?.isPending != true)
-                  ElevatedButton(
-                    onPressed: canSubmit
-                        ? () => context.read<KycCubit>().submit()
-                        : null,
-                    child: isSubmitting
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : Text(l10n.kycSubmitForReview),
-                  ),
-
-                // Hint shown when docs or profile photo are incomplete
-                if (!canSubmit && !isUploading)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      l10n.kycUploadAllDocs,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-              ],
+              KycRequiredDocumentsSection(
+                hasProfilePhoto: hasProfilePhoto,
+              ),
+              const SizedBox(height: 24),
             ]),
           );
         },
-      ),
-    );
-  }
-
-  Future<void> _pickAndUpload(
-    BuildContext context,
-    String docType, {
-    bool preferCamera = false,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final picker = ImagePicker();
-
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (_) => _SourcePicker(l10n: l10n),
-    );
-    if (source == null) return;
-
-    final picked = await picker.pickImage(
-      source: source,
-      imageQuality: 85,
-      maxWidth: 1920,
-    );
-    if (picked == null) return;
-
-    if (!context.mounted) return;
-    await context.read<KycCubit>().uploadDocument(picked, docType);
-  }
-
-  Future<void> _pickProfilePicture(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final picker = ImagePicker();
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (_) => _SourcePicker(l10n: l10n),
-    );
-    if (source == null) return;
-
-    final picked = await picker.pickImage(
-      source: source,
-      imageQuality: 85,
-      maxWidth: 800,
-      maxHeight: 800,
-    );
-    if (picked == null || !context.mounted) return;
-
-    try {
-      final bytes = await picked.readAsBytes();
-      final url = await getIt<ProfileRepository>().uploadAvatarBytes(
-        bytes,
-        picked.name.split('.').last,
-      );
-      await getIt<ProfileRepository>().updateProfile(avatarUrl: url);
-      if (!context.mounted) return;
-      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile picture updated.')),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      final message = userFacingErrorMessage(e);
-      if (isNetworkErrorMessage(message)) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not update profile picture: $message'),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-    }
-  }
-
-  Future<void> _removeProfilePicture(BuildContext context) async {
-    try {
-      await getIt<ProfileRepository>().updateProfile(clearAvatar: true);
-      if (!context.mounted) return;
-      context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile picture removed.')),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      final message = userFacingErrorMessage(e);
-      if (isNetworkErrorMessage(message)) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not remove profile picture: $message'),
-          backgroundColor: AppColors.danger,
-        ),
-      );
-    }
-  }
-
-  String _fmtDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-}
-
-class _ProfilePictureSection extends StatelessWidget {
-  const _ProfilePictureSection({
-    required this.onPick,
-    required this.onRemove,
-  });
-
-  final VoidCallback onPick;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final authState = context.watch<AuthBloc>().state;
-    final user = authState is AuthAuthenticated ? authState.user : null;
-    final hasPhoto = user?.avatarUrl?.isNotEmpty == true;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasPhoto
-              ? AppColors.success.withValues(alpha: 0.5)
-              : Theme.of(context).dividerColor,
-          width: hasPhoto ? 1.5 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          UserAvatar(
-            avatarUrl: user?.avatarUrl,
-            initials: user?.initials ?? 'U',
-            radius: 34,
-            showCameraBadge: true,
-            onTap: onPick,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      l10n.profilePicture,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: hasPhoto
-                            ? AppColors.success.withValues(alpha: 0.12)
-                            : AppColors.accent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        hasPhoto ? 'Uploaded' : 'Required',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              hasPhoto ? AppColors.success : AppColors.accent,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.profilePictureKycNote,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'Profile picture options',
-            onSelected: (value) {
-              if (value == 'pick') onPick();
-              if (value == 'remove') onRemove();
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'pick',
-                child: Text('Upload photo'),
-              ),
-              if (hasPhoto)
-                const PopupMenuItem(
-                  value: 'remove',
-                  child: Text('Remove photo'),
-                ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -574,147 +217,6 @@ class _StatusBanner extends StatelessWidget {
             Text(description, style: Theme.of(context).textTheme.bodySmall),
           ],
         )),
-      ]),
-    );
-  }
-}
-
-// ─── Document Upload Tile ─────────────────────────────────────────────────────
-
-class _DocUploadTile extends StatelessWidget {
-  const _DocUploadTile({
-    required this.docType,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.uploadedLabel,
-    required this.uploadedUrl,
-    required this.isUploading,
-    required this.enabled,
-    required this.onPick,
-  });
-
-  final String docType;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String uploadedLabel;
-  final String? uploadedUrl;
-  final bool isUploading;
-  final bool enabled;
-  final VoidCallback onPick;
-
-  bool get isUploaded => uploadedUrl != null;
-
-  @override
-  Widget build(BuildContext context) {
-    final interactive = enabled && !isUploading;
-
-    return Opacity(
-      // Visual disabled state: dim tile when blocked (e.g. while submitting)
-      opacity: interactive ? 1.0 : 0.5,
-      child: GestureDetector(
-        onTap: interactive ? onPick : null,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isUploaded
-                  ? AppColors.success.withValues(alpha: 0.5)
-                  : Theme.of(context).dividerColor,
-              width: isUploaded ? 1.5 : 1,
-            ),
-          ),
-          child: Row(children: [
-            // Doc icon or uploaded indicator
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isUploaded
-                    ? AppColors.success.withValues(alpha: 0.1)
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: isUploading
-                  ? const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : Icon(isUploaded ? Icons.check_circle_rounded : icon,
-                      size: 20,
-                      color: isUploaded ? AppColors.success : AppColors.accent),
-            ),
-            const SizedBox(width: 12),
-
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(
-                  isUploaded ? uploadedLabel : subtitle,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: isUploaded ? AppColors.success : null),
-                ),
-              ],
-            )),
-
-            // Action icon
-            if (!isUploading)
-              Icon(
-                isUploaded ? Icons.check_circle_rounded : Icons.upload_rounded,
-                size: 22,
-                color: isUploaded
-                    ? AppColors.success
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Image source picker ──────────────────────────────────────────────────────
-
-class _SourcePicker extends StatelessWidget {
-  const _SourcePicker({required this.l10n});
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const SizedBox(height: 12),
-        Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-                color: Theme.of(context).dividerColor,
-                borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 16),
-        Text(l10n.kycChooseSource,
-            style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 16),
-        ListTile(
-          leading: const Icon(Icons.camera_alt_outlined),
-          title: Text(l10n.kycSourceCamera),
-          onTap: () => Navigator.pop(context, ImageSource.camera),
-        ),
-        ListTile(
-          leading: const Icon(Icons.photo_library_outlined),
-          title: Text(l10n.kycSourceLibrary),
-          onTap: () => Navigator.pop(context, ImageSource.gallery),
-        ),
-        const SizedBox(height: 8),
       ]),
     );
   }

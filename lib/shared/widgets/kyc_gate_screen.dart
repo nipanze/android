@@ -33,7 +33,7 @@ class _KycGateScreenState extends State<KycGateScreen> {
   Timer? _pollTimer;
 
   Future<void> _openKyc(BuildContext context) async {
-    await context.push(AppRoutes.kyc);
+    await context.push(AppRoutes.profile);
     if (context.mounted) {
       context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
     }

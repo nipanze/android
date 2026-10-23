@@ -31,7 +31,8 @@ class VerificationGateModal extends StatelessWidget {
   /// Returns `true` if allowed (or verified after prompt), `false` if dismissed.
   static Future<bool> checkAndGate(
     BuildContext context, {
-    required String action, // 'loan_request' | 'forex_request' | 'need_request' | 'loan_offer' | 'forex_offer' | 'need_offer' | 'service_offer'
+    required String
+        action, // 'loan_request' | 'forex_request' | 'need_request' | 'loan_offer' | 'forex_offer' | 'need_offer' | 'service_offer'
     String? categorySlug,
     String? capabilitySlug,
     String? customTitle,
@@ -104,9 +105,7 @@ class VerificationGateModal extends StatelessWidget {
         ? (l10n?.startProviderVerificationBtn ?? 'Start Provider Verification')
         : (l10n?.verifyIdentityBtn ?? 'Verify Identity');
 
-    final icon = isProviderReq
-        ? Icons.verified_rounded
-        : Icons.badge_outlined;
+    final icon = isProviderReq ? Icons.verified_rounded : Icons.badge_outlined;
 
     final iconColor = isProviderReq ? AppColors.accent : AppColors.success;
 
@@ -181,7 +180,9 @@ class VerificationGateModal extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: Icon(
-                  isProviderReq ? Icons.arrow_forward_rounded : Icons.verified_user_outlined,
+                  isProviderReq
+                      ? Icons.arrow_forward_rounded
+                      : Icons.verified_user_outlined,
                   size: 18,
                 ),
                 label: Text(primaryButtonLabel),
@@ -194,11 +195,13 @@ class VerificationGateModal extends StatelessWidget {
                   if (isProviderReq) {
                     await context.push(AppRoutes.accountServices);
                   } else {
-                    await context.push(AppRoutes.kyc);
+                    await context.push(AppRoutes.profile);
                   }
 
                   if (!context.mounted) return;
-                  context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+                  context
+                      .read<AuthBloc>()
+                      .add(const AuthProfileRefreshRequested());
 
                   final refreshedState = context.read<AuthBloc>().state;
                   if (refreshedState is AuthAuthenticated &&

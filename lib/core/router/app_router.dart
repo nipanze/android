@@ -295,6 +295,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.kyc,
         name: 'kyc',
+        redirect: (_, __) => AppRoutes.profile,
         pageBuilder: (_, state) => _slide(state, const KycPage()),
       ),
       GoRoute(
