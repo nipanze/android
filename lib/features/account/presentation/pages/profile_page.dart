@@ -13,7 +13,10 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
+import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../kyc/presentation/widgets/marketplace_access_widget.dart';
+import '../../../provider/presentation/widgets/additional_verification_section.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -426,7 +429,7 @@ class _ProfileViewState extends State<_ProfileView> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.pop(),
         ),
-        title: Text(l10n?.editProfile ?? 'Edit profile'),
+        title: const Text('Profile & Verification'),
       ),
       body: BlocConsumer<ProfileCubit, ProfileCubitState>(
         listener: (context, state) {
@@ -513,16 +516,21 @@ class _ProfileViewState extends State<_ProfileView> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ── Identity Verification Card ─────────────────────────────
+                  // ── KYC Approval Status ───────────────────────────────────
                   Card(
                     elevation: 0,
                     margin: EdgeInsets.zero,
+                    color: isKycApproved
+                        ? const Color(0xFF103D32)
+                        : Theme.of(context).cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
+                        color: isKycApproved
+                            ? const Color(0xFF167A5A)
+                            : (Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight),
                       ),
                     ),
                     child: InkWell(
@@ -530,39 +538,41 @@ class _ProfileViewState extends State<_ProfileView> {
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                            horizontal: 14, vertical: 12),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.accent.withValues(alpha: 0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.verified_user_outlined,
-                                color: AppColors.accent,
-                                size: 20,
-                              ),
+                            Icon(
+                              isKycApproved
+                                  ? Icons.verified_rounded
+                                  : Icons.verified_user_outlined,
+                              color: isKycApproved
+                                  ? const Color(0xFF4ADE80)
+                                  : AppColors.accent,
+                              size: 20,
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    l10n?.identityVerification ??
-                                        'Identity Verification',
+                                    isKycApproved
+                                        ? 'KYC Approved'
+                                        : 'Identity Verification',
                                     style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     isKycApproved
-                                        ? 'Your account identity is verified'
-                                        : 'Upload ID document for full access',
+                                        ? 'Identity verified. You can now create listings.'
+                                        : (kycStatus == 'pending'
+                                            ? 'Your identity verification is being reviewed.'
+                                            : kycStatus == 'rejected'
+                                                ? 'Verification needs attention. Tap to review.'
+                                                : 'Upload ID document for full access.'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: Theme.of(context).brightness ==
@@ -575,21 +585,24 @@ class _ProfileViewState extends State<_ProfileView> {
                               ),
                             ),
                             _buildKycBadge(context, kycStatus),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              size: 18,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? AppColors.text3Dark
-                                  : AppColors.text3Light,
-                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
+                  if (loadedState != null) ...[
+                    MarketplaceAccessWidget(
+                      user: NipanzeUser(
+                        id: loadedState.profile.id,
+                        email: loadedState.profile.email,
+                        kycStatus: isKycApproved
+                            ? KycStatus.approved
+                            : KycStatus.notSubmitted,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // ── Full Name ─────────────────────────────────────────────
                   TextFormField(
@@ -680,6 +693,8 @@ class _ProfileViewState extends State<_ProfileView> {
                     },
                   ),
                   const SizedBox(height: 24),
+
+                  const AdditionalVerificationSection(),
                 ],
               ),
             ),
