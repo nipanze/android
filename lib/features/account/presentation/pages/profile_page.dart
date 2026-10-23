@@ -13,11 +13,9 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/data/profile_repository.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
-import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../kyc/presentation/cubit/kyc_cubit.dart';
 import '../../../kyc/presentation/widgets/kyc_required_documents_section.dart';
-import '../../../kyc/presentation/widgets/marketplace_access_widget.dart';
 import '../../../provider/presentation/widgets/additional_verification_section.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -490,6 +488,9 @@ class _ProfileViewState extends State<_ProfileView> {
               isAvatarRemoved ? null : loadedState?.profile.avatarUrl;
           final kycStatus = loadedState?.profile.kycStatus;
           final isKycApproved = loadedState?.profile.isKycApproved ?? false;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final approvedColor =
+              isDark ? const Color(0xFF4ADE80) : const Color(0xFF16834B);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -526,14 +527,18 @@ class _ProfileViewState extends State<_ProfileView> {
                     elevation: 0,
                     margin: EdgeInsets.zero,
                     color: isKycApproved
-                        ? const Color(0xFF103D32)
+                        ? (isDark
+                            ? const Color(0xFF103D32)
+                            : const Color(0xFFE8F7EF))
                         : Theme.of(context).cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
                         color: isKycApproved
-                            ? const Color(0xFF167A5A)
-                            : (Theme.of(context).brightness == Brightness.dark
+                            ? (isDark
+                                ? const Color(0xFF167A5A)
+                                : const Color(0xFF69C58D))
+                            : (isDark
                                 ? AppColors.borderDark
                                 : AppColors.borderLight),
                       ),
@@ -548,7 +553,7 @@ class _ProfileViewState extends State<_ProfileView> {
                                 ? Icons.verified_rounded
                                 : Icons.verified_user_outlined,
                             color: isKycApproved
-                                ? const Color(0xFF4ADE80)
+                                ? approvedColor
                                 : AppColors.accent,
                             size: 20,
                           ),
@@ -564,6 +569,12 @@ class _ProfileViewState extends State<_ProfileView> {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
+                                  ).copyWith(
+                                    color: isKycApproved
+                                        ? (isDark
+                                            ? const Color(0xFFE8FFF2)
+                                            : const Color(0xFF145C37))
+                                        : null,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -577,10 +588,13 @@ class _ProfileViewState extends State<_ProfileView> {
                                               : 'Upload ID document for full access.'),
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? AppColors.text2Dark
-                                        : AppColors.text2Light,
+                                    color: isKycApproved
+                                        ? (isDark
+                                            ? const Color(0xFFB5D8C8)
+                                            : const Color(0xFF53665D))
+                                        : (isDark
+                                            ? AppColors.text2Dark
+                                            : AppColors.text2Light),
                                   ),
                                 ),
                                 if (isKycApproved &&
@@ -591,10 +605,9 @@ class _ProfileViewState extends State<_ProfileView> {
                                       'Expires ${DateFormat('dd/MM/yyyy').format(loadedState!.profile.kycExpiresAt!)}',
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? AppColors.text3Dark
-                                            : AppColors.text3Light,
+                                        color: isDark
+                                            ? const Color(0xFFB5D8C8)
+                                            : const Color(0xFF53665D),
                                       ),
                                     ),
                                   ),
@@ -608,16 +621,6 @@ class _ProfileViewState extends State<_ProfileView> {
                   ),
                   const SizedBox(height: 20),
                   if (loadedState != null) ...[
-                    MarketplaceAccessWidget(
-                      user: NipanzeUser(
-                        id: loadedState.profile.id,
-                        email: loadedState.profile.email,
-                        kycStatus: isKycApproved
-                            ? KycStatus.approved
-                            : KycStatus.notSubmitted,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     KycRequiredDocumentsSection(
                       hasProfilePhoto: avatarUrl?.isNotEmpty == true,
                     ),
@@ -749,7 +752,10 @@ class _ProfileViewState extends State<_ProfileView> {
     if (status == null) return const SizedBox.shrink();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final (label, color) = switch (status) {
-      'approved' => ('Verified', AppColors.accent),
+      'approved' => (
+          'Verified',
+          isDark ? const Color(0xFF4ADE80) : const Color(0xFF16834B),
+        ),
       'pending' => ('Pending', AppColors.warning),
       'rejected' => ('Rejected', AppColors.danger),
       _ => (

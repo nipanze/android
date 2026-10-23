@@ -10,7 +10,6 @@ import '../../../provider/presentation/widgets/additional_verification_section.d
 import '../../domain/models/kyc_verification.dart';
 import '../cubit/kyc_cubit.dart';
 import '../widgets/kyc_required_documents_section.dart';
-import '../widgets/marketplace_access_widget.dart';
 
 class KycPage extends StatelessWidget {
   const KycPage({super.key});
@@ -127,14 +126,6 @@ class _KycView extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
-
-              // Marketplace Access Section
-              if (context.read<AuthBloc>().state is AuthAuthenticated)
-                MarketplaceAccessWidget(
-                  user: (context.read<AuthBloc>().state as AuthAuthenticated)
-                      .user,
-                ),
-              const SizedBox(height: 24),
 
               // Additional Verification Section
               const AdditionalVerificationSection(),
