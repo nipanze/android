@@ -522,6 +522,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get editProfile => 'Hindura Umwirondoro';
 
   @override
+  String get profileVerificationTitle => 'Umwirondoro n’Igenzura';
+
+  @override
   String get changeProfilePicture => 'Hindura ifoto y\'umwirondoro';
 
   @override
@@ -1947,6 +1950,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get kycStatusNotSubmitted => 'Ntibyatanzwe';
 
   @override
+  String get kycStatusNotStarted => 'Ntabwo byatangiye';
+
+  @override
   String get kycStatusNotSubmittedDesc =>
       'Tanga inyandiko zawe kugira ngo ubone uburenganzira bwo gushyira amakuru.';
 
@@ -1960,6 +1966,58 @@ class AppLocalizationsRw extends AppLocalizations {
   String kycExpires(String date) {
     return 'Irarangira kuwa $date';
   }
+
+  @override
+  String get marketplaceAccessSummary => 'Uburenganzira ku isoko';
+
+  @override
+  String marketplaceAccessCount(int count) {
+    return '$count kuri 5';
+  }
+
+  @override
+  String get accessLoanRequests => 'Gusaba inguzanyo';
+
+  @override
+  String get accessForexRequests => 'Gusaba Forex';
+
+  @override
+  String get accessNeedRequests => 'Gusaba ibyo ukeneye';
+
+  @override
+  String get accessMakeOffers => 'Gutanga ibiciro';
+
+  @override
+  String get accessOfferService => 'Gutanga serivisi';
+
+  @override
+  String get accessUnlocked => 'Birafunguye';
+
+  @override
+  String get accessLocked => 'Birafunze';
+
+  @override
+  String get profilePhotoUploading => 'Ifoto y’umwirondoro irapakirwa';
+
+  @override
+  String get avatarImageTooLarge => 'Hitamo ifoto itarengeje MB 5.';
+
+  @override
+  String get avatarImageUnsupported => 'Hitamo ifoto ya JPG, PNG cyangwa WebP.';
+
+  @override
+  String get additionalVerificationTitle => 'Igenzura ry’inyongera';
+
+  @override
+  String get additionalVerificationSubtitle =>
+      'Izi serivisi zisaba igenzura ry’inyongera mbere yo kuzitanga.';
+
+  @override
+  String get additionalVerificationEmpty =>
+      'Nta byiciro by’abatanga serivisi bisaba igenzura ry’inyongera ubu.';
+
+  @override
+  String get manageProviderCapabilities => 'Gucunga serivisi utanga';
 
   @override
   String get kycPendingNotice =>
@@ -3387,6 +3445,25 @@ class AppLocalizationsRw extends AppLocalizations {
   String providerIdentityRepresentedBy(String name) {
     return 'Uhagarariwe na $name';
   }
+
+  @override
+  String get providerIdentityPublicPreview =>
+      'Igaragazambere ry’umwirondoro rusange';
+
+  @override
+  String get providerIdentityRepresentativeHelper =>
+      'Gusa niba wemerewe guhagararira ubu bucuruzi.';
+
+  @override
+  String get providerCompanyNameRequired =>
+      'Birakenewe. Andika izina ry’ikigo cyangwa ubucuruzi.';
+
+  @override
+  String get providerCompanyNameFromPreviousStep =>
+      'Izina ry’ikigo ryo ku ntambwe ibanza';
+
+  @override
+  String get providerCompanyNameEdit => 'Hindura';
 
   @override
   String providerIdentitySwitchTitle(String identity) {

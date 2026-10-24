@@ -520,6 +520,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editProfile => 'Edit Profile';
 
   @override
+  String get profileVerificationTitle => 'Profile & Verification';
+
+  @override
   String get changeProfilePicture => 'Change profile picture';
 
   @override
@@ -1938,6 +1941,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kycStatusNotSubmitted => 'Not submitted';
 
   @override
+  String get kycStatusNotStarted => 'Not started';
+
+  @override
   String get kycStatusNotSubmittedDesc =>
       'Submit documents to unlock listing creation.';
 
@@ -1951,6 +1957,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String kycExpires(String date) {
     return 'Expires $date';
   }
+
+  @override
+  String get marketplaceAccessSummary => 'Marketplace access';
+
+  @override
+  String marketplaceAccessCount(int count) {
+    return '$count of 5';
+  }
+
+  @override
+  String get accessLoanRequests => 'Loan Requests';
+
+  @override
+  String get accessForexRequests => 'Forex Requests';
+
+  @override
+  String get accessNeedRequests => 'Need Requests';
+
+  @override
+  String get accessMakeOffers => 'Make Offers';
+
+  @override
+  String get accessOfferService => 'Offer a Service';
+
+  @override
+  String get accessUnlocked => 'Unlocked';
+
+  @override
+  String get accessLocked => 'Locked';
+
+  @override
+  String get profilePhotoUploading => 'Uploading profile picture';
+
+  @override
+  String get avatarImageTooLarge => 'Choose an image that is 5 MB or smaller.';
+
+  @override
+  String get avatarImageUnsupported => 'Choose a JPG, PNG, or WebP image.';
+
+  @override
+  String get additionalVerificationTitle => 'Additional Verification';
+
+  @override
+  String get additionalVerificationSubtitle =>
+      'These categories require extra verification before you can offer them.';
+
+  @override
+  String get additionalVerificationEmpty =>
+      'No provider categories currently require extra verification.';
+
+  @override
+  String get manageProviderCapabilities => 'Manage Provider Capabilities';
 
   @override
   String get kycPendingNotice =>
@@ -3372,6 +3430,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String providerIdentityRepresentedBy(String name) {
     return 'Represented by $name';
   }
+
+  @override
+  String get providerIdentityPublicPreview => 'Preview of your public profile';
+
+  @override
+  String get providerIdentityRepresentativeHelper =>
+      'Only if you are allowed to act for this business.';
+
+  @override
+  String get providerCompanyNameRequired =>
+      'Required. Enter your company or business name.';
+
+  @override
+  String get providerCompanyNameFromPreviousStep =>
+      'Company name from the previous step';
+
+  @override
+  String get providerCompanyNameEdit => 'Edit';
 
   @override
   String providerIdentitySwitchTitle(String identity) {

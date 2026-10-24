@@ -522,6 +522,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get editProfile => 'Hariri Wasifu';
 
   @override
+  String get profileVerificationTitle => 'Wasifu na Uthibitishaji';
+
+  @override
   String get changeProfilePicture => 'Badilisha picha ya wasifu';
 
   @override
@@ -1950,6 +1953,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get kycStatusNotSubmitted => 'Haijwasilishwa';
 
   @override
+  String get kycStatusNotStarted => 'Haijaanza';
+
+  @override
   String get kycStatusNotSubmittedDesc =>
       'Wasilisha hati zako ili kufungua uwezo wa kuunda matangazo.';
 
@@ -1963,6 +1969,59 @@ class AppLocalizationsSw extends AppLocalizations {
   String kycExpires(String date) {
     return 'Inaisha tarehe $date';
   }
+
+  @override
+  String get marketplaceAccessSummary => 'Ufikiaji wa soko';
+
+  @override
+  String marketplaceAccessCount(int count) {
+    return '$count kati ya 5';
+  }
+
+  @override
+  String get accessLoanRequests => 'Maombi ya mikopo';
+
+  @override
+  String get accessForexRequests => 'Maombi ya Forex';
+
+  @override
+  String get accessNeedRequests => 'Maombi ya mahitaji';
+
+  @override
+  String get accessMakeOffers => 'Toa ofa';
+
+  @override
+  String get accessOfferService => 'Toa huduma';
+
+  @override
+  String get accessUnlocked => 'Imefunguliwa';
+
+  @override
+  String get accessLocked => 'Imefungwa';
+
+  @override
+  String get profilePhotoUploading => 'Picha ya wasifu inapakiwa';
+
+  @override
+  String get avatarImageTooLarge =>
+      'Chagua picha yenye ukubwa wa MB 5 au chini.';
+
+  @override
+  String get avatarImageUnsupported => 'Chagua picha ya JPG, PNG au WebP.';
+
+  @override
+  String get additionalVerificationTitle => 'Uthibitishaji wa Ziada';
+
+  @override
+  String get additionalVerificationSubtitle =>
+      'Aina hizi zinahitaji uthibitishaji wa ziada kabla ya kutoa huduma.';
+
+  @override
+  String get additionalVerificationEmpty =>
+      'Hakuna aina ya mtoa huduma inayohitaji uthibitishaji wa ziada kwa sasa.';
+
+  @override
+  String get manageProviderCapabilities => 'Dhibiti uwezo wa mtoa huduma';
 
   @override
   String get kycPendingNotice =>
@@ -3384,6 +3443,25 @@ class AppLocalizationsSw extends AppLocalizations {
   String providerIdentityRepresentedBy(String name) {
     return 'Inawakilishwa na $name';
   }
+
+  @override
+  String get providerIdentityPublicPreview =>
+      'Muhtasari wa wasifu wako wa umma';
+
+  @override
+  String get providerIdentityRepresentativeHelper =>
+      'Ikiwa tu unaruhusiwa kuiwakilisha biashara hii.';
+
+  @override
+  String get providerCompanyNameRequired =>
+      'Inahitajika. Weka jina la kampuni au biashara.';
+
+  @override
+  String get providerCompanyNameFromPreviousStep =>
+      'Jina la kampuni kutoka hatua iliyotangulia';
+
+  @override
+  String get providerCompanyNameEdit => 'Hariri';
 
   @override
   String providerIdentitySwitchTitle(String identity) {

@@ -29,6 +29,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
     this.emailConfirmationPending = false,
     this.emailUpdateError,
     this.pendingAvatarBytes,
+    this.pendingAvatarExtension = 'jpg',
     this.pendingAvatarRemoved = false,
   });
 
@@ -39,6 +40,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
 
   /// Bytes of the newly selected avatar image (not yet uploaded/saved).
   final Uint8List? pendingAvatarBytes;
+  final String pendingAvatarExtension;
 
   /// True when the user explicitly chose to remove their current photo.
   final bool pendingAvatarRemoved;
@@ -49,6 +51,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
     bool? emailConfirmationPending,
     Object? emailUpdateError = _sentinel,
     Object? pendingAvatarBytes = _sentinel,
+    String? pendingAvatarExtension,
     bool? pendingAvatarRemoved,
   }) {
     return ProfileCubitLoaded(
@@ -62,6 +65,8 @@ final class ProfileCubitLoaded extends ProfileCubitState {
       pendingAvatarBytes: pendingAvatarBytes == _sentinel
           ? this.pendingAvatarBytes
           : pendingAvatarBytes as Uint8List?,
+      pendingAvatarExtension:
+          pendingAvatarExtension ?? this.pendingAvatarExtension,
       pendingAvatarRemoved: pendingAvatarRemoved ?? this.pendingAvatarRemoved,
     );
   }
@@ -73,6 +78,7 @@ final class ProfileCubitLoaded extends ProfileCubitState {
         emailConfirmationPending,
         emailUpdateError,
         pendingAvatarBytes,
+        pendingAvatarExtension,
         pendingAvatarRemoved,
       ];
 }

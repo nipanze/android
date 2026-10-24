@@ -125,10 +125,11 @@ class ProfileCubit extends Cubit<ProfileCubitState> {
   Future<void> refresh() => load();
 
   /// Store avatar bytes in state so they survive widget rebuilds.
-  void setPendingAvatar(Uint8List bytes) {
+  void setPendingAvatar(Uint8List bytes, {String extension = 'jpg'}) {
     if (state is! ProfileCubitLoaded) return;
     emit((state as ProfileCubitLoaded).copyWith(
       pendingAvatarBytes: bytes,
+      pendingAvatarExtension: extension,
       pendingAvatarRemoved: false,
     ));
   }

@@ -522,6 +522,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editProfile => 'تعديل الملف الشخصي';
 
   @override
+  String get profileVerificationTitle => 'الملف الشخصي والتحقق';
+
+  @override
   String get changeProfilePicture => 'تغيير صورة الملف الشخصي';
 
   @override
@@ -1927,6 +1930,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kycStatusNotSubmitted => 'لم يُقدَّم';
 
   @override
+  String get kycStatusNotStarted => 'لم يبدأ';
+
+  @override
   String get kycStatusNotSubmittedDesc =>
       'قدّم مستنداتك لفتح إمكانية إنشاء الإعلانات.';
 
@@ -1940,6 +1946,58 @@ class AppLocalizationsAr extends AppLocalizations {
   String kycExpires(String date) {
     return 'ينتهي في $date';
   }
+
+  @override
+  String get marketplaceAccessSummary => 'إمكانية الوصول إلى السوق';
+
+  @override
+  String marketplaceAccessCount(int count) {
+    return '$count من 5';
+  }
+
+  @override
+  String get accessLoanRequests => 'طلبات القروض';
+
+  @override
+  String get accessForexRequests => 'طلبات الفوركس';
+
+  @override
+  String get accessNeedRequests => 'طلبات الاحتياجات';
+
+  @override
+  String get accessMakeOffers => 'تقديم العروض';
+
+  @override
+  String get accessOfferService => 'عرض خدمة';
+
+  @override
+  String get accessUnlocked => 'متاح';
+
+  @override
+  String get accessLocked => 'مقفل';
+
+  @override
+  String get profilePhotoUploading => 'جارٍ رفع صورة الملف الشخصي';
+
+  @override
+  String get avatarImageTooLarge => 'اختر صورة بحجم 5 ميغابايت أو أقل.';
+
+  @override
+  String get avatarImageUnsupported => 'اختر صورة JPG أو PNG أو WebP.';
+
+  @override
+  String get additionalVerificationTitle => 'تحقق إضافي';
+
+  @override
+  String get additionalVerificationSubtitle =>
+      'تتطلب هذه الفئات تحققًا إضافيًا قبل تقديم خدماتها.';
+
+  @override
+  String get additionalVerificationEmpty =>
+      'لا توجد فئات لمقدمي الخدمات تتطلب تحققًا إضافيًا حاليًا.';
+
+  @override
+  String get manageProviderCapabilities => 'إدارة قدرات مقدم الخدمة';
 
   @override
   String get kycPendingNotice =>
@@ -3368,6 +3426,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String providerIdentityRepresentedBy(String name) {
     return 'يمثله $name';
   }
+
+  @override
+  String get providerIdentityPublicPreview => 'معاينة ملفك العام';
+
+  @override
+  String get providerIdentityRepresentativeHelper =>
+      'فقط إذا كان مسموحًا لك بالتصرف نيابةً عن هذا النشاط التجاري.';
+
+  @override
+  String get providerCompanyNameRequired =>
+      'مطلوب. أدخل اسم الشركة أو النشاط التجاري.';
+
+  @override
+  String get providerCompanyNameFromPreviousStep =>
+      'اسم الشركة من الخطوة السابقة';
+
+  @override
+  String get providerCompanyNameEdit => 'تعديل';
 
   @override
   String providerIdentitySwitchTitle(String identity) {

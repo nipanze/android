@@ -61,6 +61,7 @@ abstract class IProviderRepository {
     required List<String> roleCapabilitySlugs,
     required Map<String, dynamic> profile,
     required List<Map<String, String>> evidence,
+    required Map<String, dynamic> presentation,
   });
   Future<String> uploadCompanyEvidence({
     required String categorySlug,

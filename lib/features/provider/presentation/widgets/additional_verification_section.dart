@@ -22,6 +22,7 @@ class _AdditionalVerificationSectionState
     extends State<AdditionalVerificationSection> {
   List<ProviderCapability> _capabilities = [];
   bool _loading = true;
+  bool _enabled = false;
 
   @override
   void initState() {
@@ -32,10 +33,22 @@ class _AdditionalVerificationSectionState
   Future<void> _loadCapabilities() async {
     try {
       final repo = getIt<IProviderRepository>();
-      final caps = await repo.getProviderCapabilities();
+      final enabled = await repo.capabilityProfilesEnabled();
+      final caps = enabled ? await repo.getProviderCapabilities() : const [];
+      final byCategory = <String, ProviderCapability>{};
+      for (final cap in caps) {
+        if (cap.isWork ||
+            cap.verificationPolicy !=
+                ProviderVerificationPolicy.requiredProof) {
+          continue;
+        }
+        final slug = cap.categorySlug;
+        if (slug != null) byCategory.putIfAbsent(slug, () => cap);
+      }
       if (mounted) {
         setState(() {
-          _capabilities = caps;
+          _enabled = enabled;
+          _capabilities = byCategory.values.toList();
           _loading = false;
         });
       }
@@ -48,6 +61,8 @@ class _AdditionalVerificationSectionState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    if (!_enabled && !_loading) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -70,7 +85,7 @@ class _AdditionalVerificationSectionState
               ),
               const SizedBox(width: 8),
               Text(
-                'Additional Verification',
+                l10n.additionalVerificationTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -79,7 +94,7 @@ class _AdditionalVerificationSectionState
           ),
           const SizedBox(height: 6),
           Text(
-            'Some categories require additional verification before you can offer them.',
+            l10n.additionalVerificationSubtitle,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
@@ -98,49 +113,75 @@ class _AdditionalVerificationSectionState
             )
           else if (_capabilities.isNotEmpty) ...[
             ..._capabilities.map((cap) {
-              final isVerified = cap.verificationLevel ==
-                  ProviderVerificationLevel.providerVerified;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: theme.dividerColor),
-                ),
-                child: Row(
-                  children: [
-                    Text(cap.categoryIcon ?? '💼',
-                        style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        cap.capabilityName ?? cap.capabilitySlug,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+              final isVerified = cap.isVerified;
+              final status = isVerified
+                  ? l10n.providerVerified
+                  : cap.pendingEvidenceCount > 0
+                      ? l10n.providerCapabilityPendingReview
+                      : cap.rejectedEvidenceCount > 0
+                          ? l10n.providerCapabilityRejected
+                          : l10n.providerPolicyProofRequired;
+              final statusIcon = isVerified
+                  ? Icons.check_circle_outline_rounded
+                  : cap.pendingEvidenceCount > 0
+                      ? Icons.schedule_rounded
+                      : cap.rejectedEvidenceCount > 0
+                          ? Icons.error_outline_rounded
+                          : Icons.upload_file_outlined;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    alignment: Alignment.centerLeft,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    if (isVerified)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
+                  ),
+                  onPressed: () => context.push(
+                    AppRoutes.accountServices,
+                    extra: cap.capabilitySlug,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(cap.categoryIcon ?? '💼',
+                          style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 10),
+                      Expanded(
                         child: Text(
-                          AppLocalizations.of(context)!.providerVerified,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.success,
-                          ),
+                          cap.categoryName ??
+                              cap.capabilityName ??
+                              cap.capabilitySlug,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
-                  ],
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(statusIcon,
+                                size: 16,
+                                color: isVerified
+                                    ? AppColors.success
+                                    : theme.colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                status,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.labelSmall,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
@@ -161,7 +202,7 @@ class _AdditionalVerificationSectionState
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'No specialized provider capabilities declared yet.',
+                      l10n.additionalVerificationEmpty,
                       style: theme.textTheme.bodySmall,
                     ),
                   ),
@@ -174,7 +215,7 @@ class _AdditionalVerificationSectionState
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.business_center_outlined, size: 16),
-              label: const Text('Manage Provider Capabilities'),
+              label: Text(l10n.manageProviderCapabilities),
               onPressed: () => context.push(AppRoutes.accountServices),
             ),
           ),

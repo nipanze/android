@@ -339,6 +339,7 @@ class ProviderRepository implements IProviderRepository {
     required List<String> roleCapabilitySlugs,
     required Map<String, dynamic> profile,
     required List<Map<String, String>> evidence,
+    required Map<String, dynamic> presentation,
   }) async {
     try {
       await _client.rpc(RpcNames.saveCompanyCategory, params: {
@@ -347,6 +348,7 @@ class ProviderRepository implements IProviderRepository {
         'p_roles': roleCapabilitySlugs,
         'p_profile': profile,
         'p_evidence': evidence,
+        'p_presentation': presentation,
       });
       _clearCache();
       _companyProfileCache[categorySlug] = ProviderCompanyProfile.fromMap({

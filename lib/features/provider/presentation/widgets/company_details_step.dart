@@ -13,27 +13,30 @@ class CompanyDetailsStep extends StatefulWidget {
     required this.serviceCount,
     required this.roleCount,
     required this.initialProfile,
+    required this.companyName,
     this.verificationSubmissions = const [],
     required this.providerRepository,
     required this.onDraftChanged,
     required this.onSave,
+    required this.onEditCompanyName,
   });
 
   final String categorySlug;
   final int serviceCount;
   final int roleCount;
   final ProviderCompanyProfile? initialProfile;
+  final String companyName;
   final List<Map<String, dynamic>> verificationSubmissions;
   final IProviderRepository providerRepository;
   final ValueChanged<ProviderCompanyProfile> onDraftChanged;
   final Future<void> Function({required Map<String, dynamic> profile}) onSave;
+  final VoidCallback onEditCompanyName;
 
   @override
   State<CompanyDetailsStep> createState() => _CompanyDetailsStepState();
 }
 
 class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
-  final _nameController = TextEditingController();
   final _registrationController = TextEditingController();
   final _areasController = TextEditingController();
   String? _teamSize;
@@ -51,7 +54,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   void initState() {
     super.initState();
     final profile = widget.initialProfile;
-    _nameController.text = profile?.companyName ?? '';
     _registrationController.text = profile?.registrationNumber ?? '';
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
     _teamSize = profile?.teamSize;
@@ -68,9 +70,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         oldWidget.categorySlug != widget.categorySlug) {
       return;
     }
-    if (_nameController.text.isEmpty && profile.companyName != null) {
-      _nameController.text = profile.companyName!;
-    }
     if (_registrationController.text.isEmpty &&
         profile.registrationNumber != null) {
       _registrationController.text = profile.registrationNumber!;
@@ -84,7 +83,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _registrationController.dispose();
     _areasController.dispose();
     super.dispose();
@@ -98,7 +96,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   ProviderCompanyProfile _currentProfile() => ProviderCompanyProfile(
         categorySlug: widget.categorySlug,
-        companyName: _nameController.text,
+        companyName: widget.companyName,
         registrationNumber: _registrationController.text,
         teamSize: _teamSize,
         yearsInBusiness: _yearsInBusiness,
@@ -292,16 +290,16 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               Text(l10n.companyDetailsSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
               const SizedBox(height: 18),
-              TextField(
-                controller: _nameController,
-                maxLength: 80,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(
-                  labelText: l10n.companyName,
-                  border: const OutlineInputBorder(),
-                  counterText: '',
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.business_outlined),
+                  title: Text(widget.companyName),
+                  subtitle: Text(l10n.providerCompanyNameFromPreviousStep),
+                  trailing: TextButton(
+                    onPressed: widget.onEditCompanyName,
+                    child: Text(l10n.providerCompanyNameEdit),
+                  ),
                 ),
-                onChanged: (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 10),
               TextField(

@@ -992,6 +992,12 @@ abstract class AppLocalizations {
   /// **'Edit Profile'**
   String get editProfile;
 
+  /// No description provided for @profileVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile & Verification'**
+  String get profileVerificationTitle;
+
   /// No description provided for @changeProfilePicture.
   ///
   /// In en, this message translates to:
@@ -3554,6 +3560,12 @@ abstract class AppLocalizations {
   /// **'Not submitted'**
   String get kycStatusNotSubmitted;
 
+  /// No description provided for @kycStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get kycStatusNotStarted;
+
   /// No description provided for @kycStatusNotSubmittedDesc.
   ///
   /// In en, this message translates to:
@@ -3577,6 +3589,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Expires {date}'**
   String kycExpires(String date);
+
+  /// No description provided for @marketplaceAccessSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketplace access'**
+  String get marketplaceAccessSummary;
+
+  /// No description provided for @marketplaceAccessCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of 5'**
+  String marketplaceAccessCount(int count);
+
+  /// No description provided for @accessLoanRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Requests'**
+  String get accessLoanRequests;
+
+  /// No description provided for @accessForexRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex Requests'**
+  String get accessForexRequests;
+
+  /// No description provided for @accessNeedRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Need Requests'**
+  String get accessNeedRequests;
+
+  /// No description provided for @accessMakeOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Offers'**
+  String get accessMakeOffers;
+
+  /// No description provided for @accessOfferService.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer a Service'**
+  String get accessOfferService;
+
+  /// No description provided for @accessUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get accessUnlocked;
+
+  /// No description provided for @accessLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get accessLocked;
+
+  /// No description provided for @profilePhotoUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading profile picture'**
+  String get profilePhotoUploading;
+
+  /// No description provided for @avatarImageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an image that is 5 MB or smaller.'**
+  String get avatarImageTooLarge;
+
+  /// No description provided for @avatarImageUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a JPG, PNG, or WebP image.'**
+  String get avatarImageUnsupported;
+
+  /// No description provided for @additionalVerificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Verification'**
+  String get additionalVerificationTitle;
+
+  /// No description provided for @additionalVerificationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'These categories require extra verification before you can offer them.'**
+  String get additionalVerificationSubtitle;
+
+  /// No description provided for @additionalVerificationEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No provider categories currently require extra verification.'**
+  String get additionalVerificationEmpty;
+
+  /// No description provided for @manageProviderCapabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Provider Capabilities'**
+  String get manageProviderCapabilities;
 
   /// No description provided for @kycPendingNotice.
   ///
@@ -6117,6 +6225,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Represented by {name}'**
   String providerIdentityRepresentedBy(String name);
+
+  /// No description provided for @providerIdentityPublicPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview of your public profile'**
+  String get providerIdentityPublicPreview;
+
+  /// No description provided for @providerIdentityRepresentativeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if you are allowed to act for this business.'**
+  String get providerIdentityRepresentativeHelper;
+
+  /// No description provided for @providerCompanyNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required. Enter your company or business name.'**
+  String get providerCompanyNameRequired;
+
+  /// No description provided for @providerCompanyNameFromPreviousStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Company name from the previous step'**
+  String get providerCompanyNameFromPreviousStep;
+
+  /// No description provided for @providerCompanyNameEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get providerCompanyNameEdit;
 
   /// No description provided for @providerIdentitySwitchTitle.
   ///

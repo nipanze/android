@@ -132,6 +132,12 @@ The app expects a single Supabase project and shared schema with:
    - add app-version policy checks using `system_settings`
    - keep user-facing network and submit errors free of developer language
    - verify Material Icons render in release builds after Flutter/package upgrades
+6. **Provider company setup: single company name (Part A)**
+   - [x] Ask for the company name once in provider identity setup
+   - [x] Display the name read-only in Company details with an Edit return path
+   - [x] Commit company profile and presentation through one RPC transaction
+   - [ ] Apply the standalone SQL patch in the intended non-production environment
+   - [ ] Complete the requested UI and server-validation checks
 
 ### 5.2 Technical log entries
 
@@ -146,6 +152,7 @@ The app expects a single Supabase project and shared schema with:
 - `2026-08-16`: Documented app update policy: store minimum/latest supported build numbers in `system_settings`, show a dismissible update prompt for optional releases, and block old builds only when security, payment, contract, auth, or schema compatibility requires it.
 - `2026-08-16`: Confirmed `pubspec.yaml` already has `uses-material-design: true`; Material Icons build warnings are non-blocking if the APK builds and icons render. If warnings persist after upgrades, run `flutter clean`, `flutter pub get`, and rebuild.
 - `2026-10-03`: Removed the Marketplace header's Add Service button while retaining the notification bell and bottom Post chooser. Replaced the always-visible service prompt with a conditional feed card for new providers, unexplored newly added categories, or live Needs matching existing provider capabilities; the card is omitted when no relevant opportunity exists.
+- `2026-10-24`: Provider company setup now asks for the company name once in the provider identity step. The company details screen displays that saved name read-only with an Edit link back to the first step. The representative option is a single switch, and a new standalone RPC patch validates the name and commits the company profile plus presentation atomically. Provider entry remains gated by `capability_profiles_enabled`; the SQL patch is not applied to production.
 
 ---
 

@@ -499,11 +499,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final companyData = identityInfo['company_profile'] is Map
         ? (identityInfo['company_profile'] as Map).cast<String, dynamic>()
         : const <String, dynamic>{};
-    final initialCompanyName = providerType == ProviderCategoryType.company &&
-            savedPresentation['display_name']?.toString().trim().isNotEmpty ==
-                true
-        ? savedPresentation['display_name'].toString()
-        : (companyData['company_name']?.toString() ?? '');
+    final initialCompanyName = providerType == ProviderCategoryType.company
+        ? ((companyData['company_name']?.toString().trim().isNotEmpty == true)
+            ? companyData['company_name'].toString()
+            : (savedPresentation['display_name']?.toString() ?? ''))
+        : '';
     final personalName =
         savedPresentation['display_name']?.toString().trim().isNotEmpty ==
                     true &&
@@ -746,10 +746,14 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         });
         return;
       }
-      if (_savedProviderType == null) {
+      // Company identity, name and selections are committed together when its
+      // details are saved. Individual identity setup keeps its early save.
+      if (type == ProviderCategoryType.individual &&
+          _savedProviderType == null) {
         await widget.providerRepository.setCategoryType(slug, type);
       }
-      if ((presentation['display_name'] as String? ?? '').trim().isNotEmpty) {
+      if (type == ProviderCategoryType.individual &&
+          (presentation['display_name'] as String? ?? '').trim().isNotEmpty) {
         await widget.providerRepository.saveProviderIdentityPresentation(
           categorySlug: slug,
           type: type,
@@ -886,25 +890,23 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           );
           return role.capabilitySlug ?? 'work_$roleSlug';
         }).toList(),
-        profile: profile,
+        profile: {
+          ...profile,
+          'company_name':
+              (_identityPresentation['display_name']?.toString() ?? '').trim(),
+        },
         evidence: const [],
+        presentation: {
+          ..._identityPresentation,
+          'display_mode': _identityPresentation['display_mode'] ==
+                  'company_with_representative'
+              ? 'company_with_representative'
+              : 'company',
+          'display_name':
+              (_identityPresentation['display_name']?.toString() ?? '').trim(),
+          'representative_authorized': _representativeAuthorized,
+        },
       );
-      final companyName = (profile['company_name'] as String? ?? '').trim();
-      if (companyName.isNotEmpty) {
-        await widget.providerRepository.saveProviderIdentityPresentation(
-          categorySlug: categorySlug,
-          type: ProviderCategoryType.company,
-          presentation: {
-            'display_mode': _identityPresentation['display_mode'] ==
-                    'company_with_representative'
-                ? 'company_with_representative'
-                : 'company',
-            'display_name': companyName,
-            'representative_name': _identityPresentation['representative_name'],
-            'representative_authorized': _representativeAuthorized,
-          },
-        );
-      }
       if (mounted) {
         setState(() => _allowCompanyExit = true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1127,7 +1129,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                               onCatalogResult: _openCatalogResult,
                             )
                           : _step == 4
-                              ? _ProviderTypeStep(
+                              ? ProviderTypeStep(
                                   selected: _providerType,
                                   saving: _savingProviderType,
                                   error: _providerTypeError,
@@ -1140,6 +1142,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                   'representative_name']
                                               ?.toString() ??
                                           (widget.initialPersonalName ?? ''),
+                                  categoryName: _selectedCategory
+                                          ?.localizedName(localeCode) ??
+                                      '',
                                   initialDisplayMode:
                                       _identityPresentation['display_mode']
                                               ?.toString() ??
@@ -1148,14 +1153,19 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       _representativeAuthorized,
                                   isCurrent:
                                       _savedProviderType == _providerType,
-                                  requireCompanyName:
-                                      _savedProviderType != null &&
-                                          _savedProviderType != _providerType &&
-                                          _providerType ==
-                                              ProviderCategoryType.company,
                                   onPresentationChanged: (value) =>
                                       setState(() {
                                     _identityPresentation = value;
+                                    if (_providerType ==
+                                        ProviderCategoryType.company) {
+                                      _companyDisplayName =
+                                          value['display_name']?.toString() ??
+                                              '';
+                                    } else {
+                                      _personalDisplayName =
+                                          value['display_name']?.toString() ??
+                                              '';
+                                    }
                                     _representativeAuthorized =
                                         value['representative_authorized'] ==
                                             true;
@@ -1215,6 +1225,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                               serviceCount: _selected.length,
                                               roleCount: _selectedRoles.length,
                                               initialProfile: _companyProfile,
+                                              companyName:
+                                                  _identityPresentation[
+                                                              'display_name']
+                                                          ?.toString() ??
+                                                      '',
                                               verificationSubmissions:
                                                   _companyVerificationSubmissions,
                                               providerRepository:
@@ -1224,6 +1239,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                       _companyProfile =
                                                           profile),
                                               onSave: _saveCompanyDetails,
+                                              onEditCompanyName: () =>
+                                                  setState(() => _step = 4),
                                             )
                                           : _step == 2
                                               ? _KindStepView(
@@ -1407,8 +1424,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 }
 
-class _ProviderTypeStep extends StatefulWidget {
-  const _ProviderTypeStep({
+class ProviderTypeStep extends StatefulWidget {
+  const ProviderTypeStep({
+    super.key,
     required this.selected,
     required this.saving,
     required this.error,
@@ -1416,10 +1434,10 @@ class _ProviderTypeStep extends StatefulWidget {
     required this.onContinue,
     required this.initialDisplayName,
     required this.initialRepresentativeName,
+    required this.categoryName,
     required this.initialDisplayMode,
     required this.representativeAuthorized,
     required this.isCurrent,
-    required this.requireCompanyName,
     required this.onPresentationChanged,
   });
 
@@ -1430,17 +1448,17 @@ class _ProviderTypeStep extends StatefulWidget {
   final VoidCallback onContinue;
   final String initialDisplayName;
   final String initialRepresentativeName;
+  final String categoryName;
   final String initialDisplayMode;
   final bool representativeAuthorized;
   final bool isCurrent;
-  final bool requireCompanyName;
   final ValueChanged<Map<String, dynamic>> onPresentationChanged;
 
   @override
-  State<_ProviderTypeStep> createState() => _ProviderTypeStepState();
+  State<ProviderTypeStep> createState() => _ProviderTypeStepState();
 }
 
-class _ProviderTypeStepState extends State<_ProviderTypeStep> {
+class _ProviderTypeStepState extends State<ProviderTypeStep> {
   late final TextEditingController _displayName;
   late final TextEditingController _representativeName;
   late String _displayMode;
@@ -1468,13 +1486,13 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
   bool get _presentationIsValid {
     if (widget.selected == null) return false;
     if (widget.selected == ProviderCategoryType.company &&
-        _displayMode == 'company_with_representative') {
-      if (_representativeName.text.trim().isEmpty || !_authorized) return false;
+        _displayName.text.trim().isEmpty) {
+      return false;
     }
     if (widget.selected == ProviderCategoryType.company &&
-        !widget.requireCompanyName &&
-        _displayName.text.trim().isEmpty) {
-      return true;
+        _displayMode == 'company_with_representative' &&
+        (_representativeName.text.trim().isEmpty || !_authorized)) {
+      return false;
     }
     if (_displayName.text.trim().isEmpty &&
         widget.selected == ProviderCategoryType.individual) {
@@ -1485,7 +1503,7 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
   }
 
   @override
-  void didUpdateWidget(covariant _ProviderTypeStep oldWidget) {
+  void didUpdateWidget(covariant ProviderTypeStep oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selected != widget.selected) {
       _displayName.text = widget.initialDisplayName;
@@ -1558,39 +1576,46 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                     ?.copyWith(fontWeight: FontWeight.w700)),
           ),
           const SizedBox(height: 8),
-          TextFormField(
-            controller: _displayName,
-            onChanged: (_) {
-              setState(() {});
-              _notify();
-            },
-            maxLength: 80,
-            decoration: InputDecoration(
-              labelText: widget.selected == ProviderCategoryType.company
-                  ? l10n.providerIdentityCompanyName
-                  : l10n.providerIdentityDisplayName,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          if (widget.selected == ProviderCategoryType.company) ...[
-            RadioGroup<String>(
-              groupValue: _displayMode,
-              onChanged: (value) {
-                setState(() => _displayMode = value ?? 'company');
+          if (widget.selected == ProviderCategoryType.company ||
+              _displayName.text.isNotEmpty) ...[
+            TextFormField(
+              controller: _displayName,
+              onChanged: (_) {
+                setState(() {});
                 _notify();
               },
-              child: Column(children: [
-                RadioListTile<String>(
-                  contentPadding: EdgeInsets.zero,
-                  value: 'company',
-                  title: Text(l10n.providerIdentityCompanyOnly),
-                ),
-                RadioListTile<String>(
-                  contentPadding: EdgeInsets.zero,
-                  value: 'company_with_representative',
-                  title: Text(l10n.providerIdentityCompanyRepresentative),
-                ),
-              ]),
+              maxLength: 80,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: widget.selected == ProviderCategoryType.company
+                    ? l10n.providerIdentityCompanyName
+                    : l10n.providerIdentityDisplayName,
+                border: const OutlineInputBorder(),
+                counterText:
+                    widget.selected == ProviderCategoryType.company ? null : '',
+                helperText: widget.selected == ProviderCategoryType.company &&
+                        _displayName.text.trim().isEmpty
+                    ? l10n.providerCompanyNameRequired
+                    : null,
+                helperStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          ],
+          if (widget.selected == ProviderCategoryType.company) ...[
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: _displayMode == 'company_with_representative',
+              title: Text(l10n.providerIdentityCompanyRepresentative),
+              subtitle: Text(l10n.providerIdentityRepresentativeHelper),
+              onChanged: (value) {
+                setState(() {
+                  _displayMode =
+                      value ? 'company_with_representative' : 'company';
+                  _authorized = value;
+                });
+                _notify();
+              },
             ),
             if (_displayMode == 'company_with_representative') ...[
               TextFormField(
@@ -1605,28 +1630,26 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                   border: const OutlineInputBorder(),
                 ),
               ),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _authorized,
-                title: Text(l10n.providerIdentityAuthority),
-                onChanged: (value) {
-                  setState(() => _authorized = value ?? false);
-                  _notify();
-                },
-              ),
             ],
           ],
           if (_displayName.text.trim().isNotEmpty)
             Card(
               child: ListTile(
                 leading: const Icon(Icons.visibility_outlined),
-                title: Text(_displayName.text.trim()),
-                subtitle: widget.selected == ProviderCategoryType.company &&
+                title: Text(l10n.providerIdentityPublicPreview),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_displayName.text.trim()),
+                    if (widget.selected == ProviderCategoryType.company &&
                         _displayMode == 'company_with_representative' &&
-                        _representativeName.text.trim().isNotEmpty
-                    ? Text(l10n.providerIdentityRepresentedBy(
-                        _representativeName.text.trim()))
-                    : null,
+                        _representativeName.text.trim().isNotEmpty)
+                      Text(l10n.providerIdentityRepresentedBy(
+                          _representativeName.text.trim())),
+                    if (widget.categoryName.isNotEmpty)
+                      Text(widget.categoryName),
+                  ],
+                ),
               ),
             ),
         ],
@@ -1674,7 +1697,9 @@ class _ProviderTypeStepState extends State<_ProviderTypeStep> {
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(l10n.providerTypeChooseOne,
                           style: Theme.of(context).textTheme.bodySmall)),
-                if (widget.selected != null && !_presentationIsValid)
+                if (widget.selected == ProviderCategoryType.company &&
+                    _displayMode == 'company_with_representative' &&
+                    _representativeName.text.trim().isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(l10n.providerIdentityRequiredInfo,

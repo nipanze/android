@@ -523,6 +523,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get editProfile => 'Modifier le profil';
 
   @override
+  String get profileVerificationTitle => 'Profil et vérification';
+
+  @override
   String get changeProfilePicture => 'Changer la photo de profil';
 
   @override
@@ -1965,6 +1968,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get kycStatusNotSubmitted => 'Non soumis';
 
   @override
+  String get kycStatusNotStarted => 'Non commencé';
+
+  @override
   String get kycStatusNotSubmittedDesc =>
       'Soumettez vos documents pour débloquer la création d\'annonces.';
 
@@ -1978,6 +1984,58 @@ class AppLocalizationsFr extends AppLocalizations {
   String kycExpires(String date) {
     return 'Expire le $date';
   }
+
+  @override
+  String get marketplaceAccessSummary => 'Accès à la marketplace';
+
+  @override
+  String marketplaceAccessCount(int count) {
+    return '$count sur 5';
+  }
+
+  @override
+  String get accessLoanRequests => 'Demandes de prêt';
+
+  @override
+  String get accessForexRequests => 'Demandes Forex';
+
+  @override
+  String get accessNeedRequests => 'Demandes de besoin';
+
+  @override
+  String get accessMakeOffers => 'Faire des offres';
+
+  @override
+  String get accessOfferService => 'Proposer un service';
+
+  @override
+  String get accessUnlocked => 'Débloqué';
+
+  @override
+  String get accessLocked => 'Verrouillé';
+
+  @override
+  String get profilePhotoUploading => 'Téléversement de la photo de profil';
+
+  @override
+  String get avatarImageTooLarge => 'Choisissez une image de 5 Mo maximum.';
+
+  @override
+  String get avatarImageUnsupported => 'Choisissez une image JPG, PNG ou WebP.';
+
+  @override
+  String get additionalVerificationTitle => 'Vérification supplémentaire';
+
+  @override
+  String get additionalVerificationSubtitle =>
+      'Ces catégories nécessitent une vérification supplémentaire avant de proposer vos services.';
+
+  @override
+  String get additionalVerificationEmpty =>
+      'Aucune catégorie ne nécessite actuellement de vérification supplémentaire.';
+
+  @override
+  String get manageProviderCapabilities => 'Gérer les capacités du prestataire';
 
   @override
   String get kycPendingNotice =>
@@ -3420,6 +3478,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String providerIdentityRepresentedBy(String name) {
     return 'Représenté par $name';
   }
+
+  @override
+  String get providerIdentityPublicPreview => 'Aperçu de votre profil public';
+
+  @override
+  String get providerIdentityRepresentativeHelper =>
+      'Uniquement si vous êtes autorisé à agir pour cette entreprise.';
+
+  @override
+  String get providerCompanyNameRequired =>
+      'Obligatoire. Saisissez le nom de votre entreprise.';
+
+  @override
+  String get providerCompanyNameFromPreviousStep =>
+      'Nom de l’entreprise de l’étape précédente';
+
+  @override
+  String get providerCompanyNameEdit => 'Modifier';
 
   @override
   String providerIdentitySwitchTitle(String identity) {
