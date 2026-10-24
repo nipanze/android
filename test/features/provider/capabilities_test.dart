@@ -1,8 +1,10 @@
 // test/features/provider/capabilities_test.dart
 
+import 'dart:typed_data';
 import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,8 +38,24 @@ class MockNeedsRepository extends Mock implements NeedsRepository {}
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 
+class _InMemoryFileSelectorPlatform extends FileSelectorPlatform {
+  @override
+  Future<XFile?> openFile({
+    List<XTypeGroup>? acceptedTypeGroups,
+    String? initialDirectory,
+    String? confirmButtonText,
+  }) async =>
+      XFile.fromData(
+        Uint8List.fromList([37, 80, 68, 70]),
+        path: 'registration.pdf',
+        mimeType: 'application/pdf',
+      );
+}
+
 void main() {
   late MockProviderRepository mockRepo;
+
+  setUpAll(() => registerFallbackValue(Uint8List(0)));
 
   test('Foreman trade test certificate is proof-enabled', () {
     final role = ProviderServiceRole.defaults
@@ -194,7 +212,8 @@ void main() {
     expect(find.text('Excavator Hire'), findsNothing);
   });
 
-  testWidgets('Company category sheet shows services without roles',
+  testWidgets(
+      'Company category sheet selects multiple services without proof prompts',
       (tester) async {
     final needsRepo = MockNeedsRepository();
     when(needsRepo.getCategories).thenAnswer((_) async => const [
@@ -211,6 +230,16 @@ void main() {
             slug: 'excavator_hire',
             categorySlug: 'machinery_equipment',
             name: 'Excavator Hire',
+            serviceGroupSlug: 'earthmoving',
+            serviceGroupName: 'Earthmoving',
+            verificationPolicy: 'required_proof',
+          ),
+          NeedCapability(
+            slug: 'loader_hire',
+            categorySlug: 'machinery_equipment',
+            name: 'Loader Hire',
+            serviceGroupSlug: 'plant_hire',
+            serviceGroupName: 'Plant Hire',
             verificationPolicy: 'required_proof',
           ),
         ]);
@@ -255,7 +284,10 @@ void main() {
 
     expect(find.text('What we offer'), findsOneWidget);
     expect(find.text('Excavator Hire'), findsOneWidget);
-    expect(find.text('Needs proof'), findsOneWidget);
+    expect(find.text('Loader Hire'), findsOneWidget);
+    expect(find.text('Earthmoving'), findsOneWidget);
+    expect(find.text('Plant Hire'), findsOneWidget);
+    expect(find.text('Needs proof'), findsNothing);
     expect(find.text('What roles do you do?'), findsNothing);
     expect(find.text('STEP 1 OF 3'), findsNothing);
     expect(find.text('Machine Operator'), findsNothing);
@@ -271,6 +303,10 @@ void main() {
     await tester.ensureVisible(find.text('Excavator Hire'));
     await tester.tap(find.text('Excavator Hire'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Loader Hire'));
+    await tester.tap(find.text('Loader Hire'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 services'), findsOneWidget);
 
     await tester.tap(find.text('Next: company details'));
     await tester.pumpAndSettle();
@@ -286,6 +322,95 @@ void main() {
     expect(find.text('Review services'), findsNothing);
     expect(find.text('Company or business name'), findsOneWidget);
     expect(find.text('Registration number'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Upload company documents'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Upload company documents'), findsOneWidget);
+  });
+
+  testWidgets('Company proof uploads use the general company-document flow',
+      (tester) async {
+    final originalFileSelector = FileSelectorPlatform.instance;
+    FileSelectorPlatform.instance = _InMemoryFileSelectorPlatform();
+    addTearDown(() => FileSelectorPlatform.instance = originalFileSelector);
+
+    when(() => mockRepo.getCompanyVerificationSubmissions(any()))
+        .thenAnswer((_) async => [
+              {
+                'id': 'company-doc-1',
+                'document_type': 'business_registration',
+                'file_name': 'registration.pdf',
+                'status': 'pending',
+                'created_at': '2026-10-01T00:00:00Z',
+              }
+            ]);
+    when(() => mockRepo.uploadCompanyVerificationDocument(
+          categorySlug: any(named: 'categorySlug'),
+          documentType: any(named: 'documentType'),
+          fileName: any(named: 'fileName'),
+          mimeType: any(named: 'mimeType'),
+          bytes: any(named: 'bytes'),
+        )).thenAnswer((_) async => 'company-evidence-path');
+    when(() => mockRepo.saveCompanyDocument(
+          categorySlug: any(named: 'categorySlug'),
+          documentType: any(named: 'documentType'),
+          filePath: any(named: 'filePath'),
+          fileName: any(named: 'fileName'),
+          submissionId: any(named: 'submissionId'),
+        )).thenAnswer((_) async => 'company-doc-1');
+
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: CompanyDetailsStep(
+          categorySlug: 'machinery_equipment',
+          serviceCount: 2,
+          roleCount: 0,
+          initialProfile: null,
+          providerRepository: mockRepo,
+          onDraftChanged: (_) {},
+          onSave: ({required profile}) async {},
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Upload company documents'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Upload document'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Upload document'));
+    await tester.pumpAndSettle();
+
+    verify(() => mockRepo.uploadCompanyVerificationDocument(
+          categorySlug: 'machinery_equipment',
+          documentType: 'business_registration',
+          fileName: 'registration.pdf',
+          mimeType: 'application/pdf',
+          bytes: any(named: 'bytes'),
+        )).called(1);
+    verify(() => mockRepo.saveCompanyDocument(
+          categorySlug: 'machinery_equipment',
+          documentType: 'business_registration',
+          filePath: 'company-evidence-path',
+          fileName: 'registration.pdf',
+          submissionId: null,
+        )).called(1);
+    await tester.scrollUntilVisible(
+      find.text('Pending review').first,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Pending review'), findsWidgets);
+    expect(find.text('Verified'), findsNothing);
   });
 
   group('ProviderCapability Entity', () {

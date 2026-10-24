@@ -2830,19 +2830,6 @@ class _CapabilityRow extends StatelessWidget {
                             color: alreadyOwned ? text2 : null,
                           ),
                         ),
-                        if (companyStyle &&
-                            cap.verificationPolicy == 'required_proof') ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            AppLocalizations.of(context)!
-                                .providerPolicyNeedsProofTag,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.tertiary,
-                            ),
-                          ),
-                        ],
                         if (subtitle != null && subtitle.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
