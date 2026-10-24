@@ -252,6 +252,9 @@ class _ProviderServicesView extends StatelessWidget {
     final initialPersonalName = profileState is ProfileCubitLoaded
         ? profileState.profile.displayName
         : '';
+    final initialPersonalAvatarUrl = profileState is ProfileCubitLoaded
+        ? profileState.profile.avatarUrl
+        : null;
     final defaultCurrency = profileState is ProfileCubitLoaded
         ? profileState.profile.incomeCurrency
         : 'UGX';
@@ -280,6 +283,7 @@ class _ProviderServicesView extends StatelessWidget {
           : true,
       preselectedCategorySlug: preselectedCategorySlug,
       initialPersonalName: initialPersonalName,
+      initialPersonalAvatarUrl: initialPersonalAvatarUrl,
       initialProofRoleSlug: initialProofRoleSlug,
       initialCompanyCertification: initialCompanyCertification,
     );

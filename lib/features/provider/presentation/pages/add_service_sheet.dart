@@ -20,7 +20,6 @@ import '../../domain/entities/provider_company_profile.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import '../widgets/company_details_step.dart';
-import '../widgets/provider_type_sheet.dart';
 
 const _marketingServicesSlug = 'marketing_services';
 const _audienceCapabilitySlug = 'i_have_an_audience';
@@ -121,6 +120,7 @@ class AddServiceSheet extends StatefulWidget {
     this.existingFinancialMetadata,
     this.preselectedCategorySlug,
     this.initialPersonalName,
+    this.initialPersonalAvatarUrl,
     required this.needsRepository,
     required this.providerRepository,
     this.capabilityProfilesEnabled = true,
@@ -136,6 +136,7 @@ class AddServiceSheet extends StatefulWidget {
   final Map<String, dynamic>? existingFinancialMetadata;
   final String? preselectedCategorySlug;
   final String? initialPersonalName;
+  final String? initialPersonalAvatarUrl;
   final NeedsRepository needsRepository;
   final IProviderRepository providerRepository;
   final bool capabilityProfilesEnabled;
@@ -159,6 +160,7 @@ class AddServiceSheet extends StatefulWidget {
     bool initialCompanyCertification = false,
     String? preselectedCategorySlug,
     String? initialPersonalName,
+    String? initialPersonalAvatarUrl,
   }) {
     return showModalBottomSheet<ProviderCapabilitySelection>(
       context: context,
@@ -183,6 +185,7 @@ class AddServiceSheet extends StatefulWidget {
               existingFinancialMetadata: existingFinancialMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
               initialPersonalName: initialPersonalName,
+              initialPersonalAvatarUrl: initialPersonalAvatarUrl,
               needsRepository: needsRepository,
               providerRepository: providerRepository,
               capabilityProfilesEnabled: capabilityProfilesEnabled,
@@ -256,6 +259,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _initialProofDestinationOpened = false;
   String _personalDisplayName = '';
   String _companyDisplayName = '';
+  String _companyPreviewName = '';
 
   @override
   void initState() {
@@ -644,6 +648,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       };
       _personalDisplayName = personalName;
       _companyDisplayName = initialCompanyName;
+      _companyPreviewName =
+          companyData['company_name']?.toString().trim().isNotEmpty == true
+              ? companyData['company_name'].toString()
+              : initialCompanyName;
       _representativeAuthorized =
           savedPresentation['representative_authorized'] == true;
       _pendingIdentityOffers =
@@ -1137,39 +1145,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       _identityPresentation['display_name']
                                               ?.toString() ??
                                           (widget.initialPersonalName ?? ''),
-                                  initialRepresentativeName:
-                                      _identityPresentation[
-                                                  'representative_name']
-                                              ?.toString() ??
-                                          (widget.initialPersonalName ?? ''),
+                                  initialAvatarUrl:
+                                      widget.initialPersonalAvatarUrl,
+                                  companyPreviewName: _companyPreviewName,
                                   categoryName: _selectedCategory
                                           ?.localizedName(localeCode) ??
                                       '',
-                                  initialDisplayMode:
-                                      _identityPresentation['display_mode']
-                                              ?.toString() ??
-                                          'personal',
-                                  representativeAuthorized:
-                                      _representativeAuthorized,
-                                  isCurrent:
-                                      _savedProviderType == _providerType,
-                                  onPresentationChanged: (value) =>
-                                      setState(() {
-                                    _identityPresentation = value;
-                                    if (_providerType ==
-                                        ProviderCategoryType.company) {
-                                      _companyDisplayName =
-                                          value['display_name']?.toString() ??
-                                              '';
-                                    } else {
-                                      _personalDisplayName =
-                                          value['display_name']?.toString() ??
-                                              '';
-                                    }
-                                    _representativeAuthorized =
-                                        value['representative_authorized'] ==
-                                            true;
-                                  }),
+                                  currentType: _savedProviderType,
                                   onSelect: (value) => setState(() {
                                     _providerType = value;
                                     _activeIdentityCapabilities =
@@ -1424,7 +1406,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 }
 
-class ProviderTypeStep extends StatefulWidget {
+class ProviderTypeStep extends StatelessWidget {
   const ProviderTypeStep({
     super.key,
     required this.selected,
@@ -1433,12 +1415,10 @@ class ProviderTypeStep extends StatefulWidget {
     required this.onSelect,
     required this.onContinue,
     required this.initialDisplayName,
-    required this.initialRepresentativeName,
+    this.initialAvatarUrl,
+    required this.companyPreviewName,
     required this.categoryName,
-    required this.initialDisplayMode,
-    required this.representativeAuthorized,
-    required this.isCurrent,
-    required this.onPresentationChanged,
+    required this.currentType,
   });
 
   final ProviderCategoryType? selected;
@@ -1447,268 +1427,416 @@ class ProviderTypeStep extends StatefulWidget {
   final ValueChanged<ProviderCategoryType> onSelect;
   final VoidCallback onContinue;
   final String initialDisplayName;
-  final String initialRepresentativeName;
+  final String? initialAvatarUrl;
+  final String companyPreviewName;
   final String categoryName;
-  final String initialDisplayMode;
-  final bool representativeAuthorized;
-  final bool isCurrent;
-  final ValueChanged<Map<String, dynamic>> onPresentationChanged;
+  final ProviderCategoryType? currentType;
 
-  @override
-  State<ProviderTypeStep> createState() => _ProviderTypeStepState();
-}
+  Widget _optionCard(
+    BuildContext context, {
+    required ProviderCategoryType type,
+    required String title,
+    required String description,
+    required AppLocalizations l10n,
+  }) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isSelected = selected == type;
+    final isCurrent = currentType == type;
+    final isCompany = type == ProviderCategoryType.company;
+    final savedName = isCompany
+        ? (companyPreviewName.trim().isNotEmpty
+            ? companyPreviewName.trim()
+            : initialDisplayName.trim())
+        : initialDisplayName.trim();
+    final hasSavedCompany = savedName.isNotEmpty;
+    final previewName = isCompany && !hasSavedCompany
+        ? 'Your company name'
+        : (savedName.isEmpty ? 'Your name' : savedName);
+    final hint = !isCompany
+        ? 'Name and photo come from your Profile'
+        : hasSavedCompany
+            ? 'Edit in step 2'
+            : 'You add it in step 2';
+    final icon = isCompany ? Icons.business_outlined : Icons.person_outline;
+    final neutralBorder = theme.brightness == Brightness.dark
+        ? AppColors.borderDark
+        : AppColors.borderLight;
+    final borderColor = isSelected ? colors.primary : neutralBorder;
 
-class _ProviderTypeStepState extends State<ProviderTypeStep> {
-  late final TextEditingController _displayName;
-  late final TextEditingController _representativeName;
-  late String _displayMode;
-  late bool _authorized;
-
-  @override
-  void initState() {
-    super.initState();
-    _displayName = TextEditingController(text: widget.initialDisplayName);
-    _representativeName =
-        TextEditingController(text: widget.initialRepresentativeName);
-    _displayMode = widget.initialDisplayMode;
-    _authorized = widget.representativeAuthorized;
-  }
-
-  void _notify() => widget.onPresentationChanged({
-        'display_mode': widget.selected == ProviderCategoryType.individual
-            ? 'personal'
-            : _displayMode,
-        'display_name': _displayName.text.trim(),
-        'representative_name': _representativeName.text.trim(),
-        'representative_authorized': _authorized,
-      });
-
-  bool get _presentationIsValid {
-    if (widget.selected == null) return false;
-    if (widget.selected == ProviderCategoryType.company &&
-        _displayName.text.trim().isEmpty) {
-      return false;
-    }
-    if (widget.selected == ProviderCategoryType.company &&
-        _displayMode == 'company_with_representative' &&
-        (_representativeName.text.trim().isEmpty || !_authorized)) {
-      return false;
-    }
-    if (_displayName.text.trim().isEmpty &&
-        widget.selected == ProviderCategoryType.individual) {
-      return true;
-    }
-    if (_displayName.text.trim().isEmpty) return false;
-    return true;
-  }
-
-  @override
-  void didUpdateWidget(covariant ProviderTypeStep oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.selected != widget.selected) {
-      _displayName.text = widget.initialDisplayName;
-      _representativeName.text = widget.initialRepresentativeName;
-      _displayMode = widget.initialDisplayMode;
-      _authorized = widget.representativeAuthorized;
-    }
-  }
-
-  @override
-  void dispose() {
-    _displayName.dispose();
-    _representativeName.dispose();
-    super.dispose();
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      selected: isSelected,
+      label: isCurrent ? '$title, ${l10n.providerIdentityCurrent}' : title,
+      hint: description,
+      button: true,
+      onTap: () => onSelect(type),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onSelect(type),
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 64),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? colors.primary.withValues(alpha: 0.08)
+                  : colors.surface,
+              border: Border.all(
+                color: borderColor,
+                width: isSelected ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(icon, color: colors.primary, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              if (isCurrent) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    l10n.providerIdentityCurrent,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            description,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? colors.primary : colors.outline,
+                      size: 22,
+                    ),
+                  ],
+                ),
+                if (isSelected) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'PREVIEW',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      border: Border.all(color: neutralBorder),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.09),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: !isCompany &&
+                                  initialAvatarUrl?.trim().isNotEmpty == true
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    initialAvatarUrl!.trim(),
+                                    width: 42,
+                                    height: 42,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      icon,
+                                      color: colors.primary,
+                                      size: 21,
+                                    ),
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) =>
+                                            loadingProgress == null
+                                                ? child
+                                                : Icon(
+                                                    icon,
+                                                    color: colors.primary,
+                                                    size: 21,
+                                                  ),
+                                  ),
+                                )
+                              : Icon(icon, color: colors.primary, size: 21),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                previewName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isCompany && !hasSavedCompany
+                                      ? colors.onSurfaceVariant
+                                      : colors.onSurface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (categoryName.isNotEmpty)
+                                Text(
+                                  categoryName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    hint,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Column(children: [
-      Expanded(
-          child: ListView(padding: const EdgeInsets.all(20), children: [
-        Text(l10n.providerTypeOffering,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Text(l10n.providerTypeTitle,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Text(l10n.providerTypeSubtitle),
-        const SizedBox(height: 20),
-        Semantics(
-          container: true,
-          explicitChildNodes: true,
-          label: l10n.providerTypeTitle,
-          child: Column(children: [
-            ProviderTypeCard(
-                type: ProviderCategoryType.individual,
-                title: l10n.providerTypeIndividual,
-                description: l10n.providerTypeIndividualDesc,
-                selected: widget.selected == ProviderCategoryType.individual,
-                isCurrent: widget.isCurrent &&
-                    widget.selected == ProviderCategoryType.individual,
-                currentLabel: l10n.providerIdentityCurrent,
-                onTap: () => widget.onSelect(ProviderCategoryType.individual)),
-            const SizedBox(height: 10),
-            ProviderTypeCard(
-                type: ProviderCategoryType.company,
-                title: l10n.providerTypeCompany,
-                description: l10n.providerTypeCompanyDesc,
-                selected: widget.selected == ProviderCategoryType.company,
-                isCurrent: widget.isCurrent &&
-                    widget.selected == ProviderCategoryType.company,
-                currentLabel: l10n.providerIdentityCurrent,
-                onTap: () => widget.onSelect(ProviderCategoryType.company)),
-          ]),
-        ),
-        if (widget.selected != null) ...[
-          const SizedBox(height: 20),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(l10n.providerIdentityDisplayHeading,
+    final currentTypeName = currentType == ProviderCategoryType.company
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
+    final selectedTypeName = selected == ProviderCategoryType.company
+        ? l10n.providerTypeCompany
+        : l10n.providerTypeIndividual;
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(
+                l10n.providerTypeOffering.toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.providerTypeTitle,
                 style: Theme.of(context)
                     .textTheme
-                    .titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-          ),
-          const SizedBox(height: 8),
-          if (widget.selected == ProviderCategoryType.company ||
-              _displayName.text.isNotEmpty) ...[
-            TextFormField(
-              controller: _displayName,
-              onChanged: (_) {
-                setState(() {});
-                _notify();
-              },
-              maxLength: 80,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: widget.selected == ProviderCategoryType.company
-                    ? l10n.providerIdentityCompanyName
-                    : l10n.providerIdentityDisplayName,
-                border: const OutlineInputBorder(),
-                counterText:
-                    widget.selected == ProviderCategoryType.company ? null : '',
-                helperText: widget.selected == ProviderCategoryType.company &&
-                        _displayName.text.trim().isEmpty
-                    ? l10n.providerCompanyNameRequired
-                    : null,
-                helperStyle:
-                    TextStyle(color: Theme.of(context).colorScheme.error),
+                    .headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
-            ),
-          ],
-          if (widget.selected == ProviderCategoryType.company) ...[
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: _displayMode == 'company_with_representative',
-              title: Text(l10n.providerIdentityCompanyRepresentative),
-              subtitle: Text(l10n.providerIdentityRepresentativeHelper),
-              onChanged: (value) {
-                setState(() {
-                  _displayMode =
-                      value ? 'company_with_representative' : 'company';
-                  _authorized = value;
-                });
-                _notify();
-              },
-            ),
-            if (_displayMode == 'company_with_representative') ...[
-              TextFormField(
-                controller: _representativeName,
-                onChanged: (_) {
-                  setState(() {});
-                  _notify();
-                },
-                maxLength: 80,
-                decoration: InputDecoration(
-                  labelText: l10n.providerIdentityRepresentativeName,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ],
-          if (_displayName.text.trim().isNotEmpty)
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.visibility_outlined),
-                title: Text(l10n.providerIdentityPublicPreview),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 8),
+              Text(l10n.providerTypeSubtitle),
+              const SizedBox(height: 18),
+              Semantics(
+                container: true,
+                explicitChildNodes: true,
+                label: l10n.providerTypeTitle,
+                child: Column(
                   children: [
-                    Text(_displayName.text.trim()),
-                    if (widget.selected == ProviderCategoryType.company &&
-                        _displayMode == 'company_with_representative' &&
-                        _representativeName.text.trim().isNotEmpty)
-                      Text(l10n.providerIdentityRepresentedBy(
-                          _representativeName.text.trim())),
-                    if (widget.categoryName.isNotEmpty)
-                      Text(widget.categoryName),
+                    _optionCard(
+                      context,
+                      type: ProviderCategoryType.individual,
+                      title: l10n.providerTypeIndividual,
+                      description: l10n.providerTypeIndividualDesc,
+                      l10n: l10n,
+                    ),
+                    const SizedBox(height: 10),
+                    _optionCard(
+                      context,
+                      type: ProviderCategoryType.company,
+                      title: l10n.providerTypeCompany,
+                      description: l10n.providerTypeCompanyDesc,
+                      l10n: l10n,
+                    ),
                   ],
                 ),
               ),
-            ),
-        ],
-        const SizedBox(height: 14),
-        Text(l10n.providerTypeNotVerification,
-            style: Theme.of(context).textTheme.bodySmall),
-        if (widget.error != null) ...[
-          const SizedBox(height: 12),
-          Text(widget.error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          TextButton.icon(
-              onPressed: widget.saving ? null : widget.onContinue,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.retry)),
-        ],
-      ])),
-      SafeArea(
+              if (currentType != null &&
+                  selected != null &&
+                  currentType != selected) ...[
+                const SizedBox(height: 10),
+                Container(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.06),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.22),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'You currently offer ${categoryName.isEmpty ? 'this category' : categoryName} as $currentTypeName. Choosing $selectedTypeName asks you to confirm the switch. ${l10n.providerIdentityDataKept}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                height: 1.3,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n.providerTypeNotVerification,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+              if (error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                TextButton.icon(
+                  onPressed: saving ? null : onContinue,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l10n.retry),
+                ),
+              ],
+              if (selected == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    l10n.providerTypeChooseOne,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        SafeArea(
           top: false,
           child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Column(children: [
-                SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: widget.selected == null ||
-                                !_presentationIsValid ||
-                                widget.saving
-                            ? null
-                            : widget.onContinue,
-                        child: widget.saving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : Text(l10n.btnContinue))),
-                if (widget.selected == null)
-                  Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(l10n.providerTypeChooseOne,
-                          style: Theme.of(context).textTheme.bodySmall)),
-                if (widget.selected == ProviderCategoryType.company &&
-                    _displayMode == 'company_with_representative' &&
-                    _representativeName.text.trim().isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(l10n.providerIdentityRequiredInfo,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.error)),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-              ]))),
-    ]);
+                ),
+                onPressed: saving ? null : onContinue,
+                child: saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.btnContinue),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
