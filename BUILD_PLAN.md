@@ -699,3 +699,39 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 | 2026-10-21 | Full Flutter test suite | Failed on two existing localization issues: missing Kinyarwanda `events_celebrations` description and unsupported `rw` localization delegate in the post-duration test. |
 | 2026-10-21 | SQL grammar parse and `git diff --check` | Passed: 80 SQL statements parsed; no whitespace errors. Syntax-only, not live semantic execution. |
 | — | SQL execution/idempotency/RLS, Home snapshots, staging upload reproduction | Pending. |
+
+## 19. Stage 4.17 — Profile & Verification merge (Part B)
+
+> Current state (2026-10-24): the Profile page and Additional Verification UI/navigation changes were reverted at the user's request. Both are restored to their pre-Stage-4.17 layouts and behavior. Retained provider/avatar data-path changes are tracked separately.
+
+### Scope and decisions
+
+- Merge Edit Profile and Identity Verification into Account → Profile & Verification. Keep `/profile` as the destination and preserve `/kyc` as a redirect for existing links.
+- Keep KYC status and its existing access rules as the source of truth. Access chips summarize the current KYC, borrower, lender, and provider-profile gates; no eligibility or verification logic changes.
+- Phone remains read-only. Name, district, and photo changes use the existing profile update and private avatar storage paths.
+- Provider verification content remains behind `capability_profiles_enabled`; extra-verification entries show only proof-required categories and open the existing capability flow.
+- Expiry appears inside the KYC card only when an approved verification expires within 30 days. Rejection reason and required-document actions remain inside that card for non-approved states.
+- The Save changes button stays fixed and is disabled until an editable profile value changes. The scrollable content and access chips must remain usable on narrow screens.
+
+### Implementation and verification tracker
+
+| Item | Status | Evidence / remaining work |
+|---|---|---|
+| Unified Profile & Verification screen, old route redirects, Account entry point | Reverted from Profile page | The existing Account route opens the pre-Stage-4.17 Profile UI again. `/kyc` retains its existing redirect. |
+| KYC status card, rejection reason, conditional expiry, required-document actions | Reverted from Profile page | Previous Profile layout and KYC presentation restored. |
+| Marketplace access chips derived from existing access flags | Reverted from Profile page | Access summary widget remains in source but is no longer integrated into Profile. |
+| Profile form changes, locked phone, fixed Save button | Reverted from Profile page | Prior form and save behavior restored; email remains absent from the Profile UI. |
+| Photo type/size validation, progress, failure retry | Partial | Repository type/size validation remains; the Profile UI progress/retry behavior was reverted. |
+| Additional Verification filtered by required-proof categories and category auto-open | Reverted | Section, router extra, and capability page auto-open behavior restored to the prior flow. |
+| Focused widget and cubit coverage | Reverted | Profile-merge and Additional Verification UI tests/screenshots were removed; Part A company identity tests remain. |
+| 390 px and 320 px layout snapshots | Removed | Fixtures were deleted because they no longer describe the active Profile UI. |
+| Full locale, RTL, dark-theme, text-scale, and staging route regression matrix | Pending | Current checkout tests cover English responsive layouts; complete this matrix before release. |
+
+### Verification log
+
+| Date | Check | Result |
+|---|---|---|
+| 2026-10-24 | Profile verification widget tests with 390 px and 320 px goldens | Passed before the user requested the UI rollback; the test and fixtures were removed afterward. |
+| 2026-10-24 | Focused account/provider analyzer | Passed with no issues. |
+| 2026-10-24 | Profile verification widgets, ProfileCubit, and company identity setup tests | Passed: 7, 18, and 2 tests respectively. |
+| 2026-10-24 | `git diff --check` | Passed. |

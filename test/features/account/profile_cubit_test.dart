@@ -299,11 +299,16 @@ void main() {
       'setPendingAvatar emits ProfileCubitLoaded with pendingAvatarBytes',
       build: () => ProfileCubit(repository),
       seed: () => const ProfileCubitLoaded(_testProfile),
-      act: (cubit) => cubit.setPendingAvatar(Uint8List.fromList([1, 2, 3])),
+      act: (cubit) => cubit.setPendingAvatar(
+        Uint8List.fromList([1, 2, 3]),
+        extension: 'png',
+      ),
       expect: () => [
         isA<ProfileCubitLoaded>()
             .having(
                 (s) => s.pendingAvatarBytes, 'pendingAvatarBytes', isNotNull)
+            .having((s) => s.pendingAvatarExtension, 'pendingAvatarExtension',
+                'png')
             .having(
                 (s) => s.pendingAvatarRemoved, 'pendingAvatarRemoved', isFalse),
       ],

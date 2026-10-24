@@ -11,11 +11,9 @@ class KycRequiredDocumentsSection extends StatelessWidget {
   const KycRequiredDocumentsSection({
     super.key,
     required this.hasProfilePhoto,
-    this.showRejectionReason = true,
   });
 
   final bool hasProfilePhoto;
-  final bool showRejectionReason;
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +61,7 @@ class KycRequiredDocumentsSection extends StatelessWidget {
             Text(l10n.kycRequiredDocsSubtitle,
                 style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 14),
-            if (showRejectionReason &&
-                kyc?.isRejected == true &&
+            if (kyc?.isRejected == true &&
                 kyc?.rejectionReason?.isNotEmpty == true) ...[
               Container(
                 width: double.infinity,

@@ -183,9 +183,16 @@ class ProfileRepository {
 
   /// Upload avatar image bytes to Supabase Storage bucket and return public URL.
   Future<String> uploadAvatarBytes(List<int> bytes, String fileExt) async {
+    final cleanExt = fileExt.replaceAll('.', '').toLowerCase();
+    final ext = cleanExt.isEmpty ? 'jpg' : cleanExt;
+    if (bytes.isEmpty || bytes.length > 5 * 1024 * 1024) {
+      throw const ValidationException(
+          'Choose an image that is 5 MB or smaller.');
+    }
+    if (!const {'jpg', 'jpeg', 'png', 'webp'}.contains(ext)) {
+      throw const ValidationException('Choose a JPG, PNG, or WebP image.');
+    }
     try {
-      final cleanExt = fileExt.replaceAll('.', '').toLowerCase();
-      final ext = cleanExt.isEmpty ? 'jpg' : cleanExt;
       final mimeType = switch (ext) {
         'png' => 'image/png',
         'webp' => 'image/webp',

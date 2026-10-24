@@ -30,9 +30,7 @@ import 'add_service_sheet.dart';
 import 'capability_detail_sheet.dart';
 
 class ProviderServicesPage extends StatelessWidget {
-  const ProviderServicesPage({super.key, this.initialCapabilitySlug});
-
-  final String? initialCapabilitySlug;
+  const ProviderServicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,24 +41,13 @@ class ProviderServicesPage extends StatelessWidget {
         ),
         BlocProvider(create: (_) => getIt<ProfileCubit>()..load()),
       ],
-      child: _ProviderServicesView(
-        initialCapabilitySlug: initialCapabilitySlug,
-      ),
+      child: const _ProviderServicesView(),
     );
   }
 }
 
-class _ProviderServicesView extends StatefulWidget {
-  const _ProviderServicesView({this.initialCapabilitySlug});
-
-  final String? initialCapabilitySlug;
-
-  @override
-  State<_ProviderServicesView> createState() => _ProviderServicesViewState();
-}
-
-class _ProviderServicesViewState extends State<_ProviderServicesView> {
-  bool _attemptedAutoOpen = false;
+class _ProviderServicesView extends StatelessWidget {
+  const _ProviderServicesView();
 
   @override
   Widget build(BuildContext context) {
@@ -123,23 +110,6 @@ class _ProviderServicesViewState extends State<_ProviderServicesView> {
         final loaded = state as CapabilitiesLoaded;
         final caps = loaded.capabilities;
         final opps = loaded.opportunities;
-        if (!_attemptedAutoOpen && widget.initialCapabilitySlug != null) {
-          _attemptedAutoOpen = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final target = caps
-                .where(
-                    (cap) => cap.capabilitySlug == widget.initialCapabilitySlug)
-                .firstOrNull;
-            if (mounted && target != null && loaded.capabilityProfilesEnabled) {
-              _showCapabilityDetail(
-                context,
-                capability: target,
-                opps: opps,
-                l10n: AppLocalizations.of(context)!,
-              );
-            }
-          });
-        }
         final profileState = context.watch<ProfileCubit>().state;
         final profile =
             profileState is ProfileCubitLoaded ? profileState.profile : null;

@@ -795,7 +795,9 @@ class _ProfileHeaderCard extends StatelessWidget {
                     Row(children: [
                       Flexible(
                         child: Text(
-                          profile?.displayName ?? 'User',
+                          profile?.fullName?.trim().isNotEmpty == true
+                              ? profile!.fullName!.trim()
+                              : 'User',
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700),
                           overflow: TextOverflow.ellipsis,
@@ -806,13 +808,6 @@ class _ProfileHeaderCard extends StatelessWidget {
                         _VerifiedBadge(),
                       ],
                     ]),
-                    const SizedBox(height: 3),
-                    // Email
-                    Text(
-                      profile?.email ?? '',
-                      style: TextStyle(fontSize: 11, color: secondaryTextColor),
-                      overflow: TextOverflow.ellipsis,
-                    ),
                     const SizedBox(height: 6),
                     // Location
                     Row(children: [

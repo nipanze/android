@@ -301,13 +301,7 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.accountServices,
         name: 'accountServices',
-        pageBuilder: (_, state) => _slide(
-          state,
-          ProviderServicesPage(
-            initialCapabilitySlug:
-                state.extra is String ? state.extra as String : null,
-          ),
-        ),
+        pageBuilder: (_, state) => _slide(state, const ProviderServicesPage()),
       ),
       GoRoute(
         path: AppRoutes.accountPlans,
