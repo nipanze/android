@@ -3469,6 +3469,47 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
+  String get providerIdentitySwitchingCategoryBadge =>
+      'KUBADILISHA KATIKA KATEGORIA HII';
+
+  @override
+  String providerIdentitySwitchCategoryBody(String category) {
+    return 'Ni $category pekee inayobadilika. Kategoria zako nyingine zote zinabaki kama zilivyo.';
+  }
+
+  @override
+  String get providerIdentityKeptSafeHeader => 'Vilivyolindwa';
+
+  @override
+  String get providerIdentityKeptServiceInfo =>
+      'Taarifa zako za huduma. Hakuna kitakachofutwa.';
+
+  @override
+  String get providerIdentityKeptDealsReviews =>
+      'Mikataba iliyokubaliwa, maoni na historia.';
+
+  @override
+  String get providerIdentityKeptJobRoles =>
+      'Majukumu yako binafsi ya kazi yataendelea kutumika.';
+
+  @override
+  String get providerIdentityWhatChangesHeader => 'Kinachobadilika';
+
+  @override
+  String providerIdentityChangeServicesInactive(String identity) {
+    return 'Huduma zako za $identity hapa hazitakuwa amilifu. Unaweza kuzirejesha baadaye.';
+  }
+
+  @override
+  String providerIdentityChangeNewOffers(String identity) {
+    return 'Ofa mpya zitatumia utambulisho wako wa $identity.';
+  }
+
+  @override
+  String get providerIdentityChangeVerification =>
+      'Uthibitisho unaweza kuombwa tena. Hauhamishwi kati ya vitambulisho.';
+
+  @override
   String get providerIdentitySwitchBody =>
       'Hii hubadilisha aina ya utambulisho katika kategoria hii pekee. Kategoria nyingine hazibadiliki.';
 

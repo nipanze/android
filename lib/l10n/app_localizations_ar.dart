@@ -3451,6 +3451,46 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get providerIdentitySwitchingCategoryBadge => 'التبديل في هذا القسم';
+
+  @override
+  String providerIdentitySwitchCategoryBody(String category) {
+    return 'يتغير قسم $category فقط. تبقى أقسامك الأخرى كما هي تمامًا.';
+  }
+
+  @override
+  String get providerIdentityKeptSafeHeader => 'محفوظ بأمان';
+
+  @override
+  String get providerIdentityKeptServiceInfo =>
+      'معلومات خدماتك. لن يُحذف أي شيء.';
+
+  @override
+  String get providerIdentityKeptDealsReviews =>
+      'الصفقات المقبولة والتقييمات والسجل.';
+
+  @override
+  String get providerIdentityKeptJobRoles =>
+      'أدوارك المهنية الشخصية تبقى نشطة.';
+
+  @override
+  String get providerIdentityWhatChangesHeader => 'ما الذي يتغير';
+
+  @override
+  String providerIdentityChangeServicesInactive(String identity) {
+    return 'خدماتك كـ $identity هنا ستصبح غير نشطة. يمكنك استعادتها لاحقًا.';
+  }
+
+  @override
+  String providerIdentityChangeNewOffers(String identity) {
+    return 'العروض الجديدة ستستخدم هوية $identity الخاصة بك.';
+  }
+
+  @override
+  String get providerIdentityChangeVerification =>
+      'قد يُطلب منك التحقق مجددًا. لا ينتقل التحقق بين الهويات.';
+
+  @override
   String get providerIdentitySwitchBody =>
       'سيغيّر هذا القسم الحالي فقط. ستبقى أقسامك الأخرى كما هي.';
 

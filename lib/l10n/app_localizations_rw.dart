@@ -3471,6 +3471,47 @@ class AppLocalizationsRw extends AppLocalizations {
   }
 
   @override
+  String get providerIdentitySwitchingCategoryBadge =>
+      'GUHINDURA MURI IKI CYICIRO';
+
+  @override
+  String providerIdentitySwitchCategoryBody(String category) {
+    return '$category gusa niyo ihinduka. Ibindi byiciro byawe biragumana uko bisanzwe biri.';
+  }
+
+  @override
+  String get providerIdentityKeptSafeHeader => 'Ibibitswe neza';
+
+  @override
+  String get providerIdentityKeptServiceInfo =>
+      'Amakuru ya serivisi yawe. Nta kintu gisibwa.';
+
+  @override
+  String get providerIdentityKeptDealsReviews =>
+      'Amasezerano yemewe, ibitekerezo n’amateka.';
+
+  @override
+  String get providerIdentityKeptJobRoles =>
+      'Imyanya yawe bwite y’akazi irakomeza gukora.';
+
+  @override
+  String get providerIdentityWhatChangesHeader => 'Ibihinduka';
+
+  @override
+  String providerIdentityChangeServicesInactive(String identity) {
+    return 'Serivisi zawe za $identity hano zirahagarikwa. Ushobora kuzigarura nyuma.';
+  }
+
+  @override
+  String providerIdentityChangeNewOffers(String identity) {
+    return 'Amasoko mashya azakoresha umwirondoro wawe wa $identity.';
+  }
+
+  @override
+  String get providerIdentityChangeVerification =>
+      'Igenzura rishobora kongera gusabwa. Ntiryimurwa hagati y’imyirondoro.';
+
+  @override
   String get providerIdentitySwitchBody =>
       'Ibi bihindura iki cyiciro gusa. Ibindi byiciro ntibihinduka.';
 

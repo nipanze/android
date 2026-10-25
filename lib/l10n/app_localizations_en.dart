@@ -3455,6 +3455,47 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get providerIdentitySwitchingCategoryBadge =>
+      'SWITCHING IN THIS CATEGORY';
+
+  @override
+  String providerIdentitySwitchCategoryBody(String category) {
+    return 'Only $category changes. Your other categories stay exactly as they are.';
+  }
+
+  @override
+  String get providerIdentityKeptSafeHeader => 'Kept safe';
+
+  @override
+  String get providerIdentityKeptServiceInfo =>
+      'Your service information. Nothing is deleted.';
+
+  @override
+  String get providerIdentityKeptDealsReviews =>
+      'Accepted deals, reviews and history.';
+
+  @override
+  String get providerIdentityKeptJobRoles =>
+      'Your personal job roles stay active.';
+
+  @override
+  String get providerIdentityWhatChangesHeader => 'What changes';
+
+  @override
+  String providerIdentityChangeServicesInactive(String identity) {
+    return 'Your $identity services here become inactive. You can restore them later.';
+  }
+
+  @override
+  String providerIdentityChangeNewOffers(String identity) {
+    return 'New offers will use your $identity identity.';
+  }
+
+  @override
+  String get providerIdentityChangeVerification =>
+      'Verification may be asked again. It does not carry over between identities.';
+
+  @override
   String get providerIdentitySwitchBody =>
       'This changes only this category. Your other categories stay as they are.';
 

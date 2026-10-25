@@ -370,9 +370,11 @@ void main() {
           serviceCount: 2,
           roleCount: 0,
           initialProfile: null,
+          companyName: 'Acme Builders',
           providerRepository: mockRepo,
           onDraftChanged: (_) {},
           onSave: ({required profile}) async {},
+          onEditCompanyName: () {},
         ),
       ),
     ));
@@ -1001,6 +1003,8 @@ void main() {
         serviceCount: 1,
         roleCount: 0,
         initialProfile: null,
+        companyName: 'Acme Builders',
+        onEditCompanyName: () {},
         verificationSubmissions: const [
           {
             'id': 'doc-1',

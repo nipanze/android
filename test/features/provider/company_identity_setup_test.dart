@@ -70,4 +70,141 @@ void main() {
     await tester.tap(find.text('Edit'));
     expect(editTapped, isTrue);
   });
+
+  testWidgets(
+      'IdentitySwitchConfirmStep matches redesigned layout with transition chips, Kept safe, and What changes',
+      (tester) async {
+    var continued = false;
+    var cancelled = false;
+
+    await tester.pumpWidget(_localizedApp(
+      IdentitySwitchConfirmStep(
+        categoryName: 'Construction & Building',
+        from: ProviderCategoryType.individual,
+        to: ProviderCategoryType.company,
+        pendingOffers: 0,
+        onContinue: () => continued = true,
+        onCancel: () => cancelled = true,
+      ),
+    ));
+
+    // Badge and title
+    expect(find.text('SWITCHING IN THIS CATEGORY'), findsOneWidget);
+    expect(find.text('Switch to Company / Organization?'), findsOneWidget);
+    expect(
+        find.text(
+            'Only Construction & Building changes. Your other categories stay exactly as they are.'),
+        findsOneWidget);
+
+    // Visual Transition Chips
+    expect(find.text('Individual'), findsOneWidget);
+    expect(find.text('Company'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
+
+    // Kept safe section
+    expect(find.text('Kept safe'), findsOneWidget);
+    expect(find.text('Your service information. Nothing is deleted.'),
+        findsOneWidget);
+    expect(find.text('Accepted deals, reviews and history.'), findsOneWidget);
+    expect(find.text('Your personal job roles stay active.'), findsOneWidget);
+    expect(find.byIcon(Icons.gpp_good_outlined), findsOneWidget);
+
+    // What changes section
+    expect(find.text('What changes'), findsOneWidget);
+    expect(
+        find.text(
+            'Your Individual services here become inactive. You can restore them later.'),
+        findsOneWidget);
+    expect(find.text('New offers will use your Company identity.'), findsOneWidget);
+    expect(
+        find.text(
+            'Verification may be asked again. It does not carry over between identities.'),
+        findsOneWidget);
+    expect(find.byIcon(Icons.sync_rounded), findsOneWidget);
+
+    // Action buttons
+    expect(find.widgetWithText(FilledButton, 'Continue'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Cancel'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+    expect(continued, isTrue);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+    expect(cancelled, isTrue);
+  });
+
+  testWidgets('IdentitySwitchConfirmStep renders in dark theme without overflow',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 820,
+            child: IdentitySwitchConfirmStep(
+              categoryName: 'Construction & Building',
+              from: ProviderCategoryType.individual,
+              to: ProviderCategoryType.company,
+              pendingOffers: 2,
+              onContinue: () {},
+              onCancel: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('SWITCHING IN THIS CATEGORY'), findsOneWidget);
+    expect(find.text('Kept safe'), findsOneWidget);
+    expect(find.text('What changes'), findsOneWidget);
+    expect(
+        find.text(
+            'You have 2 pending offers. They stay as sent; you can withdraw them yourself.'),
+        findsOneWidget);
+  });
+
+  testWidgets('IdentitySwitchConfirmStep renders in Swahili and Arabic',
+      (tester) async {
+    for (final locale in [const Locale('sw'), const Locale('ar')]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 390,
+              height: 820,
+              child: IdentitySwitchConfirmStep(
+                categoryName: 'Construction & Building',
+                from: ProviderCategoryType.individual,
+                to: ProviderCategoryType.company,
+                pendingOffers: 0,
+                onContinue: () {},
+                onCancel: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      if (locale.languageCode == 'sw') {
+        expect(find.text('KUBADILISHA KATIKA KATEGORIA HII'), findsOneWidget);
+        expect(find.text('Vilivyolindwa'), findsOneWidget);
+        expect(find.text('Kinachobadilika'), findsOneWidget);
+        expect(find.text('Kampuni'), findsOneWidget);
+        expect(find.text('Mtu binafsi'), findsOneWidget);
+      } else {
+        expect(find.text('التبديل في هذا القسم'), findsOneWidget);
+        expect(find.text('محفوظ بأمان'), findsOneWidget);
+        expect(find.text('ما الذي يتغير'), findsOneWidget);
+        expect(find.text('شركة'), findsOneWidget);
+        expect(find.text('فرد'), findsOneWidget);
+      }
+    }
+  });
 }

@@ -1071,8 +1071,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                           constraints:
                               const BoxConstraints(minWidth: 44, minHeight: 44),
                           padding: EdgeInsets.zero,
-                          icon: Icon(Icons.arrow_back_rounded,
-                              color: text2, size: 22),
+                          icon: Icon(Icons.arrow_back_ios_new_rounded,
+                              color: text2, size: 20),
                         ),
                       if (_step > 0) const SizedBox(width: 8),
                       Expanded(
@@ -1113,7 +1113,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                     ],
                   ),
                 ),
-                const Divider(height: 1),
+                if (_step != 6) const Divider(height: 1),
 
                 // Content Area
                 Expanded(
@@ -1175,7 +1175,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                   onContinue: _continueProviderType,
                                 )
                               : _step == 6
-                                  ? _IdentitySwitchConfirmStep(
+                                  ? IdentitySwitchConfirmStep(
+                                      categoryName: _selectedCategory
+                                              ?.localizedName(localeCode) ??
+                                          '',
                                       from: _savedProviderType!,
                                       to: _providerType!,
                                       pendingOffers: _pendingIdentityOffers,
@@ -1839,8 +1842,10 @@ class ProviderTypeStep extends StatelessWidget {
   }
 }
 
-class _IdentitySwitchConfirmStep extends StatelessWidget {
-  const _IdentitySwitchConfirmStep({
+class IdentitySwitchConfirmStep extends StatelessWidget {
+  const IdentitySwitchConfirmStep({
+    super.key,
+    required this.categoryName,
     required this.from,
     required this.to,
     required this.pendingOffers,
@@ -1848,6 +1853,7 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
     required this.onCancel,
   });
 
+  final String categoryName;
   final ProviderCategoryType from;
   final ProviderCategoryType to;
   final int pendingOffers;
@@ -1857,105 +1863,392 @@ class _IdentitySwitchConfirmStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
     final toName = to == ProviderCategoryType.company
         ? l10n.providerTypeCompany
         : l10n.providerTypeIndividual;
-    final fromName = from == ProviderCategoryType.company
-        ? l10n.providerTypeCompany
+    final fromNameShort = from == ProviderCategoryType.company
+        ? l10n.companyLabel
         : l10n.providerTypeIndividual;
-    final notes = <String>[
-      l10n.providerIdentityDataKept,
-      l10n.providerIdentityOldServicesInactive(fromName),
-      l10n.providerIdentityNewOffers(toName),
-      l10n.providerIdentityVerificationReset,
-      l10n.providerIdentityHistoryKept,
-      if (pendingOffers > 0) l10n.providerIdentityPendingOffers(pendingOffers),
-    ];
-    final colors = Theme.of(context).colorScheme;
-    return Column(children: [
-      Expanded(
-        child: ListView(padding: const EdgeInsets.all(20), children: [
-          Text(l10n.providerIdentitySwitchTitle(toName),
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 10),
-          Text(l10n.providerIdentitySwitchBody,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: colors.onSurfaceVariant, height: 1.4)),
-          const SizedBox(height: 20),
-          for (var i = 0; i < notes.length; i++) ...[
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: colors.surfaceContainerLow,
-                border: Border.all(color: colors.outlineVariant),
-                borderRadius: BorderRadius.circular(12),
+    final toNameShort = to == ProviderCategoryType.company
+        ? l10n.companyLabel
+        : l10n.providerTypeIndividual;
+
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.providerIdentitySwitchingCategoryBadge,
+                style: TextStyle(
+                  color: colors.primary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 8),
+              Text(
+                l10n.providerIdentitySwitchTitle(toName),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: colors.onSurface,
+                  height: 1.22,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                categoryName.isNotEmpty
+                    ? l10n.providerIdentitySwitchCategoryBody(categoryName)
+                    : l10n.providerIdentitySwitchBody,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Visual Identity Transition Row
+              Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 1),
-                    child: Icon(
-                      i == notes.length - 1 && pendingOffers > 0
-                          ? Icons.pending_actions_rounded
-                          : Icons.check_circle_outline_rounded,
-                      size: 20,
-                      color: i == notes.length - 1 && pendingOffers > 0
-                          ? colors.tertiary
-                          : colors.primary,
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? colors.surfaceContainerLow
+                            : const Color(0xFFF8FAFC),
+                        border: Border.all(
+                          color: isDark
+                              ? colors.outlineVariant
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            from == ProviderCategoryType.company
+                                ? Icons.business_outlined
+                                : Icons.person_outline_rounded,
+                            size: 20,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              fromNameShort,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: colors.onSurfaceVariant,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Transform.scale(
+                      scaleX: isRtl ? -1 : 1,
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                    ),
+                  ),
                   Expanded(
-                    child: Text(notes[i],
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              height: 1.35,
-                            )),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? colors.primary.withValues(alpha: 0.08)
+                            : const Color(0xFFF4F8FF),
+                        border: Border.all(
+                          color: colors.primary,
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            to == ProviderCategoryType.company
+                                ? Icons.business_outlined
+                                : Icons.person_outline_rounded,
+                            size: 20,
+                            color: colors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              toNameShort,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: colors.primary,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ]),
-      ),
-      SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: Column(children: [
-            SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: onContinue,
-                    child: Text(l10n.btnContinue))),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+              const SizedBox(height: 20),
+
+              // "Kept safe" Section Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF0F291E)
+                      : const Color(0xFFF0FDF4),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF22C55E).withValues(alpha: 0.3)
+                        : const Color(0xFFDCFCE7),
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                onPressed: onCancel,
-                child: Text(l10n.cancel),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.gpp_good_outlined,
+                          size: 20,
+                          color: isDark
+                              ? const Color(0xFF4ADE80)
+                              : const Color(0xFF15803D),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.providerIdentityKeptSafeHeader,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? const Color(0xFF86EFAC)
+                                : const Color(0xFF166534),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBulletItem(
+                      icon: Icons.check_rounded,
+                      iconColor: isDark
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF16A34A),
+                      text: l10n.providerIdentityKeptServiceInfo,
+                      textColor: colors.onSurface,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildBulletItem(
+                      icon: Icons.check_rounded,
+                      iconColor: isDark
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF16A34A),
+                      text: l10n.providerIdentityKeptDealsReviews,
+                      textColor: colors.onSurface,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildBulletItem(
+                      icon: Icons.check_rounded,
+                      iconColor: isDark
+                          ? const Color(0xFF4ADE80)
+                          : const Color(0xFF16A34A),
+                      text: l10n.providerIdentityKeptJobRoles,
+                      textColor: colors.onSurface,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ]),
+              const SizedBox(height: 14),
+
+              // "What changes" Section Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? colors.surfaceContainerLow
+                      : const Color(0xFFF4F7FC),
+                  border: Border.all(
+                    color: isDark
+                        ? colors.outlineVariant.withValues(alpha: 0.5)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.sync_rounded,
+                          size: 20,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.providerIdentityWhatChangesHeader,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBulletItem(
+                      icon: Icons.schedule_rounded,
+                      iconColor: isDark
+                          ? const Color(0xFFFBBF24)
+                          : const Color(0xFFD97706),
+                      text: l10n
+                          .providerIdentityChangeServicesInactive(fromNameShort),
+                      textColor: colors.onSurface,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildBulletItem(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: colors.primary,
+                      text: l10n.providerIdentityChangeNewOffers(toNameShort),
+                      textColor: colors.onSurface,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildBulletItem(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: colors.primary,
+                      text: l10n.providerIdentityChangeVerification,
+                      textColor: colors.onSurface,
+                    ),
+                    if (pendingOffers > 0) ...[
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.pending_actions_rounded,
+                        iconColor: colors.tertiary,
+                        text: l10n.providerIdentityPendingOffers(pendingOffers),
+                        textColor: colors.onSurface,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ]);
+      Divider(
+          height: 1,
+          color: isDark
+              ? colors.outlineVariant.withValues(alpha: 0.5)
+              : const Color(0xFFE2E8F0),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: onContinue,
+                    child: Text(
+                      l10n.btnContinue,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: onCancel,
+                    child: Text(
+                      l10n.cancel,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBulletItem({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    required Color textColor,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 18, color: iconColor),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13.5,
+              height: 1.38,
+              color: textColor,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

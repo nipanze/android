@@ -3503,6 +3503,47 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get providerIdentitySwitchingCategoryBadge =>
+      'CHANGEMENT DANS CETTE CATÉGORIE';
+
+  @override
+  String providerIdentitySwitchCategoryBody(String category) {
+    return 'Seule la catégorie $category change. Vos autres catégories restent exactement telles quelles.';
+  }
+
+  @override
+  String get providerIdentityKeptSafeHeader => 'Conservé en toute sécurité';
+
+  @override
+  String get providerIdentityKeptServiceInfo =>
+      'Vos informations de service. Rien n’est supprimé.';
+
+  @override
+  String get providerIdentityKeptDealsReviews =>
+      'Accords acceptés, avis et historique.';
+
+  @override
+  String get providerIdentityKeptJobRoles =>
+      'Vos rôles professionnels personnels restent actifs.';
+
+  @override
+  String get providerIdentityWhatChangesHeader => 'Ce qui change';
+
+  @override
+  String providerIdentityChangeServicesInactive(String identity) {
+    return 'Vos services $identity ici deviennent inactifs. Vous pourrez les restaurer plus tard.';
+  }
+
+  @override
+  String providerIdentityChangeNewOffers(String identity) {
+    return 'Les nouvelles offres utiliseront votre identité $identity.';
+  }
+
+  @override
+  String get providerIdentityChangeVerification =>
+      'La vérification peut être demandée à nouveau. Elle ne se transfère pas entre identités.';
+
+  @override
   String get providerIdentitySwitchBody =>
       'Cela ne change que cette catégorie. Vos autres catégories restent inchangées.';
 

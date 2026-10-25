@@ -6262,6 +6262,66 @@ abstract class AppLocalizations {
   /// **'Switch to {identity}?'**
   String providerIdentitySwitchTitle(String identity);
 
+  /// No description provided for @providerIdentitySwitchingCategoryBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'SWITCHING IN THIS CATEGORY'**
+  String get providerIdentitySwitchingCategoryBadge;
+
+  /// No description provided for @providerIdentitySwitchCategoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {category} changes. Your other categories stay exactly as they are.'**
+  String providerIdentitySwitchCategoryBody(String category);
+
+  /// No description provided for @providerIdentityKeptSafeHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept safe'**
+  String get providerIdentityKeptSafeHeader;
+
+  /// No description provided for @providerIdentityKeptServiceInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your service information. Nothing is deleted.'**
+  String get providerIdentityKeptServiceInfo;
+
+  /// No description provided for @providerIdentityKeptDealsReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted deals, reviews and history.'**
+  String get providerIdentityKeptDealsReviews;
+
+  /// No description provided for @providerIdentityKeptJobRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal job roles stay active.'**
+  String get providerIdentityKeptJobRoles;
+
+  /// No description provided for @providerIdentityWhatChangesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'What changes'**
+  String get providerIdentityWhatChangesHeader;
+
+  /// No description provided for @providerIdentityChangeServicesInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {identity} services here become inactive. You can restore them later.'**
+  String providerIdentityChangeServicesInactive(String identity);
+
+  /// No description provided for @providerIdentityChangeNewOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'New offers will use your {identity} identity.'**
+  String providerIdentityChangeNewOffers(String identity);
+
+  /// No description provided for @providerIdentityChangeVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification may be asked again. It does not carry over between identities.'**
+  String get providerIdentityChangeVerification;
+
   /// No description provided for @providerIdentitySwitchBody.
   ///
   /// In en, this message translates to:

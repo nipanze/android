@@ -23,7 +23,6 @@ import '../../domain/repositories/provider_repository_interface.dart';
 import '../cubit/capabilities_cubit.dart';
 import '../cubit/capabilities_state.dart';
 import '../widgets/capability_badge.dart';
-import '../widgets/provider_opportunities_section.dart';
 import 'add_service_sheet.dart';
 import 'capability_detail_sheet.dart';
 
