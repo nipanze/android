@@ -175,6 +175,64 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
+  Future<String> uploadCompanyLogo({
+    required String categorySlug,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw const AuthException('Not authenticated');
+    if (bytes.isEmpty || bytes.lengthInBytes > 2 * 1024 * 1024) {
+      throw const FormatException('Company logos must be 2 MB or smaller.');
+    }
+    final normalizedMime = mimeType.toLowerCase();
+    if (!const {'image/jpeg', 'image/png'}.contains(normalizedMime)) {
+      throw const FormatException('Choose a JPG or PNG image for the logo.');
+    }
+    final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final path = 'evidence/$uid/$categorySlug/company/logo/'
+        '${DateTime.now().microsecondsSinceEpoch}_$safeName';
+    try {
+      await _uploadProviderEvidenceObject(
+        path: path,
+        bytes: bytes,
+        mimeType: normalizedMime,
+      );
+      return path;
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<void> saveCompanyLogo({
+    required String categorySlug,
+    required String filePath,
+  }) async {
+    try {
+      await _client.rpc(RpcNames.saveProviderCompanyLogo, params: {
+        'p_category_slug': categorySlug,
+        'p_logo_path': filePath,
+      });
+      _companyProfileCache.remove(categorySlug);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<String> getCompanyLogoUrl(String filePath) async {
+    try {
+      return await _client.storage
+          .from('provider-evidence')
+          .createSignedUrl(filePath, 60 * 60);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
       String categorySlug) async {
     try {

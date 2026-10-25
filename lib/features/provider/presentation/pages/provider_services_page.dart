@@ -162,10 +162,18 @@ class _ProviderServicesView extends StatelessWidget {
             ?.metadata
         : null;
 
-    final profileState = context.read<ProfileCubit>().state;
+    final profileCubit = context.read<ProfileCubit>();
+    if (profileCubit.state is! ProfileCubitLoaded) {
+      await profileCubit.refresh();
+      if (!context.mounted) return;
+    }
+    final profileState = profileCubit.state;
     final initialPersonalName = profileState is ProfileCubitLoaded
-        ? profileState.profile.displayName
+        ? profileState.profile.fullName?.trim() ?? ''
         : '';
+    final initialDistrict = profileState is ProfileCubitLoaded
+        ? profileState.profile.district
+        : null;
     final initialPersonalAvatarUrl = profileState is ProfileCubitLoaded
         ? profileState.profile.avatarUrl
         : null;
@@ -197,6 +205,7 @@ class _ProviderServicesView extends StatelessWidget {
           : true,
       preselectedCategorySlug: preselectedCategorySlug,
       initialPersonalName: initialPersonalName,
+      initialDistrict: initialDistrict,
       initialPersonalAvatarUrl: initialPersonalAvatarUrl,
       initialProofRoleSlug: initialProofRoleSlug,
       initialCompanyCertification: initialCompanyCertification,
@@ -342,7 +351,6 @@ class _ProviderServicesView extends StatelessWidget {
       }
     }
   }
-
 
   void _confirmRemove(
     BuildContext context,
@@ -1153,7 +1161,6 @@ class _WorkProfileStrip extends StatelessWidget {
     );
   }
 }
-
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.l10n, required this.isDark});

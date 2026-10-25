@@ -5,12 +5,15 @@ import 'dart:async';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
@@ -120,6 +123,7 @@ class AddServiceSheet extends StatefulWidget {
     this.existingFinancialMetadata,
     this.preselectedCategorySlug,
     this.initialPersonalName,
+    this.initialDistrict,
     this.initialPersonalAvatarUrl,
     required this.needsRepository,
     required this.providerRepository,
@@ -136,6 +140,7 @@ class AddServiceSheet extends StatefulWidget {
   final Map<String, dynamic>? existingFinancialMetadata;
   final String? preselectedCategorySlug;
   final String? initialPersonalName;
+  final String? initialDistrict;
   final String? initialPersonalAvatarUrl;
   final NeedsRepository needsRepository;
   final IProviderRepository providerRepository;
@@ -160,6 +165,7 @@ class AddServiceSheet extends StatefulWidget {
     bool initialCompanyCertification = false,
     String? preselectedCategorySlug,
     String? initialPersonalName,
+    String? initialDistrict,
     String? initialPersonalAvatarUrl,
   }) {
     return showModalBottomSheet<ProviderCapabilitySelection>(
@@ -185,6 +191,7 @@ class AddServiceSheet extends StatefulWidget {
               existingFinancialMetadata: existingFinancialMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
               initialPersonalName: initialPersonalName,
+              initialDistrict: initialDistrict,
               initialPersonalAvatarUrl: initialPersonalAvatarUrl,
               needsRepository: needsRepository,
               providerRepository: providerRepository,
@@ -258,6 +265,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _representativeAuthorized = false;
   bool _initialProofDestinationOpened = false;
   String _personalDisplayName = '';
+  String _representativeProfileName = '';
+  String? _personalAvatarUrl;
   String _companyDisplayName = '';
   String _companyPreviewName = '';
 
@@ -633,20 +642,19 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _providerType = providerType;
       _savedProviderType = providerType;
       _identityPresentation = {
-        'display_mode': savedPresentation['display_mode']?.toString() ??
-            (providerType == ProviderCategoryType.individual
-                ? 'personal'
-                : 'company'),
+        'display_mode': providerType == ProviderCategoryType.individual
+            ? 'personal'
+            : (savedPresentation['display_mode']?.toString() ?? 'company'),
         'display_name': providerType == ProviderCategoryType.company
             ? initialCompanyName
             : personalName,
-        'representative_name':
-            savedPresentation['representative_name']?.toString() ??
-                (widget.initialPersonalName ?? ''),
+        'representative_name': widget.initialPersonalName?.trim() ?? '',
         'representative_authorized':
             savedPresentation['representative_authorized'] == true,
       };
       _personalDisplayName = personalName;
+      _representativeProfileName = widget.initialPersonalName?.trim() ?? '';
+      _personalAvatarUrl = widget.initialPersonalAvatarUrl;
       _companyDisplayName = initialCompanyName;
       _companyPreviewName =
           companyData['company_name']?.toString().trim().isNotEmpty == true
@@ -891,12 +899,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       await widget.providerRepository.saveCompanyCategory(
         categorySlug: categorySlug,
         serviceSlugs: _selected.toList(),
-        roleCapabilitySlugs: _selectedRoles.map((roleSlug) {
-          final role = _categoryRoles.firstWhere(
-            (candidate) => candidate.slug == roleSlug,
-          );
-          return role.capabilitySlug ?? 'work_$roleSlug';
-        }).toList(),
+        // Company profiles submit service capabilities only. Existing personal
+        // work roles remain untouched and are deliberately excluded here.
+        roleCapabilitySlugs: const [],
         profile: {
           ...profile,
           'company_name':
@@ -905,13 +910,15 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         evidence: const [],
         presentation: {
           ..._identityPresentation,
-          'display_mode': _identityPresentation['display_mode'] ==
-                  'company_with_representative'
+          'display_mode': _representativeAuthorized &&
+                  _representativeProfileName.trim().isNotEmpty
               ? 'company_with_representative'
               : 'company',
           'display_name':
               (_identityPresentation['display_name']?.toString() ?? '').trim(),
-          'representative_authorized': _representativeAuthorized,
+          'representative_name': _representativeProfileName.trim(),
+          'representative_authorized': _representativeAuthorized &&
+              _representativeProfileName.trim().isNotEmpty,
         },
       );
       if (mounted) {
@@ -923,6 +930,31 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     } finally {
       if (mounted) setState(() => _savingCompanyDetails = false);
     }
+  }
+
+  Future<void> _changeRepresentativeProfile() async {
+    final profileCubit = context.read<ProfileCubit>();
+    await context.push<void>('/profile');
+    if (!mounted) return;
+    await profileCubit.refresh();
+    if (!mounted) return;
+    final state = profileCubit.state;
+    if (state is! ProfileCubitLoaded) return;
+    final name = state.profile.fullName?.trim() ?? '';
+    final avatarUrl = state.profile.avatarUrl;
+    final representativeEnabled = _representativeAuthorized && name.isNotEmpty;
+    setState(() {
+      _representativeProfileName = name;
+      _personalAvatarUrl = avatarUrl;
+      _representativeAuthorized = representativeEnabled;
+      _identityPresentation = {
+        ..._identityPresentation,
+        'representative_name': name,
+        'representative_authorized': representativeEnabled,
+        'display_mode':
+            representativeEnabled ? 'company_with_representative' : 'company',
+      };
+    });
   }
 
   void _openAudience() {
@@ -1144,8 +1176,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       _identityPresentation['display_name']
                                               ?.toString() ??
                                           (widget.initialPersonalName ?? ''),
-                                  initialAvatarUrl:
-                                      widget.initialPersonalAvatarUrl,
+                                  initialAvatarUrl: _personalAvatarUrl,
                                   companyPreviewName: _companyPreviewName,
                                   categoryName: _selectedCategory
                                           ?.localizedName(localeCode) ??
@@ -1161,9 +1192,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                       'display_mode': value ==
                                               ProviderCategoryType.individual
                                           ? 'personal'
-                                          : (_identityPresentation[
-                                                      'display_mode'] ==
-                                                  'company_with_representative'
+                                          : (_representativeAuthorized &&
+                                                  _representativeProfileName
+                                                      .trim()
+                                                      .isNotEmpty
                                               ? 'company_with_representative'
                                               : 'company'),
                                       'display_name': value ==
@@ -1217,7 +1249,21 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                           ? CompanyDetailsStep(
                                               categorySlug:
                                                   _selectedCategory?.slug ?? '',
+                                              categoryName: _selectedCategory
+                                                      ?.localizedName(
+                                                          localeCode) ??
+                                                  '',
                                               serviceCount: _selected.length,
+                                              serviceNames:
+                                                  _categoryCapabilities
+                                                      .where((capability) =>
+                                                          _selected.contains(
+                                                              capability.slug))
+                                                      .map((capability) =>
+                                                          capability
+                                                              .localizedName(
+                                                                  localeCode))
+                                                      .toList(),
                                               roleCount: _selectedRoles.length,
                                               initialProfile: _companyProfile,
                                               companyName:
@@ -1225,11 +1271,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               'display_name']
                                                           ?.toString() ??
                                                       '',
+                                              locationHint:
+                                                  widget.initialDistrict,
                                               representativeName:
-                                                  _identityPresentation[
-                                                              'representative_name']
-                                                          ?.toString() ??
-                                                      '',
+                                                  _representativeProfileName,
+                                              representativeAvatarUrl:
+                                                  _personalAvatarUrl,
                                               representativeAuthorized:
                                                   _representativeAuthorized,
                                               onPresentationChanged:
@@ -1238,12 +1285,23 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                 _identityPresentation = {
                                                   ..._identityPresentation,
                                                   ...presentation,
+                                                  'representative_name':
+                                                      _representativeProfileName,
                                                 };
                                                 _representativeAuthorized =
                                                     presentation[
                                                             'representative_authorized'] ==
                                                         true;
+                                                final name =
+                                                    presentation['display_name']
+                                                        ?.toString();
+                                                if (name != null) {
+                                                  _companyDisplayName = name;
+                                                  _companyPreviewName = name;
+                                                }
                                               }),
+                                              onChangeProfile:
+                                                  _changeRepresentativeProfile,
                                               verificationSubmissions:
                                                   _companyVerificationSubmissions,
                                               providerRepository:
@@ -1253,8 +1311,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                       _companyProfile =
                                                           profile),
                                               onSave: _saveCompanyDetails,
-                                              onEditCompanyName: () =>
-                                                  setState(() => _step = 4),
                                             )
                                           : _step == 2
                                               ? _KindStepView(

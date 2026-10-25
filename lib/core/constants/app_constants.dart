@@ -105,6 +105,7 @@ class RpcNames {
       'submit_provider_company_verification';
   static const String saveProviderCompanyDocument =
       'save_provider_company_document';
+  static const String saveProviderCompanyLogo = 'save_provider_company_logo';
   static const String deleteProviderCompanyDocument =
       'delete_provider_company_document';
   static const String adminReviewProviderCompanyVerification =

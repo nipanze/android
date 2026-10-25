@@ -25,6 +25,17 @@ abstract class IProviderRepository {
     required Map<String, dynamic> presentation,
   });
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug);
+  Future<String> uploadCompanyLogo({
+    required String categorySlug,
+    required String fileName,
+    required String mimeType,
+    required Uint8List bytes,
+  });
+  Future<void> saveCompanyLogo({
+    required String categorySlug,
+    required String filePath,
+  });
+  Future<String> getCompanyLogoUrl(String filePath);
   Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
       String categorySlug);
   Future<String> uploadCompanyVerificationDocument({

@@ -10,33 +10,43 @@ class CompanyDetailsStep extends StatefulWidget {
   const CompanyDetailsStep({
     super.key,
     required this.categorySlug,
+    this.categoryName = '',
+    this.locationHint,
     required this.serviceCount,
+    this.serviceNames = const [],
     required this.roleCount,
     required this.initialProfile,
     required this.companyName,
     this.representativeName = '',
+    this.representativeAvatarUrl,
     this.representativeAuthorized = false,
     this.onPresentationChanged,
+    this.onChangeProfile,
     this.verificationSubmissions = const [],
     required this.providerRepository,
     required this.onDraftChanged,
     required this.onSave,
-    required this.onEditCompanyName,
+    this.onEditCompanyName,
   });
 
   final String categorySlug;
+  final String categoryName;
+  final String? locationHint;
   final int serviceCount;
+  final List<String> serviceNames;
   final int roleCount;
   final ProviderCompanyProfile? initialProfile;
   final String companyName;
   final String representativeName;
+  final String? representativeAvatarUrl;
   final bool representativeAuthorized;
   final ValueChanged<Map<String, dynamic>>? onPresentationChanged;
+  final VoidCallback? onChangeProfile;
   final List<Map<String, dynamic>> verificationSubmissions;
   final IProviderRepository providerRepository;
   final ValueChanged<ProviderCompanyProfile> onDraftChanged;
   final Future<void> Function({required Map<String, dynamic> profile}) onSave;
-  final VoidCallback onEditCompanyName;
+  final VoidCallback? onEditCompanyName;
 
   @override
   State<CompanyDetailsStep> createState() => _CompanyDetailsStepState();
@@ -44,16 +54,16 @@ class CompanyDetailsStep extends StatefulWidget {
 
 class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   late final TextEditingController _companyNameController;
-  late final TextEditingController _representativeController;
   final _registrationController = TextEditingController();
   final _areasController = TextEditingController();
   String? _teamSize;
   String? _yearsInBusiness;
   late List<Map<String, dynamic>> _verificationSubmissions;
   String? _uploadingDocumentType;
-  String _selectedDocumentType = 'business_registration';
   bool _saving = false;
   String? _saveError;
+  String? _companyLogoUrl;
+  bool _uploadingLogo = false;
 
   static const _teamSizes = ['1-5', '6-20', '21-50', '50+'];
   static const _businessYears = ['<1', '1-2', '3-5', '6-10', '10+'];
@@ -62,14 +72,16 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   void initState() {
     super.initState();
     _companyNameController = TextEditingController(text: widget.companyName);
-    _representativeController =
-        TextEditingController(text: widget.representativeName);
     final profile = widget.initialProfile;
     _registrationController.text = profile?.registrationNumber ?? '';
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
     _teamSize = profile?.teamSize;
     _yearsInBusiness = profile?.yearsInBusiness;
     _verificationSubmissions = List.of(widget.verificationSubmissions);
+    final logoPath = profile?.logoPath;
+    if (logoPath != null && logoPath.isNotEmpty) {
+      _loadCompanyLogo(logoPath);
+    }
   }
 
   @override
@@ -79,11 +91,11 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         _companyNameController.text != widget.companyName) {
       _companyNameController.text = widget.companyName;
     }
-    if (oldWidget.representativeName != widget.representativeName &&
-        _representativeController.text != widget.representativeName) {
-      _representativeController.text = widget.representativeName;
-    }
     final profile = widget.initialProfile;
+    if (oldWidget.initialProfile?.logoPath != profile?.logoPath &&
+        profile?.logoPath != null) {
+      _loadCompanyLogo(profile!.logoPath!);
+    }
     if (profile == null ||
         oldWidget.initialProfile != null ||
         oldWidget.categorySlug != widget.categorySlug) {
@@ -103,7 +115,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   @override
   void dispose() {
     _companyNameController.dispose();
-    _representativeController.dispose();
     _registrationController.dispose();
     _areasController.dispose();
     super.dispose();
@@ -115,9 +126,61 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         _ => userFacingErrorMessage(error),
       };
 
+  Future<void> _loadCompanyLogo(String path) async {
+    try {
+      final url = await widget.providerRepository.getCompanyLogoUrl(path);
+      if (mounted) setState(() => _companyLogoUrl = url);
+    } catch (_) {
+      // Keep the upload affordance available if an old logo cannot be loaded.
+    }
+  }
+
+  Future<void> _pickCompanyLogo() async {
+    if (_uploadingLogo) return;
+    setState(() => _uploadingLogo = true);
+    try {
+      final file = await openFile(
+        acceptedTypeGroups: [
+          const XTypeGroup(
+              label: 'Company logo', extensions: ['jpg', 'jpeg', 'png']),
+        ],
+      );
+      if (file == null) return;
+      final extension = file.name.split('.').last.toLowerCase();
+      final mimeType = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        _ => '',
+      };
+      if (mimeType.isEmpty) {
+        throw const FormatException('Choose a JPG or PNG image.');
+      }
+      final bytes = await file.readAsBytes();
+      final path = await widget.providerRepository.uploadCompanyLogo(
+        categorySlug: widget.categorySlug,
+        fileName: file.name,
+        mimeType: mimeType,
+        bytes: bytes,
+      );
+      await widget.providerRepository.saveCompanyLogo(
+        categorySlug: widget.categorySlug,
+        filePath: path,
+      );
+      final url = await widget.providerRepository.getCompanyLogoUrl(path);
+      if (mounted) setState(() => _companyLogoUrl = url);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_errorText(error))));
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingLogo = false);
+    }
+  }
+
   ProviderCompanyProfile _currentProfile() => ProviderCompanyProfile(
         categorySlug: widget.categorySlug,
-        companyName: widget.companyName,
+        companyName: _companyNameController.text,
         registrationNumber: _registrationController.text,
         teamSize: _teamSize,
         yearsInBusiness: _yearsInBusiness,
@@ -131,10 +194,14 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   void _notifyDraftChanged() => widget.onDraftChanged(_currentProfile());
 
-  Future<void> _pickCompanyDocument({Map<String, dynamic>? existing}) async {
+  Future<void> _pickCompanyDocument({
+    Map<String, dynamic>? existing,
+    String? selectedDocumentType,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
-    final documentType =
-        existing?['document_type']?.toString() ?? _selectedDocumentType;
+    final documentType = existing?['document_type']?.toString() ??
+        selectedDocumentType ??
+        'business_registration';
     final submissionId = existing?['id']?.toString();
     setState(() => _uploadingDocumentType = submissionId ?? documentType);
     try {
@@ -188,7 +255,11 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     }
   }
 
-  Future<void> _addCompanyDocument() => _pickCompanyDocument();
+  Map<String, dynamic>? _submissionFor(String documentType) =>
+      _orderedSubmissions.cast<Map<String, dynamic>?>().firstWhere(
+            (row) => row?['document_type']?.toString() == documentType,
+            orElse: () => null,
+          );
 
   Future<void> _removeCompanyDocument(Map<String, dynamic> submission) async {
     final l10n = AppLocalizations.of(context)!;
@@ -225,15 +296,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     }
   }
 
-  String _documentTypeLabel(AppLocalizations l10n, String? type) =>
-      switch (type) {
-        'business_registration' => l10n.companyVerificationRegistration,
-        'business_licence' => l10n.companyVerificationLicence,
-        'certificate' => l10n.companyDocumentTypeCertificate,
-        'other' => l10n.companyDocumentTypeOther,
-        _ => type ?? l10n.companyDocumentTypeOther,
-      };
-
   String _documentStatusLabel(AppLocalizations l10n, String? status) =>
       switch (status) {
         'pending' => l10n.companyVerificationPending,
@@ -241,6 +303,99 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         'rejected' => l10n.companyVerificationRejected,
         _ => l10n.companyVerificationNotSubmitted,
       };
+
+  Widget _companyDocumentRow({
+    required String documentType,
+    required String title,
+    required AppLocalizations l10n,
+    required ThemeData theme,
+    required Color text2,
+  }) {
+    final submission = _submissionFor(documentType);
+    final status = submission?['status']?.toString();
+    final uploading = _uploadingDocumentType != null &&
+        (_uploadingDocumentType == documentType ||
+            _uploadingDocumentType == submission?['id']?.toString());
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(
+                  submission == null
+                      ? l10n.companyVerificationNotSubmitted
+                      : '${_documentStatusLabel(l10n, status)}${submission['file_name'] == null ? '' : ' · ${submission['file_name']}'}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color:
+                        status == 'rejected' ? theme.colorScheme.error : text2,
+                  ),
+                ),
+                if (submission?['reject_reason'] != null)
+                  Text(submission!['reject_reason'].toString(),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.error)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(0, 40),
+            ),
+            onPressed: _uploadingDocumentType == null
+                ? () => _pickCompanyDocument(
+                      selectedDocumentType: documentType,
+                      existing: submission,
+                    )
+                : null,
+            icon: uploading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.upload_file_rounded, size: 18),
+            label: Text(submission == null ? 'Add proof' : 'Replace'),
+          ),
+          if (submission != null && status != 'approved')
+            IconButton(
+              tooltip: l10n.companyDocumentRemove,
+              visualDensity: VisualDensity.compact,
+              onPressed: _uploadingDocumentType == null
+                  ? () => _removeCompanyDocument(submission)
+                  : null,
+              icon: const Icon(Icons.delete_outline, size: 19),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String get _serviceVerificationNote {
+    final names = widget.serviceNames
+        .map((name) => name.trim())
+        .where((name) => name.isNotEmpty)
+        .toList();
+    final requirement = switch (names.length) {
+      0 =>
+        'Selected services need their own approved proof before they go live.',
+      1 => '${names.single} needs its own approved proof before it goes live.',
+      _ =>
+        '${names.take(names.length - 1).join(', ')} and ${names.last} need their own approved proof before they go live.',
+    };
+    return '$requirement Add it from Provider Services after saving. JPG, PNG or PDF, up to 5 MB each.';
+  }
 
   List<Map<String, dynamic>> get _orderedSubmissions {
     final sorted = List<Map<String, dynamic>>.of(_verificationSubmissions);
@@ -261,6 +416,16 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   Future<void> _save() async {
     if (_saving) return;
+    if (_companyNameController.text.trim().isEmpty) {
+      setState(() => _saveError = 'Company or business name is required.');
+      return;
+    }
+    if (widget.representativeAuthorized &&
+        widget.representativeName.trim().isEmpty) {
+      setState(() => _saveError =
+          'Add your name to your Profile or turn off the representative option.');
+      return;
+    }
     setState(() {
       _saving = true;
       _saveError = null;
@@ -285,6 +450,14 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     final theme = Theme.of(context);
     final text2 = theme.colorScheme.onSurfaceVariant;
     final allCount = widget.serviceCount + widget.roleCount;
+    final representativeName = widget.representativeName.trim();
+    final representativePhoto = widget.representativeAvatarUrl?.trim();
+    final representativeInitials = representativeName
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .take(2)
+        .map((part) => part[0].toUpperCase())
+        .join();
 
     return Column(
       children: [
@@ -315,51 +488,83 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                child: InkWell(
+                  onTap: _uploadingLogo ? null : _pickCompanyLogo,
                   borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 62,
-                      height: 62,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF2F6FC),
-                        border: Border.all(
-                          color: theme.colorScheme.primary,
-                          style: BorderStyle.solid,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFDCE4EF)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 62,
+                          height: 62,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2F6FC),
+                            border:
+                                Border.all(color: theme.colorScheme.primary),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: _uploadingLogo
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                )
+                              : _companyLogoUrl == null
+                                  ? Icon(Icons.upload_rounded,
+                                      color: theme.colorScheme.primary,
+                                      size: 26)
+                                  : Image.network(
+                                      _companyLogoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Icons.upload_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 26,
+                                      ),
+                                    ),
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(Icons.add_rounded,
-                          color: theme.colorScheme.primary, size: 26),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _companyLogoUrl == null
+                                    ? 'Company logo'
+                                    : 'Change company logo',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Optional. JPG or PNG, up to 2 MB. A square image works best.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: text2,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Company logo',
-                              style: TextStyle(fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 3),
-                          Text(
-                              'Optional. JPG or PNG, up to 2 MB. A square image works best.',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: text2,
-                                height: 1.3,
-                              )),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
-              Text('Company or business name',
+              Text('Company or business name *',
                   style: theme.textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
@@ -376,6 +581,9 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   'display_name': value,
                 }),
               ),
+              const SizedBox(height: 5),
+              Text('Required. Shown publicly as the provider name.',
+                  style: theme.textTheme.bodySmall?.copyWith(color: text2)),
               const SizedBox(height: 14),
               Container(
                 padding:
@@ -395,9 +603,10 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           SizedBox(height: 3),
                           Text(
-                              'Only if you are allowed to act for this business.',
-                              style: TextStyle(
-                                  color: Color(0xFF5B6470), height: 1.3)),
+                            'Only if you are allowed to act for this business.',
+                            style: TextStyle(
+                                color: Color(0xFF5B6470), height: 1.3),
+                          ),
                         ],
                       ),
                     ),
@@ -414,38 +623,193 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               ),
               if (widget.representativeAuthorized) ...[
                 const SizedBox(height: 12),
-                Text('Representative name',
-                    style: theme.textTheme.labelLarge
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: _representativeController,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F6FA),
+                    border: Border.all(color: const Color(0xFFDCE4EF)),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  onChanged: (value) => widget.onPresentationChanged?.call({
-                    'representative_name': value,
-                  }),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE2E7EF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: representativePhoto?.isNotEmpty == true
+                            ? Image.network(
+                                representativePhoto!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Text(
+                                    representativeInitials.isEmpty
+                                        ? '•'
+                                        : representativeInitials,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Text(
+                                  representativeInitials.isEmpty
+                                      ? '•'
+                                      : representativeInitials,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Representative',
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: text2)),
+                            Text(
+                              representativeName.isEmpty
+                                  ? 'Profile name not set'
+                                  : representativeName,
+                              style: theme.textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            Text('Name and photo from your Profile',
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: text2)),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: representativeName.isEmpty
+                              ? const Color(0xFFFFF0D6)
+                              : const Color(0xFFDCF4E5),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              representativeName.isEmpty
+                                  ? Icons.sync_problem_rounded
+                                  : Icons.check_rounded,
+                              size: 13,
+                              color: representativeName.isEmpty
+                                  ? const Color(0xFFAA6500)
+                                  : const Color(0xFF168044),
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              representativeName.isEmpty
+                                  ? 'Not synced'
+                                  : 'Synced',
+                              style: TextStyle(
+                                color: representativeName.isEmpty
+                                    ? const Color(0xFFAA6500)
+                                    : const Color(0xFF168044),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                if (widget.onChangeProfile != null)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: widget.onChangeProfile,
+                      style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                      ),
+                      child: const Text('Change in Profile'),
+                    ),
+                  ),
               ],
               const SizedBox(height: 18),
-              const SizedBox(height: 10),
+              Text('PREVIEW',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                      color: const Color(0xFF596579),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8)),
+              const SizedBox(height: 7),
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE9F0FF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: _companyLogoUrl == null
+                          ? Icon(Icons.business_outlined,
+                              color: theme.colorScheme.primary)
+                          : Image.network(_companyLogoUrl!, fit: BoxFit.cover),
+                    ),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.companyName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700)),
+                          if (widget.representativeAuthorized &&
+                              widget.representativeName.trim().isNotEmpty)
+                            Text('Represented by ${widget.representativeName}',
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: text2)),
+                          if (widget.categoryName.isNotEmpty)
+                            Text(widget.categoryName,
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: text2)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Company details',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              Text(l10n.companyRegistrationNumber,
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _registrationController,
                 maxLength: 40,
-                decoration: InputDecoration(
-                  labelText: l10n.companyRegistrationNumber,
-                  border: const OutlineInputBorder(),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'For example, your business registration number',
                   counterText: '',
-                  helperText: l10n.companyRegistrationPrivate,
                 ),
                 onChanged: (_) => _notifyDraftChanged(),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               _ChoiceChips(
                 label: l10n.companyTeamSize,
                 values: _teamSizes,
@@ -478,176 +842,102 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   l10n.companyYearsTenPlus,
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
+              Text('Where do you work?',
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _areasController,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  labelText: l10n.companyServiceAreas,
                   border: const OutlineInputBorder(),
-                  helperText: l10n.companyServiceAreasHint,
+                  hintText: widget.locationHint?.trim().isNotEmpty == true
+                      ? widget.locationHint
+                      : l10n.locationLabel,
                 ),
                 onChanged: (_) => _notifyDraftChanged(),
               ),
-              const SizedBox(height: 20),
-              Text(l10n.companyDocumentsTitle,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 4),
-              Text(l10n.companyDocumentsSubtitle,
+              const SizedBox(height: 5),
+              Text('District or city only. Your exact address is never shown.',
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-              const SizedBox(height: 8),
-              Text(_companyStatusLabel(l10n),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w700)),
-              DropdownButtonFormField<String>(
-                isExpanded: true,
-                initialValue: _selectedDocumentType,
-                decoration: InputDecoration(
-                  labelText: l10n.companyDocumentTypeLabel,
-                  border: const OutlineInputBorder(),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'business_registration',
-                    child: Text(l10n.companyVerificationRegistration),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(l10n.companyVerificationTitle,
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
                   ),
-                  DropdownMenuItem(
-                    value: 'business_licence',
-                    child: Text(l10n.companyVerificationLicence),
-                  ),
-                  DropdownMenuItem(
-                    value: 'certificate',
-                    child: Text(l10n.companyDocumentTypeCertificate),
-                  ),
-                  DropdownMenuItem(
-                    value: 'other',
-                    child: Text(l10n.companyDocumentTypeOther),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF1F5),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(_companyStatusLabel(l10n),
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
                   ),
                 ],
-                onChanged: _uploadingDocumentType == null
-                    ? (value) {
-                        if (value != null) {
-                          setState(() => _selectedDocumentType = value);
-                        }
-                      }
-                    : null,
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: FilledButton.icon(
-                  onPressed: _uploadingDocumentType == null
-                      ? _addCompanyDocument
-                      : null,
-                  icon: _uploadingDocumentType == _selectedDocumentType
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.upload_file_outlined),
-                  label: Text(l10n.companyVerificationUpload),
+              const SizedBox(height: 5),
+              Text(
+                'Optional. Upload documents for manual review by Nipanze. A registration certificate does not authorize regulated services; those are verified separately, per service.',
+                style: theme.textTheme.bodySmall?.copyWith(color: text2),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  children: [
+                    _companyDocumentRow(
+                      documentType: 'business_registration',
+                      title: l10n.companyVerificationRegistration,
+                      l10n: l10n,
+                      theme: theme,
+                      text2: text2,
+                    ),
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                    _companyDocumentRow(
+                      documentType: 'business_licence',
+                      title: l10n.companyVerificationLicence,
+                      l10n: l10n,
+                      theme: theme,
+                      text2: text2,
+                    ),
+                  ],
                 ),
               ),
-              for (final submission in _orderedSubmissions) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: theme.colorScheme.outlineVariant),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            submission['status'] == 'approved'
-                                ? Icons.check_circle_outline_rounded
-                                : submission['status'] == 'rejected'
-                                    ? Icons.error_outline_rounded
-                                    : Icons.description_outlined,
-                            size: 18,
-                            color: submission['status'] == 'approved'
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _documentTypeLabel(
-                                    l10n,
-                                    submission['document_type']?.toString(),
-                                  ),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  submission['file_name']?.toString() ?? '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                                Text(
-                                  submission['reject_reason'] == null
-                                      ? _documentStatusLabel(
-                                          l10n,
-                                          submission['status']?.toString(),
-                                        )
-                                      : '${_documentStatusLabel(l10n, submission['status']?.toString())} · ${submission['reject_reason']}',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: submission['status'] == 'rejected'
-                                        ? theme.colorScheme.error
-                                        : text2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: Wrap(
-                          spacing: 4,
-                          children: [
-                            TextButton(
-                              onPressed: _uploadingDocumentType == null
-                                  ? () =>
-                                      _pickCompanyDocument(existing: submission)
-                                  : null,
-                              child: Text(l10n.companyEvidenceReplace),
-                            ),
-                            if (submission['status'] != 'approved')
-                              IconButton(
-                                tooltip: l10n.companyDocumentRemove,
-                                visualDensity: VisualDensity.compact,
-                                onPressed: _uploadingDocumentType == null
-                                    ? () => _removeCompanyDocument(submission)
-                                    : null,
-                                icon: const Icon(Icons.delete_outline),
-                              ),
-                          ],
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F6F8),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline_rounded, size: 17, color: text2),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _serviceVerificationNote,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: text2,
+                          height: 1.35,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-              const SizedBox(height: 8),
-              Text(l10n.companyVerificationSeparateNote,
-                  style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-              const SizedBox(height: 4),
-              Text(l10n.companyVerificationFileHint,
-                  style: theme.textTheme.bodySmall?.copyWith(color: text2)),
+              ),
               if (_saveError != null) ...[
                 const SizedBox(height: 12),
                 Semantics(
