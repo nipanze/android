@@ -3402,6 +3402,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerIdentityCurrent => 'الحالي';
 
   @override
+  String get providerIdentityWas => 'كان';
+
+  @override
   String get providerIdentityDisplayHeading => 'كيف تريد أن تظهر؟';
 
   @override
@@ -3661,7 +3664,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'كل المعلومات اختيارية. هذه التفاصيل خاصة بك وبمسؤولي نيبانزي فقط.';
+      'اسم الشركة فقط مطلوب. سيظهر الشعار والاسم والممثل في ملفك العام قبل التواصل معك.';
+
+  @override
+  String get companyLogo => 'شعار الشركة';
+
+  @override
+  String get companyLogoHint => 'اختياري. صورة JPG أو PNG، حتى 2 ميغابايت.';
+
+  @override
+  String get companyLogoChoose => 'إضافة شعار';
+
+  @override
+  String get companyLogoSizeHint =>
+      'اختر صورة JPG أو PNG بحجم لا يتجاوز 2 ميغابايت.';
+
+  @override
+  String get companyRepresentativeToggle => 'أظهرني أيضًا كممثل';
+
+  @override
+  String get companyProofInactive =>
+      'الإثبات مطلوب. ستظل الخدمة غير نشطة حتى الموافقة.';
 
   @override
   String get companyName => 'اسم الشركة أو النشاط التجاري';

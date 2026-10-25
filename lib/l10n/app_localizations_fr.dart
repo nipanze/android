@@ -3451,6 +3451,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerIdentityCurrent => 'Actuel';
 
   @override
+  String get providerIdentityWas => 'était';
+
+  @override
   String get providerIdentityDisplayHeading =>
       'Comment souhaitez-vous apparaître ?';
 
@@ -3711,7 +3714,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Tout est facultatif. Ces informations restent privées et ne sont visibles que par vous et les administrateurs Nipanze.';
+      'Seul le nom de l’entreprise est obligatoire. Le logo, le nom et le représentant apparaîtront sur votre profil public avant le contact.';
+
+  @override
+  String get companyLogo => 'Logo de l’entreprise';
+
+  @override
+  String get companyLogoHint => 'Facultatif. JPG ou PNG, jusqu’à 2 Mo.';
+
+  @override
+  String get companyLogoChoose => 'Ajouter un logo';
+
+  @override
+  String get companyLogoSizeHint =>
+      'Choisissez une image JPG ou PNG de 2 Mo maximum.';
+
+  @override
+  String get companyRepresentativeToggle =>
+      'M’indiquer aussi comme représentant';
+
+  @override
+  String get companyProofInactive =>
+      'Justificatif requis. Le service reste inactif jusqu’à son approbation.';
 
   @override
   String get companyName => 'Nom de l’entreprise ou de l’activité';

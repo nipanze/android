@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipanze/features/provider/domain/entities/provider_category_type.dart';
@@ -44,9 +46,10 @@ void main() {
     expect(continued, isTrue);
   });
 
-  testWidgets('company details shows name read-only and Edit returns to B2',
+  testWidgets('company details edits its required name and previews a rep',
       (tester) async {
-    var editTapped = false;
+    Map<String, dynamic>? presentation;
+    Map<String, dynamic>? savedProfile;
     await tester.pumpWidget(_localizedApp(
       CompanyDetailsStep(
         categorySlug: 'transport_logistics',
@@ -56,19 +59,49 @@ void main() {
           categorySlug: 'transport_logistics',
           companyName: 'Acme Services',
         ),
-        companyName: 'Acme Services',
+        companyName: '',
+        presentation: const {},
         providerRepository: _ProviderRepositoryStub(),
         onDraftChanged: (_) {},
-        onSave: ({required profile}) async {},
-        onEditCompanyName: () => editTapped = true,
+        onPresentationChanged: (value) => presentation = value,
+        onSave: ({
+          required profile,
+          Uint8List? logoBytes,
+          String? logoFileName,
+        }) async {
+          savedProfile = profile;
+        },
       ),
     ));
 
-    expect(find.text('Acme Services'), findsOneWidget);
-    expect(find.text('Company name from the previous step'), findsOneWidget);
-    expect(find.widgetWithText(TextField, 'Acme Services'), findsNothing);
-    await tester.tap(find.text('Edit'));
-    expect(editTapped, isTrue);
+    expect(find.byType(TextFormField), findsOneWidget);
+    await tester.ensureVisible(find.byType(TextFormField).first);
+    expect(
+      tester
+          .widget<EditableText>(find.byType(EditableText).first)
+          .controller
+          .text,
+      'Acme Services',
+    );
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'Acme Services Ltd',
+    );
+    await tester.pump();
+    expect(presentation?['display_name'], 'Acme Services Ltd');
+    await tester.ensureVisible(find.byType(SwitchListTile));
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pump();
+    await tester.ensureVisible(find.byType(TextField).first);
+    await tester.enterText(find.byType(TextField).first, 'Amina');
+    await tester.pump();
+    expect(presentation?['display_mode'], 'company_with_representative');
+    expect(find.text('Represented by Amina'), findsOneWidget);
+    await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Save company profile'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Save company profile'));
+    await tester.pump();
+    expect(savedProfile?['company_name'], 'Acme Services Ltd');
   });
 
   testWidgets(
@@ -115,7 +148,8 @@ void main() {
         find.text(
             'Your Individual services here become inactive. You can restore them later.'),
         findsOneWidget);
-    expect(find.text('New offers will use your Company identity.'), findsOneWidget);
+    expect(find.text('New offers will use your Company identity.'),
+        findsOneWidget);
     expect(
         find.text(
             'Verification may be asked again. It does not carry over between identities.'),
@@ -133,7 +167,8 @@ void main() {
     expect(cancelled, isTrue);
   });
 
-  testWidgets('IdentitySwitchConfirmStep renders in dark theme without overflow',
+  testWidgets(
+      'IdentitySwitchConfirmStep renders in dark theme without overflow',
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(

@@ -250,6 +250,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   bool _loadingCompanyDetails = false;
   bool _savingCompanyDetails = false;
   bool _allowCompanyExit = false;
+  bool _identitySwitchNeedsCompanyDetails = false;
+  Map<String, dynamic>? _pendingCompanyProfile;
+  Uint8List? _pendingCompanyLogoBytes;
+  String? _pendingCompanyLogoFileName;
   ProviderCategoryType? _savedProviderType;
   Map<String, dynamic> _identityPresentation = {};
   int _pendingIdentityOffers = 0;
@@ -747,6 +751,15 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
     try {
       if (_savedProviderType != null && _savedProviderType != type) {
+        if (type == ProviderCategoryType.company) {
+          setState(() {
+            _identitySwitchNeedsCompanyDetails = true;
+            _step = 5;
+            _savingProviderType = false;
+          });
+          await _openCompanyDetails();
+          return;
+        }
         setState(() {
           _step = 6;
           _savingProviderType = false;
@@ -807,14 +820,43 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _providerTypeError = null;
     });
     try {
-      await widget.providerRepository.switchProviderIdentity(
-        categorySlug: category.slug,
-        type: type,
-        presentation: {
-          ..._identityPresentation,
-          'representative_authorized': _representativeAuthorized,
-        },
-      );
+      if (_identitySwitchNeedsCompanyDetails) {
+        final profile = _pendingCompanyProfile;
+        if (profile == null) {
+          throw StateError('Company details are missing.');
+        }
+        await widget.providerRepository.completeCompanyIdentitySwitch(
+          categorySlug: category.slug,
+          profile: {
+            ...profile,
+            'company_name':
+                (_identityPresentation['display_name']?.toString() ?? '')
+                    .trim(),
+          },
+          presentation: {
+            ..._identityPresentation,
+            'display_mode': _identityPresentation['display_mode'] ==
+                    'company_with_representative'
+                ? 'company_with_representative'
+                : 'company',
+            'display_name':
+                (_identityPresentation['display_name']?.toString() ?? '')
+                    .trim(),
+            'representative_authorized': _representativeAuthorized,
+          },
+          logoBytes: _pendingCompanyLogoBytes,
+          logoFileName: _pendingCompanyLogoFileName,
+        );
+      } else {
+        await widget.providerRepository.switchProviderIdentity(
+          categorySlug: category.slug,
+          type: type,
+          presentation: {
+            ..._identityPresentation,
+            'representative_authorized': _representativeAuthorized,
+          },
+        );
+      }
       if (!mounted) return;
       Navigator.of(context).pop(ProviderCapabilitySelection(
         slugs: const [],
@@ -883,9 +925,20 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   Future<void> _saveCompanyDetails({
     required Map<String, dynamic> profile,
+    Uint8List? logoBytes,
+    String? logoFileName,
   }) async {
     final categorySlug = _selectedCategory?.slug;
     if (categorySlug == null || _savingCompanyDetails) return;
+    if (_identitySwitchNeedsCompanyDetails) {
+      setState(() {
+        _pendingCompanyProfile = profile;
+        _pendingCompanyLogoBytes = logoBytes;
+        _pendingCompanyLogoFileName = logoFileName;
+        _step = 7;
+      });
+      return;
+    }
     setState(() => _savingCompanyDetails = true);
     try {
       await widget.providerRepository.saveCompanyCategory(
@@ -913,11 +966,22 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               (_identityPresentation['display_name']?.toString() ?? '').trim(),
           'representative_authorized': _representativeAuthorized,
         },
+        logoBytes: logoBytes,
+        logoFileName: logoFileName,
       );
       if (mounted) {
         setState(() => _allowCompanyExit = true);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) Navigator.of(context).pop(_selection());
+          if (!mounted) return;
+          Navigator.of(context).pop(
+            _identitySwitchNeedsCompanyDetails
+                ? ProviderCapabilitySelection(
+                    slugs: const [],
+                    categorySlug: categorySlug,
+                    identitySwitchCompleted: true,
+                  )
+                : _selection(),
+          );
         });
       }
     } finally {
@@ -934,9 +998,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       if (_step == 3) {
         _step = 2;
       } else if (_step == 5) {
-        _step = 1;
+        _step = _identitySwitchNeedsCompanyDetails ? 4 : 1;
       } else if (_step == 7) {
-        _step = 6;
+        _step = _identitySwitchNeedsCompanyDetails ? 5 : 6;
         _providerTypeError = null;
       } else if (_step == 6) {
         _step = 4;
@@ -1194,6 +1258,57 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                           from: _savedProviderType!,
                                           to: _providerType!,
                                           presentation: _identityPresentation,
+                                          reusedServices: widget
+                                              .existingCapabilities
+                                              .where((capability) =>
+                                                  capability.categorySlug ==
+                                                      _selectedCategory?.slug &&
+                                                  capability.capabilityType ==
+                                                      'service' &&
+                                                  widget.existingSlugs.contains(
+                                                      capability
+                                                          .capabilitySlug))
+                                              .map((capability) =>
+                                                  capability.capabilityName ??
+                                                  capability.capabilitySlug)
+                                              .toList(),
+                                          locations:
+                                              _companyProfile?.serviceAreas ??
+                                                  const [],
+                                          verificationServices:
+                                              _categoryCapabilities
+                                                  .where((capability) =>
+                                                      capability
+                                                              .verificationPolicy ==
+                                                          'required_proof' &&
+                                                      widget.existingSlugs
+                                                          .contains(
+                                                              capability.slug))
+                                                  .map((capability) =>
+                                                      capability.name)
+                                                  .toList(),
+                                          companyVerificationStatus: _companyVerificationSubmissions
+                                                  .any((submission) =>
+                                                      submission['status'] ==
+                                                      'pending')
+                                              ? AppLocalizations.of(context)!
+                                                  .companyVerificationPending
+                                              : _companyVerificationSubmissions
+                                                      .any((submission) =>
+                                                          submission['status'] ==
+                                                          'rejected')
+                                                  ? AppLocalizations.of(context)!
+                                                      .companyVerificationRejected
+                                                  : _companyVerificationSubmissions
+                                                          .any((submission) =>
+                                                              submission['status'] ==
+                                                              'approved')
+                                                      ? AppLocalizations.of(
+                                                              context)!
+                                                          .companyVerificationVerified
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .companyVerificationNotSubmitted,
                                           pendingOffers: _pendingIdentityOffers,
                                           activeCapabilities:
                                               _activeIdentityCapabilities,
@@ -1214,17 +1329,38 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               'display_name']
                                                           ?.toString() ??
                                                       '',
+                                              allowEmptyServices:
+                                                  _identitySwitchNeedsCompanyDetails,
+                                              presentation:
+                                                  _identityPresentation,
                                               verificationSubmissions:
                                                   _companyVerificationSubmissions,
                                               providerRepository:
                                                   widget.providerRepository,
                                               onDraftChanged: (profile) =>
-                                                  setState(() =>
-                                                      _companyProfile =
-                                                          profile),
+                                                  setState(() {
+                                                _companyProfile = profile;
+                                                _companyDisplayName =
+                                                    profile.companyName ?? '';
+                                                _identityPresentation = {
+                                                  ..._identityPresentation,
+                                                  'display_name':
+                                                      profile.companyName ?? '',
+                                                };
+                                              }),
+                                              onPresentationChanged:
+                                                  (presentation) =>
+                                                      setState(() {
+                                                _identityPresentation = {
+                                                  ..._identityPresentation,
+                                                  ...presentation,
+                                                };
+                                                _representativeAuthorized =
+                                                    presentation[
+                                                            'representative_authorized'] ==
+                                                        true;
+                                              }),
                                               onSave: _saveCompanyDetails,
-                                              onEditCompanyName: () =>
-                                                  setState(() => _step = 4),
                                             )
                                           : _step == 2
                                               ? _KindStepView(
@@ -1888,280 +2024,281 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
               children: [
                 Text(
                   l10n.providerIdentitySwitchingCategoryBadge,
-                style: TextStyle(
-                  color: colors.primary,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
+                  style: TextStyle(
+                    color: colors.primary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.providerIdentitySwitchTitle(toName),
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colors.onSurface,
-                  height: 1.22,
+                const SizedBox(height: 8),
+                Text(
+                  l10n.providerIdentitySwitchTitle(toName),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
+                    height: 1.22,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                categoryName.isNotEmpty
-                    ? l10n.providerIdentitySwitchCategoryBody(categoryName)
-                    : l10n.providerIdentitySwitchBody,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  height: 1.45,
+                const SizedBox(height: 10),
+                Text(
+                  categoryName.isNotEmpty
+                      ? l10n.providerIdentitySwitchCategoryBody(categoryName)
+                      : l10n.providerIdentitySwitchBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.45,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Visual Identity Transition Row
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? colors.surfaceContainerLow
-                            : const Color(0xFFF8FAFC),
-                        border: Border.all(
-                          color: isDark
-                              ? colors.outlineVariant
-                              : const Color(0xFFE2E8F0),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            from == ProviderCategoryType.company
-                                ? Icons.business_outlined
-                                : Icons.person_outline_rounded,
-                            size: 20,
-                            color: colors.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              fromNameShort,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: colors.onSurfaceVariant,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Transform.scale(
-                      scaleX: isRtl ? -1 : 1,
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        color: colors.primary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? colors.primary.withValues(alpha: 0.08)
-                            : const Color(0xFFF4F8FF),
-                        border: Border.all(
-                          color: colors.primary,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            to == ProviderCategoryType.company
-                                ? Icons.business_outlined
-                                : Icons.person_outline_rounded,
-                            size: 20,
-                            color: colors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              toNameShort,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: colors.primary,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // "Kept safe" Section Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F291E)
-                      : const Color(0xFFF0FDF4),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF22C55E).withValues(alpha: 0.3)
-                        : const Color(0xFFDCFCE7),
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Visual Identity Transition Row
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.gpp_good_outlined,
-                          size: 20,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFF15803D),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.providerIdentityKeptSafeHeader,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                              ? colors.surfaceContainerLow
+                              : const Color(0xFFF8FAFC),
+                          border: Border.all(
                             color: isDark
-                                ? const Color(0xFF86EFAC)
-                                : const Color(0xFF166534),
+                                ? colors.outlineVariant
+                                : const Color(0xFFE2E8F0),
                           ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              from == ProviderCategoryType.company
+                                  ? Icons.business_outlined
+                                  : Icons.person_outline_rounded,
+                              size: 20,
+                              color: colors.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                fromNameShort,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.onSurfaceVariant,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptServiceInfo,
-                      textColor: colors.onSurface,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Transform.scale(
+                        scaleX: isRtl ? -1 : 1,
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: colors.primary,
+                          size: 20,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptDealsReviews,
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptJobRoles,
-                      textColor: colors.onSurface,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? colors.primary.withValues(alpha: 0.08)
+                              : const Color(0xFFF4F8FF),
+                          border: Border.all(
+                            color: colors.primary,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              to == ProviderCategoryType.company
+                                  ? Icons.business_outlined
+                                  : Icons.person_outline_rounded,
+                              size: 20,
+                              color: colors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                toNameShort,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.primary,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 20),
 
-              // "What changes" Section Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? colors.surfaceContainerLow
-                      : const Color(0xFFF4F7FC),
-                  border: Border.all(
+                // "Kept safe" Section Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? colors.outlineVariant.withValues(alpha: 0.5)
-                        : const Color(0xFFE2E8F0),
+                        ? const Color(0xFF0F291E)
+                        : const Color(0xFFF0FDF4),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF22C55E).withValues(alpha: 0.3)
+                          : const Color(0xFFDCFCE7),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.sync_rounded,
-                          size: 20,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.providerIdentityWhatChangesHeader,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: colors.primary,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.gpp_good_outlined,
+                            size: 20,
+                            color: isDark
+                                ? const Color(0xFF4ADE80)
+                                : const Color(0xFF15803D),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildBulletItem(
-                      icon: Icons.schedule_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFFFBBF24)
-                          : const Color(0xFFD97706),
-                      text: l10n
-                          .providerIdentityChangeServicesInactive(fromNameShort),
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.info_outline_rounded,
-                      iconColor: colors.primary,
-                      text: l10n.providerIdentityChangeNewOffers(toNameShort),
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.info_outline_rounded,
-                      iconColor: colors.primary,
-                      text: l10n.providerIdentityChangeVerification,
-                      textColor: colors.onSurface,
-                    ),
-                    if (pendingOffers > 0) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.providerIdentityKeptSafeHeader,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFF166534),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildBulletItem(
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptServiceInfo,
+                        textColor: colors.onSurface,
+                      ),
                       const SizedBox(height: 10),
                       _buildBulletItem(
-                        icon: Icons.pending_actions_rounded,
-                        iconColor: colors.tertiary,
-                        text: l10n.providerIdentityPendingOffers(pendingOffers),
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptDealsReviews,
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptJobRoles,
                         textColor: colors.onSurface,
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // "What changes" Section Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? colors.surfaceContainerLow
+                        : const Color(0xFFF4F7FC),
+                    border: Border.all(
+                      color: isDark
+                          ? colors.outlineVariant.withValues(alpha: 0.5)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.sync_rounded,
+                            size: 20,
+                            color: colors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.providerIdentityWhatChangesHeader,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: colors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildBulletItem(
+                        icon: Icons.schedule_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706),
+                        text: l10n.providerIdentityChangeServicesInactive(
+                            fromNameShort),
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.info_outline_rounded,
+                        iconColor: colors.primary,
+                        text: l10n.providerIdentityChangeNewOffers(toNameShort),
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.info_outline_rounded,
+                        iconColor: colors.primary,
+                        text: l10n.providerIdentityChangeVerification,
+                        textColor: colors.onSurface,
+                      ),
+                      if (pendingOffers > 0) ...[
+                        const SizedBox(height: 10),
+                        _buildBulletItem(
+                          icon: Icons.pending_actions_rounded,
+                          iconColor: colors.tertiary,
+                          text:
+                              l10n.providerIdentityPendingOffers(pendingOffers),
+                          textColor: colors.onSurface,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      Divider(
+        Divider(
           height: 1,
           color: isDark
               ? colors.outlineVariant.withValues(alpha: 0.5)
@@ -2258,6 +2395,10 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
     required this.from,
     required this.to,
     required this.presentation,
+    required this.reusedServices,
+    required this.locations,
+    required this.verificationServices,
+    required this.companyVerificationStatus,
     required this.pendingOffers,
     required this.activeCapabilities,
     required this.error,
@@ -2270,6 +2411,10 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
   final ProviderCategoryType from;
   final ProviderCategoryType to;
   final Map<String, dynamic> presentation;
+  final List<String> reusedServices;
+  final List<String> locations;
+  final List<String> verificationServices;
+  final String companyVerificationStatus;
   final int pendingOffers;
   final int activeCapabilities;
   final String? error;
@@ -2292,105 +2437,172 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
     final withRep = to == ProviderCategoryType.company &&
         presentation['display_mode'] == 'company_with_representative' &&
         rep.isNotEmpty;
+    final panelColor = Theme.of(context).colorScheme.surface;
+    final outline = Theme.of(context).colorScheme.outlineVariant;
+
     return Column(children: [
       Expanded(
-        child: ListView(padding: const EdgeInsets.all(20), children: [
-          Text(l10n.providerIdentityReviewTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 14),
-          _IdentityReviewRow(
-              label: l10n.providerIdentityCategory, value: categoryName),
-          _IdentityReviewRow(
-              label: l10n.providerIdentityNewIdentity,
-              value: '$toName (was $fromName)'),
-          _IdentityReviewRow(
-            label: l10n.providerIdentityPublicName,
-            value: withRep
-                ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}'
-                : displayName,
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.providerIdentityReused,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: colors.primary)),
-          ListTile(
-              dense: true,
-              leading: const Icon(Icons.check),
-              title: Text(l10n.providerIdentityDataKept)),
-          const SizedBox(height: 8),
-          Text(l10n.providerIdentityNeedsAttention,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: colors.primary)),
-          ListTile(
-              dense: true,
-              leading: const Icon(Icons.pending_actions),
-              title: Text(l10n.providerIdentityCompanyVerificationStatus)),
-          if (pendingOffers > 0)
-            ListTile(
-                dense: true,
-                leading: const Icon(Icons.mark_email_unread_outlined),
-                title: Text(l10n.providerIdentityPendingOffers(pendingOffers))),
-          if (activeCapabilities == 0)
-            ListTile(
-                dense: true,
-                leading: Icon(Icons.info_outline, color: colors.tertiary),
-                title: Text(l10n.providerIdentityNoActiveWarning)),
-          const SizedBox(height: 8),
-          Text(l10n.providerIdentityOldServicesInactive(fromName)),
-          if (error != null) ...[
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          children: [
+            Row(children: [
+              Expanded(child: _progressSegment(colors.primary)),
+              const SizedBox(width: 6),
+              Expanded(child: _progressSegment(colors.primary)),
+            ]),
+            const SizedBox(height: 10),
+            Text(
+              l10n.companyStepTwoOfTwo,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .6,
+                  ),
+            ),
+            const SizedBox(height: 5),
+            Text(l10n.providerIdentityReviewTitle,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            _reviewCard(
+              context,
+              color: panelColor,
+              border: outline,
+              children: [
+                _IdentityReviewRow(
+                    label: l10n.providerIdentityCategory, value: categoryName),
+                _IdentityReviewRow(
+                    label: l10n.providerIdentityNewIdentity,
+                    value: '$toName\n${l10n.providerIdentityWas} $fromName'),
+                _IdentityReviewRow(
+                  label: l10n.providerIdentityPublicName,
+                  value: withRep
+                      ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}'
+                      : displayName,
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            Text(error!, style: TextStyle(color: colors.error)),
-            TextButton.icon(
+            _ReviewSectionLabel(
+              text: l10n.providerIdentityReused.toUpperCase(),
+              color: colors.primary,
+            ),
+            const SizedBox(height: 5),
+            _reviewCard(
+              context,
+              color: panelColor,
+              border: outline,
+              children: [
+                if (reusedServices.isNotEmpty)
+                  _ReviewCheckRow(
+                    text:
+                        '${l10n.providerIdentityKeptServiceInfo} (${reusedServices.length})',
+                  ),
+                if (locations.isNotEmpty)
+                  _ReviewCheckRow(
+                      text: '${l10n.companyServiceAreas}: '
+                          '${locations.join(', ')}'),
+                if (reusedServices.isEmpty && locations.isEmpty)
+                  _ReviewCheckRow(text: l10n.providerIdentityDataKept),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _ReviewSectionLabel(
+              text: l10n.providerIdentityNeedsAttention.toUpperCase(),
+              color: const Color(0xFFB45309),
+            ),
+            const SizedBox(height: 5),
+            _reviewCard(
+              context,
+              color: panelColor,
+              border: outline,
+              children: [
+                for (final service in verificationServices)
+                  _ReviewStatusRow(
+                    title: service,
+                    subtitle: l10n.companyProofInactive,
+                    status: l10n.providerCapabilityInactive,
+                  ),
+                _ReviewStatusRow(
+                  title: l10n.companyVerificationTitle,
+                  subtitle: l10n.providerIdentityCompanyVerificationStatus,
+                  status: companyVerificationStatus,
+                ),
+                if (pendingOffers > 0)
+                  _ReviewStatusRow(
+                    title: l10n.providerIdentityPendingOffers(pendingOffers),
+                    subtitle: l10n.providerIdentityHistoryKept,
+                    status: l10n.providerIdentityCurrent,
+                  ),
+                if (activeCapabilities == 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      l10n.providerIdentityNoActiveWarning,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
+              ],
+            ),
+            if (error != null) ...[
+              const SizedBox(height: 10),
+              Text(error!, style: TextStyle(color: colors.error)),
+              TextButton.icon(
                 onPressed: saving ? null : onConfirm,
                 icon: const Icon(Icons.refresh),
-                label: Text(l10n.retry)),
+                label: Text(l10n.retry),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
       SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Column(children: [
-              SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: saving ? null : onConfirm,
-                      child: saving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(l10n.providerIdentityConfirm))),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: saving ? null : onBack,
-                  child: Text(l10n.btnBack),
-                ),
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Column(children: [
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: FilledButton(
+                onPressed: saving ? null : onConfirm,
+                child: saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text(l10n.providerIdentityConfirm),
               ),
-            ]),
-          )),
+            ),
+            TextButton(
+              onPressed: saving ? null : onBack,
+              child: Text(l10n.btnBack),
+            ),
+          ]),
+        ),
+      ),
     ]);
   }
+
+  static Widget _reviewCard(
+    BuildContext context, {
+    required Color color,
+    required Color border,
+    required List<Widget> children,
+  }) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color,
+          border: Border.all(color: border),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(children: children),
+      );
 }
 
 class _IdentityReviewRow extends StatelessWidget {
@@ -2413,6 +2625,107 @@ class _IdentityReviewRow extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w600))),
         ]),
       );
+}
+
+Widget _progressSegment(Color color) => Container(
+      height: 3,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+
+class _ReviewSectionLabel extends StatelessWidget {
+  const _ReviewSectionLabel({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+              letterSpacing: .45,
+            ),
+      );
+}
+
+class _ReviewCheckRow extends StatelessWidget {
+  const _ReviewCheckRow({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.check, size: 16, color: Colors.green.shade700),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+            ),
+          ],
+        ),
+      );
+}
+
+class _ReviewStatusRow extends StatelessWidget {
+  const _ReviewStatusRow({
+    required this.title,
+    required this.subtitle,
+    required this.status,
+  });
+
+  final String title;
+  final String subtitle;
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                Text(subtitle,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        )),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              status,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

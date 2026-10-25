@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
@@ -14,11 +16,13 @@ class CompanyDetailsStep extends StatefulWidget {
     required this.roleCount,
     required this.initialProfile,
     required this.companyName,
+    this.allowEmptyServices = false,
+    this.presentation = const {},
     this.verificationSubmissions = const [],
     required this.providerRepository,
     required this.onDraftChanged,
     required this.onSave,
-    required this.onEditCompanyName,
+    required this.onPresentationChanged,
   });
 
   final String categorySlug;
@@ -26,22 +30,34 @@ class CompanyDetailsStep extends StatefulWidget {
   final int roleCount;
   final ProviderCompanyProfile? initialProfile;
   final String companyName;
+  final bool allowEmptyServices;
+  final Map<String, dynamic> presentation;
   final List<Map<String, dynamic>> verificationSubmissions;
   final IProviderRepository providerRepository;
   final ValueChanged<ProviderCompanyProfile> onDraftChanged;
-  final Future<void> Function({required Map<String, dynamic> profile}) onSave;
-  final VoidCallback onEditCompanyName;
+  final Future<void> Function({
+    required Map<String, dynamic> profile,
+    Uint8List? logoBytes,
+    String? logoFileName,
+  }) onSave;
+  final ValueChanged<Map<String, dynamic>> onPresentationChanged;
 
   @override
   State<CompanyDetailsStep> createState() => _CompanyDetailsStepState();
 }
 
 class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
+  final _companyNameController = TextEditingController();
   final _registrationController = TextEditingController();
   final _areasController = TextEditingController();
+  final _representativeController = TextEditingController();
   String? _teamSize;
   String? _yearsInBusiness;
+  bool _showAsRepresentative = false;
   late List<Map<String, dynamic>> _verificationSubmissions;
+  Uint8List? _logoBytes;
+  String? _logoFileName;
+  String? _logoUrl;
   String? _uploadingDocumentType;
   String _selectedDocumentType = 'business_registration';
   bool _saving = false;
@@ -54,11 +70,20 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   void initState() {
     super.initState();
     final profile = widget.initialProfile;
+    _companyNameController.text = profile?.companyName ?? widget.companyName;
     _registrationController.text = profile?.registrationNumber ?? '';
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
     _teamSize = profile?.teamSize;
     _yearsInBusiness = profile?.yearsInBusiness;
+    _representativeController.text =
+        widget.presentation['representative_name']?.toString() ?? '';
+    _showAsRepresentative =
+        widget.presentation['display_mode'] == 'company_with_representative';
     _verificationSubmissions = List.of(widget.verificationSubmissions);
+    final logoPath = profile?.logoPath;
+    if (logoPath != null && logoPath.isNotEmpty) {
+      _loadLogoUrl(logoPath);
+    }
   }
 
   @override
@@ -77,15 +102,36 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     if (_areasController.text.isEmpty && profile.serviceAreas.isNotEmpty) {
       _areasController.text = profile.serviceAreas.join(', ');
     }
+    if (_companyNameController.text.isEmpty &&
+        profile.companyName?.isNotEmpty == true) {
+      _companyNameController.text = profile.companyName!;
+    }
     _teamSize ??= profile.teamSize;
     _yearsInBusiness ??= profile.yearsInBusiness;
+    if (profile.logoPath?.isNotEmpty == true && _logoUrl == null) {
+      _loadLogoUrl(profile.logoPath!);
+    }
   }
 
   @override
   void dispose() {
     _registrationController.dispose();
     _areasController.dispose();
+    _companyNameController.dispose();
+    _representativeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadLogoUrl(String logoPath) async {
+    try {
+      final url = await widget.providerRepository.getCompanyLogoUrl(logoPath);
+      if (mounted) setState(() => _logoUrl = url);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_errorText(error))),
+      );
+    }
   }
 
   static String _errorText(Object error) => switch (error) {
@@ -96,7 +142,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   ProviderCompanyProfile _currentProfile() => ProviderCompanyProfile(
         categorySlug: widget.categorySlug,
-        companyName: widget.companyName,
+        companyName: _companyNameController.text,
         registrationNumber: _registrationController.text,
         teamSize: _teamSize,
         yearsInBusiness: _yearsInBusiness,
@@ -109,6 +155,42 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
       );
 
   void _notifyDraftChanged() => widget.onDraftChanged(_currentProfile());
+
+  void _notifyPresentationChanged() {
+    widget.onPresentationChanged({
+      'display_mode':
+          _showAsRepresentative ? 'company_with_representative' : 'company',
+      'display_name': _companyNameController.text.trim(),
+      'representative_name': _representativeController.text.trim(),
+      'representative_authorized': _showAsRepresentative,
+    });
+  }
+
+  Future<void> _pickCompanyLogo() async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      const types = XTypeGroup(
+        label: 'Company logo',
+        extensions: ['jpg', 'jpeg', 'png'],
+      );
+      final file = await openFile(acceptedTypeGroups: [types]);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty || bytes.lengthInBytes > 2 * 1024 * 1024) {
+        throw StateError(l10n.companyLogoSizeHint);
+      }
+      if (!mounted) return;
+      setState(() {
+        _logoBytes = bytes;
+        _logoFileName = file.name;
+        _logoUrl = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(_errorText(error))));
+    }
+  }
 
   Future<void> _pickCompanyDocument({Map<String, dynamic>? existing}) async {
     final l10n = AppLocalizations.of(context)!;
@@ -239,15 +321,25 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_saving) return;
     setState(() {
       _saving = true;
       _saveError = null;
     });
     final profile = _currentProfile();
+    if (_companyNameController.text.trim().isEmpty) {
+      setState(() {
+        _saving = false;
+        _saveError = l10n.providerCompanyNameRequired;
+      });
+      return;
+    }
     try {
       await widget.onSave(
         profile: profile.toJson(),
+        logoBytes: _logoBytes,
+        logoFileName: _logoFileName,
       );
     } catch (error) {
       if (!mounted) return;
@@ -289,19 +381,143 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 4),
               Text(l10n.companyDetailsSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-              const SizedBox(height: 18),
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.business_outlined),
-                  title: Text(widget.companyName),
-                  subtitle: Text(l10n.providerCompanyNameFromPreviousStep),
-                  trailing: TextButton(
-                    onPressed: widget.onEditCompanyName,
-                    child: Text(l10n.providerCompanyNameEdit),
+              const SizedBox(height: 14),
+              Text(l10n.companyLogo,
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: _saving ? null : _pickCompanyLogo,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: theme.colorScheme.outline),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _logoBytes != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(9),
+                              child:
+                                  Image.memory(_logoBytes!, fit: BoxFit.cover),
+                            )
+                          : _logoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(9),
+                                  child: Image.network(_logoUrl!,
+                                      fit: BoxFit.cover),
+                                )
+                              : Icon(Icons.add,
+                                  color: theme.colorScheme.primary),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_logoFileName ?? l10n.companyLogoChoose),
+                          const SizedBox(height: 3),
+                          Text(
+                            l10n.companyLogoHint,
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: text2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
+              TextFormField(
+                controller: _companyNameController,
+                maxLength: 80,
+                decoration: InputDecoration(
+                  labelText: l10n.companyName,
+                  helperText: l10n.providerCompanyNameRequired,
+                  border: const OutlineInputBorder(),
+                  counterText: '',
+                ),
+                onChanged: (_) {
+                  setState(() {});
+                  _notifyDraftChanged();
+                  _notifyPresentationChanged();
+                },
+              ),
+              const SizedBox(height: 6),
+              Card(
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      title: Text(l10n.companyRepresentativeToggle),
+                      subtitle: Text(l10n.providerIdentityRepresentativeHelper),
+                      value: _showAsRepresentative,
+                      onChanged: (value) {
+                        setState(() => _showAsRepresentative = value);
+                        _notifyPresentationChanged();
+                      },
+                    ),
+                    if (_showAsRepresentative)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        child: TextField(
+                          controller: _representativeController,
+                          decoration: InputDecoration(
+                            labelText: l10n.providerIdentityRepresentativeName,
+                            border: const OutlineInputBorder(),
+                            helperText:
+                                l10n.providerIdentityRepresentativeHelper,
+                          ),
+                          onChanged: (_) {
+                            setState(() {});
+                            _notifyPresentationChanged();
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.providerIdentityPublicPreview,
+                        style:
+                            theme.textTheme.labelSmall?.copyWith(color: text2)),
+                    const SizedBox(height: 6),
+                    Text(
+                      _companyNameController.text.trim().isEmpty
+                          ? l10n.companyName
+                          : _companyNameController.text.trim(),
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    if (_showAsRepresentative &&
+                        _representativeController.text.trim().isNotEmpty)
+                      Text(l10n.providerIdentityRepresentedBy(
+                          _representativeController.text.trim())),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
               TextField(
                 controller: _registrationController,
                 maxLength: 40,
@@ -550,7 +766,10 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
-                  onPressed: _saving || allCount == 0 ? null : _save,
+                  onPressed:
+                      _saving || (allCount == 0 && !widget.allowEmptyServices)
+                          ? null
+                          : _save,
                   child: _saving
                       ? const SizedBox(
                           width: 20,

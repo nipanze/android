@@ -3421,6 +3421,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerIdentityCurrent => 'Iriho';
 
   @override
+  String get providerIdentityWas => 'yari';
+
+  @override
   String get providerIdentityDisplayHeading => 'Wifuza kugaragazwa ute?';
 
   @override
@@ -3678,7 +3681,29 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Ibi byose si itegeko. Aya makuru abikwa mu ibanga kandi agaragara kuri wowe n’abayobozi ba Nipanze gusa.';
+      'Izina ry’ikigo ni ryo ryonyine rikenewe. Ikirango, izina n’uhagarariye ikigo bizagaragara ku mwirondoro rusange.';
+
+  @override
+  String get companyLogo => 'Ikirango cy’ikigo';
+
+  @override
+  String get companyLogoHint =>
+      'Si ngombwa. JPG cyangwa PNG, kugeza kuri 2 MB.';
+
+  @override
+  String get companyLogoChoose => 'Ongeraho ikirango';
+
+  @override
+  String get companyLogoSizeHint =>
+      'Hitamo ishusho ya JPG cyangwa PNG itarengeje 2 MB.';
+
+  @override
+  String get companyRepresentativeToggle =>
+      'Nyereka nanone nk’uhagarariye ikigo';
+
+  @override
+  String get companyProofInactive =>
+      'Icyemezo kirakenewe. Serivisi ntizakora itaremezwa.';
 
   @override
   String get companyName => 'Izina ry’ikigo cyangwa ubucuruzi';
