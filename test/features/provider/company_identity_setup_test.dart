@@ -20,9 +20,8 @@ class _ProviderRepositoryStub implements IProviderRepository {
 }
 
 void main() {
-  testWidgets('company name can be entered before reviewing an identity switch',
+  testWidgets('company name is shown as a read-only identity preview',
       (tester) async {
-    var companyName = '';
     var continued = false;
     await tester.pumpWidget(_localizedApp(
       ProviderTypeStep(
@@ -32,19 +31,14 @@ void main() {
         onSelect: (_) {},
         onContinue: () => continued = true,
         initialDisplayName: '',
-        companyPreviewName: '',
+        companyPreviewName: 'Acme Services',
         categoryName: 'Transport & Logistics',
         currentType: ProviderCategoryType.individual,
-        onCompanyNameChanged: (value) => companyName = value,
       ),
     ));
-    await tester.enterText(
-      find.byKey(const ValueKey('provider-company-display-name')),
-      'Acme Services',
-    );
-    await tester.pump();
 
-    expect(companyName, 'Acme Services');
+    expect(find.text('Acme Services'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
     expect(find.text('Transport & Logistics'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
     expect(continued, isTrue);

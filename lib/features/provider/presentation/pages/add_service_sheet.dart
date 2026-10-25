@@ -730,14 +730,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       ..._identityPresentation,
       'representative_authorized': _representativeAuthorized,
     };
-    final l10n = AppLocalizations.of(context)!;
-    if (_savedProviderType != null &&
-        _savedProviderType != type &&
-        type == ProviderCategoryType.company &&
-        (presentation['display_name'] as String? ?? '').trim().isEmpty) {
-      setState(() => _providerTypeError = l10n.providerCompanyNameRequired);
-      return;
-    }
     if (_savedProviderType != null &&
         _savedProviderType != type &&
         presentation['display_mode'] == 'company_with_representative' &&
@@ -745,6 +737,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
             (presentation['representative_name'] as String? ?? '')
                 .trim()
                 .isEmpty)) {
+      final l10n = AppLocalizations.of(context)!;
       setState(() => _providerTypeError = l10n.providerIdentityRequiredInfo);
       return;
     }
@@ -1179,15 +1172,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                           : _companyDisplayName,
                                     };
                                   }),
-                                  onCompanyNameChanged: (value) => setState(() {
-                                    _companyDisplayName = value;
-                                    _companyPreviewName = value;
-                                    _identityPresentation = {
-                                      ..._identityPresentation,
-                                      'display_name': value,
-                                    };
-                                    _providerTypeError = null;
-                                  }),
                                   onContinue: _continueProviderType,
                                 )
                               : _step == 6
@@ -1434,7 +1418,6 @@ class ProviderTypeStep extends StatelessWidget {
     required this.companyPreviewName,
     required this.categoryName,
     required this.currentType,
-    required this.onCompanyNameChanged,
   });
 
   final ProviderCategoryType? selected;
@@ -1447,7 +1430,6 @@ class ProviderTypeStep extends StatelessWidget {
   final String companyPreviewName;
   final String categoryName;
   final ProviderCategoryType? currentType;
-  final ValueChanged<String> onCompanyNameChanged;
 
   Widget _optionCard(
     BuildContext context, {
@@ -1470,7 +1452,11 @@ class ProviderTypeStep extends StatelessWidget {
     final previewName = isCompany && !hasSavedCompany
         ? 'Your company name'
         : (savedName.isEmpty ? 'Your name' : savedName);
-    const hint = 'Name and photo come from your Profile';
+    final hint = !isCompany
+        ? 'Name and photo come from your Profile'
+        : hasSavedCompany
+            ? 'Edit in step 2'
+            : 'You add it in step 2';
     final icon = isCompany ? Icons.business_outlined : Icons.person_outline;
     final neutralBorder = theme.brightness == Brightness.dark
         ? AppColors.borderDark
@@ -1636,36 +1622,17 @@ class ProviderTypeStep extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (isCompany)
-                                TextFormField(
-                                  key: const ValueKey(
-                                      'provider-company-display-name'),
-                                  initialValue: companyPreviewName,
-                                  maxLength: 80,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.providerIdentityCompanyName,
-                                    hintText: l10n.providerIdentityCompanyOnly,
-                                    counterText: '',
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colors.onSurface,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  onChanged: onCompanyNameChanged,
-                                )
-                              else
-                                Text(
-                                  previewName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colors.onSurface,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              Text(
+                                previewName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isCompany && !hasSavedCompany
+                                      ? colors.onSurfaceVariant
+                                      : colors.onSurface,
+                                  fontWeight: FontWeight.w700,
                                 ),
+                              ),
                               if (categoryName.isNotEmpty)
                                 Text(
                                   categoryName,
@@ -1682,14 +1649,13 @@ class ProviderTypeStep extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 7),
-                  if (!isCompany)
-                    Text(
-                      hint,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  Text(
+                    hint,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
                 ],
               ],
             ),
