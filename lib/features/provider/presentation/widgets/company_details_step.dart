@@ -87,6 +87,12 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   @override
   void didUpdateWidget(covariant CompanyDetailsStep oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!identical(
+      oldWidget.verificationSubmissions,
+      widget.verificationSubmissions,
+    )) {
+      _verificationSubmissions = List.of(widget.verificationSubmissions);
+    }
     if (oldWidget.companyName != widget.companyName &&
         _companyNameController.text != widget.companyName) {
       _companyNameController.text = widget.companyName;
