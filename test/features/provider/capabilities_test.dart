@@ -672,7 +672,7 @@ void main() {
   });
 
   void setupMockProviderRepo(MockProviderRepository repo) {
-    when(() => repo.capabilityProfilesEnabled()).thenAnswer((_) async => false);
+    when(() => repo.capabilityProfilesEnabled()).thenAnswer((_) async => true);
     when(() => repo.workProfilesEnabled()).thenAnswer((_) async => false);
     when(() => repo.getProviderCapabilities())
         .thenAnswer((_) async => const <ProviderCapability>[]);
@@ -687,7 +687,8 @@ void main() {
   }
 
   group('Provider Services flow', () {
-    testWidgets('Offer Services tab shows categories inline', (tester) async {
+    testWidgets('Screen A shows filter chips and Add Service FAB',
+        (tester) async {
       final mockProviderRepo = MockProviderRepository();
       setupMockProviderRepo(mockProviderRepo);
       final mockNeedsRepo = MockNeedsRepository();
@@ -736,18 +737,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Offer Services'), findsOneWidget);
-      expect(find.text('Available for Jobs'), findsOneWidget);
-      expect(find.text('Machinery & Equipment'), findsOneWidget);
-
-      await tester.tap(find.text('Machinery & Equipment'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Excavator Hire'), findsOneWidget);
+      // Screen A — no legacy tabs, filter chips and FAB are present.
+      expect(find.text('Offer Services'), findsNothing);
+      expect(find.text('Available for Jobs'), findsNothing);
+      expect(find.text('Add Service'), findsOneWidget);
+      expect(find.text('All 0'), findsOneWidget);
     });
 
     testWidgets(
-        'Professional Services hides marketing capabilities without repetition',
+        'AddServiceSheet Professional Services hides marketing capabilities without repetition',
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
       setupMockProviderRepo(mockProviderRepo);
@@ -816,6 +814,9 @@ void main() {
                 ),
               ]);
 
+      when(() => mockProviderRepo.getMyCategoryTypes())
+          .thenAnswer((_) async => {});
+
       await tester.pumpWidget(
         const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -825,7 +826,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Tap Professional Services category
+      // Screen A is shown — open the AddServiceSheet via FAB.
+      await tester.tap(find.text('Add Service'));
+      await tester.pumpAndSettle();
+
+      // Tap Professional Services category in the sheet.
       await tester.tap(find.text('Professional & Business Services'));
       await tester.pumpAndSettle();
 
@@ -833,7 +838,6 @@ void main() {
       expect(find.text('Company Registration'), findsOneWidget);
       expect(find.text('Legal Services'), findsOneWidget);
       expect(find.text('Finance & Legal'), findsOneWidget);
-      expect(find.text('Marketing & Promotion'), findsNothing);
 
       // Should NOT see individual marketing sub-items directly in Professional.
       expect(find.text('Advertising Campaigns'), findsNothing);
@@ -841,7 +845,7 @@ void main() {
     });
 
     testWidgets(
-        'Marketing & Promotion category filters out redundant marketing_services tile and opens audience editor',
+        'AddServiceSheet Marketing & Promotion category filters out redundant marketing_services tile and opens audience editor',
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
       setupMockProviderRepo(mockProviderRepo);
@@ -894,6 +898,9 @@ void main() {
                 ),
               ]);
 
+      when(() => mockProviderRepo.getMyCategoryTypes())
+          .thenAnswer((_) async => {});
+
       await tester.pumpWidget(
         const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -903,16 +910,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Tap Marketing & Promotion category
+      // Screen A — open AddServiceSheet via FAB then tap Marketing & Promotion.
+      await tester.tap(find.text('Add Service'));
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('Marketing & Promotion'));
       await tester.pumpAndSettle();
 
       // Should see Advertising Campaigns and I Have an Audience
       expect(find.text('Advertising Campaigns'), findsOneWidget);
       expect(find.text('I Have an Audience'), findsOneWidget);
-
-      // The redundant marketing_services tile should not be shown.
-      expect(find.text('Marketing & Promotion'), findsWidgets);
 
       // Tap "I Have an Audience" row to open audience editor
       await tester.tap(find.text('I Have an Audience'));
