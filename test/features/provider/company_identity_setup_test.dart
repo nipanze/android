@@ -20,59 +20,34 @@ class _ProviderRepositoryStub implements IProviderRepository {
 }
 
 void main() {
-  testWidgets('company name is required and representative switch previews it',
+  testWidgets('company name can be entered before reviewing an identity switch',
       (tester) async {
-    Map<String, dynamic>? presentation;
+    var companyName = '';
+    var continued = false;
     await tester.pumpWidget(_localizedApp(
       ProviderTypeStep(
         selected: ProviderCategoryType.company,
         saving: false,
         error: null,
         onSelect: (_) {},
-        onContinue: () {},
+        onContinue: () => continued = true,
         initialDisplayName: '',
-        initialRepresentativeName: '',
+        companyPreviewName: '',
         categoryName: 'Transport & Logistics',
-        initialDisplayMode: 'company',
-        representativeAuthorized: false,
-        isCurrent: false,
-        onPresentationChanged: (value) => presentation = value,
+        currentType: ProviderCategoryType.individual,
+        onCompanyNameChanged: (value) => companyName = value,
       ),
     ));
-    await tester.drag(find.byType(ListView), const Offset(0, -450));
-    await tester.pumpAndSettle();
-
-    final continueButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Continue'),
+    await tester.enterText(
+      find.byKey(const ValueKey('provider-company-display-name')),
+      'Acme Services',
     );
-    expect(continueButton.onPressed, isNull);
-    expect(
-      tester
-          .widget<InputDecorator>(find.byType(InputDecorator).first)
-          .decoration
-          .helperText,
-      'Required. Enter your company or business name.',
-    );
-
-    await tester.enterText(find.byType(TextFormField).first, 'Acme Services');
-    await tester.pump();
-    await tester.tap(find.byType(SwitchListTile));
     await tester.pump();
 
-    expect(find.byType(TextFormField), findsNWidgets(2));
-    expect(presentation?['display_mode'], 'company_with_representative');
-    await tester.enterText(find.byType(TextFormField).last, 'Amina');
-    await tester.pump();
-    expect(find.text('Represented by Amina'), findsOneWidget);
+    expect(companyName, 'Acme Services');
     expect(find.text('Transport & Logistics'), findsOneWidget);
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Continue'),
-          )
-          .onPressed,
-      isNotNull,
-    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+    expect(continued, isTrue);
   });
 
   testWidgets('company details shows name read-only and Edit returns to B2',
