@@ -14,6 +14,9 @@ class CompanyDetailsStep extends StatefulWidget {
     required this.roleCount,
     required this.initialProfile,
     required this.companyName,
+    this.representativeName = '',
+    this.representativeAuthorized = false,
+    this.onPresentationChanged,
     this.verificationSubmissions = const [],
     required this.providerRepository,
     required this.onDraftChanged,
@@ -26,6 +29,9 @@ class CompanyDetailsStep extends StatefulWidget {
   final int roleCount;
   final ProviderCompanyProfile? initialProfile;
   final String companyName;
+  final String representativeName;
+  final bool representativeAuthorized;
+  final ValueChanged<Map<String, dynamic>>? onPresentationChanged;
   final List<Map<String, dynamic>> verificationSubmissions;
   final IProviderRepository providerRepository;
   final ValueChanged<ProviderCompanyProfile> onDraftChanged;
@@ -37,6 +43,8 @@ class CompanyDetailsStep extends StatefulWidget {
 }
 
 class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
+  late final TextEditingController _companyNameController;
+  late final TextEditingController _representativeController;
   final _registrationController = TextEditingController();
   final _areasController = TextEditingController();
   String? _teamSize;
@@ -53,6 +61,9 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   @override
   void initState() {
     super.initState();
+    _companyNameController = TextEditingController(text: widget.companyName);
+    _representativeController =
+        TextEditingController(text: widget.representativeName);
     final profile = widget.initialProfile;
     _registrationController.text = profile?.registrationNumber ?? '';
     _areasController.text = profile?.serviceAreas.join(', ') ?? '';
@@ -64,6 +75,14 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   @override
   void didUpdateWidget(covariant CompanyDetailsStep oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.companyName != widget.companyName &&
+        _companyNameController.text != widget.companyName) {
+      _companyNameController.text = widget.companyName;
+    }
+    if (oldWidget.representativeName != widget.representativeName &&
+        _representativeController.text != widget.representativeName) {
+      _representativeController.text = widget.representativeName;
+    }
     final profile = widget.initialProfile;
     if (profile == null ||
         oldWidget.initialProfile != null ||
@@ -83,6 +102,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
 
   @override
   void dispose() {
+    _companyNameController.dispose();
+    _representativeController.dispose();
     _registrationController.dispose();
     _areasController.dispose();
     super.dispose();
@@ -289,18 +310,129 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 4),
               Text(l10n.companyDetailsSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(color: text2)),
-              const SizedBox(height: 18),
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.business_outlined),
-                  title: Text(widget.companyName),
-                  subtitle: Text(l10n.providerCompanyNameFromPreviousStep),
-                  trailing: TextButton(
-                    onPressed: widget.onEditCompanyName,
-                    child: Text(l10n.providerCompanyNameEdit),
-                  ),
+              const SizedBox(height: 16),
+              Text('How should you be shown?',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 62,
+                      height: 62,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2F6FC),
+                        border: Border.all(
+                          color: theme.colorScheme.primary,
+                          style: BorderStyle.solid,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.add_rounded,
+                          color: theme.colorScheme.primary, size: 26),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Company logo',
+                              style: TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 3),
+                          Text(
+                              'Optional. JPG or PNG, up to 2 MB. A square image works best.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: text2,
+                                height: 1.3,
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 14),
+              Text('Company or business name',
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _companyNameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                ),
+                onChanged: (value) => widget.onPresentationChanged?.call({
+                  'display_name': value,
+                }),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Also show me as representative',
+                              style: TextStyle(fontWeight: FontWeight.w700)),
+                          SizedBox(height: 3),
+                          Text(
+                              'Only if you are allowed to act for this business.',
+                              style: TextStyle(
+                                  color: Color(0xFF5B6470), height: 1.3)),
+                        ],
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: widget.representativeAuthorized,
+                      onChanged: (value) => widget.onPresentationChanged?.call({
+                        'representative_authorized': value,
+                        'display_mode':
+                            value ? 'company_with_representative' : 'company',
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.representativeAuthorized) ...[
+                const SizedBox(height: 12),
+                Text('Representative name',
+                    style: theme.textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _representativeController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  ),
+                  onChanged: (value) => widget.onPresentationChanged?.call({
+                    'representative_name': value,
+                  }),
+                ),
+              ],
+              const SizedBox(height: 18),
               const SizedBox(height: 10),
               TextField(
                 controller: _registrationController,
@@ -537,30 +669,42 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         ),
         SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Column(children: [
-              Text(
-                l10n.companySelectionCount(
-                    widget.serviceCount, widget.roleCount),
-                style: theme.textTheme.bodySmall?.copyWith(color: text2),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton(
-                  onPressed: _saving || allCount == 0 ? null : _save,
-                  child: _saving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.companySave),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Color(0xFFE1E7EF))),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: Column(children: [
+                Text(
+                  l10n.companySelectionCount(
+                      widget.serviceCount, widget.roleCount),
+                  style: theme.textTheme.bodySmall?.copyWith(color: text2),
                 ),
-              ),
-            ]),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF216EEF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: _saving || allCount == 0 ? null : _save,
+                    child: _saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.companySave),
+                  ),
+                ),
+              ]),
+            ),
           ),
         ),
       ],

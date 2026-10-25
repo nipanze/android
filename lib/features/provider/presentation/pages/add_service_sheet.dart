@@ -1197,6 +1197,17 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                           pendingOffers: _pendingIdentityOffers,
                                           activeCapabilities:
                                               _activeIdentityCapabilities,
+                                          inactiveCapabilities: widget
+                                              .existingCapabilities
+                                              .where((capability) =>
+                                                  capability.categorySlug ==
+                                                      _selectedCategory?.slug &&
+                                                  !capability.isActive &&
+                                                  (capability.identityType ==
+                                                          null ||
+                                                      capability.identityType ==
+                                                          _providerType!.name))
+                                              .toList(),
                                           error: _providerTypeError,
                                           saving: _savingProviderType,
                                           onBack: _goBack,
@@ -1214,6 +1225,25 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               'display_name']
                                                           ?.toString() ??
                                                       '',
+                                              representativeName:
+                                                  _identityPresentation[
+                                                              'representative_name']
+                                                          ?.toString() ??
+                                                      '',
+                                              representativeAuthorized:
+                                                  _representativeAuthorized,
+                                              onPresentationChanged:
+                                                  (presentation) =>
+                                                      setState(() {
+                                                _identityPresentation = {
+                                                  ..._identityPresentation,
+                                                  ...presentation,
+                                                };
+                                                _representativeAuthorized =
+                                                    presentation[
+                                                            'representative_authorized'] ==
+                                                        true;
+                                              }),
                                               verificationSubmissions:
                                                   _companyVerificationSubmissions,
                                               providerRepository:
@@ -1888,280 +1918,281 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
               children: [
                 Text(
                   l10n.providerIdentitySwitchingCategoryBadge,
-                style: TextStyle(
-                  color: colors.primary,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
+                  style: TextStyle(
+                    color: colors.primary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.providerIdentitySwitchTitle(toName),
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colors.onSurface,
-                  height: 1.22,
+                const SizedBox(height: 8),
+                Text(
+                  l10n.providerIdentitySwitchTitle(toName),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: colors.onSurface,
+                    height: 1.22,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                categoryName.isNotEmpty
-                    ? l10n.providerIdentitySwitchCategoryBody(categoryName)
-                    : l10n.providerIdentitySwitchBody,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  height: 1.45,
+                const SizedBox(height: 10),
+                Text(
+                  categoryName.isNotEmpty
+                      ? l10n.providerIdentitySwitchCategoryBody(categoryName)
+                      : l10n.providerIdentitySwitchBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    height: 1.45,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Visual Identity Transition Row
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? colors.surfaceContainerLow
-                            : const Color(0xFFF8FAFC),
-                        border: Border.all(
-                          color: isDark
-                              ? colors.outlineVariant
-                              : const Color(0xFFE2E8F0),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            from == ProviderCategoryType.company
-                                ? Icons.business_outlined
-                                : Icons.person_outline_rounded,
-                            size: 20,
-                            color: colors.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              fromNameShort,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: colors.onSurfaceVariant,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Transform.scale(
-                      scaleX: isRtl ? -1 : 1,
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        color: colors.primary,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? colors.primary.withValues(alpha: 0.08)
-                            : const Color(0xFFF4F8FF),
-                        border: Border.all(
-                          color: colors.primary,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            to == ProviderCategoryType.company
-                                ? Icons.business_outlined
-                                : Icons.person_outline_rounded,
-                            size: 20,
-                            color: colors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              toNameShort,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: colors.primary,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // "Kept safe" Section Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F291E)
-                      : const Color(0xFFF0FDF4),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF22C55E).withValues(alpha: 0.3)
-                        : const Color(0xFFDCFCE7),
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Visual Identity Transition Row
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.gpp_good_outlined,
-                          size: 20,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFF15803D),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.providerIdentityKeptSafeHeader,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                              ? colors.surfaceContainerLow
+                              : const Color(0xFFF8FAFC),
+                          border: Border.all(
                             color: isDark
-                                ? const Color(0xFF86EFAC)
-                                : const Color(0xFF166534),
+                                ? colors.outlineVariant
+                                : const Color(0xFFE2E8F0),
                           ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              from == ProviderCategoryType.company
+                                  ? Icons.business_outlined
+                                  : Icons.person_outline_rounded,
+                              size: 20,
+                              color: colors.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                fromNameShort,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.onSurfaceVariant,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptServiceInfo,
-                      textColor: colors.onSurface,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Transform.scale(
+                        scaleX: isRtl ? -1 : 1,
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: colors.primary,
+                          size: 20,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptDealsReviews,
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.check_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFF4ADE80)
-                          : const Color(0xFF16A34A),
-                      text: l10n.providerIdentityKeptJobRoles,
-                      textColor: colors.onSurface,
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? colors.primary.withValues(alpha: 0.08)
+                              : const Color(0xFFF4F8FF),
+                          border: Border.all(
+                            color: colors.primary,
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              to == ProviderCategoryType.company
+                                  ? Icons.business_outlined
+                                  : Icons.person_outline_rounded,
+                              size: 20,
+                              color: colors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                toNameShort,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.primary,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 20),
 
-              // "What changes" Section Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? colors.surfaceContainerLow
-                      : const Color(0xFFF4F7FC),
-                  border: Border.all(
+                // "Kept safe" Section Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
                     color: isDark
-                        ? colors.outlineVariant.withValues(alpha: 0.5)
-                        : const Color(0xFFE2E8F0),
+                        ? const Color(0xFF0F291E)
+                        : const Color(0xFFF0FDF4),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF22C55E).withValues(alpha: 0.3)
+                          : const Color(0xFFDCFCE7),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.sync_rounded,
-                          size: 20,
-                          color: colors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.providerIdentityWhatChangesHeader,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: colors.primary,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.gpp_good_outlined,
+                            size: 20,
+                            color: isDark
+                                ? const Color(0xFF4ADE80)
+                                : const Color(0xFF15803D),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildBulletItem(
-                      icon: Icons.schedule_rounded,
-                      iconColor: isDark
-                          ? const Color(0xFFFBBF24)
-                          : const Color(0xFFD97706),
-                      text: l10n
-                          .providerIdentityChangeServicesInactive(fromNameShort),
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.info_outline_rounded,
-                      iconColor: colors.primary,
-                      text: l10n.providerIdentityChangeNewOffers(toNameShort),
-                      textColor: colors.onSurface,
-                    ),
-                    const SizedBox(height: 10),
-                    _buildBulletItem(
-                      icon: Icons.info_outline_rounded,
-                      iconColor: colors.primary,
-                      text: l10n.providerIdentityChangeVerification,
-                      textColor: colors.onSurface,
-                    ),
-                    if (pendingOffers > 0) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.providerIdentityKeptSafeHeader,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFF166534),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildBulletItem(
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptServiceInfo,
+                        textColor: colors.onSurface,
+                      ),
                       const SizedBox(height: 10),
                       _buildBulletItem(
-                        icon: Icons.pending_actions_rounded,
-                        iconColor: colors.tertiary,
-                        text: l10n.providerIdentityPendingOffers(pendingOffers),
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptDealsReviews,
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.check_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFF16A34A),
+                        text: l10n.providerIdentityKeptJobRoles,
                         textColor: colors.onSurface,
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // "What changes" Section Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? colors.surfaceContainerLow
+                        : const Color(0xFFF4F7FC),
+                    border: Border.all(
+                      color: isDark
+                          ? colors.outlineVariant.withValues(alpha: 0.5)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.sync_rounded,
+                            size: 20,
+                            color: colors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.providerIdentityWhatChangesHeader,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: colors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildBulletItem(
+                        icon: Icons.schedule_rounded,
+                        iconColor: isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706),
+                        text: l10n.providerIdentityChangeServicesInactive(
+                            fromNameShort),
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.info_outline_rounded,
+                        iconColor: colors.primary,
+                        text: l10n.providerIdentityChangeNewOffers(toNameShort),
+                        textColor: colors.onSurface,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                        icon: Icons.info_outline_rounded,
+                        iconColor: colors.primary,
+                        text: l10n.providerIdentityChangeVerification,
+                        textColor: colors.onSurface,
+                      ),
+                      if (pendingOffers > 0) ...[
+                        const SizedBox(height: 10),
+                        _buildBulletItem(
+                          icon: Icons.pending_actions_rounded,
+                          iconColor: colors.tertiary,
+                          text:
+                              l10n.providerIdentityPendingOffers(pendingOffers),
+                          textColor: colors.onSurface,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      Divider(
+        Divider(
           height: 1,
           color: isDark
               ? colors.outlineVariant.withValues(alpha: 0.5)
@@ -2260,6 +2291,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
     required this.presentation,
     required this.pendingOffers,
     required this.activeCapabilities,
+    required this.inactiveCapabilities,
     required this.error,
     required this.saving,
     required this.onBack,
@@ -2272,6 +2304,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
   final Map<String, dynamic> presentation;
   final int pendingOffers;
   final int activeCapabilities;
+  final List<ProviderCapability> inactiveCapabilities;
   final String? error;
   final bool saving;
   final VoidCallback onBack;
@@ -2292,127 +2325,395 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
     final withRep = to == ProviderCategoryType.company &&
         presentation['display_mode'] == 'company_with_representative' &&
         rep.isNotEmpty;
-    return Column(children: [
-      Expanded(
-        child: ListView(padding: const EdgeInsets.all(20), children: [
-          Text(l10n.providerIdentityReviewTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 14),
-          _IdentityReviewRow(
-              label: l10n.providerIdentityCategory, value: categoryName),
-          _IdentityReviewRow(
-              label: l10n.providerIdentityNewIdentity,
-              value: '$toName (was $fromName)'),
-          _IdentityReviewRow(
-            label: l10n.providerIdentityPublicName,
-            value: withRep
-                ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}'
-                : displayName,
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colors.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'STEP 2 OF 2',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.7,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                l10n.providerIdentityReviewTitle,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                      color: const Color(0xFF1F2A37),
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                ),
+                child: Column(
+                  children: [
+                    _IdentityReviewRow(
+                      label: l10n.providerIdentityCategory,
+                      value: categoryName,
+                    ),
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                    _IdentityReviewRow(
+                      label: l10n.providerIdentityNewIdentity,
+                      value: '$toName\nwas $fromName',
+                    ),
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                    _IdentityReviewRow(
+                      label: l10n.providerIdentityPublicName,
+                      value: withRep
+                          ? '$displayName\n${l10n.providerIdentityRepresentedBy(rep)}'
+                          : (displayName.isNotEmpty ? displayName : '-'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                l10n.providerIdentityReused.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                ),
+                child: Column(
+                  children: [
+                    _ReviewCheckRow(text: l10n.providerIdentityDataKept),
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                    if (pendingOffers > 0)
+                      _ReviewCheckRow(
+                        text: l10n.providerIdentityPendingOffers(pendingOffers),
+                      )
+                    else
+                      const _ReviewCheckRow(
+                        text: 'Locations: Kampala, Wakiso',
+                      ),
+                    const Divider(height: 1, indent: 12, endIndent: 12),
+                    const _ReviewCheckRow(
+                      text: 'Images (2) and contact preferences',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                l10n.providerIdentityNeedsAttention.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFFAA6500),
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              if (inactiveCapabilities.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: const Color(0xFFDCE4EF)),
+                  ),
+                  child: Text(
+                    'No inactive services for this identity.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: const Color(0xFF5B6470),
+                        ),
+                  ),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: const Color(0xFFDCE4EF)),
+                  ),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < inactiveCapabilities.length; i++) ...[
+                        if (i > 0)
+                          const Divider(height: 1, indent: 12, endIndent: 12),
+                        _ReviewAttentionRow(
+                          title: inactiveCapabilities[i].capabilityName ??
+                              inactiveCapabilities[i].capabilitySlug,
+                          subtitle: _inactiveCapabilityReason(
+                              inactiveCapabilities[i]),
+                          badge: _inactiveCapabilityStatus(
+                            inactiveCapabilities[i],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              if (error != null) ...[
+                const SizedBox(height: 12),
+                Text(error!, style: TextStyle(color: colors.error)),
+                TextButton.icon(
+                  onPressed: saving ? null : onConfirm,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l10n.retry),
+                ),
+              ],
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(l10n.providerIdentityReused,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: colors.primary)),
-          ListTile(
-              dense: true,
-              leading: const Icon(Icons.check),
-              title: Text(l10n.providerIdentityDataKept)),
-          const SizedBox(height: 8),
-          Text(l10n.providerIdentityNeedsAttention,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: colors.primary)),
-          ListTile(
-              dense: true,
-              leading: const Icon(Icons.pending_actions),
-              title: Text(l10n.providerIdentityCompanyVerificationStatus)),
-          if (pendingOffers > 0)
-            ListTile(
-                dense: true,
-                leading: const Icon(Icons.mark_email_unread_outlined),
-                title: Text(l10n.providerIdentityPendingOffers(pendingOffers))),
-          if (activeCapabilities == 0)
-            ListTile(
-                dense: true,
-                leading: Icon(Icons.info_outline, color: colors.tertiary),
-                title: Text(l10n.providerIdentityNoActiveWarning)),
-          const SizedBox(height: 8),
-          Text(l10n.providerIdentityOldServicesInactive(fromName)),
-          if (error != null) ...[
-            const SizedBox(height: 12),
-            Text(error!, style: TextStyle(color: colors.error)),
-            TextButton.icon(
-                onPressed: saving ? null : onConfirm,
-                icon: const Icon(Icons.refresh),
-                label: Text(l10n.retry)),
-          ],
-        ]),
-      ),
-      SafeArea(
+        ),
+        SafeArea(
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Column(children: [
-              SizedBox(
+            child: Column(
+              children: [
+                SizedBox(
                   width: double.infinity,
-                  height: 48,
+                  height: 52,
                   child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      onPressed: saving ? null : onConfirm,
-                      child: saving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(l10n.providerIdentityConfirm))),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: saving ? null : onConfirm,
+                    child: saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            l10n.providerIdentityConfirm,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                            ),
+                          ),
                   ),
-                  onPressed: saving ? null : onBack,
-                  child: Text(l10n.btnBack),
                 ),
-              ),
-            ]),
-          )),
-    ]);
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: TextButton(
+                    onPressed: saving ? null : onBack,
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.primary,
+                    ),
+                    child: Text(
+                      l10n.btnBack,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
 class _IdentityReviewRow extends StatelessWidget {
   const _IdentityReviewRow({required this.label, required this.value});
+
   final String label;
   final String value;
+
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-              child: Text(label, style: Theme.of(context).textTheme.bodySmall)),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Text(value,
-                  textAlign: TextAlign.end,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w600))),
-        ]),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF5B6470),
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: const Color(0xFF1F2A37),
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                    ),
+              ),
+            ),
+          ],
+        ),
       );
+}
+
+class _ReviewCheckRow extends StatelessWidget {
+  const _ReviewCheckRow({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(Icons.check_rounded, color: Color(0xFF168044), size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF1F2A37),
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewAttentionRow extends StatelessWidget {
+  const _ReviewAttentionRow({
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+  });
+
+  final String title;
+  final String subtitle;
+  final String badge;
+
+  @override
+  Widget build(BuildContext context) {
+    const badgeBg = Color(0xFFEEF1F5);
+    const badgeText = Color(0xFF5A6575);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF1F2A37),
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF5B6470),
+                        height: 1.2,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: badgeBg,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                badge,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: badgeText,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _inactiveCapabilityStatus(ProviderCapability capability) =>
+    switch (capability.status) {
+      ProviderCapabilityStatus.pendingReview => 'Pending review',
+      ProviderCapabilityStatus.rejected => 'Rejected',
+      ProviderCapabilityStatus.expired => 'Expired',
+      _ => 'Inactive',
+    };
+
+String _inactiveCapabilityReason(ProviderCapability capability) {
+  if (capability.pendingEvidenceCount > 0) return 'Proof is awaiting review.';
+  if (capability.rejectedEvidenceCount > 0) {
+    return capability.latestRejectReason ?? 'Proof was not approved.';
+  }
+  if (capability.expiredEvidenceCount > 0) return 'Proof has expired.';
+  if (capability.verificationPolicy ==
+      ProviderVerificationPolicy.requiredProof) {
+    return 'Required proof has not been approved.';
+  }
+  return 'This service is currently inactive.';
 }
 
 // ---------------------------------------------------------------------------
