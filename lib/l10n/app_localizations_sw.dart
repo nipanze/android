@@ -3417,9 +3417,6 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerIdentityCurrent => 'Ya sasa';
 
   @override
-  String get providerIdentityWas => 'alikuwa';
-
-  @override
   String get providerIdentityDisplayHeading => 'Utaonyeshwaje?';
 
   @override
@@ -3679,27 +3676,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get companyDetailsSubtitle =>
-      'Jina la kampuni pekee ndilo linalohitajika. Nembo, jina na mwakilishi vitaonekana kwenye wasifu wako wa umma.';
-
-  @override
-  String get companyLogo => 'Nembo ya kampuni';
-
-  @override
-  String get companyLogoHint => 'Si lazima. JPG au PNG, hadi MB 2.';
-
-  @override
-  String get companyLogoChoose => 'Ongeza nembo';
-
-  @override
-  String get companyLogoSizeHint =>
-      'Chagua picha ya JPG au PNG isiyozidi MB 2.';
-
-  @override
-  String get companyRepresentativeToggle => 'Nionyeshe pia kama mwakilishi';
-
-  @override
-  String get companyProofInactive =>
-      'Ushahidi unahitajika. Huduma haitatumika hadi ithibitishwe.';
+      'Kila kitu hapa ni hiari. Maelezo haya ni ya faragha kwako na wasimamizi wa Nipanze.';
 
   @override
   String get companyName => 'Jina la kampuni au biashara';

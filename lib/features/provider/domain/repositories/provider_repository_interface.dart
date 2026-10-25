@@ -24,15 +24,7 @@ abstract class IProviderRepository {
     required ProviderCategoryType type,
     required Map<String, dynamic> presentation,
   });
-  Future<void> completeCompanyIdentitySwitch({
-    required String categorySlug,
-    required Map<String, dynamic> profile,
-    required Map<String, dynamic> presentation,
-    Uint8List? logoBytes,
-    String? logoFileName,
-  });
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug);
-  Future<String> getCompanyLogoUrl(String logoPath);
   Future<List<Map<String, dynamic>>> getCompanyVerificationSubmissions(
       String categorySlug);
   Future<String> uploadCompanyVerificationDocument({
@@ -70,8 +62,6 @@ abstract class IProviderRepository {
     required Map<String, dynamic> profile,
     required List<Map<String, String>> evidence,
     required Map<String, dynamic> presentation,
-    Uint8List? logoBytes,
-    String? logoFileName,
   });
   Future<String> uploadCompanyEvidence({
     required String categorySlug,

@@ -154,61 +154,6 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
-  Future<void> completeCompanyIdentitySwitch({
-    required String categorySlug,
-    required Map<String, dynamic> profile,
-    required Map<String, dynamic> presentation,
-    Uint8List? logoBytes,
-    String? logoFileName,
-  }) async {
-    String? uploadedLogoPath;
-    try {
-      final uid = _uid;
-      if (logoBytes != null) {
-        if (uid == null) throw const AuthException('Not authenticated');
-        final fileName = logoFileName?.trim() ?? '';
-        final extension = fileName.split('.').last.toLowerCase();
-        final mimeType = switch (extension) {
-          'jpg' || 'jpeg' => 'image/jpeg',
-          'png' => 'image/png',
-          _ => '',
-        };
-        if (logoBytes.isEmpty || logoBytes.lengthInBytes > 2 * 1024 * 1024) {
-          throw const FormatException('Company logos must be 2 MB or smaller.');
-        }
-        if (mimeType.isEmpty) {
-          throw const FormatException('Choose a JPG or PNG company logo.');
-        }
-        final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
-        uploadedLogoPath = 'evidence/$uid/$categorySlug/company/logo/'
-            '${DateTime.now().microsecondsSinceEpoch}_$safeName';
-        await _uploadProviderEvidenceObject(
-          path: uploadedLogoPath,
-          bytes: logoBytes,
-          mimeType: mimeType,
-        );
-      }
-      await _client.rpc('complete_provider_company_identity_switch', params: {
-        'p_category_slug': categorySlug,
-        'p_profile': profile,
-        'p_presentation': presentation,
-        'p_logo_path': uploadedLogoPath,
-      });
-      _clearCache();
-      _companyProfileCache[categorySlug] = ProviderCompanyProfile.fromMap({
-        ...profile,
-        'category_slug': categorySlug,
-        if (uploadedLogoPath != null) 'logo_path': uploadedLogoPath,
-      });
-    } catch (e) {
-      if (uploadedLogoPath != null) {
-        await _cleanupUnrecordedEvidence(uploadedLogoPath);
-      }
-      throw parseSupabaseError(e);
-    }
-  }
-
-  @override
   Future<ProviderCompanyProfile?> getCompanyProfile(String categorySlug) async {
     try {
       final row = await _client
@@ -225,17 +170,6 @@ class ProviderRepository implements IProviderRepository {
       if (cached != null && parseSupabaseError(e) is NetworkException) {
         return cached;
       }
-      throw parseSupabaseError(e);
-    }
-  }
-
-  @override
-  Future<String> getCompanyLogoUrl(String logoPath) async {
-    try {
-      return await _client.storage
-          .from('provider-evidence')
-          .createSignedUrl(logoPath, 3600);
-    } catch (e) {
       throw parseSupabaseError(e);
     }
   }
@@ -406,36 +340,8 @@ class ProviderRepository implements IProviderRepository {
     required Map<String, dynamic> profile,
     required List<Map<String, String>> evidence,
     required Map<String, dynamic> presentation,
-    Uint8List? logoBytes,
-    String? logoFileName,
   }) async {
-    String? uploadedLogoPath;
     try {
-      final uid = _uid;
-      if (logoBytes != null) {
-        if (uid == null) throw const AuthException('Not authenticated');
-        final fileName = logoFileName?.trim() ?? '';
-        final extension = fileName.split('.').last.toLowerCase();
-        final mimeType = switch (extension) {
-          'jpg' || 'jpeg' => 'image/jpeg',
-          'png' => 'image/png',
-          _ => '',
-        };
-        if (logoBytes.isEmpty || logoBytes.lengthInBytes > 2 * 1024 * 1024) {
-          throw const FormatException('Company logos must be 2 MB or smaller.');
-        }
-        if (mimeType.isEmpty) {
-          throw const FormatException('Choose a JPG or PNG company logo.');
-        }
-        final safeName = fileName.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
-        uploadedLogoPath = 'evidence/$uid/$categorySlug/company/logo/'
-            '${DateTime.now().microsecondsSinceEpoch}_$safeName';
-        await _uploadProviderEvidenceObject(
-          path: uploadedLogoPath,
-          bytes: logoBytes,
-          mimeType: mimeType,
-        );
-      }
       await _client.rpc(RpcNames.saveCompanyCategory, params: {
         'p_category_slug': categorySlug,
         'p_services': serviceSlugs,
@@ -444,22 +350,12 @@ class ProviderRepository implements IProviderRepository {
         'p_evidence': evidence,
         'p_presentation': presentation,
       });
-      if (uploadedLogoPath != null) {
-        await _client.rpc('save_provider_company_logo', params: {
-          'p_category_slug': categorySlug,
-          'p_logo_path': uploadedLogoPath,
-        });
-      }
       _clearCache();
       _companyProfileCache[categorySlug] = ProviderCompanyProfile.fromMap({
         ...profile,
         'category_slug': categorySlug,
-        if (uploadedLogoPath != null) 'logo_path': uploadedLogoPath,
       });
     } catch (e) {
-      if (uploadedLogoPath != null) {
-        await _cleanupUnrecordedEvidence(uploadedLogoPath);
-      }
       throw parseSupabaseError(e);
     }
   }

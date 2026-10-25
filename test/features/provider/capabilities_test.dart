@@ -321,11 +321,6 @@ void main() {
     );
     expect(find.text('Review services'), findsNothing);
     expect(find.text('Company or business name'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Registration number'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
     expect(find.text('Registration number'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Upload company documents'),
@@ -378,12 +373,8 @@ void main() {
           companyName: 'Acme Builders',
           providerRepository: mockRepo,
           onDraftChanged: (_) {},
-          onPresentationChanged: (_) {},
-          onSave: ({
-            required profile,
-            Uint8List? logoBytes,
-            String? logoFileName,
-          }) async {},
+          onSave: ({required profile}) async {},
+          onEditCompanyName: () {},
         ),
       ),
     ));
@@ -760,8 +751,6 @@ void main() {
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
       setupMockProviderRepo(mockProviderRepo);
-      when(() => mockProviderRepo.capabilityProfilesEnabled())
-          .thenAnswer((_) async => false);
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
 
@@ -848,7 +837,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should see professional capabilities only.
-      await tester.ensureVisible(find.text('Company Registration'));
       expect(find.text('Company Registration'), findsOneWidget);
       expect(find.text('Legal Services'), findsOneWidget);
       expect(find.text('Finance & Legal'), findsOneWidget);
@@ -863,8 +851,6 @@ void main() {
         (tester) async {
       final mockProviderRepo = MockProviderRepository();
       setupMockProviderRepo(mockProviderRepo);
-      when(() => mockProviderRepo.capabilityProfilesEnabled())
-          .thenAnswer((_) async => false);
       final mockNeedsRepo = MockNeedsRepository();
       final mockProfileRepo = MockProfileRepository();
 
@@ -934,7 +920,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should see Advertising Campaigns and I Have an Audience
-      await tester.ensureVisible(find.text('Advertising Campaigns'));
       expect(find.text('Advertising Campaigns'), findsOneWidget);
       expect(find.text('I Have an Audience'), findsOneWidget);
 
@@ -953,7 +938,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap back arrow to return to Marketing & Promotion list
-      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
       await tester.pumpAndSettle();
 
       // Back on Marketing & Promotion list, subtitle reflects selected platforms
@@ -1019,6 +1004,7 @@ void main() {
         roleCount: 0,
         initialProfile: null,
         companyName: 'Acme Builders',
+        onEditCompanyName: () {},
         verificationSubmissions: const [
           {
             'id': 'doc-1',
@@ -1038,12 +1024,7 @@ void main() {
         ],
         providerRepository: mockRepo,
         onDraftChanged: (_) {},
-        onPresentationChanged: (_) {},
-        onSave: ({
-          required profile,
-          Uint8List? logoBytes,
-          String? logoFileName,
-        }) async {},
+        onSave: ({required profile}) async {},
       )));
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(

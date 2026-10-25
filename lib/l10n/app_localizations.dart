@@ -6178,12 +6178,6 @@ abstract class AppLocalizations {
   /// **'Current'**
   String get providerIdentityCurrent;
 
-  /// No description provided for @providerIdentityWas.
-  ///
-  /// In en, this message translates to:
-  /// **'was'**
-  String get providerIdentityWas;
-
   /// No description provided for @providerIdentityDisplayHeading.
   ///
   /// In en, this message translates to:
@@ -6583,44 +6577,8 @@ abstract class AppLocalizations {
   /// No description provided for @companyDetailsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Only the company name is required. Your public profile shows the logo, name and representative before contact.'**
+  /// **'Everything here is optional. These details are private to you and Nipanze administrators.'**
   String get companyDetailsSubtitle;
-
-  /// No description provided for @companyLogo.
-  ///
-  /// In en, this message translates to:
-  /// **'Company logo'**
-  String get companyLogo;
-
-  /// No description provided for @companyLogoHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional. JPG or PNG, up to 2 MB. A unique image works best.'**
-  String get companyLogoHint;
-
-  /// No description provided for @companyLogoChoose.
-  ///
-  /// In en, this message translates to:
-  /// **'Add logo'**
-  String get companyLogoChoose;
-
-  /// No description provided for @companyLogoSizeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a JPG or PNG image up to 2 MB.'**
-  String get companyLogoSizeHint;
-
-  /// No description provided for @companyRepresentativeToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Also show me as representative'**
-  String get companyRepresentativeToggle;
-
-  /// No description provided for @companyProofInactive.
-  ///
-  /// In en, this message translates to:
-  /// **'Proof required. Stays inactive until approved.'**
-  String get companyProofInactive;
 
   /// No description provided for @companyName.
   ///
