@@ -371,9 +371,20 @@ class _ProviderServicesView extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(dCtx);
-              cubit.removeCapability(cap.capabilitySlug);
+              try {
+                await cubit.removeCapability(cap.capabilitySlug);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(userFacingErrorMessage(e)),
+                      backgroundColor: AppColors.danger,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               l10n.removeService,

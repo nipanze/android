@@ -99,6 +99,7 @@ class RpcNames {
   static const String canPerformMarketplaceActivity =
       'can_perform_marketplace_activity';
   static const String saveProviderCapabilities = 'save_provider_capabilities';
+  static const String removeProviderCapability = 'remove_provider_capability';
   static const String setProviderCategoryType = 'set_provider_category_type';
   static const String saveCompanyCategory = 'save_company_category';
   static const String submitProviderCompanyVerification =

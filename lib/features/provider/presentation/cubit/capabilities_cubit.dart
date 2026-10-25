@@ -141,10 +141,10 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
       await loadWithOpportunities();
     } catch (e) {
       OfflineService().reportRequestFailure(e);
-      if (state is! CapabilitiesLoaded ||
-          parseSupabaseError(e) is! NetworkException) {
+      if (state is! CapabilitiesLoaded) {
         emit(CapabilitiesError(userFacingErrorMessage(e)));
       }
+      rethrow;
     }
   }
 

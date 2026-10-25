@@ -1,5 +1,6 @@
 // lib/features/provider/data/repositories/provider_repository.dart
 
+import 'dart:developer' as dev;
 import 'dart:typed_data';
 
 import 'package:injectable/injectable.dart';
@@ -773,7 +774,13 @@ class ProviderRepository implements IProviderRepository {
           .delete()
           .eq('user_id', uid)
           .eq('capability_slug', capabilitySlug);
+      _clearCache();
     } catch (e) {
+      dev.log(
+        'removeCapability error: $e',
+        name: 'ProviderRepository',
+        error: e,
+      );
       throw parseSupabaseError(e);
     }
   }
