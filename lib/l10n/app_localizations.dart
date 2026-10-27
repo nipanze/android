@@ -5368,6 +5368,12 @@ abstract class AppLocalizations {
   /// **'Per'**
   String get per;
 
+  /// No description provided for @payPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get payPeriod;
+
   /// No description provided for @perHour.
   ///
   /// In en, this message translates to:

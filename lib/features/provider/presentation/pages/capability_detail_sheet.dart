@@ -79,6 +79,9 @@ class CapabilityDetailSheet extends StatelessWidget {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     final isJob = capability.isWork;
+    final hasApprovedRoleProof = capability.roleQualificationClaims.any(
+      (claim) => claim['status'] == 'verified' && claim['has_evidence'] == true,
+    );
     final title = capability.capabilityName ?? capability.capabilitySlug;
     final category = capability.categoryName ?? '';
     final icon = capability.categoryIcon ?? (isJob ? '💼' : '🔧');
@@ -339,20 +342,32 @@ class CapabilityDetailSheet extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            onTogglePause(!capability.isPaused);
-                          },
-                          child: Text(
-                            capability.isPaused
-                                ? 'Resume'
-                                : (isJob
-                                    ? 'Pause jobs for this role'
-                                    : 'Pause service'),
-                            style: TextStyle(color: text2, fontSize: 13),
+                        if (hasApprovedRoleProof && !capability.isPaused)
+                          const Expanded(
+                            child: Text(
+                              'Approved proof · this role stays active',
+                              style: TextStyle(
+                                color: AppColors.success,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          )
+                        else
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              onTogglePause(!capability.isPaused);
+                            },
+                            child: Text(
+                              capability.isPaused
+                                  ? 'Resume'
+                                  : (isJob
+                                      ? 'Pause jobs for this role'
+                                      : 'Pause service'),
+                              style: TextStyle(color: text2, fontSize: 13),
+                            ),
                           ),
-                        ),
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context);

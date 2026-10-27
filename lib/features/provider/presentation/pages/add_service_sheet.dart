@@ -22,6 +22,7 @@ import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_company_profile.dart';
 import '../../domain/entities/provider_service_role.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
+import '../cubit/capabilities_cubit.dart';
 import '../widgets/company_details_step.dart';
 
 const _marketingServicesSlug = 'marketing_services';
@@ -122,6 +123,7 @@ class AddServiceSheet extends StatefulWidget {
     this.existingAudienceMetadata,
     this.existingFinancialMetadata,
     this.preselectedCategorySlug,
+    this.defaultCurrency = 'UGX',
     this.initialPersonalName,
     this.initialDistrict,
     this.initialPersonalAvatarUrl,
@@ -139,6 +141,7 @@ class AddServiceSheet extends StatefulWidget {
   final Map<String, dynamic>? existingAudienceMetadata;
   final Map<String, dynamic>? existingFinancialMetadata;
   final String? preselectedCategorySlug;
+  final String defaultCurrency;
   final String? initialPersonalName;
   final String? initialDistrict;
   final String? initialPersonalAvatarUrl;
@@ -164,6 +167,7 @@ class AddServiceSheet extends StatefulWidget {
     String? initialProofRoleSlug,
     bool initialCompanyCertification = false,
     String? preselectedCategorySlug,
+    String defaultCurrency = 'UGX',
     String? initialPersonalName,
     String? initialDistrict,
     String? initialPersonalAvatarUrl,
@@ -190,6 +194,7 @@ class AddServiceSheet extends StatefulWidget {
               existingAudienceMetadata: existingAudienceMetadata,
               existingFinancialMetadata: existingFinancialMetadata,
               preselectedCategorySlug: preselectedCategorySlug,
+              defaultCurrency: defaultCurrency,
               initialPersonalName: initialPersonalName,
               initialDistrict: initialDistrict,
               initialPersonalAvatarUrl: initialPersonalAvatarUrl,
@@ -223,6 +228,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   // Work profile selection state
   final Set<String> _selectedRoles = {};
+  final Set<String> _removingRoleSlugs = {};
   int _currentRoleIndex = 0;
   final Map<String, Set<String>> _kindsByRole = {};
   final Map<String, Set<String>> _qualificationsByRole = {};
@@ -327,7 +333,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         'expected_pay': {
           'amount': int.tryParse(_expectedPayAmountByRole[roleSlug]!),
           'period': _expectedPayPeriodByRole[roleSlug] ?? 'month',
-          'currency': 'UGX',
+          'currency': widget.defaultCurrency,
         },
     };
   }
@@ -961,6 +967,73 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() => _showAudience = true);
   }
 
+  Set<String> get _approvedRoleSlugs => widget.existingCapabilities
+      .where((cap) => cap.categorySlug == _selectedCategory?.slug)
+      .expand((cap) => cap.roleQualificationClaims
+          .where((claim) =>
+              claim['status'] == 'verified' && claim['has_evidence'] == true)
+          .map((claim) => claim['role_slug']?.toString() ?? ''))
+      .where((slug) => slug.isNotEmpty)
+      .toSet();
+
+  void _clearRoleDraft(String slug) {
+    _kindsByRole.remove(slug);
+    _qualificationsByRole.remove(slug);
+    _yearsExperienceByRole.remove(slug);
+    _availabilityByRole.remove(slug);
+    _languagesByRole.remove(slug);
+    _willingToTravelByRole.remove(slug);
+    _expectedPayAmountByRole.remove(slug);
+    _expectedPayPeriodByRole.remove(slug);
+    _roleEvidenceDrafts.removeWhere((draft) => draft.roleSlug == slug);
+  }
+
+  Future<void> _toggleRoleSelection(String slug) async {
+    if (_removingRoleSlugs.contains(slug)) return;
+    if (!_selectedRoles.contains(slug)) {
+      setState(() => _selectedRoles.add(slug));
+      return;
+    }
+    if (_approvedRoleSlugs.contains(slug)) return;
+
+    final role = _categoryRoles.where((item) => item.slug == slug).firstOrNull;
+    final capabilitySlug = role?.capabilitySlug ?? 'work_$slug';
+    final isSaved = widget.existingSlugs.contains(capabilitySlug) ||
+        widget.existingSlugs.contains(slug);
+    if (isSaved) {
+      setState(() => _removingRoleSlugs.add(slug));
+      try {
+        await widget.providerRepository.saveProviderCapabilitiesBulk(
+          items: const [],
+          categorySlug: _selectedCategory?.slug,
+          removeSlugs: [capabilitySlug],
+        );
+        if (!mounted) return;
+        await context.read<CapabilitiesCubit>().loadWithOpportunities();
+      } catch (error) {
+        if (mounted) {
+          setState(() => _removingRoleSlugs.remove(slug));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(userFacingErrorMessage(error))),
+          );
+        }
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _removingRoleSlugs.remove(slug);
+      _selectedRoles.remove(slug);
+      _clearRoleDraft(slug);
+      if (_selectedRoles.isEmpty) {
+        _currentRoleIndex = 0;
+      } else if (_currentRoleIndex >= _selectedRoles.length) {
+        _currentRoleIndex = _selectedRoles.length - 1;
+      }
+    });
+  }
+
   void _goBack() {
     setState(() {
       if (_step == 3) {
@@ -1112,19 +1185,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                           _step == 0
                               ? l10n.chooseCategory
                               : (_step == 2 || _step == 3)
-                                  ? (_selectedRoles.isNotEmpty
-                                      ? _categoryRoles
-                                          .firstWhere(
-                                            (r) =>
-                                                r.slug ==
-                                                _selectedRoles.elementAtOrNull(
-                                                    _currentRoleIndex),
-                                            orElse: () => _categoryRoles.first,
-                                          )
-                                          .name
-                                      : (_selectedCategory
-                                              ?.localizedName(localeCode) ??
-                                          ''))
+                                  ? (_selectedCategory
+                                          ?.localizedName(localeCode) ??
+                                      l10n.chooseCapabilities)
                                   : _showAudience
                                       ? l10n.iHaveAnAudience
                                       : (_selectedCategory
@@ -1313,37 +1376,21 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                               onSave: _saveCompanyDetails,
                                             )
                                           : _step == 2
-                                              ? _KindStepView(
-                                                  role:
-                                                      _categoryRoles.firstWhere(
-                                                    (r) =>
-                                                        r.slug ==
-                                                        _selectedRoles.elementAt(
-                                                            _currentRoleIndex),
-                                                    orElse: () =>
-                                                        _categoryRoles.first,
-                                                  ),
-                                                  roleIndex: _currentRoleIndex,
-                                                  totalRoles:
-                                                      _selectedRoles.length,
-                                                  selectedKinds:
-                                                      _kindsByRole.putIfAbsent(
-                                                    _selectedRoles.elementAt(
-                                                        _currentRoleIndex),
-                                                    () => {},
-                                                  ),
+                                              ? _KindsStepView(
+                                                  roles: _categoryRoles
+                                                      .where((role) =>
+                                                          _selectedRoles
+                                                              .contains(
+                                                                  role.slug))
+                                                      .toList(),
+                                                  approvedRoleSlugs:
+                                                      _approvedRoleSlugs,
+                                                  selectedKindsByRole:
+                                                      _kindsByRole,
                                                   scrollController:
                                                       scrollController,
-                                                  onNext: () {
-                                                    if (_currentRoleIndex <
-                                                        _selectedRoles.length -
-                                                            1) {
-                                                      setState(() =>
-                                                          _currentRoleIndex++);
-                                                    } else {
-                                                      setState(() => _step = 3);
-                                                    }
-                                                  },
+                                                  onNext: () =>
+                                                      setState(() => _step = 3),
                                                 )
                                               : _step == 3
                                                   ? _QualificationsStepView(
@@ -1369,6 +1416,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           _expectedPayAmountByRole,
                                                       expectedPayPeriodByRole:
                                                           _expectedPayPeriodByRole,
+                                                      defaultCurrency: widget
+                                                          .defaultCurrency,
                                                       evidenceDrafts:
                                                           _roleEvidenceDrafts,
                                                       scrollController:
@@ -1422,6 +1471,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           selected: _selected,
                                                           selectedRoles:
                                                               _selectedRoles,
+                                                          approvedRoleSlugs:
+                                                              _approvedRoleSlugs,
+                                                          removingRoleSlugs:
+                                                              _removingRoleSlugs,
                                                           iWantJobs:
                                                               _categoryWorkProfilesEnabled,
                                                           companyType:
@@ -1447,20 +1500,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               }
                                                             });
                                                           },
-                                                          onToggleRole: (slug) {
-                                                            setState(() {
-                                                              if (_selectedRoles
-                                                                  .contains(
-                                                                      slug)) {
-                                                                _selectedRoles
-                                                                    .remove(
-                                                                        slug);
-                                                              } else {
-                                                                _selectedRoles
-                                                                    .add(slug);
-                                                              }
-                                                            });
-                                                          },
+                                                          onToggleRole:
+                                                              _toggleRoleSelection,
                                                           onChangeProviderType:
                                                               () => setState(
                                                                   () => _step =
@@ -2426,7 +2467,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.4,
-                      color: const Color(0xFF1F2A37),
+                      color: colors.onSurface,
                     ),
               ),
               const SizedBox(height: 16),
@@ -3032,6 +3073,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.existingSlugs,
     required this.selected,
     required this.selectedRoles,
+    required this.approvedRoleSlugs,
+    required this.removingRoleSlugs,
     required this.iWantJobs,
     required this.companyType,
     required this.providerType,
@@ -3052,6 +3095,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final Set<String> existingSlugs;
   final Set<String> selected;
   final Set<String> selectedRoles;
+  final Set<String> approvedRoleSlugs;
+  final Set<String> removingRoleSlugs;
   final bool iWantJobs;
   final bool companyType;
   final ProviderCategoryType? providerType;
@@ -3389,7 +3434,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: text2)),
               const SizedBox(height: 8),
               Text(
-                l10n.providerTypeWhatRoles,
+                individualType ? 'Choose roles' : l10n.providerTypeWhatRoles,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -3418,9 +3463,15 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   _RoleCard(
                     role: role,
                     isSelected: selectedRoles.contains(role.slug),
+                    proofApproved: approvedRoleSlugs.contains(role.slug),
+                    isRemoving: removingRoleSlugs.contains(role.slug),
                     border: border,
                     text2: text2,
-                    onTap: () => onToggleRole(role.slug),
+                    onTap: (approvedRoleSlugs.contains(role.slug) &&
+                                selectedRoles.contains(role.slug)) ||
+                            removingRoleSlugs.contains(role.slug)
+                        ? null
+                        : () => onToggleRole(role.slug),
                   ),
             ],
           ],
@@ -3682,6 +3733,8 @@ class _RoleCard extends StatelessWidget {
   const _RoleCard({
     required this.role,
     required this.isSelected,
+    required this.proofApproved,
+    required this.isRemoving,
     required this.border,
     required this.text2,
     required this.onTap,
@@ -3689,9 +3742,11 @@ class _RoleCard extends StatelessWidget {
 
   final ProviderServiceRole role;
   final bool isSelected;
+  final bool proofApproved;
+  final bool isRemoving;
   final Color border;
   final Color text2;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -3714,23 +3769,30 @@ class _RoleCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: isSelected ? activeColor : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? activeColor : border,
-                  width: 1.5,
+            if (isRemoving)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: isSelected ? activeColor : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? activeColor : border,
+                    width: 1.5,
+                  ),
                 ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded,
+                        size: 13, color: Colors.white)
+                    : null,
               ),
-              child: isSelected
-                  ? const Icon(Icons.check_rounded,
-                      size: 13, color: Colors.white)
-                  : null,
-            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -3750,6 +3812,21 @@ class _RoleCard extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: text2),
                     ),
                   ],
+                  if (proofApproved) ...[
+                    const SizedBox(height: 5),
+                    const Row(
+                      children: [
+                        Icon(Icons.verified_rounded,
+                            size: 14, color: AppColors.success),
+                        SizedBox(width: 4),
+                        Text('Proof approved',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -3766,11 +3843,13 @@ class _KindChip extends StatelessWidget {
   const _KindChip({
     required this.label,
     required this.selected,
+    this.locked = false,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
+  final bool locked;
   final VoidCallback onTap;
 
   @override
@@ -3781,7 +3860,7 @@ class _KindChip extends StatelessWidget {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: locked ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -3798,6 +3877,11 @@ class _KindChip extends StatelessWidget {
           children: [
             if (selected) ...[
               const Icon(Icons.check_rounded, size: 14, color: purple),
+              const SizedBox(width: 4),
+            ],
+            if (locked) ...[
+              const Icon(Icons.lock_outline_rounded,
+                  size: 13, color: AppColors.success),
               const SizedBox(width: 4),
             ],
             Text(
@@ -3819,203 +3903,140 @@ class _KindChip extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Sheet E: Kind Step (Step 2 of 3)
 // ---------------------------------------------------------------------------
-class _KindStepView extends StatefulWidget {
-  const _KindStepView({
-    required this.role,
-    required this.roleIndex,
-    required this.totalRoles,
-    required this.selectedKinds,
-    required this.scrollController,
-    required this.onNext,
-  });
-
-  final ProviderServiceRole role;
-  final int roleIndex;
-  final int totalRoles;
-  final Set<String> selectedKinds;
+class _KindsStepView extends StatefulWidget {
+  const _KindsStepView(
+      {required this.roles,
+      required this.approvedRoleSlugs,
+      required this.selectedKindsByRole,
+      required this.scrollController,
+      required this.onNext});
+  final List<ProviderServiceRole> roles;
+  final Set<String> approvedRoleSlugs;
+  final Map<String, Set<String>> selectedKindsByRole;
   final ScrollController scrollController;
   final VoidCallback onNext;
-
   @override
-  State<_KindStepView> createState() => _KindStepViewState();
+  State<_KindsStepView> createState() => _KindsStepViewState();
 }
 
-class _KindStepViewState extends State<_KindStepView> {
-  String _getInstruction(ProviderServiceRole role) {
+class _KindsStepViewState extends State<_KindsStepView> {
+  String _instruction(ProviderServiceRole role) {
     final q = (role.kindQuestion ?? '').toLowerCase();
     final slug = role.slug.toLowerCase();
-    if (slug == 'machine_operator' || q.contains('machine')) {
-      return 'Pick all that apply. Employers search by machine.';
-    }
-    if (slug == 'skilled_tradesperson' || q.contains('trade')) {
-      return 'Pick all that apply. Employers search by trade.';
-    }
-    if (slug == 'site_manager' || q.contains('site')) {
-      return 'Pick all that apply. Employers search by site type.';
+    if (slug == 'developer' || q.contains('build') || q.contains('software')) {
+      return 'Pick all that apply. Employers search by tech stack.';
     }
     if (slug == 'driver' || q.contains('vehicle') || q.contains('drive')) {
       return 'Pick all that apply. Employers search by vehicle type.';
     }
-    if (slug == 'developer' || q.contains('build') || q.contains('software')) {
-      return 'Pick all that apply. Employers search by tech stack.';
-    }
-    if (slug == 'marketer_specialist' || q.contains('channel')) {
-      return 'Pick all that apply. Employers search by marketing channel.';
-    }
     return 'Pick all that apply. Employers search by specialty.';
-  }
-
-  String _getSelectionCountLabel(ProviderServiceRole role, int count) {
-    final q = (role.kindQuestion ?? '').toLowerCase();
-    final slug = role.slug.toLowerCase();
-    if (slug == 'machine_operator' || q.contains('machine')) {
-      return '$count machine${count == 1 ? '' : 's'} selected';
-    }
-    if (slug == 'skilled_tradesperson' || q.contains('trade')) {
-      return '$count trade${count == 1 ? '' : 's'} selected';
-    }
-    if (slug == 'site_manager' || q.contains('site')) {
-      return '$count site type${count == 1 ? '' : 's'} selected';
-    }
-    if (slug == 'driver' || q.contains('vehicle') || q.contains('drive')) {
-      return '$count vehicle type${count == 1 ? '' : 's'} selected';
-    }
-    return '$count selected';
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-
-    return Stack(
-      children: [
-        ListView(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final border = dark ? AppColors.borderDark : AppColors.borderLight;
+    final text2 = dark ? AppColors.text2Dark : AppColors.text2Light;
+    final ready = widget.roles.isNotEmpty &&
+        widget.roles.every((r) =>
+            (widget.selectedKindsByRole[r.slug] ?? const <String>{})
+                .isNotEmpty);
+    return Stack(children: [
+      ListView(
           controller: widget.scrollController,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
           children: [
-            Row(
-              children: [
-                Text(
-                  'STEP 2 OF 3',
-                  style: TextStyle(
+            Text('STEP 2 OF 3',
+                style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
-                    color: text2,
-                  ),
-                ),
-                if (widget.totalRoles > 1) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    'Role ${widget.roleIndex + 1} of ${widget.totalRoles}: ${widget.role.name}',
-                    style: TextStyle(fontSize: 12, color: text2),
-                  ),
-                ],
-              ],
-            ),
+                    letterSpacing: .6,
+                    color: text2)),
             const SizedBox(height: 12),
-            Text(
-              widget.role.kindQuestion ?? 'Which kind do you do?',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _getInstruction(widget.role),
-              style: TextStyle(fontSize: 12, color: text2),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final kind in widget.role.kinds)
-                  _KindChip(
-                    label: kind.name,
-                    selected: widget.selectedKinds.contains(kind.slug),
-                    onTap: () {
-                      setState(() {
-                        if (widget.selectedKinds.contains(kind.slug)) {
-                          widget.selectedKinds.remove(kind.slug);
-                        } else {
-                          widget.selectedKinds.add(kind.slug);
-                        }
-                      });
-                    },
-                  ),
-              ],
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 14, bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.bg3Dark : Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: border.withValues(alpha: 0.6),
-                ),
+            Text('Role details',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            for (final role in widget.roles)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: dark ? AppColors.bg3Dark : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: border.withValues(alpha: .6))),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(role.name,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 6),
+                      Text(role.kindQuestion ?? 'Which kind do you do?',
+                          style: TextStyle(fontSize: 13, color: text2)),
+                      const SizedBox(height: 3),
+                      Text(_instruction(role),
+                          style: TextStyle(fontSize: 11, color: text2)),
+                      if (widget.approvedRoleSlugs.contains(role.slug)) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          'The selected approved specialty stays on. Add other specialties to personalize job preferences.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: text2,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Wrap(spacing: 8, runSpacing: 8, children: [
+                        for (final kind in role.kinds)
+                          _KindChip(
+                            label: kind.name,
+                            selected:
+                                (widget.selectedKindsByRole[role.slug] ?? {})
+                                    .contains(kind.slug),
+                            locked: widget.approvedRoleSlugs
+                                    .contains(role.slug) &&
+                                (widget.selectedKindsByRole[role.slug] ?? {})
+                                    .contains(kind.slug),
+                            onTap: () => setState(() {
+                              final values = widget.selectedKindsByRole
+                                  .putIfAbsent(role.slug, () => <String>{});
+                              if (!values.add(kind.slug)) {
+                                values.remove(kind.slug);
+                              }
+                            }),
+                          )
+                      ]),
+                      const SizedBox(height: 8),
+                      Text(
+                          '${(widget.selectedKindsByRole[role.slug] ?? const <String>{}).length} selected',
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: text2,
+                              fontWeight: FontWeight.w600)),
+                    ]),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    widget.selectedKinds.isEmpty
-                        ? Icons.auto_awesome_outlined
-                        : Icons.check_circle_outline_rounded,
-                    size: 16,
-                    color: AppColors.proPurple,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.selectedKinds.isEmpty
-                          ? 'Show employers what you do best—pick the specialties that fit you.'
-                          : 'Great picks! These specialties help the right employers find you.',
-                      style: TextStyle(fontSize: 11, color: text2, height: 1.3),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Center(
-              child: Text(
-                _getSelectionCountLabel(
-                    widget.role, widget.selectedKinds.length),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: text2,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        Positioned(
+          ]),
+      Positioned(
           left: 16,
           right: 16,
           bottom: 12,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.proPurple,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: widget.selectedKinds.isNotEmpty ? widget.onNext : null,
-            child: Text(
-              widget.roleIndex < widget.totalRoles - 1
-                  ? 'Next role'
-                  : 'Next: add qualifications',
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-            ),
-          ),
-        ),
-      ],
-    );
+                backgroundColor: AppColors.proPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
+            onPressed: ready ? widget.onNext : null,
+            child: const Text('Next: add qualifications',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          )),
+    ]);
   }
 }
 
@@ -4033,6 +4054,7 @@ class _QualificationsStepView extends StatefulWidget {
     required this.willingToTravelByRole,
     required this.expectedPayAmountByRole,
     required this.expectedPayPeriodByRole,
+    required this.defaultCurrency,
     required this.evidenceDrafts,
     required this.scrollController,
     required this.onSave,
@@ -4047,6 +4069,7 @@ class _QualificationsStepView extends StatefulWidget {
   final Map<String, bool> willingToTravelByRole;
   final Map<String, String> expectedPayAmountByRole;
   final Map<String, String> expectedPayPeriodByRole;
+  final String defaultCurrency;
   final List<PendingRoleEvidenceDraft> evidenceDrafts;
   final ScrollController scrollController;
   final VoidCallback onSave;
@@ -4160,6 +4183,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final text2 =
         Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
     final primaryRoleSlug = widget.roles.firstOrNull?.slug ?? '';
@@ -4181,7 +4205,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Tick what you have',
+              'Qualifications & proof',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -4209,7 +4233,6 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 Builder(builder: (ctx) {
                   final roleQuals = widget.qualificationsByRole
                       .putIfAbsent(role.slug, () => {});
-                  final isChecked = roleQuals.contains(qual.slug);
                   final evidenceDraft = widget.evidenceDrafts
                       .where((draft) =>
                           draft.roleSlug == role.slug &&
@@ -4227,6 +4250,10 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                           claim['role_slug'] == role.slug &&
                           claim['qualification_slug'] == qual.slug)
                       .firstOrNull;
+                  final hasUploadedEvidence = evidenceDraft != null ||
+                      existingClaim?['has_evidence'] == true;
+                  final isChecked =
+                      roleQuals.contains(qual.slug) || hasUploadedEvidence;
                   final existingStatus = existingClaim?['status']?.toString();
                   final evidenceStatus = evidenceDraft != null
                       ? AppLocalizations.of(context)!.companyEvidenceUploaded
@@ -4254,18 +4281,20 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   return Column(
                     children: [
                       InkWell(
-                        onTap: () {
-                          setState(() {
-                            if (isChecked) {
-                              roleQuals.remove(qual.slug);
-                              widget.evidenceDrafts.removeWhere((draft) =>
-                                  draft.roleSlug == role.slug &&
-                                  draft.qualificationSlug == qual.slug);
-                            } else {
-                              roleQuals.add(qual.slug);
-                            }
-                          });
-                        },
+                        onTap: hasUploadedEvidence
+                            ? null
+                            : () {
+                                setState(() {
+                                  if (isChecked) {
+                                    roleQuals.remove(qual.slug);
+                                    widget.evidenceDrafts.removeWhere((draft) =>
+                                        draft.roleSlug == role.slug &&
+                                        draft.qualificationSlug == qual.slug);
+                                  } else {
+                                    roleQuals.add(qual.slug);
+                                  }
+                                });
+                              },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 2, vertical: 12),
@@ -4303,23 +4332,37 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                       ),
                                     ),
                                     if (qual.isEvidence)
-                                      Text(
-                                        evidenceStatus,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: evidenceDraft != null
-                                              ? AppColors.proPurple
-                                              : existingStatus == 'rejected'
-                                                  ? Theme.of(context)
-                                                      .colorScheme
-                                                      .error
-                                                  : text2,
-                                        ),
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              evidenceStatus,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: evidenceDraft != null
+                                                    ? AppColors.proPurple
+                                                    : existingStatus ==
+                                                            'rejected'
+                                                        ? Theme.of(context)
+                                                            .colorScheme
+                                                            .error
+                                                        : text2,
+                                              ),
+                                            ),
+                                          ),
+                                          if (hasUploadedEvidence) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(Icons.lock_outline_rounded,
+                                                size: 12, color: text2),
+                                          ],
+                                        ],
                                       ),
                                   ],
                                 ),
                               ),
-                              if (qual.isEvidence)
+                              if (qual.isEvidence &&
+                                  isChecked &&
+                                  !isExistingEvidenceApproved)
                                 IconButton(
                                   tooltip: 'Upload proof for ${qual.name}',
                                   visualDensity: VisualDensity.compact,
@@ -4494,9 +4537,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
             const SizedBox(height: 12),
 
             // Expected pay
-            const Text(
-              'Expected pay',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            Text(
+              l10n.expectedPay,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
             const SizedBox(height: 8),
             Row(
@@ -4507,10 +4550,11 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     controller: _amountController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'Amount (UGX)',
-                      prefixText: 'UGX ',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText:
+                          l10n.amountLabelWithCurrency(widget.defaultCurrency),
+                      prefixText: '${widget.defaultCurrency} ',
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (val) {
                       widget.expectedPayAmountByRole[primaryRoleSlug] = val;
@@ -4524,13 +4568,25 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                     initialValue:
                         widget.expectedPayPeriodByRole[primaryRoleSlug] ??
                             'month',
-                    decoration: const InputDecoration(
-                      labelText: 'Period',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.payPeriod,
+                      border: const OutlineInputBorder(),
                     ),
                     items: [
                       for (final p in _payPeriods)
-                        DropdownMenuItem(value: p, child: Text('/ $p')),
+                        DropdownMenuItem(
+                          value: p,
+                          child: Text(
+                            '/ ${switch (p) {
+                              'hour' => l10n.perHour,
+                              'day' => l10n.perDay,
+                              'week' => l10n.perWeek,
+                              'month' => l10n.perMonth,
+                              'project' => l10n.perProject,
+                              _ => p,
+                            }}',
+                          ),
+                        ),
                     ],
                     onChanged: (val) {
                       setState(() {

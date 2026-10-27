@@ -2906,6 +2906,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get per => 'لكل';
 
   @override
+  String get payPeriod => 'الفترة';
+
+  @override
   String get perHour => 'ساعة';
 
   @override

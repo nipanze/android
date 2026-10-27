@@ -2924,6 +2924,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get per => 'Per';
 
   @override
+  String get payPeriod => 'Period';
+
+  @override
   String get perHour => 'hour';
 
   @override

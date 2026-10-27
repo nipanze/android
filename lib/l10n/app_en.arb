@@ -1410,6 +1410,7 @@
   "expectedPay": "Expected pay",
   "payOpen": "Pay open",
   "per": "Per",
+  "payPeriod": "Period",
   "perHour": "hour",
   "perDay": "day",
   "perWeek": "week",

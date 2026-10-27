@@ -2942,6 +2942,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get per => 'Kuri';
 
   @override
+  String get payPeriod => 'Igihe';
+
+  @override
   String get perHour => 'isaha';
 
   @override

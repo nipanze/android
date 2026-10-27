@@ -2967,6 +2967,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get per => 'Par';
 
   @override
+  String get payPeriod => 'Période';
+
+  @override
   String get perHour => 'heure';
 
   @override

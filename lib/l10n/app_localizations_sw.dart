@@ -2937,6 +2937,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get per => 'Kwa';
 
   @override
+  String get payPeriod => 'Kipindi';
+
+  @override
   String get perHour => 'saa';
 
   @override

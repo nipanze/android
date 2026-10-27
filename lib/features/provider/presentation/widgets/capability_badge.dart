@@ -48,6 +48,9 @@ class CapabilityBadge extends StatelessWidget {
     final localeCode = Localizations.localeOf(context).languageCode;
 
     final isJob = capability.isWork;
+    final hasApprovedRoleProof = capability.roleQualificationClaims.any(
+      (claim) => claim['status'] == 'verified' && claim['has_evidence'] == true,
+    );
     final icon = capability.categoryIcon ?? (isJob ? '💼' : '🔧');
     final capabilityFallback = NeedCapability(
       slug: capability.capabilitySlug,
@@ -300,7 +303,8 @@ class CapabilityBadge extends StatelessWidget {
                 // Three-dot menu or remove button
                 if (onEdit != null ||
                     onEditCompanyDetails != null ||
-                    onTogglePause != null ||
+                    (onTogglePause != null &&
+                        (!hasApprovedRoleProof || capability.isPaused)) ||
                     onRemove != null)
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_vert_rounded, color: text2, size: 20),
@@ -339,7 +343,8 @@ class CapabilityBadge extends StatelessWidget {
                             ],
                           ),
                         ),
-                      if (onTogglePause != null)
+                      if (onTogglePause != null &&
+                          (!hasApprovedRoleProof || capability.isPaused))
                         PopupMenuItem(
                           value: 'pause',
                           child: Row(

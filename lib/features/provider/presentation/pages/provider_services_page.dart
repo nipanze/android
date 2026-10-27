@@ -207,6 +207,7 @@ class _ProviderServicesView extends StatelessWidget {
       initialPersonalName: initialPersonalName,
       initialDistrict: initialDistrict,
       initialPersonalAvatarUrl: initialPersonalAvatarUrl,
+      defaultCurrency: defaultCurrency,
       initialProofRoleSlug: initialProofRoleSlug,
       initialCompanyCertification: initialCompanyCertification,
     );

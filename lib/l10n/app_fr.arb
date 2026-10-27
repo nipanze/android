@@ -1356,6 +1356,7 @@
   "expectedPay": "Rémunération attendue",
   "payOpen": "Rémunération ouverte",
   "per": "Par",
+  "payPeriod": "Période",
   "perHour": "heure",
   "perDay": "jour",
   "perWeek": "semaine",
