@@ -340,9 +340,8 @@ class _WorkProfileCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: profile.isActive
-                        ? AppColors.success
-                        : AppColors.danger,
+                    color:
+                        profile.isActive ? AppColors.success : AppColors.danger,
                   ),
                 ),
               ),
@@ -362,13 +361,13 @@ class _WorkProfileCard extends StatelessWidget {
               ),
             ],
           ),
-          if (profile.roles.isNotEmpty) ...[
+          if (profile.roles.any((role) => role.isActive)) ...[
             const SizedBox(height: 10),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: [
-                for (final role in profile.roles)
+                for (final role in profile.roles.where((role) => role.isActive))
                   Chip(
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                     visualDensity: VisualDensity.compact,
@@ -462,8 +461,7 @@ class WorkProfileEditorSheet extends StatefulWidget {
   }
 
   @override
-  State<WorkProfileEditorSheet> createState() =>
-      _WorkProfileEditorSheetState();
+  State<WorkProfileEditorSheet> createState() => _WorkProfileEditorSheetState();
 }
 
 class _WorkProfileEditorSheetState extends State<WorkProfileEditorSheet> {
@@ -725,23 +723,20 @@ class _WorkProfileEditorSheetState extends State<WorkProfileEditorSheet> {
                       ),
                     for (final roleSlug in _selectedRoleSlugs) ...[
                       (() {
-                        final role = _roles
-                            .where((r) => r.slug == roleSlug)
-                            .firstOrNull;
+                        final role =
+                            _roles.where((r) => r.slug == roleSlug).firstOrNull;
                         if (role == null) return const SizedBox.shrink();
                         final roleWorkTypes =
                             _workTypesByRole.putIfAbsent(roleSlug, () => {});
-                        final roleQualifications =
-                            _qualificationsByRole.putIfAbsent(
-                                roleSlug, () => {});
+                        final roleQualifications = _qualificationsByRole
+                            .putIfAbsent(roleSlug, () => {});
 
                         return Container(
                           margin: const EdgeInsets.only(top: 14),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.bg3Dark
-                                : AppColors.bg3Light,
+                            color:
+                                isDark ? AppColors.bg3Dark : AppColors.bg3Light,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: border),
                           ),

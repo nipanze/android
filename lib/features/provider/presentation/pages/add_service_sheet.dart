@@ -229,6 +229,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   // Work profile selection state
   final Set<String> _selectedRoles = {};
   final Set<String> _removingRoleSlugs = {};
+  final Map<String, List<Map<String, dynamic>>> _roleClaimStateOverrides = {};
   int _currentRoleIndex = 0;
   final Map<String, Set<String>> _kindsByRole = {};
   final Map<String, Set<String>> _qualificationsByRole = {};
@@ -320,6 +321,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   Map<String, dynamic> _buildWorkMetadata(String roleSlug) {
     return {
       'role_id': roleSlug,
+      'is_role_active': true,
       'kind_ids': (_kindsByRole[roleSlug] ?? {}).toList(),
       'qualification_ids': (_qualificationsByRole[roleSlug] ?? {}).toList(),
       if (_yearsExperienceByRole[roleSlug] != null)
@@ -336,6 +338,38 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           'currency': widget.defaultCurrency,
         },
     };
+  }
+
+  void _hydrateRoleDraft(String roleSlug, Map<String, dynamic> metadata) {
+    _kindsByRole[roleSlug] = (metadata['kind_ids'] as List? ?? const [])
+        .map((value) => value.toString())
+        .toSet();
+    _qualificationsByRole[roleSlug] =
+        (metadata['qualification_ids'] as List? ?? const [])
+            .map((value) => value.toString())
+            .toSet();
+    if (metadata['years_experience'] != null) {
+      _yearsExperienceByRole[roleSlug] =
+          metadata['years_experience'].toString();
+    }
+    if (metadata['availability'] != null) {
+      _availabilityByRole[roleSlug] = metadata['availability'].toString();
+    }
+    _languagesByRole[roleSlug] =
+        (metadata['languages'] as List? ?? const ['English'])
+            .map((value) => value.toString())
+            .toSet();
+    _willingToTravelByRole[roleSlug] =
+        metadata['willing_to_travel'] as bool? ?? false;
+    final expectedPay = metadata['expected_pay'];
+    if (expectedPay is Map) {
+      if (expectedPay['amount'] != null) {
+        _expectedPayAmountByRole[roleSlug] = expectedPay['amount'].toString();
+      }
+      if (expectedPay['period'] != null) {
+        _expectedPayPeriodByRole[roleSlug] = expectedPay['period'].toString();
+      }
+    }
   }
 
   ProviderCapabilitySelection _selection() {
@@ -419,7 +453,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       categorySlug: _selectedCategory?.slug,
       workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
-      roleEvidenceDrafts: List.unmodifiable(_roleEvidenceDrafts),
+      roleEvidenceDrafts: List.unmodifiable(_roleEvidenceDrafts.where(
+        (draft) => _selectedRoles.contains(draft.roleSlug),
+      )),
       companyPath: companyPath,
     );
   }
@@ -600,43 +636,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           .where((capability) =>
               capability.isWork && capability.capabilitySlug == capSlug)
           .firstOrNull;
-      if (widget.existingSlugs.contains(capSlug) ||
-          widget.existingSlugs.contains(role.slug)) {
+      final isActiveRole = existingRole?.metadata['is_role_active'] != false;
+      if ((widget.existingSlugs.contains(capSlug) ||
+              widget.existingSlugs.contains(role.slug)) &&
+          isActiveRole) {
         _selectedRoles.add(role.slug);
         if (existingRole != null) {
-          final metadata = existingRole.metadata;
-          _kindsByRole[role.slug] = (metadata['kind_ids'] as List? ?? const [])
-              .map((value) => value.toString())
-              .toSet();
-          _qualificationsByRole[role.slug] =
-              (metadata['qualification_ids'] as List? ?? const [])
-                  .map((value) => value.toString())
-                  .toSet();
-          if (metadata['years_experience'] != null) {
-            _yearsExperienceByRole[role.slug] =
-                metadata['years_experience'].toString();
-          }
-          if (metadata['availability'] != null) {
-            _availabilityByRole[role.slug] =
-                metadata['availability'].toString();
-          }
-          _languagesByRole[role.slug] =
-              (metadata['languages'] as List? ?? const ['English'])
-                  .map((value) => value.toString())
-                  .toSet();
-          _willingToTravelByRole[role.slug] =
-              metadata['willing_to_travel'] as bool? ?? false;
-          final expectedPay = metadata['expected_pay'];
-          if (expectedPay is Map) {
-            if (expectedPay['amount'] != null) {
-              _expectedPayAmountByRole[role.slug] =
-                  expectedPay['amount'].toString();
-            }
-            if (expectedPay['period'] != null) {
-              _expectedPayPeriodByRole[role.slug] =
-                  expectedPay['period'].toString();
-            }
-          }
+          _hydrateRoleDraft(role.slug, existingRole.metadata);
         }
       }
     }
@@ -967,57 +973,252 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() => _showAudience = true);
   }
 
-  Set<String> get _approvedRoleSlugs => widget.existingCapabilities
-      .where((cap) => cap.categorySlug == _selectedCategory?.slug)
-      .expand((cap) => cap.roleQualificationClaims
-          .where((claim) =>
-              claim['status'] == 'verified' && claim['has_evidence'] == true)
-          .map((claim) => claim['role_slug']?.toString() ?? ''))
-      .where((slug) => slug.isNotEmpty)
-      .toSet();
-
-  void _clearRoleDraft(String slug) {
-    _kindsByRole.remove(slug);
-    _qualificationsByRole.remove(slug);
-    _yearsExperienceByRole.remove(slug);
-    _availabilityByRole.remove(slug);
-    _languagesByRole.remove(slug);
-    _willingToTravelByRole.remove(slug);
-    _expectedPayAmountByRole.remove(slug);
-    _expectedPayPeriodByRole.remove(slug);
-    _roleEvidenceDrafts.removeWhere((draft) => draft.roleSlug == slug);
+  ProviderCapability? _savedRoleCapability(String slug) {
+    final role = _categoryRoles.where((item) => item.slug == slug).firstOrNull;
+    final capabilitySlug = role?.capabilitySlug ?? 'work_$slug';
+    return widget.existingCapabilities
+        .where((capability) => capability.capabilitySlug == capabilitySlug)
+        .firstOrNull;
   }
+
+  List<Map<String, dynamic>> _roleClaims(String slug) =>
+      _roleClaimStateOverrides[slug] ??
+      _savedRoleCapability(slug)?.roleQualificationClaims ??
+      const [];
+
+  List<Map<String, String>> _activeProofStates(String slug) => _roleClaims(slug)
+      .where((claim) =>
+          claim['has_evidence'] == true &&
+          (claim['status'] == 'pending_review' ||
+              claim['status'] == 'verified'))
+      .map((claim) => <String, String>{
+            'role_slug': claim['role_slug']?.toString() ?? slug,
+            'qualification_slug': claim['qualification_slug']?.toString() ?? '',
+            'status': claim['status']?.toString() ?? '',
+          })
+      .toList()
+    ..sort((a, b) => a['qualification_slug']!.compareTo(
+          b['qualification_slug']!,
+        ));
+
+  Map<String, int> get _rolePendingProofCounts => {
+        for (final role in _categoryRoles)
+          role.slug: _roleClaims(role.slug)
+              .where((claim) =>
+                  claim['has_evidence'] == true &&
+                  claim['status'] == 'pending_review')
+              .length,
+      };
+
+  Map<String, int> get _roleApprovedProofCounts => {
+        for (final role in _categoryRoles)
+          role.slug: _roleClaims(role.slug)
+              .where((claim) =>
+                  claim['has_evidence'] == true &&
+                  claim['status'] == 'verified')
+              .length,
+      };
+
+  Future<bool> _confirmRoleRemoval(ProviderServiceRole role) async {
+    final claims = _activeProofStates(role.slug);
+    if (claims.isEmpty) return true;
+    final pendingCount =
+        claims.where((claim) => claim['status'] == 'pending_review').length;
+    final approvedCount = claims.length - pendingCount;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.bg2Dark : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        final text = Theme.of(sheetContext).colorScheme.onSurface;
+        final text2 = text.withValues(alpha: 0.72);
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.borderDark : Colors.black12,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Remove ${role.name}?',
+                    style: Theme.of(sheetContext)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                _removalNote(
+                  Icons.schedule_rounded,
+                  'Its specialties and qualifications are hidden from employers.',
+                  text2,
+                ),
+                if (pendingCount > 0)
+                  _removalNote(
+                    Icons.schedule_rounded,
+                    '$pendingCount proof${pendingCount == 1 ? '' : 's'} under review ${pendingCount == 1 ? 'is' : 'are'} withdrawn.',
+                    Colors.amber.shade800,
+                  ),
+                if (approvedCount > 0)
+                  _removalNote(
+                    Icons.verified_outlined,
+                    '$approvedCount approved Nipanze badge${approvedCount == 1 ? '' : 's'} ${approvedCount == 1 ? 'stops' : 'stop'} showing.',
+                    Colors.amber.shade800,
+                  ),
+                _removalNote(
+                  Icons.check_rounded,
+                  'Your answers are kept. Tick the role again to restore them.',
+                  AppColors.success,
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.proPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pop(sheetContext, false),
+                    child: const Text('Keep role'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 50,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      side: BorderSide(
+                          color: AppColors.danger.withValues(alpha: 0.35)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pop(sheetContext, true),
+                    child: const Text('Remove role'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    return result == true;
+  }
+
+  Widget _removalNote(IconData icon, String label, Color color) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 17, color: color),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+          ],
+        ),
+      );
 
   Future<void> _toggleRoleSelection(String slug) async {
     if (_removingRoleSlugs.contains(slug)) return;
+    final role = _categoryRoles.where((item) => item.slug == slug).firstOrNull;
+    if (role == null) return;
+    final savedCapability = _savedRoleCapability(slug);
     if (!_selectedRoles.contains(slug)) {
-      setState(() => _selectedRoles.add(slug));
+      if (savedCapability?.metadata['is_role_active'] == false) {
+        setState(() => _removingRoleSlugs.add(slug));
+        try {
+          final result = await widget.providerRepository.setWorkRoleActive(
+            providerCapabilityId: savedCapability!.id,
+            roleSlug: slug,
+            active: true,
+          );
+          if (result['changed'] != true) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Could not restore this role.')),
+              );
+            }
+            return;
+          }
+          final claims = (result['claim_states'] as List? ?? const [])
+              .whereType<Map>()
+              .map((claim) => claim.cast<String, dynamic>())
+              .toList();
+          _hydrateRoleDraft(slug, savedCapability.metadata);
+          _roleClaimStateOverrides[slug] = claims;
+          if (mounted) {
+            await context.read<CapabilitiesCubit>().loadWithOpportunities();
+          }
+        } catch (error) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(userFacingErrorMessage(error))),
+            );
+          }
+          return;
+        } finally {
+          if (mounted) setState(() => _removingRoleSlugs.remove(slug));
+        }
+      }
+      if (mounted) setState(() => _selectedRoles.add(slug));
       return;
     }
-    if (_approvedRoleSlugs.contains(slug)) return;
-
-    final role = _categoryRoles.where((item) => item.slug == slug).firstOrNull;
-    final capabilitySlug = role?.capabilitySlug ?? 'work_$slug';
-    final isSaved = widget.existingSlugs.contains(capabilitySlug) ||
-        widget.existingSlugs.contains(slug);
-    if (isSaved) {
+    final proofStates = _activeProofStates(slug);
+    if (proofStates.isNotEmpty && !await _confirmRoleRemoval(role)) return;
+    if (savedCapability != null) {
       setState(() => _removingRoleSlugs.add(slug));
       try {
-        await widget.providerRepository.saveProviderCapabilitiesBulk(
-          items: const [],
-          categorySlug: _selectedCategory?.slug,
-          removeSlugs: [capabilitySlug],
+        final result = await widget.providerRepository.setWorkRoleActive(
+          providerCapabilityId: savedCapability.id,
+          roleSlug: slug,
+          active: false,
+          expectedClaimStates: proofStates,
         );
         if (!mounted) return;
+        if (result['changed'] != true) {
+          final rows = (result['claim_states'] as List? ?? const [])
+              .whereType<Map>()
+              .map((claim) => claim.cast<String, dynamic>())
+              .toList();
+          setState(() => _roleClaimStateOverrides[slug] = rows);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text(
+                    'Proof status changed. Review the updated status before removing this role.')),
+          );
+          return;
+        }
+        final claims = (result['claim_states'] as List? ?? const [])
+            .whereType<Map>()
+            .map((claim) => claim.cast<String, dynamic>())
+            .toList();
+        _roleClaimStateOverrides[slug] = claims;
         await context.read<CapabilitiesCubit>().loadWithOpportunities();
       } catch (error) {
         if (mounted) {
-          setState(() => _removingRoleSlugs.remove(slug));
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(userFacingErrorMessage(error))),
           );
         }
         return;
+      } finally {
+        if (mounted) setState(() => _removingRoleSlugs.remove(slug));
       }
     }
 
@@ -1025,13 +1226,17 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _removingRoleSlugs.remove(slug);
       _selectedRoles.remove(slug);
-      _clearRoleDraft(slug);
       if (_selectedRoles.isEmpty) {
         _currentRoleIndex = 0;
       } else if (_currentRoleIndex >= _selectedRoles.length) {
         _currentRoleIndex = _selectedRoles.length - 1;
       }
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Role removed. Tick it again to restore your answers.'),
+      ),
+    );
   }
 
   void _goBack() {
@@ -1383,8 +1588,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               .contains(
                                                                   role.slug))
                                                       .toList(),
-                                                  approvedRoleSlugs:
-                                                      _approvedRoleSlugs,
                                                   selectedKindsByRole:
                                                       _kindsByRole,
                                                   scrollController:
@@ -1402,6 +1605,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           .toList(),
                                                       existingCapabilities: widget
                                                           .existingCapabilities,
+                                                      providerRepository: widget
+                                                          .providerRepository,
                                                       qualificationsByRole:
                                                           _qualificationsByRole,
                                                       yearsExperienceByRole:
@@ -1471,8 +1676,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           selected: _selected,
                                                           selectedRoles:
                                                               _selectedRoles,
-                                                          approvedRoleSlugs:
-                                                              _approvedRoleSlugs,
+                                                          pendingProofCounts:
+                                                              _rolePendingProofCounts,
+                                                          approvedProofCounts:
+                                                              _roleApprovedProofCounts,
                                                           removingRoleSlugs:
                                                               _removingRoleSlugs,
                                                           iWantJobs:
@@ -3065,6 +3272,37 @@ class _CategoryListState extends State<_CategoryList> {
 // ---------------------------------------------------------------------------
 // Category capability selection for provider services and work roles.
 // ---------------------------------------------------------------------------
+class _RoleProgressIndicator extends StatelessWidget {
+  const _RoleProgressIndicator({required this.step});
+
+  final int step;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactive = isDark ? AppColors.borderDark : const Color(0xFFE2E6EE);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          for (var index = 1; index <= 3; index++) ...[
+            if (index > 1) const SizedBox(width: 6),
+            Expanded(
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  color: index <= step ? AppColors.proPurple : inactive,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _CategoryCapabilitiesView extends StatelessWidget {
   const _CategoryCapabilitiesView({
     this.categorySlug,
@@ -3073,7 +3311,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.existingSlugs,
     required this.selected,
     required this.selectedRoles,
-    required this.approvedRoleSlugs,
+    required this.pendingProofCounts,
+    required this.approvedProofCounts,
     required this.removingRoleSlugs,
     required this.iWantJobs,
     required this.companyType,
@@ -3095,7 +3334,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final Set<String> existingSlugs;
   final Set<String> selected;
   final Set<String> selectedRoles;
-  final Set<String> approvedRoleSlugs;
+  final Map<String, int> pendingProofCounts;
+  final Map<String, int> approvedProofCounts;
   final Set<String> removingRoleSlugs;
   final bool iWantJobs;
   final bool companyType;
@@ -3418,6 +3658,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             // ── Jobs: role selection ───────────────────────────────
             if (showRoles) ...[
               const SizedBox(height: 16),
+              _RoleProgressIndicator(step: 1),
               if (individualType)
                 Text(
                   l10n.providerTypeStepOneOfThree,
@@ -3463,13 +3704,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   _RoleCard(
                     role: role,
                     isSelected: selectedRoles.contains(role.slug),
-                    proofApproved: approvedRoleSlugs.contains(role.slug),
+                    pendingProofCount: pendingProofCounts[role.slug] ?? 0,
+                    approvedProofCount: approvedProofCounts[role.slug] ?? 0,
                     isRemoving: removingRoleSlugs.contains(role.slug),
                     border: border,
                     text2: text2,
-                    onTap: (approvedRoleSlugs.contains(role.slug) &&
-                                selectedRoles.contains(role.slug)) ||
-                            removingRoleSlugs.contains(role.slug)
+                    onTap: removingRoleSlugs.contains(role.slug)
                         ? null
                         : () => onToggleRole(role.slug),
                   ),
@@ -3733,7 +3973,8 @@ class _RoleCard extends StatelessWidget {
   const _RoleCard({
     required this.role,
     required this.isSelected,
-    required this.proofApproved,
+    required this.pendingProofCount,
+    required this.approvedProofCount,
     required this.isRemoving,
     required this.border,
     required this.text2,
@@ -3742,7 +3983,8 @@ class _RoleCard extends StatelessWidget {
 
   final ProviderServiceRole role;
   final bool isSelected;
-  final bool proofApproved;
+  final int pendingProofCount;
+  final int approvedProofCount;
   final bool isRemoving;
   final Color border;
   final Color text2;
@@ -3812,18 +4054,25 @@ class _RoleCard extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: text2),
                     ),
                   ],
-                  if (proofApproved) ...[
+                  if (pendingProofCount > 0 || approvedProofCount > 0) ...[
                     const SizedBox(height: 5),
-                    const Row(
+                    Wrap(
+                      spacing: 6,
                       children: [
-                        Icon(Icons.verified_rounded,
-                            size: 14, color: AppColors.success),
-                        SizedBox(width: 4),
-                        Text('Proof approved',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.success,
-                                fontWeight: FontWeight.w600)),
+                        if (pendingProofCount > 0)
+                          _ProofCountPill(
+                            icon: Icons.schedule_rounded,
+                            label:
+                                '$pendingProofCount proof${pendingProofCount == 1 ? '' : 's'} under review',
+                            color: Colors.amber.shade800,
+                          ),
+                        if (approvedProofCount > 0)
+                          _ProofCountPill(
+                            icon: Icons.verified_rounded,
+                            label:
+                                '$approvedProofCount approved proof${approvedProofCount == 1 ? '' : 's'}',
+                            color: AppColors.success,
+                          ),
                       ],
                     ),
                   ],
@@ -3837,19 +4086,48 @@ class _RoleCard extends StatelessWidget {
   }
 }
 
+class _ProofCountPill extends StatelessWidget {
+  const _ProofCountPill({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(label,
+                style: TextStyle(
+                    color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+          ],
+        ),
+      );
+}
+
 /// Selectable chip for kind/machine/trade selection (matches Image E).
 /// Purple border and light purple fill when selected, outlined when not.
 class _KindChip extends StatelessWidget {
   const _KindChip({
     required this.label,
     required this.selected,
-    this.locked = false,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
-  final bool locked;
   final VoidCallback onTap;
 
   @override
@@ -3860,7 +4138,7 @@ class _KindChip extends StatelessWidget {
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     return GestureDetector(
-      onTap: locked ? null : onTap,
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -3877,11 +4155,6 @@ class _KindChip extends StatelessWidget {
           children: [
             if (selected) ...[
               const Icon(Icons.check_rounded, size: 14, color: purple),
-              const SizedBox(width: 4),
-            ],
-            if (locked) ...[
-              const Icon(Icons.lock_outline_rounded,
-                  size: 13, color: AppColors.success),
               const SizedBox(width: 4),
             ],
             Text(
@@ -3906,12 +4179,10 @@ class _KindChip extends StatelessWidget {
 class _KindsStepView extends StatefulWidget {
   const _KindsStepView(
       {required this.roles,
-      required this.approvedRoleSlugs,
       required this.selectedKindsByRole,
       required this.scrollController,
       required this.onNext});
   final List<ProviderServiceRole> roles;
-  final Set<String> approvedRoleSlugs;
   final Map<String, Set<String>> selectedKindsByRole;
   final ScrollController scrollController;
   final VoidCallback onNext;
@@ -3946,6 +4217,7 @@ class _KindsStepViewState extends State<_KindsStepView> {
           controller: widget.scrollController,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
           children: [
+            _RoleProgressIndicator(step: 2),
             Text('STEP 2 OF 3',
                 style: TextStyle(
                     fontSize: 10,
@@ -3979,27 +4251,12 @@ class _KindsStepViewState extends State<_KindsStepView> {
                       const SizedBox(height: 3),
                       Text(_instruction(role),
                           style: TextStyle(fontSize: 11, color: text2)),
-                      if (widget.approvedRoleSlugs.contains(role.slug)) ...[
-                        const SizedBox(height: 5),
-                        Text(
-                          'The selected approved specialty stays on. Add other specialties to personalize job preferences.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: text2,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 10),
                       Wrap(spacing: 8, runSpacing: 8, children: [
                         for (final kind in role.kinds)
                           _KindChip(
                             label: kind.name,
                             selected:
-                                (widget.selectedKindsByRole[role.slug] ?? {})
-                                    .contains(kind.slug),
-                            locked: widget.approvedRoleSlugs
-                                    .contains(role.slug) &&
                                 (widget.selectedKindsByRole[role.slug] ?? {})
                                     .contains(kind.slug),
                             onTap: () => setState(() {
@@ -4047,6 +4304,7 @@ class _QualificationsStepView extends StatefulWidget {
   const _QualificationsStepView({
     required this.roles,
     required this.existingCapabilities,
+    required this.providerRepository,
     required this.qualificationsByRole,
     required this.yearsExperienceByRole,
     required this.availabilityByRole,
@@ -4062,6 +4320,7 @@ class _QualificationsStepView extends StatefulWidget {
 
   final List<ProviderServiceRole> roles;
   final List<ProviderCapability> existingCapabilities;
+  final IProviderRepository providerRepository;
   final Map<String, Set<String>> qualificationsByRole;
   final Map<String, String> yearsExperienceByRole;
   final Map<String, String> availabilityByRole;
@@ -4081,6 +4340,8 @@ class _QualificationsStepView extends StatefulWidget {
 
 class _QualificationsStepViewState extends State<_QualificationsStepView> {
   final _amountController = TextEditingController();
+  final Map<String, String> _claimStatusOverrides = {};
+  final Set<String> _withdrawnEvidenceKeys = {};
 
   final _experienceOptions = ['Under 1', '1-2', '2-5', '0-10', '10+'];
   final _availabilityOptions = [
@@ -4114,6 +4375,176 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
 
   String _proofKey(String roleSlug, String qualificationSlug) =>
       '$roleSlug::$qualificationSlug';
+
+  Future<bool> _confirmQualificationUntick({
+    required ProviderRoleQualification qualification,
+    required String status,
+  }) async {
+    final pending = status == 'pending_review';
+    return await showModalBottomSheet<bool>(
+          context: context,
+          useRootNavigator: true,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.bg2Dark
+              : Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (sheetContext) => SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color:
+                            Theme.of(sheetContext).brightness == Brightness.dark
+                                ? AppColors.borderDark
+                                : const Color(0xFFE2E6EE),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    pending
+                        ? 'Withdraw this proof?'
+                        : 'Remove this qualification?',
+                    style: Theme.of(sheetContext)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    pending
+                        ? '${qualification.name} is being reviewed. Unticking withdraws it from review. You can upload it again later.'
+                        : 'Unticking ${qualification.name} will remove your Nipanze badge for this qualification.',
+                    style: Theme.of(sheetContext).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 50,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.proPurple,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(sheetContext, true),
+                      child: const Text('Withdraw and untick'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 50,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.proPurple,
+                        side: BorderSide(
+                            color: AppColors.proPurple.withValues(alpha: 0.3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(sheetContext, false),
+                      child: const Text('Keep'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _untickQualification({
+    required ProviderServiceRole role,
+    required ProviderRoleQualification qualification,
+    required Set<String> roleQualifications,
+    required ProviderCapability? existingCapability,
+    required Map<String, dynamic>? existingClaim,
+    required PendingRoleEvidenceDraft? evidenceDraft,
+  }) async {
+    final key = _proofKey(role.slug, qualification.slug);
+    final status = _claimStatusOverrides[key] ??
+        existingClaim?['status']?.toString() ??
+        'self_declared';
+    final needsConfirmation = existingClaim?['has_evidence'] == true &&
+        (status == 'pending_review' || status == 'verified');
+
+    if (needsConfirmation &&
+        !await _confirmQualificationUntick(
+          qualification: qualification,
+          status: status,
+        )) {
+      return;
+    }
+
+    if (needsConfirmation && existingCapability != null) {
+      try {
+        final result =
+            await widget.providerRepository.withdrawRoleQualification(
+          providerCapabilityId: existingCapability.id,
+          roleSlug: role.slug,
+          qualificationSlug: qualification.slug,
+          expectedStatus: status,
+        );
+        if (!mounted) return;
+        if (result['withdrawn'] != true) {
+          setState(() {
+            _claimStatusOverrides[key] = result['status']?.toString() ?? status;
+            roleQualifications.add(qualification.slug);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Proof status changed. The qualification is still selected with its latest status.',
+              ),
+            ),
+          );
+          return;
+        }
+        setState(() {
+          roleQualifications.remove(qualification.slug);
+          _claimStatusOverrides[key] = 'withdrawn';
+          _withdrawnEvidenceKeys.add(key);
+          if (evidenceDraft != null) {
+            widget.evidenceDrafts.remove(evidenceDraft);
+          }
+        });
+        if (status == 'pending_review') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Proof withdrawn. You can upload it again anytime.',
+              ),
+            ),
+          );
+        }
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingErrorMessage(error))),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      roleQualifications.remove(qualification.slug);
+      if (evidenceDraft != null) widget.evidenceDrafts.remove(evidenceDraft);
+    });
+  }
 
   Future<void> _pickQualificationEvidence({
     required (ProviderServiceRole, ProviderRoleQualification) target,
@@ -4194,6 +4625,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
           controller: widget.scrollController,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
           children: [
+            _RoleProgressIndicator(step: 3),
             Text(
               'STEP 3 OF 3',
               style: TextStyle(
@@ -4250,11 +4682,18 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                           claim['role_slug'] == role.slug &&
                           claim['qualification_slug'] == qual.slug)
                       .firstOrNull;
+                  final proofKey = _proofKey(role.slug, qual.slug);
+                  final existingStatus = _claimStatusOverrides[proofKey] ??
+                      existingClaim?['status']?.toString();
                   final hasUploadedEvidence = evidenceDraft != null ||
-                      existingClaim?['has_evidence'] == true;
-                  final isChecked =
-                      roleQuals.contains(qual.slug) || hasUploadedEvidence;
-                  final existingStatus = existingClaim?['status']?.toString();
+                      (existingClaim?['has_evidence'] == true &&
+                          existingStatus != 'withdrawn' &&
+                          !_withdrawnEvidenceKeys.contains(proofKey));
+                  final isChecked = roleQuals.contains(qual.slug) ||
+                      evidenceDraft != null ||
+                      (existingClaim?['has_evidence'] == true &&
+                          existingStatus != 'withdrawn' &&
+                          !_withdrawnEvidenceKeys.contains(proofKey));
                   final evidenceStatus = evidenceDraft != null
                       ? AppLocalizations.of(context)!.companyEvidenceUploaded
                       : switch (existingStatus) {
@@ -4266,6 +4705,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                               .companyEvidenceRejected,
                           'expired' => AppLocalizations.of(context)!
                               .companyEvidenceExpired,
+                          'withdrawn' => 'Proof withdrawn',
                           _ => AppLocalizations.of(context)!
                               .companyEvidenceNotAdded,
                         };
@@ -4281,20 +4721,18 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   return Column(
                     children: [
                       InkWell(
-                        onTap: hasUploadedEvidence
-                            ? null
-                            : () {
-                                setState(() {
-                                  if (isChecked) {
-                                    roleQuals.remove(qual.slug);
-                                    widget.evidenceDrafts.removeWhere((draft) =>
-                                        draft.roleSlug == role.slug &&
-                                        draft.qualificationSlug == qual.slug);
-                                  } else {
-                                    roleQuals.add(qual.slug);
-                                  }
-                                });
-                              },
+                        onTap: isChecked
+                            ? () => _untickQualification(
+                                  role: role,
+                                  qualification: qual,
+                                  roleQualifications: roleQuals,
+                                  existingCapability: existingCapability,
+                                  existingClaim: existingClaim,
+                                  evidenceDraft: evidenceDraft,
+                                )
+                            : () => setState(
+                                  () => roleQuals.add(qual.slug),
+                                ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 2, vertical: 12),
@@ -4350,7 +4788,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                               ),
                                             ),
                                           ),
-                                          if (hasUploadedEvidence) ...[
+                                          if (existingStatus ==
+                                                  'pending_review' &&
+                                              hasUploadedEvidence) ...[
                                             const SizedBox(width: 4),
                                             Icon(Icons.lock_outline_rounded,
                                                 size: 12, color: text2),

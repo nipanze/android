@@ -869,6 +869,50 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
+  @override
+  Future<Map<String, dynamic>> setWorkRoleActive({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required bool active,
+    List<Map<String, String>> expectedClaimStates = const [],
+  }) async {
+    try {
+      final result =
+          await _client.rpc('set_provider_work_role_active', params: {
+        'p_provider_capability_id': providerCapabilityId,
+        'p_role_slug': roleSlug,
+        'p_active': active,
+        'p_expected_claim_states': expectedClaimStates,
+      });
+      _clearCache();
+      return Map<String, dynamic>.from(result as Map);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> withdrawRoleQualification({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String expectedStatus,
+  }) async {
+    try {
+      final result =
+          await _client.rpc('withdraw_provider_role_qualification', params: {
+        'p_provider_capability_id': providerCapabilityId,
+        'p_role_slug': roleSlug,
+        'p_qualification_slug': qualificationSlug,
+        'p_expected_status': expectedStatus,
+      });
+      _clearCache();
+      return Map<String, dynamic>.from(result as Map);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   Future<void> _cleanupUnrecordedEvidence(String objectPath) async {
     try {
       await _client.rpc('cleanup_unrecorded_provider_evidence', params: {

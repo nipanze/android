@@ -58,8 +58,9 @@ class JobProfile {
   final String? summary;
   final List<JobProfileRole> roles;
 
-  int get qualificationCount =>
-      roles.fold(0, (sum, role) => sum + role.qualifications.length);
+  int get qualificationCount => roles
+      .where((role) => role.isActive)
+      .fold(0, (sum, role) => sum + role.qualifications.length);
 }
 
 class JobProfileRole {

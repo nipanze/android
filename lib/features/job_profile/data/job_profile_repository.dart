@@ -96,23 +96,41 @@ class JobProfileRepository {
 
       final profileId = profile['id'] as String;
 
-      await _client
+      final existingRoles = await _client
           .from(TableNames.jobProfileRoles)
-          .delete()
+          .select('id, role_slug')
           .eq('job_profile_id', profileId);
+      final requestedRoleSlugs =
+          draft.roles.map((role) => role.roleSlug).toSet();
+      for (final row in (existingRoles as List).whereType<Map>()) {
+        if (!requestedRoleSlugs.contains(row['role_slug']?.toString())) {
+          await _client
+              .from(TableNames.jobProfileRoles)
+              .update({'is_active': false}).eq('id', row['id']);
+        }
+      }
 
       for (final role in draft.roles) {
         final insertedRole = await _client
             .from(TableNames.jobProfileRoles)
-            .insert({
+            .upsert({
               'job_profile_id': profileId,
               'role_slug': role.roleSlug,
               'is_active': true,
               'years_experience': role.yearsExperience,
-            })
+            }, onConflict: 'job_profile_id,role_slug')
             .select('id')
             .single();
         final roleAssignmentId = insertedRole['id'] as String;
+
+        await _client
+            .from(TableNames.jobProfileRoleWorkTypes)
+            .delete()
+            .eq('job_profile_role_id', roleAssignmentId);
+        await _client
+            .from(TableNames.jobProfileQualificationAnswers)
+            .delete()
+            .eq('job_profile_role_id', roleAssignmentId);
 
         if (role.workTypeSlugs.isNotEmpty) {
           await _client.from(TableNames.jobProfileRoleWorkTypes).insert([

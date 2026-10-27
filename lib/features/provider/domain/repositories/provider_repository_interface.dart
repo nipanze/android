@@ -123,6 +123,18 @@ abstract class IProviderRepository {
     required String roleSlug,
     required String qualificationSlug,
   });
+  Future<Map<String, dynamic>> setWorkRoleActive({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required bool active,
+    List<Map<String, String>> expectedClaimStates = const [],
+  });
+  Future<Map<String, dynamic>> withdrawRoleQualification({
+    required String providerCapabilityId,
+    required String roleSlug,
+    required String qualificationSlug,
+    required String expectedStatus,
+  });
   Future<List<ProviderOpportunity>> getProviderOpportunities();
   Future<List<ProviderServiceRole>> getServiceRoles({
     String? categorySlug,

@@ -145,7 +145,12 @@ class _ProviderServicesView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final loaded = cubit.state;
     final existingSlugs = loaded is CapabilitiesLoaded
-        ? loaded.capabilities.map((c) => c.capabilitySlug).toSet()
+        ? loaded.capabilities
+            .where((capability) =>
+                !capability.isWork ||
+                capability.metadata['is_role_active'] != false)
+            .map((c) => c.capabilitySlug)
+            .toSet()
         : <String>{};
     final existingFinancialMetadata = loaded is CapabilitiesLoaded
         ? loaded.capabilities
@@ -793,19 +798,28 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
   _CapFilter _filter = _CapFilter.all;
 
   List<ProviderCapability> get _filtered {
+    final activeCapabilities = widget.capabilities
+        .where((capability) =>
+            !capability.isWork ||
+            capability.metadata['is_role_active'] != false)
+        .toList();
     switch (_filter) {
       case _CapFilter.services:
-        return widget.capabilities.where((c) => !c.isWork).toList();
+        return activeCapabilities.where((c) => !c.isWork).toList();
       case _CapFilter.jobs:
-        return widget.capabilities.where((c) => c.isWork).toList();
+        return activeCapabilities.where((c) => c.isWork).toList();
       case _CapFilter.all:
-        return widget.capabilities;
+        return activeCapabilities;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final caps = widget.capabilities;
+    final caps = widget.capabilities
+        .where((capability) =>
+            !capability.isWork ||
+            capability.metadata['is_role_active'] != false)
+        .toList();
     final servicesCount = caps.where((c) => !c.isWork).length;
     final jobsCount = caps.where((c) => c.isWork).length;
     final totalJobMatches = widget.opportunities
