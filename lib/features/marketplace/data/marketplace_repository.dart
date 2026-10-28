@@ -23,6 +23,22 @@ class MarketplaceRepository {
 
   String? get currentViewerId => _client.auth.currentUser?.id;
 
+  Future<bool> isNeedsOwner({
+    required String requestId,
+    required String userId,
+  }) async {
+    try {
+      final row = await _client
+          .from(TableNames.needsRequests)
+          .select('requester_id')
+          .eq('request_id', requestId)
+          .maybeSingle();
+      return row?['requester_id'] == userId;
+    } catch (_) {
+      return false;
+    }
+  }
+
   String _cacheKey({
     String? district,
     MarketplaceModule? module,

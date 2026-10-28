@@ -654,8 +654,12 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
         final l10n = AppLocalizations.of(context)!;
         final localeCode = Localizations.localeOf(context).languageCode;
         final localizedPromptCategories = prompt.categories
+            .take(3)
             .map((category) => category.localizedName(localeCode))
             .toList();
+        final newCategorySummary =
+            '${localizedPromptCategories.join(', ')}'
+            '${prompt.categories.length > 3 ? '…' : ''}';
         final title = switch (prompt.kind) {
           _DiscoveryPromptKind.addServices => l10n.whatCanYouHelpWith,
           _DiscoveryPromptKind.newCategories => l10n.newCategoriesAvailable,
@@ -664,9 +668,7 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
         final subtitle = switch (prompt.kind) {
           _DiscoveryPromptKind.addServices => l10n.whatCanYouHelpWithSubtitle,
           _DiscoveryPromptKind.newCategories =>
-            l10n.newCategoriesAvailableSubtitle(
-              localizedPromptCategories.join(', '),
-            ),
+            l10n.newCategoriesAvailableSubtitle(newCategorySummary),
           _DiscoveryPromptKind.opportunities =>
             l10n.matchingNeedsSubtitle(prompt.matchingRequestCount),
         };

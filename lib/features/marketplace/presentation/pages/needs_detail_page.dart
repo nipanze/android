@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
@@ -11,6 +12,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/verification_gate_modal.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
@@ -35,6 +37,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   bool _loadingOffers = false;
   bool _submittingOffer = false;
   bool _actionInProgress = false;
+  bool _isOwner = false;
 
   @override
   void initState() {
@@ -45,6 +48,14 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   void _loadNeed() {
     _futureNeed =
         getIt<MarketplaceRepository>().getNeedsDetail(widget.requestId);
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthAuthenticated) {
+      getIt<MarketplaceRepository>()
+          .isNeedsOwner(requestId: widget.requestId, userId: authState.user.id)
+          .then((value) {
+        if (mounted) setState(() => _isOwner = value);
+      });
+    }
     _loadOffers();
   }
 
@@ -1010,11 +1021,12 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                           label: l10n.locationLabel,
                           value: need.location,
                         ),
-                        _NeedFact(
-                          icon: Icons.local_offer_rounded,
-                          label: l10n.offersLabel,
-                          value: l10n.offersCount(need.numberOfOffers),
-                        ),
+                        if (_isOwner)
+                          _NeedFact(
+                            icon: Icons.local_offer_rounded,
+                            label: l10n.offersLabel,
+                            value: l10n.offersCount(need.numberOfOffers),
+                          ),
                         if (need.timeRemaining != null)
                           _NeedFact(
                             icon: Icons.schedule_rounded,
@@ -1079,65 +1091,67 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              // ── Offers Section ──────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Provider Offers (${_offers.length})',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (_loadingOffers)
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              if (_offers.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: detailSurface,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'No offers placed yet. Be the first provider to quote!',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+              if (_isOwner) ...[
+                const SizedBox(height: 20),
+                // Offers are visible only to the requester who owns this need.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Provider Offers (${_offers.length})',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                )
-              else
-                ..._offers.asMap().entries.map(
-                      (entry) => _OfferCard(
-                        offer: entry.value,
-                        index: entry.key + 1,
-                        capabilityName: need.capabilitySlug != null
-                            ? NeedCapability(
-                                slug: need.capabilitySlug!,
-                                categorySlug: need.categorySlug,
-                                name: _formatKey(need.capabilitySlug!),
-                              ).localizedName(
-                                Localizations.localeOf(context).languageCode,
-                              )
-                            : null,
-                        onAccept: _actionInProgress
-                            ? null
-                            : () => _acceptOffer(entry.value.id),
-                        onUnlock: _actionInProgress
-                            ? null
-                            : () => _unlockContact(entry.value.id),
+                    if (_loadingOffers)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (_offers.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: detailSurface,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'No offers placed yet. Be the first provider to quote!',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
-              const SizedBox(height: 24),
+                  )
+                else
+                  ..._offers.asMap().entries.map(
+                        (entry) => _OfferCard(
+                          offer: entry.value,
+                          index: entry.key + 1,
+                          capabilityName: need.capabilitySlug != null
+                              ? NeedCapability(
+                                  slug: need.capabilitySlug!,
+                                  categorySlug: need.categorySlug,
+                                  name: _formatKey(need.capabilitySlug!),
+                                ).localizedName(
+                                  Localizations.localeOf(context).languageCode,
+                                )
+                              : null,
+                          onAccept: _actionInProgress
+                              ? null
+                              : () => _acceptOffer(entry.value.id),
+                          onUnlock: _actionInProgress
+                              ? null
+                              : () => _unlockContact(entry.value.id),
+                        ),
+                      ),
+                const SizedBox(height: 24),
+              ],
               // ── Make Offer Action Button ─────────────────────────────────
               if (!hasAlreadyOffered && acceptedOffer == null)
                 ElevatedButton.icon(

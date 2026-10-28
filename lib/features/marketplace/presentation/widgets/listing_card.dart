@@ -209,7 +209,6 @@ class ListingCard extends StatelessWidget {
                 onMoreAction: onMoreAction,
                 showDeleteAction: showDeleteAction,
                 attributes: [
-                  if (needs != null) l10n.offersCount(needs.numberOfOffers),
                   if (needs != null) needs.urgency,
                   if (loan != null) '${loan.durationMonths} ${l10n.months}',
                   if (forex != null) _forexSettlementLabel(forex, context),
