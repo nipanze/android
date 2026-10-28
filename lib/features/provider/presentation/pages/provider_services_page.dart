@@ -1,5 +1,7 @@
 // lib/features/provider/presentation/pages/provider_services_page.dart
 
+import 'dart:async';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -363,6 +365,10 @@ class _ProviderServicesView extends StatelessWidget {
     ProviderCapability cap,
     AppLocalizations l10n,
   ) {
+    if (cap.isWork) {
+      unawaited(_deactivateWorkRole(context, cap));
+      return;
+    }
     final cubit = context.read<CapabilitiesCubit>();
     showDialog<void>(
       context: context,
@@ -401,6 +407,185 @@ class _ProviderServicesView extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _deactivateWorkRole(
+    BuildContext context,
+    ProviderCapability capability,
+  ) async {
+    final roleSlug = capability.metadata['role_id']?.toString() ??
+        capability.capabilitySlug.replaceFirst('work_', '');
+    final claims = capability.roleQualificationClaims
+        .where((claim) =>
+            (claim['role_slug']?.toString() ?? roleSlug) == roleSlug &&
+            claim['has_evidence'] == true &&
+            (claim['status'] == 'pending_review' ||
+                claim['status'] == 'verified'))
+        .toList()
+      ..sort((a, b) => (a['qualification_slug']?.toString() ?? '')
+          .compareTo(b['qualification_slug']?.toString() ?? ''));
+    final pendingCount =
+        claims.where((claim) => claim['status'] == 'pending_review').length;
+    final approvedCount = claims.length - pendingCount;
+    if (claims.isNotEmpty) {
+      final confirmed = await showModalBottomSheet<bool>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.bg2Dark
+            : Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (sheetContext) => SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(sheetContext).brightness == Brightness.dark
+                              ? AppColors.borderDark
+                              : Colors.black12,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Remove ${capability.capabilityName ?? roleSlug}?',
+                  style: Theme.of(sheetContext)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                _workRoleRemovalNote(
+                  Icons.visibility_off_outlined,
+                  'Its specialties and qualifications are hidden from employers.',
+                  Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                ),
+                if (pendingCount > 0)
+                  _workRoleRemovalNote(
+                    Icons.schedule_rounded,
+                    '$pendingCount proof${pendingCount == 1 ? '' : 's'} under review ${pendingCount == 1 ? 'is' : 'are'} withdrawn.',
+                    Colors.amber.shade800,
+                  ),
+                if (approvedCount > 0)
+                  _workRoleRemovalNote(
+                    Icons.verified_outlined,
+                    '$approvedCount approved Nipanze badge${approvedCount == 1 ? '' : 's'} ${approvedCount == 1 ? 'stops' : 'stop'} showing.',
+                    Colors.amber.shade800,
+                  ),
+                _workRoleRemovalNote(
+                  Icons.check_rounded,
+                  'Your answers are kept. Tick the role again to restore them.',
+                  AppColors.success,
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 50,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.proPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(sheetContext, false),
+                    child: const Text('Keep role'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 50,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      side: BorderSide(
+                        color: AppColors.danger.withValues(alpha: 0.35),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(sheetContext, true),
+                    child: const Text('Remove role'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+    }
+
+    final expectedClaimStates = claims
+        .map((claim) => <String, String>{
+              'role_slug': roleSlug,
+              'qualification_slug':
+                  claim['qualification_slug']?.toString() ?? '',
+              'status': claim['status']?.toString() ?? '',
+            })
+        .toList();
+    try {
+      final result = await getIt<IProviderRepository>().setWorkRoleActive(
+        providerCapabilityId: capability.id,
+        roleSlug: roleSlug,
+        active: false,
+        expectedClaimStates: expectedClaimStates,
+      );
+      if (!context.mounted) return;
+      if (result['changed'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Proof status changed. Review the updated status before removing this role.',
+            ),
+          ),
+        );
+        await context.read<CapabilitiesCubit>().loadWithOpportunities();
+        return;
+      }
+      await context.read<CapabilitiesCubit>().loadWithOpportunities();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Role removed. Tick it again to restore your answers.'),
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userFacingErrorMessage(error)),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  Widget _workRoleRemovalNote(IconData icon, String label, Color color) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 17, color: color),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
+          ],
+        ),
+      );
 
   Future<void> _showCapabilityDetail(
     BuildContext context, {

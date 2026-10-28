@@ -19,6 +19,15 @@ alter table public.provider_role_qualification_claims
     or (status in ('verified', 'rejected', 'expired') and reviewed_by is not null and reviewed_at is not null)
   );
 
+-- Mark the admin-review mirror withdrawn instead of deleting it. An existing
+-- cleanup trigger deletes the underlying storage object when this row is
+-- deleted, and Supabase requires storage deletion to go through its Storage API.
+alter table public.provider_capability_evidence
+  drop constraint if exists provider_capability_evidence_status_check;
+alter table public.provider_capability_evidence
+  add constraint provider_capability_evidence_status_check
+  check (status in ('pending', 'approved', 'rejected', 'expired', 'withdrawn'));
+
 create or replace function public.set_provider_work_role_active(
   p_provider_capability_id uuid,
   p_role_slug text,
@@ -106,10 +115,11 @@ begin
         or (claim.status = 'verified'
           and (claim.expires_at is null or claim.expires_at > now())));
 
-    -- Delete only the review-queue mirror. The source file remains private and
-    -- attached to the withdrawn claim until owner deletion or retention cleanup.
-    delete from public.provider_capability_evidence evidence
-    using public.provider_role_qualification_claims claim
+    -- Remove withdrawn proofs from the pending review queue without deleting
+    -- their mirror rows; a DELETE trigger would remove the private file.
+    update public.provider_capability_evidence evidence
+    set status = 'withdrawn', updated_at = now()
+    from public.provider_role_qualification_claims claim
     where claim.provider_capability_id = v_cap.id
       and claim.role_slug = p_role_slug
       and claim.status = 'withdrawn'
@@ -182,7 +192,7 @@ begin
   where claim.provider_capability_id = v_cap.id and claim.is_claimed;
 
   insert into public.audit_logs(user_id, event_type, entity_type, entity_id, action, new_values)
-  values (v_user, 'admin_action', 'provider_work_role', v_cap.id::text,
+  values (v_user, 'admin_action', 'provider_work_role', v_cap.id,
     case when p_active then 'reactivate_work_role' else 'deactivate_work_role' end,
     jsonb_build_object('role_slug', p_role_slug, 'active', p_active,
       'withdrawn_qualification_slugs', to_jsonb(v_withdrawn_slugs)));
@@ -245,7 +255,8 @@ begin
   update public.provider_role_qualification_claims
   set status = 'withdrawn', is_claimed = false, updated_at = now()
   where id = v_claim.id;
-  delete from public.provider_capability_evidence evidence
+  update public.provider_capability_evidence evidence
+  set status = 'withdrawn', updated_at = now()
   where evidence.provider_capability_id = v_cap.id
     and evidence.requirement_key = p_qualification_slug
     and evidence.file_url = v_claim.evidence_object_path;
@@ -279,7 +290,7 @@ begin
   end if;
 
   insert into public.audit_logs(user_id, event_type, entity_type, entity_id, action, new_values)
-  values (v_user, 'admin_action', 'provider_role_qualification_claim', v_claim.id::text,
+  values (v_user, 'admin_action', 'provider_role_qualification_claim', v_claim.id,
     'withdraw_role_qualification_proof', jsonb_build_object(
       'role_slug', p_role_slug, 'qualification_slug', p_qualification_slug,
       'previous_status', v_claim.status));
@@ -359,3 +370,4 @@ grant execute on function private.provider_capability_is_eligible(uuid)
   to authenticated, anon;
 
 commit;
+notify pgrst, 'reload schema';

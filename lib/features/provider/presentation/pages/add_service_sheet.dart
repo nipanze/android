@@ -982,9 +982,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   }
 
   List<Map<String, dynamic>> _roleClaims(String slug) =>
-      _roleClaimStateOverrides[slug] ??
-      _savedRoleCapability(slug)?.roleQualificationClaims ??
-      const [];
+      (_roleClaimStateOverrides[slug] ??
+              _savedRoleCapability(slug)?.roleQualificationClaims ??
+              const [])
+          .where((claim) =>
+              (claim['role_slug']?.toString() ?? slug) == slug)
+          .toList();
 
   List<Map<String, String>> _activeProofStates(String slug) => _roleClaims(slug)
       .where((claim) =>
@@ -1209,7 +1212,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
             .map((claim) => claim.cast<String, dynamic>())
             .toList();
         _roleClaimStateOverrides[slug] = claims;
-        await context.read<CapabilitiesCubit>().loadWithOpportunities();
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1237,6 +1239,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         content: Text('Role removed. Tick it again to restore your answers.'),
       ),
     );
+    if (savedCapability != null) {
+      unawaited(context.read<CapabilitiesCubit>().loadWithOpportunities());
+    }
   }
 
   void _goBack() {

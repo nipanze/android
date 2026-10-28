@@ -3,6 +3,7 @@
 import 'dart:developer' as dev;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
@@ -887,6 +888,25 @@ class ProviderRepository implements IProviderRepository {
       _clearCache();
       return Map<String, dynamic>.from(result as Map);
     } catch (e) {
+      dev.log(
+        'setWorkRoleActive RPC failed: $e',
+        name: 'ProviderRepository',
+        error: e,
+      );
+      if (e is PostgrestException &&
+          e.code == 'PGRST202' &&
+          e.message.contains('set_provider_work_role_active')) {
+        throw const DatabaseException(
+          'Role removal is not enabled on the server yet. Apply '
+          'sql/patch_provider_work_role_withdrawal.sql to the Supabase project.',
+        );
+      }
+      if (kDebugMode && e is PostgrestException) {
+        throw DatabaseException(
+          'Role update failed [${e.code}]: ${e.message}',
+          code: e.code,
+        );
+      }
       throw parseSupabaseError(e);
     }
   }
