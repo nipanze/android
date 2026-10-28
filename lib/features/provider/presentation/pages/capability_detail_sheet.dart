@@ -458,11 +458,15 @@ class _VerificationChecklist extends StatelessWidget {
           final actionLabel = hasEvidence
               ? AppLocalizations.of(context)!.companyEvidenceReplace
               : AppLocalizations.of(context)!.companyEvidenceAdd;
-          if (st == 'verified') {
+          final wasApproved =
+              st == 'verified' || (st == 'expired' && c['verified_at'] != null);
+          if (wasApproved) {
             items.add(_ChecklistItem(
               title: qName,
-              icon: Icons.check_circle_rounded,
-              iconColor: AppColors.success,
+              icon: st == 'expired'
+                  ? Icons.lock_rounded
+                  : Icons.check_circle_rounded,
+              iconColor: st == 'expired' ? text2 : AppColors.success,
               subtitle: statusLabel,
             ));
           } else if (st == 'pending_review') {

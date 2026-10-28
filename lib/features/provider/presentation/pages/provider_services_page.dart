@@ -16,7 +16,6 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../job_profile/data/job_profile_repository.dart';
 import '../../../job_profile/domain/models/job_profile.dart';
-import '../../../job_profile/presentation/widgets/work_profile_section.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
@@ -104,7 +103,6 @@ class _ProviderServicesView extends StatelessWidget {
               capabilities: caps,
               categoryTypes: loaded.categoryTypes,
               opportunities: opps,
-              workProfilesEnabled: loaded.workProfilesEnabled,
               needsRepository: needsRepo,
               isDark: isDark,
               l10n: l10n,
@@ -343,19 +341,6 @@ class _ProviderServicesView extends StatelessWidget {
                 : 'Work profile saved, but proof could not be submitted: $proofError';
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(message)));
-      }
-    } else if (selection != null &&
-        selection.openWorkProfile &&
-        context.mounted) {
-      await WorkProfileEditorSheet.show(
-        context,
-        repository: getIt<JobProfileRepository>(),
-        needsRepository: needsRepo,
-        defaultCurrency: defaultCurrency,
-        preselectedCategorySlug: selection.categorySlug,
-      );
-      if (context.mounted) {
-        await cubit.loadWithOpportunities();
       }
     }
   }
@@ -951,7 +936,6 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.capabilities,
     required this.categoryTypes,
     required this.opportunities,
-    required this.workProfilesEnabled,
     required this.needsRepository,
     required this.isDark,
     required this.l10n,
@@ -965,7 +949,6 @@ class _ScreenASummaryView extends StatefulWidget {
   final List<ProviderCapability> capabilities;
   final Map<String, ProviderCategoryType> categoryTypes;
   final List<ProviderOpportunity> opportunities;
-  final bool workProfilesEnabled;
   final NeedsRepository needsRepository;
   final bool isDark;
   final AppLocalizations l10n;
@@ -1007,12 +990,6 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
         .toList();
     final servicesCount = caps.where((c) => !c.isWork).length;
     final jobsCount = caps.where((c) => c.isWork).length;
-    final totalJobMatches = widget.opportunities
-        .where((o) => caps.any(
-              (c) => c.isWork && c.capabilitySlug == o.capabilitySlug,
-            ))
-        .fold<int>(0, (sum, o) => sum + o.opportunityCount);
-
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
@@ -1113,19 +1090,6 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
               },
             ),
           ),
-
-        // ── Work profile strip ──
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: _WorkProfileStrip(
-              jobsCount: jobsCount,
-              totalJobMatches: totalJobMatches,
-              workProfilesEnabled: widget.workProfilesEnabled,
-              isDark: widget.isDark,
-            ),
-          ),
-        ),
 
         // Bottom padding for FAB
         const SliverToBoxAdapter(child: SizedBox(height: 96)),
@@ -1271,103 +1235,6 @@ class _FilterChip extends StatelessWidget {
             color: selected ? activeColor : null,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _WorkProfileStrip extends StatelessWidget {
-  const _WorkProfileStrip({
-    required this.jobsCount,
-    required this.totalJobMatches,
-    required this.workProfilesEnabled,
-    required this.isDark,
-  });
-
-  final int jobsCount;
-  final int totalJobMatches;
-  final bool workProfilesEnabled;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
-    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
-
-    if (!workProfilesEnabled && jobsCount == 0) {
-      return Container(
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: border),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            const Text('💼', style: TextStyle(fontSize: 20)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                l10n.workProfilesDisabled,
-                style: TextStyle(fontSize: 13, color: text2),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final summary = jobsCount == 0
-        ? l10n.providerNoJobRolesAdded
-        : '${l10n.rolesCount(jobsCount)} · ${l10n.providerAvailableForJobs}'
-            '${totalJobMatches > 0 ? ' · ${l10n.providerOpenJobsMatch(totalJobMatches)}' : ''}';
-
-    return Container(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.proPurple.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: const Text('💼', style: TextStyle(fontSize: 18)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.workProfileTitle,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  summary,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: text2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, size: 20, color: text2),
-        ],
       ),
     );
   }

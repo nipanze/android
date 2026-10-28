@@ -76,7 +76,6 @@ class ProviderCapabilitySelection {
   const ProviderCapabilitySelection({
     required this.slugs,
     this.metadataBySlug = const {},
-    this.openWorkProfile = false,
     this.categorySlug,
     this.workRoles = const [],
     this.workMetadataByRole = const {},
@@ -87,7 +86,6 @@ class ProviderCapabilitySelection {
 
   final List<String> slugs;
   final Map<String, Map<String, dynamic>> metadataBySlug;
-  final bool openWorkProfile;
   final String? categorySlug;
   final List<String> workRoles;
   final Map<String, Map<String, dynamic>> workMetadataByRole;
@@ -236,6 +234,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final Map<String, String> _yearsExperienceByRole = {};
   final Map<String, String> _availabilityByRole = {};
   final Map<String, Set<String>> _languagesByRole = {};
+  bool _sharedPreferencesPrefilled = false;
   final Map<String, bool> _willingToTravelByRole = {};
   final Map<String, String> _expectedPayAmountByRole = {};
   final Map<String, String> _expectedPayPeriodByRole = {};
@@ -355,10 +354,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     if (metadata['availability'] != null) {
       _availabilityByRole[roleSlug] = metadata['availability'].toString();
     }
-    _languagesByRole[roleSlug] =
-        (metadata['languages'] as List? ?? const ['English'])
-            .map((value) => value.toString())
-            .toSet();
+    final languages = metadata['languages'] as List?;
+    if (languages != null && languages.isNotEmpty) {
+      _languagesByRole[roleSlug] =
+          languages.map((value) => value.toString()).toSet();
+    }
     _willingToTravelByRole[roleSlug] =
         metadata['willing_to_travel'] as bool? ?? false;
     final expectedPay = metadata['expected_pay'];
@@ -368,6 +368,43 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       }
       if (expectedPay['period'] != null) {
         _expectedPayPeriodByRole[roleSlug] = expectedPay['period'].toString();
+      }
+    }
+  }
+
+  void _prefillWorkPreferencesFromAnotherCategory(
+    String categorySlug,
+    List<ProviderServiceRole> roles,
+  ) {
+    final source = widget.existingCapabilities.where((capability) {
+      if (!capability.isWork ||
+          capability.categorySlug == null ||
+          capability.categorySlug == categorySlug ||
+          capability.metadata['is_role_active'] == false) {
+        return false;
+      }
+      final availability = capability.metadata['availability']?.toString();
+      final languages = capability.metadata['languages'] as List?;
+      return (availability != null && availability.isNotEmpty) ||
+          (languages != null && languages.isNotEmpty);
+    }).firstOrNull;
+    if (source == null) return;
+
+    final availability = source.metadata['availability']?.toString();
+    final languages = (source.metadata['languages'] as List? ?? const [])
+        .map((value) => value.toString())
+        .where((language) => language.isNotEmpty)
+        .toSet();
+    for (final role in roles) {
+      if (!_availabilityByRole.containsKey(role.slug) &&
+          availability != null &&
+          availability.isNotEmpty) {
+        _availabilityByRole[role.slug] = availability;
+        _sharedPreferencesPrefilled = true;
+      }
+      if (!_languagesByRole.containsKey(role.slug) && languages.isNotEmpty) {
+        _languagesByRole[role.slug] = {...languages};
+        _sharedPreferencesPrefilled = true;
       }
     }
   }
@@ -449,7 +486,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     return ProviderCapabilitySelection(
       slugs: slugs,
       metadataBySlug: metadataBySlug,
-      openWorkProfile: canEditWorkRoles,
       categorySlug: _selectedCategory?.slug,
       workRoles: canEditWorkRoles ? _selectedRoles.toList() : const [],
       workMetadataByRole: workMetadataByRole,
@@ -646,6 +682,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
       }
     }
+    _prefillWorkPreferencesFromAnotherCategory(cat.slug, roles);
 
     setState(() {
       _categoryCapabilities = filteredCaps;
@@ -1629,6 +1666,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           .defaultCurrency,
                                                       evidenceDrafts:
                                                           _roleEvidenceDrafts,
+                                                      showSharedPreferencesHint:
+                                                          _sharedPreferencesPrefilled,
                                                       scrollController:
                                                           scrollController,
                                                       onSave: () =>
@@ -4327,6 +4366,7 @@ class _QualificationsStepView extends StatefulWidget {
     required this.expectedPayPeriodByRole,
     required this.defaultCurrency,
     required this.evidenceDrafts,
+    required this.showSharedPreferencesHint,
     required this.scrollController,
     required this.onSave,
   });
@@ -4343,6 +4383,7 @@ class _QualificationsStepView extends StatefulWidget {
   final Map<String, String> expectedPayPeriodByRole;
   final String defaultCurrency;
   final List<PendingRoleEvidenceDraft> evidenceDrafts;
+  final bool showSharedPreferencesHint;
   final ScrollController scrollController;
   final VoidCallback onSave;
 
@@ -4411,7 +4452,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
     final status =
         _claimStatusOverrides[proofKey] ?? claim?['status']?.toString();
     return claim?['has_evidence'] == true &&
-        (status == 'pending_review' || status == 'verified');
+        (status == 'pending_review' ||
+            status == 'verified' ||
+            (status == 'expired' && claim?['verified_at'] != null));
   }
 
   bool get _allRequiredProofsReady => widget.roles.every(
@@ -4523,8 +4566,19 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
     final status = _claimStatusOverrides[key] ??
         existingClaim?['status']?.toString() ??
         'self_declared';
-    final needsConfirmation = existingClaim?['has_evidence'] == true &&
-        (status == 'pending_review' || status == 'verified');
+    final wasApproved = existingClaim?['has_evidence'] == true &&
+        (status == 'verified' ||
+            (status == 'expired' && existingClaim?['verified_at'] != null));
+    if (wasApproved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context)!.providerApprovedProofLocked)),
+      );
+      return;
+    }
+    final needsConfirmation =
+        existingClaim?['has_evidence'] == true && status == 'pending_review';
 
     if (needsConfirmation &&
         !await _confirmQualificationUntick(
@@ -4789,8 +4843,11 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                           _ => AppLocalizations.of(context)!
                               .companyEvidenceNotAdded,
                         };
-                  final isExistingEvidenceApproved =
-                      existingStatus == 'verified' && evidenceDraft == null;
+                  final isExistingEvidenceApproved = evidenceDraft == null &&
+                      existingClaim?['has_evidence'] == true &&
+                      (existingStatus == 'verified' ||
+                          (existingStatus == 'expired' &&
+                              existingClaim?['verified_at'] != null));
                   final acceptsProof = role.acceptsProofFor(qual);
                   final isRequiredProof =
                       role.isRequiredProofQualification(qual);
@@ -4888,6 +4945,14 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                             const SizedBox(width: 4),
                                             Icon(Icons.lock_outline_rounded,
                                                 size: 12, color: text2),
+                                          ],
+                                          if (isExistingEvidenceApproved) ...[
+                                            const SizedBox(width: 4),
+                                            const Icon(
+                                              Icons.lock_rounded,
+                                              size: 12,
+                                              color: AppColors.success,
+                                            ),
                                           ],
                                         ],
                                       ),
@@ -4994,6 +5059,18 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
               ],
             ),
             const SizedBox(height: 16),
+
+            if (widget.showSharedPreferencesHint) ...[
+              Text(
+                l10n.providerWorkPreferencesSharedHint,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: text2,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // Availability
             const Text(

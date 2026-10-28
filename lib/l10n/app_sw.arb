@@ -1703,6 +1703,8 @@
   "providerPolicyNeedsProofTag": "Uthibitisho unahitajika",
   "providerRoleRequiredProofHint": "Pakia uthibitisho huu kabla ya kuhifadhi jukumu.",
   "providerRoleRequiredProofIncluded": "Uthibitisho unaohitajika umeongezwa.",
+  "providerApprovedProofLocked": "Uthibitisho ulioidhinishwa utahifadhiwa na hauwezi kuondolewa au kubadilishwa.",
+  "providerWorkPreferencesSharedHint": "Ni sawa na kategoria zako nyingine. Badilisha unavyotaka.",
   "providerPolicyUploadDocuments": "Pakia hati",
   "providerEvidenceNoRequirements": "Hakuna uthibitisho uliowekwa kwa uwezo huu.",
   "providerEvidenceSubmitted": "Uthibitisho umetumwa kwa ukaguzi.",

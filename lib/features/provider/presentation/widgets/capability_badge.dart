@@ -51,6 +51,20 @@ class CapabilityBadge extends StatelessWidget {
     final hasApprovedRoleProof = capability.roleQualificationClaims.any(
       (claim) => claim['status'] == 'verified' && claim['has_evidence'] == true,
     );
+    final hasRoleProofToAdd = !isJob ||
+        capability.roleQualificationClaims.any((claim) {
+          if (claim['is_evidence'] != true) return false;
+          final hasEvidence = claim['has_evidence'] == true;
+          final status = claim['status']?.toString();
+          final proofIsAlreadySubmitted = hasEvidence &&
+              (status == 'pending_review' ||
+                  status == 'verified' ||
+                  (status == 'expired' && claim['verified_at'] != null));
+          return !proofIsAlreadySubmitted;
+        });
+    final canAddProof = onAddProof != null &&
+        hasRoleProofToAdd &&
+        capability.status != ProviderCapabilityStatus.providerVerified;
     final icon = capability.categoryIcon ?? (isJob ? '💼' : '🔧');
     final capabilityFallback = NeedCapability(
       slug: capability.capabilitySlug,
@@ -239,10 +253,7 @@ class CapabilityBadge extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      if (statusNote.isNotEmpty ||
-                          (onAddProof != null &&
-                              capability.status !=
-                                  ProviderCapabilityStatus.providerVerified))
+                      if (statusNote.isNotEmpty || canAddProof)
                         Row(
                           children: [
                             if (statusNote.isNotEmpty)
@@ -258,10 +269,7 @@ class CapabilityBadge extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            if (onAddProof != null &&
-                                capability.status !=
-                                    ProviderCapabilityStatus
-                                        .providerVerified) ...[
+                            if (canAddProof) ...[
                               if (statusNote.isNotEmpty)
                                 const SizedBox(width: 8),
                               InkWell(

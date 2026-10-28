@@ -3915,6 +3915,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerRoleRequiredProofIncluded => 'تمت إضافة الإثبات المطلوب.';
 
   @override
+  String get providerApprovedProofLocked =>
+      'يُحتفظ بالإثبات المعتمد ولا يمكن حذفه أو استبداله.';
+
+  @override
+  String get providerWorkPreferencesSharedHint =>
+      'مثل إعدادات فئاتك الأخرى. غيّر ما تشاء.';
+
+  @override
   String get providerPolicyUploadDocuments => 'إرسال المستندات';
 
   @override

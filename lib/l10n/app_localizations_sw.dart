@@ -3929,6 +3929,14 @@ class AppLocalizationsSw extends AppLocalizations {
       'Uthibitisho unaohitajika umeongezwa.';
 
   @override
+  String get providerApprovedProofLocked =>
+      'Uthibitisho ulioidhinishwa utahifadhiwa na hauwezi kuondolewa au kubadilishwa.';
+
+  @override
+  String get providerWorkPreferencesSharedHint =>
+      'Ni sawa na kategoria zako nyingine. Badilisha unavyotaka.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Pakia hati';
 
   @override

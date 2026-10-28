@@ -1703,6 +1703,8 @@
   "providerPolicyNeedsProofTag": "Icyemezo kirakenewe",
   "providerRoleRequiredProofHint": "Shyiraho iki cyemezo mbere yo kubika uyu mwuga.",
   "providerRoleRequiredProofIncluded": "Icyemezo gisabwa cyashyizwemo.",
+  "providerApprovedProofLocked": "Icyemezo cyemejwe kirabikwa kandi ntigishobora gukurwaho cyangwa gusimbuzwa.",
+  "providerWorkPreferencesSharedHint": "Bimeze kimwe no mu bindi byiciro byawe. Hindura icyo ushaka.",
   "providerPolicyUploadDocuments": "Ohereza inyandiko",
   "providerEvidenceNoRequirements": "Nta cyemezo cyateganyijwe kuri ubu bushobozi.",
   "providerEvidenceSubmitted": "Icyemezo cyoherejwe kugira ngo gisuzumwe.",

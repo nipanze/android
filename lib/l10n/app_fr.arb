@@ -1710,6 +1710,8 @@
   "providerPolicyNeedsProofTag": "Justificatif requis",
   "providerRoleRequiredProofHint": "Téléversez ce justificatif avant d’enregistrer le rôle.",
   "providerRoleRequiredProofIncluded": "Justificatif requis ajouté.",
+  "providerApprovedProofLocked": "Le justificatif approuvé est conservé et ne peut être supprimé ni remplacé.",
+  "providerWorkPreferencesSharedHint": "Comme dans vos autres catégories. Modifiez selon vos besoins.",
   "providerPolicyUploadDocuments": "Envoyer des documents",
   "providerEvidenceNoRequirements": "Aucun justificatif n’est configuré pour cette capacité.",
   "providerEvidenceSubmitted": "Justificatif envoyé pour examen.",

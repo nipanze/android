@@ -7000,6 +7000,18 @@ abstract class AppLocalizations {
   /// **'Required proof added.'**
   String get providerRoleRequiredProofIncluded;
 
+  /// No description provided for @providerApprovedProofLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved proof is kept and cannot be removed or replaced.'**
+  String get providerApprovedProofLocked;
+
+  /// No description provided for @providerWorkPreferencesSharedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as your other categories. Change anything.'**
+  String get providerWorkPreferencesSharedHint;
+
   /// No description provided for @providerPolicyUploadDocuments.
   ///
   /// In en, this message translates to:

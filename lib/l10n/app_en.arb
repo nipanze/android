@@ -1799,6 +1799,8 @@
   "providerPolicyNeedsProofTag": "Needs proof",
   "providerRoleRequiredProofHint": "Upload this proof before saving the role.",
   "providerRoleRequiredProofIncluded": "Required proof added.",
+  "providerApprovedProofLocked": "Approved proof is kept and cannot be removed or replaced.",
+  "providerWorkPreferencesSharedHint": "Same as your other categories. Change anything.",
   "providerPolicyUploadDocuments": "Upload documents",
   "providerEvidenceNoRequirements": "No evidence is configured for this capability.",
   "providerEvidenceSubmitted": "Evidence submitted for review.",

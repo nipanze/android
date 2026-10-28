@@ -3968,6 +3968,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerRoleRequiredProofIncluded => 'Justificatif requis ajouté.';
 
   @override
+  String get providerApprovedProofLocked =>
+      'Le justificatif approuvé est conservé et ne peut être supprimé ni remplacé.';
+
+  @override
+  String get providerWorkPreferencesSharedHint =>
+      'Comme dans vos autres catégories. Modifiez selon vos besoins.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Envoyer des documents';
 
   @override

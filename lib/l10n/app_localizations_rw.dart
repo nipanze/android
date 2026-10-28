@@ -3933,6 +3933,14 @@ class AppLocalizationsRw extends AppLocalizations {
       'Icyemezo gisabwa cyashyizwemo.';
 
   @override
+  String get providerApprovedProofLocked =>
+      'Icyemezo cyemejwe kirabikwa kandi ntigishobora gukurwaho cyangwa gusimbuzwa.';
+
+  @override
+  String get providerWorkPreferencesSharedHint =>
+      'Bimeze kimwe no mu bindi byiciro byawe. Hindura icyo ushaka.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Ohereza inyandiko';
 
   @override

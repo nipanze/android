@@ -3912,6 +3912,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerRoleRequiredProofIncluded => 'Required proof added.';
 
   @override
+  String get providerApprovedProofLocked =>
+      'Approved proof is kept and cannot be removed or replaced.';
+
+  @override
+  String get providerWorkPreferencesSharedHint =>
+      'Same as your other categories. Change anything.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Upload documents';
 
   @override
