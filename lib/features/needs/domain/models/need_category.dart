@@ -126,6 +126,48 @@ class NeedCategory {
         description;
   }
 
+  static const Map<String, int> _demandOrder = {
+    'machinery_equipment': 1,
+    'transport_logistics': 2,
+    'specialized_products': 3,
+    'construction_building': 4,
+    'professional_services': 5,
+    'travel_international': 6,
+    'agriculture_agribusiness': 7,
+    'energy_utilities': 8,
+    'technology_digital': 9,
+    'marketing_promotion': 10,
+    'education_training': 11,
+    'events_production': 12,
+    'events_celebrations': 12,
+    'weddings_celebrations': 12,
+    'photo_video_music_talent': 13,
+    'photo_video_talent': 13,
+    'music_video': 13,
+    'beauty_fashion_styling': 14,
+  };
+
+  static List<NeedCategory> sortForDisplay(
+    Iterable<NeedCategory> categories,
+  ) {
+    final sorted = categories.toList()
+      ..sort((a, b) {
+        final aOrder = _demandOrder[a.slug];
+        final bOrder = _demandOrder[b.slug];
+        if (aOrder != null && bOrder != null && aOrder != bOrder) {
+          return aOrder.compareTo(bOrder);
+        }
+        if (aOrder != null && bOrder == null) return -1;
+        if (aOrder == null && bOrder != null) return 1;
+
+        final configuredOrder = a.sortOrder.compareTo(b.sortOrder);
+        return configuredOrder != 0
+            ? configuredOrder
+            : a.slug.compareTo(b.slug);
+      });
+    return sorted;
+  }
+
   static const List<NeedCategory> defaultCategories = [
     NeedCategory(
       slug: 'machinery_equipment',
@@ -137,92 +179,11 @@ class NeedCategory {
       isActive: true,
     ),
     NeedCategory(
-      slug: 'technology_digital',
-      name: 'Technology & Digital',
-      icon: '💻',
-      description: 'Software, websites, IT support and security.',
-      sortOrder: 2,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'marketing_promotion',
-      name: 'Marketing & Promotion',
-      icon: '📢',
-      description: 'Advertising, content and influencer work.',
-      sortOrder: 3,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'professional_services',
-      name: 'Business & Professional Services',
-      icon: '🧑‍💼',
-      description: 'Legal, accounting, HR, engineering and consulting.',
-      sortOrder: 4,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'education_training',
-      name: 'Education & Training',
-      icon: '🎓',
-      description:
-          'Education, internships, professional training and admissions.',
-      sortOrder: 5,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'events_celebrations',
-      name: 'Events & Celebrations',
-      icon: '🎉',
-      description: 'Weddings, parties, equipment, catering and crews.',
-      sortOrder: 6,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'photo_video_talent',
-      name: 'Photo, Video, Music & Talent',
-      icon: '🎬',
-      description: 'Creative production, talent and performers.',
-      sortOrder: 7,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'beauty_fashion_styling',
-      name: 'Beauty, Fashion & Styling',
-      icon: '💄',
-      description: 'Makeup, hair, styling and clothing.',
-      sortOrder: 8,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'construction_building',
-      name: 'Construction & Building',
-      icon: '🏗️',
-      description: 'Contractors, trades and surveying.',
-      sortOrder: 9,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'energy_utilities',
-      name: 'Energy & Water',
-      icon: '⚡',
-      description: 'Solar, power backup, boreholes and water systems.',
-      sortOrder: 10,
-      isActive: true,
-    ),
-    NeedCategory(
       slug: 'transport_logistics',
       name: 'Transport & Logistics',
       icon: '🚚',
       description: 'Moving, hauling, delivery and fleet services.',
-      sortOrder: 11,
-      isActive: true,
-    ),
-    NeedCategory(
-      slug: 'agriculture_agribusiness',
-      name: 'Agriculture & Agribusiness',
-      icon: '🌾',
-      description: 'Farm services, inputs and produce.',
-      sortOrder: 12,
+      sortOrder: 2,
       isActive: true,
     ),
     NeedCategory(
@@ -230,7 +191,23 @@ class NeedCategory {
       name: 'Specialized Products & Procurement',
       icon: '🔎',
       description: 'Buying, importing and finding hard-to-get products.',
-      sortOrder: 13,
+      sortOrder: 3,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'construction_building',
+      name: 'Construction & Building',
+      icon: '🏗️',
+      description: 'Contractors, trades and surveying.',
+      sortOrder: 4,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'professional_services',
+      name: 'Business & Professional Services',
+      icon: '🧑‍💼',
+      description: 'Legal, accounting, HR, engineering and consulting.',
+      sortOrder: 5,
       isActive: true,
     ),
     NeedCategory(
@@ -239,9 +216,74 @@ class NeedCategory {
       icon: '✈️',
       description:
           'Travel, visa assistance, flights, accommodation, and relocation.',
-      sortOrder: 14,
+      sortOrder: 6,
       isActive: true,
       providerVerificationRequired: true,
+    ),
+    NeedCategory(
+      slug: 'agriculture_agribusiness',
+      name: 'Agriculture & Agribusiness',
+      icon: '🌾',
+      description: 'Farm services, inputs and produce.',
+      sortOrder: 7,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'energy_utilities',
+      name: 'Energy & Water',
+      icon: '⚡',
+      description: 'Solar, power backup, boreholes and water systems.',
+      sortOrder: 8,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'technology_digital',
+      name: 'Technology & Digital',
+      icon: '💻',
+      description: 'Software, websites, IT support and security.',
+      sortOrder: 9,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'marketing_promotion',
+      name: 'Marketing & Promotion',
+      icon: '📢',
+      description: 'Advertising, content and influencer work.',
+      sortOrder: 10,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'education_training',
+      name: 'Education & Training',
+      icon: '🎓',
+      description:
+          'Education, internships, professional training and admissions.',
+      sortOrder: 11,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'events_celebrations',
+      name: 'Events & Celebrations',
+      icon: '🎉',
+      description: 'Weddings, parties, equipment, catering and crews.',
+      sortOrder: 12,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'photo_video_talent',
+      name: 'Photo, Video, Music & Talent',
+      icon: '🎬',
+      description: 'Creative production, talent and performers.',
+      sortOrder: 13,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'beauty_fashion_styling',
+      name: 'Beauty, Fashion & Styling',
+      icon: '💄',
+      description: 'Makeup, hair, styling and clothing.',
+      sortOrder: 14,
+      isActive: true,
     ),
   ];
 

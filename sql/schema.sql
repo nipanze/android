@@ -15011,15 +15011,15 @@ comment on column public.need_capabilities.ui_group_slug is
 insert into public.need_categories
   (slug, name, icon, sort_order, is_active)
 values
-  ('technology_digital', 'Technology & Digital', '💻', 1, true),
-  ('marketing_promotion', 'Marketing & Promotion', '📣', 2, true),
-  ('education_training', 'Education & Training', '🎓', 4, true),
-  ('events_production', 'Events & Celebrations', '🎉', 5, true),
-  ('photo_video_music_talent', 'Photo, Video, Music & Talent', '🎬', 6, true),
-  ('beauty_fashion_styling', 'Beauty, Fashion & Styling', '💄', 7, true),
-  ('construction_building', 'Construction & Building', '🏗️', 8, true),
-  ('energy_utilities', 'Energy & Water', '⚡', 9, true),
-  ('agriculture_agribusiness', 'Agriculture', '🌾', 12, true),
+  ('technology_digital', 'Technology & Digital', '💻', 9, true),
+  ('marketing_promotion', 'Marketing & Promotion', '📣', 10, true),
+  ('education_training', 'Education & Training', '🎓', 11, true),
+  ('events_production', 'Events & Celebrations', '🎉', 12, true),
+  ('photo_video_music_talent', 'Photo, Video, Music & Talent', '🎬', 13, true),
+  ('beauty_fashion_styling', 'Beauty, Fashion & Styling', '💄', 14, true),
+  ('construction_building', 'Construction & Building', '🏗️', 4, true),
+  ('energy_utilities', 'Energy & Water', '⚡', 8, true),
+  ('agriculture_agribusiness', 'Agriculture', '🌾', 7, true),
   ('weddings_celebrations', 'Weddings & Celebrations', '🎉', 120, false),
   ('music_video', 'Music & Video', '🎬', 110, false)
 on conflict (slug) do nothing;
@@ -16716,20 +16716,20 @@ commit;
 -- patch_update_categories_v1.sql
 -- =============================================================================
 -- Adjusts Needs categories to the final 14-category list:
---   1.  Technology & Digital
---   2.  Marketing & Promotion          ← NEW top-level category
---   3.  Business & Professional        ← was "Professional & Business Services"
---   4.  Education & Training
---   5.  Events & Celebrations          ← was "Events & Production"
---   6.  Photo, Video, Music & Talent   ← NEW top-level category
---   7.  Beauty, Fashion & Styling      ← NEW top-level category
---   8.  Construction & Building
---   9.  Energy & Water                 ← was "Energy & Utilities"
---  10.  Transport & Logistics
---  11.  Machinery & Equipment
---  12.  Agriculture                    ← was "Agriculture & Agribusiness"
---  13.  Procurement & Sourcing         ← was "Specialized Products & Procurement"
---  14.  Travel & International
+--   1.  Machinery & Equipment
+--   2.  Transport & Logistics
+--   3.  Procurement & Sourcing         ← was "Specialized Products & Procurement"
+--   4.  Construction & Building
+--   5.  Business & Professional        ← was "Professional & Business Services"
+--   6.  Travel & International
+--   7.  Agriculture                    ← was "Agriculture & Agribusiness"
+--   8.  Energy & Water                 ← was "Energy & Utilities"
+--   9.  Technology & Digital
+--  10.  Marketing & Promotion          ← NEW top-level category
+--  11.  Education & Training
+--  12.  Events & Celebrations          ← was "Events & Production"
+--  13.  Photo, Video, Music & Talent   ← NEW top-level category
+--  14.  Beauty, Fashion & Styling      ← NEW top-level category
 --
 -- Safe to re-run: all upserts use ON CONFLICT DO UPDATE.
 -- Never modifies patch.sql / schema.sql / merged.sql.
@@ -16739,47 +16739,47 @@ commit;
 -- 1. Rename existing categories & fix sort orders
 -- ---------------------------------------------------------------------------
 UPDATE public.need_categories
-SET name = 'Technology & Digital',  sort_order = 1
+SET name = 'Technology & Digital',  sort_order = 9
 WHERE slug = 'technology_digital';
 
 UPDATE public.need_categories
-SET name = 'Business & Professional', sort_order = 3
+SET name = 'Business & Professional', sort_order = 5
 WHERE slug = 'professional_services';
 
 UPDATE public.need_categories
-SET name = 'Education & Training',   sort_order = 4
+SET name = 'Education & Training',   sort_order = 11
 WHERE slug = 'education_training';
 
 UPDATE public.need_categories
-SET name = 'Events & Celebrations',  sort_order = 5
+SET name = 'Events & Celebrations',  sort_order = 12
 WHERE slug = 'events_production';
 
 UPDATE public.need_categories
-SET name = 'Construction & Building', sort_order = 8
+SET name = 'Construction & Building', sort_order = 4
 WHERE slug = 'construction_building';
 
 UPDATE public.need_categories
-SET name = 'Energy & Water',          sort_order = 9
+SET name = 'Energy & Water',          sort_order = 8
 WHERE slug = 'energy_utilities';
 
 UPDATE public.need_categories
-SET name = 'Transport & Logistics',   sort_order = 10
+SET name = 'Transport & Logistics',   sort_order = 2
 WHERE slug = 'transport_logistics';
 
 UPDATE public.need_categories
-SET name = 'Machinery & Equipment',   sort_order = 11
+SET name = 'Machinery & Equipment',   sort_order = 1
 WHERE slug = 'machinery_equipment';
 
 UPDATE public.need_categories
-SET name = 'Agriculture',             sort_order = 12
+SET name = 'Agriculture',             sort_order = 7
 WHERE slug = 'agriculture_agribusiness';
 
 UPDATE public.need_categories
-SET name = 'Procurement & Sourcing',  sort_order = 13
+SET name = 'Procurement & Sourcing',  sort_order = 3
 WHERE slug = 'specialized_products';
 
 UPDATE public.need_categories
-SET name = 'Travel & International',  sort_order = 14
+SET name = 'Travel & International',  sort_order = 6
 WHERE slug = 'travel_international';
 
 -- ---------------------------------------------------------------------------
@@ -16788,15 +16788,15 @@ WHERE slug = 'travel_international';
 INSERT INTO public.need_categories (slug, name, icon, sort_order, description, is_active)
 VALUES
   ('marketing_promotion',
-   'Marketing & Promotion', '📣', 2,
+   'Marketing & Promotion', '📣', 10,
    'Digital marketing, social media, advertising, influencer marketing, and brand promotion services.',
    true),
   ('photo_video_music_talent',
-   'Photo, Video, Music & Talent', '🎬', 6,
+   'Photo, Video, Music & Talent', '🎬', 13,
    'Photography, videography, music production, DJs, performers, and creative talent.',
    true),
   ('beauty_fashion_styling',
-   'Beauty, Fashion & Styling', '💄', 7,
+   'Beauty, Fashion & Styling', '💄', 14,
    'Hair styling, makeup, tailoring, fashion design, and personal styling services.',
    true)
 ON CONFLICT (slug) DO UPDATE SET

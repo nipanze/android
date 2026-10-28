@@ -78,14 +78,16 @@ class NeedsRepository {
           .neq('slug', 'financial_services')
           .order('sort_order', ascending: true);
 
-      return _dedupeBySlug(
+      return NeedCategory.sortForDisplay(_dedupeBySlug(
         (data as List)
             .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
             .where((category) => category.slug != 'financial_services')
             .toList(),
-      );
+      ));
     } catch (_) {
-      return _dedupeBySlug(NeedCategory.defaultCategories);
+      return NeedCategory.sortForDisplay(
+        _dedupeBySlug(NeedCategory.defaultCategories),
+      );
     }
   }
 

@@ -112,20 +112,20 @@ grant select, insert, update on public.provider_capability_evidence to authentic
 -- 3. Seed 14 categories
 insert into public.need_categories (slug, name, icon, sort_order, description, is_active)
 values
-  ('technology_digital', 'Technology & Digital', '💻', 1, 'Software, websites, IT support and security', true),
-  ('marketing_promotion', 'Marketing & Promotion', '📣', 2, 'Advertising, content and influencer work', true),
-  ('professional_services', 'Business & Professional Services', '💼', 3, 'Consulting, legal, accounting, HR and design', true),
-  ('education_training', 'Education & Training', '🎓', 4, 'Learning, admissions and placements', true),
-  ('events_production', 'Events & Celebrations', '🎉', 5, 'Weddings, parties, corporate events and the services behind them', true),
-  ('photo_video_music_talent', 'Photo, Video, Music & Talent', '🎬', 6, 'Creative production and performers for any occasion', true),
-  ('beauty_fashion_styling', 'Beauty, Fashion & Styling', '💄', 7, 'Makeup, hair, styling and clothing', true),
-  ('construction_building', 'Construction & Building', '🏗️', 8, 'Contractors, trades and surveying', true),
-  ('energy_utilities', 'Energy & Water', '⚡', 9, 'Solar, power backup, boreholes and water systems', true),
-  ('transport_logistics', 'Transport & Logistics', '🚚', 10, 'Moving, hauling, delivery and cold chain', true),
-  ('machinery_equipment', 'Machinery & Equipment', '🚜', 11, 'Heavy machinery and equipment hire, with or without an operator', true),
-  ('agriculture_agribusiness', 'Agriculture & Agribusiness', '🌾', 12, 'Farm services, inputs and produce', true),
-  ('specialized_products', 'Procurement & Sourcing', '🔎', 13, 'Buying, importing and finding hard-to-get products', true),
-  ('travel_international', 'Travel & International', '✈️', 14, 'Bookings, visas, tours and relocation', true)
+  ('machinery_equipment', 'Machinery & Equipment', '🚜', 1, 'Heavy machinery and equipment hire, with or without an operator', true),
+  ('transport_logistics', 'Transport & Logistics', '🚚', 2, 'Moving, hauling, delivery and cold chain', true),
+  ('specialized_products', 'Procurement & Sourcing', '🔎', 3, 'Buying, importing and finding hard-to-get products', true),
+  ('construction_building', 'Construction & Building', '🏗️', 4, 'Contractors, trades and surveying', true),
+  ('professional_services', 'Business & Professional Services', '💼', 5, 'Consulting, legal, accounting, HR and design', true),
+  ('travel_international', 'Travel & International', '✈️', 6, 'Bookings, visas, tours and relocation', true),
+  ('agriculture_agribusiness', 'Agriculture & Agribusiness', '🌾', 7, 'Farm services, inputs and produce', true),
+  ('energy_utilities', 'Energy & Water', '⚡', 8, 'Solar, power backup, boreholes and water systems', true),
+  ('technology_digital', 'Technology & Digital', '💻', 9, 'Software, websites, IT support and security', true),
+  ('marketing_promotion', 'Marketing & Promotion', '📣', 10, 'Advertising, content and influencer work', true),
+  ('education_training', 'Education & Training', '🎓', 11, 'Learning, admissions and placements', true),
+  ('events_production', 'Events & Celebrations', '🎉', 12, 'Weddings, parties, corporate events and the services behind them', true),
+  ('photo_video_music_talent', 'Photo, Video, Music & Talent', '🎬', 13, 'Creative production and performers for any occasion', true),
+  ('beauty_fashion_styling', 'Beauty, Fashion & Styling', '💄', 14, 'Makeup, hair, styling and clothing', true)
 on conflict (slug) do update set
   name = excluded.name,
   icon = excluded.icon,

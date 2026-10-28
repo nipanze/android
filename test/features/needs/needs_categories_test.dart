@@ -5,6 +5,32 @@ import 'package:nipanze/features/needs/domain/models/need_category.dart';
 import 'package:nipanze/features/needs/domain/models/need_form_schema.dart';
 
 void main() {
+  test('categories follow the Uganda demand order for display', () {
+    final categories = NeedCategory.sortForDisplay(
+      NeedCategory.defaultCategories.reversed,
+    );
+
+    expect(
+      categories.map((category) => category.slug).toList(),
+      [
+        'machinery_equipment',
+        'transport_logistics',
+        'specialized_products',
+        'construction_building',
+        'professional_services',
+        'travel_international',
+        'agriculture_agribusiness',
+        'energy_utilities',
+        'technology_digital',
+        'marketing_promotion',
+        'education_training',
+        'events_celebrations',
+        'photo_video_talent',
+        'beauty_fashion_styling',
+      ],
+    );
+  });
+
   test('location and nationality suggestions follow country settings', () {
     expect(
       CountryLocations.localitiesFor(EastAfricaCountries.uganda),
