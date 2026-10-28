@@ -3921,6 +3921,14 @@ class AppLocalizationsSw extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Uthibitisho unahitajika';
 
   @override
+  String get providerRoleRequiredProofHint =>
+      'Pakia uthibitisho huu kabla ya kuhifadhi jukumu.';
+
+  @override
+  String get providerRoleRequiredProofIncluded =>
+      'Uthibitisho unaohitajika umeongezwa.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Pakia hati';
 
   @override

@@ -3908,6 +3908,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'يتطلب إثباتاً';
 
   @override
+  String get providerRoleRequiredProofHint =>
+      'ارفع هذا الإثبات قبل حفظ هذا الدور.';
+
+  @override
+  String get providerRoleRequiredProofIncluded => 'تمت إضافة الإثبات المطلوب.';
+
+  @override
   String get providerPolicyUploadDocuments => 'إرسال المستندات';
 
   @override

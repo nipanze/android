@@ -985,8 +985,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       (_roleClaimStateOverrides[slug] ??
               _savedRoleCapability(slug)?.roleQualificationClaims ??
               const [])
-          .where((claim) =>
-              (claim['role_slug']?.toString() ?? slug) == slug)
+          .where((claim) => (claim['role_slug']?.toString() ?? slug) == slug)
           .toList();
 
   List<Map<String, String>> _activeProofStates(String slug) => _roleClaims(slug)
@@ -3999,6 +3998,7 @@ class _RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const activeColor = AppColors.proPurple;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -4059,11 +4059,19 @@ class _RoleCard extends StatelessWidget {
                       style: TextStyle(fontSize: 12, color: text2),
                     ),
                   ],
-                  if (pendingProofCount > 0 || approvedProofCount > 0) ...[
+                  if (role.requiresProof ||
+                      pendingProofCount > 0 ||
+                      approvedProofCount > 0) ...[
                     const SizedBox(height: 5),
                     Wrap(
                       spacing: 6,
                       children: [
+                        if (role.requiresProof)
+                          _ProofCountPill(
+                            icon: Icons.lock_outline_rounded,
+                            label: l10n.providerPolicyNeedsProofTag,
+                            color: Colors.amber.shade800,
+                          ),
                         if (pendingProofCount > 0)
                           _ProofCountPill(
                             icon: Icons.schedule_rounded,
@@ -4381,6 +4389,37 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
   String _proofKey(String roleSlug, String qualificationSlug) =>
       '$roleSlug::$qualificationSlug';
 
+  bool _requiredProofIsReady(
+    ProviderServiceRole role,
+    ProviderRoleQualification qualification,
+  ) {
+    final proofKey = _proofKey(role.slug, qualification.slug);
+    final hasDraft = widget.evidenceDrafts.any(
+      (draft) => _proofKey(draft.roleSlug, draft.qualificationSlug) == proofKey,
+    );
+    if (hasDraft) return true;
+
+    final capabilitySlug = role.capabilitySlug ?? 'work_${role.slug}';
+    final capability = widget.existingCapabilities
+        .where((item) => item.capabilitySlug == capabilitySlug)
+        .firstOrNull;
+    final claim = capability?.roleQualificationClaims
+        .where((item) =>
+            item['role_slug'] == role.slug &&
+            item['qualification_slug'] == qualification.slug)
+        .firstOrNull;
+    final status =
+        _claimStatusOverrides[proofKey] ?? claim?['status']?.toString();
+    return claim?['has_evidence'] == true &&
+        (status == 'pending_review' || status == 'verified');
+  }
+
+  bool get _allRequiredProofsReady => widget.roles.every(
+        (role) => role.requiredProofQualifications.every(
+          (qualification) => _requiredProofIsReady(role, qualification),
+        ),
+      );
+
   Future<bool> _confirmQualificationUntick({
     required ProviderRoleQualification qualification,
     required String status,
@@ -4555,7 +4594,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
     required (ProviderServiceRole, ProviderRoleQualification) target,
   }) async {
     final (role, qualification) = target;
-    if (!qualification.isEvidence) {
+    if (!role.acceptsProofFor(qualification)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content:
@@ -4656,13 +4695,49 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
 
             // Qualifications checkboxes per role (flat list with dividers matching Image F)
             for (final role in widget.roles) ...[
-              if (widget.roles.length > 1) ...[
+              if (widget.roles.length > 1 || role.requiresProof) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 6, bottom: 4),
                   child: Text(
                     role.name,
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+              ],
+              if (role.requiresProof) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _requiredProofIsReady(
+                                role, role.requiredProofQualifications.first)
+                            ? Icons.check_circle_outline_rounded
+                            : Icons.lock_outline_rounded,
+                        size: 14,
+                        color: _requiredProofIsReady(
+                                role, role.requiredProofQualifications.first)
+                            ? AppColors.success
+                            : Colors.amber.shade800,
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          _requiredProofIsReady(
+                                  role, role.requiredProofQualifications.first)
+                              ? l10n.providerRoleRequiredProofIncluded
+                              : l10n.providerRoleRequiredProofHint,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: _requiredProofIsReady(role,
+                                    role.requiredProofQualifications.first)
+                                ? AppColors.success
+                                : Colors.amber.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -4716,6 +4791,9 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                         };
                   final isExistingEvidenceApproved =
                       existingStatus == 'verified' && evidenceDraft == null;
+                  final acceptsProof = role.acceptsProofFor(qual);
+                  final isRequiredProof =
+                      role.isRequiredProofQualification(qual);
 
                   final isDark =
                       Theme.of(context).brightness == Brightness.dark;
@@ -4774,7 +4852,18 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    if (qual.isEvidence)
+                                    if (isRequiredProof) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        l10n.providerPolicyNeedsProofTag,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.amber.shade800,
+                                        ),
+                                      ),
+                                    ],
+                                    if (acceptsProof)
                                       Row(
                                         children: [
                                           Flexible(
@@ -4805,7 +4894,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                   ],
                                 ),
                               ),
-                              if (qual.isEvidence &&
+                              if (acceptsProof &&
                                   isChecked &&
                                   !isExistingEvidenceApproved)
                                 IconButton(
@@ -5060,7 +5149,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: widget.onSave,
+            onPressed: _allRequiredProofsReady ? widget.onSave : null,
             child: const Text(
               'Save work profile',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),

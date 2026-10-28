@@ -978,7 +978,7 @@ class ProviderRepository implements IProviderRepository {
       var query = _client.from(TableNames.capabilityRoles).select(
             'slug, name, kind_question, category_slug, capability_slug, '
             'role_kinds(slug, name, sort_order), '
-            'role_qualifications(slug, name, is_evidence, sort_order)',
+            'role_qualifications(slug, name, is_evidence, is_required_proof, sort_order)',
           );
 
       if (capabilitySlug != null) {

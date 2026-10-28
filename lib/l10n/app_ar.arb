@@ -1701,6 +1701,8 @@
   "providerPolicyProofLater": "أضف إثباتًا للنظر في منحك شارة Nipanze",
   "providerPolicyProofRequired": "يلزم الإثبات قبل التفعيل",
   "providerPolicyNeedsProofTag": "يتطلب إثباتاً",
+  "providerRoleRequiredProofHint": "ارفع هذا الإثبات قبل حفظ هذا الدور.",
+  "providerRoleRequiredProofIncluded": "تمت إضافة الإثبات المطلوب.",
   "providerPolicyUploadDocuments": "إرسال المستندات",
   "providerEvidenceNoRequirements": "لم يتم تحديد إثبات لهذه الخدمة.",
   "providerEvidenceSubmitted": "تم إرسال الإثبات للمراجعة.",

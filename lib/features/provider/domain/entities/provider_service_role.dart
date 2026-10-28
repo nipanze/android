@@ -1,5 +1,54 @@
 // lib/features/provider/domain/entities/provider_service_role.dart
 
+const _requiredProofQualificationsByRole = <String, String>{
+  'security_specialist': 'cissp_cism',
+  'accountant_finance_officer': 'practising_certificate',
+  'lawyer_legal_officer': 'bar_admission_practising_certificate',
+  'engineer': 'registered_with_engineers_board',
+  'architect_designer': 'registered_architect',
+  'teacher_tutor': 'registered_with_teaching_board',
+  'vocational_trainer': 'trade_certificate',
+  'site_manager': 'safety_certification_osha',
+  'foreman_supervisor': 'trade_test_certificate',
+  'skilled_tradesperson': 'trade_test_grade_i_ii_iii',
+  'surveyor': 'registered_surveyor',
+  'solar_electrical_technician': 'electrical_licence',
+  'energy_engineer': 'registered_engineer',
+  'driver': 'valid_driving_licence_class',
+  'driving_instructor': 'instructor_licence',
+  'machine_operator': 'operator_licence_certificate',
+  'equipment_mechanic': 'mechanic_trade_certificate',
+  'site_supervisor': 'safety_certification',
+  'veterinary_livestock_officer': 'veterinary_licence',
+  'clearing_customs_agent': 'customs_clearing_licence',
+  'visa_assistance_specialist': 'travel_agency_licence',
+  'tour_guide': 'tourism_board_guide_licence',
+  'driver_guide': 'valid_driving_licence_class',
+  'house_help': 'national_id',
+  'nanny': 'police_clearance',
+  'home_carer': 'caregiving_certificate',
+  'home_cook': 'food_handler_certificate',
+  'doctor': 'council_registration',
+  'nurse': 'council_registration',
+  'clinician': 'practising_licence',
+  'medical_specialist': 'specialist_registration',
+  'optometrist': 'optometry_registration',
+  'dentist': 'dental_council_registration',
+  'pharmacist': 'pharmacy_board_registration',
+  'lab_technician': 'lab_council_registration',
+  'physiotherapist': 'physiotherapy_registration',
+  'counsellor': 'professional_registration',
+  'nursing_assistant': 'assistant_certificate',
+  'hiv_counsellor': 'facility_authorisation',
+  'caterer_chef': 'food_handler_certificate',
+  'massage_therapist': 'massage_therapy_certificate',
+  'spa_therapist': 'cosmetology_spa_certificate',
+  'traditional_healer': 'association_registration',
+  'duwah_practitioner': 'endorsement',
+  'ceremony_officiant': 'endorsement',
+  'angel_investor': 'identity_verification',
+};
+
 class ProviderServiceRole {
   const ProviderServiceRole({
     required this.slug,
@@ -34,6 +83,8 @@ class ProviderServiceRole {
               ? qualification.name
               : existing.name,
           isEvidence: existing.isEvidence || qualification.isEvidence,
+          isRequiredProof:
+              existing.isRequiredProof || qualification.isRequiredProof,
         );
       }
     }
@@ -59,6 +110,29 @@ class ProviderServiceRole {
   final String? capabilitySlug;
   final List<ProviderRoleOption> kinds;
   final List<ProviderRoleQualification> qualifications;
+
+  String? get requiredProofQualificationSlug =>
+      _requiredProofQualificationsByRole[slug] ??
+      qualifications
+          .where((qualification) => qualification.isRequiredProof)
+          .firstOrNull
+          ?.slug;
+
+  List<ProviderRoleQualification> get requiredProofQualifications =>
+      qualifications
+          .where((qualification) =>
+              qualification.isRequiredProof ||
+              qualification.slug == requiredProofQualificationSlug)
+          .toList();
+
+  bool get requiresProof => requiredProofQualifications.isNotEmpty;
+
+  bool isRequiredProofQualification(ProviderRoleQualification qualification) =>
+      qualification.isRequiredProof ||
+      qualification.slug == requiredProofQualificationSlug;
+
+  bool acceptsProofFor(ProviderRoleQualification qualification) =>
+      qualification.isEvidence || isRequiredProofQualification(qualification);
 
   static List<ProviderServiceRole> defaultsForCategory(String? categorySlug) {
     if (categorySlug == null) return const [];
@@ -402,15 +476,13 @@ class ProviderServiceRole {
     ),
     ProviderServiceRole(
       slug: 'architect_designer',
-      name: 'Architect / Designer',
-      description: 'Architectural design, drawings, and approvals',
+      name: 'Architect',
+      description: 'Building design, technical drawings, and approvals',
       kindQuestion: 'What do you design?',
       categorySlug: 'professional_services',
       capabilitySlug: 'work_architect_designer',
       kinds: [
         ProviderRoleOption(slug: 'buildings', name: 'Buildings'),
-        ProviderRoleOption(slug: 'interiors', name: 'Interiors'),
-        ProviderRoleOption(slug: 'landscape', name: 'Landscape'),
       ],
       qualifications: [
         ProviderRoleQualification(
@@ -421,6 +493,30 @@ class ProviderServiceRole {
             slug: 'portfolio', name: 'Portfolio', isEvidence: false),
         ProviderRoleQualification(
             slug: 'cad_bim_skills', name: 'CAD/BIM skills', isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'interior_designer',
+      name: 'Interior Designer',
+      description: 'Interior layouts, finishes, and space planning',
+      kindQuestion: 'What do you design?',
+      categorySlug: 'professional_services',
+      capabilitySlug: 'work_interior_designer',
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'portfolio', name: 'Portfolio', isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'landscape_designer',
+      name: 'Landscape Designer',
+      description: 'Landscape and outdoor space design',
+      kindQuestion: 'What do you design?',
+      categorySlug: 'professional_services',
+      capabilitySlug: 'work_landscape_designer',
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'portfolio', name: 'Portfolio', isEvidence: false),
       ],
     ),
     ProviderServiceRole(
@@ -529,8 +625,8 @@ class ProviderServiceRole {
     ),
     ProviderServiceRole(
       slug: 'teacher_tutor',
-      name: 'Teacher / Tutor',
-      description: 'Curriculum instruction, tutoring, and exam prep',
+      name: 'Teacher',
+      description: 'Formal primary, secondary, and university teaching',
       kindQuestion: 'What do you teach?',
       categorySlug: 'education_training',
       capabilitySlug: 'work_teacher_tutor',
@@ -538,8 +634,6 @@ class ProviderServiceRole {
         ProviderRoleOption(slug: 'primary', name: 'Primary'),
         ProviderRoleOption(slug: 'secondary', name: 'Secondary'),
         ProviderRoleOption(slug: 'university', name: 'University'),
-        ProviderRoleOption(slug: 'languages', name: 'Languages'),
-        ProviderRoleOption(slug: 'exam_prep', name: 'Exam prep'),
       ],
       qualifications: [
         ProviderRoleQualification(
@@ -561,19 +655,34 @@ class ProviderServiceRole {
       ],
     ),
     ProviderServiceRole(
+      slug: 'private_tutor',
+      name: 'Private Tutor / Exam Coach',
+      description: 'Private lessons, language learning, and exam preparation',
+      kindQuestion: 'What do you teach?',
+      categorySlug: 'education_training',
+      capabilitySlug: 'work_private_tutor',
+      kinds: [
+        ProviderRoleOption(slug: 'languages', name: 'Languages'),
+        ProviderRoleOption(slug: 'exam_prep', name: 'Exam prep'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'subject_specialisation',
+            name: 'Subject specialisation',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
       slug: 'trainer_instructor',
       name: 'Trainer / Instructor',
-      description: 'Corporate, technical, or vocational skills training',
+      description: 'Computer, IT, and professional skills training',
       kindQuestion: 'Training field?',
       categorySlug: 'education_training',
       capabilitySlug: 'work_trainer_instructor',
       kinds: [
         ProviderRoleOption(slug: 'computer_it', name: 'Computer / IT'),
         ProviderRoleOption(
-            slug: 'vocational_technical', name: 'Vocational / technical'),
-        ProviderRoleOption(
             slug: 'professional_corporate', name: 'Professional / corporate'),
-        ProviderRoleOption(slug: 'driving', name: 'Driving'),
       ],
       qualifications: [
         ProviderRoleQualification(
@@ -588,6 +697,25 @@ class ProviderServiceRole {
             slug: 'industry_experience_3_years',
             name: 'Industry experience 3+ years',
             isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'vocational_trainer',
+      name: 'Vocational / Technical Trainer',
+      description: 'Practical trade and technical skills instruction',
+      kindQuestion: 'What trade do you teach?',
+      categorySlug: 'education_training',
+      capabilitySlug: 'work_vocational_trainer',
+      kinds: [
+        ProviderRoleOption(slug: 'vocational_technical', name: 'Trades'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+          slug: 'trade_certificate',
+          name: 'Trade certificate',
+          isEvidence: true,
+          isRequiredProof: true,
+        ),
       ],
     ),
     ProviderServiceRole(
@@ -1650,14 +1778,13 @@ class ProviderServiceRole {
     ProviderServiceRole(
       slug: 'travel_agent_consultant',
       name: 'Travel Agent / Consultant',
-      description: 'Flights, itineraries, and visa guidance',
+      description: 'Flights, itineraries, tours, and travel planning',
       kindQuestion: 'What do you handle?',
       categorySlug: 'travel_international',
       capabilitySlug: 'work_travel_agent_consultant',
       kinds: [
         ProviderRoleOption(slug: 'flights', name: 'Flights'),
         ProviderRoleOption(slug: 'tours_packages', name: 'Tours & packages'),
-        ProviderRoleOption(slug: 'visas', name: 'Visas'),
         ProviderRoleOption(slug: 'hajj_umrah', name: 'Hajj & Umrah'),
         ProviderRoleOption(slug: 'relocation', name: 'Relocation'),
       ],
@@ -1674,6 +1801,30 @@ class ProviderServiceRole {
             slug: '2_years_experience',
             name: '2+ years experience',
             isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'visa_assistance_specialist',
+      name: 'Visa Assistance Specialist',
+      description:
+          'Visa applications, document checks, and appointment support',
+      kindQuestion: 'What visa support do you provide?',
+      categorySlug: 'travel_international',
+      capabilitySlug: 'work_visa_assistance_specialist',
+      kinds: [
+        ProviderRoleOption(
+            slug: 'visa_applications', name: 'Visa applications'),
+        ProviderRoleOption(slug: 'document_review', name: 'Document review'),
+        ProviderRoleOption(
+            slug: 'appointment_support', name: 'Appointment support'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+          slug: 'travel_agency_licence',
+          name: 'Travel agency or visa agent authorisation',
+          isEvidence: true,
+          isRequiredProof: true,
+        ),
       ],
     ),
     ProviderServiceRole(
@@ -1739,8 +1890,6 @@ class ProviderServiceRole {
       capabilitySlug: 'work_operations_manager',
       kinds: [
         ProviderRoleOption(slug: 'tours', name: 'Tours'),
-        ProviderRoleOption(
-            slug: 'visa_documentation', name: 'Visa & documentation'),
         ProviderRoleOption(slug: 'travel_desk', name: 'Travel desk'),
       ],
       qualifications: [
@@ -1780,6 +1929,7 @@ class ProviderRoleQualification {
     required this.slug,
     required this.name,
     this.isEvidence = false,
+    this.isRequiredProof = false,
   });
 
   factory ProviderRoleQualification.fromMap(dynamic value) {
@@ -1788,10 +1938,12 @@ class ProviderRoleQualification {
       slug: map['slug'] as String? ?? '',
       name: map['name'] as String? ?? '',
       isEvidence: map['is_evidence'] as bool? ?? false,
+      isRequiredProof: map['is_required_proof'] as bool? ?? false,
     );
   }
 
   final String slug;
   final String name;
   final bool isEvidence;
+  final bool isRequiredProof;
 }

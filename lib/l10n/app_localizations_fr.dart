@@ -3961,6 +3961,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Justificatif requis';
 
   @override
+  String get providerRoleRequiredProofHint =>
+      'Téléversez ce justificatif avant d’enregistrer le rôle.';
+
+  @override
+  String get providerRoleRequiredProofIncluded => 'Justificatif requis ajouté.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Envoyer des documents';
 
   @override

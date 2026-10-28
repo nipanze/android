@@ -1701,6 +1701,8 @@
   "providerPolicyProofLater": "Ongeza uthibitisho ili uzingatiwe kwa beji ya Nipanze",
   "providerPolicyProofRequired": "Uthibitisho unahitajika kabla ya kuanza",
   "providerPolicyNeedsProofTag": "Uthibitisho unahitajika",
+  "providerRoleRequiredProofHint": "Pakia uthibitisho huu kabla ya kuhifadhi jukumu.",
+  "providerRoleRequiredProofIncluded": "Uthibitisho unaohitajika umeongezwa.",
   "providerPolicyUploadDocuments": "Pakia hati",
   "providerEvidenceNoRequirements": "Hakuna uthibitisho uliowekwa kwa uwezo huu.",
   "providerEvidenceSubmitted": "Uthibitisho umetumwa kwa ukaguzi.",

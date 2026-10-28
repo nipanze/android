@@ -3925,6 +3925,14 @@ class AppLocalizationsRw extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Icyemezo kirakenewe';
 
   @override
+  String get providerRoleRequiredProofHint =>
+      'Shyiraho iki cyemezo mbere yo kubika uyu mwuga.';
+
+  @override
+  String get providerRoleRequiredProofIncluded =>
+      'Icyemezo gisabwa cyashyizwemo.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Ohereza inyandiko';
 
   @override

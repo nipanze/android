@@ -1797,6 +1797,8 @@
   "providerPolicyProofLater": "Add proof to be considered for a Nipanze badge",
   "providerPolicyProofRequired": "Proof required before it goes live",
   "providerPolicyNeedsProofTag": "Needs proof",
+  "providerRoleRequiredProofHint": "Upload this proof before saving the role.",
+  "providerRoleRequiredProofIncluded": "Required proof added.",
   "providerPolicyUploadDocuments": "Upload documents",
   "providerEvidenceNoRequirements": "No evidence is configured for this capability.",
   "providerEvidenceSubmitted": "Evidence submitted for review.",

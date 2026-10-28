@@ -1701,6 +1701,8 @@
   "providerPolicyProofLater": "Ongeraho icyemezo kugira ngo usuzumirwe kubona ikirango cya Nipanze",
   "providerPolicyProofRequired": "Icyemezo kirakenewe mbere yo gutangira",
   "providerPolicyNeedsProofTag": "Icyemezo kirakenewe",
+  "providerRoleRequiredProofHint": "Shyiraho iki cyemezo mbere yo kubika uyu mwuga.",
+  "providerRoleRequiredProofIncluded": "Icyemezo gisabwa cyashyizwemo.",
   "providerPolicyUploadDocuments": "Ohereza inyandiko",
   "providerEvidenceNoRequirements": "Nta cyemezo cyateganyijwe kuri ubu bushobozi.",
   "providerEvidenceSubmitted": "Icyemezo cyoherejwe kugira ngo gisuzumwe.",

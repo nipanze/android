@@ -3905,6 +3905,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get providerPolicyNeedsProofTag => 'Needs proof';
 
   @override
+  String get providerRoleRequiredProofHint =>
+      'Upload this proof before saving the role.';
+
+  @override
+  String get providerRoleRequiredProofIncluded => 'Required proof added.';
+
+  @override
   String get providerPolicyUploadDocuments => 'Upload documents';
 
   @override

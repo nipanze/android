@@ -6988,6 +6988,18 @@ abstract class AppLocalizations {
   /// **'Needs proof'**
   String get providerPolicyNeedsProofTag;
 
+  /// No description provided for @providerRoleRequiredProofHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload this proof before saving the role.'**
+  String get providerRoleRequiredProofHint;
+
+  /// No description provided for @providerRoleRequiredProofIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Required proof added.'**
+  String get providerRoleRequiredProofIncluded;
+
   /// No description provided for @providerPolicyUploadDocuments.
   ///
   /// In en, this message translates to:
