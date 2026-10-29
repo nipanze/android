@@ -205,7 +205,9 @@ class MainScaffold extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Icon(
-                      Icons.person_outline_rounded,
+                      isSelected
+                          ? Icons.person_rounded
+                          : Icons.person_outline_rounded,
                       size: 22,
                       color: color,
                     ),
