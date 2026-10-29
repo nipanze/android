@@ -17,9 +17,10 @@ class PlatformLimits {
     this.minInterestRate = 5,
     this.maxInterestRate = 30,
     this.minLenderInvestment = 100000,
-    this.maxActiveRequestsFree = 2,
-    this.maxActiveRequestsLender = 5,
-    this.maxActiveRequestsPro = 15,
+    this.maxActiveRequestsFree = 3,
+    this.maxActiveRequestsLender = 8,
+    this.maxActiveRequestsPro = 20,
+    this.maxActiveResponsesLender = 10,
     this.listingDurationDays = 30,
     this.forexListingDurationDays = 7,
     this.needsDurationByCategory = const {
@@ -40,6 +41,7 @@ class PlatformLimits {
   final int maxActiveRequestsFree;
   final int maxActiveRequestsLender;
   final int maxActiveRequestsPro;
+  final int maxActiveResponsesLender;
   final int listingDurationDays;
   final int forexListingDurationDays;
   final Map<String, int> needsDurationByCategory;
@@ -101,11 +103,13 @@ class SystemSettingsRepository {
         maxActiveRequestsFree:
             int.tryParse(map['max_active_requests_free'] ?? '') ??
                 int.tryParse(map['max_concurrent_requests'] ?? '') ??
-                2,
+                3,
         maxActiveRequestsLender:
-            int.tryParse(map['max_active_requests_lender'] ?? '') ?? 5,
+            int.tryParse(map['max_active_requests_lender'] ?? '') ?? 8,
         maxActiveRequestsPro:
-            int.tryParse(map['max_active_requests_pro'] ?? '') ?? 15,
+            int.tryParse(map['max_active_requests_pro'] ?? '') ?? 20,
+        maxActiveResponsesLender:
+            int.tryParse(map['max_active_responses_lender'] ?? '') ?? 10,
         listingDurationDays:
             int.tryParse(map['listing_duration_days'] ?? '') ?? 30,
         forexListingDurationDays:
@@ -133,10 +137,10 @@ class SystemSettingsRepository {
               14,
         },
         marketRateBaselinePct: double.tryParse(
-                  map['market_interest_rate_baseline_pct'] ??
-                      map['market_rate_baseline_pct'] ??
-                      '') ??
-              10.0,
+                map['market_interest_rate_baseline_pct'] ??
+                    map['market_rate_baseline_pct'] ??
+                    '') ??
+            10.0,
       );
       return _cached!;
     } catch (_) {

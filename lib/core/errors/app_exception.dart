@@ -176,8 +176,25 @@ AppException _parsePostgrestError(String code, String message) {
     return const SubscriptionRequiredException('Pro');
   }
   if (message.contains('NIPANZE_MAX_REQUESTS')) {
+    final count = RegExp(r'(\d+) of (\d+) active requests').firstMatch(message);
+    if (count != null) {
+      return DatabaseException(
+        'You have ${count.group(1)} of ${count.group(2)} active requests.',
+      );
+    }
     return const DatabaseException(
-        'You have reached the maximum number of active listings.');
+        'You have reached the active request limit.');
+  }
+  if (message.contains('NIPANZE_MAX_RESPONSES')) {
+    final count =
+        RegExp(r'(\d+) of (\d+) active responses').firstMatch(message);
+    if (count != null) {
+      return DatabaseException(
+        'You have ${count.group(1)} of ${count.group(2)} active responses.',
+      );
+    }
+    return const DatabaseException(
+        'You have reached the active response limit.');
   }
   if (message.contains('NIPANZE_SELF_OFFER') ||
       message.contains('NIPANZE_SELF_BID')) {

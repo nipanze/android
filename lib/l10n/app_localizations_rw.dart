@@ -669,10 +669,10 @@ class AppLocalizationsRw extends AppLocalizations {
   String get justNow => 'ubu';
 
   @override
-  String get statListings => 'Inguzanyo';
+  String get statListings => 'Ibyifuzo';
 
   @override
-  String get statListingsSubtitle => 'Izimusaba zatangiwe';
+  String get statListingsSubtitle => 'Inguzanyo n\'ibikenewe bikora';
 
   @override
   String get statOffers => 'Ibirego';

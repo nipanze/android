@@ -8,14 +8,28 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../settings/data/system_settings_repository.dart';
 
 import '../../data/subscription_price_repository.dart';
 import '../cubit/subscription_price_cubit.dart';
 import '../widgets/flutterwave_checkout_sheet.dart';
 
 /// The single place where marketplace capability and subscription prices are explained.
-class PricingPage extends StatelessWidget {
+class PricingPage extends StatefulWidget {
   const PricingPage({super.key});
+
+  @override
+  State<PricingPage> createState() => _PricingPageState();
+}
+
+class _PricingPageState extends State<PricingPage> {
+  late final Future<PlatformLimits> _limitsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _limitsFuture = getIt<SystemSettingsRepository>().getLimits();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +41,15 @@ class PricingPage extends StatelessWidget {
     final countryCode = state is AuthAuthenticated ? state.user.country : null;
     final country = EastAfricaCountries.findByCode(countryCode);
 
-    return BlocProvider<SubscriptionPriceCubit>(
-      create: (_) => getIt<SubscriptionPriceCubit>()..load(country.code),
-      child: _PricingPageBody(
-        country: country,
-        current: current,
+    return FutureBuilder<PlatformLimits>(
+      future: _limitsFuture,
+      builder: (context, snapshot) => BlocProvider<SubscriptionPriceCubit>(
+        create: (_) => getIt<SubscriptionPriceCubit>()..load(country.code),
+        child: _PricingPageBody(
+          country: country,
+          current: current,
+          limits: snapshot.data ?? PlatformLimits.defaults,
+        ),
       ),
     );
   }
@@ -41,10 +59,12 @@ class _PricingPageBody extends StatelessWidget {
   const _PricingPageBody({
     required this.country,
     required this.current,
+    required this.limits,
   });
 
   final EastAfricaCountry country;
   final SubscriptionPlan current;
+  final PlatformLimits limits;
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +152,8 @@ class _PricingPageBody extends StatelessWidget {
                 subtitle: l10n?.freePlanSubtitle ??
                     'Browse, watch listings, post basic requests, and accept offers.',
                 features: [
-                  l10n?.freeFeature1 ?? 'Browse the marketplace',
-                  'Post up to 2 active loan requests',
+                  'Browse Loans, Forex and Needs',
+                  'Post up to ${limits.maxActiveRequestsFree} active requests',
                   l10n?.freeFeature3 ?? 'Accept offers received',
                 ],
                 current: current,
@@ -152,7 +172,10 @@ class _PricingPageBody extends StatelessWidget {
                     'For anyone ready to make structured offers across Loans, Forex and Needs.',
                 features: [
                   l10n?.everythingInFree ?? 'Everything in Free',
-                  'Post up to 5 active loan requests',
+                  'Post up to ${limits.maxActiveRequestsLender} active requests',
+                  'Respond to Needs with full terms',
+                  'Alerts for new Needs in your categories',
+                  'Up to ${limits.maxActiveResponsesLender} active responses at once',
                   l10n?.lenderFeature1 ??
                       'Make offers with full terms (rate, fee, schedule)',
                   l10n?.lenderFeature2 ??
@@ -174,10 +197,13 @@ class _PricingPageBody extends StatelessWidget {
                     'Priority visibility, improved matching and stronger marketplace performance.',
                 features: [
                   l10n?.everythingInLender ?? 'Everything in Provider',
-                  'Post up to 15 active loan requests',
+                  'Post up to ${limits.maxActiveRequestsPro} active requests',
+                  'Unlimited active responses',
+                  'Your response shown first to the requester',
+                  'Advanced filters for Loans and Needs',
+                  'Response insights: seen, shortlisted, won',
                   'Preferred loan terms and Forex rate',
-                  'Priority visibility and improved matching',
-                  'Verified badge and advanced trust insights',
+                  'Advanced trust insights',
                 ],
                 current: current,
                 onChoose: () =>
@@ -186,15 +212,28 @@ class _PricingPageBody extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'Verification is not part of any plan. Verified badges come only from approved proof.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+
               Text(
                 l10n?.paymentSecurityDisclaimer ??
                     'Nipanze does not hold or move funds. Subscription changes are confirmed through a secure payment flow.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.text3Dark
-                    : AppColors.text3Light),
+                    fontSize: 11,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.text3Dark
+                        : AppColors.text3Light),
               ),
             ],
           );

@@ -669,10 +669,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get justNow => 'sasa hivi';
 
   @override
-  String get statListings => 'Orodha';
+  String get statListings => 'Maombi';
 
   @override
-  String get statListingsSubtitle => 'Maombi yaliyowasilishwa';
+  String get statListingsSubtitle => 'Mikopo na mahitaji yanayoendelea';
 
   @override
   String get statOffers => 'Mapendekezo';

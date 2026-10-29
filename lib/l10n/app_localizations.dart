@@ -1259,13 +1259,13 @@ abstract class AppLocalizations {
   /// No description provided for @statListings.
   ///
   /// In en, this message translates to:
-  /// **'Listings'**
+  /// **'Requests'**
   String get statListings;
 
   /// No description provided for @statListingsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Posted requests'**
+  /// **'Active Loans and Needs'**
   String get statListingsSubtitle;
 
   /// No description provided for @statOffers.

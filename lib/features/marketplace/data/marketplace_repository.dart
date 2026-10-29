@@ -420,4 +420,15 @@ class MarketplaceRepository {
       return const {};
     }
   }
+
+  /// Server-side entitlement check for the non-loan Advanced Filters.
+  /// Filters narrow the already-public feed, but Pro access is still checked
+  /// by Postgres so a modified client cannot invoke the feature anonymously.
+  Future<void> assertProAdvancedFilters() async {
+    try {
+      await _client.rpc('assert_pro_advanced_filters');
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
 }

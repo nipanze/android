@@ -670,10 +670,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get justNow => 'à l\'instant';
 
   @override
-  String get statListings => 'Annonces';
+  String get statListings => 'Demandes';
 
   @override
-  String get statListingsSubtitle => 'Demandes publiées';
+  String get statListingsSubtitle => 'Prêts et besoins actifs';
 
   @override
   String get statOffers => 'Offres';

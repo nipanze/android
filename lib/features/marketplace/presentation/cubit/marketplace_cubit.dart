@@ -214,6 +214,31 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
     _proFilter = criteria;
 
+    try {
+      await _repository.assertProAdvancedFilters();
+    } catch (_) {
+      _proFilter = const ProFilterCriteria();
+      _cachedProFilteredIds = null;
+      _emitLoaded();
+      return;
+    }
+
+    // The selector at the top of Advanced Filters represents the same
+    // marketplace modules as the home chips. Fetch the selected feed before
+    // narrowing it so switching from Loans to All/Forex/Needs can add rows.
+    if (_moduleFilter != criteria.moduleFilter) {
+      _moduleFilter = criteria.moduleFilter;
+      try {
+        _allListings = await _repository.getListings(
+          district: _districtFilter,
+          module: _moduleFilter,
+          country: _countryFilter,
+        );
+      } catch (_) {
+        // Keep the last loaded results available while offline.
+      }
+    }
+
     if (!criteria.isActive) {
       // Filters cleared — restore full listing set immediately.
       _cachedProFilteredIds = null;
@@ -240,6 +265,18 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         (state as MarketplaceLoaded)
             .copyWith(proFilterActive: true, proFilterCriteria: criteria),
       );
+    }
+
+    final needsLoanRpc = criteria.moduleFilter == MarketplaceModule.loan &&
+        (criteria.employmentTypes.isNotEmpty ||
+            criteria.incomeBrackets.isNotEmpty ||
+            criteria.suggestedTermsOnly ||
+            criteria.institutionMatchOnly ||
+            criteria.verifiedOnly);
+    if (!needsLoanRpc) {
+      _cachedProFilteredIds = null;
+      _emitLoaded();
+      return;
     }
 
     try {
@@ -269,9 +306,19 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   /// Clear all Pro filters and restore the full listing set.
-  void clearProFilters() {
+  Future<void> clearProFilters() async {
     _proFilter = const ProFilterCriteria();
     _cachedProFilteredIds = null;
+    if (_moduleFilter != null) {
+      _moduleFilter = null;
+      try {
+        _allListings = await _repository.getListings(
+          district: _districtFilter,
+          module: null,
+          country: _countryFilter,
+        );
+      } catch (_) {}
+    }
     _emitLoaded();
   }
 
@@ -303,6 +350,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
           final expiresAt = _expiresAt(listing);
           return expiresAt == null || expiresAt.isAfter(now);
         })
+        .where(_matchesProCriteria)
         .where((listing) => !_myOfferRequestIds.contains(_offerKey(listing)))
         .toList();
     final rankedListings = _rankPersonalized(visibleListings);
@@ -317,6 +365,78 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       proFilterActive: false,
       interestCategorySlugs: _interestCategorySlugs,
     ));
+  }
+
+  bool _matchesProCriteria(MarketplaceItem item) {
+    final criteria = _proFilter;
+    if (criteria.moduleFilter != null && item.module != criteria.moduleFilter) {
+      return false;
+    }
+    if (criteria.moduleFilter == MarketplaceModule.loan &&
+        item.module == MarketplaceModule.loan &&
+        _cachedProFilteredIds != null &&
+        !_cachedProFilteredIds!.contains(item.requestId)) {
+      return false;
+    }
+    final amount = item.loan?.requestedAmount ??
+        item.forex?.amount ??
+        item.needs?.budget ??
+        0;
+    if (criteria.amountBands.isNotEmpty &&
+        !criteria.amountBands.any((band) => switch (band) {
+              'under_100k' => amount < 100000,
+              '100k_500k' => amount >= 100000 && amount < 500000,
+              '500k_1m' => amount >= 500000 && amount < 1000000,
+              'over_1m' => amount >= 1000000,
+              _ => true,
+            })) {
+      return false;
+    }
+    final location = item.loan?.district ??
+        item.forex?.district ??
+        item.needs?.location ??
+        '';
+    if (criteria.location.isNotEmpty &&
+        location.toLowerCase() != criteria.location.toLowerCase()) {
+      return false;
+    }
+    final verified = item.loan?.trustIsVerified ??
+        item.forex?.trustIsVerified ??
+        item.needs?.trustIsVerified ??
+        false;
+    if (criteria.verifiedOnly && !verified) return false;
+    if (criteria.moduleFilter == MarketplaceModule.forex &&
+        item.module == MarketplaceModule.forex) {
+      final favoriteCurrencies = criteria.favoriteCurrencies
+          .map((currency) => currency.toUpperCase())
+          .toSet();
+      if (!favoriteCurrencies.contains(item.forex!.currencyHeld) &&
+          !favoriteCurrencies.contains(item.forex!.currencyNeeded)) {
+        return false;
+      }
+    }
+    if (criteria.moduleFilter == MarketplaceModule.needs &&
+        item.module == MarketplaceModule.needs) {
+      final need = item.needs!;
+      if (criteria.needType.isNotEmpty &&
+          need.categorySlug.toLowerCase() != criteria.needType.toLowerCase()) {
+        return false;
+      }
+      if (criteria.urgency.isNotEmpty &&
+          need.urgency.toLowerCase() != criteria.urgency.toLowerCase()) {
+        return false;
+      }
+      if (criteria.hasClearBudget && need.budget <= 0) return false;
+      if (criteria.amongFirst && need.numberOfOffers != 0) return false;
+      if (criteria.matchesMyCategories &&
+          !_interestCategorySlugs.contains(need.categorySlug) &&
+          !criteria.myNeedCategorySlugs.contains(need.categorySlug) &&
+          (need.capabilitySlug == null ||
+              !criteria.myRoleCapabilitySlugs.contains(need.capabilitySlug))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   DateTime? _expiresAt(MarketplaceItem item) =>

@@ -666,10 +666,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get justNow => 'just now';
 
   @override
-  String get statListings => 'Listings';
+  String get statListings => 'Requests';
 
   @override
-  String get statListingsSubtitle => 'Posted requests';
+  String get statListingsSubtitle => 'Active Loans and Needs';
 
   @override
   String get statOffers => 'Offers';

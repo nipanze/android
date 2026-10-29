@@ -668,10 +668,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get justNow => 'الآن';
 
   @override
-  String get statListings => 'الإعلانات';
+  String get statListings => 'الطلبات';
 
   @override
-  String get statListingsSubtitle => 'الطلبات المنشورة';
+  String get statListingsSubtitle => 'طلبات القروض والاحتياجات النشطة';
 
   @override
   String get statOffers => 'العروض';

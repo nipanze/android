@@ -6,26 +6,60 @@ part of 'marketplace_cubit.dart';
 /// "no Pro filter active", which the cubit uses to skip the RPC call entirely.
 class ProFilterCriteria extends Equatable {
   const ProFilterCriteria({
+    this.moduleFilter,
     this.employmentTypes = const [],
     this.incomeBrackets = const [],
     this.suggestedTermsOnly = false,
     this.verifiedOnly = false,
     this.institutionMatchOnly = false,
+    this.amountBands = const [],
+    this.location = '',
+    this.favoriteCurrencies = const [],
+    this.needType = '',
+    this.urgency = '',
+    this.hasClearBudget = false,
+    this.amongFirst = false,
+    this.matchesMyCategories = false,
+    this.myNeedCategorySlugs = const [],
+    this.myRoleCapabilitySlugs = const [],
   });
 
+  final MarketplaceModule? moduleFilter;
   final List<String> employmentTypes;
   final List<String> incomeBrackets;
   final bool suggestedTermsOnly;
   final bool verifiedOnly;
   final bool institutionMatchOnly;
+  final List<String> amountBands;
+  final String location;
+  final List<String> favoriteCurrencies;
+  final String needType;
+  final String urgency;
+  final bool hasClearBudget;
+  final bool amongFirst;
+  final bool matchesMyCategories;
+  final List<String> myNeedCategorySlugs;
+  final List<String> myRoleCapabilitySlugs;
 
   /// True when at least one filter is actually active.
-  bool get isActive =>
-      employmentTypes.isNotEmpty ||
-      incomeBrackets.isNotEmpty ||
-      suggestedTermsOnly ||
-      verifiedOnly ||
-      institutionMatchOnly;
+  bool get isActive {
+    final shared =
+        verifiedOnly || amountBands.isNotEmpty || location.isNotEmpty;
+    final typeSpecific = switch (moduleFilter) {
+      MarketplaceModule.loan => employmentTypes.isNotEmpty ||
+          incomeBrackets.isNotEmpty ||
+          suggestedTermsOnly ||
+          institutionMatchOnly,
+      MarketplaceModule.forex => favoriteCurrencies.isNotEmpty,
+      MarketplaceModule.needs => needType.isNotEmpty ||
+          urgency.isNotEmpty ||
+          hasClearBudget ||
+          amongFirst ||
+          matchesMyCategories,
+      null => false,
+    };
+    return shared || typeSpecific || moduleFilter != null;
+  }
 
   ProFilterCriteria copyWith({
     List<String>? employmentTypes,
@@ -33,6 +67,17 @@ class ProFilterCriteria extends Equatable {
     bool? suggestedTermsOnly,
     bool? verifiedOnly,
     bool? institutionMatchOnly,
+    MarketplaceModule? moduleFilter,
+    List<String>? amountBands,
+    String? location,
+    List<String>? favoriteCurrencies,
+    String? needType,
+    String? urgency,
+    bool? hasClearBudget,
+    bool? amongFirst,
+    bool? matchesMyCategories,
+    List<String>? myNeedCategorySlugs,
+    List<String>? myRoleCapabilitySlugs,
   }) {
     return ProFilterCriteria(
       employmentTypes: employmentTypes ?? this.employmentTypes,
@@ -40,6 +85,18 @@ class ProFilterCriteria extends Equatable {
       suggestedTermsOnly: suggestedTermsOnly ?? this.suggestedTermsOnly,
       verifiedOnly: verifiedOnly ?? this.verifiedOnly,
       institutionMatchOnly: institutionMatchOnly ?? this.institutionMatchOnly,
+      moduleFilter: moduleFilter ?? this.moduleFilter,
+      amountBands: amountBands ?? this.amountBands,
+      location: location ?? this.location,
+      favoriteCurrencies: favoriteCurrencies ?? this.favoriteCurrencies,
+      needType: needType ?? this.needType,
+      urgency: urgency ?? this.urgency,
+      hasClearBudget: hasClearBudget ?? this.hasClearBudget,
+      amongFirst: amongFirst ?? this.amongFirst,
+      matchesMyCategories: matchesMyCategories ?? this.matchesMyCategories,
+      myNeedCategorySlugs: myNeedCategorySlugs ?? this.myNeedCategorySlugs,
+      myRoleCapabilitySlugs:
+          myRoleCapabilitySlugs ?? this.myRoleCapabilitySlugs,
     );
   }
 
@@ -53,6 +110,17 @@ class ProFilterCriteria extends Equatable {
         suggestedTermsOnly,
         verifiedOnly,
         institutionMatchOnly,
+        moduleFilter,
+        amountBands,
+        location,
+        favoriteCurrencies,
+        needType,
+        urgency,
+        hasClearBudget,
+        amongFirst,
+        matchesMyCategories,
+        myNeedCategorySlugs,
+        myRoleCapabilitySlugs,
       ];
 }
 

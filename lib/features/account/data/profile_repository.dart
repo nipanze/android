@@ -39,6 +39,12 @@ class ProfileRepository {
         return null;
       });
 
+      final activeRequestsFuture =
+          _client.rpc('get_my_active_request_count').catchError((Object error) {
+        OfflineService().reportRequestFailure(error);
+        return null;
+      });
+
       // Use SELECT * so the query never fails on missing columns — new fields
       // added in later patches (e.g. preferred_employment_types from v4.5)
       // will be null-coalesced below when not present.
@@ -77,12 +83,14 @@ class ProfileRepository {
         profileFuture,
         trustFuture,
         proTrustFuture,
+        activeRequestsFuture,
       ]);
 
       final activity = results[0];
       final profile = results[1];
       final trust = results[2];
       final proTrust = results[3];
+      final activeRequests = results[4] as num?;
 
       if (activity == null && profile == null) {
         final cachedProfile = _cachedProfiles[_uid];
@@ -155,7 +163,10 @@ class ProfileRepository {
         trustSuccessRate: (proTrust?['success_rate'] as num?)?.toDouble(),
         trustReliabilityScore:
             (proTrust?['reliability_score'] as num?)?.toInt(),
-        activeListings: (activity?['active_listings'] as int?) ?? 0,
+        activeListings: activeRequests?.toInt() ??
+            (activity?['active_requests'] as int?) ??
+            (activity?['active_listings'] as int?) ??
+            0,
         activeOffers: (activity?['active_offers'] as int?) ?? 0,
         revealedContacts: (activity?['revealed_contacts'] as int?) ?? 0,
         freeUnlocksRemaining: (profile?['free_unlocks_remaining'] as int?) ?? 1,
