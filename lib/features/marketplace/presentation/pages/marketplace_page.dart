@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
@@ -23,6 +24,7 @@ import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
+import '../../../provider/domain/entities/provider_capability.dart';
 import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
@@ -241,6 +243,7 @@ class _MarketplaceView extends StatelessWidget {
             _ModuleFilterRow(
               onProFilterTap: () => _onProFilterTap(context),
             ),
+            _ForYouPreferencesRow(key: _ForYouPreferencesRow.editKey),
             // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
@@ -281,6 +284,41 @@ class _MarketplaceView extends StatelessWidget {
                           discoveryCubit.state is! DiscoveryLoading &&
                               !hasActiveDiscoveryCard;
 
+                      if (state.moduleFilter == MarketplaceModule.loan &&
+                          !context.read<MarketplaceCubit>().isLendingEnabled) {
+                        return ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              Card(
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Icon(
+                                                Icons.lock_outline_rounded,
+                                                color: AppColors.accent),
+                                            const SizedBox(height: 10),
+                                            const Text(
+                                                'Loan requests are for lenders',
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight:
+                                                        FontWeight.w700)),
+                                            const SizedBox(height: 6),
+                                            const Text(
+                                                'Turn on I lend to see loan requests in your feed.'),
+                                            const SizedBox(height: 12),
+                                            FilledButton(
+                                                onPressed: () =>
+                                                    _enableLending(context),
+                                                child: const Text(
+                                                    'Turn on I lend')),
+                                          ]))),
+                            ]);
+                      }
+
                       // Subtle loading overlay while Pro filter RPC is in flight.
                       if (state.proFilterActive) {
                         return Center(
@@ -316,6 +354,26 @@ class _MarketplaceView extends StatelessWidget {
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
+                              if (state.moduleFilter == null &&
+                                  context
+                                      .read<MarketplaceCubit>()
+                                      .forYouInterests
+                                      .isEmpty)
+                                Card(
+                                  child: ListTile(
+                                    leading:
+                                        const Icon(Icons.interests_outlined),
+                                    title: const Text('Pick interests'),
+                                    subtitle: const Text(
+                                        'Choose topics to personalize For You.'),
+                                    trailing: TextButton(
+                                      onPressed: () => _ForYouPreferencesRow
+                                          .editKey.currentState
+                                          ?._edit(),
+                                      child: const Text('Choose'),
+                                    ),
+                                  ),
+                                ),
                               if (state.moduleFilter == null) ...[
                                 DiscoveryCard(
                                   country: country,
@@ -419,57 +477,80 @@ class _MarketplaceView extends StatelessWidget {
                                   listing.requestId,
                                   module: listing.module,
                                 );
-                                return ListingCard(
-                                  listing: listing,
-                                  onTap: () => context.push(
-                                    listing.forex == null
-                                        ? listing.needs == null
-                                            ? '/marketplace/${listing.requestId}'
-                                            : '/marketplace/needs/${listing.requestId}'
-                                        : '/forex/${listing.requestId}',
-                                  ),
-                                  isSaved: isSaved,
-                                  onWatchlistToggle: () {
-                                    if (isSaved) {
-                                      unawaited(() async {
-                                        final removed =
-                                            await watchlist.remove(listing);
-                                        if (removed ==
-                                                WatchlistActionResult.failure &&
-                                            context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                            ..clearSnackBars()
-                                            ..showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .watchlistError,
-                                                ),
-                                              ),
-                                            );
+                                final reason = context
+                                    .read<MarketplaceCubit>()
+                                    .forYouReason(listing);
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    ListingCard(
+                                      listing: listing,
+                                      onTap: () => context.push(
+                                        listing.forex == null
+                                            ? listing.needs == null
+                                                ? '/marketplace/${listing.requestId}'
+                                                : '/marketplace/needs/${listing.requestId}'
+                                            : '/forex/${listing.requestId}',
+                                      ),
+                                      isSaved: isSaved,
+                                      onWatchlistToggle: () {
+                                        if (isSaved) {
+                                          unawaited(() async {
+                                            final removed =
+                                                await watchlist.remove(listing);
+                                            if (removed ==
+                                                    WatchlistActionResult
+                                                        .failure &&
+                                                context.mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                ..clearSnackBars()
+                                                ..showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .watchlistError,
+                                                    ),
+                                                  ),
+                                                );
+                                            }
+                                          }());
+                                        } else {
+                                          unawaited(() async {
+                                            final added =
+                                                await watchlist.add(listing);
+                                            if (added ==
+                                                    WatchlistActionResult
+                                                        .failure &&
+                                                context.mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                ..clearSnackBars()
+                                                ..showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .watchlistError,
+                                                    ),
+                                                  ),
+                                                );
+                                            }
+                                          }());
                                         }
-                                      }());
-                                    } else {
-                                      unawaited(() async {
-                                        final added =
-                                            await watchlist.add(listing);
-                                        if (added ==
-                                                WatchlistActionResult.failure &&
-                                            context.mounted) {
-                                          ScaffoldMessenger.of(context)
-                                            ..clearSnackBars()
-                                            ..showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  AppLocalizations.of(context)!
-                                                      .watchlistError,
-                                                ),
-                                              ),
-                                            );
-                                        }
-                                      }());
-                                    }
-                                  },
+                                      },
+                                    ),
+                                    if (isForYou && reason != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 4, left: 10),
+                                        child: Text(reason,
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.accent,
+                                                fontWeight: FontWeight.w600)),
+                                      )
+                                  ],
                                 );
                               },
                             );
@@ -488,6 +569,224 @@ class _MarketplaceView extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _enableLending(BuildContext context) async {
+  final cubit = context.read<MarketplaceCubit>();
+  await (await SharedPreferences.getInstance())
+      .setBool('marketplace_i_lend', true);
+  cubit.setForYouPreferences(
+    interestSlugs: cubit.forYouInterests,
+    providerSlugs: cubit.providerCategories,
+    iLend: true,
+  );
+}
+
+class _ForYouPreferencesRow extends StatefulWidget {
+  const _ForYouPreferencesRow({super.key});
+
+  static final editKey = GlobalKey<_ForYouPreferencesRowState>();
+
+  @override
+  State<_ForYouPreferencesRow> createState() => _ForYouPreferencesRowState();
+}
+
+class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
+  static const _choices = <String, String>{
+    'machinery_equipment': 'Equipment',
+    'transport_logistics': 'Logistics',
+    'professional_services': 'Services',
+    'specialized_products': 'Procurement',
+    'energy_utilities': 'Solar',
+    'agriculture_agribusiness': 'Farming',
+    'education_training': 'Education',
+    'forex': 'Forex',
+  };
+  Set<String> _interests = {};
+  Set<String> _offers = {};
+  bool _lends = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    try {
+      final discovery = getIt<DiscoveryRepository>();
+      final values = await Future.wait([
+        discovery.getSavedInterestCategories(),
+        getIt<IProviderRepository>().getProviderCapabilities(),
+        SharedPreferences.getInstance(),
+      ]);
+      final prefs = values[2] as SharedPreferences;
+      if (!mounted) return;
+      setState(() {
+        _interests =
+            (values[0] as Set<String>).intersection(_choices.keys.toSet());
+        _offers = (values[1] as List<ProviderCapability>)
+            .where((capability) => capability.isActive)
+            .map((capability) =>
+                capability.categorySlug ?? capability.capabilitySlug)
+            .toSet();
+        _lends = prefs.getBool('marketplace_i_lend') ?? true;
+      });
+      _syncCubit();
+    } catch (_) {
+      // Keep the feed usable if preferences are unavailable offline.
+    }
+  }
+
+  void _syncCubit() => context.read<MarketplaceCubit>().setForYouPreferences(
+        interestSlugs: _interests,
+        providerSlugs: _offers,
+        iLend: _lends,
+      );
+
+  Future<void> _edit() async {
+    final selected = Set<String>.from(_interests);
+    var lends = _lends;
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) =>
+          StatefulBuilder(builder: (context, setSheetState) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Personalize For You',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 18),
+                  const Text('I’m interested in',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: _choices.entries
+                          .map((entry) => FilterChip(
+                                label: Text(entry.value),
+                                selected: selected.contains(entry.key),
+                                onSelected: (value) => setSheetState(() => value
+                                    ? selected.add(entry.key)
+                                    : selected.remove(entry.key)),
+                              ))
+                          .toList()),
+                  const SizedBox(height: 18),
+                  const Text('I can offer',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 4),
+                  const Text(
+                      'From Provider Services. Services are set per category.'),
+                  const SizedBox(height: 7),
+                  Wrap(
+                      spacing: 6,
+                      children: _offers
+                          .map((slug) => Chip(
+                              label: Text(
+                                  _choices[slug] ?? slug.replaceAll('_', ' '))))
+                          .toList()),
+                  SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('I lend'),
+                      value: lends,
+                      onChanged: (value) => setSheetState(() => lends = value)),
+                  SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                          onPressed: () => Navigator.pop(sheetContext, true),
+                          child: const Text('Save'))),
+                ]),
+          ),
+        );
+      }),
+    );
+    if (result != true || !mounted) return;
+    try {
+      final repository = getIt<DiscoveryRepository>();
+      final previous = (await repository.getSavedInterestCategories())
+          .intersection(_choices.keys.toSet());
+      await repository.removeInterestCategories(previous.difference(selected));
+      await repository.saveInterestCategories(selected.difference(previous));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('marketplace_i_lend', lends);
+      if (!mounted) return;
+      setState(() {
+        _interests = selected;
+        _lends = lends;
+      });
+      _syncCubit();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not save preferences: $error')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocBuilder<MarketplaceCubit, MarketplaceState>(
+        builder: (context, state) {
+          if (state is MarketplaceLoaded && state.moduleFilter != null) {
+            return const SizedBox.shrink();
+          }
+          final labels = [
+            ..._offers.map((slug) =>
+                'Offer: ${_choices[slug] ?? slug.replaceAll('_', ' ')}'),
+            ..._interests
+                .map((slug) => _choices[slug] ?? slug.replaceAll('_', ' ')),
+            if (_lends) 'I lend',
+          ];
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 14, 8),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Text('For you:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const SizedBox(width: 6),
+                Expanded(
+                    child: labels.isEmpty
+                        ? const Text('General feed',
+                            style: TextStyle(fontSize: 12, color: Colors.grey))
+                        : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                                children: labels
+                                    .map((label) => Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 5),
+                                          child: Chip(
+                                              label: Text(label,
+                                                  style: const TextStyle(
+                                                      fontSize: 10)),
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              padding: EdgeInsets.zero),
+                                        ))
+                                    .toList()))),
+                TextButton(onPressed: _edit, child: const Text('Edit')),
+              ]),
+              if (state is MarketplaceLoaded && state.moduleFilter == null)
+                const Padding(
+                    padding: EdgeInsets.only(top: 2),
+                    child: Text(
+                        'Personalization ranks matching posts. Who can see a post is decided separately; audience access is enforced on the server. Build notes: saved account interests, Provider Services categories, and I lend preference power this feed.',
+                        style: TextStyle(fontSize: 10, color: Colors.grey))),
+            ]),
+          );
+        },
+      );
 }
 
 enum _DiscoveryPromptKind { addServices, newCategories, opportunities }
@@ -657,8 +956,7 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
             .take(3)
             .map((category) => category.localizedName(localeCode))
             .toList();
-        final newCategorySummary =
-            '${localizedPromptCategories.join(', ')}'
+        final newCategorySummary = '${localizedPromptCategories.join(', ')}'
             '${prompt.categories.length > 3 ? '…' : ''}';
         final title = switch (prompt.kind) {
           _DiscoveryPromptKind.addServices => l10n.whatCanYouHelpWith,

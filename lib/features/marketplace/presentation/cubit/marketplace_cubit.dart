@@ -72,6 +72,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   String? _countryFilter;
   Set<String> _interestCategorySlugs = {};
   Set<String> _personalizationCategorySlugs = {};
+  Set<String> _forYouInterestSlugs = {};
+  Set<String> _providerCategorySlugs = {};
+  bool _iLend = true;
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
@@ -337,14 +340,63 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     if (state is MarketplaceLoaded) _emitLoaded();
   }
 
+  void setForYouPreferences({
+    required Set<String> interestSlugs,
+    required Set<String> providerSlugs,
+    required bool iLend,
+  }) {
+    _forYouInterestSlugs = {...interestSlugs};
+    _providerCategorySlugs = {...providerSlugs};
+    _iLend = iLend;
+    if (state is MarketplaceLoaded) _emitLoaded();
+  }
+
+  String? forYouReason(MarketplaceItem item) {
+    if (item.loan != null) {
+      return _iLend ? 'You lend' : null;
+    }
+    if (item.needs == null) {
+      return _forYouInterestSlugs.contains('forex')
+          ? 'Interested in Forex'
+          : null;
+    }
+    final slug = item.needs!.categorySlug;
+    if (_providerCategorySlugs.contains(slug)) {
+      return 'You offer ${item.needs!.category}';
+    }
+    if (_forYouInterestSlugs.contains(slug)) {
+      return 'Interested in ${_interestName(slug)}';
+    }
+    return null;
+  }
+
+  bool get isLendingEnabled => _iLend;
+  Set<String> get forYouInterests => Set.unmodifiable(_forYouInterestSlugs);
+  Set<String> get providerCategories =>
+      Set.unmodifiable(_providerCategorySlugs);
+
+  String _interestName(String slug) => switch (slug) {
+        'machinery_equipment' => 'Equipment',
+        'transport_logistics' => 'Logistics',
+        'professional_services' => 'Services',
+        'specialized_products' => 'Procurement',
+        'energy_utilities' => 'Solar',
+        'agriculture_agribusiness' => 'Farming',
+        'education_training' => 'Education',
+        'forex' => 'Forex',
+        _ => slug.replaceAll('_', ' '),
+      };
+
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _emitLoaded({List<MarketplaceItem>? overrideListings}) {
     _scheduleExpiryCheck();
     final now = DateTime.now();
-    final interestFiltered = _applyInterestFilter(
-      overrideListings ?? _allListings,
-    );
+    var interestFiltered =
+        _applyInterestFilter(overrideListings ?? _allListings);
+    if (_moduleFilter == null && (_forYouInterestSlugs.isNotEmpty || !_iLend)) {
+      interestFiltered = interestFiltered.where(_matchesForYou).toList();
+    }
     final visibleListings = interestFiltered
         .where((listing) {
           final expiresAt = _expiresAt(listing);
@@ -365,6 +417,19 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       proFilterActive: false,
       interestCategorySlugs: _interestCategorySlugs,
     ));
+  }
+
+  bool _matchesForYou(MarketplaceItem item) {
+    if (item.module == MarketplaceModule.loan) return _iLend;
+    if (_forYouInterestSlugs.isEmpty) {
+      return true;
+    }
+    if (item.module == MarketplaceModule.forex) {
+      return _forYouInterestSlugs.contains('forex');
+    }
+    final slug = item.needs!.categorySlug;
+    return _forYouInterestSlugs.contains(slug) ||
+        _providerCategorySlugs.contains(slug);
   }
 
   bool _matchesProCriteria(MarketplaceItem item) {
