@@ -113,7 +113,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Borrow. Lend. Grow.'**
+  /// **'Need. Connect. Grow.'**
   String get welcomeTitle;
 
   /// No description provided for @welcomeTagline.

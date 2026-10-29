@@ -477,7 +477,6 @@ class _ForexRequestCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              const SizedBox(height: 9),
               Container(
                 width: double.infinity,
                 padding:
@@ -493,69 +492,59 @@ class _ForexRequestCard extends StatelessWidget {
                         : AppColors.borderLight,
                   ),
                 ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final available = constraints.maxWidth;
-                    final leftWidth = available * 0.48;
-                    final rightWidth = available - leftWidth - 52;
-
-                    return Row(
-                      children: [
-                        SizedBox(
-                          width: leftWidth,
-                          child: Flexible(
-                            child: Text(
-                              heldAmount,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: theme.colorScheme.onSurface,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                                height: 1.05,
-                              ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: Text(
+                        heldAmount,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          height: 1.05,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 16,
+                      color: accent,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Projected Money',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: mutedColor,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 16,
-                          color: accent,
-                        ),
-                        const SizedBox(width: 6),
-                        SizedBox(
-                          width: rightWidth.clamp(70.0, double.infinity),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Projected Money',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: mutedColor,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                projectedAmount,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: theme.colorScheme.onSurface,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.05,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 2),
+                          Text(
+                            projectedAmount,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              height: 1.05,
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),

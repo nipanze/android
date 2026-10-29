@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Nipanze';
 
   @override
-  String get welcomeTitle => 'Borrow. Lend. Grow.';
+  String get welcomeTitle => 'Need. Connect. Grow.';
 
   @override
   String get welcomeTagline => 'Checkout local listings';

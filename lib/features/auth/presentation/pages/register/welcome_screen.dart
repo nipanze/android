@@ -111,25 +111,11 @@ class WelcomeScreen extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ShaderMask(
-                      shaderCallback: (rect) => const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.white,
-                          Colors.white,
-                          Colors.transparent,
-                        ],
-                        stops: [0.0, 0.25, 0.75, 1.0],
-                      ).createShader(rect),
-                      blendMode: BlendMode.dstIn,
-                      child: Image.asset(
-                        isDark
-                            ? 'assets/images/hero_illustration_dark.png'
-                            : 'assets/images/hero_illustration_light.png',
-                        fit: BoxFit.contain,
-                      ),
+                    child: Image.asset(
+                      isDark
+                          ? 'assets/images/hero_illustration_dark.png'
+                          : 'assets/images/hero_illustration_light.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
