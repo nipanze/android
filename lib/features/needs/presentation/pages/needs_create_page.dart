@@ -18,12 +18,17 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../../settings/data/system_settings_repository.dart';
+import '../../data/need_draft_exit_guard.dart';
+import '../../data/need_draft_store.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
 import '../../domain/models/need_form_schema.dart';
 
 class NeedsCreatePage extends StatefulWidget {
-  const NeedsCreatePage({super.key});
+  const NeedsCreatePage({super.key, this.initialCategorySlug, this.draftId});
+
+  final String? initialCategorySlug;
+  final String? draftId;
 
   @override
   State<NeedsCreatePage> createState() => _NeedsCreatePageState();
@@ -43,9 +48,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String? _recentRequestsLoadError;
 
   String _categorySlug = 'machinery_equipment';
+  String _categoryAtOpen = 'machinery_equipment';
   String _urgency = 'Within 30 days';
   String? _location;
+  bool _locationTouched = false;
   bool _submitting = false;
+  bool _savingDraft = false;
+  bool _allowExit = false;
+  String? _draftId;
   PlatformLimits _limits = PlatformLimits.defaults;
 
   static const _urgencies = [
@@ -58,14 +68,63 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   @override
   void initState() {
     super.initState();
+    _draftId = widget.draftId;
+    if (NeedCategory.defaultCategories
+        .any((category) => category.slug == widget.initialCategorySlug)) {
+      _categorySlug = widget.initialCategorySlug!;
+    }
+    _categoryAtOpen = _categorySlug;
     _titleController.addListener(_refresh);
     _specificationController.addListener(_refresh);
     _budgetController.addListener(_refresh);
     _customLocationController.addListener(_refresh);
     _initCategoryControllers();
+    NeedDraftExitGuard.register(
+      this,
+      hasChanges: () => _hasDraftContent,
+      saveDraft: _saveDraft,
+    );
+    if (widget.draftId != null) _loadDraft();
     _loadCategories();
     _loadLimits();
     _loadRecentRequests();
+  }
+
+  Future<void> _loadDraft() async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated || widget.draftId == null) return;
+    final draft = await NeedDraftStore.find(authState.user.id, widget.draftId!);
+    if (!mounted || draft == null) return;
+    setState(() {
+      final slug = draft['category_slug']?.toString();
+      if (slug != null &&
+          NeedCategory.defaultCategories
+              .any((category) => category.slug == slug)) {
+        _categorySlug = slug;
+        _initCategoryControllers();
+      }
+      _titleController.text = draft['title']?.toString() ?? '';
+      _specificationController.text = draft['specification']?.toString() ?? '';
+      _budgetController.text = draft['budget']?.toString() ?? '';
+      _location = draft['location']?.toString();
+      _customLocationController.text =
+          draft['custom_location']?.toString() ?? '';
+      final urgency = draft['urgency']?.toString();
+      if (urgency != null && _urgencies.contains(urgency)) _urgency = urgency;
+      final details = draft['details'];
+      if (details is Map) {
+        for (final entry in details.entries) {
+          final field = _fieldByKey(entry.key.toString());
+          if (field == null) continue;
+          if (field.type == NeedFieldType.boolean) {
+            _dynamicBooleans[field.key] =
+                entry.value == true || entry.value.toString() == 'true';
+          } else {
+            _dynamicControllers[field.key]?.text = entry.value.toString();
+          }
+        }
+      }
+    });
   }
 
   Future<void> _loadRecentRequests() async {
@@ -122,6 +181,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   @override
   void dispose() {
+    NeedDraftExitGuard.unregister(this);
     _titleController.dispose();
     _specificationController.dispose();
     _budgetController.dispose();
@@ -130,6 +190,32 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  bool get _hasDraftContent =>
+      _draftId != null ||
+      _categorySlug != _categoryAtOpen ||
+      _titleController.text.trim().isNotEmpty ||
+      _specificationController.text.trim().isNotEmpty ||
+      _budgetController.text.trim().isNotEmpty ||
+      _customLocationController.text.trim().isNotEmpty ||
+      _locationTouched ||
+      _urgency != 'Within 30 days' ||
+      _dynamicControllers.values
+          .any((controller) => controller.text.trim().isNotEmpty) ||
+      _dynamicBooleans.values.any((value) => value);
+
+  Future<void> _confirmAndPop() async {
+    if (!await NeedDraftExitGuard.confirmExit(context) || !mounted) return;
+    setState(() => _allowExit = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(AppRoutes.needsCreate);
+      }
+    });
   }
 
   void _refresh() {
@@ -909,6 +995,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         urgency: _urgency,
         country: country.code,
       );
+      if (_draftId != null) {
+        try {
+          await NeedDraftStore.delete(authState.user.id, _draftId!);
+        } catch (_) {
+          // Publishing succeeded; a local cleanup issue must not hide it.
+        }
+      }
       if (!mounted) return;
       setState(() => _submitting = false);
       final dialogResult = await showDialog<bool>(
@@ -939,6 +1032,45 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+    }
+  }
+
+  Future<bool> _saveDraft() async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return false;
+    if (!_hasDraftContent) return false;
+    setState(() => _savingDraft = true);
+    try {
+      final saved = await NeedDraftStore.save(
+        authState.user.id,
+        {
+          'title': _titleController.text.trim(),
+          'specification': _specificationController.text.trim(),
+          'category_slug': _categorySlug,
+          'details': _collectDetails(),
+          'budget': _budgetController.text.trim(),
+          'location': _location,
+          'custom_location': _customLocationController.text.trim(),
+          'urgency': _urgency,
+        },
+        id: _draftId,
+      );
+      if (!mounted) return false;
+      setState(() {
+        _draftId = saved['draft_id']?.toString();
+        _savingDraft = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft saved on this device.')),
+      );
+      return true;
+    } catch (error) {
+      if (!mounted) return false;
+      setState(() => _savingDraft = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save draft: $error')),
+      );
+      return false;
     }
   }
 
@@ -985,431 +1117,459 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         selectedCategory.descriptionForCountry(countryCode)?.trim();
     final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : context.go(AppRoutes.marketplace),
+    return PopScope<Object?>(
+      canPop: !_hasDraftContent || _allowExit,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmAndPop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            onPressed: _confirmAndPop,
+          ),
+          title: Text(l10n.createNeedsRequestTitle),
         ),
-        title: Text(l10n.createNeedsRequestTitle),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(18),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_recentRequestsLoadError != null) ...[
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(18),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_recentRequestsLoadError != null) ...[
+                    Text(
+                      'Previous Need suggestions unavailable: '
+                      '$_recentRequestsLoadError',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Text(
-                    'Previous Need suggestions unavailable: '
-                    '$_recentRequestsLoadError',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                Text(
-                  'Choose Need Category',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('category-$_categorySlug'),
-                  initialValue: _categorySlug,
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      l10n.needsCategoryLabel,
-                      categoryDescription != null &&
-                              categoryDescription.isNotEmpty
-                          ? categoryDescription
-                          : guidance.specificationHelper,
-                    ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: _categories
-                      .map(
-                        (cat) => DropdownMenuItem(
-                          value: cat.slug,
-                          child: Row(
-                            children: [
-                              Text(cat.icon,
-                                  style: const TextStyle(fontSize: 16)),
-                              const SizedBox(width: 8),
-                              Text(_categoryLocalizedName(l10n, cat.slug)),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) _selectCategory(value);
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _titleController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      l10n.needsTitleLabel,
-                      guidance.titleHint,
-                    ),
-                    hintText: guidance.titleHint,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return l10n.validationTitleRequired;
-                    if (text.length < 4) return l10n.validationTitleMinLength;
-                    return null;
-                  },
-                ),
-                FormSuggestionStrip(
-                  label: 'Recent',
-                  suggestions: _recentValues((request) => request.title),
-                  onSelected: (value) =>
-                      setState(() => _titleController.text = value),
-                ),
-                const SizedBox(height: 8),
-                _buildStarterPresets(),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _specificationController,
-                  minLines: 3,
-                  maxLines: 6,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      _categorySlug == 'education_training'
-                          ? 'Course / Subject / Skill'
-                          : l10n.needsSpecificationLabel,
-                      guidance.specificationHelper,
-                    ),
-                    hintText: guidance.specificationHint,
-                    helperText: guidance.specificationHelper,
-                    alignLabelWithHint: true,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) {
-                      return l10n.needsSpecificationRequired;
-                    }
-                    if (text.length < 12) {
-                      return l10n.needsSpecificationMinLength;
-                    }
-                    return null;
-                  },
-                ),
-                FormSuggestionStrip(
-                  label: 'Previous text',
-                  suggestions:
-                      _recentValues((request) => request.specification),
-                  onSelected: (value) =>
-                      setState(() => _specificationController.text = value),
-                ),
-                if (dynamicFields.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  Text(
-                    'Category Specifics',
+                    'Choose Need Category',
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: theme.colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  for (final field in dynamicFields) ...[
-                    if (_isTransportLocationPairStart(dynamicFields, field))
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _buildTextInputWithHelpers(field),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTextInputWithHelpers(
-                              dynamicFields[dynamicFields.indexOf(field) + 1],
-                            ),
-                          ),
-                        ],
-                      )
-                    else if (_isTransportLocationPairEnd(dynamicFields, field))
-                      const SizedBox.shrink()
-                    else if (field.type == NeedFieldType.boolean)
-                      SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(field.label),
-                        subtitle: field.helperText == null
-                            ? null
-                            : Text(field.helperText!),
-                        value: _dynamicBooleans[field.key] ?? false,
-                        onChanged: (val) {
-                          setState(() {
-                            _dynamicBooleans[field.key] = val;
-                          });
-                        },
-                      )
-                    else if (field.options != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildOptionPills(field),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              key: ValueKey(
-                                '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
-                              ),
-                              initialValue: _dynamicControllers[field.key]
-                                          ?.text
-                                          .isEmpty ??
-                                      true
-                                  ? null
-                                  : _dynamicControllers[field.key]?.text,
-                              decoration: InputDecoration(
-                                label: _fieldLabel(field.label, field.guidance),
-                                hintText: field.hint,
-                                helperText: field.helperText,
-                                border: const OutlineInputBorder(),
-                              ),
-                              items: _optionsForField(field)
-                                  .map(
-                                    (option) => DropdownMenuItem(
-                                      value: option,
-                                      child: Text(option),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                _dynamicControllers[field.key]?.text =
-                                    value ?? '';
-                              },
-                              validator: (value) {
-                                if (field.isRequired &&
-                                    (value == null || value.isEmpty)) {
-                                  return 'Please fill in this requirement';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      _buildTextInputWithHelpers(field),
-                  ],
-                ],
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _budgetController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      _categorySlug == 'education_training'
-                          ? 'Maximum Budget ($currency)'
-                          : l10n.needsBudgetLabel(currency),
-                      l10n.needsBudgetHelper,
-                    ),
-                    hintText: l10n.needsBudgetHint,
-                    helperText: l10n.needsBudgetHelper,
-                    suffixIcon: _buildBudgetStepperSuffix(),
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return l10n.validationAmountRequired;
-                    final amount = int.tryParse(text.replaceAll(',', ''));
-                    if (amount == null || amount < 0) {
-                      return l10n.validationValidNumber;
-                    }
-                    return null;
-                  },
-                ),
-                FormSuggestionStrip(
-                  label: 'Recent budget',
-                  suggestions: _recentValues(
-                    (request) =>
-                        request.currency == currency && request.budget > 0
-                            ? '$currency ${formatter.format(request.budget)}'
-                            : '',
-                  ),
-                  onSelected: (value) => setState(() {
-                    _budgetController.text =
-                        value.replaceAll(RegExp(r'[^0-9]'), '');
-                  }),
-                ),
-                const SizedBox(height: 4),
-                _buildBudgetShortcuts(currency),
-                const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('location-$selectedLocation'),
-                  initialValue: selectedLocation,
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      country.regionsLabel,
-                      'Choose the area where you need the service or delivery.',
-                    ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: country.regions
-                      .map(
-                        (region) => DropdownMenuItem(
-                          value: region,
-                          child: Text(region),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _location = value ?? country.regions.first;
-                      if (_location != 'Other') {
-                        _customLocationController.clear();
-                      }
-                    });
-                  },
-                  validator: (value) => value == null || value.isEmpty
-                      ? l10n.needsLocationRequired
-                      : null,
-                ),
-                FormSuggestionStrip(
-                  label: 'Recent',
-                  suggestions: _recentValuesAcrossCategories(
-                          (request) => request.location)
-                      .where(country.regions.contains)
-                      .toList(),
-                  onSelected: (value) => setState(() {
-                    _location = value;
-                    _customLocationController.clear();
-                  }),
-                ),
-                if (selectedLocation == 'Other') ...[
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _customLocationController,
-                    textCapitalization: TextCapitalization.words,
+                  DropdownButtonFormField<String>(
+                    key: ValueKey('category-$_categorySlug'),
+                    initialValue: _categorySlug,
                     decoration: InputDecoration(
                       label: _fieldLabel(
-                        l10n.needsCustomLocationLabel,
-                        l10n.needsCustomLocationHint,
+                        l10n.needsCategoryLabel,
+                        categoryDescription != null &&
+                                categoryDescription.isNotEmpty
+                            ? categoryDescription
+                            : guidance.specificationHelper,
                       ),
-                      hintText: l10n.needsCustomLocationHint,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: _categories
+                        .map(
+                          (cat) => DropdownMenuItem(
+                            value: cat.slug,
+                            child: Row(
+                              children: [
+                                Text(cat.icon,
+                                    style: const TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Text(_categoryLocalizedName(l10n, cat.slug)),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) _selectCategory(value);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _titleController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      label: _fieldLabel(
+                        l10n.needsTitleLabel,
+                        guidance.titleHint,
+                      ),
+                      hintText: guidance.titleHint,
                       border: const OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (selectedLocation != 'Other') return null;
-                      if ((value ?? '').trim().isEmpty) {
-                        return l10n.needsLocationRequired;
-                      }
+                      final text = value?.trim() ?? '';
+                      if (text.isEmpty) return l10n.validationTitleRequired;
+                      if (text.length < 4) return l10n.validationTitleMinLength;
                       return null;
                     },
                   ),
                   FormSuggestionStrip(
                     label: 'Recent',
-                    suggestions: _recentValuesAcrossCategories(
-                      (request) => request.location,
-                    )
-                        .where((value) => !country.regions.contains(value))
+                    suggestions: _recentValues((request) => request.title),
+                    onSelected: (value) =>
+                        setState(() => _titleController.text = value),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStarterPresets(),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _specificationController,
+                    minLines: 3,
+                    maxLines: 6,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      label: _fieldLabel(
+                        _categorySlug == 'education_training'
+                            ? 'Course / Subject / Skill'
+                            : l10n.needsSpecificationLabel,
+                        guidance.specificationHelper,
+                      ),
+                      hintText: guidance.specificationHint,
+                      helperText: guidance.specificationHelper,
+                      alignLabelWithHint: true,
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final text = value?.trim() ?? '';
+                      if (text.isEmpty) {
+                        return l10n.needsSpecificationRequired;
+                      }
+                      if (text.length < 12) {
+                        return l10n.needsSpecificationMinLength;
+                      }
+                      return null;
+                    },
+                  ),
+                  FormSuggestionStrip(
+                    label: 'Previous text',
+                    suggestions:
+                        _recentValues((request) => request.specification),
+                    onSelected: (value) =>
+                        setState(() => _specificationController.text = value),
+                  ),
+                  if (dynamicFields.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    Text(
+                      'Category Specifics',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    for (final field in dynamicFields) ...[
+                      if (_isTransportLocationPairStart(dynamicFields, field))
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildTextInputWithHelpers(field),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextInputWithHelpers(
+                                dynamicFields[dynamicFields.indexOf(field) + 1],
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (_isTransportLocationPairEnd(
+                          dynamicFields, field))
+                        const SizedBox.shrink()
+                      else if (field.type == NeedFieldType.boolean)
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(field.label),
+                          subtitle: field.helperText == null
+                              ? null
+                              : Text(field.helperText!),
+                          value: _dynamicBooleans[field.key] ?? false,
+                          onChanged: (val) {
+                            setState(() {
+                              _dynamicBooleans[field.key] = val;
+                            });
+                          },
+                        )
+                      else if (field.options != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildOptionPills(field),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                key: ValueKey(
+                                  '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
+                                ),
+                                initialValue: _dynamicControllers[field.key]
+                                            ?.text
+                                            .isEmpty ??
+                                        true
+                                    ? null
+                                    : _dynamicControllers[field.key]?.text,
+                                decoration: InputDecoration(
+                                  label:
+                                      _fieldLabel(field.label, field.guidance),
+                                  hintText: field.hint,
+                                  helperText: field.helperText,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                items: _optionsForField(field)
+                                    .map(
+                                      (option) => DropdownMenuItem(
+                                        value: option,
+                                        child: Text(option),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  _dynamicControllers[field.key]?.text =
+                                      value ?? '';
+                                },
+                                validator: (value) {
+                                  if (field.isRequired &&
+                                      (value == null || value.isEmpty)) {
+                                    return 'Please fill in this requirement';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        _buildTextInputWithHelpers(field),
+                    ],
+                  ],
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _budgetController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      label: _fieldLabel(
+                        _categorySlug == 'education_training'
+                            ? 'Maximum Budget ($currency)'
+                            : l10n.needsBudgetLabel(currency),
+                        l10n.needsBudgetHelper,
+                      ),
+                      hintText: l10n.needsBudgetHint,
+                      helperText: l10n.needsBudgetHelper,
+                      suffixIcon: _buildBudgetStepperSuffix(),
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      final text = value?.trim() ?? '';
+                      if (text.isEmpty) return l10n.validationAmountRequired;
+                      final amount = int.tryParse(text.replaceAll(',', ''));
+                      if (amount == null || amount < 0) {
+                        return l10n.validationValidNumber;
+                      }
+                      return null;
+                    },
+                  ),
+                  FormSuggestionStrip(
+                    label: 'Recent budget',
+                    suggestions: _recentValues(
+                      (request) =>
+                          request.currency == currency && request.budget > 0
+                              ? '$currency ${formatter.format(request.budget)}'
+                              : '',
+                    ),
+                    onSelected: (value) => setState(() {
+                      _budgetController.text =
+                          value.replaceAll(RegExp(r'[^0-9]'), '');
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  _buildBudgetShortcuts(currency),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey('location-$selectedLocation'),
+                    initialValue: selectedLocation,
+                    decoration: InputDecoration(
+                      label: _fieldLabel(
+                        country.regionsLabel,
+                        'Choose the area where you need the service or delivery.',
+                      ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: country.regions
+                        .map(
+                          (region) => DropdownMenuItem(
+                            value: region,
+                            child: Text(region),
+                          ),
+                        )
                         .toList(),
-                    onSelected: (value) => setState(
-                      () => _customLocationController.text = value,
+                    onChanged: (value) {
+                      setState(() {
+                        _location = value ?? country.regions.first;
+                        _locationTouched = true;
+                        if (_location != 'Other') {
+                          _customLocationController.clear();
+                        }
+                      });
+                    },
+                    validator: (value) => value == null || value.isEmpty
+                        ? l10n.needsLocationRequired
+                        : null,
+                  ),
+                  FormSuggestionStrip(
+                    label: 'Recent',
+                    suggestions: _recentValuesAcrossCategories(
+                            (request) => request.location)
+                        .where(country.regions.contains)
+                        .toList(),
+                    onSelected: (value) => setState(() {
+                      _location = value;
+                      _locationTouched = true;
+                      _customLocationController.clear();
+                    }),
+                  ),
+                  if (selectedLocation == 'Other') ...[
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _customLocationController,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: InputDecoration(
+                        label: _fieldLabel(
+                          l10n.needsCustomLocationLabel,
+                          l10n.needsCustomLocationHint,
+                        ),
+                        hintText: l10n.needsCustomLocationHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (selectedLocation != 'Other') return null;
+                        if ((value ?? '').trim().isEmpty) {
+                          return l10n.needsLocationRequired;
+                        }
+                        return null;
+                      },
+                    ),
+                    FormSuggestionStrip(
+                      label: 'Recent',
+                      suggestions: _recentValuesAcrossCategories(
+                        (request) => request.location,
+                      )
+                          .where((value) => !country.regions.contains(value))
+                          .toList(),
+                      onSelected: (value) => setState(
+                        () => _customLocationController.text = value,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey('urgency-$_urgency'),
+                    initialValue: _urgency,
+                    decoration: InputDecoration(
+                      label: _fieldLabel(
+                        l10n.needsUrgencyLabel,
+                        'Choose when you need providers to respond or complete the work.',
+                      ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: _urgencies
+                        .map(
+                          (urgency) => DropdownMenuItem(
+                            value: urgency,
+                            child: Text(_urgencyLabel(l10n, urgency)),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) => setState(
+                      () => _urgency = value ?? _urgencies.first,
+                    ),
+                  ),
+                  FormSuggestionStrip(
+                    label: 'Recent',
+                    suggestions: _recentValuesAcrossCategories(
+                            (request) => request.urgency)
+                        .where(
+                          _urgencies.contains,
+                        )
+                        .toList(),
+                    onSelected: (value) => setState(() => _urgency = value),
+                  ),
+                  const SizedBox(height: 4),
+                  FormSuggestionStrip(
+                    label: 'Try',
+                    suggestions: _urgencies
+                        .map((value) => _urgencyLabel(l10n, value))
+                        .toList(),
+                    onSelected: (value) => setState(() {
+                      _urgency = _urgencies.firstWhere(
+                        (urgency) => _urgencyLabel(l10n, urgency) == value,
+                        orElse: () => _urgencies.last,
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    l10n.needsBudgetPreview(
+                      currency,
+                      formatter.format(_budgetValue()),
+                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
-                const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
-                  key: ValueKey('urgency-$_urgency'),
-                  initialValue: _urgency,
-                  decoration: InputDecoration(
-                    label: _fieldLabel(
-                      l10n.needsUrgencyLabel,
-                      'Choose when you need providers to respond or complete the work.',
-                    ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  items: _urgencies
-                      .map(
-                        (urgency) => DropdownMenuItem(
-                          value: urgency,
-                          child: Text(_urgencyLabel(l10n, urgency)),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) => setState(
-                    () => _urgency = value ?? _urgencies.first,
-                  ),
-                ),
-                FormSuggestionStrip(
-                  label: 'Recent',
-                  suggestions: _recentValuesAcrossCategories(
-                          (request) => request.urgency)
-                      .where(
-                        _urgencies.contains,
-                      )
-                      .toList(),
-                  onSelected: (value) => setState(() => _urgency = value),
-                ),
-                const SizedBox(height: 4),
-                FormSuggestionStrip(
-                  label: 'Try',
-                  suggestions: _urgencies
-                      .map((value) => _urgencyLabel(l10n, value))
-                      .toList(),
-                  onSelected: (value) => setState(() {
-                    _urgency = _urgencies.firstWhere(
-                      (urgency) => _urgencyLabel(l10n, urgency) == value,
-                      orElse: () => _urgencies.last,
-                    );
-                  }),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  l10n.needsBudgetPreview(
-                    currency,
-                    formatter.format(_budgetValue()),
-                  ),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PostDurationInfoCard(
-              durationDays: _limits.durationForNeedsCategory(_categorySlug),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PostDurationInfoCard(
+                durationDays: _limits.durationForNeedsCategory(_categorySlug),
               ),
-              onPressed: _submitting || !_isReadyToPublish ? null : _submit,
-              child: _submitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.needsPreviewBtn),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  TextButton.icon(
+                    onPressed:
+                        _savingDraft || !_hasDraftContent ? null : _saveDraft,
+                    icon: _savingDraft
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.bookmark_add_outlined),
+                    label: const Text('Save draft'),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed:
+                          _submitting || !_isReadyToPublish ? null : _submit,
+                      child: _submitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.needsPreviewBtn),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -8,10 +8,10 @@ import '../../../core/di/injection.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../../features/needs/data/need_draft_exit_guard.dart';
 import '../../../features/notifications/presentation/cubit/notification_cubit.dart';
 import '../../../l10n/app_localizations.dart';
 import 'offline_connection_listener.dart';
-import 'post_choice_sheet.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({
@@ -46,6 +46,13 @@ class MainScaffold extends StatelessWidget {
       return 4;
     }
     return 0;
+  }
+
+  Future<void> _navigate(BuildContext context, String route) async {
+    if (!await NeedDraftExitGuard.confirmExit(context) || !context.mounted) {
+      return;
+    }
+    context.go(route);
   }
 
   @override
@@ -85,7 +92,9 @@ class MainScaffold extends StatelessWidget {
                     icon: Icons.home_rounded,
                     label: AppLocalizations.of(context)!.navHome,
                     isSelected: currentIndex == 0,
-                    onTap: () => context.go(AppRoutes.home),
+                    onTap: () {
+                      _navigate(context, AppRoutes.home);
+                    },
                   ),
                   // 2. Watchlist
                   _buildNavTab(
@@ -94,18 +103,15 @@ class MainScaffold extends StatelessWidget {
                     selectedIcon: Icons.star_rounded,
                     label: AppLocalizations.of(context)!.navWatchlist,
                     isSelected: currentIndex == 1,
-                    onTap: () => context.go(AppRoutes.watchlist),
+                    onTap: () {
+                      _navigate(context, AppRoutes.watchlist);
+                    },
                   ),
                   // 3. Center + Button (TikTok-style prominent button, NO text)
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        final shellContext =
-                            shellNavigatorKey.currentState?.overlay?.context;
-                        if (shellContext == null) {
-                          throw StateError('Shell navigator is not mounted.');
-                        }
-                        showPostChoiceSheet(shellContext);
+                        _navigate(context, AppRoutes.needsCreate);
                       },
                       behavior: HitTestBehavior.opaque,
                       child: Center(
@@ -131,13 +137,17 @@ class MainScaffold extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     label: AppLocalizations.of(context)!.navActivity,
                     isSelected: currentIndex == 3,
-                    onTap: () => context.go(AppRoutes.positions),
+                    onTap: () {
+                      _navigate(context, AppRoutes.positions);
+                    },
                   ),
                   // 5. Account (with incomplete steps red dot)
                   _buildNavTabAccount(
                     context,
                     isSelected: currentIndex == 4,
-                    onTap: () => context.go(AppRoutes.account),
+                    onTap: () {
+                      _navigate(context, AppRoutes.account);
+                    },
                   ),
                 ],
               ),

@@ -27,6 +27,7 @@ import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/marketplace/presentation/pages/needs_detail_page.dart';
 import '../../features/marketplace/presentation/pages/proposed_deal_page.dart';
 import '../../features/needs/presentation/pages/needs_create_page.dart';
+import '../../features/needs/presentation/pages/posting_system_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/positions/presentation/pages/positions_page.dart';
 import '../../features/pricing/presentation/pages/pricing_page.dart';
@@ -61,6 +62,7 @@ class AppRoutes {
       '/listings/create'; // ← top-level, not nested
   static const String forexCreate = '/forex/create';
   static const String needsCreate = '/needs/create';
+  static const String needsCreateFull = '/needs/create/full';
   static const String forexDetail = '/forex/:requestId';
   static const String myForexRequests = '/forex/my-forex';
   static const String notifications = '/notifications';
@@ -211,7 +213,21 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.needsCreate,
             name: 'needsCreate',
-            pageBuilder: (_, state) => _fade(state, const NeedsCreatePage()),
+            pageBuilder: (_, state) => _fade(
+              state,
+              PostingSystemPage(draftId: state.uri.queryParameters['draft']),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.needsCreateFull,
+            name: 'needsCreateFull',
+            pageBuilder: (_, state) => _fade(
+              state,
+              NeedsCreatePage(
+                initialCategorySlug: state.uri.queryParameters['category'],
+                draftId: state.uri.queryParameters['draft'],
+              ),
+            ),
           ),
           GoRoute(
             path: AppRoutes.forexDetail,
