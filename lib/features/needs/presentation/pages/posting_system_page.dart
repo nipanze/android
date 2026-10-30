@@ -583,18 +583,108 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
         ),
       );
 
-  Widget _iconBox(String icon, {double size = 38}) => Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.bg3Dark
-              : AppColors.bg3Light,
-          borderRadius: BorderRadius.circular(11),
+  Widget _iconBox(String icon, {double size = 38}) {
+    final style = _illustrationStyle(icon);
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [style.$2, style.$3],
         ),
-        child: Text(icon, style: TextStyle(fontSize: size * 0.56)),
-      );
+        borderRadius: BorderRadius.circular(size * 0.27),
+        boxShadow: [
+          BoxShadow(
+            color: style.$3.withValues(alpha: 0.22),
+            blurRadius: size * 0.16,
+            offset: Offset(0, size * 0.07),
+          ),
+        ],
+      ),
+      child: Icon(style.$1, color: Colors.white, size: size * 0.58),
+    );
+  }
+
+  (IconData, Color, Color) _illustrationStyle(String emoji) => switch (emoji) {
+        '🪪' => (
+            Icons.badge_rounded,
+            const Color(0xFF63B5FF),
+            const Color(0xFF2563EB)
+          ),
+        '🛂' => (
+            Icons.flight_takeoff_rounded,
+            const Color(0xFF4588FF),
+            const Color(0xFF2349D8)
+          ),
+        '💰' => (
+            Icons.savings_rounded,
+            const Color(0xFFFFC247),
+            const Color(0xFFF28A00)
+          ),
+        '💱' => (
+            Icons.currency_exchange_rounded,
+            const Color(0xFF45D6B0),
+            const Color(0xFF079879)
+          ),
+        '🚜' => (
+            Icons.agriculture_rounded,
+            const Color(0xFF73D77A),
+            const Color(0xFF219653)
+          ),
+        '🚚' => (
+            Icons.local_shipping_rounded,
+            const Color(0xFFFFA45B),
+            const Color(0xFFE65332)
+          ),
+        '💼' => (
+            Icons.business_center_rounded,
+            const Color(0xFFB88CFF),
+            const Color(0xFF7543D6)
+          ),
+        '⚡' => (
+            Icons.bolt_rounded,
+            const Color(0xFFFFD447),
+            const Color(0xFFEF8C00)
+          ),
+        '🏗️' => (
+            Icons.construction_rounded,
+            const Color(0xFFFFA34D),
+            const Color(0xFFE56820)
+          ),
+        '🎓' => (
+            Icons.school_rounded,
+            const Color(0xFF9B8AFF),
+            const Color(0xFF5A43D6)
+          ),
+        '🌱' => (
+            Icons.grass_rounded,
+            const Color(0xFF73D77A),
+            const Color(0xFF168A58)
+          ),
+        '💻' => (
+            Icons.laptop_mac_rounded,
+            const Color(0xFF70C8FF),
+            const Color(0xFF3267D5)
+          ),
+        '🎉' => (
+            Icons.celebration_rounded,
+            const Color(0xFFFF76B8),
+            const Color(0xFFCA35B3)
+          ),
+        '➕' => (
+            Icons.add_rounded,
+            const Color(0xFF76ABFF),
+            const Color(0xFF356FE0)
+          ),
+        _ => (
+            Icons.category_rounded,
+            const Color(0xFF7FB8FF),
+            const Color(0xFF4669D8)
+          ),
+      };
 
   Widget _promptCard(_PostingPrompt prompt) => InkWell(
         onTap: () => _select(prompt),
