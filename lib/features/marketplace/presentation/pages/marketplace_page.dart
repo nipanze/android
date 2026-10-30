@@ -480,77 +480,58 @@ class _MarketplaceView extends StatelessWidget {
                                 final reason = context
                                     .read<MarketplaceCubit>()
                                     .forYouReason(listing);
-                                return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    ListingCard(
-                                      listing: listing,
-                                      onTap: () => context.push(
-                                        listing.forex == null
-                                            ? listing.needs == null
-                                                ? '/marketplace/${listing.requestId}'
-                                                : '/marketplace/needs/${listing.requestId}'
-                                            : '/forex/${listing.requestId}',
-                                      ),
-                                      isSaved: isSaved,
-                                      onWatchlistToggle: () {
-                                        if (isSaved) {
-                                          unawaited(() async {
-                                            final removed =
-                                                await watchlist.remove(listing);
-                                            if (removed ==
-                                                    WatchlistActionResult
-                                                        .failure &&
-                                                context.mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                ..clearSnackBars()
-                                                ..showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      AppLocalizations.of(
-                                                              context)!
-                                                          .watchlistError,
-                                                    ),
-                                                  ),
-                                                );
-                                            }
-                                          }());
-                                        } else {
-                                          unawaited(() async {
-                                            final added =
-                                                await watchlist.add(listing);
-                                            if (added ==
-                                                    WatchlistActionResult
-                                                        .failure &&
-                                                context.mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                ..clearSnackBars()
-                                                ..showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      AppLocalizations.of(
-                                                              context)!
-                                                          .watchlistError,
-                                                    ),
-                                                  ),
-                                                );
-                                            }
-                                          }());
+                                return ListingCard(
+                                  listing: listing,
+                                  onTap: () => context.push(
+                                    listing.forex == null
+                                        ? listing.needs == null
+                                            ? '/marketplace/${listing.requestId}'
+                                            : '/marketplace/needs/${listing.requestId}'
+                                        : '/forex/${listing.requestId}',
+                                  ),
+                                  isSaved: isSaved,
+                                  matchReason: isForYou ? reason : null,
+                                  onWatchlistToggle: () {
+                                    if (isSaved) {
+                                      unawaited(() async {
+                                        final removed =
+                                            await watchlist.remove(listing);
+                                        if (removed ==
+                                                WatchlistActionResult.failure &&
+                                            context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                            ..clearSnackBars()
+                                            ..showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .watchlistError,
+                                                ),
+                                              ),
+                                            );
                                         }
-                                      },
-                                    ),
-                                    if (isForYou && reason != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            top: 4, left: 10),
-                                        child: Text(reason,
-                                            style: const TextStyle(
-                                                fontSize: 11,
-                                                color: AppColors.accent,
-                                                fontWeight: FontWeight.w600)),
-                                      )
-                                  ],
+                                      }());
+                                    } else {
+                                      unawaited(() async {
+                                        final added =
+                                            await watchlist.add(listing);
+                                        if (added ==
+                                                WatchlistActionResult.failure &&
+                                            context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                            ..clearSnackBars()
+                                            ..showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  AppLocalizations.of(context)!
+                                                      .watchlistError,
+                                                ),
+                                              ),
+                                            );
+                                        }
+                                      }());
+                                    }
+                                  },
                                 );
                               },
                             );
@@ -604,6 +585,7 @@ class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
   };
   Set<String> _interests = {};
   Set<String> _offers = {};
+  List<ProviderCapability> _offerCapabilities = const [];
   bool _lends = true;
 
   @override
@@ -630,6 +612,9 @@ class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
             .map((capability) =>
                 capability.categorySlug ?? capability.capabilitySlug)
             .toSet();
+        _offerCapabilities = (values[1] as List<ProviderCapability>)
+            .where((capability) => capability.isActive)
+            .toList();
         _lends = prefs.getBool('marketplace_i_lend') ?? true;
       });
       _syncCubit();
@@ -650,62 +635,219 @@ class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
-      builder: (sheetContext) =>
-          StatefulBuilder(builder: (context, setSheetState) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-            child: Column(
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.bg2Dark
+          : Colors.white,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final dark = Theme.of(context).brightness == Brightness.dark;
+          final textColor = dark ? AppColors.textDark : const Color(0xFF111827);
+          final secondary =
+              dark ? AppColors.text2Dark : const Color(0xFF475569);
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Personalize For You',
-                      style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 18),
-                  const Text('I’m interested in',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
-                  Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: _choices.entries
-                          .map((entry) => FilterChip(
-                                label: Text(entry.value),
-                                selected: selected.contains(entry.key),
-                                onSelected: (value) => setSheetState(() => value
-                                    ? selected.add(entry.key)
-                                    : selected.remove(entry.key)),
-                              ))
-                          .toList()),
-                  const SizedBox(height: 18),
-                  const Text('I can offer',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  const Text(
-                      'From Provider Services. Services are set per category.'),
-                  const SizedBox(height: 7),
-                  Wrap(
-                      spacing: 6,
-                      children: _offers
-                          .map((slug) => Chip(
-                              label: Text(
-                                  _choices[slug] ?? slug.replaceAll('_', ' '))))
-                          .toList()),
-                  SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('I lend'),
-                      value: lends,
-                      onChanged: (value) => setSheetState(() => lends = value)),
-                  SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                          onPressed: () => Navigator.pop(sheetContext, true),
-                          child: const Text('Save'))),
-                ]),
-          ),
-        );
-      }),
+                  Container(
+                      width: 38,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: dark
+                              ? AppColors.borderDark
+                              : const Color(0xFFD7DDE7),
+                          borderRadius: BorderRadius.circular(4))),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Your For You feed',
+                              style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.2)),
+                          const SizedBox(height: 4),
+                          Text(
+                              'Tell Nipanze what you want to see. You can change this any time.',
+                              style: TextStyle(
+                                  color: secondary,
+                                  fontSize: 12.5,
+                                  height: 1.35)),
+                          const SizedBox(height: 13),
+                          Text('I’m interested in',
+                              style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 7),
+                          Wrap(
+                            spacing: 7,
+                            runSpacing: 7,
+                            children: _choices.entries.map((entry) {
+                              final isSelected = selected.contains(entry.key);
+                              return InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () => setSheetState(() => isSelected
+                                    ? selected.remove(entry.key)
+                                    : selected.add(entry.key)),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 120),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? (dark
+                                            ? AppColors.accent
+                                                .withValues(alpha: 0.15)
+                                            : const Color(0xFFEEF5FF))
+                                        : Colors.transparent,
+                                    border: Border.all(
+                                        color: isSelected
+                                            ? AppColors.accent
+                                            : (dark
+                                                ? AppColors.borderDark
+                                                : const Color(0xFFADB8C8)),
+                                        width: isSelected ? 2 : 1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(entry.value,
+                                      style: TextStyle(
+                                          color: isSelected
+                                              ? AppColors.accent
+                                              : textColor,
+                                          fontSize: 13,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+                          Text('I can offer',
+                              style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 7),
+                          Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: _offerCapabilities.map((capability) {
+                                final category = capability.categoryName ??
+                                    _choices[capability.categorySlug] ??
+                                    capability.categorySlug
+                                        ?.replaceAll('_', ' ') ??
+                                    capability.capabilityName ??
+                                    capability.capabilitySlug
+                                        .replaceAll('_', ' ');
+                                final identity = capability.identityType
+                                    ?.replaceAll('_', ' ');
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 11, vertical: 7),
+                                  decoration: BoxDecoration(
+                                      color: dark
+                                          ? AppColors.proPurple
+                                              .withValues(alpha: 0.16)
+                                          : const Color(0xFFF0EBFF),
+                                      border: Border.all(
+                                          color: const Color(0xFFD8CCFF)),
+                                      borderRadius: BorderRadius.circular(22)),
+                                  child: Text(
+                                      '$category${identity == null || identity.isEmpty ? '' : ' · ${_titleCase(identity)}'}',
+                                      style: const TextStyle(
+                                          color: Color(0xFF5932DA),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700)),
+                                );
+                              }).toList()),
+                          const SizedBox(height: 6),
+                          Text(
+                              'Comes from your Provider Services. Change it there, per category.',
+                              style: TextStyle(
+                                  color: secondary,
+                                  fontSize: 11.5,
+                                  height: 1.35)),
+                          const SizedBox(height: 18),
+                          Text('Loans',
+                              style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(13, 9, 10, 9),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: dark
+                                        ? AppColors.borderDark
+                                        : const Color(0xFFDCE2EC)),
+                                borderRadius: BorderRadius.circular(13)),
+                            child: Row(children: [
+                              Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                    Text('I lend',
+                                        style: TextStyle(
+                                            color: textColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                        'See loan requests. Borrowers only share them with lenders.',
+                                        style: TextStyle(
+                                            color: secondary,
+                                            fontSize: 11.5,
+                                            height: 1.35)),
+                                  ])),
+                              Switch(
+                                  value: lends,
+                                  onChanged: (value) =>
+                                      setSheetState(() => lends = value)),
+                            ]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            top: BorderSide(
+                                color: dark
+                                    ? AppColors.borderDark
+                                    : const Color(0xFFE7EAF0)))),
+                    child: SizedBox(
+                        width: double.infinity,
+                        height: 49,
+                        child: FilledButton(
+                            onPressed: () => Navigator.pop(sheetContext, true),
+                            style: FilledButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(13))),
+                            child: const Text('Done',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700)))),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
     if (result != true || !mounted) return;
     try {
@@ -729,6 +871,12 @@ class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
       }
     }
   }
+
+  String _titleCase(String value) => value
+      .split(' ')
+      .map((part) =>
+          part.isEmpty ? part : '${part[0].toUpperCase()}${part.substring(1)}')
+      .join(' ');
 
   @override
   Widget build(BuildContext context) =>

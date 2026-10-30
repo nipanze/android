@@ -3489,7 +3489,32 @@ INSERT INTO currencies (code, name, is_market_currency, market_country, forex_tr
     ('NGN', 'Nigerian Naira',         TRUE,  'NG', FALSE),
     ('ZAR', 'South African Rand',     TRUE,  'ZA', FALSE),
     ('EGP', 'Egyptian Pound',         TRUE,  'EG', FALSE),
-    ('USD', 'US Dollar',              FALSE, NULL, FALSE)
+    ('USD', 'US Dollar',              FALSE, NULL, FALSE),
+    ('BIF', 'Burundian Franc',        FALSE, NULL, FALSE),
+    ('SSP', 'South Sudanese Pound',   FALSE, NULL, FALSE),
+    ('CDF', 'Congolese Franc',        FALSE, NULL, FALSE),
+    ('SOS', 'Somali Shilling',        FALSE, NULL, FALSE),
+    ('ETB', 'Ethiopian Birr',         FALSE, NULL, FALSE),
+    ('DJF', 'Djiboutian Franc',       FALSE, NULL, FALSE),
+    ('ERN', 'Eritrean Nakfa',         FALSE, NULL, FALSE),
+    ('SDG', 'Sudanese Pound',         FALSE, NULL, FALSE),
+    ('KMF', 'Comorian Franc',         FALSE, NULL, FALSE),
+    ('MGA', 'Malagasy Ariary',        FALSE, NULL, FALSE),
+    ('MWK', 'Malawian Kwacha',        FALSE, NULL, FALSE),
+    ('MUR', 'Mauritian Rupee',        FALSE, NULL, FALSE),
+    ('SCR', 'Seychellois Rupee',      FALSE, NULL, FALSE),
+    ('ZMW', 'Zambian Kwacha',         FALSE, NULL, FALSE),
+    ('ZWG', 'Zimbabwe Gold',          FALSE, NULL, FALSE),
+    ('MZN', 'Mozambican Metical',     FALSE, NULL, FALSE),
+    ('EUR', 'Euro',                   FALSE, NULL, FALSE),
+    ('GBP', 'British Pound',          FALSE, NULL, FALSE),
+    ('AED', 'UAE Dirham',             FALSE, NULL, FALSE),
+    ('INR', 'Indian Rupee',           FALSE, NULL, FALSE),
+    ('JPY', 'Japanese Yen',           FALSE, NULL, FALSE),
+    ('CAD', 'Canadian Dollar',        FALSE, NULL, FALSE),
+    ('AUD', 'Australian Dollar',      FALSE, NULL, FALSE),
+    ('CHF', 'Swiss Franc',            FALSE, NULL, FALSE),
+    ('CNY', 'Chinese Yuan',           FALSE, NULL, FALSE)
 ON CONFLICT (code) DO NOTHING;
 
 CREATE INDEX IF NOT EXISTS idx_currencies_forex_enabled
@@ -5445,7 +5470,12 @@ WHERE code IN ('UG','KE','TZ','RW','BI','SS','CD','SO','NG','ZA','EG');
 -- All market currencies + USD cleared for trading
 UPDATE currencies
 SET forex_trading_enabled = TRUE
-WHERE code IN ('UGX','KES','TZS','RWF','NGN','ZAR','EGP','USD');
+WHERE code IN (
+    'UGX','KES','TZS','RWF','NGN','ZAR','EGP','USD',
+    'BIF','SSP','CDF','SOS','ETB','DJF','ERN','SDG','KMF',
+    'MGA','MWK','MUR','SCR','ZMW','ZWG',
+    'MZN','EUR','GBP','AED','INR','JPY','CAD','AUD','CHF','CNY'
+);
 
 
 -- ============================================

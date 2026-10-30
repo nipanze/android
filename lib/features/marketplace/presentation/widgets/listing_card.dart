@@ -23,6 +23,7 @@ class ListingCard extends StatelessWidget {
     this.moreActionLabel,
     this.onMoreAction,
     this.showDeleteAction = false,
+    this.matchReason,
   });
 
   final MarketplaceItem listing;
@@ -33,6 +34,7 @@ class ListingCard extends StatelessWidget {
   final String? moreActionLabel;
   final VoidCallback? onMoreAction;
   final bool showDeleteAction;
+  final String? matchReason;
 
   @override
   Widget build(BuildContext context) {
@@ -168,12 +170,12 @@ class ListingCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          padding: const EdgeInsets.fromLTRB(13, 13, 13, 12),
           decoration: BoxDecoration(
             color: surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor, width: 1.0),
           ),
           child: LayoutBuilder(
@@ -202,6 +204,7 @@ class ListingCard extends StatelessWidget {
                 verified: isVerified,
                 mutedColor: mutedColor,
                 description: description,
+                matchReason: matchReason,
                 isSaved: isSaved,
                 onWatchlistToggle: onWatchlistToggle,
                 showMoreActions: showMoreActions,
@@ -323,6 +326,7 @@ class _MainListingArea extends StatelessWidget {
     required this.verified,
     required this.mutedColor,
     required this.description,
+    required this.matchReason,
     required this.isSaved,
     required this.onWatchlistToggle,
     required this.showMoreActions,
@@ -343,6 +347,7 @@ class _MainListingArea extends StatelessWidget {
   final bool verified;
   final Color mutedColor;
   final String description;
+  final String? matchReason;
   final bool isSaved;
   final VoidCallback onWatchlistToggle;
   final bool showMoreActions;
@@ -416,8 +421,8 @@ class _MainListingArea extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
             height: 1.12,
             color: theme.colorScheme.onSurface,
           ),
@@ -474,6 +479,37 @@ class _MainListingArea extends StatelessWidget {
               color: mutedColor,
               fontSize: 13,
               height: 1.25,
+            ),
+          ),
+        ],
+        if (matchReason != null) ...[
+          const SizedBox(height: 9),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+            decoration: BoxDecoration(
+              color: isLoan ? const Color(0xFFECF7F0) : const Color(0xFFEEF3FF),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 12,
+                    color: isLoan
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFF2563EB)),
+                const SizedBox(width: 5),
+                Text(
+                  matchReason!,
+                  style: TextStyle(
+                    color: isLoan
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFF2563EB),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

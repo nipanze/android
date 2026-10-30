@@ -138,6 +138,7 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
   late Set<String> _favoriteCurrencies;
   List<String> _favoriteCurrencyOptions = const [];
   bool _favoriteCurrenciesLoading = true;
+  bool _showAllFavoriteCurrencies = false;
   late String _needType;
   late String _urgency;
   late bool _hasClearBudget;
@@ -219,6 +220,41 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
           .map((row) => row['code'].toString())
           .where((code) => code.isNotEmpty)
           .toList();
+      const featured = [
+        'UGX',
+        'KES',
+        'TZS',
+        'RWF',
+        'BIF',
+        'CDF',
+        'SSP',
+        'SOS',
+        'ETB',
+        'DJF',
+        'ERN',
+        'KMF',
+        'MGA',
+        'MWK',
+        'MUR',
+        'SCR',
+        'ZMW',
+        'ZWG',
+        'USD',
+        'NGN',
+        'ZAR',
+        'EGP',
+        'SDG'
+      ];
+      codes.sort((a, b) {
+        final aRank = featured.indexOf(a);
+        final bRank = featured.indexOf(b);
+        if (aRank >= 0 || bRank >= 0) {
+          if (aRank < 0) return 1;
+          if (bRank < 0) return -1;
+          return aRank.compareTo(bRank);
+        }
+        return a.compareTo(b);
+      });
       setState(() {
         _favoriteCurrencyOptions = codes;
         _favoriteCurrenciesLoading = false;
@@ -446,501 +482,514 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
     final l10n = AppLocalizations.of(context);
     final currencyCode = _currencyCode;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.82,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // ── Handle ──────────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 4),
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: border,
-                    borderRadius: BorderRadius.circular(2),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Handle ──────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 4),
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            // ── Header ──────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.proPurple.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.tune_rounded,
+                      color: AppColors.proPurple,
+                      size: 16,
+                    ),
                   ),
-                ),
-              ),
-              // ── Header ──────────────────────────────────────────────────
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.proPurple.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.tune_rounded,
-                        color: AppColors.proPurple,
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n?.advancedFilters ?? 'Advanced Filters',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n?.advancedFilters ?? 'Advanced Filters',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
                           ),
-                          Text(
-                            l10n?.advancedFiltersBadge ??
-                                'Pro · Narrow the marketplace feed',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color:
-                                  AppColors.proPurple.withValues(alpha: 0.85),
-                              fontWeight: FontWeight.w500,
-                            ),
+                        ),
+                        Text(
+                          l10n?.advancedFiltersBadge ??
+                              'Pro · Narrow the marketplace feed',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.proPurple.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _moduleFilter = null;
-                          _amountBands.clear();
-                          _locationController.clear();
-                          _favoriteCurrencies.clear();
-                          _needType = '';
-                          _urgency = '';
-                          _hasClearBudget = false;
-                          _amongFirst = false;
-                          _matchesMyCategories = false;
-                          _selectedEmployment.clear();
-                          _selectedIncome.clear();
-                          _suggestedTermsOnly = false;
-                          _verifiedOnly = false;
-                          _institutionMatchOnly = false;
-                        });
-                        context.read<MarketplaceCubit>().clearProFilters();
-                      },
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(44, 44),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                      ),
-                      child: Text(
-                        l10n?.filterReset ?? 'Reset',
-                        style: const TextStyle(
-                            color: AppColors.danger, fontSize: 12.5),
-                      ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _moduleFilter = null;
+                        _amountBands.clear();
+                        _locationController.clear();
+                        _favoriteCurrencies.clear();
+                        _needType = '';
+                        _urgency = '';
+                        _hasClearBudget = false;
+                        _amongFirst = false;
+                        _matchesMyCategories = false;
+                        _selectedEmployment.clear();
+                        _selectedIncome.clear();
+                        _suggestedTermsOnly = false;
+                        _verifiedOnly = false;
+                        _institutionMatchOnly = false;
+                      });
+                      context.read<MarketplaceCubit>().clearProFilters();
+                    },
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(44, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                     ),
-                  ],
-                ),
+                    child: Text(
+                      l10n?.filterReset ?? 'Reset',
+                      style: const TextStyle(
+                          color: AppColors.danger, fontSize: 12.5),
+                    ),
+                  ),
+                ],
               ),
-              Divider(height: 1, color: border),
-              // ── Scrollable body ─────────────────────────────────────────
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                  children: [
-                    _ModuleTypeSwitch(
-                      selected: _moduleFilter,
-                      onSelected: _selectModule,
+            ),
+            Divider(height: 1, color: border),
+            // ── Scrollable body ─────────────────────────────────────────
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  _ModuleTypeSwitch(
+                    selected: _moduleFilter,
+                    onSelected: _selectModule,
+                  ),
+                  const SizedBox(height: 16),
+                  if (_moduleFilter == null) ...[
+                    _SectionHeader(
+                      icon: Icons.tune_rounded,
+                      label: 'Amount range',
+                      subtitle: 'Brackets only. Exact amounts stay private',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: const [
+                        ('Under 100K', 'under_100k'),
+                        ('100K–500K', '100k_500k'),
+                        ('500K–1M', '500k_1m'),
+                        ('Over 1M', 'over_1m'),
+                      ]
+                          .map((entry) => _FilterChip(
+                                label: entry.$1,
+                                selected: _amountBands.contains(entry.$2),
+                                onTap: () => setState(() =>
+                                    _amountBands.contains(entry.$2)
+                                        ? _amountBands.remove(entry.$2)
+                                        : _amountBands.add(entry.$2)),
+                              ))
+                          .toList(),
                     ),
                     const SizedBox(height: 16),
-                    if (_moduleFilter == null) ...[
-                      _SectionHeader(
-                        icon: Icons.tune_rounded,
-                        label: 'Amount range',
-                        subtitle: 'Brackets only. Exact amounts stay private',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 8),
+                    _SectionHeader(
+                      icon: Icons.location_on_outlined,
+                      label: 'Location',
+                      subtitle: 'Where the request is from',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        ..._locations.take(5).map((region) => _FilterChip(
+                              label: region,
+                              selected: _locationController.text == region,
+                              onTap: () => setState(() {
+                                _locationController.text =
+                                    _locationController.text == region
+                                        ? ''
+                                        : region;
+                              }),
+                            )),
+                        if (_locations.length > 5)
+                          _FilterChip(
+                            label: _locationController.text.isNotEmpty &&
+                                    !_locations.take(5).contains(
+                                          _locationController.text,
+                                        )
+                                ? 'More · ${_locationController.text}'
+                                : 'More',
+                            selected: _locationController.text.isNotEmpty &&
+                                !_locations.take(5).contains(
+                                      _locationController.text,
+                                    ),
+                            onTap: _chooseMoreLocation,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionHeader(
+                      icon: Icons.shield_outlined,
+                      label: 'Quality signals',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 6),
+                    _ToggleTile(
+                      icon: Icons.verified_outlined,
+                      iconColor: AppColors.success,
+                      title: 'Verified requester',
+                      subtitle: 'Only KYC approved requesters',
+                      value: _verifiedOnly,
+                      onChanged: (v) => setState(() => _verifiedOnly = v),
+                      border: border,
+                    ),
+                  ],
+                  if (_moduleFilter == MarketplaceModule.forex) ...[
+                    const SizedBox(height: 16),
+                    _SectionHeader(
+                      icon: Icons.star_outline_rounded,
+                      label: 'Favourite currencies',
+                      subtitle: 'Other currencies are turned off',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 10),
+                    if (_favoriteCurrenciesLoading)
+                      const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else if (_favoriteCurrencyOptions.isEmpty)
+                      Text(
+                        'No Forex currencies are currently enabled.',
+                        style: TextStyle(color: text2, fontSize: 12),
+                      )
+                    else ...[
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
-                        children: const [
-                          ('Under 100K', 'under_100k'),
-                          ('100K–500K', '100k_500k'),
-                          ('500K–1M', '500k_1m'),
-                          ('Over 1M', 'over_1m'),
-                        ]
-                            .map((entry) => _FilterChip(
-                                  label: entry.$1,
-                                  selected: _amountBands.contains(entry.$2),
-                                  onTap: () => setState(() =>
-                                      _amountBands.contains(entry.$2)
-                                          ? _amountBands.remove(entry.$2)
-                                          : _amountBands.add(entry.$2)),
+                        children: _visibleFavoriteCurrencies
+                            .map((currency) => _FilterChip(
+                                  label: currency,
+                                  selected:
+                                      _favoriteCurrencies.contains(currency),
+                                  onTap: () => setState(() {
+                                    if (_favoriteCurrencies
+                                        .contains(currency)) {
+                                      _favoriteCurrencies.remove(currency);
+                                    } else {
+                                      _favoriteCurrencies.add(currency);
+                                    }
+                                  }),
                                 ))
                             .toList(),
                       ),
-                      const SizedBox(height: 16),
-                      _SectionHeader(
-                        icon: Icons.location_on_outlined,
-                        label: 'Location',
-                        subtitle: 'Where the request is from',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          ..._locations.take(5).map((region) => _FilterChip(
-                                label: region,
-                                selected: _locationController.text == region,
-                                onTap: () => setState(() {
-                                  _locationController.text =
-                                      _locationController.text == region
-                                          ? ''
-                                          : region;
-                                }),
-                              )),
-                          if (_locations.length > 5)
-                            _FilterChip(
-                              label: _locationController.text.isNotEmpty &&
-                                      !_locations.take(5).contains(
-                                            _locationController.text,
-                                          )
-                                  ? 'More · ${_locationController.text}'
-                                  : 'More',
-                              selected: _locationController.text.isNotEmpty &&
-                                  !_locations.take(5).contains(
-                                        _locationController.text,
-                                      ),
-                              onTap: _chooseMoreLocation,
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _SectionHeader(
-                        icon: Icons.shield_outlined,
-                        label: 'Quality signals',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 6),
-                      _ToggleTile(
-                        icon: Icons.verified_outlined,
-                        iconColor: AppColors.success,
-                        title: 'Verified requester',
-                        subtitle: 'Only KYC approved requesters',
-                        value: _verifiedOnly,
-                        onChanged: (v) => setState(() => _verifiedOnly = v),
-                        border: border,
-                      ),
-                    ],
-                    if (_moduleFilter == MarketplaceModule.forex) ...[
-                      const SizedBox(height: 16),
-                      _SectionHeader(
-                        icon: Icons.star_outline_rounded,
-                        label: 'Favourite currencies',
-                        subtitle: 'Other currencies are turned off',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 10),
-                      if (_favoriteCurrenciesLoading)
-                        const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else if (_favoriteCurrencyOptions.isEmpty)
-                        Text(
-                          'No Forex currencies are currently enabled.',
-                          style: TextStyle(color: text2, fontSize: 12),
-                        )
-                      else
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: _favoriteCurrencyOptions
-                              .map((currency) => _FilterChip(
-                                    label: currency,
-                                    selected:
-                                        _favoriteCurrencies.contains(currency),
-                                    onTap: () => setState(() {
-                                      if (_favoriteCurrencies
-                                          .contains(currency)) {
-                                        _favoriteCurrencies.remove(currency);
-                                      } else {
-                                        _favoriteCurrencies.add(currency);
-                                      }
-                                    }),
-                                  ))
-                              .toList(),
-                        ),
-                    ],
-                    if (_moduleFilter == MarketplaceModule.needs) ...[
-                      const SizedBox(height: 24),
-                      _SectionHeader(
-                          icon: Icons.inventory_2_outlined,
-                          label: 'Needs',
-                          textColor: text2),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue: _needType,
-                        decoration:
-                            const InputDecoration(labelText: 'Need type'),
-                        items: const [
-                          ('Any type', ''),
-                          ('Equipment', 'machinery_equipment'),
-                          ('Logistics', 'transport_logistics'),
-                          ('Services', 'professional_services'),
-                          ('Procurement', 'specialized_products'),
-                        ]
-                            .map((entry) => DropdownMenuItem(
-                                value: entry.$2, child: Text(entry.$1)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _needType = v ?? ''),
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        initialValue:
-                            _urgency.isEmpty ? 'Any urgency' : _urgency,
-                        decoration: const InputDecoration(labelText: 'Urgency'),
-                        items: const [
-                          'Any urgency',
-                          'Urgent',
-                          'This week',
-                          'Flexible',
-                        ]
-                            .map((v) =>
-                                DropdownMenuItem(value: v, child: Text(v)))
-                            .toList(),
-                        onChanged: (v) => setState(
-                            () => _urgency = v == 'Any urgency' ? '' : v ?? ''),
-                      ),
-                      const SizedBox(height: 8),
-                      _ToggleTile(
-                          icon: Icons.account_balance_wallet_outlined,
-                          iconColor: AppColors.accent,
-                          title: 'Has a clear budget',
-                          subtitle: 'Only Needs with a stated budget',
-                          value: _hasClearBudget,
-                          onChanged: (v) => setState(() => _hasClearBudget = v),
-                          border: border),
-                      _ToggleTile(
-                          icon: Icons.bolt_outlined,
-                          iconColor: AppColors.warning,
-                          title: 'Be among the first',
-                          subtitle: 'Only Needs with no responses yet',
-                          value: _amongFirst,
-                          onChanged: (v) => setState(() => _amongFirst = v),
-                          border: border),
-                      _ToggleTile(
-                          icon: Icons.category_outlined,
-                          iconColor: AppColors.proPurple,
-                          title: 'Matches my categories and roles',
-                          subtitle:
-                              'Use the categories selected in your profile',
-                          value: _matchesMyCategories,
-                          onChanged: (v) =>
-                              setState(() => _matchesMyCategories = v),
-                          border: border),
-                    ],
-                    if (_moduleFilter == MarketplaceModule.loan) ...[
-                      // Employment type
-                      _SectionHeader(
-                        icon: Icons.work_outline_rounded,
-                        label: l10n?.filterEmploymentType ?? 'Employment type',
-                        subtitle: l10n?.filterEmploymentSubtitle ??
-                            "Filter by the borrower's declared employment",
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _kEmploymentOptions.map((opt) {
-                          final selected =
-                              _selectedEmployment.contains(opt.value);
-                          return _FilterChip(
-                            label: _resolveLabel(
-                              l10n,
-                              opt.labelKey,
-                              currency: currencyCode,
-                            ),
-                            selected: selected,
-                            onTap: () => setState(() {
-                              if (selected) {
-                                _selectedEmployment.remove(opt.value);
-                              } else {
-                                _selectedEmployment.add(opt.value);
-                              }
-                            }),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      // Income bracket
-                      _SectionHeader(
-                        icon: Icons.bar_chart_rounded,
-                        label:
-                            l10n?.filterIncomeRange ?? 'Monthly income range',
-                        subtitle: l10n?.filterIncomeSubtitle ??
-                            'Coarse brackets — exact income is never shown',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _kIncomeBracketOptions.map((opt) {
-                          final selected = _selectedIncome.contains(opt.value);
-                          return _FilterChip(
-                            label: _resolveLabel(
-                              l10n,
-                              opt.labelKey,
-                              currency: currencyCode,
-                            ),
-                            selected: selected,
-                            onTap: () => setState(() {
-                              if (selected) {
-                                _selectedIncome.remove(opt.value);
-                              } else {
-                                _selectedIncome.add(opt.value);
-                              }
-                            }),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      // Boolean toggles — Listing quality signals
-                      _SectionHeader(
-                        icon: Icons.shield_outlined,
-                        label: l10n?.filterQualitySignals ??
-                            'Listing quality signals',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 10),
-                      _ToggleTile(
-                        icon: Icons.receipt_long_outlined,
-                        iconColor: AppColors.accent,
-                        title: l10n?.filterHasSuggestedTerms ??
-                            'Has suggested terms',
-                        subtitle: l10n?.filterHasSuggestedTermsSubtitle ??
-                            'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule',
-                        value: _suggestedTermsOnly,
-                        onChanged: (v) =>
-                            setState(() => _suggestedTermsOnly = v),
-                        border: border,
-                      ),
-                    ],
-                    if (_moduleFilter == MarketplaceModule.loan) ...[
-                      const SizedBox(height: 24),
-                      // Smart matching section (bank/credit agents only)
-                      _SectionHeader(
-                        icon: Icons.account_balance_rounded,
-                        label: l10n?.filterSmartMatchingSection ??
-                            'Smart matching',
-                        textColor: text2,
-                      ),
-                      const SizedBox(height: 10),
-                      _ToggleTile(
-                        icon: Icons.account_balance_outlined,
-                        iconColor: _isAgentEligible
-                            ? AppColors.warning
-                            : text2.withValues(alpha: 0.45),
-                        title: l10n?.filterInstitutionMatches ??
-                            'Institution matches',
-                        subtitle: _isAgentEligible
-                            ? (l10n?.filterInstitutionMatchesSubtitle ??
-                                'Only opted-in loan requests matching your institution.')
-                            : (l10n?.filterInstitutionMatchesIneligible ??
-                                'Set your institution in Profile → Bank & Professional to enable this filter.'),
-                        value: _institutionMatchOnly,
-                        onChanged: _isAgentEligible
-                            ? (v) => setState(() => _institutionMatchOnly = v)
-                            : null,
-                        border: border,
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    // Privacy note
-                    Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.proPurple.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.proPurple.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.info_outline_rounded,
-                              size: 14, color: AppColors.proPurple),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Filters only narrow what you see. Requester names, '
-                              'exact amounts and exact income are never shown.',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: text2,
-                                height: 1.4,
-                              ),
+                      if (_favoriteCurrencyOptions.length > 6)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: () => setState(() =>
+                                _showAllFavoriteCurrencies =
+                                    !_showAllFavoriteCurrencies),
+                            icon: Icon(_showAllFavoriteCurrencies
+                                ? Icons.expand_less_rounded
+                                : Icons.expand_more_rounded),
+                            label: Text(_showAllFavoriteCurrencies
+                                ? 'Show less'
+                                : 'More (${_favoriteCurrencyOptions.length - _visibleFavoriteCurrencies.length})'),
+                            style: TextButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
+                              visualDensity: VisualDensity.compact,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                    ],
+                  ],
+                  if (_moduleFilter == MarketplaceModule.needs) ...[
+                    const SizedBox(height: 24),
+                    _SectionHeader(
+                        icon: Icons.inventory_2_outlined,
+                        label: 'Needs',
+                        textColor: text2),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: _needType,
+                      decoration: const InputDecoration(labelText: 'Need type'),
+                      items: const [
+                        ('Any type', ''),
+                        ('Equipment', 'machinery_equipment'),
+                        ('Logistics', 'transport_logistics'),
+                        ('Services', 'professional_services'),
+                        ('Procurement', 'specialized_products'),
+                      ]
+                          .map((entry) => DropdownMenuItem(
+                              value: entry.$2, child: Text(entry.$1)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _needType = v ?? ''),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      initialValue: _urgency.isEmpty ? 'Any urgency' : _urgency,
+                      decoration: const InputDecoration(labelText: 'Urgency'),
+                      items: const [
+                        'Any urgency',
+                        'Urgent',
+                        'This week',
+                        'Flexible',
+                      ]
+                          .map(
+                              (v) => DropdownMenuItem(value: v, child: Text(v)))
+                          .toList(),
+                      onChanged: (v) => setState(
+                          () => _urgency = v == 'Any urgency' ? '' : v ?? ''),
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                        icon: Icons.account_balance_wallet_outlined,
+                        iconColor: AppColors.accent,
+                        title: 'Has a clear budget',
+                        subtitle: 'Only Needs with a stated budget',
+                        value: _hasClearBudget,
+                        onChanged: (v) => setState(() => _hasClearBudget = v),
+                        border: border),
+                    _ToggleTile(
+                        icon: Icons.bolt_outlined,
+                        iconColor: AppColors.warning,
+                        title: 'Be among the first',
+                        subtitle: 'Only Needs with no responses yet',
+                        value: _amongFirst,
+                        onChanged: (v) => setState(() => _amongFirst = v),
+                        border: border),
+                    _ToggleTile(
+                        icon: Icons.category_outlined,
+                        iconColor: AppColors.proPurple,
+                        title: 'Matches my categories and roles',
+                        subtitle: 'Use the categories selected in your profile',
+                        value: _matchesMyCategories,
+                        onChanged: (v) =>
+                            setState(() => _matchesMyCategories = v),
+                        border: border),
+                  ],
+                  if (_moduleFilter == MarketplaceModule.loan) ...[
+                    // Employment type
+                    _SectionHeader(
+                      icon: Icons.work_outline_rounded,
+                      label: l10n?.filterEmploymentType ?? 'Employment type',
+                      subtitle: l10n?.filterEmploymentSubtitle ??
+                          "Filter by the borrower's declared employment",
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _kEmploymentOptions.map((opt) {
+                        final selected =
+                            _selectedEmployment.contains(opt.value);
+                        return _FilterChip(
+                          label: _resolveLabel(
+                            l10n,
+                            opt.labelKey,
+                            currency: currencyCode,
+                          ),
+                          selected: selected,
+                          onTap: () => setState(() {
+                            if (selected) {
+                              _selectedEmployment.remove(opt.value);
+                            } else {
+                              _selectedEmployment.add(opt.value);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    // Income bracket
+                    _SectionHeader(
+                      icon: Icons.bar_chart_rounded,
+                      label: l10n?.filterIncomeRange ?? 'Monthly income range',
+                      subtitle: l10n?.filterIncomeSubtitle ??
+                          'Coarse brackets — exact income is never shown',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _kIncomeBracketOptions.map((opt) {
+                        final selected = _selectedIncome.contains(opt.value);
+                        return _FilterChip(
+                          label: _resolveLabel(
+                            l10n,
+                            opt.labelKey,
+                            currency: currencyCode,
+                          ),
+                          selected: selected,
+                          onTap: () => setState(() {
+                            if (selected) {
+                              _selectedIncome.remove(opt.value);
+                            } else {
+                              _selectedIncome.add(opt.value);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    // Boolean toggles — Listing quality signals
+                    _SectionHeader(
+                      icon: Icons.shield_outlined,
+                      label: l10n?.filterQualitySignals ??
+                          'Listing quality signals',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 10),
+                    _ToggleTile(
+                      icon: Icons.receipt_long_outlined,
+                      iconColor: AppColors.accent,
+                      title: l10n?.filterHasSuggestedTerms ??
+                          'Has suggested terms',
+                      subtitle: l10n?.filterHasSuggestedTermsSubtitle ??
+                          'Only Pro-posted listings that carry a locked interest rate, late fee, and repayment schedule',
+                      value: _suggestedTermsOnly,
+                      onChanged: (v) => setState(() => _suggestedTermsOnly = v),
+                      border: border,
                     ),
                   ],
-                ),
-              ),
-              // ── Action row ───────────────────────────────────────────────
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  20,
-                  12,
-                  20,
-                  12 + MediaQuery.of(context).padding.bottom,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _moduleFilter == MarketplaceModule.forex &&
-                            _favoriteCurrenciesLoading
-                        ? null
-                        : _applyAndClose,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.proPurple,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(50),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  if (_moduleFilter == MarketplaceModule.loan) ...[
+                    const SizedBox(height: 24),
+                    // Smart matching section (bank/credit agents only)
+                    _SectionHeader(
+                      icon: Icons.account_balance_rounded,
+                      label:
+                          l10n?.filterSmartMatchingSection ?? 'Smart matching',
+                      textColor: text2,
+                    ),
+                    const SizedBox(height: 10),
+                    _ToggleTile(
+                      icon: Icons.account_balance_outlined,
+                      iconColor: _isAgentEligible
+                          ? AppColors.warning
+                          : text2.withValues(alpha: 0.45),
+                      title: l10n?.filterInstitutionMatches ??
+                          'Institution matches',
+                      subtitle: _isAgentEligible
+                          ? (l10n?.filterInstitutionMatchesSubtitle ??
+                              'Only opted-in loan requests matching your institution.')
+                          : (l10n?.filterInstitutionMatchesIneligible ??
+                              'Set your institution in Profile → Bank & Professional to enable this filter.'),
+                      value: _institutionMatchOnly,
+                      onChanged: _isAgentEligible
+                          ? (v) => setState(() => _institutionMatchOnly = v)
+                          : null,
+                      border: border,
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  // Privacy note
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.proPurple.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppColors.proPurple.withValues(alpha: 0.18),
                       ),
                     ),
-                    child: Text(
-                      'Show results · $_activeFilterCount filters',
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline_rounded,
+                            size: 14, color: AppColors.proPurple),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Filters only narrow what you see. Requester names, '
+                            'exact amounts and exact income are never shown.',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: text2,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // ── Action row ───────────────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                12 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _moduleFilter == MarketplaceModule.forex &&
+                          _favoriteCurrenciesLoading
+                      ? null
+                      : _applyAndClose,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.proPurple,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(50),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Show results · $_activeFilterCount filters',
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -968,6 +1017,16 @@ class _ProFiltersSheetState extends State<_ProFiltersSheet> {
       null => 0,
     };
     return shared + moduleSpecific + (_moduleFilter == null ? 0 : 1);
+  }
+
+  List<String> get _visibleFavoriteCurrencies {
+    if (_showAllFavoriteCurrencies || _favoriteCurrencyOptions.length <= 6) {
+      return _favoriteCurrencyOptions;
+    }
+    final visible = _favoriteCurrencyOptions.take(6).toSet();
+    visible
+        .addAll(_favoriteCurrencies.where(_favoriteCurrencyOptions.contains));
+    return _favoriteCurrencyOptions.where(visible.contains).toList();
   }
 }
 
@@ -1056,8 +1115,8 @@ class _SectionHeader extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               if (subtitle != null) ...[
