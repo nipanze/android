@@ -884,6 +884,7 @@
   "repaymentScheduleLabel": "Gahunda yo kwishyura",
   "monthly": "Buri kwezi",
   "weekly": "Buri cyumweru",
+  "daily": "Buri munsi",
   "oneTimePayment": "Kwishyura rimwe",
   "installmentAmountLabel": "Amafaranga ya buri gice ({currency})",
   "@installmentAmountLabel": {

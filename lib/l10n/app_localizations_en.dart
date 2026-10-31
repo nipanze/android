@@ -1585,6 +1585,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekly => 'Weekly';
 
   @override
+  String get daily => 'Daily';
+
+  @override
   String get oneTimePayment => 'One-time payment';
 
   @override

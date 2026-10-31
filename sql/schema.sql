@@ -150,7 +150,7 @@ CREATE TYPE reveal_status_enum AS ENUM (
 );
 
 CREATE TYPE repayment_frequency_enum AS ENUM (
-    'weekly', 'monthly', 'one_time'
+    'daily', 'weekly', 'monthly', 'one_time'
 );
 
 CREATE TYPE agreement_status_enum AS ENUM (
@@ -546,9 +546,9 @@ CREATE TABLE loan_requests (
     -- Borrower's income context. Stored for request review, but not exposed
     -- through the public marketplace listing view.
     income_source               TEXT NOT NULL,          -- e.g. 'Monthly salary from Kampala City Council'
-    preferred_repayment_plan    TEXT NOT NULL           -- weekly, monthly, one_time
+    preferred_repayment_plan    TEXT NOT NULL           -- daily, weekly, monthly, one_time
                                     CONSTRAINT chk_lr_repayment_plan
-                                    CHECK (preferred_repayment_plan IN ('weekly', 'monthly', 'one_time')),
+                                    CHECK (preferred_repayment_plan IN ('daily', 'weekly', 'monthly', 'one_time')),
     repayment_amount_per_period BIGINT NOT NULL         -- e.g. 200000, in the request's own currency
                                     CONSTRAINT chk_lr_repayment_positive CHECK (repayment_amount_per_period > 0),
     repayment_timeline          TEXT NOT NULL,          -- e.g. '4 months starting March 2026'
@@ -575,7 +575,7 @@ CREATE TABLE loan_requests (
     suggested_repayment_frequency TEXT
                                     CONSTRAINT chk_lr_suggested_repayment_frequency
                                     CHECK (suggested_repayment_frequency IS NULL OR
-                                           suggested_repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+                                           suggested_repayment_frequency IN ('daily', 'weekly', 'monthly', 'one_time')),
     suggested_installment_amount BIGINT
                                     CONSTRAINT chk_lr_suggested_installment_positive
                                     CHECK (suggested_installment_amount IS NULL OR suggested_installment_amount > 0),
@@ -639,7 +639,7 @@ CREATE TABLE loan_offers (
     late_fee_pct         NUMERIC(5,2) NOT NULL
                             CONSTRAINT chk_lo_late_fee_range CHECK (late_fee_pct >= 0 AND late_fee_pct <= 100),
     repayment_frequency  TEXT NOT NULL
-                            CONSTRAINT chk_lo_repayment_frequency CHECK (repayment_frequency IN ('weekly', 'monthly', 'one_time')),
+                            CONSTRAINT chk_lo_repayment_frequency CHECK (repayment_frequency IN ('daily', 'weekly', 'monthly', 'one_time')),
     installment_amount   BIGINT NOT NULL
                             CONSTRAINT chk_lo_installment_positive CHECK (installment_amount > 0),
     proposed_expectations TEXT,   -- optional: lender's additional terms or expectations
@@ -14314,8 +14314,8 @@ CREATE TABLE IF NOT EXISTS public.borrower_information (
             'self_employed',
             'business_owner',
             'student',
-            'unemployed',
-            'other'
+            'retired',
+            'unemployed'
         )),
     employer_business_name TEXT,
     is_government_employee BOOLEAN NOT NULL,

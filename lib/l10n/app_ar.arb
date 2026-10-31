@@ -884,6 +884,7 @@
   "repaymentScheduleLabel": "جدول السداد",
   "monthly": "شهرياً",
   "weekly": "أسبوعياً",
+  "daily": "يومياً",
   "oneTimePayment": "دفعة واحدة",
   "installmentAmountLabel": "قيمة القسط ({currency})",
   "@installmentAmountLabel": {

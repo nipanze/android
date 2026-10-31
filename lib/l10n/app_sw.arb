@@ -884,6 +884,7 @@
   "repaymentScheduleLabel": "Ratiba ya marejesho",
   "monthly": "Kila mwezi",
   "weekly": "Kila wiki",
+  "daily": "Kila siku",
   "oneTimePayment": "Malipo ya mara moja",
   "installmentAmountLabel": "Kiasi cha awamu ({currency})",
   "@installmentAmountLabel": {

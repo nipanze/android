@@ -151,9 +151,11 @@ class ListingCard extends StatelessWidget {
               height: 1.05,
             ),
           );
+    final loanDescription = loan?.description?.trim();
     final description = needs?.specification ??
-        loan?.purpose ??
-        _forexDescription(forex, context);
+        (loanDescription?.isNotEmpty == true
+            ? loanDescription!
+            : loan?.purpose ?? _forexDescription(forex, context));
     final location =
         needs?.location ?? loan?.district ?? _forexLocation(forex, context);
     final isVerified = needs?.trustIsVerified ??

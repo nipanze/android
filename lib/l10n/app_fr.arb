@@ -884,6 +884,7 @@
   "repaymentScheduleLabel": "Calendrier de remboursement",
   "monthly": "Mensuel",
   "weekly": "Hebdomadaire",
+  "daily": "Quotidien",
   "oneTimePayment": "Paiement unique",
   "installmentAmountLabel": "Montant de l'échéance ({currency})",
   "@installmentAmountLabel": {

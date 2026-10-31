@@ -249,6 +249,7 @@ class _ListingsBody extends StatelessWidget {
       preferredRepaymentPlan: listing.preferredRepaymentPlan,
       repaymentAmountPerPeriod: listing.repaymentAmountPerPeriod,
       repaymentTimeline: listing.repaymentTimeline,
+      description: listing.description,
       suggestedInterestRatePct: listing.suggestedInterestRatePct,
       suggestedLateFeePct: listing.suggestedLateFeePct,
       suggestedRepaymentFrequency: listing.suggestedRepaymentFrequency,

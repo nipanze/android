@@ -444,8 +444,12 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
             : draft['location'])
         ?.toString()
         .trim();
+    final isLoanDraft = draft['kind'] == 'loan_request';
     final subtitleParts = [
-      if (category.name.isNotEmpty) category.name,
+      if (isLoanDraft)
+        'Loan request'
+      else if (category.name.isNotEmpty)
+        category.name,
       if (location != null && location.isNotEmpty) location,
     ];
     return Padding(
@@ -456,9 +460,11 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(13),
           onTap: () {
-            final route = draft['kind'] == 'driving_permit'
-                ? '${AppRoutes.needsCreate}?draft=$draftId'
-                : '${AppRoutes.needsCreateFull}?draft=$draftId';
+            final route = isLoanDraft
+                ? '${AppRoutes.listingCreate}?draft=$draftId'
+                : draft['kind'] == 'driving_permit'
+                    ? '${AppRoutes.needsCreate}?draft=$draftId'
+                    : '${AppRoutes.needsCreateFull}?draft=$draftId';
             context.go(route);
           },
           child: Container(
@@ -469,7 +475,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
               borderRadius: BorderRadius.circular(13),
             ),
             child: Row(children: [
-              _iconBox(category.icon, size: 42),
+              _iconBox(isLoanDraft ? '💰' : category.icon, size: 42),
               const SizedBox(width: 9),
               Expanded(
                 child: Column(

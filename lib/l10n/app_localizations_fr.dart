@@ -1608,6 +1608,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get weekly => 'Hebdomadaire';
 
   @override
+  String get daily => 'Quotidien';
+
+  @override
   String get oneTimePayment => 'Paiement unique';
 
   @override

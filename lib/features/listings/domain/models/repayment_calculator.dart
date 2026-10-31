@@ -8,6 +8,7 @@ class RepaymentCalculator {
     if (durationMonths <= 0) return 0;
     return switch (repaymentPlan) {
       'weekly' => durationMonths * 4,
+      'daily' => durationMonths * 30,
       'one_time' => 1,
       'monthly' => durationMonths,
       _ => 0,

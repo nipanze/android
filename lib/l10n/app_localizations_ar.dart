@@ -1578,6 +1578,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weekly => 'أسبوعياً';
 
   @override
+  String get daily => 'يومياً';
+
+  @override
   String get oneTimePayment => 'دفعة واحدة';
 
   @override

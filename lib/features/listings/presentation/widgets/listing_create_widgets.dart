@@ -33,48 +33,61 @@ class ListingStepHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              if (onBack != null) ...[
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
                 SizedBox(
-                  width: 34,
-                  height: 34,
+                  width: 40,
+                  height: 48,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 18,
-                    ),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     onPressed: onBack,
                   ),
                 ),
-                const SizedBox(width: 8),
-              ],
-              Expanded(
-                // Screen title uses Sora (heading font) per app_theme.dart —
-                // headlineSmall already carries AppFonts.heading, no override needed.
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Theme.of(context).dividerColor,
-              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
-              minHeight: 2,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: theme.dividerColor,
+                    valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+                    minHeight: 2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -97,18 +110,17 @@ class ListingInfoBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.42)),
+        color: AppColors.accent.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         text,
         style: const TextStyle(
           fontFamily: AppFonts.body,
-          fontSize: 10.5,
-          color: AppColors.accentLight,
+          fontSize: 12,
+          color: AppColors.accent,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -125,12 +137,14 @@ class ListingFormPanel extends StatelessWidget {
     super.key,
     required this.title,
     required this.children,
+    this.isComplete = false,
     this.subtitle,
   });
 
   final String title;
   final String? subtitle;
   final List<Widget> children;
+  final bool isComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -138,29 +152,39 @@ class ListingFormPanel extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.bg2Dark
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : theme.dividerColor,
+          color: isDark
+              ? AppColors.borderDark.withValues(alpha: 0.35)
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.72),
-              fontSize: 10,
-              letterSpacing: 0.6,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Icon(
+                isComplete ? Icons.check_rounded : Icons.close_rounded,
+                size: 20,
+                color: isComplete ? AppColors.success : AppColors.danger,
+                semanticLabel: isComplete ? 'Complete' : 'Incomplete',
+              ),
+            ],
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
@@ -249,20 +273,24 @@ class LiveRepaymentMathPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     if (principal <= 0 || durationMonths <= 0 || repaymentPlan == null) {
+      final theme = Theme.of(context);
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Theme.of(context).dividerColor),
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.65),
+          ),
         ),
         child: Text(
           l10n?.liveCalcNoData ??
               'Fill in the fields above to see your repayment breakdown.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       );
     }
@@ -277,21 +305,23 @@ class LiveRepaymentMathPanel extends StatelessWidget {
 
     final int borrowingCost =
         totalPayback > principal ? totalPayback - principal : 0;
+    final theme = Theme.of(context);
 
     final planNote = switch (repaymentPlan) {
       'weekly' => l10n?.liveCalcWeeklyNote(durationMonths, periods) ??
           'Weekly plan: $durationMonths months × 4 = $periods payments',
+      'daily' => '$periods daily payments (about 30 per month)',
       'one_time' => l10n?.liveCalcOneTimeNote ?? '1 lump-sum payment',
       _ => l10n?.liveCalcMonthlyNote(periods) ?? '$periods monthly payments',
     };
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+        color: AppColors.accent.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.38)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,14 +329,15 @@ class LiveRepaymentMathPanel extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.calculate_outlined,
-                  size: 16, color: AppColors.accent),
-              const SizedBox(width: 6),
+                  size: 19, color: AppColors.accent),
+              const SizedBox(width: 8),
               Text(
                 (l10n?.liveCalcTitle ?? 'Repayment breakdown').toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                style: theme.textTheme.labelMedium?.copyWith(
                       color: AppColors.accent,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.55,
                     ),
               ),
             ],
@@ -315,13 +346,10 @@ class LiveRepaymentMathPanel extends StatelessWidget {
           Text(
             l10n?.repaymentCalcFormula ??
                 'installment × number of payments = total payback',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
+            style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 11,
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
           ),
           const SizedBox(height: 10),
@@ -338,7 +366,10 @@ class LiveRepaymentMathPanel extends StatelessWidget {
             value: planNote,
           ),
           if (installmentAmount > 0) ...[
-            const Divider(height: 12),
+            Divider(
+              height: 16,
+              color: AppColors.accent.withValues(alpha: 0.24),
+            ),
             MathRow(
               label: l10n?.liveCalcInstallment ?? 'Per period installment',
               value: '$currency ${fmtAmount(installmentAmount)}',
@@ -346,6 +377,7 @@ class LiveRepaymentMathPanel extends StatelessWidget {
             MathRow(
               label: l10n?.liveCalcTotalPayback ?? 'Total payback',
               value: '$currency ${fmtAmount(totalPayback)}',
+              valueColor: AppColors.accent,
               isBold: true,
             ),
             if (borrowingCost > 0)
@@ -378,6 +410,7 @@ class MathRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -385,16 +418,17 @@ class MathRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-                  color: valueColor,
-                ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: valueColor ?? theme.colorScheme.onSurface,
+              fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -501,6 +535,8 @@ class RepaymentScheduleTimeline extends StatelessWidget {
 
   int get _numberOfInstallments {
     switch (repaymentPlan.toLowerCase()) {
+      case 'daily':
+        return durationMonths * 30;
       case 'weekly':
         return durationMonths * 4;
       case 'one_time':
@@ -543,6 +579,10 @@ class RepaymentScheduleTimeline extends StatelessWidget {
   DateTime _instalmentDate(int index) {
     final anchor = anchorDate ?? DateTime.now();
     switch (repaymentPlan.toLowerCase()) {
+      case 'daily':
+        final base = anchor.add(Duration(days: index + 1));
+        return DateTime(base.year, base.month, base.day);
+
       case 'weekly':
         final targetWd = _dueWeekday;
         DateTime base = anchor.add(Duration(days: 7 * (index + 1)));

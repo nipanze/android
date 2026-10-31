@@ -27,3 +27,5 @@ comment on view public.v_loan_listing_descriptions is
 grant select on public.v_loan_listing_descriptions to authenticated, anon;
 
 commit;
+
+notify pgrst, 'reload schema';

@@ -1596,6 +1596,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get weekly => 'Kila wiki';
 
   @override
+  String get daily => 'Kila siku';
+
+  @override
   String get oneTimePayment => 'Malipo ya mara moja';
 
   @override

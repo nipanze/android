@@ -158,6 +158,59 @@ AppException _parsePostgrestError(String code, String message) {
   final forex = _parseForexError(code, message);
   if (forex != null) return forex;
 
+  if (code == '23514' &&
+      message.toLowerCase().contains('chk_lr_repayment_plan')) {
+    return const ValidationException(
+      'Daily repayments are not enabled on the server yet. Choose another plan or contact support.',
+    );
+  }
+  if (code == '23514' &&
+      message
+          .toLowerCase()
+          .contains('borrower_information_employment_status_check')) {
+    return const ValidationException(
+      'Retired employment status is not enabled on the server yet. Apply the borrower status database patch, then try again.',
+    );
+  }
+  if (code == '23514') {
+    return const ValidationException(
+      'One of the selected values is not enabled on the server yet. Apply the latest database updates, then try again.',
+    );
+  }
+  if (code == 'PGRST204') {
+    final missingColumn = RegExp(
+      r"Could not find the '([^']+)' column of '([^']+)'",
+      caseSensitive: false,
+    ).firstMatch(message);
+    if (missingColumn != null) {
+      return DatabaseException(
+        'The server database is missing the '
+        '${missingColumn.group(2)}.${missingColumn.group(1)} column. '
+        'Apply the matching database patch, then try again.',
+      );
+    }
+  }
+  if (code == 'PGRST205') {
+    final missingTable = RegExp(
+      r"Could not find the table '([^']+)'",
+      caseSensitive: false,
+    ).firstMatch(message);
+    if (missingTable != null) {
+      return DatabaseException(
+        'The server database is missing the ${missingTable.group(1)} table. '
+        'Apply the matching database patch, then try again.',
+      );
+    }
+  }
+  if (code == 'PGRST204' ||
+      code == 'PGRST205' ||
+      code == '42703' ||
+      code == '42P01') {
+    return const DatabaseException(
+      'The server database is missing an update required by this form. Apply the latest database patches, then try again.',
+    );
+  }
+
   // Nipanze-specific trigger codes (aligned to v4.0)
   if (message.contains('NIPANZE_KYC_REQUIRED')) {
     return const KycRequiredException();

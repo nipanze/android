@@ -804,6 +804,7 @@
   "repaymentScheduleLabel": "Repayment schedule",
   "monthly": "Monthly",
   "weekly": "Weekly",
+  "daily": "Daily",
   "oneTimePayment": "One-time payment",
   "installmentAmountLabel": "Installment amount ({currency})",
   "@installmentAmountLabel": {

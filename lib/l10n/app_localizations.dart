@@ -2942,6 +2942,12 @@ abstract class AppLocalizations {
   /// **'Weekly'**
   String get weekly;
 
+  /// No description provided for @daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
   /// No description provided for @oneTimePayment.
   ///
   /// In en, this message translates to:

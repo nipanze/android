@@ -203,7 +203,10 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.listingCreate,
             name: 'listingCreate',
-            pageBuilder: (_, state) => _fade(state, const ListingCreatePage()),
+            pageBuilder: (_, state) => _fade(
+              state,
+              ListingCreatePage(draftId: state.uri.queryParameters['draft']),
+            ),
           ),
           GoRoute(
             path: AppRoutes.forexCreate,

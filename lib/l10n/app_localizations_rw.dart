@@ -1592,6 +1592,9 @@ class AppLocalizationsRw extends AppLocalizations {
   String get weekly => 'Buri cyumweru';
 
   @override
+  String get daily => 'Buri munsi';
+
+  @override
   String get oneTimePayment => 'Kwishyura rimwe';
 
   @override
