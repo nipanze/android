@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,7 +18,9 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../../shared/widgets/trust_badges.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../../marketplace/presentation/widgets/lender_required_sheet.dart';
+import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../data/forex_repository.dart';
 
 class ForexDetailPage extends StatefulWidget {
@@ -30,13 +34,21 @@ class ForexDetailPage extends StatefulWidget {
 
 class _ForexDetailPageState extends State<ForexDetailPage> {
   late Future<_ForexDetailData> _future;
+  late final WatchlistCubit _watchlistCubit = getIt<WatchlistCubit>();
   ForexListingModel? _cachedListing;
   String? _ownerId;
 
   @override
   void initState() {
     super.initState();
+    unawaited(_watchlistCubit.load());
     _future = _load();
+  }
+
+  @override
+  void dispose() {
+    _watchlistCubit.close();
+    super.dispose();
   }
 
   Future<_ForexDetailData> _load() async {
@@ -104,7 +116,7 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
               ? context.pop()
               : context.go(AppRoutes.marketplace),
         ),
-        title: Text(l10n?.forexRequestTitle ?? 'Forex request'),
+        title: Text(l10n?.forexRequestTitle ?? 'Forex details'),
         actions: [
           IconButton(
             tooltip: 'Safety Toolkit',
@@ -241,27 +253,93 @@ class _ForexDetailPageState extends State<ForexDetailPage> {
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // ── Make an Offer button (outside card, like loan detail) ──
-                      if (!isOwner)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _openOfferSheet,
-                            icon: const Icon(
-                              Icons.handshake_rounded,
-                              size: 18,
-                            ),
-                            label: Text(l10n?.makeAnOffer ?? 'Make an offer'),
-                          ),
-                        ),
                     ],
                   ),
                 ),
               ),
             ),
+          );
+        },
+      ),
+      bottomNavigationBar: FutureBuilder<_ForexDetailData>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const SizedBox.shrink();
+          final listing = snapshot.data!.listing;
+          final isOwner = user != null && _ownerId == user.id;
+          if (isOwner) return const SizedBox.shrink();
+
+          return BlocBuilder<WatchlistCubit, WatchlistState>(
+            bloc: _watchlistCubit,
+            builder: (context, watchlistState) {
+              final isSaved = _watchlistCubit.isWatched(
+                listing.requestId,
+                module: MarketplaceModule.forex,
+              );
+              return SafeArea(
+                top: false,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outlineVariant
+                            .withValues(alpha: 0.14),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 152,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(152, 48),
+                          ),
+                          onPressed: () async {
+                            if (user == null) {
+                              context.go(AppRoutes.login);
+                              return;
+                            }
+                            final item = MarketplaceItem.forex(listing);
+                            final result = isSaved
+                                ? await _watchlistCubit.remove(item)
+                                : await _watchlistCubit.add(item);
+                            if (!context.mounted ||
+                                result == WatchlistActionResult.success) {
+                              return;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(result ==
+                                        WatchlistActionResult.offline
+                                    ? 'Watchlist changes will sync when you are online.'
+                                    : 'Could not update your watchlist. Please try again.'),
+                              ),
+                            );
+                          },
+                          icon: Icon(isSaved
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded),
+                          label: Text(isSaved ? 'Saved' : 'Watchlist'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _openOfferSheet,
+                          icon: const Icon(Icons.handshake_rounded, size: 18),
+                          label: Text(l10n?.makeAnOffer ?? 'Make an offer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

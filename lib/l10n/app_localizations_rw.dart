@@ -1447,7 +1447,7 @@ class AppLocalizationsRw extends AppLocalizations {
   String get forexSettlementOther => 'Ikindi';
 
   @override
-  String get forexRequestTitle => 'Ubusabe bwa forex';
+  String get forexRequestTitle => 'Ibisobanuro bya forex';
 
   @override
   String get myForexRequestsTitle => 'Ubusabe bwanjye bwa forex';

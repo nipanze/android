@@ -1434,7 +1434,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get forexSettlementOther => 'أخرى';
 
   @override
-  String get forexRequestTitle => 'طلب عملات';
+  String get forexRequestTitle => 'تفاصيل الفوركس';
 
   @override
   String get myForexRequestsTitle => 'طلبات العملات الخاصة بي';

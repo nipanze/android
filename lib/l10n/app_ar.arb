@@ -818,7 +818,7 @@
   "forexSettlementMobileMoney": "محفظة إلكترونية",
   "forexSettlementBankTransfer": "تحويل بنكي",
   "forexSettlementOther": "أخرى",
-  "forexRequestTitle": "طلب عملات",
+  "forexRequestTitle": "تفاصيل الفوركس",
   "myForexRequestsTitle": "طلبات العملات الخاصة بي",
   "noForexRequestsYet": "لا توجد طلبات عملات حتى الآن.",
   "listingDetailTitle": "تفاصيل الإعلان",

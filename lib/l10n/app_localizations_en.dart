@@ -1440,7 +1440,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forexSettlementOther => 'Other';
 
   @override
-  String get forexRequestTitle => 'Forex request';
+  String get forexRequestTitle => 'Forex details';
 
   @override
   String get myForexRequestsTitle => 'My forex requests';

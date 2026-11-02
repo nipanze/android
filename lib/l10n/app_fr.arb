@@ -818,7 +818,7 @@
   "forexSettlementMobileMoney": "Mobile Money",
   "forexSettlementBankTransfer": "Virement bancaire",
   "forexSettlementOther": "Autre",
-  "forexRequestTitle": "Demande de change",
+  "forexRequestTitle": "Détails du forex",
   "myForexRequestsTitle": "Mes demandes de change",
   "noForexRequestsYet": "Aucune demande de change pour le moment.",
   "listingDetailTitle": "Détail de l'annonce",

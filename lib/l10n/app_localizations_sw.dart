@@ -1451,7 +1451,7 @@ class AppLocalizationsSw extends AppLocalizations {
   String get forexSettlementOther => 'Nyingine';
 
   @override
-  String get forexRequestTitle => 'Ombi la forex';
+  String get forexRequestTitle => 'Maelezo ya forex';
 
   @override
   String get myForexRequestsTitle => 'Maombi yangu ya forex';

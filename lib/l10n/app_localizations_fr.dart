@@ -1462,7 +1462,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get forexSettlementOther => 'Autre';
 
   @override
-  String get forexRequestTitle => 'Demande de change';
+  String get forexRequestTitle => 'Détails du forex';
 
   @override
   String get myForexRequestsTitle => 'Mes demandes de change';

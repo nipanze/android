@@ -2675,7 +2675,7 @@ abstract class AppLocalizations {
   /// No description provided for @forexRequestTitle.
   ///
   /// In en, this message translates to:
-  /// **'Forex request'**
+  /// **'Forex details'**
   String get forexRequestTitle;
 
   /// No description provided for @myForexRequestsTitle.
