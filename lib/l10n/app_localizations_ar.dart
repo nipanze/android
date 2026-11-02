@@ -1455,7 +1455,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loanTypeLabel => 'نوع القرض';
 
   @override
-  String get aboutRequest => 'حول الطلب';
+  String get aboutRequest => 'سبب الحاجة إليه';
+
+  @override
+  String get loanInstallmentLabel => 'القسط';
+
+  @override
+  String get loanInterestLabel => 'الفائدة';
+
+  @override
+  String get loanMonthlyFrequency => 'كل شهر';
+
+  @override
+  String get loanWeeklyFrequency => 'كل أسبوع';
+
+  @override
+  String get loanOneTimeFrequency => 'مرة واحدة';
 
   @override
   String get notSpecified => 'غير محدد';

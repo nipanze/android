@@ -1449,7 +1449,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noForexRequestsYet => 'No forex requests yet.';
 
   @override
-  String get listingDetailTitle => 'Loan Request';
+  String get listingDetailTitle => 'Loan details';
 
   @override
   String get needDetailTitle => 'Need details';
@@ -1461,7 +1461,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loanTypeLabel => 'Loan type';
 
   @override
-  String get aboutRequest => 'About the request';
+  String get aboutRequest => 'Why they need it';
+
+  @override
+  String get loanInstallmentLabel => 'Installment';
+
+  @override
+  String get loanInterestLabel => 'Interest';
+
+  @override
+  String get loanMonthlyFrequency => 'every month';
+
+  @override
+  String get loanWeeklyFrequency => 'every week';
+
+  @override
+  String get loanOneTimeFrequency => 'one time';
 
   @override
   String get notSpecified => 'Not specified';

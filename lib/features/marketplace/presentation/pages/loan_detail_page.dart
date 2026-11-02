@@ -24,6 +24,7 @@ import '../widgets/lender_required_sheet.dart';
 import '../widgets/loan_detail/make_offer_sheet.dart';
 import '../widgets/loan_detail/offer_card.dart';
 import '../widgets/pro_required_sheet.dart';
+import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 
 class LoanDetailPage extends StatefulWidget {
   const LoanDetailPage({super.key, required this.requestId});
@@ -45,6 +46,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
   final _repo = getIt<MarketplaceRepository>();
   final _settingsRepo = getIt<SystemSettingsRepository>();
+  late final WatchlistCubit _watchlistCubit = getIt<WatchlistCubit>();
   double _marketBaselinePct = 10.0;
   StreamSubscription<List<LoanOffer>>? _offersSub;
   StreamSubscription<List<MarketplaceItem>>? _listingSub;
@@ -53,6 +55,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   void initState() {
     super.initState();
     _loadSettings();
+    unawaited(_watchlistCubit.load());
     _loadOnce();
   }
 
@@ -66,6 +69,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   void dispose() {
     _offersSub?.cancel();
     _listingSub?.cancel();
+    _watchlistCubit.close();
     super.dispose();
   }
 
@@ -189,12 +193,25 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
     }
 
     final listing = _listing!;
+    final installmentAmount =
+        listing.suggestedInstallmentAmount ?? listing.repaymentAmountPerPeriod;
+    final repaymentFrequency =
+        (listing.suggestedRepaymentFrequency ?? listing.preferredRepaymentPlan)
+            .toLowerCase();
+    final installmentCount = repaymentFrequency.contains('week')
+        ? listing.durationMonths * 4
+        : repaymentFrequency.contains('year')
+            ? listing.durationMonths ~/ 12
+            : repaymentFrequency.contains('one_time') ||
+                    repaymentFrequency.contains('one time')
+                ? 1
+                : listing.durationMonths;
+    final totalPayable = installmentAmount * installmentCount;
     final authState = context.watch<AuthBloc>().state;
     final l10n = AppLocalizations.of(context);
     final user = authState is AuthAuthenticated ? authState.user : null;
     final isOwner = _isOwnerValue;
     final hasMadeOffer = _isParticipant;
-    final canMakeOffer = !isOwner && !hasMadeOffer;
     // Pro borrowers see term-comparison arrows on each offer card
     final isProBorrower = isOwner &&
         authState is AuthAuthenticated &&
@@ -221,7 +238,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               : context.go(AppRoutes.marketplace),
         ),
         title: Text(
-            AppLocalizations.of(context)?.listingDetailTitle ?? 'Loan Request'),
+            AppLocalizations.of(context)?.listingDetailTitle ?? 'Loan details'),
         actions: [
           IconButton(
             tooltip: 'Safety Toolkit',
@@ -253,9 +270,24 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: detailSurface,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : AppColors.borderLight,
+                ),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF18243A).withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -295,7 +327,13 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleSmall
-                                    ?.copyWith(fontSize: 12.5),
+                                    ?.copyWith(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                    ),
                               ),
                             ),
                           ],
@@ -335,7 +373,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                                     : listing.timeRemainingLabel ?? '',
                                 style: TextStyle(
                                   fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: listing.isExpired ||
                                           listing.isClosingSoon6h
                                       ? AppColors.danger
@@ -355,53 +393,140 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   CurrencyAmount(
                     listing.requestedAmount,
                     currency: listing.currency,
-                    fontSize: 27,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
+                  Builder(
+                    builder: (context) {
+                      final badgeColor = listing.hasCollateral
+                          ? AppColors.success
+                          : (isDark
+                              ? AppColors.text2Dark
+                              : AppColors.text2Light);
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              listing.hasCollateral
+                                  ? Icons.verified_user_rounded
+                                  : Icons.shield_outlined,
+                              size: 12,
+                              color: badgeColor,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              listing.hasCollateral
+                                  ? (l10n?.securedCollateralLabel ?? 'Secured')
+                                  : (l10n?.noCollateralLabel ??
+                                      'No collateral'),
+                              style: TextStyle(
+                                color: badgeColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
                   // ── Loan facts ───────────────────────────────────────────
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _LoanFact(
-                        icon: Icons.calendar_month_rounded,
-                        label: l10n?.termLabel ?? 'Term',
-                        value:
-                            '${listing.durationMonths} ${l10n?.months ?? 'months'}',
+                      Expanded(
+                        child: _LoanFact(
+                          icon: Icons.business_outlined,
+                          label: 'Employer',
+                          value: l10n?.notSpecified ?? 'Not specified',
+                        ),
                       ),
-                      _LoanFact(
-                        icon: Icons.location_on_rounded,
-                        label: l10n?.locationLabel ?? 'Location',
-                        value: listing.district,
-                      ),
-                      _LoanFact(
-                        icon: Icons.shield_rounded,
-                        label: l10n?.collateralLabel ?? 'Collateral',
-                        value: listing.hasCollateral
-                            ? (l10n?.securedCollateralLabel ?? 'Secured')
-                            : (l10n?.notSpecified ?? 'Not specified'),
-                      ),
-                      _LoanFact(
-                        icon: Icons.category_rounded,
-                        label: l10n?.loanTypeLabel ?? 'Loan type',
-                        value: listing.title,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _LoanFact(
+                          icon: Icons.work_outline_rounded,
+                          label: 'Working as',
+                          value: listing.incomeSource.trim().isEmpty
+                              ? (l10n?.notSpecified ?? 'Not specified')
+                              : listing.incomeSource.trim(),
+                        ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 12),
-
+                  const SizedBox(height: 14),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _LoanFact(
+                          icon: Icons.calendar_month_rounded,
+                          label: l10n?.termLabel ?? 'Term',
+                          value:
+                              '${listing.durationMonths} ${l10n?.months ?? 'months'}',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _LoanFact(
+                          icon: null,
+                          emoji: '📍',
+                          label: l10n?.locationLabel ?? 'Location',
+                          value: listing.district,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _LoanFact(
+                          icon: Icons.credit_card_rounded,
+                          label: 'Total payable',
+                          value:
+                              '${listing.currency} ${_formatLoanAmount(totalPayable)}',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _LoanFact(
+                          icon: Icons.percent_rounded,
+                          label: l10n?.loanInterestLabel ?? 'Interest',
+                          value: listing.suggestedInterestRatePct == null
+                              ? (l10n?.notSpecified ?? 'Not specified')
+                              : '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%',
+                        ),
+                      ),
+                    ],
+                  ),
                   if (listing.purpose.trim().isNotEmpty) ...[
                     const SizedBox(height: 16),
+                    Divider(
+                      height: 1,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : const Color(0xFFE9EDF4),
+                    ),
+                    const SizedBox(height: 14),
                     _DescriptionSection(
-                      title: l10n?.aboutRequest ?? 'About the request',
+                      title: l10n?.aboutRequest ?? 'Why they need it',
                       body: listing.purpose,
                     ),
                   ],
                   if (listing.description?.trim().isNotEmpty == true) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _DescriptionSection(
                       title: 'How the funds will be used',
                       body: listing.description!.trim(),
@@ -556,42 +681,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
 
             const SizedBox(height: 16),
 
-            if (canMakeOffer)
-              ElevatedButton.icon(
-                onPressed: () {
-                  if (user == null) {
-                    context.go('/auth/login');
-                    return;
-                  }
-                  if (!user.canLend) {
-                    showLenderRequiredSheet(context);
-                    return;
-                  }
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (sheetCtx) => Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
-                      ),
-                      child: MakeOfferSheet(
-                        listing: listing,
-                        onClose: () => Navigator.of(sheetCtx).pop(),
-                        onOfferPlaced: () {
-                          Navigator.of(sheetCtx).pop();
-                          _loadOnce();
-                        },
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.handshake_rounded),
-                label: Text(l10n?.makeAnOffer ?? 'Make an offer'),
-              )
-            else if (hasMadeOffer)
-              _OfferPlacedNotice(),
+            if (hasMadeOffer) _OfferPlacedNotice(),
           ]),
         ),
       ),
@@ -602,6 +692,115 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
               onOfferPlaced: () {
                 setState(() => _showOfferSheet = false);
                 _loadOnce();
+              },
+            )
+          : null,
+      bottomNavigationBar: !isOwner
+          ? BlocBuilder<WatchlistCubit, WatchlistState>(
+              bloc: _watchlistCubit,
+              builder: (context, watchlistState) {
+                final isSaved = _watchlistCubit.isWatched(listing.requestId);
+                return SafeArea(
+                  top: false,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border(
+                        top: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant
+                              .withValues(alpha: 0.14),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 152,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(152, 48),
+                            ),
+                            onPressed: () async {
+                              if (user == null) {
+                                context.go('/auth/login');
+                                return;
+                              }
+                              final result = isSaved
+                                  ? await _watchlistCubit
+                                      .remove(MarketplaceItem.loan(listing))
+                                  : await _watchlistCubit
+                                      .add(MarketplaceItem.loan(listing));
+                              if (!context.mounted ||
+                                  result == WatchlistActionResult.success) {
+                                return;
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result ==
+                                          WatchlistActionResult.offline
+                                      ? 'Watchlist changes will sync when you are online.'
+                                      : 'Could not update your watchlist. Please try again.'),
+                                ),
+                              );
+                            },
+                            icon: Icon(isSaved
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded),
+                            label: Text(isSaved ? 'Saved' : 'Watchlist'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: hasMadeOffer
+                                ? null
+                                : () {
+                                    if (user == null) {
+                                      context.go('/auth/login');
+                                      return;
+                                    }
+                                    if (!user.canLend) {
+                                      showLenderRequiredSheet(context);
+                                      return;
+                                    }
+                                    showModalBottomSheet<void>(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      useSafeArea: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (sheetCtx) => Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom: MediaQuery.of(sheetCtx)
+                                              .viewInsets
+                                              .bottom,
+                                        ),
+                                        child: MakeOfferSheet(
+                                          listing: listing,
+                                          onClose: () =>
+                                              Navigator.of(sheetCtx).pop(),
+                                          onOfferPlaced: () {
+                                            Navigator.of(sheetCtx).pop();
+                                            _loadOnce();
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            icon: Icon(hasMadeOffer
+                                ? Icons.check_rounded
+                                : Icons.handshake_rounded),
+                            label: Text(hasMadeOffer
+                                ? 'Offer placed'
+                                : l10n?.makeAnOffer ?? 'Make an offer'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
             )
           : null,
@@ -619,9 +818,16 @@ class _DescriptionSection extends StatelessWidget {
         children: [
           Text(title.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.accent, fontWeight: FontWeight.bold)),
+                  color: AppColors.accent, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          Text(body, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            body,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+          ),
         ],
       );
 }
@@ -631,21 +837,27 @@ class _LoanFact extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.emoji,
+    this.subtitle,
   });
 
-  final IconData icon;
+  final IconData? icon;
+  final String? emoji;
   final String label;
   final String value;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SizedBox(
-      width: 156,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.accent, size: 20),
+          if (emoji != null)
+            Text(emoji!, style: const TextStyle(fontSize: 16, height: 1.1))
+          else if (icon != null)
+            Icon(icon, color: AppColors.accent, size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -655,18 +867,36 @@ class _LoanFact extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelMedium?.copyWith(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
+                if (subtitle != null && subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -674,6 +904,15 @@ class _LoanFact extends StatelessWidget {
       ),
     );
   }
+}
+
+String _repaymentFrequencyLabel(String frequency, AppLocalizations? l10n) {
+  return switch (frequency.toLowerCase()) {
+    'monthly' => l10n?.loanMonthlyFrequency ?? 'every month',
+    'weekly' => l10n?.loanWeeklyFrequency ?? 'every week',
+    'one_time' => l10n?.loanOneTimeFrequency ?? 'one time',
+    _ => frequency,
+  };
 }
 
 String _formatLoanAmount(int amount) {
@@ -695,7 +934,7 @@ class _ProposedRepaymentPlan extends StatefulWidget {
 }
 
 class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
-  bool _expanded = false;
+  bool _expanded = true;
 
   String fmtAmount(int? n) {
     if (n == null) return '—';
@@ -739,7 +978,7 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Row(
           children: [
             Expanded(
@@ -749,14 +988,78 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
                             .colorScheme
                             .onSurface
                             .withValues(alpha: 0.6),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
                       )),
             ),
             const SizedBox(width: 8),
-            Text(value, style: Theme.of(context).textTheme.bodyMedium),
+            Text(
+              value,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w800, fontSize: 12),
+            ),
           ],
         ),
+      );
+
+  Widget _totalPayableRow(String value) => Container(
+        margin: const EdgeInsets.only(top: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: AppColors.accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Total payable',
+                style: TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _summaryAmount(
+    String label,
+    String currency,
+    int? amount,
+    Color labelColor,
+    Color valueColor,
+    bool alignRight,
+  ) =>
+      Column(
+        crossAxisAlignment:
+            alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text('$label $currency',
+              style: TextStyle(
+                  color: labelColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600)),
+          Text(fmtAmount(amount),
+              style: TextStyle(
+                  color: valueColor,
+                  fontSize: 13,
+                  height: 1.25,
+                  fontWeight: FontWeight.w700)),
+        ],
       );
 
   @override
@@ -767,6 +1070,34 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
     final installment = listing.suggestedInstallmentAmount;
     final freq =
         listing.suggestedRepaymentFrequency ?? listing.preferredRepaymentPlan;
+    final headerTimeline = listing.repaymentTimeline
+        .replaceFirst(
+          RegExp(r'^\s*paid\s+by\s+', caseSensitive: false),
+          '',
+        )
+        .replaceFirst(
+          RegExp(r'\s+for\s+\d+\s+months?\s*$', caseSensitive: false),
+          '',
+        )
+        .trim();
+    final count =
+        _installmentCount(listing, listing.suggestedRepaymentFrequency ?? freq);
+    final total =
+        installment != null && count != null ? installment * count : null;
+    final interest = total == null ? null : total - listing.requestedAmount;
+    final principalShare = total == null || total <= 0
+        ? 1.0
+        : (listing.requestedAmount / total).clamp(0.0, 1.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final foreground =
+        isDark ? const Color(0xFFF5F7FC) : const Color(0xFF172033);
+    final muted = isDark ? const Color(0xFFB7C2D5) : const Color(0xFF657187);
+    final panel = isDark ? const Color(0xFF101827) : Colors.white;
+    final outline = isDark ? const Color(0xFF2B3A55) : const Color(0xFFE0E6EF);
+    final toggleBackground =
+        isDark ? const Color(0xFF1D3156) : const Color(0xFFE8F1FF);
+    final toggleForeground =
+        isDark ? const Color(0xFF77AEFF) : const Color(0xFF2468C8);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -777,119 +1108,141 @@ class _ProposedRepaymentPlanState extends State<_ProposedRepaymentPlan> {
           style: Theme.of(context)
               .textTheme
               .labelSmall
-              ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.bold),
+              ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () => setState(() => _expanded = !_expanded),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .outlineVariant
-                      .withValues(alpha: 0.25)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          '${listing.preferredRepaymentPlan} · ${listing.repaymentTimeline}',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  )),
-                      const SizedBox(height: 6),
-                      if (installment != null)
-                        Text('$currency ${fmtAmount(installment)} / $freq',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.6))),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(_expanded ? Icons.expand_less : Icons.expand_more,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6)),
-              ],
-            ),
-          ),
-        ),
-        if (_expanded) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .outlineVariant
-                      .withValues(alpha: 0.12)),
+              color: panel,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: outline),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _row(
-                    l10n?.preferredRepaymentPlanLabel ??
-                        'Preferred repayment plan',
-                    listing.preferredRepaymentPlan),
-                _row(
-                    l10n?.repaymentTimelineLabel ??
-                        'Repayment timeline & schedule',
-                    listing.repaymentTimeline),
-                if (installment != null)
-                  _row(
-                      l10n?.suggestedInstallmentAmountLabel(currency) ??
-                          'Suggested installment amount ($currency)',
-                      '$currency ${fmtAmount(installment)}'),
-                if (listing.suggestedInterestRatePct != null)
-                  _row('Interest rate',
-                      '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
-                if (listing.suggestedLateFeePct != null)
-                  _row('Late fee',
-                      '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
-                // Totals: show total repayable and total interest when we can compute them
-                if (installment != null) ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Instalments',
+                              style: TextStyle(
+                                  color: muted,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 3),
+                          Text(
+                              installment == null
+                                  ? '—'
+                                  : '$currency ${fmtAmount(installment)}',
+                              style: TextStyle(
+                                  color: foreground,
+                                  fontSize: 23,
+                                  height: 1.05,
+                                  fontWeight: FontWeight.w900)),
+                          const SizedBox(height: 5),
+                          Text('Due $headerTimeline',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: muted,
+                                  fontSize: 14,
+                                  height: 1.2,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(top: 14),
+                      decoration: BoxDecoration(
+                        color: toggleBackground,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _expanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        color: toggleForeground,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+                if (total != null) ...[
+                  const SizedBox(height: 12),
+                  Divider(height: 1, thickness: 1, color: outline),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: principalShare,
+                      minHeight: 8,
+                      color: const Color(0xFF3984F5),
+                      backgroundColor: const Color(0xFFFFB43B),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _summaryAmount(
+                          'Borrowed',
+                          currency,
+                          listing.requestedAmount,
+                          muted,
+                          foreground,
+                          false,
+                        ),
+                      ),
+                      Expanded(
+                        child: _summaryAmount(
+                          'Interest',
+                          currency,
+                          interest?.abs(),
+                          muted,
+                          foreground,
+                          true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (_expanded) ...[
+                  const SizedBox(height: 8),
+                  Divider(
+                    height: 1,
+                    color: outline,
+                  ),
                   const SizedBox(height: 6),
-                  Builder(builder: (context) {
-                    final count = _installmentCount(
-                        listing, listing.suggestedRepaymentFrequency ?? freq);
-                    if (count == null) return const SizedBox.shrink();
-                    final total = installment * count;
-                    final principal = listing.requestedAmount;
-                    final interest = total - principal;
-                    return Column(
-                      children: [
-                        _row('Total amount payable',
-                            '$currency ${fmtAmount(total)}'),
-                        _row('Total interest',
-                            '${interest < 0 ? '-' : ''}$currency ${fmtAmount(interest.abs())}'),
-                      ],
-                    );
-                  }),
+                  if (listing.suggestedLateFeePct != null)
+                    _row('Suggested late fee',
+                        '${listing.suggestedLateFeePct!.toStringAsFixed(1)}%'),
+                  if (listing.suggestedInterestRatePct != null)
+                    _row('Interest rate',
+                        '${listing.suggestedInterestRatePct!.toStringAsFixed(1)}%'),
+                  _row(
+                      'Suggested Timeline', '${listing.durationMonths} months'),
+                  if (installment != null)
+                    _row('Suggested installment amount',
+                        '$currency ${fmtAmount(installment)}'),
+                  if (total != null) ...[
+                    _totalPayableRow('$currency ${fmtAmount(total)}'),
+                  ],
                 ],
               ],
             ),
           ),
-        ]
+        ),
       ],
     );
   }

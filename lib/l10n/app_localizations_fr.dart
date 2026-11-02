@@ -1483,7 +1483,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loanTypeLabel => 'Type de prêt';
 
   @override
-  String get aboutRequest => 'À PROPOS DE LA DEMANDE';
+  String get aboutRequest => 'POURQUOI L\'EMPRUNTEUR EN A BESOIN';
+
+  @override
+  String get loanInstallmentLabel => 'Échéance';
+
+  @override
+  String get loanInterestLabel => 'Intérêt';
+
+  @override
+  String get loanMonthlyFrequency => 'chaque mois';
+
+  @override
+  String get loanWeeklyFrequency => 'chaque semaine';
+
+  @override
+  String get loanOneTimeFrequency => 'une fois';
 
   @override
   String get notSpecified => 'Non précisé';

@@ -152,12 +152,14 @@ class CurrencyAmount extends StatelessWidget {
     super.key,
     required this.currency,
     this.fontSize = 20,
+    this.fontWeight = FontWeight.w600,
     this.color,
   });
 
   final int amount;
   final String currency;
   final double fontSize;
+  final FontWeight fontWeight;
   final Color? color;
 
   @override
@@ -173,7 +175,7 @@ class CurrencyAmount extends StatelessWidget {
       style: TextStyle(
         fontFamily: AppFonts.body,
         fontSize: fontSize,
-        fontWeight: FontWeight.w600,
+        fontWeight: fontWeight,
         color: color ?? AppColors.accent,
       ),
     );
@@ -350,9 +352,8 @@ class ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isOffline = message.startsWith('You’re offline ·');
-    final displayMessage = isOffline
-        ? 'Check your internet connection and try again.'
-        : message;
+    final displayMessage =
+        isOffline ? 'Check your internet connection and try again.' : message;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

@@ -1472,7 +1472,22 @@ class AppLocalizationsSw extends AppLocalizations {
   String get loanTypeLabel => 'Aina ya mkopo';
 
   @override
-  String get aboutRequest => 'KUHUSU OMBI';
+  String get aboutRequest => 'KWA NINI ANAIHITAJI';
+
+  @override
+  String get loanInstallmentLabel => 'Awamu';
+
+  @override
+  String get loanInterestLabel => 'Riba';
+
+  @override
+  String get loanMonthlyFrequency => 'kila mwezi';
+
+  @override
+  String get loanWeeklyFrequency => 'kila wiki';
+
+  @override
+  String get loanOneTimeFrequency => 'mara moja';
 
   @override
   String get notSpecified => 'Haijabainishwa';

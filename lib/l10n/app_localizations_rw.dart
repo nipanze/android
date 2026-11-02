@@ -1468,7 +1468,22 @@ class AppLocalizationsRw extends AppLocalizations {
   String get loanTypeLabel => 'Ubwoko bw\'inguzanyo';
 
   @override
-  String get aboutRequest => 'IBYEREKEYE UBUSABE';
+  String get aboutRequest => 'Impamvu abikeneye';
+
+  @override
+  String get loanInstallmentLabel => 'Igice cyo kwishyura';
+
+  @override
+  String get loanInterestLabel => 'Inyungu';
+
+  @override
+  String get loanMonthlyFrequency => 'buri kwezi';
+
+  @override
+  String get loanWeeklyFrequency => 'buri cyumweru';
+
+  @override
+  String get loanOneTimeFrequency => 'rimwe gusa';
 
   @override
   String get notSpecified => 'Ntabwo byasobanuwe';

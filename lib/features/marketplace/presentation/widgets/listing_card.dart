@@ -453,7 +453,8 @@ class _MainListingArea extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             _MetaIcon(
-              icon: Icons.location_on_rounded,
+              icon: null,
+              emoji: '📍',
               label: location,
               color: mutedColor,
             ),
@@ -565,18 +566,23 @@ class _MetaIcon extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
+    this.emoji,
   });
 
-  final IconData icon;
+  final IconData? icon;
   final String label;
   final Color color;
+  final String? emoji;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
+        if (emoji != null)
+          Text(emoji!, style: const TextStyle(fontSize: 14, height: 1))
+        else if (icon != null)
+          Icon(icon, size: 14, color: color),
         const SizedBox(width: 4),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 170),

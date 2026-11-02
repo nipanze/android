@@ -2693,7 +2693,7 @@ abstract class AppLocalizations {
   /// No description provided for @listingDetailTitle.
   ///
   /// In en, this message translates to:
-  /// **'Loan Request'**
+  /// **'Loan details'**
   String get listingDetailTitle;
 
   /// No description provided for @needDetailTitle.
@@ -2717,8 +2717,38 @@ abstract class AppLocalizations {
   /// No description provided for @aboutRequest.
   ///
   /// In en, this message translates to:
-  /// **'About the request'**
+  /// **'Why they need it'**
   String get aboutRequest;
+
+  /// No description provided for @loanInstallmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment'**
+  String get loanInstallmentLabel;
+
+  /// No description provided for @loanInterestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest'**
+  String get loanInterestLabel;
+
+  /// No description provided for @loanMonthlyFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'every month'**
+  String get loanMonthlyFrequency;
+
+  /// No description provided for @loanWeeklyFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'every week'**
+  String get loanWeeklyFrequency;
+
+  /// No description provided for @loanOneTimeFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'one time'**
+  String get loanOneTimeFrequency;
 
   /// No description provided for @notSpecified.
   ///
