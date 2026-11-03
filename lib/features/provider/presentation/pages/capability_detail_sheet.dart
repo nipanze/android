@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../loan_products/presentation/loan_product_strings.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
 import '../widgets/provider_verification_chip.dart';
@@ -79,6 +80,10 @@ class CapabilityDetailSheet extends StatelessWidget {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     final isJob = capability.isWork;
+    final noProofIndividualLoan =
+        capability.categorySlug == 'financial_services' &&
+            (capability.identityType == 'individual' ||
+                providerType == ProviderCategoryType.individual);
     final hasApprovedRoleProof = capability.roleQualificationClaims.any(
       (claim) => claim['status'] == 'verified' && claim['has_evidence'] == true,
     );
@@ -279,35 +284,60 @@ class CapabilityDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Details summary: Verification checklist section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'WHAT IS NEEDED FOR THE VERIFIED BADGE',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
-                        color: text2,
+              // Individual loan services do not need capability proof.
+              if (noProofIndividualLoan)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.verified_user_outlined,
+                          size: 18, color: AppColors.success),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          loanProductText(context, 'individual_no_proof'),
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.4,
+                            color: isDark
+                                ? const Color(0xFF9AD6A8)
+                                : const Color(0xFF28603D),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    _VerificationChecklist(
-                      capability: capability,
-                      onAddProof: onAddProof,
-                      onAddRoleProof: isJob && !capability.isVerified
-                          ? onAddRoleProof
-                          : null,
-                      onRemoveRoleProof: isJob && !capability.isVerified
-                          ? onRemoveRoleProof
-                          : null,
-                    ),
-                  ],
+                    ],
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'WHAT IS NEEDED FOR THE VERIFIED BADGE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: text2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _VerificationChecklist(
+                        capability: capability,
+                        onAddProof: onAddProof,
+                        onAddRoleProof: isJob && !capability.isVerified
+                            ? onAddRoleProof
+                            : null,
+                        onRemoveRoleProof: isJob && !capability.isVerified
+                            ? onRemoveRoleProof
+                            : null,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 20),
 
               // Action buttons matching Image 2 Screen G

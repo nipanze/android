@@ -119,23 +119,29 @@ begin
     from (select 1) seed
     left join public.provider_category_profiles pcp
       on pcp.user_id = new.user_id and pcp.category_slug = v_category;
-    new.is_active := new.verification_level = 'provider_verified'
-      and exists (
-        select 1 from public.verification_requirements vr
-        where vr.scope_type = 'capability' and vr.scope_id = new.capability_slug
-          and vr.is_active and vr.provider_type in ('both', v_type)
-          and cardinality(vr.required_evidence) > 0
-          and not exists (
-            select 1 from unnest(vr.required_evidence) as required(key)
-            where not exists (
-              select 1 from public.provider_capability_evidence e
-              where e.provider_capability_id = new.id
-                and e.provider_type in ('both', v_type)
-                and e.requirement_key = required.key and e.status = 'approved'
-                and (e.expires_at is null or e.expires_at > now())
+    if v_type = 'individual' then
+      -- Individual loan providers can offer loan products without capability
+      -- proof. Account/KYC checks still apply when an offer is published.
+      new.is_active := true;
+    else
+      new.is_active := new.verification_level = 'provider_verified'
+        and exists (
+          select 1 from public.verification_requirements vr
+          where vr.scope_type = 'capability' and vr.scope_id = new.capability_slug
+            and vr.is_active and vr.provider_type in ('both', v_type)
+            and cardinality(vr.required_evidence) > 0
+            and not exists (
+              select 1 from unnest(vr.required_evidence) as required(key)
+              where not exists (
+                select 1 from public.provider_capability_evidence e
+                where e.provider_capability_id = new.id
+                  and e.provider_type in ('both', v_type)
+                  and e.requirement_key = required.key and e.status = 'approved'
+                  and (e.expires_at is null or e.expires_at > now())
+              )
             )
-          )
-      );
+        );
+    end if;
   elsif v_policy = 'required_proof' then
     new.is_active := new.verification_level = 'provider_verified'
       and exists (
@@ -154,7 +160,10 @@ begin
       new.verification_level := 'self_declared';
       new.verified_by := null;
       new.verified_at := null;
-      if v_policy = 'required_proof' then new.is_active := false; end if;
+      if v_policy = 'required_proof'
+         and not (v_category = 'financial_services' and new.identity_type = 'individual') then
+        new.is_active := false;
+      end if;
     end if;
   end if;
   return new;

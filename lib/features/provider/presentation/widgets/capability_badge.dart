@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../loan_products/presentation/loan_product_strings.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
@@ -62,8 +63,13 @@ class CapabilityBadge extends StatelessWidget {
                   (status == 'expired' && claim['verified_at'] != null));
           return !proofIsAlreadySubmitted;
         });
+    final noProofIndividualLoan =
+        capability.categorySlug == 'financial_services' &&
+            (capability.identityType == 'individual' ||
+                providerType == ProviderCategoryType.individual);
     final canAddProof = onAddProof != null &&
         hasRoleProofToAdd &&
+        !noProofIndividualLoan &&
         capability.status != ProviderCapabilityStatus.providerVerified;
     final icon = capability.categoryIcon ?? (isJob ? '💼' : '🔧');
     final capabilityFallback = NeedCapability(
@@ -102,6 +108,8 @@ class CapabilityBadge extends StatelessWidget {
           capability.latestRejectReason ?? l10n.providerCapabilityRejected;
     } else if (capability.status == ProviderCapabilityStatus.expired) {
       statusNote = l10n.expired;
+    } else if (noProofIndividualLoan) {
+      statusNote = loanProductText(context, 'individual_no_proof');
     } else if (isJob &&
         providerType == ProviderCategoryType.company &&
         capability.qualificationIds.isEmpty &&
