@@ -112,6 +112,7 @@ class ProviderCapabilitySelection {
     this.companyPath = false,
     this.roleEvidenceDrafts = const [],
     this.identitySwitchCompleted = false,
+    this.capabilitiesSaved = false,
   });
 
   final List<String> slugs;
@@ -122,6 +123,7 @@ class ProviderCapabilitySelection {
   final bool companyPath;
   final List<PendingRoleEvidenceDraft> roleEvidenceDrafts;
   final bool identitySwitchCompleted;
+  final bool capabilitiesSaved;
 }
 
 class PendingRoleEvidenceDraft {
@@ -162,6 +164,7 @@ class AddServiceSheet extends StatefulWidget {
     this.initialJobsMode = false,
     this.initialProofRoleSlug,
     this.initialCompanyCertification = false,
+    this.onFinancialServicesContinue,
   });
 
   final Set<String> existingSlugs;
@@ -180,6 +183,8 @@ class AddServiceSheet extends StatefulWidget {
   final bool initialJobsMode;
   final String? initialProofRoleSlug;
   final bool initialCompanyCertification;
+  final Future<String?> Function(ProviderCapabilitySelection selection)?
+      onFinancialServicesContinue;
 
   static Future<ProviderCapabilitySelection?> show(
     BuildContext context, {
@@ -194,6 +199,8 @@ class AddServiceSheet extends StatefulWidget {
     bool initialJobsMode = false,
     String? initialProofRoleSlug,
     bool initialCompanyCertification = false,
+    Future<String?> Function(ProviderCapabilitySelection selection)?
+        onFinancialServicesContinue,
     String? preselectedCategorySlug,
     String defaultCurrency = 'UGX',
     String? initialPersonalName,
@@ -211,7 +218,11 @@ class AddServiceSheet extends StatefulWidget {
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => Navigator.of(sheetContext).pop(),
+              onTap: () {
+                // Use maybePop so PopScope.canPop (which blocks dismissal
+                // while financial services are being saved) is respected.
+                Navigator.of(sheetContext).maybePop();
+              },
             ),
           ),
           Align(
@@ -233,6 +244,7 @@ class AddServiceSheet extends StatefulWidget {
               initialJobsMode: initialJobsMode,
               initialProofRoleSlug: initialProofRoleSlug,
               initialCompanyCertification: initialCompanyCertification,
+              onFinancialServicesContinue: onFinancialServicesContinue,
             ),
           ),
         ],
@@ -293,6 +305,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   List<Map<String, dynamic>> _companyVerificationSubmissions = const [];
   bool _loadingCompanyDetails = false;
   bool _savingCompanyDetails = false;
+  bool _savingFinancialServices = false;
   bool _allowCompanyExit = false;
   ProviderCategoryType? _savedProviderType;
   Map<String, dynamic> _identityPresentation = {};
@@ -440,7 +453,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     }
   }
 
-  ProviderCapabilitySelection _selection() {
+  ProviderCapabilitySelection _selection({bool capabilitiesSaved = false}) {
     final slugs = <String>[];
     if (_providerType != ProviderCategoryType.individual ||
         _selectedCategory?.slug == _financialCategorySlug) {
@@ -525,7 +538,47 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         (draft) => _selectedRoles.contains(draft.roleSlug),
       )),
       companyPath: companyPath,
+      capabilitiesSaved: capabilitiesSaved,
     );
+  }
+
+  Future<void> _continueFinancialServices() async {
+    if (_savingFinancialServices) return;
+    final save = widget.onFinancialServicesContinue;
+    if (save == null) {
+      Navigator.of(context).pop(_selection());
+      return;
+    }
+
+    setState(() => _savingFinancialServices = true);
+    try {
+      final errorMessage = await save(_selection());
+      if (!mounted) return;
+      if (errorMessage == null) {
+        // Reset loading state BEFORE popping so _LoadingDots is removed from
+        // the tree cleanly before the sheet's exit animation begins.
+        // Without this the repeating AnimationController inside _LoadingDots
+        // is still ticking when the route is being dismissed, which triggers a
+        // _handlePersistentFrameCallback crash on Flutter web (DDC).
+        final result = _selection(capabilitiesSaved: true);
+        setState(() => _savingFinancialServices = false);
+        if (!mounted) return;
+        Navigator.of(context).pop(result);
+        return;
+      }
+      setState(() => _savingFinancialServices = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _savingFinancialServices = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
+    }
   }
 
   Future<void> _loadCategories() async {
@@ -1427,7 +1480,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
 
     return PopScope<Object?>(
-      canPop: !_hasUnsavedCompanyDraft || _allowCompanyExit,
+      canPop: (!_hasUnsavedCompanyDraft || _allowCompanyExit) &&
+          !_savingFinancialServices,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _hasUnsavedCompanyDraft) _confirmCompanyExit();
       },
@@ -1781,6 +1835,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                       .individual,
                                                           providerType:
                                                               _providerType,
+                                                          savingServices:
+                                                              _savingFinancialServices,
                                                           scrollController:
                                                               scrollController,
                                                           onToggleCapability:
@@ -1810,11 +1866,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                   _selectedCategory
                                                                           ?.slug ==
                                                                       _financialCategorySlug
-                                                              ? () => Navigator
-                                                                      .of(
-                                                                          context)
-                                                                  .pop(
-                                                                      _selection())
+                                                              ? _continueFinancialServices
                                                               : _openCompanyDetails,
                                                           onNextKind: () {
                                                             setState(() {
@@ -3422,6 +3474,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     required this.iWantJobs,
     required this.companyType,
     required this.providerType,
+    this.savingServices = false,
     required this.scrollController,
     required this.onToggleCapability,
     required this.onToggleRole,
@@ -3445,6 +3498,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   final bool iWantJobs;
   final bool companyType;
   final ProviderCategoryType? providerType;
+  final bool savingServices;
   final ScrollController scrollController;
   final ValueChanged<String> onToggleCapability;
   final ValueChanged<String> onToggleRole;
@@ -3897,20 +3951,68 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: hasServices ? onSaveServices : null,
-                child: Text(
-                  hasServices
-                      ? l10n.btnContinue
-                      : l10n.providerTypeSelectService,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 15),
-                ),
+                onPressed:
+                    hasServices && !savingServices ? onSaveServices : null,
+                child: savingServices
+                    ? const _LoadingDots()
+                    : Text(
+                        hasServices
+                            ? l10n.btnContinue
+                            : l10n.providerTypeSelectService,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15),
+                      ),
               ),
           ]),
         ),
       ],
     );
   }
+}
+
+class _LoadingDots extends StatefulWidget {
+  const _LoadingDots();
+
+  @override
+  State<_LoadingDots> createState() => _LoadingDotsState();
+}
+
+class _LoadingDotsState extends State<_LoadingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: 'Saving services',
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            final start = index * 0.22;
+            final end = (start + 0.56).clamp(0.0, 1.0);
+            return FadeTransition(
+              opacity: Tween<double>(begin: 0.25, end: 1).animate(
+                CurvedAnimation(
+                  parent: _controller,
+                  curve: Interval(start, end, curve: Curves.easeInOut),
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2),
+                child: Text('●', style: TextStyle(fontSize: 10)),
+              ),
+            );
+          }),
+        ),
+      );
 }
 
 // ---------------------------------------------------------------------------

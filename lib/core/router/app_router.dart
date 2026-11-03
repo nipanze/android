@@ -19,6 +19,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/kyc/presentation/pages/kyc_page.dart';
 import '../../features/listings/presentation/pages/listing_create_page.dart';
 import '../../features/listings/presentation/pages/my_listings_page.dart';
+import '../../features/loan_products/presentation/pages/loan_products_page.dart';
 import '../../features/marketplace/domain/models/marketplace_item.dart';
 import '../../features/marketplace/presentation/pages/agreement_review_page.dart';
 import '../../features/marketplace/presentation/pages/contact_details_page.dart';
@@ -60,6 +61,11 @@ class AppRoutes {
   static const String myListings = '/listings/my-listings';
   static const String listingCreate =
       '/listings/create'; // ← top-level, not nested
+  static const String loanProducts = '/provider/loan-products';
+  static const String loanProductCreate = '/provider/loan-products/new';
+  static const String loanProductEdit =
+      '/provider/loan-products/:productId/edit';
+  static const String loanProductMarketplace = '/loan-products';
   static const String forexCreate = '/forex/create';
   static const String needsCreate = '/needs/create';
   static const String needsCreateFull = '/needs/create/full';
@@ -245,6 +251,33 @@ class AppRouter {
             path: AppRoutes.myListings,
             name: 'myListings',
             pageBuilder: (_, state) => _fade(state, const MyListingsPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.loanProducts,
+            name: 'loanProducts',
+            pageBuilder: (_, state) => _fade(state, const LoanProductsPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.loanProductCreate,
+            name: 'loanProductCreate',
+            pageBuilder: (_, state) =>
+                _fade(state, const LoanProductFormPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.loanProductEdit,
+            name: 'loanProductEdit',
+            pageBuilder: (_, state) => _fade(
+              state,
+              LoanProductFormPage(
+                productId: state.pathParameters['productId'],
+              ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.loanProductMarketplace,
+            name: 'loanProductMarketplace',
+            pageBuilder: (_, state) =>
+                _fade(state, const LoanProductMarketplacePage()),
           ),
           GoRoute(
             path: AppRoutes.positions,

@@ -5,11 +5,13 @@ import 'dart:async';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -95,6 +97,15 @@ class _ProviderServicesView extends StatelessWidget {
           appBar: AppBar(
             title: Text(l10n.providerServicesTitle),
             centerTitle: false,
+            actions: [
+              if (loaded.capabilityProfilesEnabled &&
+                  loaded.categoryTypes.containsKey('financial_services'))
+                IconButton(
+                  tooltip: 'Loan products',
+                  onPressed: () => context.push(AppRoutes.loanProducts),
+                  icon: const Icon(Icons.account_balance_outlined),
+                ),
+            ],
           ),
           body: RefreshIndicator(
             onRefresh: () =>
@@ -219,6 +230,18 @@ class _ProviderServicesView extends StatelessWidget {
       defaultCurrency: defaultCurrency,
       initialProofRoleSlug: initialProofRoleSlug,
       initialCompanyCertification: initialCompanyCertification,
+      onFinancialServicesContinue: (selection) async {
+        final saved = await cubit.addCapabilitiesAndReport(
+          selection.slugs,
+          categorySlug: selection.categorySlug,
+          metadataBySlug: selection.metadataBySlug,
+        );
+        if (saved) return null;
+        final saveState = cubit.state;
+        return saveState is CapabilitiesError
+            ? saveState.message
+            : 'Could not save Financial Services. Check your connection and try again.';
+      },
     );
     if (selection?.identitySwitchCompleted == true) {
       await cubit.loadWithOpportunities();
@@ -230,21 +253,51 @@ class _ProviderServicesView extends StatelessWidget {
       return;
     }
     if (selection?.companyPath == true) {
-      await cubit.loadWithOpportunities();
+      final shouldOpenLoanProduct = selection != null &&
+          selection.categorySlug == 'financial_services' &&
+          selection.slugs.isNotEmpty;
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.companyProfileSaved)),
         );
       }
+      if (context.mounted && shouldOpenLoanProduct) {
+        await _openLoanProductSetup(context);
+      }
+      if (context.mounted) await cubit.loadWithOpportunities();
       return;
     }
+    var capabilitiesSaved = selection?.capabilitiesSaved ?? false;
     if (selection != null &&
+        !capabilitiesSaved &&
         (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {
-      await cubit.addCapabilities(
+      capabilitiesSaved = await cubit.addCapabilitiesAndReport(
         selection.slugs,
-        categorySlug: selection.categorySlug!,
+        categorySlug: selection.categorySlug,
         metadataBySlug: selection.metadataBySlug,
       );
+    }
+    final isFinancialServiceSelection =
+        selection?.categorySlug == 'financial_services' &&
+            (selection?.slugs.isNotEmpty ?? false);
+    if (isFinancialServiceSelection) {
+      if (capabilitiesSaved) {
+        if (context.mounted) await _openLoanProductSetup(context);
+        if (context.mounted) await cubit.loadWithOpportunities();
+      } else if (context.mounted) {
+        final currentState = cubit.state;
+        final message = currentState is CapabilitiesError
+            ? currentState.message
+            : 'Could not save Financial Services. Check your connection and try again.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.danger,
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+      return;
     }
     await cubit.loadWithOpportunities();
 
@@ -562,6 +615,15 @@ class _ProviderServicesView extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _openLoanProductSetup(BuildContext context) async {
+    // showModalBottomSheet completes as soon as pop is requested, while its
+    // reverse animation is still running. Let that route finish dismissing
+    // before pushing the next page onto the shell navigator.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    if (!context.mounted) return;
+    await context.pushNamed<void>('loanProductCreate');
   }
 
   Widget _workRoleRemovalNote(IconData icon, String label, Color color) =>

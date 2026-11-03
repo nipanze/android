@@ -755,3 +755,22 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 ### Checkpoint
 
 - Implementation is staged for review before Part B. SQL has not been run. Flutter analysis, database/RLS validation, staging journey checks, and 390 px screenshots remain pending.
+
+## 18.1 Stage 4.19 — Loan Products (Part B)
+
+### Scope
+
+- Add provider-posted loan products as a separate catalogue and workflow. Borrower `loan_requests` and lender `loan_offers` remain unchanged.
+- Support the seven product categories, category-specific purposes, product drafts, active/paused/closed/archived states, plan quotas, featured limits, and a public active-products catalogue.
+- Keep products identity-scoped to the provider's selected Individual or Company financial capability. Publish checks the feature flag, active account, phone, KYC, company/capability eligibility, and subscription limits.
+- Continue from a successfully saved Financial Services provider selection into the loan product form. Link provider product management and public browsing from Provider Services and Marketplace.
+
+### Files and SQL
+
+- New standalone patch: `sql/patch_loan_products.sql` (not run here; apply after the base schema and Part A Financial Services patches).
+- UI/repository: `lib/features/loan_products/`.
+- Router and entry points: `lib/core/router/app_router.dart`, `lib/features/provider/presentation/pages/provider_services_page.dart`, and `lib/features/marketplace/presentation/pages/marketplace_page.dart`.
+
+### Checkpoint
+
+- Part B implementation is ready for review. `flutter analyze --no-pub lib` reports no errors (informational lints remain). Full analysis finds a compile error in an existing test fixture at `test/features/provider/capabilities_test.dart:653` because its cubit call omits the now-required `categorySlug`; tests were not run. SQL has not been run, and database/RLS validation and staging journey checks remain pending. Part C request matching and Activity integration has not started.

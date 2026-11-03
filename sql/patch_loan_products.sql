@@ -232,14 +232,16 @@ begin
   if jsonb_typeof(v_terms)<>'object' then raise exception 'Invalid product terms.' using errcode='22023'; end if;
   if p_product_id is null then
     insert into public.loan_products(provider_id,identity_type,provider_capability_id,category_slug,
-      purpose_slug,product_title,short_description,minimum_amount,maximum_amount,currency_code,terms)
+      purpose_slug,product_title,short_description,minimum_amount,maximum_amount,currency_code,terms,is_featured)
     values(v_user,v_identity,v_capability,v_category,v_purpose,v_title,v_description,
-      v_min,v_max,v_currency,v_terms) returning id into v_id;
+      v_min,v_max,v_currency,v_terms,coalesce((v_terms->>'featured')::boolean,false)) returning id into v_id;
   else
     update public.loan_products set identity_type=v_identity,provider_capability_id=v_capability,
       category_slug=v_category,purpose_slug=v_purpose,product_title=v_title,
       short_description=v_description,minimum_amount=v_min,maximum_amount=v_max,
-      currency_code=v_currency,terms=v_terms,status=case when status='archived' then status else 'draft' end,
+      currency_code=v_currency,terms=v_terms,
+      is_featured=coalesce((v_terms->>'featured')::boolean,false),
+      status=case when status='archived' then status else 'draft' end,
       updated_at=now()
     where id=p_product_id and provider_id=v_user and status<>'archived'
     returning id into v_id;
@@ -334,6 +336,8 @@ set search_path=public,private,pg_temp as $$
 declare v_plan text;v_country text;v_limit int;v_count int;v_featured_limit int;v_featured int;
 begin
   if auth.uid() is null then raise exception 'Not authenticated.' using errcode='42501'; end if;
+  if not private.loan_products_feature_enabled(auth.uid()) then
+    raise exception 'Provider loan products are disabled.' using errcode='P0216'; end if;
   select coalesce(s.plan::text,'free'),p.country into v_plan,v_country from public.profiles p
    left join lateral(select plan from public.subscriptions where user_id=p.id and status='active'
    order by created_at desc limit 1)s on true where p.id=auth.uid();

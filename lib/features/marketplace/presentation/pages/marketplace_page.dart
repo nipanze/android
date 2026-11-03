@@ -199,6 +199,23 @@ class _MarketplaceView extends StatelessWidget {
                     ),
                   ),
                   // ── Notification bell ─────────────────────────────────
+                  Tooltip(
+                    message: 'Loan products',
+                    child: SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        tooltip: 'Loan products',
+                        icon: const Icon(
+                          Icons.account_balance_outlined,
+                          size: 21,
+                        ),
+                        onPressed: () =>
+                            context.push(AppRoutes.loanProductMarketplace),
+                      ),
+                    ),
+                  ),
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
                       final unread =

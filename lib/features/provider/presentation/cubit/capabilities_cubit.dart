@@ -83,19 +83,29 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     String? categorySlug,
     Map<String, Map<String, dynamic>> metadataBySlug = const {},
   }) async {
+    await addCapabilitiesAndReport(
+      slugs,
+      categorySlug: categorySlug,
+      metadataBySlug: metadataBySlug,
+    );
+  }
+
+  Future<bool> addCapabilitiesAndReport(
+    List<String> slugs, {
+    String? categorySlug,
+    Map<String, Map<String, dynamic>> metadataBySlug = const {},
+  }) async {
     try {
       await _repo.addCapabilities(
         slugs,
         categorySlug: categorySlug,
         metadataBySlug: metadataBySlug,
       );
-      await loadWithOpportunities();
+      return true;
     } catch (e) {
       OfflineService().reportRequestFailure(e);
-      if (state is! CapabilitiesLoaded ||
-          parseSupabaseError(e) is! NetworkException) {
-        emit(CapabilitiesError(userFacingErrorMessage(e)));
-      }
+      emit(CapabilitiesError(userFacingErrorMessage(e)));
+      return false;
     }
   }
 

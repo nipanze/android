@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 import '../../../core/errors/app_exception.dart';
 
@@ -78,7 +78,6 @@ class LoanProductRepository {
       final rows = await _client
           .from('currencies')
           .select('code,name,is_market_currency')
-          .eq('is_market_currency', true)
           .order('code');
       return (rows as List)
           .whereType<Map>()
@@ -91,14 +90,10 @@ class LoanProductRepository {
 
   Future<List<Map<String, dynamic>>> getMyProducts() async {
     try {
-      final rows = await _client
-          .from('loan_products')
-          .select('''
+      final rows = await _client.from('loan_products').select('''
             *,loan_product_categories(name),
             loan_product_purposes(name),provider_capabilities(need_capabilities(name))
-          ''')
-          .eq('provider_id', _userId)
-          .order('updated_at', ascending: false);
+          ''').eq('provider_id', _userId).order('updated_at', ascending: false);
       return (rows as List)
           .whereType<Map>()
           .map((row) => row.cast<String, dynamic>())
@@ -124,7 +119,8 @@ class LoanProductRepository {
     }
   }
 
-  Future<String> saveDraft({String? productId, required Map<String, dynamic> payload}) async {
+  Future<String> saveDraft(
+      {String? productId, required Map<String, dynamic> payload}) async {
     try {
       final result = await _client.rpc(
         'save_loan_product_draft',

@@ -534,3 +534,9 @@ Apply order:
 2. Apply `sql/patch_capability_profiles.sql` if capability roles/kinds/qualifications are not already present.
 3. Apply `sql/patch_job_seeking_profiles.sql`.
 4. Enable `system_settings.job_profiles_enabled` only after staging verification.
+
+### Provider loan products
+
+Loan Products are provider offers, separate from borrower loan requests and lender loan offers. Providers with an eligible, identity-matched Financial Services capability can save drafts, publish products, manage status, and view plan quotas. Active products are browsable from Marketplace; matching products to borrower requests and Activity notifications are a later Part C.
+
+Apply `sql/patch_loan_products.sql` after the base schema and the Financial Services provider capability patch. The patch is standalone and safe to rerun. Review and validate it in staging before production. The app flow is under `lib/features/loan_products/`, with management linked from Provider Services and browsing linked from Marketplace.
