@@ -14,6 +14,67 @@ class ListingRepository {
 
   String get _uid => _client.auth.currentUser!.id;
 
+  Future<bool> loanProductsEnabled() async {
+    try {
+      final profile = await _client
+          .from('profiles')
+          .select('country')
+          .eq('id', _uid)
+          .maybeSingle();
+      final country = profile?['country']?.toString();
+      final rows = await _client
+          .from('system_settings')
+          .select('setting_value,country')
+          .eq('setting_key', 'capability_profiles_enabled')
+          .eq('is_public', true);
+      final settings = (rows as List).whereType<Map>().toList();
+      final selected = settings.firstWhere(
+        (row) => row['country'] == country,
+        orElse: () => settings.firstWhere(
+          (row) => row['country'] == null,
+          orElse: () => const {},
+        ),
+      );
+      return ['true', '1'].contains(
+        selected['setting_value']?.toString().toLowerCase(),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLoanProductCategories() async {
+    try {
+      final rows = await _client
+          .from('loan_product_categories')
+          .select('slug,name,sort_order')
+          .eq('is_active', true)
+          .order('sort_order');
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getLoanProductPurposes() async {
+    try {
+      final rows = await _client
+          .from('loan_product_purposes')
+          .select('category_slug,slug,name,sort_order')
+          .eq('is_active', true)
+          .order('sort_order');
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
   Future<BorrowerInformation?> getBorrowerInformation() async {
     try {
       final data = await _client
@@ -84,6 +145,8 @@ class ListingRepository {
     String? collateralDetails,
     int? collateralEstimatedValue,
     String? collateralLocation,
+    String? loanCategory,
+    String? loanPurpose,
     String country = 'UG',
   }) async {
     try {
@@ -95,6 +158,8 @@ class ListingRepository {
             'borrower_id': _uid,
             'title': title,
             'purpose': purpose,
+            if (loanCategory != null) 'loan_category': loanCategory,
+            if (loanPurpose != null) 'loan_purpose': loanPurpose,
             'requested_amount': requestedAmount,
             'duration_months': durationMonths,
             'district': district,

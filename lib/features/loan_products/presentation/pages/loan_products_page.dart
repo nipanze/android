@@ -89,6 +89,64 @@ class _LoanProductsPageState extends State<LoanProductsPage> {
     }
   }
 
+  Future<void> _showProductActivity() async {
+    try {
+      final results = await Future.wait([
+        _repository.getMatches(),
+        _repository.getEnquiries(),
+      ]);
+      if (!mounted) return;
+      final matches = results[0];
+      final enquiries = results[1];
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Loan product activity'),
+          content: SizedBox(
+            width: 420,
+            height: 420,
+            child: ListView(children: [
+              Text('Matching borrower requests',
+                  style: Theme.of(context).textTheme.titleMedium),
+              if (matches.isEmpty) const Text('No matching requests yet.'),
+              for (final row in matches)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.compare_arrows),
+                  title: Text(row['request_title']?.toString() ?? ''),
+                  subtitle: Text(
+                    '${row['currency_code']} ${row['requested_amount']} · ${row['district']}',
+                  ),
+                ),
+              const Divider(),
+              Text('Product enquiries',
+                  style: Theme.of(context).textTheme.titleMedium),
+              if (enquiries.isEmpty) const Text('No enquiries yet.'),
+              for (final row in enquiries)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.mark_email_unread_outlined),
+                  title: Text(row['product_title']?.toString() ?? ''),
+                  subtitle: Text(row['message']?.toString() ?? ''),
+                ),
+            ]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            )
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -98,6 +156,11 @@ class _LoanProductsPageState extends State<LoanProductsPage> {
       appBar: AppBar(
         title: Text(loanProductText(context, 'title')),
         actions: [
+          IconButton(
+            tooltip: 'Loan product activity',
+            onPressed: _showProductActivity,
+            icon: const Icon(Icons.notifications_active_outlined),
+          ),
           IconButton(
             tooltip: loanProductText(context, 'browse'),
             onPressed: () => context.push('/loan-products'),
@@ -512,6 +575,7 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
 
   Map<String, dynamic> _terms({int? step}) => {
         'interest_method': _interestMethod,
+        'lending_capacity': _c('lending_capacity').text.trim(),
         'interest_rate':
             _interestFree == true ? '0' : _c('interest_rate').text.trim(),
         'interest_free': _interestFree,
@@ -992,10 +1056,7 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
                           _stepContent(),
                           if (_step == 6) ...[
                             const SizedBox(height: 8),
-                            Text(
-                                t(_identityType == 'individual'
-                                    ? 'publish_gate_individual'
-                                    : 'publish_gate'),
+                            Text(t('publish_gate'),
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ],
@@ -1120,6 +1181,7 @@ class _LoanProductMarketplacePageState
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _products = [];
+  final _enquiryController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -1137,6 +1199,66 @@ class _LoanProductMarketplacePageState
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _enquire(Map<String, dynamic> product) async {
+    _enquiryController.clear();
+    final message = await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Enquire about this product'),
+          content: TextField(
+            controller: _enquiryController,
+            minLines: 3,
+            maxLines: 6,
+            onChanged: (_) => setDialogState(() {}),
+            decoration: const InputDecoration(
+              labelText: 'Your question',
+              hintText: 'Ask the provider about this loan product',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: _enquiryController.text.trim().length < 5
+                  ? null
+                  : () => Navigator.pop(
+                        context,
+                        _enquiryController.text.trim(),
+                      ),
+              child: const Text('Send enquiry'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (message == null || message.length < 5 || !mounted) return;
+    try {
+      await _repository.enquire(
+        productId: product['id'].toString(),
+        message: message,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Enquiry sent.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _enquiryController.dispose();
+    super.dispose();
   }
 
   @override
@@ -1173,18 +1295,59 @@ class _LoanProductMarketplacePageState
                                   ]),
                                   Text(
                                       '${product['provider_name'] ?? ''} · ${product['identity_type'] == 'company' ? 'Company' : 'Individual'}'),
+                                  if (product['identity_type'] == 'company' &&
+                                      product['provider_logo_url'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          product['provider_logo_url']
+                                              .toString(),
+                                          width: 64,
+                                          height: 64,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(Icons.business),
+                                        ),
+                                      ),
+                                    ),
                                   const SizedBox(height: 4),
                                   Text(
                                       '${product['category_name'] ?? ''} · ${product['purpose_name'] ?? ''}'),
                                   const SizedBox(height: 8),
                                   Text(
                                       '${product['currency_code'] ?? ''} ${product['minimum_amount'] ?? ''} – ${product['maximum_amount'] ?? ''}'),
+                                  Text(_marketTerms(product)),
+                                  if (product['terms'] is Map &&
+                                      (product['terms']['eligible_locations']
+                                          is List))
+                                    Text(
+                                      'Eligibility: ${(product['terms']['eligible_locations'] as List).join(', ')}',
+                                    ),
                                   const SizedBox(height: 8),
                                   Text(product['short_description']
                                           ?.toString() ??
                                       ''),
+                                  const SizedBox(height: 8),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: FilledButton.tonalIcon(
+                                      onPressed: () => _enquire(product),
+                                      icon: const Icon(Icons.mail_outline),
+                                      label: const Text('Enquire'),
+                                    ),
+                                  ),
                                 ]),
                           )),
                       ]),
       );
+
+  String _marketTerms(Map<String, dynamic> product) {
+    final terms = Map<String, dynamic>.from(product['terms'] as Map? ?? {});
+    final rate = terms['interest_free'] == true
+        ? 'Interest-free'
+        : '${terms['interest_rate'] ?? '—'}% (${terms['interest_method'] ?? '—'})';
+    return '$rate · ${terms['repayment_frequency'] ?? '—'} repayment';
+  }
 }

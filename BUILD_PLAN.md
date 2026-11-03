@@ -761,16 +761,16 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 ### Scope
 
 - Add provider-posted loan products as a separate catalogue and workflow. Borrower `loan_requests` and lender `loan_offers` remain unchanged.
-- Support the seven product categories, category-specific purposes, product drafts, active/paused/closed/archived states, plan quotas, featured limits, and a public active-products catalogue.
-- Keep products identity-scoped to the provider's selected Individual or Company financial capability. Publish checks the feature flag, active account, phone, KYC, and subscription limits. Individual offers do not require capability evidence; Company offers still require approved capability proof.
+- Support the seven product categories, category-specific purposes, product drafts, active/paused/unavailable/archived states, plan quotas, featured limits, and a public active-products catalogue.
+- Keep products identity-scoped to the provider's selected Individual or Company financial capability. Publish checks the feature flag, active account, phone, KYC, plan limits, and approved capability proof for Companies. Individuals do not need capability proof.
 - Individual Financial Services selection continues to an in-drawer preview. Saving confirms the selected capabilities and returns to Provider Services. Loan posting is a separate follow-up form build and is not embedded in this selection flow.
 
 ### Files and SQL
 
-- New standalone patch: `sql/patch_loan_products.sql` (not run here; apply after the base schema and Part A Financial Services patches).
+- New standalone patches: `sql/patch_loan_products.sql` and `sql/patch_loan_products_part_b_hardening.sql` (not run here; apply the first after the base schema and Part A Financial Services patch, then apply the hardening patch after the verification-policy, company-profile, and company-logo patches).
 - UI/repository: `lib/features/loan_products/`.
 - Router and entry points: `lib/core/router/app_router.dart`, `lib/features/provider/presentation/pages/provider_services_page.dart`, and `lib/features/marketplace/presentation/pages/marketplace_page.dart`.
 
 ### Checkpoint
 
-- Part B implementation is ready for review. `flutter analyze --no-pub lib` reports no errors (informational lints remain). Full analysis finds a compile error in an existing test fixture at `test/features/provider/capabilities_test.dart:653` because its cubit call omits the now-required `categorySlug`; tests were not run. SQL has not been run, and database/RLS validation and staging journey checks remain pending. Part C request matching and Activity integration has not started.
+- Part B implementation includes product authoring, management, plan quotas, server-side publish gates, and marketplace display. Individuals do not require capability proof; Companies do. Part C implementation adds category/purpose coverage, structured classification to the existing borrower form, eligible matching, notifications, borrower request detail product matches, and product enquiries in Activity. New patches: `sql/patch_loan_products.sql`, `sql/patch_loan_products_part_b_hardening.sql`, and `sql/patch_loan_products_part_c_matching.sql` (not run). Build validation, staging RLS/journey validation, and 390 px screenshots remain pending.

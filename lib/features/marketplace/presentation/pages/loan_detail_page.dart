@@ -17,6 +17,7 @@ import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/domain/models/nipanze_user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../settings/data/system_settings_repository.dart';
+import '../../../loan_products/data/loan_product_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/loan_listing.dart';
 import '../../domain/models/marketplace_item.dart';
@@ -37,6 +38,7 @@ class LoanDetailPage extends StatefulWidget {
 class _LoanDetailPageState extends State<LoanDetailPage> {
   LoanListing? _listing;
   List<LoanOffer> _offers = [];
+  List<Map<String, dynamic>> _matchedProducts = const [];
   bool _loading = true;
   String? _error;
   bool _showOfferSheet = false;
@@ -45,6 +47,7 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
   bool _isParticipant = false;
 
   final _repo = getIt<MarketplaceRepository>();
+  final _loanProductRepo = getIt<LoanProductRepository>();
   final _settingsRepo = getIt<SystemSettingsRepository>();
   late final WatchlistCubit _watchlistCubit = getIt<WatchlistCubit>();
   double _marketBaselinePct = 10.0;
@@ -99,11 +102,21 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
         widget.requestId,
         includePrivate: isOwner,
       );
+      List<Map<String, dynamic>> matchedProducts = const [];
+      if (isOwner) {
+        try {
+          matchedProducts =
+              await _loanProductRepo.getProductsForRequest(widget.requestId);
+        } catch (_) {
+          // Product matching is an optional, flag-gated addition.
+        }
+      }
 
       if (!mounted) return;
       setState(() {
         _listing = listing;
         _offers = offers;
+        _matchedProducts = matchedProducts;
         _isOwnerValue = isOwner;
         // The RPC only returns rows after it has confirmed participation. Its
         // lender labels are deliberately anonymised, so never compare them to
@@ -556,6 +569,40 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                 ],
               ),
             ),
+
+            if (isOwner && _matchedProducts.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: detailSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Loan products matching your request',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    for (final product in _matchedProducts)
+                      Card(
+                        child: ListTile(
+                          leading: Icon(product['identity_type'] == 'company'
+                              ? Icons.business_outlined
+                              : Icons.person_outline),
+                          title:
+                              Text(product['product_title']?.toString() ?? ''),
+                          subtitle: Text(
+                            '${product['provider_name']} · ${product['identity_type']} · ${product['category_name']} / ${product['purpose_name']}\n${product['currency_code']} ${product['minimum_amount']} – ${product['maximum_amount']}',
+                          ),
+                          isThreeLine: true,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
 
             if (isOwner || hasMadeOffer || _offers.isNotEmpty) ...[
               const SizedBox(height: 16),

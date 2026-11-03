@@ -191,6 +191,12 @@ class _ListingCreatePageState extends State<ListingCreatePage>
   final _collateralValueController = TextEditingController();
   final _collateralLocationController = TextEditingController();
   String? _selectedPurpose;
+  String? _loanProductCategory;
+  String? _loanProductPurpose;
+  bool _loanProductClassificationEnabled = false;
+  bool _loanProductClassificationLoading = true;
+  List<Map<String, dynamic>> _loanProductCategories = const [];
+  List<Map<String, dynamic>> _loanProductPurposes = const [];
   String? _customPurpose;
   String? _district;
   bool _hasCollateral = false;
@@ -290,9 +296,36 @@ class _ListingCreatePageState extends State<ListingCreatePage>
       controller.addListener(_refreshButtonState);
     }
     _loadLimits();
+    _loadLoanProductClassification();
     _loadBorrowerInformation();
     _loadRecentRequests();
     if (_draftId != null) _loadLoanDraft();
+  }
+
+  Future<void> _loadLoanProductClassification() async {
+    final repository = getIt<ListingRepository>();
+    final enabled = await repository.loanProductsEnabled();
+    if (!enabled) {
+      if (mounted) setState(() => _loanProductClassificationLoading = false);
+      return;
+    }
+    try {
+      final results = await Future.wait([
+        repository.getLoanProductCategories(),
+        repository.getLoanProductPurposes(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _loanProductClassificationEnabled = true;
+        _loanProductClassificationLoading = false;
+        _loanProductCategories = results[0];
+        _loanProductPurposes = results[1];
+      });
+    } catch (_) {
+      // The existing loan request flow remains usable if the optional catalog
+      // has not been installed in this environment.
+      if (mounted) setState(() => _loanProductClassificationLoading = false);
+    }
   }
 
   Future<void> _loadRecentRequests() async {
@@ -315,6 +348,8 @@ class _ListingCreatePageState extends State<ListingCreatePage>
   bool get _hasDraftContent =>
       _draftId != null ||
       _selectedPurpose != null ||
+      _loanProductCategory != null ||
+      _loanProductPurpose != null ||
       _titleController.text.trim().isNotEmpty ||
       _amountController.text.trim().isNotEmpty ||
       _durationController.text.trim().isNotEmpty ||
@@ -361,6 +396,8 @@ class _ListingCreatePageState extends State<ListingCreatePage>
       _titleController.text = draft['request_title']?.toString() ?? '';
       final savedPurpose = draft['purpose']?.toString();
       _selectedPurpose = _purposes.contains(savedPurpose) ? savedPurpose : null;
+      _loanProductCategory = draft['loan_category']?.toString();
+      _loanProductPurpose = draft['loan_purpose']?.toString();
       _customPurpose = draft['custom_purpose']?.toString();
       _customPurposeController.text = _customPurpose ?? '';
       _amountController.text = draft['amount']?.toString() ?? '';
@@ -435,6 +472,8 @@ class _ListingCreatePageState extends State<ListingCreatePage>
           'step': _step,
           'request_title': _titleController.text,
           'purpose': _selectedPurpose,
+          'loan_category': _loanProductCategory,
+          'loan_purpose': _loanProductPurpose,
           'custom_purpose': _customPurpose,
           'amount': _amountController.text,
           'duration': _durationController.text,
@@ -653,7 +692,10 @@ class _ListingCreatePageState extends State<ListingCreatePage>
   bool get _loanDetailsReady {
     final amount = int.tryParse(_amountController.text);
     final duration = int.tryParse(_durationController.text);
-    final purposeReady = _selectedPurpose != null &&
+    final purposeReady = (!_loanProductClassificationLoading &&
+            (!_loanProductClassificationEnabled ||
+                (_loanProductCategory != null && _loanProductPurpose != null))) &&
+        _selectedPurpose != null &&
         (_selectedPurpose != 'Other' ||
             ((_customPurpose?.trim().isNotEmpty ?? false) &&
                 _titleController.text.trim().length >= 4));
@@ -938,6 +980,8 @@ class _ListingCreatePageState extends State<ListingCreatePage>
         collateralLocation: _hasCollateral && collateralLocation.isNotEmpty
             ? collateralLocation
             : null,
+        loanCategory: _loanProductCategory,
+        loanPurpose: _loanProductPurpose,
         country: authState.user.country,
       );
     } catch (e) {
@@ -1203,11 +1247,66 @@ class _ListingCreatePageState extends State<ListingCreatePage>
           const SizedBox(height: 14),
           ListingFormPanel(
             title: l10n?.panelTheBasics ?? 'The basics',
-            isComplete: _selectedPurpose != null &&
+            isComplete: (!_loanProductClassificationLoading &&
+                    (!_loanProductClassificationEnabled ||
+                        (_loanProductCategory != null &&
+                            _loanProductPurpose != null))) &&
+                _selectedPurpose != null &&
                 (_selectedPurpose != 'Other' ||
                     ((_customPurpose?.trim().isNotEmpty ?? false) &&
                         _titleController.text.trim().length >= 4)),
             children: [
+              if (_loanProductClassificationEnabled) ...[
+                DropdownButtonFormField<String>(
+                  initialValue: _loanProductCategory,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Loan category',
+                  ),
+                  items: _loanProductCategories
+                      .map((row) => DropdownMenuItem(
+                            value: row['slug']?.toString(),
+                            child: Text(row['name']?.toString() ?? ''),
+                          ))
+                      .toList(),
+                  onChanged: (value) => setState(() {
+                    _loanProductCategory = value;
+                    _loanProductPurpose = null;
+                    _scheduleDraftSave();
+                  }),
+                  validator: (value) => _loanProductClassificationEnabled &&
+                          value == null
+                      ? 'Select a loan category'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _loanProductPurpose,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Loan purpose for matching',
+                  ),
+                  items: _loanProductPurposes
+                      .where((row) =>
+                          row['category_slug'] == _loanProductCategory)
+                      .map((row) => DropdownMenuItem(
+                            value: row['slug']?.toString(),
+                            child: Text(row['name']?.toString() ?? ''),
+                          ))
+                      .toList(),
+                  onChanged: _loanProductCategory == null
+                      ? null
+                      : (value) => setState(() {
+                            _loanProductPurpose = value;
+                            _scheduleDraftSave();
+                          }),
+                  validator: (value) => _loanProductClassificationEnabled &&
+                          value == null
+                      ? 'Select a loan purpose'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+              ],
               DropdownButtonFormField<String>(
                 initialValue: _selectedPurpose,
                 decoration: InputDecoration(

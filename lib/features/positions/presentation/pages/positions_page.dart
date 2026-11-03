@@ -13,6 +13,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../listings/presentation/pages/my_listings_page.dart';
+import '../../../listings/data/listing_repository.dart';
+import '../../../loan_products/data/loan_product_repository.dart';
 import '../../../marketplace/domain/models/agreement.dart';
 import '../../domain/models/lender_offer.dart';
 import '../cubit/positions_cubit.dart';
@@ -30,6 +32,97 @@ class PositionsPage extends StatelessWidget {
   }
 }
 
+class _LoanProductActivityTab extends StatefulWidget {
+  const _LoanProductActivityTab();
+
+  @override
+  State<_LoanProductActivityTab> createState() =>
+      _LoanProductActivityTabState();
+}
+
+class _LoanProductActivityTabState extends State<_LoanProductActivityTab> {
+  final _repository = getIt<LoanProductRepository>();
+  List<Map<String, dynamic>> _matches = const [];
+  List<Map<String, dynamic>> _enquiries = const [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final result = await Future.wait([
+        _repository.getMatches(),
+        _repository.getEnquiries(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _matches = result[0];
+        _enquiries = result[1];
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) return ErrorState(message: _error!, onRetry: _load);
+    if (_matches.isEmpty && _enquiries.isEmpty) {
+      return const Center(child: Text('No loan product activity yet.'));
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(14),
+        children: [
+          Text('Matching borrower requests',
+              style: Theme.of(context).textTheme.titleMedium),
+          if (_matches.isEmpty) const ListTile(title: Text('No matches yet.')),
+          for (final row in _matches)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.compare_arrows),
+                title: Text(row['request_title']?.toString() ?? ''),
+                subtitle: Text(
+                  '${row['product_title']} · ${row['currency_code']} ${row['requested_amount']} · ${row['district']}',
+                ),
+                onTap: () => context.push('/marketplace/${row['request_id']}'),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text('Product enquiries',
+              style: Theme.of(context).textTheme.titleMedium),
+          if (_enquiries.isEmpty)
+            const ListTile(title: Text('No enquiries yet.')),
+          for (final row in _enquiries)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.mark_email_unread_outlined),
+                title: Text(row['product_title']?.toString() ?? ''),
+                subtitle: Text(row['message']?.toString() ?? ''),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PositionsView extends StatefulWidget {
   const _PositionsView();
 
@@ -39,12 +132,24 @@ class _PositionsView extends StatefulWidget {
 
 class _PositionsViewState extends State<_PositionsView>
     with SingleTickerProviderStateMixin {
-  late final TabController _tc;
+  late TabController _tc;
+  bool _loanProductsEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _tc = TabController(length: 3, vsync: this);
+    _loadProductActivityFlag();
+  }
+
+  Future<void> _loadProductActivityFlag() async {
+    final enabled = await getIt<ListingRepository>().loanProductsEnabled();
+    if (!mounted || !enabled) return;
+    setState(() {
+      _tc.dispose();
+      _tc = TabController(length: 4, vsync: this);
+      _loanProductsEnabled = true;
+    });
   }
 
   @override
@@ -139,6 +244,7 @@ class _PositionsViewState extends State<_PositionsView>
               Tab(text: AppLocalizations.of(context)!.tabMyRequests),
               Tab(text: AppLocalizations.of(context)!.tabMyOffers),
               Tab(text: AppLocalizations.of(context)!.tabDeals),
+              if (_loanProductsEnabled) const Tab(text: 'Loan products'),
             ],
           ),
 
@@ -160,6 +266,7 @@ class _PositionsViewState extends State<_PositionsView>
                     const MyListingsPage(),
                     _LenderTab(state: state),
                     _DealsTab(state: state),
+                    if (_loanProductsEnabled) const _LoanProductActivityTab(),
                   ],
                 );
               },

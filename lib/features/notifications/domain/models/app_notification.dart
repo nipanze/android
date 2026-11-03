@@ -57,6 +57,13 @@ class AppNotification extends Equatable {
 
   /// Deep link route — used to navigate on tap.
   String? get deepLinkRoute {
+    if (data?['kind'] == 'loan_product_match') {
+      final matchedRequestId = data?['request_id']?.toString();
+      if (matchedRequestId != null) return '/marketplace/$matchedRequestId';
+    }
+    if (data?['kind'] == 'loan_product_enquiry') {
+      return '/provider/loan-products';
+    }
     final agreementId =
         (data?['agreement_id'] ?? data?['agreementId'])?.toString();
     final needId = (data?['need_id'] ?? data?['needId'])?.toString();

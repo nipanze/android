@@ -110,10 +110,22 @@ class LoanProductRepository {
           .select()
           .order('is_featured', ascending: false)
           .order('published_at', ascending: false);
-      return (rows as List)
+      final products = (rows as List)
           .whereType<Map>()
           .map((row) => row.cast<String, dynamic>())
           .toList();
+      for (final product in products) {
+        final path = product['provider_logo_url']?.toString();
+        if (path == null || path.isEmpty) continue;
+        try {
+          product['provider_logo_url'] = await _client.storage
+              .from('provider-evidence')
+              .createSignedUrl(path, 3600);
+        } catch (_) {
+          product['provider_logo_url'] = null;
+        }
+      }
+      return products;
     } catch (e) {
       throw parseSupabaseError(e);
     }
@@ -151,6 +163,60 @@ class LoanProductRepository {
     try {
       final result = await _client.rpc('get_my_loan_product_quota');
       return Map<String, dynamic>.from(result as Map);
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getMatches({String? productId}) async {
+    try {
+      final result = await _client.rpc('get_my_loan_product_matches',
+          params: {'p_product_id': productId});
+      return (result as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getProductsForRequest(
+      String requestId) async {
+    try {
+      final result = await _client.rpc('get_matching_products_for_request',
+          params: {'p_request_id': requestId});
+      return (result as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getEnquiries() async {
+    try {
+      final rows = await _client
+          .from('v_my_loan_product_enquiries')
+          .select()
+          .order('created_at', ascending: false);
+      return (rows as List)
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList();
+    } catch (e) {
+      throw parseSupabaseError(e);
+    }
+  }
+
+  Future<void> enquire(
+      {required String productId, required String message}) async {
+    try {
+      await _client.rpc('enquire_loan_product', params: {
+        'p_product_id': productId,
+        'p_message': message,
+      });
     } catch (e) {
       throw parseSupabaseError(e);
     }
