@@ -35,7 +35,7 @@ class FormSuggestionStrip extends StatelessWidget {
               label,
               style: theme.textTheme.labelMedium?.copyWith(
                 color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 6),
@@ -43,33 +43,29 @@ class FormSuggestionStrip extends StatelessWidget {
           Wrap(
             spacing: 7,
             runSpacing: 7,
-            children: values
-                .map((value) {
-                  final selected = value == selectedValue;
-                  return Material(
-                      color: selected
-                          ? colors.primary
-                          : colors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10),
-                      child: InkWell(
-                        onTap: () => onSelected(value),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 11, vertical: 8),
-                          child: Text(value,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: selected
-                                    ? colors.onPrimary
-                                    : colors.onSurface,
-                              )),
-                        ),
-                      ),
-                    );
-                })
-                .toList(),
+            children: values.map((value) {
+              final selected = value == selectedValue;
+              return Material(
+                color: selected
+                    ? colors.primary
+                    : colors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  onTap: () => onSelected(value),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+                    child: Text(value,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: selected ? colors.onPrimary : colors.onSurface,
+                        )),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

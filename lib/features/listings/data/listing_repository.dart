@@ -47,7 +47,7 @@ class ListingRepository {
     try {
       final rows = await _client
           .from('loan_product_categories')
-          .select('slug,name,sort_order')
+          .select('slug,name,request_picker_name,sort_order')
           .eq('is_active', true)
           .order('sort_order');
       return (rows as List)

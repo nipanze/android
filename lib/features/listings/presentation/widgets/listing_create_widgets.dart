@@ -49,7 +49,8 @@ class ListingStepHeader extends StatelessWidget {
                   height: 48,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                    icon:
+                        const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                     onPressed: onBack,
                   ),
                 ),
@@ -112,7 +113,7 @@ class ListingInfoBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.09),
+        color: AppColors.accent.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
@@ -157,9 +158,7 @@ class ListingFormPanel extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDark
-              ? AppColors.borderDark.withValues(alpha: 0.35)
-              : theme.colorScheme.outlineVariant.withValues(alpha: 0.28),
+          color: isDark ? AppColors.borderDark : const Color(0xFFBEC4CC),
         ),
       ),
       child: Column(
@@ -171,9 +170,9 @@ class ListingFormPanel extends StatelessWidget {
                 child: Text(
                   title.toUpperCase(),
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.onSurface,
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -334,11 +333,11 @@ class LiveRepaymentMathPanel extends StatelessWidget {
               Text(
                 (l10n?.liveCalcTitle ?? 'Repayment breakdown').toUpperCase(),
                 style: theme.textTheme.labelMedium?.copyWith(
-                      color: AppColors.accent,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.55,
-                    ),
+                  color: AppColors.accent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.55,
+                ),
               ),
             ],
           ),
@@ -347,10 +346,10 @@ class LiveRepaymentMathPanel extends StatelessWidget {
             l10n?.repaymentCalcFormula ??
                 'installment × number of payments = total payback',
             style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 11,
-                  fontStyle: FontStyle.italic,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 10),
           MathRow(
