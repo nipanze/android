@@ -3620,6 +3620,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'أقدم مهاراتي الشخصية مباشرةً للعملاء بصفتي مستقلاً أو عاملاً.';
 
   @override
+  String get providerTypeFinancialIndividualDesc =>
+      'أقدم التمويل باسمي ضمن هويتي الفردية.';
+
+  @override
   String get providerTypeCompany => 'شركة / مؤسسة';
 
   @override

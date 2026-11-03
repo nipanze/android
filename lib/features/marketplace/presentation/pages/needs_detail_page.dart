@@ -804,6 +804,7 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
       if (selection != null && selection.slugs.isNotEmpty && mounted) {
         await provRepo.addCapabilities(
           selection.slugs,
+          categorySlug: selection.categorySlug!,
           metadataBySlug: selection.metadataBySlug,
         );
         if (mounted) {

@@ -3641,6 +3641,10 @@ class AppLocalizationsRw extends AppLocalizations {
       'Ntanga ubumenyi bwanjye ku bakiriya ku giti cyanjye, ndi umwigenga cyangwa umukozi.';
 
   @override
+  String get providerTypeFinancialIndividualDesc =>
+      'Ntanga inkunga mu izina ryanjye, nk\'Umuntu ku giti cye.';
+
+  @override
   String get providerTypeCompany => 'Ikigo / Umuryango';
 
   @override

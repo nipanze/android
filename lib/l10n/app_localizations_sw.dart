@@ -3639,6 +3639,10 @@ class AppLocalizationsSw extends AppLocalizations {
       'Ninatoa ujuzi wangu binafsi moja kwa moja kwa wateja, kama mfanyakazi huru au mfanyakazi.';
 
   @override
+  String get providerTypeFinancialIndividualDesc =>
+      'Ninatoa ufadhili kwa jina langu chini ya utambulisho wangu wa Mtu Binafsi.';
+
+  @override
   String get providerTypeCompany => 'Kampuni / Shirika';
 
   @override

@@ -931,6 +931,39 @@ INSERT INTO loan_requests (
  'Business Working Capital', 'Short-term working capital to fulfil supplier contracts at DFCU Bank',
  7000000, 6, 'Salary — UGX 6,500,000', 'monthly', 1200000, '6 months starting February 2026', 'Central',
  'active', NOW() - INTERVAL '6 days 20 hours', NOW() + INTERVAL '14 days', NULL, 2, 29, NOW() - INTERVAL '6 days 21 hours');
+
+-- Structured category and purpose for seeded requests. Keep the original
+-- purpose narrative unchanged for compatibility with existing loan screens.
+UPDATE public.loan_requests
+SET loan_category = CASE
+      WHEN lower(title) ~ 'school|university|tuition|certification|education' THEN 'Education Loans'
+      WHEN lower(title) ~ 'medical|clinic|surgery|health' THEN 'Personal Loans'
+      WHEN lower(title) ~ 'boda|motorcycle|vehicle|van|car' THEN 'Asset Financing'
+      WHEN lower(title) ~ 'farm|irrigation|crop|tractor|agri' THEN 'Agricultural Loans'
+      WHEN lower(title) ~ 'land|home|property|mortgage|renovation' THEN 'Property Loans'
+      WHEN lower(title) ~ 'inventory|stock|working capital|business|bakery|shop|tailor|equipment|startup|expansion|agribusiness|phone repair|generator' THEN 'Business Loans'
+      ELSE 'Personal Loans'
+    END,
+    loan_purpose = CASE
+      WHEN lower(title) ~ 'boda' THEN 'Boda Boda Financing'
+      WHEN lower(title) ~ 'motorcycle' THEN 'Motorcycle Financing'
+      WHEN lower(title) ~ 'school' THEN 'School Fees'
+      WHEN lower(title) ~ 'university|tuition' THEN 'University Tuition'
+      WHEN lower(title) ~ 'certification|professional' THEN 'Professional Courses'
+      WHEN lower(title) ~ 'medical|clinic|surgery|health' THEN 'Medical Expenses'
+      WHEN lower(title) ~ 'irrigation|farm equipment' THEN 'Agricultural Equipment'
+      WHEN lower(title) ~ 'farm|crop|tractor|agri' THEN 'Crop Production'
+      WHEN lower(title) ~ 'renovation|improvement' THEN 'Home Improvement'
+      WHEN lower(title) ~ 'home construction' THEN 'Home Construction'
+      WHEN lower(title) ~ 'inventory|stock|restock' THEN 'Inventory / Stock Purchase'
+      WHEN lower(title) ~ 'working capital' THEN 'Working Capital'
+      WHEN lower(title) ~ 'equipment|machine|tailor|phone repair|generator' THEN 'Equipment for Business'
+      WHEN lower(title) ~ 'expansion|boost' THEN 'Business Expansion'
+      WHEN lower(title) ~ 'land|home|property|mortgage' THEN 'Other Property Needs'
+      ELSE 'Other Business Needs'
+    END
+WHERE id::text LIKE 'c1000000-%' OR id::text LIKE 'c2000000-%';
+
 -- ---- loan_requests: other EAC countries (one each, demonstrating cross-border marketplace) ----
 INSERT INTO loan_requests (
     id, borrower_id, country, title, purpose, requested_amount, duration_months,
@@ -979,7 +1012,29 @@ INSERT INTO loan_requests (
  3500000, 12, 'Salary — SOS 4,200,000', 'monthly', 340000, '12 months starting March 2026', 'Mogadishu',
  'active', NOW() - INTERVAL '1 days', NOW() + INTERVAL '14 days', NULL, 1, 13, NOW() - INTERVAL '1 days 10 minutes');
 
--- ---- loan_offers: other EAC countries (all cross-border by design) ----
+-- Classify the cross-border demo requests inserted immediately above.
+UPDATE public.loan_requests
+SET loan_category = CASE
+      WHEN lower(title) ~ 'university|tuition|school' THEN 'Education Loans'
+      WHEN lower(title) ~ 'boda|motorcycle|vehicle|van|car' THEN 'Asset Financing'
+      WHEN lower(title) ~ 'farm|irrigation|crop|tractor|agri' THEN 'Agricultural Loans'
+      WHEN lower(title) ~ 'land|home|property|mortgage' THEN 'Property Loans'
+      ELSE 'Business Loans'
+    END,
+    loan_purpose = CASE
+      WHEN lower(title) ~ 'boda' THEN 'Boda Boda Financing'
+      WHEN lower(title) ~ 'motorcycle' THEN 'Motorcycle Financing'
+      WHEN lower(title) ~ 'university|tuition' THEN 'University Tuition'
+      WHEN lower(title) ~ 'school' THEN 'School Fees'
+      WHEN lower(title) ~ 'machine|equipment|sewing|generator' THEN 'Equipment for Business'
+      WHEN lower(title) ~ 'stock|inventory' THEN 'Inventory / Stock Purchase'
+      WHEN lower(title) ~ 'working capital' THEN 'Working Capital'
+      WHEN lower(title) ~ 'expansion' THEN 'Business Expansion'
+      ELSE 'Other Business Needs'
+    END
+WHERE id::text LIKE 'c2000000-%';
+
+ -- ---- loan_offers: other EAC countries (all cross-border by design) ----
 INSERT INTO loan_offers (
     id, request_id, lender_id, offer_amount, interest_rate_pct, late_fee_pct,
     repayment_frequency, installment_amount, proposed_expectations,

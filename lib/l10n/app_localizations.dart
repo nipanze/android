@@ -6544,6 +6544,12 @@ abstract class AppLocalizations {
   /// **'I offer my personal skills directly to clients, as a freelancer or worker.'**
   String get providerTypeIndividualDesc;
 
+  /// No description provided for @providerTypeFinancialIndividualDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'I provide financing in my own name under my Individual identity.'**
+  String get providerTypeFinancialIndividualDesc;
+
   /// No description provided for @providerTypeCompany.
   ///
   /// In en, this message translates to:

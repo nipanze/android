@@ -10,6 +10,8 @@ class LoanListing extends Equatable {
     required this.requestId,
     required this.title,
     required this.purpose,
+    this.loanCategory,
+    this.loanPurpose,
     required this.district,
     required this.country,
     required this.durationMonths,
@@ -53,6 +55,8 @@ class LoanListing extends Equatable {
   final String requestId;
   final String title;
   final String purpose;
+  final String? loanCategory;
+  final String? loanPurpose;
   final String district;
   final String country;
   final int durationMonths;
@@ -146,6 +150,8 @@ class LoanListing extends Equatable {
       requestId: (map['request_id'] ?? map['id']) as String,
       title: map['title'] as String? ?? 'Untitled',
       purpose: map['purpose'] as String? ?? '',
+      loanCategory: map['loan_category'] as String?,
+      loanPurpose: map['loan_purpose'] as String?,
       district: map['district'] as String? ?? '',
       durationMonths: map['duration_months'] as int? ?? 0,
       requestedAmount: (map['requested_amount'] as num?)?.toInt() ?? 0,

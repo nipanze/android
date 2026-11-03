@@ -17,6 +17,7 @@ import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_capability.dart';
 import '../../../needs/domain/models/need_category.dart';
+import '../../../needs/domain/models/need_catalog_localizations.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_company_profile.dart';
@@ -52,6 +53,35 @@ const _financialMetadataSlugs = {
   'other_financial_services',
 };
 const _financialOrderedSlugs = [
+  'personal_loan_services',
+  'emergency_loan_services',
+  'salary_loan_services',
+  'medical_financing',
+  'business_startup_financing',
+  'working_capital_financing',
+  'business_expansion_financing',
+  'sme_financing',
+  'boda_boda_financing',
+  'car_financing',
+  'tuk_tuk_financing',
+  'motorcycle_financing',
+  'smartphone_financing',
+  'laptop_financing',
+  'heavy_machinery_financing',
+  'equipment_financing',
+  'agricultural_loan_services',
+  'livestock_financing',
+  'crop_financing',
+  'farm_equipment_financing',
+  'mortgage_financing',
+  'land_financing',
+  'property_development_financing',
+  'school_fees_financing',
+  'university_financing',
+  'education_loan_services',
+  'travel_financing',
+  'wedding_financing',
+  'other_lifestyle_financing',
   'bank_loan_agent',
   'money_lender_private_lender',
   'financial_advisory',
@@ -222,6 +252,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   List<NeedCategory> _categories = [];
   List<NeedCapability> _categoryCapabilities = [];
   List<ProviderServiceRole> _categoryRoles = [];
+  Set<String> _identityExistingSlugs = {};
   final Set<String> _selected = {};
 
   // Work profile selection state
@@ -411,7 +442,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   ProviderCapabilitySelection _selection() {
     final slugs = <String>[];
-    if (_providerType != ProviderCategoryType.individual) {
+    if (_providerType != ProviderCategoryType.individual ||
+        _selectedCategory?.slug == _financialCategorySlug) {
       slugs.addAll(_selected);
     }
     final metadataBySlug = <String, Map<String, dynamic>>{};
@@ -498,7 +530,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   Future<void> _loadCategories() async {
     final cats = List<NeedCategory>.of(
-      await widget.needsRepository.getCategories(),
+      await widget.needsRepository.getProviderCategories(
+        includeFinancialServices: widget.capabilityProfilesEnabled,
+      ),
     );
     if (!mounted) return;
     final mostRecentByCategory = <String, DateTime>{};
@@ -551,6 +585,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   Future<void> _selectCategory(NeedCategory cat) async {
     setState(() {
       _selected.clear();
+      _identityExistingSlugs.clear();
       _selectedRoles.clear();
       _companyProfile = null;
       _companyVerificationSubmissions = const [];
@@ -559,8 +594,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       _showAudience = false;
       _loading = true;
     });
-    final caps =
-        await widget.needsRepository.getCapabilities(categorySlug: cat.slug);
+    final caps = await widget.needsRepository.getCapabilities(
+      categorySlug: cat.slug,
+      includeFinancialServices: cat.slug == _financialCategorySlug,
+    );
     var needsProviderType = false;
     ProviderCategoryType? providerType;
     if (widget.capabilityProfilesEnabled) {
@@ -661,9 +698,17 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final categoryWorkEnabled = widget.workProfilesEnabled &&
         await widget.providerRepository.isCategoryWorkProfileEnabled(cat.slug);
     for (final cap in filteredCaps) {
-      if (widget.existingSlugs.contains(cap.slug) &&
-          providerType != ProviderCategoryType.individual) {
+      final existingForIdentity = widget.existingCapabilities.any((saved) =>
+          saved.capabilitySlug == cap.slug &&
+          saved.identityType == providerType?.name);
+      final legacyCompanyCapability = providerType ==
+              ProviderCategoryType.company &&
+          widget.existingSlugs.contains(cap.slug) &&
+          !widget.existingCapabilities.any((saved) =>
+              saved.capabilitySlug == cap.slug && saved.identityType != null);
+      if (existingForIdentity || legacyCompanyCapability) {
         _selected.add(cap.slug);
+        _identityExistingSlugs.add(cap.slug);
       }
     }
     for (final role in roles) {
@@ -687,6 +732,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _categoryCapabilities = filteredCaps;
       _categoryRoles = roles;
+      _identityExistingSlugs = Set.of(_identityExistingSlugs);
       _providerTypeRequired = needsProviderType;
       _providerType = providerType;
       _savedProviderType = providerType;
@@ -1478,6 +1524,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                             )
                           : _step == 4
                               ? ProviderTypeStep(
+                                  financialServices: _selectedCategory?.slug ==
+                                      _financialCategorySlug,
                                   selected: _providerType,
                                   saving: _savingProviderType,
                                   error: _providerTypeError,
@@ -1714,8 +1762,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                           capabilities:
                                                               _categoryCapabilities,
                                                           roles: _categoryRoles,
-                                                          existingSlugs: widget
-                                                              .existingSlugs,
+                                                          existingSlugs:
+                                                              _identityExistingSlugs,
                                                           selected: _selected,
                                                           selectedRoles:
                                                               _selectedRoles,
@@ -1756,8 +1804,18 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                               () => setState(
                                                                   () => _step =
                                                                       4),
-                                                          onSaveServices:
-                                                              _openCompanyDetails,
+                                                          onSaveServices: _providerType ==
+                                                                      ProviderCategoryType
+                                                                          .individual &&
+                                                                  _selectedCategory
+                                                                          ?.slug ==
+                                                                      _financialCategorySlug
+                                                              ? () => Navigator
+                                                                      .of(
+                                                                          context)
+                                                                  .pop(
+                                                                      _selection())
+                                                              : _openCompanyDetails,
                                                           onNextKind: () {
                                                             setState(() {
                                                               _step = 2;
@@ -1788,6 +1846,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 class ProviderTypeStep extends StatelessWidget {
   const ProviderTypeStep({
     super.key,
+    this.financialServices = false,
     required this.selected,
     required this.saving,
     required this.error,
@@ -1800,6 +1859,7 @@ class ProviderTypeStep extends StatelessWidget {
     required this.currentType,
   });
 
+  final bool financialServices;
   final ProviderCategoryType? selected;
   final bool saving;
   final String? error;
@@ -2089,7 +2149,9 @@ class ProviderTypeStep extends StatelessWidget {
                       context,
                       type: ProviderCategoryType.individual,
                       title: l10n.providerTypeIndividual,
-                      description: l10n.providerTypeIndividualDesc,
+                      description: financialServices
+                          ? l10n.providerTypeFinancialIndividualDesc
+                          : l10n.providerTypeIndividualDesc,
                       l10n: l10n,
                     ),
                     const SizedBox(height: 10),
@@ -3420,7 +3482,12 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   c.serviceGroupSlug != 'work_roles' &&
                   !c.slug.startsWith('work_'))
               .toList();
-          orderedGroups.add((g, cap.serviceGroupName, groupCaps));
+          orderedGroups.add((
+            g,
+            NeedCatalogLocalizations.serviceGroupName(localeCode, g) ??
+                cap.serviceGroupName,
+            groupCaps,
+          ));
         }
       } else {
         noGroup.add(cap);
@@ -3432,8 +3499,10 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
     final individualType = providerType == ProviderCategoryType.individual;
     final companyMode = providerType == ProviderCategoryType.company;
-    final showRoles = iWantJobs && individualType;
-    final hasServices = companyType && selected.isNotEmpty;
+    final financialServicePath = categorySlug == _financialCategorySlug;
+    final showRoles = iWantJobs && individualType && !financialServicePath;
+    final hasServices =
+        (companyType || financialServicePath) && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
 
     return Stack(
@@ -3579,7 +3648,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: text2)),
             if (companyType) const SizedBox(height: 10),
 
-            if (companyType)
+            if (companyType || financialServicePath)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
                 if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
@@ -3767,14 +3836,14 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           bottom: 8,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(
-                individualType
+                individualType && !financialServicePath
                     ? l10n.rolesCount(showRoles ? selectedRoles.length : 0)
                     : companyMode
                         ? l10n.servicesCount(selected.length)
                         : l10n.servicesCount(selected.length),
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
-            if (individualType)
+            if (individualType && !financialServicePath)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.proPurple,

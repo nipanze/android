@@ -91,6 +91,29 @@ class NeedsRepository {
     }
   }
 
+  /// Provider picker categories. Financial Services is intentionally excluded
+  /// from the Needs flow, but may be enabled for Provider Services by rollout.
+  Future<List<NeedCategory>> getProviderCategories({
+    required bool includeFinancialServices,
+  }) async {
+    try {
+      final countryCode = await _getCountryCode();
+      final data = await _client
+          .from(TableNames.needCategories)
+          .select()
+          .eq('is_active', true)
+          .order('sort_order', ascending: true);
+      final categories = (data as List)
+          .map((row) => NeedCategory.fromMap(row, countryCode: countryCode))
+          .where((category) =>
+              includeFinancialServices || category.slug != 'financial_services')
+          .toList();
+      return NeedCategory.sortForDisplay(_dedupeBySlug(categories));
+    } catch (_) {
+      return getCategories();
+    }
+  }
+
   Future<List<Map<String, dynamic>>> searchProviderCatalog(
     String query, {
     String? localeCode,
@@ -153,8 +176,13 @@ class NeedsRepository {
   }
 
   /// Fetch capabilities for a category
-  Future<List<NeedCapability>> getCapabilities({String? categorySlug}) async {
-    if (categorySlug == 'financial_services') return const [];
+  Future<List<NeedCapability>> getCapabilities({
+    String? categorySlug,
+    bool includeFinancialServices = false,
+  }) async {
+    if (categorySlug == 'financial_services' && !includeFinancialServices) {
+      return const [];
+    }
     try {
       final countryCode = await _getCountryCode();
       var query = _client.from(TableNames.needCapabilities).select();
@@ -170,8 +198,9 @@ class NeedsRepository {
       return _dedupeBySlug(
         (data as List)
             .map((e) => NeedCapability.fromMap(e, countryCode: countryCode))
-            .where(
-                (capability) => capability.categorySlug != 'financial_services')
+            .where((capability) =>
+                includeFinancialServices ||
+                capability.categorySlug != 'financial_services')
             .toList(),
       );
     } catch (_) {

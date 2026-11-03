@@ -2,9 +2,9 @@
 
 > Current repository catalog reference. Generated from [`provider_services_v2.json`](./provider_services_v2.json); rollout state comes from the SQL seed. A deployed database may differ if patches or flags have not been applied.
 
-> **Provider identity rule:** Individual profiles select work roles. Company / Organization profiles select services only; the Company setup screen has no roles section.
+> **Provider identity rule:** Individual profiles select work roles; Financial Services capabilities are available to both Individual and Company identities. Other Company / Organization profiles select services and do not include work roles.
 
-**Catalog size:** 18 categories · 178 services · 90 Individual roles.
+**Catalog size:** 19 categories · 207 services · 90 Individual roles.
 
 Policies: `open` = a provider profile can be active without proof; `optional_proof` = the profile can be active while proof may be reviewed for a badge; `required_proof` = the provider profile remains inactive until required proof is approved. The catalog entry itself may still be available for selection. “Configured by verification rules” identifies existing capabilities whose policy is supplied separately.
 
@@ -30,6 +30,7 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | 16 | [Health & Medical](#16-health-and-medical) | Inactive (rollout gated) | 16 | 12 |
 | 17 | [Business & Investment](#17-business-and-investment) | Inactive (rollout gated) | 5 | 2 |
 | 18 | [Traditional & Cultural Services](#18-traditional-and-cultural-services) | Inactive (rollout gated) | 6 | 4 |
+| 19 | [Financial Services](#19-financial-services) | Provider rollout gated | 29 | 0 |
 
 ## Full catalog
 
@@ -1926,6 +1927,80 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 |---|---|
 | Registration with relevant association or local authority | Yes |
 | Referees | No |
+
+## 19. 💰 Financial Services
+
+**Status:** Provider category gated by `capability_profiles_enabled`
+**Database slug:** `financial_services`
+**Description:** Loans and financing you offer
+**Provider identities:** Individual and Company / Organization
+**Verification policy:** All listed capabilities use `required_proof`; unapproved selections remain private drafts and do not appear in borrower discovery.
+
+### Personal Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Personal Loan Services | `personal_loan_services` | `required_proof` |
+| Emergency Loan Services | `emergency_loan_services` | `required_proof` |
+| Salary Loan Services | `salary_loan_services` | `required_proof` |
+| Medical Financing | `medical_financing` | `required_proof` |
+
+### Business Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Business Startup Financing | `business_startup_financing` | `required_proof` |
+| Working Capital Financing | `working_capital_financing` | `required_proof` |
+| Business Expansion Financing | `business_expansion_financing` | `required_proof` |
+| SME Financing | `sme_financing` | `required_proof` |
+
+### Asset Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Boda Boda Financing | `boda_boda_financing` | `required_proof` |
+| Car Financing | `car_financing` | `required_proof` |
+| Tuk-tuk Financing | `tuk_tuk_financing` | `required_proof` |
+| Motorcycle Financing | `motorcycle_financing` | `required_proof` |
+| Smartphone Financing | `smartphone_financing` | `required_proof` |
+| Laptop Financing | `laptop_financing` | `required_proof` |
+| Heavy Machinery Financing | `heavy_machinery_financing` | `required_proof` |
+| Equipment Financing | `equipment_financing` | `required_proof` |
+
+### Agricultural Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Agricultural Loans | `agricultural_loan_services` | `required_proof` |
+| Livestock Financing | `livestock_financing` | `required_proof` |
+| Crop Financing | `crop_financing` | `required_proof` |
+| Farm Equipment Financing | `farm_equipment_financing` | `required_proof` |
+
+### Property Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Mortgage Financing | `mortgage_financing` | `required_proof` |
+| Land Financing | `land_financing` | `required_proof` |
+| Property Development Financing | `property_development_financing` | `required_proof` |
+
+### Education Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| School Fees Financing | `school_fees_financing` | `required_proof` |
+| University Financing | `university_financing` | `required_proof` |
+| Education Loans | `education_loan_services` | `required_proof` |
+
+### Lifestyle Financing
+
+| Service | Database slug | Verification policy |
+|---|---|---|
+| Travel Financing | `travel_financing` | `required_proof` |
+| Wedding Financing | `wedding_financing` | `required_proof` |
+| Other Lifestyle Financing | `other_lifestyle_financing` | `required_proof` |
+
+Individual proof uses the existing identity verification plus supporting information. Company proof uses the existing private company profile and company-document review, including registration and applicable financial authorization or licensing evidence. Company names remain edited in the existing company details step.
 
 ## Safety and rollout notes
 

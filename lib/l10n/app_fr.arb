@@ -1593,6 +1593,7 @@
   "providerTypeSubtitle": "Cela indique aux personnes si elles traiteront avec vous ou votre entreprise. Vous pouvez choisir différemment pour chaque catégorie.",
   "providerTypeIndividual": "Particulier",
   "providerTypeIndividualDesc": "Je propose directement mes compétences personnelles aux clients, en tant qu’indépendant ou salarié.",
+  "providerTypeFinancialIndividualDesc": "Je propose des financements en mon nom, sous mon identité individuelle.",
   "providerTypeCompany": "Entreprise / Organisation",
   "providerTypeCompanyDesc": "Une entreprise, une agence, une équipe ou une institution enregistrée.",
   "providerTypeNotVerification": "Ce choix ne vous vérifie pas. La vérification est distincte et n’est demandée que si un service l’exige.",

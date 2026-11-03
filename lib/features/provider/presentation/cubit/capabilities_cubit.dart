@@ -80,10 +80,15 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
 
   Future<void> addCapabilities(
     List<String> slugs, {
+    String? categorySlug,
     Map<String, Map<String, dynamic>> metadataBySlug = const {},
   }) async {
     try {
-      await _repo.addCapabilities(slugs, metadataBySlug: metadataBySlug);
+      await _repo.addCapabilities(
+        slugs,
+        categorySlug: categorySlug,
+        metadataBySlug: metadataBySlug,
+      );
       await loadWithOpportunities();
     } catch (e) {
       OfflineService().reportRequestFailure(e);
@@ -117,12 +122,12 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   }
 
   Future<void> setCapabilityPaused({
-    required String capabilitySlug,
+    required String providerCapabilityId,
     required bool paused,
   }) async {
     try {
       await _repo.setCapabilityPaused(
-        capabilitySlug: capabilitySlug,
+        providerCapabilityId: providerCapabilityId,
         paused: paused,
       );
       await loadWithOpportunities();
@@ -135,9 +140,9 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
     }
   }
 
-  Future<void> removeCapability(String capabilitySlug) async {
+  Future<void> removeCapability(String providerCapabilityId) async {
     try {
-      await _repo.removeCapability(capabilitySlug);
+      await _repo.removeCapability(providerCapabilityId);
       await loadWithOpportunities();
     } catch (e) {
       OfflineService().reportRequestFailure(e);

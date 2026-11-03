@@ -1586,6 +1586,7 @@
   "providerTypeSubtitle": "Ibi bifasha abantu kumenya niba bazakorana nawe cyangwa n’ubucuruzi bwawe. Ushobora kubihitamo ukundi kuri buri cyiciro.",
   "providerTypeIndividual": "Umuntu ku giti cye",
   "providerTypeIndividualDesc": "Ntanga ubumenyi bwanjye ku bakiriya ku giti cyanjye, ndi umwigenga cyangwa umukozi.",
+  "providerTypeFinancialIndividualDesc": "Ntanga inkunga mu izina ryanjye, nk'Umuntu ku giti cye.",
   "providerTypeCompany": "Ikigo / Umuryango",
   "providerTypeCompanyDesc": "Ubucuruzi, ikigo cy’ubuhuza, itsinda cyangwa ikigo cyanditse.",
   "providerTypeNotVerification": "Guhitamo ibi ntibikugenzura. Igenzura ririhariye kandi risabwa gusa iyo serivisi irikeneye.",

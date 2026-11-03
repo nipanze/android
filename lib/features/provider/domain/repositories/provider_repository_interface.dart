@@ -94,6 +94,7 @@ abstract class IProviderRepository {
   Future<List<ProviderCapability>> getProviderCapabilities();
   Future<void> addCapabilities(
     List<String> slugs, {
+    String? categorySlug,
     Map<String, Map<String, dynamic>> metadataBySlug = const {},
   });
   Future<void> saveProviderCapabilitiesBulk({
@@ -101,10 +102,10 @@ abstract class IProviderRepository {
     String? categorySlug,
     List<String> removeSlugs = const [],
   });
-  Future<void> removeCapability(String capabilitySlug);
+  Future<void> removeCapability(String providerCapabilityId);
   Future<bool> hasCapability(String capabilitySlug);
   Future<void> setCapabilityPaused({
-    required String capabilitySlug,
+    required String providerCapabilityId,
     required bool paused,
   });
   Future<String> submitCapabilityEvidence({

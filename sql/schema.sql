@@ -537,6 +537,8 @@ CREATE TABLE loan_requests (
     country                     TEXT NOT NULL REFERENCES countries(code),
 
     title                       TEXT NOT NULL,
+    loan_category               TEXT,
+    loan_purpose                TEXT,
     purpose                     TEXT NOT NULL,
     description                 TEXT,
     requested_amount            BIGINT NOT NULL CONSTRAINT chk_lr_amount_positive CHECK (requested_amount > 0),
@@ -1060,6 +1062,8 @@ CREATE VIEW v_loan_listings AS
 SELECT
     lr.id                                                                     AS request_id,
     lr.title,
+    lr.loan_category,
+    lr.loan_purpose,
     lr.purpose,
     lr.district,
     lr.country,
@@ -1165,6 +1169,8 @@ CREATE VIEW v_loan_listing_details AS
 SELECT
     lr.id                                                                     AS request_id,
     lr.title,
+    lr.loan_category,
+    lr.loan_purpose,
     lr.purpose,
     lr.district,
     lr.country,

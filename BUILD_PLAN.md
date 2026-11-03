@@ -735,3 +735,23 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 | 2026-10-24 | Focused account/provider analyzer | Passed with no issues. |
 | 2026-10-24 | Profile verification widgets, ProfileCubit, and company identity setup tests | Passed: 7, 18, and 2 tests respectively. |
 | 2026-10-24 | `git diff --check` | Passed. |
+
+## 18. Stage 4.18 — Financial Services Provider Capabilities (Part A)
+
+### Scope
+
+- Reuse the existing `financial_services` catalogue category, provider identities, capability rows, evidence workflow, verification rules, and plan configuration. It remains excluded from Needs.
+- Add 29 capabilities in seven financing groups. Individual and Company selections are identity-scoped; profile switching continues through the existing server-side identity switch.
+- Keep all new entry points behind `capability_profiles_enabled`. Financial capability drafts remain inactive until all required evidence is approved by the existing review process.
+- Preserve previous financial capability rows and their evidence. Capability pause/removal now targets the selected capability record so an identity-specific row cannot change another identity's record.
+
+### Files and SQL
+
+- Catalogue source: `provider_services_v2.json`; readable catalogue: `provider_services_catalog.md`.
+- UI/repository: `lib/features/needs/data/needs_repository.dart`, `lib/features/needs/domain/models/need_catalog_localizations.dart`, `lib/features/provider/presentation/pages/add_service_sheet.dart`, `lib/features/provider/presentation/pages/provider_services_page.dart`, `lib/features/provider/data/repositories/provider_repository.dart`, `lib/features/provider/presentation/cubit/capabilities_cubit.dart`, and `lib/features/provider/domain/repositories/provider_repository_interface.dart`.
+- New standalone database patch: `sql/patch_financial_services_provider_capabilities.sql` (not run here).
+- Existing loan classification work from the previous request remains separate and is not part of Part A.
+
+### Checkpoint
+
+- Implementation is staged for review before Part B. SQL has not been run. Flutter analysis, database/RLS validation, staging journey checks, and 390 px screenshots remain pending.

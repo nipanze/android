@@ -109,6 +109,12 @@ class NeedCatalogLocalizations {
   };
 
   static const categoryDescriptions = <String, Map<String, String>>{
+    'financial_services': {
+      'rw': 'Inguzanyo n’inkunga utanga.',
+      'fr': 'Prêts et financements que vous proposez.',
+      'sw': 'Mikopo na ufadhili unaotoa.',
+      'ar': 'القروض والتمويل الذي تقدمه.',
+    },
     'machinery_equipment': {
       'rw':
           'Gukodesha cyangwa gushaka imashini ziremereye, ibikoresho by\'inganda na jenereta.',
@@ -229,16 +235,6 @@ class NeedCatalogLocalizations {
       'ar':
           'خدمات إبداعية وتنظيمية لحفلات التخرج والزفاف والمناسبات الاجتماعية.',
     },
-    'financial_services': {
-      'rw':
-          'Inguzanyo, kuvunja amafaranga, abakozi ba banki, SACCO, microfinance n\'inama z\'imari.',
-      'fr':
-          'Prêts, change, agents bancaires, SACCO, microfinance et conseil financier.',
-      'sw':
-          'Mikopo, ubadilishaji fedha, mawakala wa benki, SACCO, huduma ndogo za kifedha na ushauri.',
-      'ar':
-          'القروض وصرف العملات ووكلاء البنوك والتعاونيات والتمويل الأصغر والاستشارات المالية.',
-    },
     'marketing_promotion': {
       'rw':
           'Kwamamaza kuri interineti, ku mbuga nkoranyambaga, kwamamaza ibicuruzwa no gutangaza brand.',
@@ -266,12 +262,185 @@ class NeedCatalogLocalizations {
           'Coiffure, maquillage, couture, création de mode et stylisme personnel.',
       'sw':
           'Kutengeneza nywele, makeup, ushonaji, ubunifu wa mitindo na ushauri wa mavazi.',
-      'ar':
-          'تصفيف الشعر والمكياج والخياطة وتصميم الأزياء والتصفيف الشخصي.',
+      'ar': 'تصفيف الشعر والمكياج والخياطة وتصميم الأزياء والتصفيف الشخصي.',
     },
   };
 
   static const capabilityNames = <String, Map<String, String>>{
+    'personal_loan_services': {
+      'rw': 'Serivisi z’inguzanyo bwite',
+      'fr': 'Prêts personnels',
+      'sw': 'Huduma za mikopo binafsi',
+      'ar': 'خدمات القروض الشخصية',
+    },
+    'emergency_loan_services': {
+      'rw': 'Inguzanyo z’ubutabazi',
+      'fr': 'Prêts d’urgence',
+      'sw': 'Mikopo ya dharura',
+      'ar': 'قروض الطوارئ',
+    },
+    'salary_loan_services': {
+      'rw': 'Inguzanyo zishingiye ku mushahara',
+      'fr': 'Avances sur salaire',
+      'sw': 'Mikopo ya mshahara',
+      'ar': 'قروض الراتب',
+    },
+    'medical_financing': {
+      'rw': 'Inkunga y’ubuvuzi',
+      'fr': 'Financement médical',
+      'sw': 'Ufadhili wa matibabu',
+      'ar': 'تمويل طبي',
+    },
+    'business_startup_financing': {
+      'rw': 'Inkunga yo gutangiza ubucuruzi',
+      'fr': 'Financement de démarrage d’entreprise',
+      'sw': 'Ufadhili wa kuanzisha biashara',
+      'ar': 'تمويل بدء الأعمال',
+    },
+    'working_capital_financing': {
+      'rw': 'Inkunga y’imikorere y’ubucuruzi',
+      'fr': 'Financement du fonds de roulement',
+      'sw': 'Ufadhili wa mtaji wa biashara',
+      'ar': 'تمويل رأس المال العامل',
+    },
+    'business_expansion_financing': {
+      'rw': 'Inkunga yo kwagura ubucuruzi',
+      'fr': 'Financement de l’expansion',
+      'sw': 'Ufadhili wa upanuzi wa biashara',
+      'ar': 'تمويل توسيع الأعمال',
+    },
+    'sme_financing': {
+      'rw': 'Inkunga y’ibigo bito n’ibiciriritse',
+      'fr': 'Financement des PME',
+      'sw': 'Ufadhili wa biashara ndogo na za kati',
+      'ar': 'تمويل المؤسسات الصغيرة والمتوسطة',
+    },
+    'boda_boda_financing': {
+      'rw': 'Inkunga ya boda boda',
+      'fr': 'Financement boda-boda',
+      'sw': 'Ufadhili wa boda boda',
+      'ar': 'تمويل بودا بودا',
+    },
+    'car_financing': {
+      'rw': 'Inkunga yo kugura imodoka',
+      'fr': 'Financement automobile',
+      'sw': 'Ufadhili wa gari',
+      'ar': 'تمويل السيارات',
+    },
+    'tuk_tuk_financing': {
+      'rw': 'Inkunga ya tuk-tuk',
+      'fr': 'Financement tuk-tuk',
+      'sw': 'Ufadhili wa tuk-tuk',
+      'ar': 'تمويل التوك توك',
+    },
+    'motorcycle_financing': {
+      'rw': 'Inkunga yo kugura ipikipiki',
+      'fr': 'Financement de moto',
+      'sw': 'Ufadhili wa pikipiki',
+      'ar': 'تمويل الدراجات النارية',
+    },
+    'smartphone_financing': {
+      'rw': 'Inkunga ya telefoni igezweho',
+      'fr': 'Financement de smartphone',
+      'sw': 'Ufadhili wa simu janja',
+      'ar': 'تمويل الهواتف الذكية',
+    },
+    'laptop_financing': {
+      'rw': 'Inkunga ya mudasobwa igendanwa',
+      'fr': 'Financement d’ordinateur portable',
+      'sw': 'Ufadhili wa kompyuta mpakato',
+      'ar': 'تمويل الحواسيب المحمولة',
+    },
+    'heavy_machinery_financing': {
+      'rw': 'Inkunga y’imashini ziremereye',
+      'fr': 'Financement de machinerie lourde',
+      'sw': 'Ufadhili wa mashine nzito',
+      'ar': 'تمويل الآلات الثقيلة',
+    },
+    'equipment_financing': {
+      'rw': 'Inkunga y’ibikoresho',
+      'fr': 'Financement d’équipement',
+      'sw': 'Ufadhili wa vifaa',
+      'ar': 'تمويل المعدات',
+    },
+    'agricultural_loan_services': {
+      'rw': 'Inguzanyo z’ubuhinzi',
+      'fr': 'Prêts agricoles',
+      'sw': 'Huduma za mikopo ya kilimo',
+      'ar': 'خدمات القروض الزراعية',
+    },
+    'livestock_financing': {
+      'rw': 'Inkunga y’amatungo',
+      'fr': 'Financement de l’élevage',
+      'sw': 'Ufadhili wa mifugo',
+      'ar': 'تمويل الثروة الحيوانية',
+    },
+    'crop_financing': {
+      'rw': 'Inkunga y’imyaka',
+      'fr': 'Financement des cultures',
+      'sw': 'Ufadhili wa mazao',
+      'ar': 'تمويل المحاصيل',
+    },
+    'farm_equipment_financing': {
+      'rw': 'Inkunga y’ibikoresho by’ubuhinzi',
+      'fr': 'Financement d’équipement agricole',
+      'sw': 'Ufadhili wa vifaa vya kilimo',
+      'ar': 'تمويل المعدات الزراعية',
+    },
+    'mortgage_financing': {
+      'rw': 'Inkunga y’inguzanyo y’inzu',
+      'fr': 'Financement hypothécaire',
+      'sw': 'Ufadhili wa rehani',
+      'ar': 'تمويل الرهن العقاري',
+    },
+    'land_financing': {
+      'rw': 'Inkunga yo kugura ubutaka',
+      'fr': 'Financement foncier',
+      'sw': 'Ufadhili wa ardhi',
+      'ar': 'تمويل الأراضي',
+    },
+    'property_development_financing': {
+      'rw': 'Inkunga yo guteza imbere imitungo',
+      'fr': 'Financement immobilier',
+      'sw': 'Ufadhili wa maendeleo ya mali',
+      'ar': 'تمويل تطوير العقارات',
+    },
+    'school_fees_financing': {
+      'rw': 'Inkunga y’amafaranga y’ishuri',
+      'fr': 'Financement des frais scolaires',
+      'sw': 'Ufadhili wa ada ya shule',
+      'ar': 'تمويل الرسوم المدرسية',
+    },
+    'university_financing': {
+      'rw': 'Inkunga ya kaminuza',
+      'fr': 'Financement universitaire',
+      'sw': 'Ufadhili wa chuo kikuu',
+      'ar': 'تمويل الجامعة',
+    },
+    'education_loan_services': {
+      'rw': 'Inguzanyo z’uburezi',
+      'fr': 'Prêts pour l’éducation',
+      'sw': 'Huduma za mikopo ya elimu',
+      'ar': 'خدمات القروض التعليمية',
+    },
+    'travel_financing': {
+      'rw': 'Inkunga y’ingendo',
+      'fr': 'Financement de voyage',
+      'sw': 'Ufadhili wa safari',
+      'ar': 'تمويل السفر',
+    },
+    'wedding_financing': {
+      'rw': 'Inkunga y’ubukwe',
+      'fr': 'Financement de mariage',
+      'sw': 'Ufadhili wa harusi',
+      'ar': 'تمويل حفلات الزفاف',
+    },
+    'other_lifestyle_financing': {
+      'rw': 'Izindi nkunga z’imibereho',
+      'fr': 'Autres financements de style de vie',
+      'sw': 'Ufadhili mwingine wa maisha',
+      'ar': 'تمويلات أخرى لنمط الحياة',
+    },
     'social_media_marketing': {
       'rw': 'Kwamamaza ku mbuga nkoranyambaga',
     },
@@ -1231,6 +1400,51 @@ class NeedCatalogLocalizations {
     },
   };
 
+  static const serviceGroupNames = <String, Map<String, String>>{
+    'personal_financing': {
+      'rw': 'Inkunga bwite',
+      'fr': 'Financement personnel',
+      'sw': 'Ufadhili binafsi',
+      'ar': 'التمويل الشخصي',
+    },
+    'business_financing': {
+      'rw': 'Inkunga y’ubucuruzi',
+      'fr': 'Financement des entreprises',
+      'sw': 'Ufadhili wa biashara',
+      'ar': 'تمويل الأعمال',
+    },
+    'asset_financing': {
+      'rw': 'Inkunga y’imitungo',
+      'fr': 'Financement d’actifs',
+      'sw': 'Ufadhili wa mali',
+      'ar': 'تمويل الأصول',
+    },
+    'agricultural_financing': {
+      'rw': 'Inkunga y’ubuhinzi',
+      'fr': 'Financement agricole',
+      'sw': 'Ufadhili wa kilimo',
+      'ar': 'التمويل الزراعي',
+    },
+    'property_financing': {
+      'rw': 'Inkunga y’imitungo itimukanwa',
+      'fr': 'Financement immobilier',
+      'sw': 'Ufadhili wa mali isiyohamishika',
+      'ar': 'تمويل العقارات',
+    },
+    'education_financing': {
+      'rw': 'Inkunga y’uburezi',
+      'fr': 'Financement de l’éducation',
+      'sw': 'Ufadhili wa elimu',
+      'ar': 'تمويل التعليم',
+    },
+    'lifestyle_financing': {
+      'rw': 'Inkunga y’imibereho',
+      'fr': 'Financement du mode de vie',
+      'sw': 'Ufadhili wa maisha',
+      'ar': 'تمويل نمط الحياة',
+    },
+  };
+
   static String? categoryName(String? localeCode, String slug) =>
       categoryNames[slug]?[localeCode?.toLowerCase()];
 
@@ -1239,4 +1453,7 @@ class NeedCatalogLocalizations {
 
   static String? capabilityName(String? localeCode, String slug) =>
       capabilityNames[slug]?[localeCode?.toLowerCase()];
+
+  static String? serviceGroupName(String? localeCode, String slug) =>
+      serviceGroupNames[slug]?[localeCode?.toLowerCase()];
 }

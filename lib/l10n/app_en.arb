@@ -1682,6 +1682,7 @@
   "providerTypeSubtitle": "This tells people whether they would deal with you or with your business. You can set it differently for each category.",
   "providerTypeIndividual": "Individual",
   "providerTypeIndividualDesc": "I offer my personal skills directly to clients, as a freelancer or worker.",
+  "providerTypeFinancialIndividualDesc": "I provide financing in my own name under my Individual identity.",
   "providerTypeCompany": "Company / Organization",
   "providerTypeCompanyDesc": "A registered business, agency, team or institution.",
   "providerTypeNotVerification": "Selecting this does not verify you. Verification is separate and only asked where a service requires it.",

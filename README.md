@@ -524,6 +524,10 @@ The new patch adds owner-private `job_profiles`, `job_profile_roles`, `job_profi
 
 The `/account/services` screen now shows a separate Work Profile section behind the public `job_profiles_enabled` setting. Job matching is intentionally shown as unavailable until a real jobs/opportunity source exists; no fake listings or match percentages are generated.
 
+### Financial Services provider capabilities
+
+The existing Financial Services category is available in Provider Services when `capability_profiles_enabled` is enabled. Its 29 financing capabilities are grouped by personal, business, asset, agricultural, property, education, and lifestyle financing. Both Individual and Company identities can maintain separate capability selections. Capabilities use the existing required-proof review flow and remain hidden until approved. Financial Services remains excluded from Needs. Apply `sql/patch_financial_services_provider_capabilities.sql` after the v2 catalog, provider work-profile, verification-policy, provider-type verification matrix, company provider path, category-type, and identity-switch patches; do not run it against production without deployment approval.
+
 Apply order:
 
 1. Apply the existing Needs/provider capability SQL patches.

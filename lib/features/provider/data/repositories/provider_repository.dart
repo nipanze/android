@@ -382,6 +382,8 @@ class ProviderRepository implements IProviderRepository {
           .select(
               'id, capability_slug, provider_capability_evidence(id, requirement_key, file_url, status, reject_reason, expires_at, created_at)')
           .eq('user_id', uid)
+          .eq('identity_type', 'company')
+          .eq('need_capabilities.category_slug', categorySlug)
           .inFilter('capability_slug', serviceSlugs);
       return (rows as List)
           .whereType<Map>()
@@ -619,16 +621,32 @@ class ProviderRepository implements IProviderRepository {
             .eq('user_id', uid)
             .order('created_at');
       } catch (_) {
-        data = await _client
-            .from(TableNames.providerCapabilities)
-            .select(
-              'id, user_id, capability_slug, verification_level, evidence_url, '
-              'metadata, verified_by, verified_at, created_at, '
-              'need_capabilities!capability_slug(name, category_slug, '
-              'need_categories!category_slug(name, icon))',
-            )
-            .eq('user_id', uid)
-            .order('created_at');
+        try {
+          // Keep identity_type in the compatibility path. Dropping it here
+          // makes Individual services look like legacy Company selections.
+          data = await _client
+              .from(TableNames.providerCapabilities)
+              .select(
+                'id, user_id, capability_slug, identity_type, verification_level, '
+                'is_active, evidence_url, metadata, verified_by, verified_at, '
+                'created_at, need_capabilities!capability_slug(name, category_slug, '
+                'need_categories!category_slug(name, icon))',
+              )
+              .eq('user_id', uid)
+              .order('created_at');
+        } catch (_) {
+          // Pre-identity schemas still use the original legacy projection.
+          data = await _client
+              .from(TableNames.providerCapabilities)
+              .select(
+                'id, user_id, capability_slug, verification_level, evidence_url, '
+                'metadata, verified_by, verified_at, created_at, '
+                'need_capabilities!capability_slug(name, category_slug, '
+                'need_categories!category_slug(name, icon))',
+              )
+              .eq('user_id', uid)
+              .order('created_at');
+        }
       }
 
       final capabilities = (data as List).map((e) {
@@ -661,23 +679,19 @@ class ProviderRepository implements IProviderRepository {
   @override
   Future<void> addCapabilities(
     List<String> slugs, {
+    String? categorySlug,
     Map<String, Map<String, dynamic>> metadataBySlug = const {},
   }) async {
     try {
-      final uid = _uid;
-      if (uid == null) throw const AuthException('Not authenticated');
-      final rows = slugs
-          .map((s) => {
-                'user_id': uid,
-                'capability_slug': s,
-                'verification_level': 'self_declared',
-                if (metadataBySlug.containsKey(s))
-                  'metadata': metadataBySlug[s],
-              })
-          .toList();
-      await _client
-          .from(TableNames.providerCapabilities)
-          .upsert(rows, onConflict: 'user_id,capability_slug');
+      await saveProviderCapabilitiesBulk(
+        categorySlug: categorySlug,
+        items: slugs
+            .map((slug) => {
+                  'capability_slug': slug,
+                  'metadata': metadataBySlug[slug] ?? const {},
+                })
+            .toList(),
+      );
     } catch (e) {
       throw parseSupabaseError(e);
     }
@@ -690,41 +704,14 @@ class ProviderRepository implements IProviderRepository {
     List<String> removeSlugs = const [],
   }) async {
     try {
-      final uid = _uid;
-      if (uid == null) throw const AuthException('Not authenticated');
-
-      try {
-        await _client.rpc(
-          RpcNames.saveProviderCapabilities,
-          params: {
-            'p_items': items,
-            'p_category_slug': categorySlug,
-            'p_remove_slugs': removeSlugs,
-          },
-        );
-      } catch (rpcErr) {
-        // Fall back to direct table operations if RPC not present in db yet
-        if (removeSlugs.isNotEmpty) {
-          await _client
-              .from(TableNames.providerCapabilities)
-              .delete()
-              .eq('user_id', uid)
-              .filter('capability_slug', 'in', removeSlugs);
-        }
-        if (items.isNotEmpty) {
-          final rows = items
-              .map((it) => {
-                    'user_id': uid,
-                    'capability_slug': it['capability_slug'],
-                    'verification_level': 'self_declared',
-                    if (it['metadata'] != null) 'metadata': it['metadata'],
-                  })
-              .toList();
-          await _client
-              .from(TableNames.providerCapabilities)
-              .upsert(rows, onConflict: 'user_id,capability_slug');
-        }
-      }
+      await _client.rpc(
+        RpcNames.saveProviderCapabilities,
+        params: {
+          'p_items': items,
+          'p_category_slug': categorySlug,
+          'p_remove_slugs': removeSlugs,
+        },
+      );
       _clearCache();
     } catch (e) {
       throw parseSupabaseError(e);
@@ -733,7 +720,7 @@ class ProviderRepository implements IProviderRepository {
 
   @override
   Future<void> setCapabilityPaused({
-    required String capabilitySlug,
+    required String providerCapabilityId,
     required bool paused,
   }) async {
     try {
@@ -744,7 +731,7 @@ class ProviderRepository implements IProviderRepository {
           .from(TableNames.providerCapabilities)
           .select('metadata')
           .eq('user_id', uid)
-          .eq('capability_slug', capabilitySlug)
+          .eq('id', providerCapabilityId)
           .maybeSingle();
 
       final meta =
@@ -758,7 +745,7 @@ class ProviderRepository implements IProviderRepository {
             'updated_at': DateTime.now().toIso8601String()
           })
           .eq('user_id', uid)
-          .eq('capability_slug', capabilitySlug);
+          .eq('id', providerCapabilityId);
       _clearCache();
     } catch (e) {
       throw parseSupabaseError(e);
@@ -766,7 +753,7 @@ class ProviderRepository implements IProviderRepository {
   }
 
   @override
-  Future<void> removeCapability(String capabilitySlug) async {
+  Future<void> removeCapability(String providerCapabilityId) async {
     try {
       final uid = _uid;
       if (uid == null) throw const AuthException('Not authenticated');
@@ -774,7 +761,7 @@ class ProviderRepository implements IProviderRepository {
           .from(TableNames.providerCapabilities)
           .delete()
           .eq('user_id', uid)
-          .eq('capability_slug', capabilitySlug);
+          .eq('id', providerCapabilityId);
       _clearCache();
     } catch (e) {
       dev.log(
@@ -796,6 +783,7 @@ class ProviderRepository implements IProviderRepository {
           .select('capability_slug')
           .eq('user_id', uid)
           .eq('capability_slug', capabilitySlug)
+          .limit(1)
           .maybeSingle();
       return data != null;
     } catch (_) {

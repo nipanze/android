@@ -89,12 +89,12 @@
     ],
     "flow": [
       "Choose a category and provider identity.",
-      "Individual: select work roles, then add role kinds and qualifications.",
+      "Individual: select work roles, then add role kinds and qualifications. Financial Services also supports Individual financing capabilities.",
       "Company / Organization: select services and complete company details; work roles are not shown in company settings.",
       "Verification and category rollout policies are enforced by the catalog and database configuration."
     ],
     "catalog_rules": {
-      "service_owner": "company",
+      "service_owner": "company_except_financial_services",
       "work_role_owner": "individual",
       "policy_values": [
         "open",
@@ -104,6 +104,59 @@
     }
   },
   "categories": [
+    {
+      "id": "financial_services",
+      "name": "Financial Services",
+      "icon": "💰",
+      "description": "Loans and financing you offer",
+      "provider_verification_required": true,
+      "provider_types": ["individual", "company"],
+      "service_groups": [
+        {"id": "personal_financing", "name": "Personal Financing", "services": [
+          {"id": "personal_loan_services", "name": "Personal Loan Services", "database_slug": "personal_loan_services", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "emergency_loan_services", "name": "Emergency Loan Services", "database_slug": "emergency_loan_services", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "salary_loan_services", "name": "Salary Loan Services", "database_slug": "salary_loan_services", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "medical_financing", "name": "Medical Financing", "database_slug": "medical_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "business_financing", "name": "Business Financing", "services": [
+          {"id": "business_startup_financing", "name": "Business Startup Financing", "database_slug": "business_startup_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "working_capital_financing", "name": "Working Capital Financing", "database_slug": "working_capital_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "business_expansion_financing", "name": "Business Expansion Financing", "database_slug": "business_expansion_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "sme_financing", "name": "SME Financing", "database_slug": "sme_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "asset_financing", "name": "Asset Financing", "services": [
+          {"id": "boda_boda_financing", "name": "Boda Boda Financing", "database_slug": "boda_boda_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "car_financing", "name": "Car Financing", "database_slug": "car_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "tuk_tuk_financing", "name": "Tuk-tuk Financing", "database_slug": "tuk_tuk_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "motorcycle_financing", "name": "Motorcycle Financing", "database_slug": "motorcycle_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "smartphone_financing", "name": "Smartphone Financing", "database_slug": "smartphone_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "laptop_financing", "name": "Laptop Financing", "database_slug": "laptop_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "heavy_machinery_financing", "name": "Heavy Machinery Financing", "database_slug": "heavy_machinery_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "equipment_financing", "name": "Equipment Financing", "database_slug": "equipment_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "agricultural_financing", "name": "Agricultural Financing", "services": [
+          {"id": "agricultural_loan_services", "name": "Agricultural Loans", "database_slug": "agricultural_loan_services", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "livestock_financing", "name": "Livestock Financing", "database_slug": "livestock_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "crop_financing", "name": "Crop Financing", "database_slug": "crop_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "farm_equipment_financing", "name": "Farm Equipment Financing", "database_slug": "farm_equipment_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "property_financing", "name": "Property Financing", "services": [
+          {"id": "mortgage_financing", "name": "Mortgage Financing", "database_slug": "mortgage_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "land_financing", "name": "Land Financing", "database_slug": "land_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "property_development_financing", "name": "Property Development Financing", "database_slug": "property_development_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "education_financing", "name": "Education Financing", "services": [
+          {"id": "school_fees_financing", "name": "School Fees Financing", "database_slug": "school_fees_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "university_financing", "name": "University Financing", "database_slug": "university_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "education_loan_services", "name": "Education Loans", "database_slug": "education_loan_services", "is_active": true, "verification_policy": "required_proof"}
+        ]},
+        {"id": "lifestyle_financing", "name": "Lifestyle Financing", "services": [
+          {"id": "travel_financing", "name": "Travel Financing", "database_slug": "travel_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "wedding_financing", "name": "Wedding Financing", "database_slug": "wedding_financing", "is_active": true, "verification_policy": "required_proof"},
+          {"id": "other_lifestyle_financing", "name": "Other Lifestyle Financing", "database_slug": "other_lifestyle_financing", "is_active": true, "verification_policy": "required_proof"}
+        ]}
+      ]
+    },
     {
       "id": "technology_digital",
       "name": "Technology & Digital",

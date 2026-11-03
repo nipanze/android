@@ -154,7 +154,8 @@ class _ProviderServicesView extends StatelessWidget {
         : <String>{};
     final existingFinancialMetadata = loaded is CapabilitiesLoaded
         ? loaded.capabilities
-            .where((cap) => const {
+            .where((cap) =>
+                const {
                   'bank_loan_agent',
                   'money_lender_private_lender',
                   'financial_advisory',
@@ -162,7 +163,10 @@ class _ProviderServicesView extends StatelessWidget {
                   'loan_services',
                   'sacco_microfinance',
                   'other_financial_services',
-                }.contains(cap.capabilitySlug))
+                }.contains(cap.capabilitySlug) &&
+                (cap.identityType ==
+                        loaded.categoryTypes['financial_services']?.name ||
+                    cap.identityType == null))
             .firstOrNull
             ?.metadata
         : null;
@@ -238,6 +242,7 @@ class _ProviderServicesView extends StatelessWidget {
         (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {
       await cubit.addCapabilities(
         selection.slugs,
+        categorySlug: selection.categorySlug!,
         metadataBySlug: selection.metadataBySlug,
       );
     }
@@ -371,7 +376,7 @@ class _ProviderServicesView extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(dCtx);
               try {
-                await cubit.removeCapability(cap.capabilitySlug);
+                await cubit.removeCapability(cap.id);
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -602,7 +607,7 @@ class _ProviderServicesView extends StatelessWidget {
         preselectedCategorySlug: capability.categorySlug,
       ),
       onTogglePause: (paused) => cubit.setCapabilityPaused(
-        capabilitySlug: capability.capabilitySlug,
+        providerCapabilityId: capability.id,
         paused: paused,
       ),
       onRemove: () => _confirmRemove(context, capability, l10n),
@@ -965,12 +970,21 @@ class _ScreenASummaryView extends StatefulWidget {
 class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
   _CapFilter _filter = _CapFilter.all;
 
+  bool _belongsToSelectedFinancialIdentity(ProviderCapability capability) {
+    if (capability.categorySlug != 'financial_services' ||
+        capability.identityType == null) {
+      return true;
+    }
+    final selected = widget.categoryTypes['financial_services'];
+    return selected == null || capability.identityType == selected.name;
+  }
+
   List<ProviderCapability> get _filtered {
-    final activeCapabilities = widget.capabilities
-        .where((capability) =>
-            !capability.isWork ||
-            capability.metadata['is_role_active'] != false)
-        .toList();
+    final activeCapabilities = widget.capabilities.where((capability) {
+      if (!_belongsToSelectedFinancialIdentity(capability)) return false;
+      return !capability.isWork ||
+          capability.metadata['is_role_active'] != false;
+    }).toList();
     switch (_filter) {
       case _CapFilter.services:
         return activeCapabilities.where((c) => !c.isWork).toList();
@@ -983,11 +997,11 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
 
   @override
   Widget build(BuildContext context) {
-    final caps = widget.capabilities
-        .where((capability) =>
-            !capability.isWork ||
-            capability.metadata['is_role_active'] != false)
-        .toList();
+    final caps = widget.capabilities.where((capability) {
+      if (!_belongsToSelectedFinancialIdentity(capability)) return false;
+      return !capability.isWork ||
+          capability.metadata['is_role_active'] != false;
+    }).toList();
     final servicesCount = caps.where((c) => !c.isWork).length;
     final jobsCount = caps.where((c) => c.isWork).length;
     return CustomScrollView(
@@ -1079,7 +1093,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                   onEdit: () => widget.onTapCapability(cap),
                   onTogglePause: (val) {
                     context.read<CapabilitiesCubit>().setCapabilityPaused(
-                          capabilitySlug: cap.capabilitySlug,
+                          providerCapabilityId: cap.id,
                           paused: val,
                         );
                   },

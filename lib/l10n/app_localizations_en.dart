@@ -3624,6 +3624,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'I offer my personal skills directly to clients, as a freelancer or worker.';
 
   @override
+  String get providerTypeFinancialIndividualDesc =>
+      'I provide financing in my own name under my Individual identity.';
+
+  @override
   String get providerTypeCompany => 'Company / Organization';
 
   @override

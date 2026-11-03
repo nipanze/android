@@ -1140,6 +1140,9 @@ select
   pc.verified_by,
   pc.verified_at,
   pc.created_at,
+  -- Keep this column in position 19: later verification/document patches
+  -- already append capability_type before the qualification summary.
+  nc.capability_type,
   coalesce(qs.claims, '[]'::jsonb) as role_qualification_claims
 from public.provider_capabilities pc
 join public.need_capabilities nc on nc.slug = pc.capability_slug
@@ -1172,3 +1175,6 @@ grant select on public.need_categories, public.need_capabilities to anon, authen
 grant select on public.capability_roles, public.role_kinds, public.role_qualifications to anon, authenticated;
 
 commit;
+
+-- Refresh PostgREST's cached table/view columns after the catalog DDL.
+notify pgrst, 'reload schema';
