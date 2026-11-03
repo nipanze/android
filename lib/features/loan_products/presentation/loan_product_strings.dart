@@ -6,6 +6,19 @@ String loanProductText(BuildContext context, String key) {
     'en': {
       'title': 'Loan products',
       'new': 'New product',
+      'preview_services': 'Preview services',
+      'selected_services': 'Selected financial services',
+      'your_services': 'Your services',
+      'service_count_one': '{count} service',
+      'service_count_other': '{count} services',
+      'save_selection': 'Save',
+      'non_custodial_note':
+          'Nipanze connects you with borrowers. It never holds loan money.',
+      'individual_no_proof':
+          'No proof needed for Individual loan providers.',
+      'no_services_selected':
+          'No services selected. Saving removes your current Financial Services selections.',
+      'save_continue': 'Save and continue',
       'browse': 'Browse products',
       'quota': 'Active products',
       'none': 'No loan products yet',
@@ -54,6 +67,8 @@ String loanProductText(BuildContext context, String key) {
       'draft_saved': 'Draft saved',
       'publish_gate':
           'Publishing requires an approved capability and verified account. You can keep this as a draft.',
+      'publish_gate_individual':
+          'Individual offers do not need capability proof. Your account must still meet the standard posting verification checks.',
       'status': 'Status',
       'active': 'Active',
       'draft': 'Draft',
@@ -81,6 +96,19 @@ String loanProductText(BuildContext context, String key) {
     'fr': {
       'title': 'Produits de prêt',
       'new': 'Nouveau produit',
+      'preview_services': 'Aperçu des services',
+      'selected_services': 'Services financiers sélectionnés',
+      'your_services': 'Vos services',
+      'service_count_one': '{count} service',
+      'service_count_other': '{count} services',
+      'save_selection': 'Enregistrer',
+      'non_custodial_note':
+          'Nipanze vous met en relation avec des emprunteurs. La plateforme ne détient jamais les fonds des prêts.',
+      'individual_no_proof':
+          'Aucune preuve de service n’est requise pour les offres individuelles. Vous pourrez publier ces offres de prêt après l’enregistrement.',
+      'no_services_selected':
+          'Aucun service sélectionné. Enregistrer supprimera vos sélections actuelles.',
+      'save_continue': 'Enregistrer et continuer',
       'browse': 'Parcourir les produits',
       'quota': 'Produits actifs',
       'none': 'Aucun produit de prêt',
@@ -152,10 +180,25 @@ String loanProductText(BuildContext context, String key) {
       'capacity_hint': 'Montant total disponible (facultatif)',
       'publish_gate':
           'La publication exige un service approuvé et un compte vérifié. Vous pouvez garder le brouillon.',
+      'publish_gate_individual':
+          'Les offres individuelles ne nécessitent pas de preuve du service. Votre compte doit toujours satisfaire aux vérifications standard de publication.',
     },
     'sw': {
       'title': 'Bidhaa za mikopo',
       'new': 'Bidhaa mpya',
+      'preview_services': 'Hakiki huduma',
+      'selected_services': 'Huduma za kifedha zilizochaguliwa',
+      'your_services': 'Huduma zako',
+      'service_count_one': 'Huduma {count}',
+      'service_count_other': 'Huduma {count}',
+      'save_selection': 'Hifadhi',
+      'non_custodial_note':
+          'Nipanze hukuunganisha na wakopaji. Haihifadhi pesa za mikopo.',
+      'individual_no_proof':
+          'Ofa za mikopo za mtu binafsi hazihitaji uthibitisho wa huduma. Unaweza kuchapisha ofa hizi za mikopo baada ya kuhifadhi.',
+      'no_services_selected':
+          'Hakuna huduma zilizochaguliwa. Kuhifadhi kutaondoa chaguo zako za sasa.',
+      'save_continue': 'Hifadhi na uendelee',
       'browse': 'Vinjari bidhaa',
       'quota': 'Bidhaa zinazotumika',
       'none': 'Bado hakuna bidhaa za mkopo',
@@ -226,10 +269,25 @@ String loanProductText(BuildContext context, String key) {
       'capacity_hint': 'Jumla ya fedha zinazopatikana (si lazima)',
       'publish_gate':
           'Kuchapisha kunahitaji huduma iliyoidhinishwa na akaunti iliyothibitishwa. Unaweza kuhifadhi rasimu.',
+      'publish_gate_individual':
+          'Ofa za mtu binafsi hazihitaji uthibitisho wa huduma. Akaunti yako bado lazima ipitie ukaguzi wa kawaida wa kuchapisha.',
     },
     'rw': {
       'title': 'Ibicuruzwa by’inguzanyo',
       'new': 'Igicuruzwa gishya',
+      'preview_services': 'Reba serivisi mbere',
+      'selected_services': 'Serivisi z’imari wahisemo',
+      'your_services': 'Serivisi zawe',
+      'service_count_one': 'Serivisi {count}',
+      'service_count_other': 'Serivisi {count}',
+      'save_selection': 'Bika',
+      'non_custodial_note':
+          'Nipanze iguhuza n’abasaba inguzanyo. Ntiyigera ibika amafaranga y’inguzanyo.',
+      'individual_no_proof':
+          'Inguzanyo zitangwa n’umuntu ku giti cye ntizisaba ibimenyetso bya serivisi. Ushobora gutangaza izo nguzanyo umaze kubika.',
+      'no_services_selected':
+          'Nta serivisi wahisemo. Kubika bizakuraho izo wahisemo mbere.',
+      'save_continue': 'Bika ukomeze',
       'browse': 'Reba ibicuruzwa',
       'quota': 'Ibicuruzwa bikora',
       'none': 'Nta bicuruzwa by’inguzanyo birimo',
@@ -300,10 +358,25 @@ String loanProductText(BuildContext context, String key) {
       'capacity_hint': 'Amafaranga yose ahari (si ngombwa)',
       'publish_gate':
           'Kugira ngo ushyire ahagaragara bisaba serivisi yemejwe na konti yagenzuwe. Ushobora kubika umushinga.',
+      'publish_gate_individual':
+          'Amasoko y’umuntu ku giti cye ntasaba ibimenyetso bya serivisi. Konti igomba gukomeza kuzuza igenzura risanzwe ryo gutangaza.',
     },
     'ar': {
       'title': 'منتجات القروض',
       'new': 'منتج جديد',
+      'preview_services': 'معاينة الخدمات',
+      'selected_services': 'الخدمات المالية المحددة',
+      'your_services': 'خدماتك',
+      'service_count_one': '{count} خدمة',
+      'service_count_other': '{count} خدمات',
+      'save_selection': 'حفظ',
+      'non_custodial_note':
+          'تربطك نيبانزي بالمقترضين، ولا تحتفظ بأموال القروض مطلقاً.',
+      'individual_no_proof':
+          'عروض القروض الفردية لا تحتاج إلى إثبات الخدمة. يمكنك نشر عروض القروض هذه بعد الحفظ.',
+      'no_services_selected':
+          'لم يتم اختيار خدمات. سيؤدي الحفظ إلى إزالة اختياراتك الحالية.',
+      'save_continue': 'حفظ ومتابعة',
       'browse': 'تصفح المنتجات',
       'quota': 'المنتجات النشطة',
       'none': 'لا توجد منتجات قروض بعد',
@@ -374,6 +447,8 @@ String loanProductText(BuildContext context, String key) {
       'capacity_hint': 'إجمالي المبلغ المتاح للإقراض (اختياري)',
       'publish_gate':
           'يتطلب النشر خدمة معتمدة وحساباً موثقاً. يمكنك حفظها كمسودة.',
+      'publish_gate_individual':
+          'العروض الفردية لا تحتاج إلى إثبات الخدمة. يظل حسابك مطالباً باستيفاء فحوصات النشر المعتادة.',
     },
   };
   final language = translations[locale] ?? translations['en']!;

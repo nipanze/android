@@ -762,8 +762,8 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 
 - Add provider-posted loan products as a separate catalogue and workflow. Borrower `loan_requests` and lender `loan_offers` remain unchanged.
 - Support the seven product categories, category-specific purposes, product drafts, active/paused/closed/archived states, plan quotas, featured limits, and a public active-products catalogue.
-- Keep products identity-scoped to the provider's selected Individual or Company financial capability. Publish checks the feature flag, active account, phone, KYC, company/capability eligibility, and subscription limits.
-- Continue from a successfully saved Financial Services provider selection into the loan product form. Link provider product management and public browsing from Provider Services and Marketplace.
+- Keep products identity-scoped to the provider's selected Individual or Company financial capability. Publish checks the feature flag, active account, phone, KYC, and subscription limits. Individual offers do not require capability evidence; Company offers still require approved capability proof.
+- Individual Financial Services selection continues to an in-drawer preview. Saving confirms the selected capabilities and returns to Provider Services. Loan posting is a separate follow-up form build and is not embedded in this selection flow.
 
 ### Files and SQL
 

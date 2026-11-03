@@ -537,6 +537,6 @@ Apply order:
 
 ### Provider loan products
 
-Loan Products are provider offers, separate from borrower loan requests and lender loan offers. Providers with an eligible, identity-matched Financial Services capability can save drafts, publish products, manage status, and view plan quotas. Active products are browsable from Marketplace; matching products to borrower requests and Activity notifications are a later Part C.
+Loan Products are provider offers, separate from borrower loan requests and lender loan offers. Providers with an identity-matched Financial Services capability can save drafts, publish products, manage status, and view plan quotas. Individual loan offers do not require capability evidence; the existing account posting checks still apply. Company offers require the existing approved capability proof. Active products are browsable from Marketplace; matching products to borrower requests and Activity notifications are a later Part C.
 
 Apply `sql/patch_loan_products.sql` after the base schema and the Financial Services provider capability patch. The patch is standalone and safe to rerun. Review and validate it in staging before production. The app flow is under `lib/features/loan_products/`, with management linked from Provider Services and browsing linked from Marketplace.

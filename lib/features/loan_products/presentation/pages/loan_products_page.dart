@@ -336,8 +336,13 @@ class _StatusChip extends StatelessWidget {
 }
 
 class LoanProductFormPage extends StatefulWidget {
-  const LoanProductFormPage({super.key, this.productId});
+  const LoanProductFormPage({
+    super.key,
+    this.productId,
+    this.embedded = false,
+  });
   final String? productId;
+  final bool embedded;
 
   @override
   State<LoanProductFormPage> createState() => _LoanProductFormPageState();
@@ -648,7 +653,7 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
 
   Future<void> _saveDraftAndExit() async {
     if (_productId == null && (_category == null || _capabilityId == null)) {
-      Navigator.of(context).pop();
+      if (!widget.embedded) Navigator.of(context).pop();
       return;
     }
     setState(() => _saving = true);
@@ -657,7 +662,14 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
         productId: _productId,
         payload: _payload(step: _step),
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted && widget.embedded) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loanProductText(context, 'draft_saved'))),
+        );
+      } else if (mounted) {
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -682,7 +694,14 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
         payload: _payload(step: 6),
       );
       await _repository.publish(_productId!);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted && widget.embedded) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Loan product published.')),
+        );
+      } else if (mounted) {
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -934,7 +953,7 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
   Widget build(BuildContext context) {
     final t = (String key) => loanProductText(context, key);
     return Scaffold(
-      appBar: AppBar(title: Text(t('new'))),
+      appBar: widget.embedded ? null : AppBar(title: Text(t('new'))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -973,7 +992,10 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
                           _stepContent(),
                           if (_step == 6) ...[
                             const SizedBox(height: 8),
-                            Text(t('publish_gate'),
+                            Text(
+                                t(_identityType == 'individual'
+                                    ? 'publish_gate_individual'
+                                    : 'publish_gate'),
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ],

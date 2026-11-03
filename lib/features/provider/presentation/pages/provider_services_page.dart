@@ -236,7 +236,10 @@ class _ProviderServicesView extends StatelessWidget {
           categorySlug: selection.categorySlug,
           metadataBySlug: selection.metadataBySlug,
         );
-        if (saved) return null;
+        if (saved) {
+          unawaited(cubit.loadWithOpportunities());
+          return null;
+        }
         final saveState = cubit.state;
         return saveState is CapabilitiesError
             ? saveState.message
@@ -253,16 +256,10 @@ class _ProviderServicesView extends StatelessWidget {
       return;
     }
     if (selection?.companyPath == true) {
-      final shouldOpenLoanProduct = selection != null &&
-          selection.categorySlug == 'financial_services' &&
-          selection.slugs.isNotEmpty;
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.companyProfileSaved)),
         );
-      }
-      if (context.mounted && shouldOpenLoanProduct) {
-        await _openLoanProductSetup(context);
       }
       if (context.mounted) await cubit.loadWithOpportunities();
       return;
@@ -281,10 +278,7 @@ class _ProviderServicesView extends StatelessWidget {
         selection?.categorySlug == 'financial_services' &&
             (selection?.slugs.isNotEmpty ?? false);
     if (isFinancialServiceSelection) {
-      if (capabilitiesSaved) {
-        if (context.mounted) await _openLoanProductSetup(context);
-        if (context.mounted) await cubit.loadWithOpportunities();
-      } else if (context.mounted) {
+      if (!capabilitiesSaved && context.mounted) {
         final currentState = cubit.state;
         final message = currentState is CapabilitiesError
             ? currentState.message
@@ -296,7 +290,12 @@ class _ProviderServicesView extends StatelessWidget {
             duration: const Duration(seconds: 6),
           ),
         );
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Financial services saved.')),
+        );
       }
+      if (context.mounted) await cubit.loadWithOpportunities();
       return;
     }
     await cubit.loadWithOpportunities();
@@ -615,15 +614,6 @@ class _ProviderServicesView extends StatelessWidget {
         ),
       );
     }
-  }
-
-  Future<void> _openLoanProductSetup(BuildContext context) async {
-    // showModalBottomSheet completes as soon as pop is requested, while its
-    // reverse animation is still running. Let that route finish dismissing
-    // before pushing the next page onto the shell navigator.
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    if (!context.mounted) return;
-    await context.pushNamed<void>('loanProductCreate');
   }
 
   Widget _workRoleRemovalNote(IconData icon, String label, Color color) =>

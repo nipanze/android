@@ -182,7 +182,10 @@ drop policy if exists loan_products_active_market_read on public.loan_products;
 create policy loan_products_active_market_read on public.loan_products
   for select to authenticated using(
     status='active' and private.loan_products_feature_enabled()
-    and private.provider_capability_is_eligible(provider_capability_id)
+    and (
+      identity_type='individual'
+      or private.provider_capability_is_eligible(provider_capability_id)
+    )
   );
 
 create or replace function public.save_loan_product_draft(
@@ -285,9 +288,11 @@ begin
     raise exception 'This provider identity is no longer selected.' using errcode='P0216'; end if;
   if not exists(select 1 from public.provider_capabilities pc
        where pc.id=v_product.provider_capability_id and pc.user_id=v_user
-         and pc.identity_type=v_product.identity_type and pc.verification_level='provider_verified'
-         and pc.is_active and private.provider_capability_is_eligible(pc.id)) then
-    raise exception 'An approved Financial Services capability under this identity is required to publish.' using errcode='P0216'; end if;
+         and pc.identity_type=v_product.identity_type and pc.is_active
+         and (v_product.identity_type='individual'
+              or (pc.verification_level='provider_verified'
+                  and private.provider_capability_is_eligible(pc.id)))) then
+    raise exception 'An eligible Financial Services capability under this identity is required to publish.' using errcode='P0216'; end if;
   if not exists(select 1 from public.profiles p join public.kyc_verifications k on k.user_id=p.id
        where p.id=v_user and p.account_status='active' and p.phone_verified_at is not null
          and k.status='approved' and (k.expires_at is null or k.expires_at>now())) then
@@ -374,8 +379,10 @@ left join public.provider_identity_presentations ip on ip.user_id=lp.provider_id
 left join public.profiles pr on pr.id=lp.provider_id
 where lp.status='active' and private.loan_products_feature_enabled(lp.provider_id)
   and pcp.provider_type=lp.identity_type and pc.identity_type=lp.identity_type
-  and pc.is_active and pc.verification_level='provider_verified'
-  and private.provider_capability_is_eligible(pc.id);
+  and pc.is_active
+  and (lp.identity_type='individual'
+       or (pc.verification_level='provider_verified'
+           and private.provider_capability_is_eligible(pc.id)));
 grant select on public.v_active_loan_products to anon,authenticated;
 
 commit;
