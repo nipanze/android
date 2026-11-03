@@ -326,10 +326,10 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                                 listing.title,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .titleSmall
+                                    .headlineMedium
                                     ?.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.w700,
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface,
@@ -393,8 +393,8 @@ class _LoanDetailPageState extends State<LoanDetailPage> {
                   CurrencyAmount(
                     listing.requestedAmount,
                     currency: listing.currency,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w900,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   const SizedBox(height: 8),
@@ -823,8 +823,7 @@ class _DescriptionSection extends StatelessWidget {
           Text(
             body,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  height: 1.4,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
           ),
@@ -857,7 +856,7 @@ class _LoanFact extends StatelessWidget {
           if (emoji != null)
             Text(emoji!, style: const TextStyle(fontSize: 16, height: 1.1))
           else if (icon != null)
-            Icon(icon, color: AppColors.accent, size: 18),
+            Icon(icon, color: AppColors.accent, size: 19),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -868,21 +867,15 @@ class _LoanFact extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty) ...[
                   const SizedBox(height: 2),

@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/services/localization_fallback.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -21,6 +23,7 @@ import '../../../provider/domain/repositories/provider_repository_interface.dart
 import '../../../provider/presentation/pages/add_service_sheet.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
+import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 
 class NeedsDetailPage extends StatefulWidget {
   const NeedsDetailPage({super.key, required this.requestId});
@@ -38,11 +41,19 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   bool _submittingOffer = false;
   bool _actionInProgress = false;
   bool _isOwner = false;
+  late final WatchlistCubit _watchlistCubit = getIt<WatchlistCubit>();
 
   @override
   void initState() {
     super.initState();
+    unawaited(_watchlistCubit.load());
     _loadNeed();
+  }
+
+  @override
+  void dispose() {
+    _watchlistCubit.close();
+    super.dispose();
   }
 
   void _loadNeed() {
@@ -898,6 +909,8 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthAuthenticated ? authState.user : null;
 
     final detailSurface =
         isDark ? AppColors.bg2Dark : theme.colorScheme.surfaceContainerHighest;
@@ -1152,15 +1165,92 @@ class _NeedsDetailPageState extends State<NeedsDetailPage> {
                       ),
                 const SizedBox(height: 24),
               ],
-              // ── Make Offer Action Button ─────────────────────────────────
-              if (!hasAlreadyOffered && acceptedOffer == null)
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.handshake_rounded),
-                  label: Text(l10n.makeAnOffer),
-                  onPressed: () => _showMakeOfferSheet(need),
-                ),
             ],
           ),
+          bottomNavigationBar: !_isOwner
+              ? BlocBuilder<WatchlistCubit, WatchlistState>(
+                  bloc: _watchlistCubit,
+                  builder: (context, watchlistState) {
+                    final isSaved = _watchlistCubit.isWatched(
+                      need.requestId,
+                      module: MarketplaceModule.needs,
+                    );
+                    final offerAccepted = acceptedOffer != null;
+                    final offerUnavailable = hasAlreadyOffered || offerAccepted;
+                    return SafeArea(
+                      top: false,
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          border: Border(
+                            top: BorderSide(
+                              color: theme.colorScheme.outlineVariant
+                                  .withValues(alpha: 0.14),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 152,
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(152, 48),
+                                ),
+                                onPressed: () async {
+                                  if (user == null) {
+                                    context.go(AppRoutes.login);
+                                    return;
+                                  }
+                                  final item = MarketplaceItem.needs(need);
+                                  final result = isSaved
+                                      ? await _watchlistCubit.remove(item)
+                                      : await _watchlistCubit.add(item);
+                                  if (!context.mounted ||
+                                      result == WatchlistActionResult.success) {
+                                    return;
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(result ==
+                                              WatchlistActionResult.offline
+                                          ? 'Watchlist changes will sync when you are online.'
+                                          : 'Could not update your watchlist. Please try again.'),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(isSaved
+                                    ? Icons.bookmark_rounded
+                                    : Icons.bookmark_border_rounded),
+                                label: Text(isSaved ? 'Saved' : 'Watchlist'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: offerUnavailable
+                                    ? null
+                                    : () => _showMakeOfferSheet(need),
+                                icon: Icon(offerUnavailable
+                                    ? Icons.check_rounded
+                                    : Icons.handshake_rounded),
+                                label: Text(
+                                  offerAccepted
+                                      ? 'Offer accepted'
+                                      : hasAlreadyOffered
+                                          ? 'Offer placed'
+                                          : l10n.makeAnOffer,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : null,
         );
       },
     );
