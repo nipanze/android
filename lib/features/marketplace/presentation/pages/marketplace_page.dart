@@ -25,6 +25,8 @@ import '../../../needs/domain/models/need_category.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../../provider/domain/entities/provider_capability.dart';
+import '../../../provider/presentation/cubit/capabilities_cubit.dart';
+import '../../../provider/presentation/cubit/capabilities_state.dart';
 import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
@@ -85,6 +87,7 @@ class MarketplacePage extends StatelessWidget {
           },
         ),
         BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
+        BlocProvider(create: (_) => getIt<CapabilitiesCubit>()..load()),
       ],
       child: _MarketplaceView(country: userCountry),
     );
@@ -199,23 +202,6 @@ class _MarketplaceView extends StatelessWidget {
                     ),
                   ),
                   // ── Notification bell ─────────────────────────────────
-                  Tooltip(
-                    message: 'Loan products',
-                    child: SizedBox(
-                      width: 36,
-                      height: 36,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        tooltip: 'Loan products',
-                        icon: const Icon(
-                          Icons.account_balance_outlined,
-                          size: 21,
-                        ),
-                        onPressed: () =>
-                            context.push(AppRoutes.loanProductMarketplace),
-                      ),
-                    ),
-                  ),
                   BlocBuilder<NotificationCubit, NotificationState>(
                     builder: (context, state) {
                       final unread =
@@ -902,56 +888,118 @@ class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
           if (state is MarketplaceLoaded && state.moduleFilter != null) {
             return const SizedBox.shrink();
           }
-          final labels = [
-            ..._offers.map((slug) =>
-                'Offer: ${_choices[slug] ?? slug.replaceAll('_', ' ')}'),
+          final labels = <String>{
+            ..._offers
+                .map((slug) => _choices[slug] ?? slug.replaceAll('_', ' ')),
             ..._interests
                 .map((slug) => _choices[slug] ?? slug.replaceAll('_', ' ')),
-            if (_lends) 'I lend',
-          ];
+          }.toList();
           return Padding(
             padding: const EdgeInsets.fromLTRB(18, 0, 14, 8),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                const Text('For you:',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
-                const SizedBox(width: 6),
-                Expanded(
-                    child: labels.isEmpty
-                        ? const Text('General feed',
-                            style: TextStyle(fontSize: 12, color: Colors.grey))
-                        : SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                                children: labels
-                                    .map((label) => Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 5),
-                                          child: Chip(
-                                              label: Text(label,
-                                                  style: const TextStyle(
-                                                      fontSize: 10)),
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              padding: EdgeInsets.zero),
-                                        ))
-                                    .toList()))),
-                TextButton(onPressed: _edit, child: const Text('Edit')),
-              ]),
-              if (state is MarketplaceLoaded && state.moduleFilter == null)
-                const Padding(
-                    padding: EdgeInsets.only(top: 2),
-                    child: Text(
-                        'Personalization ranks matching posts. Who can see a post is decided separately; audience access is enforced on the server. Build notes: saved account interests, Provider Services categories, and I lend preference power this feed.',
-                        style: TextStyle(fontSize: 10, color: Colors.grey))),
+            child: Row(children: [
+              const Text('Based on:',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF778195))),
+              const SizedBox(width: 6),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
+                    _AddServicePill(
+                      onTap: () => context.push(AppRoutes.accountServices),
+                    ),
+                    ...labels.map((label) => Padding(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: _PreferencePill(label: label),
+                        )),
+                  ]),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _edit,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+                  child: Text('Edit',
+                      style: TextStyle(
+                        color: Color(0xFF0758D5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      )),
+                ),
+              ),
             ]),
           );
         },
       );
+}
+
+class _AddServicePill extends StatelessWidget {
+  const _AddServicePill({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: CustomPaint(
+          foregroundPainter: _DashedPillBorder(),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+            child: Text('+ Add service',
+                style: TextStyle(
+                  color: Color(0xFF6941FF),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                )),
+          ),
+        ),
+      );
+}
+
+class _PreferencePill extends StatelessWidget {
+  const _PreferencePill({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEEF4FF),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(label,
+            style: const TextStyle(
+              color: Color(0xFF0758D5),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            )),
+      );
+}
+
+class _DashedPillBorder extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Offset.zero & size,
+        const Radius.circular(18),
+      ));
+    final paint = Paint()
+      ..color = const Color(0xFF7B61FF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final end = (distance + 3).clamp(0.0, metric.length).toDouble();
+        canvas.drawPath(metric.extractPath(distance, end), paint);
+        distance += 5;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 enum _DiscoveryPromptKind { addServices, newCategories, opportunities }
@@ -1243,69 +1291,177 @@ class _ModuleFilterRow extends StatelessWidget {
     return BlocBuilder<MarketplaceCubit, MarketplaceState>(
       builder: (context, state) {
         final selected = state is MarketplaceLoaded ? state.moduleFilter : null;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
-          child: Row(
-            children: [
-              // Scrollable filter pills
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 18),
-                  child: Row(
-                    children: [
-                      _FilterPill(
-                        label: AppLocalizations.of(context)!.marketplaceForYou,
-                        icon: Icons.auto_awesome_rounded,
-                        selected: selected == null,
-                        accentColor: AppColors.accent,
-                        onTap: () => context
-                            .read<MarketplaceCubit>()
-                            .setModuleFilter(null),
+        return BlocBuilder<CapabilitiesCubit, CapabilitiesState>(
+          builder: (context, capabilitiesState) {
+            final services = capabilitiesState is CapabilitiesLoaded
+                ? capabilitiesState.capabilities
+                    .where((capability) =>
+                        capability.isActive &&
+                        !capability.isPaused &&
+                        (!capability.isWork ||
+                            capability.metadata['is_role_active'] != false))
+                    .toList()
+                : const <ProviderCapability>[];
+            final isLoading = capabilitiesState is CapabilitiesInitial ||
+                capabilitiesState is CapabilitiesLoading;
+            final loadFailed = capabilitiesState is CapabilitiesError;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 18),
+                      child: Row(
+                        children: isLoading
+                            ? [
+                                _FilterPill(
+                                  label: AppLocalizations.of(context)!
+                                      .marketplaceForYou,
+                                  icon: Icons.auto_awesome_rounded,
+                                  selected: selected == null,
+                                  accentColor: AppColors.accent,
+                                  onTap: () => context
+                                      .read<MarketplaceCubit>()
+                                      .setModuleFilter(null),
+                                ),
+                                const SizedBox(width: 6),
+                                const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ]
+                            : loadFailed
+                                ? [
+                                    _FilterPill(
+                                      label: AppLocalizations.of(context)!
+                                          .marketplaceForYou,
+                                      icon: Icons.auto_awesome_rounded,
+                                      selected: selected == null,
+                                      accentColor: AppColors.accent,
+                                      onTap: () => context
+                                          .read<MarketplaceCubit>()
+                                          .setModuleFilter(null),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ActionChip(
+                                      label: const Text('Retry services'),
+                                      avatar: const Icon(
+                                        Icons.refresh_rounded,
+                                        size: 16,
+                                      ),
+                                      onPressed: () => context
+                                          .read<CapabilitiesCubit>()
+                                          .load(),
+                                    ),
+                                  ]
+                                : services.isEmpty
+                                    ? [
+                                        _FilterPill(
+                                          label: AppLocalizations.of(context)!
+                                              .marketplaceForYou,
+                                          icon: Icons.auto_awesome_rounded,
+                                          selected: selected == null,
+                                          accentColor: AppColors.accent,
+                                          onTap: () => context
+                                              .read<MarketplaceCubit>()
+                                              .setModuleFilter(null),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        ActionChip(
+                                          label: const Text('Add a service'),
+                                          avatar: const Icon(Icons.add_rounded,
+                                              size: 16),
+                                          onPressed: () => context
+                                              .push(AppRoutes.accountServices),
+                                        ),
+                                      ]
+                                    : [
+                                        _FilterPill(
+                                          label: AppLocalizations.of(context)!
+                                              .marketplaceForYou,
+                                          icon: Icons.auto_awesome_rounded,
+                                          selected: selected == null,
+                                          accentColor: AppColors.accent,
+                                          onTap: () => context
+                                              .read<MarketplaceCubit>()
+                                              .setModuleFilter(null),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        for (var i = 0;
+                                            i < services.length;
+                                            i++) ...[
+                                          if (i > 0) const SizedBox(width: 6),
+                                          _FilterPill(
+                                            label: _providerServiceLabel(
+                                                services[i]),
+                                            selected: selected ==
+                                                _moduleForProviderService(
+                                                    services[i]),
+                                            accentColor: AppColors.accent,
+                                            onTap: () => context
+                                                .read<MarketplaceCubit>()
+                                                .setModuleFilter(
+                                                  _moduleForProviderService(
+                                                      services[i]),
+                                                ),
+                                          ),
+                                        ],
+                                      ],
                       ),
-                      const SizedBox(width: 6),
-                      _FilterPill(
-                        label: AppLocalizations.of(context)!.marketplaceLoans,
-                        icon: Icons.account_balance_wallet_outlined,
-                        selected: selected == MarketplaceModule.loan,
-                        accentColor: AppColors.accent,
-                        onTap: () => context
-                            .read<MarketplaceCubit>()
-                            .setModuleFilter(MarketplaceModule.loan),
-                      ),
-                      const SizedBox(width: 6),
-                      _FilterPill(
-                        label: AppLocalizations.of(context)!.marketplaceForex,
-                        icon: Icons.currency_exchange_rounded,
-                        selected: selected == MarketplaceModule.forex,
-                        accentColor: const Color(0xFF06B6D4),
-                        onTap: () => context
-                            .read<MarketplaceCubit>()
-                            .setModuleFilter(MarketplaceModule.forex),
-                      ),
-                      const SizedBox(width: 6),
-                      _FilterPill(
-                        label: AppLocalizations.of(context)!.marketplaceNeeds,
-                        icon: Icons.search_rounded,
-                        selected: selected == MarketplaceModule.needs,
-                        accentColor: AppColors.warning,
-                        onTap: () => context
-                            .read<MarketplaceCubit>()
-                            .setModuleFilter(MarketplaceModule.needs),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  _ProFilterButton(onTap: onProFilterTap),
+                ],
               ),
-              // Filter button pinned to far right of the row
-              const SizedBox(width: 8),
-              _ProFilterButton(onTap: onProFilterTap),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+}
+
+String _providerServiceLabel(ProviderCapability service) {
+  if (service.isWork) {
+    final roleId = service.metadata['role_id']?.toString().trim();
+    if (roleId != null && roleId.isNotEmpty) {
+      return roleId
+          .split('_')
+          .where((part) => part.isNotEmpty)
+          .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+          .join(' ');
+    }
+  }
+  final name = service.capabilityName?.trim();
+  if (name != null && name.isNotEmpty) return name;
+  final category = service.categoryName?.trim();
+  if (category != null && category.isNotEmpty) return category;
+  return service.capabilitySlug
+      .split('_')
+      .where((part) => part.isNotEmpty)
+      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+      .join(' ');
+}
+
+MarketplaceModule _moduleForProviderService(ProviderCapability service) {
+  final slugs =
+      '${service.capabilitySlug} ${service.categorySlug ?? ''}'.toLowerCase();
+  if (slugs.contains('forex') || slugs.contains('currency_exchange')) {
+    return MarketplaceModule.forex;
+  }
+  if (slugs.contains('loan') ||
+      slugs.contains('financial') ||
+      slugs.contains('microfinance') ||
+      slugs.contains('sacco')) {
+    return MarketplaceModule.loan;
+  }
+  return MarketplaceModule.needs;
 }
 
 class _FilterPill extends StatelessWidget {

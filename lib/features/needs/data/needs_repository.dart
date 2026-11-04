@@ -91,8 +91,8 @@ class NeedsRepository {
     }
   }
 
-  /// Provider picker categories. Financial Services is intentionally excluded
-  /// from the Needs flow, but may be enabled for Provider Services by rollout.
+  /// Provider picker categories. Financial Services is available here while
+  /// remaining excluded from the Needs flow.
   Future<List<NeedCategory>> getProviderCategories({
     required bool includeFinancialServices,
   }) async {

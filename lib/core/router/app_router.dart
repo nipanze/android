@@ -65,7 +65,6 @@ class AppRoutes {
   static const String loanProductCreate = '/provider/loan-products/new';
   static const String loanProductEdit =
       '/provider/loan-products/:productId/edit';
-  static const String loanProductMarketplace = '/loan-products';
   static const String forexCreate = '/forex/create';
   static const String needsCreate = '/needs/create';
   static const String needsCreateFull = '/needs/create/full';
@@ -272,12 +271,6 @@ class AppRouter {
                 productId: state.pathParameters['productId'],
               ),
             ),
-          ),
-          GoRoute(
-            path: AppRoutes.loanProductMarketplace,
-            name: 'loanProductMarketplace',
-            pageBuilder: (_, state) =>
-                _fade(state, const LoanProductMarketplacePage()),
           ),
           GoRoute(
             path: AppRoutes.positions,

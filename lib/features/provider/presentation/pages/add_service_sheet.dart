@@ -669,7 +669,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     });
     final caps = await widget.needsRepository.getCapabilities(
       categorySlug: cat.slug,
-      includeFinancialServices: cat.slug == _financialCategorySlug,
+      includeFinancialServices: cat.slug == _financialCategorySlug &&
+          widget.capabilityProfilesEnabled,
     );
     var needsProviderType = false;
     ProviderCategoryType? providerType;
