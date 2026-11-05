@@ -246,7 +246,7 @@ class _MarketplaceView extends StatelessWidget {
             _ModuleFilterRow(
               onProFilterTap: () => _onProFilterTap(context),
             ),
-            _ForYouPreferencesRow(key: _ForYouPreferencesRow.editKey),
+            const _ForYouPreferencesSync(),
             // ── Listing feed ─────────────────────────────────────────────
             Expanded(
               child: Container(
@@ -357,26 +357,6 @@ class _MarketplaceView extends StatelessWidget {
                           child: ListView(
                             padding: const EdgeInsets.fromLTRB(13, 6, 13, 14),
                             children: [
-                              if (state.moduleFilter == null &&
-                                  context
-                                      .read<MarketplaceCubit>()
-                                      .forYouInterests
-                                      .isEmpty)
-                                Card(
-                                  child: ListTile(
-                                    leading:
-                                        const Icon(Icons.interests_outlined),
-                                    title: const Text('Pick interests'),
-                                    subtitle: const Text(
-                                        'Choose topics to personalize For You.'),
-                                    trailing: TextButton(
-                                      onPressed: () => _ForYouPreferencesRow
-                                          .editKey.currentState
-                                          ?._edit(),
-                                      child: const Text('Choose'),
-                                    ),
-                                  ),
-                                ),
                               if (state.moduleFilter == null) ...[
                                 DiscoveryCard(
                                   country: country,
@@ -566,440 +546,65 @@ Future<void> _enableLending(BuildContext context) async {
   );
 }
 
-class _ForYouPreferencesRow extends StatefulWidget {
-  const _ForYouPreferencesRow({super.key});
-
-  static final editKey = GlobalKey<_ForYouPreferencesRowState>();
+class _ForYouPreferencesSync extends StatefulWidget {
+  const _ForYouPreferencesSync();
 
   @override
-  State<_ForYouPreferencesRow> createState() => _ForYouPreferencesRowState();
+  State<_ForYouPreferencesSync> createState() => _ForYouPreferencesSyncState();
 }
 
-class _ForYouPreferencesRowState extends State<_ForYouPreferencesRow> {
-  static const _choices = <String, String>{
-    'machinery_equipment': 'Equipment',
-    'transport_logistics': 'Logistics',
-    'professional_services': 'Services',
-    'specialized_products': 'Procurement',
-    'energy_utilities': 'Solar',
-    'agriculture_agribusiness': 'Farming',
-    'education_training': 'Education',
-    'forex': 'Forex',
+class _ForYouPreferencesSyncState extends State<_ForYouPreferencesSync> {
+  static const _knownInterestSlugs = <String>{
+    "machinery_equipment",
+    "transport_logistics",
+    "professional_services",
+    "specialized_products",
+    "energy_utilities",
+    "agriculture_agribusiness",
+    "education_training",
+    "forex",
   };
-  Set<String> _interests = {};
-  Set<String> _offers = {};
-  List<ProviderCapability> _offerCapabilities = const [];
-  bool _lends = true;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_load());
+    unawaited(_sync());
   }
 
-  Future<void> _load() async {
+  Future<void> _sync() async {
     try {
-      final discovery = getIt<DiscoveryRepository>();
       final values = await Future.wait([
-        discovery.getSavedInterestCategories(),
+        getIt<DiscoveryRepository>().getSavedInterestCategories(),
         getIt<IProviderRepository>().getProviderCapabilities(),
         SharedPreferences.getInstance(),
       ]);
+      if (!mounted) return;
+      final interests =
+          (values[0] as Set<String>).intersection(_knownInterestSlugs);
+      final capabilities = values[1] as List<ProviderCapability>;
+      final providerSlugs = capabilities
+          .where((capability) =>
+              capability.isActive &&
+              !capability.isPaused &&
+              (!capability.isWork ||
+                  capability.metadata["is_role_active"] != false))
+          .map((capability) =>
+              capability.categorySlug ?? capability.capabilitySlug)
+          .toSet();
       final prefs = values[2] as SharedPreferences;
       if (!mounted) return;
-      setState(() {
-        _interests =
-            (values[0] as Set<String>).intersection(_choices.keys.toSet());
-        _offers = (values[1] as List<ProviderCapability>)
-            .where((capability) => capability.isActive)
-            .map((capability) =>
-                capability.categorySlug ?? capability.capabilitySlug)
-            .toSet();
-        _offerCapabilities = (values[1] as List<ProviderCapability>)
-            .where((capability) => capability.isActive)
-            .toList();
-        _lends = prefs.getBool('marketplace_i_lend') ?? true;
-      });
-      _syncCubit();
+      context.read<MarketplaceCubit>().setForYouPreferences(
+            interestSlugs: interests,
+            providerSlugs: providerSlugs,
+            iLend: prefs.getBool("marketplace_i_lend") ?? true,
+          );
     } catch (_) {
       // Keep the feed usable if preferences are unavailable offline.
     }
   }
 
-  void _syncCubit() => context.read<MarketplaceCubit>().setForYouPreferences(
-        interestSlugs: _interests,
-        providerSlugs: _offers,
-        iLend: _lends,
-      );
-
-  Future<void> _edit() async {
-    final selected = Set<String>.from(_interests);
-    var lends = _lends;
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppColors.bg2Dark
-          : Colors.white,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) {
-          final dark = Theme.of(context).brightness == Brightness.dark;
-          final textColor = dark ? AppColors.textDark : const Color(0xFF111827);
-          final secondary =
-              dark ? AppColors.text2Dark : const Color(0xFF475569);
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.9,
-            ),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  Container(
-                      width: 38,
-                      height: 4,
-                      decoration: BoxDecoration(
-                          color: dark
-                              ? AppColors.borderDark
-                              : const Color(0xFFD7DDE7),
-                          borderRadius: BorderRadius.circular(4))),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Your For You feed',
-                              style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.2)),
-                          const SizedBox(height: 4),
-                          Text(
-                              'Tell Nipanze what you want to see. You can change this any time.',
-                              style: TextStyle(
-                                  color: secondary,
-                                  fontSize: 12.5,
-                                  height: 1.35)),
-                          const SizedBox(height: 13),
-                          Text('I’m interested in',
-                              style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 7),
-                          Wrap(
-                            spacing: 7,
-                            runSpacing: 7,
-                            children: _choices.entries.map((entry) {
-                              final isSelected = selected.contains(entry.key);
-                              return InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () => setSheetState(() => isSelected
-                                    ? selected.remove(entry.key)
-                                    : selected.add(entry.key)),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 120),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? (dark
-                                            ? AppColors.accent
-                                                .withValues(alpha: 0.15)
-                                            : const Color(0xFFEEF5FF))
-                                        : Colors.transparent,
-                                    border: Border.all(
-                                        color: isSelected
-                                            ? AppColors.accent
-                                            : (dark
-                                                ? AppColors.borderDark
-                                                : const Color(0xFFADB8C8)),
-                                        width: isSelected ? 2 : 1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(entry.value,
-                                      style: TextStyle(
-                                          color: isSelected
-                                              ? AppColors.accent
-                                              : textColor,
-                                          fontSize: 13,
-                                          fontWeight: isSelected
-                                              ? FontWeight.w700
-                                              : FontWeight.w500)),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 20),
-                          Text('I can offer',
-                              style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 7),
-                          Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: _offerCapabilities.map((capability) {
-                                final category = capability.categoryName ??
-                                    _choices[capability.categorySlug] ??
-                                    capability.categorySlug
-                                        ?.replaceAll('_', ' ') ??
-                                    capability.capabilityName ??
-                                    capability.capabilitySlug
-                                        .replaceAll('_', ' ');
-                                final identity = capability.identityType
-                                    ?.replaceAll('_', ' ');
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 11, vertical: 7),
-                                  decoration: BoxDecoration(
-                                      color: dark
-                                          ? AppColors.proPurple
-                                              .withValues(alpha: 0.16)
-                                          : const Color(0xFFF0EBFF),
-                                      border: Border.all(
-                                          color: const Color(0xFFD8CCFF)),
-                                      borderRadius: BorderRadius.circular(22)),
-                                  child: Text(
-                                      '$category${identity == null || identity.isEmpty ? '' : ' · ${_titleCase(identity)}'}',
-                                      style: const TextStyle(
-                                          color: Color(0xFF5932DA),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700)),
-                                );
-                              }).toList()),
-                          const SizedBox(height: 6),
-                          Text(
-                              'Comes from your Provider Services. Change it there, per category.',
-                              style: TextStyle(
-                                  color: secondary,
-                                  fontSize: 11.5,
-                                  height: 1.35)),
-                          const SizedBox(height: 18),
-                          Text('Loans',
-                              style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(13, 9, 10, 9),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: dark
-                                        ? AppColors.borderDark
-                                        : const Color(0xFFDCE2EC)),
-                                borderRadius: BorderRadius.circular(13)),
-                            child: Row(children: [
-                              Expanded(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                    Text('I lend',
-                                        style: TextStyle(
-                                            color: textColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700)),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                        'See loan requests. Borrowers only share them with lenders.',
-                                        style: TextStyle(
-                                            color: secondary,
-                                            fontSize: 11.5,
-                                            height: 1.35)),
-                                  ])),
-                              Switch(
-                                  value: lends,
-                                  onChanged: (value) =>
-                                      setSheetState(() => lends = value)),
-                            ]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            top: BorderSide(
-                                color: dark
-                                    ? AppColors.borderDark
-                                    : const Color(0xFFE7EAF0)))),
-                    child: SizedBox(
-                        width: double.infinity,
-                        height: 49,
-                        child: FilledButton(
-                            onPressed: () => Navigator.pop(sheetContext, true),
-                            style: FilledButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(13))),
-                            child: const Text('Done',
-                                style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700)))),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-    if (result != true || !mounted) return;
-    try {
-      final repository = getIt<DiscoveryRepository>();
-      final previous = (await repository.getSavedInterestCategories())
-          .intersection(_choices.keys.toSet());
-      await repository.removeInterestCategories(previous.difference(selected));
-      await repository.saveInterestCategories(selected.difference(previous));
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('marketplace_i_lend', lends);
-      if (!mounted) return;
-      setState(() {
-        _interests = selected;
-        _lends = lends;
-      });
-      _syncCubit();
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not save preferences: $error')));
-      }
-    }
-  }
-
-  String _titleCase(String value) => value
-      .split(' ')
-      .map((part) =>
-          part.isEmpty ? part : '${part[0].toUpperCase()}${part.substring(1)}')
-      .join(' ');
-
   @override
-  Widget build(BuildContext context) =>
-      BlocBuilder<MarketplaceCubit, MarketplaceState>(
-        builder: (context, state) {
-          if (state is MarketplaceLoaded && state.moduleFilter != null) {
-            return const SizedBox.shrink();
-          }
-          final labels = <String>{
-            ..._offers
-                .map((slug) => _choices[slug] ?? slug.replaceAll('_', ' ')),
-            ..._interests
-                .map((slug) => _choices[slug] ?? slug.replaceAll('_', ' ')),
-          }.toList();
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(18, 0, 14, 8),
-            child: Row(children: [
-              const Text('Based on:',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF778195))),
-              const SizedBox(width: 6),
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: [
-                    _AddServicePill(
-                      onTap: () => context.push(AppRoutes.accountServices),
-                    ),
-                    ...labels.map((label) => Padding(
-                          padding: const EdgeInsets.only(left: 5),
-                          child: _PreferencePill(label: label),
-                        )),
-                  ]),
-                ),
-              ),
-              const SizedBox(width: 4),
-              InkWell(
-                onTap: _edit,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 7),
-                  child: Text('Edit',
-                      style: TextStyle(
-                        color: Color(0xFF0758D5),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      )),
-                ),
-              ),
-            ]),
-          );
-        },
-      );
-}
-
-class _AddServicePill extends StatelessWidget {
-  const _AddServicePill({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: CustomPaint(
-          foregroundPainter: _DashedPillBorder(),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-            child: Text('+ Add service',
-                style: TextStyle(
-                  color: Color(0xFF6941FF),
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                )),
-          ),
-        ),
-      );
-}
-
-class _PreferencePill extends StatelessWidget {
-  const _PreferencePill({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEEF4FF),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(label,
-            style: const TextStyle(
-              color: Color(0xFF0758D5),
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-            )),
-      );
-}
-
-class _DashedPillBorder extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Offset.zero & size,
-        const Radius.circular(18),
-      ));
-    final paint = Paint()
-      ..color = const Color(0xFF7B61FF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final end = (distance + 3).clamp(0.0, metric.length).toDouble();
-        canvas.drawPath(metric.extractPath(distance, end), paint);
-        distance += 5;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 enum _DiscoveryPromptKind { addServices, newCategories, opportunities }
