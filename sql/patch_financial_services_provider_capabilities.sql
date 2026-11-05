@@ -8,14 +8,16 @@ begin;
 
 update public.need_categories
 set name = 'Financial Services', icon = '💰',
-    description = 'Loans and financing you offer', sort_order = 19, is_active = true
+    description = 'Loans, Forex, SACCOs, investments, and other financial services.',
+    sort_order = 19, is_active = true
 where slug = 'financial_services';
 
 insert into public.need_categories
   (slug, name, icon, description, sort_order, is_active, provider_verification_required)
 values
   ('financial_services', 'Financial Services', '💰',
-   'Loans and financing you offer', 19, true, false)
+   'Loans, Forex, SACCOs, investments, and other financial services.',
+   19, true, false)
 on conflict (slug) do update set
   name = excluded.name, icon = excluded.icon,
   description = excluded.description, sort_order = excluded.sort_order,

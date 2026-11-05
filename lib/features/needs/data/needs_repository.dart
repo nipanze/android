@@ -10,6 +10,27 @@ import '../domain/models/need_catalog_localizations.dart';
 import '../domain/models/need_category.dart';
 import '../domain/models/need_offer.dart';
 
+const _providerCatalogCategorySlugs = <String>{
+  'technology_digital',
+  'marketing_promotion',
+  'professional_services',
+  'education_training',
+  'events_production',
+  'photo_video_music_talent',
+  'beauty_fashion_styling',
+  'construction_building',
+  'energy_utilities',
+  'transport_logistics',
+  'machinery_equipment',
+  'agriculture_agribusiness',
+  'specialized_products',
+  'travel_international',
+  'domestic_household',
+  'health_medical',
+  'traditional_cultural',
+  'financial_services',
+};
+
 List<Map<String, dynamic>> deduplicateCatalogSearchResults(
   Iterable<Map<String, dynamic>> results,
 ) {
@@ -106,11 +127,19 @@ class NeedsRepository {
       final categories = (data as List)
           .map((row) => NeedCategory.fromMap(row, countryCode: countryCode))
           .where((category) =>
-              includeFinancialServices || category.slug != 'financial_services')
+              _providerCatalogCategorySlugs.contains(category.slug) &&
+              (includeFinancialServices ||
+                  category.slug != 'financial_services'))
           .toList();
       return NeedCategory.sortForDisplay(_dedupeBySlug(categories));
     } catch (_) {
-      return getCategories();
+      final categories = await getCategories();
+      return NeedCategory.sortForDisplay(_dedupeBySlug(categories
+          .where((category) =>
+              _providerCatalogCategorySlugs.contains(category.slug) &&
+              (includeFinancialServices ||
+                  category.slug != 'financial_services'))
+          .toList()));
     }
   }
 

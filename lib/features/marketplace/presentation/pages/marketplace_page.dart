@@ -1033,6 +1033,8 @@ class _ModuleFilterRow extends StatelessWidget {
 }
 
 String _providerServiceLabel(ProviderCapability service) {
+  final category = service.categoryName?.trim();
+  if (category != null && category.isNotEmpty) return category;
   if (service.isWork) {
     final roleId = service.metadata['role_id']?.toString().trim();
     if (roleId != null && roleId.isNotEmpty) {
@@ -1045,8 +1047,6 @@ String _providerServiceLabel(ProviderCapability service) {
   }
   final name = service.capabilityName?.trim();
   if (name != null && name.isNotEmpty) return name;
-  final category = service.categoryName?.trim();
-  if (category != null && category.isNotEmpty) return category;
   return service.capabilitySlug
       .split('_')
       .where((part) => part.isNotEmpty)

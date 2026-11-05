@@ -88,7 +88,7 @@
       "Other"
     ],
     "flow": [
-      "Choose a category and provider identity.",
+      "Choose a one-word category, then a subcategory, then your Individual or Company / Organization identity.",
       "Individual: select work roles, then add role kinds and qualifications. Financial Services also supports Individual financing capabilities.",
       "Company / Organization: select services and complete company details; work roles are not shown in company settings.",
       "Verification and category rollout policies are enforced by the catalog and database configuration."
@@ -105,67 +105,14 @@
   },
   "categories": [
     {
-      "id": "financial_services",
-      "name": "Financial Services",
-      "icon": "💰",
-      "description": "Loans and financing you offer",
-      "provider_verification_required": true,
-      "provider_types": ["individual", "company"],
-      "service_groups": [
-        {"id": "personal_financing", "name": "Personal Financing", "services": [
-          {"id": "personal_loan_services", "name": "Personal Loan Services", "database_slug": "personal_loan_services", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "emergency_loan_services", "name": "Emergency Loan Services", "database_slug": "emergency_loan_services", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "salary_loan_services", "name": "Salary Loan Services", "database_slug": "salary_loan_services", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "medical_financing", "name": "Medical Financing", "database_slug": "medical_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "business_financing", "name": "Business Financing", "services": [
-          {"id": "business_startup_financing", "name": "Business Startup Financing", "database_slug": "business_startup_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "working_capital_financing", "name": "Working Capital Financing", "database_slug": "working_capital_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "business_expansion_financing", "name": "Business Expansion Financing", "database_slug": "business_expansion_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "sme_financing", "name": "SME Financing", "database_slug": "sme_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "asset_financing", "name": "Asset Financing", "services": [
-          {"id": "boda_boda_financing", "name": "Boda Boda Financing", "database_slug": "boda_boda_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "car_financing", "name": "Car Financing", "database_slug": "car_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "tuk_tuk_financing", "name": "Tuk-tuk Financing", "database_slug": "tuk_tuk_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "motorcycle_financing", "name": "Motorcycle Financing", "database_slug": "motorcycle_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "smartphone_financing", "name": "Smartphone Financing", "database_slug": "smartphone_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "laptop_financing", "name": "Laptop Financing", "database_slug": "laptop_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "heavy_machinery_financing", "name": "Heavy Machinery Financing", "database_slug": "heavy_machinery_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "equipment_financing", "name": "Equipment Financing", "database_slug": "equipment_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "agricultural_financing", "name": "Agricultural Financing", "services": [
-          {"id": "agricultural_loan_services", "name": "Agricultural Loans", "database_slug": "agricultural_loan_services", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "livestock_financing", "name": "Livestock Financing", "database_slug": "livestock_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "crop_financing", "name": "Crop Financing", "database_slug": "crop_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "farm_equipment_financing", "name": "Farm Equipment Financing", "database_slug": "farm_equipment_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "property_financing", "name": "Property Financing", "services": [
-          {"id": "mortgage_financing", "name": "Mortgage Financing", "database_slug": "mortgage_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "land_financing", "name": "Land Financing", "database_slug": "land_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "property_development_financing", "name": "Property Development Financing", "database_slug": "property_development_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "education_financing", "name": "Education Financing", "services": [
-          {"id": "school_fees_financing", "name": "School Fees Financing", "database_slug": "school_fees_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "university_financing", "name": "University Financing", "database_slug": "university_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "education_loan_services", "name": "Education Loans", "database_slug": "education_loan_services", "is_active": true, "verification_policy": "required_proof"}
-        ]},
-        {"id": "lifestyle_financing", "name": "Lifestyle Financing", "services": [
-          {"id": "travel_financing", "name": "Travel Financing", "database_slug": "travel_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "wedding_financing", "name": "Wedding Financing", "database_slug": "wedding_financing", "is_active": true, "verification_policy": "required_proof"},
-          {"id": "other_lifestyle_financing", "name": "Other Lifestyle Financing", "database_slug": "other_lifestyle_financing", "is_active": true, "verification_policy": "required_proof"}
-        ]}
-      ]
-    },
-    {
       "id": "technology_digital",
-      "name": "Technology & Digital",
+      "name": "Technology",
       "icon": "💻",
       "description": "Software, websites, IT support and security",
       "service_groups": [
         {
-          "id": "build",
-          "name": "Build",
+          "id": "development",
+          "name": "Development",
           "services": [
             {
               "id": "software_development",
@@ -186,7 +133,7 @@
               "database_slug": "mobile_app_development"
             },
             {
-              "id": "automation",
+              "id": "automation_services",
               "name": "Automation",
               "is_active": true,
               "database_slug": "automation_services"
@@ -194,8 +141,8 @@
           ]
         },
         {
-          "id": "support_infrastructure",
-          "name": "Support & Infrastructure",
+          "id": "support_networks",
+          "name": "Support & Networks",
           "services": [
             {
               "id": "it_support",
@@ -204,28 +151,22 @@
               "database_slug": "it_support"
             },
             {
-              "id": "networking",
+              "id": "networking_services",
               "name": "Networking",
               "is_active": true,
               "database_slug": "networking_services"
-            },
-            {
-              "id": "cybersecurity",
-              "name": "Cybersecurity",
-              "is_active": true,
-              "database_slug": "cybersecurity_services"
             }
           ]
         },
         {
-          "id": "other",
-          "name": "Other",
+          "id": "security",
+          "name": "Security",
           "services": [
             {
-              "id": "other_technology",
-              "name": "Other Technology",
+              "id": "cybersecurity_services",
+              "name": "Cybersecurity",
               "is_active": true,
-              "database_slug": "other_technology"
+              "database_slug": "cybersecurity_services"
             }
           ]
         }
@@ -464,7 +405,7 @@
     },
     {
       "id": "marketing_promotion",
-      "name": "Marketing & Promotion",
+      "name": "Marketing",
       "icon": "📣",
       "description": "Advertising, content and influencer work",
       "service_groups": [
@@ -537,18 +478,6 @@
               "name": "I Have an Audience",
               "is_active": true,
               "database_slug": "i_have_an_audience"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_marketing_services",
-              "name": "Other Marketing Services",
-              "is_active": true,
-              "database_slug": "other_marketing_services"
             }
           ]
         }
@@ -729,13 +658,13 @@
     },
     {
       "id": "business_professional_services",
-      "name": "Business & Professional Services",
+      "name": "Business",
       "icon": "💼",
       "description": "Consulting, legal, accounting, HR and design",
       "service_groups": [
         {
-          "id": "finance_legal",
-          "name": "Finance & Legal",
+          "id": "accounting_legal",
+          "name": "Accounting & Legal",
           "services": [
             {
               "id": "accounting_tax",
@@ -772,43 +701,6 @@
               "name": "HR Services",
               "is_active": true,
               "database_slug": "hr_services"
-            }
-          ]
-        },
-        {
-          "id": "design_engineering",
-          "name": "Design & Engineering",
-          "services": [
-            {
-              "id": "architecture",
-              "name": "Architecture",
-              "is_active": true,
-              "database_slug": "architecture_services"
-            },
-            {
-              "id": "engineering",
-              "name": "Engineering",
-              "is_active": true,
-              "database_slug": "engineering_consulting"
-            },
-            {
-              "id": "driving_school_driver_training",
-              "name": "Driving School / Driver Training",
-              "is_active": true,
-              "policy": "required_proof",
-              "database_slug": "driving_school_driver_training"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_professional_services",
-              "name": "Other Professional Services",
-              "is_active": true,
-              "database_slug": "other_professional"
             }
           ]
         }
@@ -1150,7 +1042,7 @@
     },
     {
       "id": "education_training",
-      "name": "Education & Training",
+      "name": "Education",
       "icon": "🎓",
       "description": "Learning, admissions and placements",
       "service_groups": [
@@ -1239,8 +1131,8 @@
           ]
         },
         {
-          "id": "coursework",
-          "name": "Coursework & projects",
+          "id": "coursework_projects",
+          "name": "Coursework & Projects",
           "services": [
             {
               "id": "final_year_project_support",
@@ -1548,7 +1440,7 @@
     },
     {
       "id": "events_celebrations",
-      "name": "Events & Celebrations",
+      "name": "Events",
       "icon": "🎉",
       "description": "Weddings, parties, corporate events and the services behind them",
       "service_groups": [
@@ -1563,19 +1455,19 @@
               "database_slug": "event_planning"
             },
             {
-              "id": "decoration",
+              "id": "event_decoration",
               "name": "Decoration",
               "is_active": true,
               "database_slug": "event_decoration"
             },
             {
-              "id": "cakes",
+              "id": "celebration_cakes",
               "name": "Cakes",
               "is_active": true,
               "database_slug": "celebration_cakes"
             },
             {
-              "id": "catering",
+              "id": "celebration_catering",
               "name": "Catering",
               "is_active": true,
               "database_slug": "celebration_catering"
@@ -1583,11 +1475,11 @@
           ]
         },
         {
-          "id": "equipment_venue_setup",
-          "name": "Equipment & Venue Setup",
+          "id": "equipment_venue",
+          "name": "Equipment & Venue",
           "services": [
             {
-              "id": "tents",
+              "id": "tent_hire",
               "name": "Tents",
               "is_active": true,
               "database_slug": "tent_hire"
@@ -1605,7 +1497,7 @@
               "database_slug": "sound_systems"
             },
             {
-              "id": "lighting",
+              "id": "lighting_hire",
               "name": "Lighting",
               "is_active": true,
               "database_slug": "lighting_hire"
@@ -1613,11 +1505,11 @@
           ]
         },
         {
-          "id": "entertainment_hosting",
-          "name": "Entertainment & Hosting",
+          "id": "entertainment_transport",
+          "name": "Entertainment & Transport",
           "services": [
             {
-              "id": "djs_mcs",
+              "id": "celebration_mc_dj",
               "name": "DJs / MCs",
               "is_active": true,
               "database_slug": "celebration_mc_dj"
@@ -1627,18 +1519,6 @@
               "name": "Event Transport",
               "is_active": true,
               "database_slug": "event_transport"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_events",
-              "name": "Other Events",
-              "is_active": true,
-              "database_slug": "other_events"
             }
           ]
         }
@@ -1853,7 +1733,7 @@
     },
     {
       "id": "photo_video_music_talent",
-      "name": "Photo, Video, Music & Talent",
+      "name": "Media",
       "icon": "🎬",
       "description": "Creative production and performers for any occasion",
       "service_groups": [
@@ -1862,13 +1742,13 @@
           "name": "Photo & Video",
           "services": [
             {
-              "id": "photography",
+              "id": "photography_services",
               "name": "Photography",
               "is_active": true,
               "database_slug": "photography_services"
             },
             {
-              "id": "videography",
+              "id": "videography_services",
               "name": "Videography",
               "is_active": true,
               "database_slug": "videography_services"
@@ -1882,8 +1762,8 @@
           ]
         },
         {
-          "id": "music_production",
-          "name": "Music Production",
+          "id": "music",
+          "name": "Music",
           "services": [
             {
               "id": "recording_studios",
@@ -1918,8 +1798,8 @@
           ]
         },
         {
-          "id": "on_screen_performers",
-          "name": "On-screen & Performers",
+          "id": "performers",
+          "name": "Performers",
           "services": [
             {
               "id": "actors_actresses",
@@ -1944,6 +1824,24 @@
               "name": "Music Video Models",
               "is_active": true,
               "database_slug": "music_video_models"
+            }
+          ]
+        },
+        {
+          "id": "art_design",
+          "name": "Art & Design",
+          "services": [
+            {
+              "id": "art_illustration",
+              "database_slug": "art_illustration",
+              "name": "Art & Illustration",
+              "is_active": true
+            },
+            {
+              "id": "graphic_design",
+              "database_slug": "graphic_design",
+              "name": "Graphic Design",
+              "is_active": true
             }
           ]
         }
@@ -2137,7 +2035,7 @@
     },
     {
       "id": "beauty_fashion_styling",
-      "name": "Beauty, Fashion, Styling & Wellness",
+      "name": "Beauty",
       "icon": "💄",
       "description": "Makeup, hair, styling, clothing, massage, spa, and wellness services",
       "service_groups": [
@@ -2146,16 +2044,40 @@
           "name": "Beauty",
           "services": [
             {
-              "id": "makeup_artists",
+              "id": "celebration_makeup",
               "name": "Makeup Artists",
               "is_active": true,
               "database_slug": "celebration_makeup"
             },
             {
-              "id": "hair_stylists",
+              "id": "hair_styling",
               "name": "Hair Stylists",
               "is_active": true,
               "database_slug": "hair_styling"
+            },
+            {
+              "id": "salon_barber_services",
+              "name": "Salons & Barber Shops",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "salon",
+                "barber",
+                "barbershop"
+              ],
+              "database_slug": "salon_barber_services"
+            },
+            {
+              "id": "nails_skincare_services",
+              "name": "Nails & Skincare",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "manicure",
+                "pedicure",
+                "skincare"
+              ],
+              "database_slug": "nails_skincare_services"
             }
           ]
         },
@@ -2170,13 +2092,13 @@
               "database_slug": "bridal_styling"
             },
             {
-              "id": "stylists",
+              "id": "music_video_stylists",
               "name": "Stylists",
               "is_active": true,
               "database_slug": "music_video_stylists"
             },
             {
-              "id": "wedding_dresses_bridesmaid_outfits",
+              "id": "dresses_bridesmaid_outfits",
               "name": "Wedding Dresses / Bridesmaid Outfits",
               "is_active": true,
               "database_slug": "dresses_bridesmaid_outfits"
@@ -2211,30 +2133,6 @@
                 "steam"
               ],
               "database_slug": "spa_services"
-            },
-            {
-              "id": "salon_barber_services",
-              "name": "Salons & Barber Shops",
-              "is_active": true,
-              "policy": "optional_proof",
-              "aliases": [
-                "salon",
-                "barber",
-                "barbershop"
-              ],
-              "database_slug": "salon_barber_services"
-            },
-            {
-              "id": "nails_skincare_services",
-              "name": "Nails & Skincare",
-              "is_active": true,
-              "policy": "optional_proof",
-              "aliases": [
-                "manicure",
-                "pedicure",
-                "skincare"
-              ],
-              "database_slug": "nails_skincare_services"
             },
             {
               "id": "sauna_steam_services",
@@ -2549,7 +2447,7 @@
     },
     {
       "id": "construction_building",
-      "name": "Construction & Building",
+      "name": "Construction",
       "icon": "🏗️",
       "description": "Contractors, trades and surveying",
       "service_groups": [
@@ -2564,19 +2462,19 @@
               "database_slug": "building_contractors"
             },
             {
-              "id": "roofing",
+              "id": "roofing_services",
               "name": "Roofing",
               "is_active": true,
               "database_slug": "roofing_services"
             },
             {
-              "id": "excavation",
+              "id": "excavation_works",
               "name": "Excavation",
               "is_active": true,
               "database_slug": "excavation_works"
             },
             {
-              "id": "concrete",
+              "id": "concrete_works",
               "name": "Concrete",
               "is_active": true,
               "database_slug": "concrete_works"
@@ -2588,7 +2486,7 @@
           "name": "Trades",
           "services": [
             {
-              "id": "plumbing",
+              "id": "plumbing_services",
               "name": "Plumbing",
               "is_active": true,
               "database_slug": "plumbing_services"
@@ -2612,7 +2510,7 @@
               "database_slug": "construction_materials"
             },
             {
-              "id": "surveying",
+              "id": "surveying_services",
               "name": "Surveying",
               "is_active": true,
               "database_slug": "surveying_services"
@@ -2620,14 +2518,20 @@
           ]
         },
         {
-          "id": "other",
-          "name": "Other",
+          "id": "design_engineering",
+          "name": "Design & Engineering",
           "services": [
             {
-              "id": "other_construction",
-              "name": "Other Construction",
+              "id": "architecture_services",
+              "name": "Architecture",
               "is_active": true,
-              "database_slug": "other_construction"
+              "database_slug": "architecture_services"
+            },
+            {
+              "id": "engineering_consulting",
+              "name": "Engineering",
+              "is_active": true,
+              "database_slug": "engineering_consulting"
             }
           ]
         }
@@ -2859,7 +2763,7 @@
     },
     {
       "id": "energy_water",
-      "name": "Energy & Water",
+      "name": "Energy",
       "icon": "⚡",
       "description": "Solar, power backup, boreholes and water systems",
       "service_groups": [
@@ -2874,7 +2778,7 @@
               "database_slug": "solar_systems"
             },
             {
-              "id": "batteries",
+              "id": "battery_supply",
               "name": "Batteries",
               "is_active": true,
               "database_slug": "battery_supply"
@@ -2886,7 +2790,7 @@
               "database_slug": "backup_power"
             },
             {
-              "id": "generators",
+              "id": "generator_supply",
               "name": "Generators",
               "is_active": true,
               "database_slug": "generator_supply"
@@ -2904,7 +2808,7 @@
           "name": "Water",
           "services": [
             {
-              "id": "boreholes",
+              "id": "borehole_drilling",
               "name": "Boreholes",
               "is_active": true,
               "database_slug": "borehole_drilling"
@@ -2926,12 +2830,6 @@
               "name": "Energy Consulting",
               "is_active": true,
               "database_slug": "energy_consulting"
-            },
-            {
-              "id": "other_energy_services",
-              "name": "Other Energy Services",
-              "is_active": true,
-              "database_slug": "other_energy_services"
             }
           ]
         }
@@ -3103,7 +3001,7 @@
     },
     {
       "id": "transport_logistics",
-      "name": "Transport & Logistics",
+      "name": "Transport",
       "icon": "🚚",
       "description": "Moving, hauling, delivery and cold chain",
       "service_groups": [
@@ -3136,7 +3034,7 @@
               "database_slug": "agricultural_transport"
             },
             {
-              "id": "cold_chain_refrigerated",
+              "id": "cold_chain_transport",
               "name": "Cold Chain & Refrigerated",
               "is_active": true,
               "database_slug": "cold_chain_transport"
@@ -3148,7 +3046,7 @@
           "name": "Delivery & Moving",
           "services": [
             {
-              "id": "courier",
+              "id": "courier_delivery",
               "name": "Courier",
               "is_active": true,
               "database_slug": "courier_delivery"
@@ -3180,20 +3078,8 @@
           ]
         },
         {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_logistics",
-              "name": "Other Logistics",
-              "is_active": true,
-              "database_slug": "other_logistics"
-            }
-          ]
-        },
-        {
           "id": "passenger",
-          "name": "Passenger transport",
+          "name": "Passenger",
           "services": [
             {
               "id": "chauffeur_services",
@@ -3228,6 +3114,19 @@
                 "motorcycle taxi"
               ],
               "database_slug": "boda_taxi_services"
+            }
+          ]
+        },
+        {
+          "id": "training",
+          "name": "Training",
+          "services": [
+            {
+              "id": "driving_school_driver_training",
+              "name": "Driving School / Driver Training",
+              "is_active": true,
+              "policy": "required_proof",
+              "database_slug": "driving_school_driver_training"
             }
           ]
         }
@@ -3473,7 +3372,7 @@
     },
     {
       "id": "machinery_equipment",
-      "name": "Machinery & Equipment",
+      "name": "Machinery",
       "icon": "🚜",
       "description": "Heavy machinery and equipment hire, with or without an operator",
       "service_groups": [
@@ -3534,18 +3433,6 @@
               "name": "Industrial Equipment",
               "is_active": true,
               "database_slug": "industrial_equipment"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_machinery",
-              "name": "Other Machinery",
-              "is_active": true,
-              "database_slug": "other_machinery"
             }
           ]
         }
@@ -3748,7 +3635,7 @@
     },
     {
       "id": "agriculture_agribusiness",
-      "name": "Agriculture & Agribusiness",
+      "name": "Agriculture",
       "icon": "🌾",
       "description": "Farm services, inputs and produce",
       "service_groups": [
@@ -3763,7 +3650,7 @@
               "database_slug": "farm_services"
             },
             {
-              "id": "irrigation",
+              "id": "irrigation_services",
               "name": "Irrigation",
               "is_active": true,
               "database_slug": "irrigation_services"
@@ -3797,12 +3684,6 @@
               "name": "Produce Buyers",
               "is_active": true,
               "database_slug": "produce_buyers"
-            },
-            {
-              "id": "other_agriculture",
-              "name": "Other Agriculture",
-              "is_active": true,
-              "database_slug": "other_agriculture"
             }
           ]
         }
@@ -3970,7 +3851,7 @@
     },
     {
       "id": "procurement_sourcing",
-      "name": "Procurement & Sourcing",
+      "name": "Sourcing",
       "icon": "🔎",
       "description": "Buying, importing and finding hard-to-get products",
       "service_groups": [
@@ -4031,18 +3912,6 @@
               "name": "Medical & Lab Supplies",
               "is_active": true,
               "database_slug": "medical_lab_supplies"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_procurement",
-              "name": "Other Procurement",
-              "is_active": true,
-              "database_slug": "other_procurement"
             }
           ]
         }
@@ -4176,7 +4045,7 @@
     },
     {
       "id": "travel_international",
-      "name": "Travel & International",
+      "name": "Travel",
       "icon": "✈️",
       "description": "Bookings, visas, tours and relocation",
       "service_groups": [
@@ -4185,7 +4054,7 @@
           "name": "Bookings",
           "services": [
             {
-              "id": "flight_tickets_bookings",
+              "id": "flight_tickets",
               "name": "Flight Tickets & Bookings",
               "is_active": true,
               "database_slug": "flight_tickets"
@@ -4255,12 +4124,6 @@
               "name": "Travel Consultation",
               "is_active": true,
               "database_slug": "travel_consultation"
-            },
-            {
-              "id": "other_travel_services",
-              "name": "Other Travel Services",
-              "is_active": true,
-              "database_slug": "other_travel_services"
             }
           ]
         }
@@ -4432,20 +4295,20 @@
     },
     {
       "id": "domestic_household",
-      "name": "Domestic & Household",
+      "name": "Domestic",
       "icon": "🏠",
       "description": "House help, childcare, home cooking and care at home",
-      "is_active": false,
+      "is_active": true,
       "identity_rule": "individual_roles_only_company_services_only",
       "service_groups": [
         {
           "id": "home_help",
-          "name": "Home help",
+          "name": "Home Help",
           "services": [
             {
               "id": "house_help_services",
               "name": "Maids & House Help",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "maid",
@@ -4459,7 +4322,7 @@
             {
               "id": "housekeeping_services",
               "name": "Housekeeping & Cleaning",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "cleaner",
@@ -4470,7 +4333,7 @@
             {
               "id": "laundry_services",
               "name": "Laundry & Ironing",
-              "is_active": false,
+              "is_active": true,
               "policy": "open",
               "aliases": [
                 "laundry",
@@ -4481,7 +4344,7 @@
             {
               "id": "gardening_services",
               "name": "Gardening & Compound Care",
-              "is_active": false,
+              "is_active": true,
               "policy": "open",
               "aliases": [
                 "gardener",
@@ -4498,7 +4361,7 @@
             {
               "id": "childcare_nanny_services",
               "name": "Nannies & Childcare",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "nanny",
@@ -4510,7 +4373,7 @@
             {
               "id": "home_cooking_services",
               "name": "Home Cooks",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "home cook",
@@ -4521,27 +4384,13 @@
             {
               "id": "elderly_home_care",
               "name": "Elderly Home Care",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "home carer",
                 "elder care"
               ],
               "database_slug": "elderly_home_care"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_domestic",
-              "name": "Other Domestic",
-              "is_active": false,
-              "policy": "open",
-              "aliases": [],
-              "database_slug": "other_domestic"
             }
           ]
         }
@@ -4595,7 +4444,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "optional_proof",
           "aliases": [
             "maid",
@@ -4654,7 +4503,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "nanny",
@@ -4701,7 +4550,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "optional_proof",
           "aliases": [
             "cook"
@@ -4743,7 +4592,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "open",
           "aliases": [
             "gardener"
@@ -4790,7 +4639,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "optional_proof",
           "aliases": [
             "caregiver",
@@ -4803,10 +4652,10 @@
     },
     {
       "id": "health_medical",
-      "name": "Health & Medical",
+      "name": "Health",
       "icon": "⚕️",
       "description": "Nurses, doctors, specialists, clinics and care",
-      "is_active": false,
+      "is_active": true,
       "identity_rule": "individual_roles_only_company_services_only",
       "service_groups": [
         {
@@ -4816,7 +4665,7 @@
             {
               "id": "clinic_services",
               "name": "Clinics & Health Centres",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "clinic",
@@ -4828,7 +4677,7 @@
             {
               "id": "hospital_services",
               "name": "Hospitals",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "hospital"
@@ -4838,7 +4687,7 @@
             {
               "id": "eye_clinic_optical",
               "name": "Eye Clinics & Opticals",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "optician",
@@ -4851,7 +4700,7 @@
             {
               "id": "dental_clinic",
               "name": "Dental Clinics",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "dentist"
@@ -4861,7 +4710,7 @@
             {
               "id": "diagnostic_lab",
               "name": "Diagnostic Labs & Imaging",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "lab",
@@ -4873,7 +4722,7 @@
             {
               "id": "pharmacy_services",
               "name": "Pharmacies",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "chemist",
@@ -4884,7 +4733,7 @@
             {
               "id": "physiotherapy_clinic",
               "name": "Physiotherapy Clinics",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "physio"
@@ -4894,7 +4743,7 @@
             {
               "id": "orthopaedic_care",
               "name": "Orthopaedic & Bone Care",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "bone doctor",
@@ -4912,13 +4761,13 @@
           ]
         },
         {
-          "id": "staffing",
-          "name": "Staffing & home care",
+          "id": "home_outreach",
+          "name": "Home & Outreach",
           "services": [
             {
               "id": "home_nursing_agency",
               "name": "Home Nursing Agencies",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "home nurse"
@@ -4928,7 +4777,7 @@
             {
               "id": "medical_staffing_agency",
               "name": "Medical Staffing Agencies",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [],
               "database_slug": "medical_staffing_agency"
@@ -4936,7 +4785,7 @@
             {
               "id": "mobile_health_outreach",
               "name": "Mobile Health Outreach",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "home visit"
@@ -4946,45 +4795,13 @@
           ]
         },
         {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_health",
-              "name": "Other Health Services",
-              "is_active": false,
-              "policy": "required_proof",
-              "aliases": [],
-              "database_slug": "other_health"
-            }
-          ]
-        },
-        {
-          "id": "procedures",
-          "name": "Procedures",
-          "services": [
-            {
-              "id": "circumcision_services",
-              "name": "Circumcision Services",
-              "is_active": false,
-              "policy": "required_proof",
-              "aliases": [
-                "male circumcision",
-                "VMMC",
-                "mobile circumcision"
-              ],
-              "database_slug": "circumcision_services"
-            }
-          ]
-        },
-        {
-          "id": "reproductive",
-          "name": "Reproductive health",
+          "id": "reproductive_health",
+          "name": "Reproductive Health",
           "services": [
             {
               "id": "maternity_care_services",
               "name": "Antenatal & Maternity Care",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "pregnancy",
@@ -5001,7 +4818,7 @@
             {
               "id": "family_planning_services",
               "name": "Family Planning & Reproductive Health",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "contraception",
@@ -5012,7 +4829,7 @@
             {
               "id": "hiv_testing_services",
               "name": "HIV Testing & Counselling",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "HIV test",
@@ -5024,6 +4841,24 @@
                 "sexual health"
               ],
               "database_slug": "hiv_testing_services"
+            }
+          ]
+        },
+        {
+          "id": "procedures",
+          "name": "Procedures",
+          "services": [
+            {
+              "id": "circumcision_services",
+              "name": "Circumcision Services",
+              "is_active": true,
+              "policy": "required_proof",
+              "aliases": [
+                "male circumcision",
+                "VMMC",
+                "mobile circumcision"
+              ],
+              "database_slug": "circumcision_services"
             }
           ]
         }
@@ -5093,7 +4928,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "sister",
@@ -5150,7 +4985,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "physician",
@@ -5206,7 +5041,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_clinician"
@@ -5287,7 +5122,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "oncologist",
@@ -5334,7 +5169,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "optician",
@@ -5382,7 +5217,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_dentist"
@@ -5426,7 +5261,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_pharmacist"
@@ -5461,7 +5296,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_lab_technician"
@@ -5509,7 +5344,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_physiotherapist"
@@ -5553,7 +5388,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_counsellor"
@@ -5597,7 +5432,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [],
           "database_slug": "work_nursing_assistant"
@@ -5642,7 +5477,7 @@
               "is_evidence": true
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "HIV testing counsellor",
@@ -5654,21 +5489,504 @@
       "database_slug": "health_medical"
     },
     {
-      "id": "business_investment",
-      "name": "Business & Investment",
-      "icon": "💼",
-      "description": "Angel investors, mentors and startup support",
-      "is_active": false,
+      "id": "traditional_cultural",
+      "name": "Cultural",
+      "icon": "🪘",
+      "description": "Traditional ceremonies, prayers, healing and culture",
+      "is_active": true,
       "identity_rule": "individual_roles_only_company_services_only",
       "service_groups": [
         {
-          "id": "funding",
-          "name": "Investor support",
+          "id": "culture",
+          "name": "Culture",
+          "services": [
+            {
+              "id": "duwah_services",
+              "name": "Duwah Services",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [
+                "duwa",
+                "duwah"
+              ],
+              "database_slug": "duwah_services"
+            },
+            {
+              "id": "traditional_ceremony_services",
+              "name": "Traditional Ceremonies",
+              "is_active": true,
+              "policy": "optional_proof",
+              "aliases": [],
+              "database_slug": "traditional_ceremony_services"
+            },
+            {
+              "id": "traditional_dance_drumming",
+              "name": "Traditional Dance & Drumming",
+              "is_active": true,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "traditional_dance_drumming"
+            },
+            {
+              "id": "traditional_attire_crafts",
+              "name": "Traditional Attire & Crafts",
+              "is_active": true,
+              "policy": "open",
+              "aliases": [],
+              "database_slug": "traditional_attire_crafts"
+            }
+          ]
+        },
+        {
+          "id": "healing",
+          "name": "Healing",
+          "services": [
+            {
+              "id": "traditional_healing_herbal",
+              "name": "Herbal & Traditional Healing",
+              "is_active": true,
+              "policy": "required_proof",
+              "aliases": [
+                "traditional healer",
+                "herbalist"
+              ],
+              "database_slug": "traditional_healing_herbal"
+            }
+          ]
+        }
+      ],
+      "work_roles": [
+        {
+          "id": "duwah_practitioner",
+          "name": "Duwah Practitioner",
+          "kind_question": "What is your practice?",
+          "kinds": [],
+          "qualifications": [
+            {
+              "id": "endorsement",
+              "name": "Community or religious endorsement letter",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            },
+            {
+              "id": "experience",
+              "name": "Experience years",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [
+            "duwa",
+            "duwah"
+          ],
+          "database_slug": "work_duwah_practitioner"
+        },
+        {
+          "id": "ceremony_officiant",
+          "name": "Ceremony Officiant / Elder",
+          "kind_question": "Which ceremonies?",
+          "kinds": [
+            {
+              "id": "introduction_marriage",
+              "name": "Introduction & marriage"
+            },
+            {
+              "id": "naming",
+              "name": "Naming"
+            },
+            {
+              "id": "funeral_memorial",
+              "name": "Funeral & memorial"
+            },
+            {
+              "id": "cultural_rites",
+              "name": "Cultural rites"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "endorsement",
+              "name": "Endorsement",
+              "is_evidence": true
+            },
+            {
+              "id": "references",
+              "name": "References",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [],
+          "database_slug": "work_ceremony_officiant"
+        },
+        {
+          "id": "traditional_performer",
+          "name": "Traditional Performer",
+          "kind_question": "What do you perform?",
+          "kinds": [
+            {
+              "id": "dancer",
+              "name": "Dancer"
+            },
+            {
+              "id": "drummer",
+              "name": "Drummer"
+            },
+            {
+              "id": "singer",
+              "name": "Singer"
+            },
+            {
+              "id": "storyteller",
+              "name": "Storyteller"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "showreel",
+              "name": "Showreel",
+              "is_evidence": false
+            },
+            {
+              "id": "group_membership",
+              "name": "Group membership",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "open",
+          "aliases": [],
+          "database_slug": "work_traditional_performer"
+        },
+        {
+          "id": "traditional_healer",
+          "name": "Traditional Healer / Herbalist",
+          "kind_question": "What is your practice?",
+          "kinds": [
+            {
+              "id": "herbalist",
+              "name": "Herbalist"
+            },
+            {
+              "id": "bone_setter",
+              "name": "Bone setter"
+            },
+            {
+              "id": "birth_attendant",
+              "name": "Birth attendant"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "association_registration",
+              "name": "Registration with relevant association or local authority",
+              "is_evidence": true
+            },
+            {
+              "id": "referees",
+              "name": "Referees",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "required_proof",
+          "aliases": [
+            "traditional healer",
+            "herbalist"
+          ],
+          "database_slug": "work_traditional_healer"
+        }
+      ],
+      "database_slug": "traditional_cultural"
+    },
+    {
+      "id": "financial_services",
+      "name": "Finance",
+      "icon": "💰",
+      "description": "Loans, Forex, SACCOs, investments, and other financial services.",
+      "provider_verification_required": true,
+      "provider_types": [
+        "individual",
+        "company"
+      ],
+      "service_groups": [
+        {
+          "id": "loans",
+          "name": "Loans",
+          "services": [
+            {
+              "id": "personal_loan_services",
+              "name": "Personal Loan Services",
+              "database_slug": "personal_loan_services",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "emergency_loan_services",
+              "name": "Emergency Loan Services",
+              "database_slug": "emergency_loan_services",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "salary_loan_services",
+              "name": "Salary Loan Services",
+              "database_slug": "salary_loan_services",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "medical_financing",
+              "name": "Medical Financing",
+              "database_slug": "medical_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "business_startup_financing",
+              "name": "Business Startup Financing",
+              "database_slug": "business_startup_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "working_capital_financing",
+              "name": "Working Capital Financing",
+              "database_slug": "working_capital_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "business_expansion_financing",
+              "name": "Business Expansion Financing",
+              "database_slug": "business_expansion_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "sme_financing",
+              "name": "SME Financing",
+              "database_slug": "sme_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "boda_boda_financing",
+              "name": "Boda Boda Financing",
+              "database_slug": "boda_boda_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "car_financing",
+              "name": "Car Financing",
+              "database_slug": "car_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "tuk_tuk_financing",
+              "name": "Tuk-tuk Financing",
+              "database_slug": "tuk_tuk_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "motorcycle_financing",
+              "name": "Motorcycle Financing",
+              "database_slug": "motorcycle_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "smartphone_financing",
+              "name": "Smartphone Financing",
+              "database_slug": "smartphone_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "laptop_financing",
+              "name": "Laptop Financing",
+              "database_slug": "laptop_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "heavy_machinery_financing",
+              "name": "Heavy Machinery Financing",
+              "database_slug": "heavy_machinery_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "equipment_financing",
+              "name": "Equipment Financing",
+              "database_slug": "equipment_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "agricultural_loan_services",
+              "name": "Agricultural Loans",
+              "database_slug": "agricultural_loan_services",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "livestock_financing",
+              "name": "Livestock Financing",
+              "database_slug": "livestock_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "crop_financing",
+              "name": "Crop Financing",
+              "database_slug": "crop_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "farm_equipment_financing",
+              "name": "Farm Equipment Financing",
+              "database_slug": "farm_equipment_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "mortgage_financing",
+              "name": "Mortgage Financing",
+              "database_slug": "mortgage_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "land_financing",
+              "name": "Land Financing",
+              "database_slug": "land_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "property_development_financing",
+              "name": "Property Development Financing",
+              "database_slug": "property_development_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "school_fees_financing",
+              "name": "School Fees Financing",
+              "database_slug": "school_fees_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "university_financing",
+              "name": "University Financing",
+              "database_slug": "university_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "education_loan_services",
+              "name": "Education Loans",
+              "database_slug": "education_loan_services",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "travel_financing",
+              "name": "Travel Financing",
+              "database_slug": "travel_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "wedding_financing",
+              "name": "Wedding Financing",
+              "database_slug": "wedding_financing",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        },
+        {
+          "id": "forex",
+          "name": "Forex",
+          "services": [
+            {
+              "id": "forex_currency_exchange",
+              "database_slug": "forex_currency_exchange",
+              "name": "Currency Exchange / Forex Bureau",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "forex_trading_training",
+              "database_slug": "forex_trading_training",
+              "name": "Forex Trading Training",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "money_transfer",
+              "database_slug": "money_transfer",
+              "name": "Money Transfer",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        },
+        {
+          "id": "saccos_cooperatives",
+          "name": "SACCOs & Cooperatives",
+          "services": [
+            {
+              "id": "sacco_services",
+              "database_slug": "sacco_services",
+              "name": "SACCOs",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "vsla_groups",
+              "database_slug": "vsla_groups",
+              "name": "Village Savings Groups (VSLA)",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "cooperative_societies",
+              "database_slug": "cooperative_societies",
+              "name": "Cooperative Societies",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "group_savings_chamas",
+              "database_slug": "group_savings_chamas",
+              "name": "Group Savings & Chamas",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        },
+        {
+          "id": "investment_opportunities",
+          "name": "Investment Opportunities",
           "services": [
             {
               "id": "angel_investor_network",
               "name": "Angel Investor Networks",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "angel investor",
@@ -5681,7 +5999,7 @@
             {
               "id": "startup_advisory",
               "name": "Startup Advisory",
-              "is_active": false,
+              "is_active": true,
               "policy": "optional_proof",
               "aliases": [
                 "startup mentor"
@@ -5691,7 +6009,7 @@
             {
               "id": "investor_introductions",
               "name": "Investor Introductions",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "investor introduction"
@@ -5701,7 +6019,7 @@
             {
               "id": "incubator_accelerator",
               "name": "Incubators & Accelerators",
-              "is_active": false,
+              "is_active": true,
               "policy": "required_proof",
               "aliases": [
                 "startup incubator",
@@ -5710,22 +6028,10 @@
               "database_slug": "incubator_accelerator"
             }
           ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_investment",
-              "name": "Other Investment Support",
-              "is_active": false,
-              "policy": "open",
-              "aliases": [],
-              "database_slug": "other_investment"
-            }
-          ]
         }
       ],
+      "is_active": true,
+      "database_slug": "financial_services",
       "work_roles": [
         {
           "id": "angel_investor",
@@ -5787,7 +6093,7 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "required_proof",
           "aliases": [
             "investor",
@@ -5834,246 +6140,14 @@
               "is_evidence": false
             }
           ],
-          "is_active": false,
+          "is_active": true,
           "policy": "optional_proof",
           "aliases": [
             "startup mentor"
           ],
           "database_slug": "work_business_mentor"
         }
-      ],
-      "database_slug": "business_investment"
-    },
-    {
-      "id": "traditional_cultural",
-      "name": "Traditional & Cultural Services",
-      "icon": "🪘",
-      "description": "Traditional ceremonies, prayers, healing and culture",
-      "is_active": false,
-      "identity_rule": "individual_roles_only_company_services_only",
-      "service_groups": [
-        {
-          "id": "culture",
-          "name": "Culture",
-          "services": [
-            {
-              "id": "duwah_services",
-              "name": "Duwah Services",
-              "is_active": false,
-              "policy": "optional_proof",
-              "aliases": [
-                "duwa",
-                "duwah"
-              ],
-              "database_slug": "duwah_services"
-            },
-            {
-              "id": "traditional_ceremony_services",
-              "name": "Traditional Ceremonies",
-              "is_active": false,
-              "policy": "optional_proof",
-              "aliases": [],
-              "database_slug": "traditional_ceremony_services"
-            },
-            {
-              "id": "traditional_dance_drumming",
-              "name": "Traditional Dance & Drumming",
-              "is_active": false,
-              "policy": "open",
-              "aliases": [],
-              "database_slug": "traditional_dance_drumming"
-            },
-            {
-              "id": "traditional_attire_crafts",
-              "name": "Traditional Attire & Crafts",
-              "is_active": false,
-              "policy": "open",
-              "aliases": [],
-              "database_slug": "traditional_attire_crafts"
-            }
-          ]
-        },
-        {
-          "id": "healing",
-          "name": "Healing",
-          "services": [
-            {
-              "id": "traditional_healing_herbal",
-              "name": "Herbal & Traditional Healing",
-              "is_active": false,
-              "policy": "required_proof",
-              "aliases": [
-                "traditional healer",
-                "herbalist"
-              ],
-              "database_slug": "traditional_healing_herbal"
-            }
-          ]
-        },
-        {
-          "id": "other",
-          "name": "Other",
-          "services": [
-            {
-              "id": "other_traditional",
-              "name": "Other Traditional",
-              "is_active": false,
-              "policy": "open",
-              "aliases": [],
-              "database_slug": "other_traditional"
-            }
-          ]
-        }
-      ],
-      "work_roles": [
-        {
-          "id": "duwah_practitioner",
-          "name": "Duwah Practitioner",
-          "kind_question": "What is your practice?",
-          "kinds": [],
-          "qualifications": [
-            {
-              "id": "endorsement",
-              "name": "Community or religious endorsement letter",
-              "is_evidence": true
-            },
-            {
-              "id": "references",
-              "name": "References",
-              "is_evidence": false
-            },
-            {
-              "id": "experience",
-              "name": "Experience years",
-              "is_evidence": false
-            }
-          ],
-          "is_active": false,
-          "policy": "optional_proof",
-          "aliases": [
-            "duwa",
-            "duwah"
-          ],
-          "database_slug": "work_duwah_practitioner"
-        },
-        {
-          "id": "ceremony_officiant",
-          "name": "Ceremony Officiant / Elder",
-          "kind_question": "Which ceremonies?",
-          "kinds": [
-            {
-              "id": "introduction_marriage",
-              "name": "Introduction & marriage"
-            },
-            {
-              "id": "naming",
-              "name": "Naming"
-            },
-            {
-              "id": "funeral_memorial",
-              "name": "Funeral & memorial"
-            },
-            {
-              "id": "cultural_rites",
-              "name": "Cultural rites"
-            }
-          ],
-          "qualifications": [
-            {
-              "id": "endorsement",
-              "name": "Endorsement",
-              "is_evidence": true
-            },
-            {
-              "id": "references",
-              "name": "References",
-              "is_evidence": false
-            }
-          ],
-          "is_active": false,
-          "policy": "optional_proof",
-          "aliases": [],
-          "database_slug": "work_ceremony_officiant"
-        },
-        {
-          "id": "traditional_performer",
-          "name": "Traditional Performer",
-          "kind_question": "What do you perform?",
-          "kinds": [
-            {
-              "id": "dancer",
-              "name": "Dancer"
-            },
-            {
-              "id": "drummer",
-              "name": "Drummer"
-            },
-            {
-              "id": "singer",
-              "name": "Singer"
-            },
-            {
-              "id": "storyteller",
-              "name": "Storyteller"
-            }
-          ],
-          "qualifications": [
-            {
-              "id": "showreel",
-              "name": "Showreel",
-              "is_evidence": false
-            },
-            {
-              "id": "group_membership",
-              "name": "Group membership",
-              "is_evidence": false
-            }
-          ],
-          "is_active": false,
-          "policy": "open",
-          "aliases": [],
-          "database_slug": "work_traditional_performer"
-        },
-        {
-          "id": "traditional_healer",
-          "name": "Traditional Healer / Herbalist",
-          "kind_question": "What is your practice?",
-          "kinds": [
-            {
-              "id": "herbalist",
-              "name": "Herbalist"
-            },
-            {
-              "id": "bone_setter",
-              "name": "Bone setter"
-            },
-            {
-              "id": "birth_attendant",
-              "name": "Birth attendant"
-            }
-          ],
-          "qualifications": [
-            {
-              "id": "association_registration",
-              "name": "Registration with relevant association or local authority",
-              "is_evidence": true
-            },
-            {
-              "id": "referees",
-              "name": "Referees",
-              "is_evidence": false
-            }
-          ],
-          "is_active": false,
-          "policy": "required_proof",
-          "aliases": [
-            "traditional healer",
-            "herbalist"
-          ],
-          "database_slug": "work_traditional_healer"
-        }
-      ],
-      "database_slug": "traditional_cultural"
+      ]
     }
   ],
   "catalog_safety": {

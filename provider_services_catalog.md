@@ -1,69 +1,62 @@
 # Nipanze Provider Services Catalog
 
-> Current repository catalog reference. Generated from [`provider_services_v2.json`](./provider_services_v2.json); rollout state comes from the SQL seed. A deployed database may differ if patches or flags have not been applied.
+> Catalog source: [`provider_services_v2.json`](./provider_services_v2.json). Database updates are in [`sql/patch_provider_catalog_one_word_hierarchy.sql`](./sql/patch_provider_catalog_one_word_hierarchy.sql). Apply that migration after its prerequisite catalog and verification patches.
 
-> **Provider identity rule:** Individual profiles select work roles; Financial Services capabilities are available to both Individual and Company identities. Other Company / Organization profiles select services and do not include work roles.
+**Catalog size:** 18 categories · 200 services · 90 Individual roles.
 
-**Catalog size:** 19 categories · 207 services · 90 Individual roles.
-
-Policies: `open` = a provider profile can be active without proof; `optional_proof` = the profile can be active while proof may be reviewed for a badge; `required_proof` = the provider profile remains inactive until required proof is approved. The catalog entry itself may still be available for selection. “Configured by verification rules” identifies existing capabilities whose policy is supplied separately.
+The picker flow is **Category → Subcategory → Individual or Company / Organization → Services**. Category and subcategory labels are display values; existing database slugs are preserved. Finance supports both identity types. Individual profiles select work roles; company profiles select services.
 
 ## Categories at a glance
 
-| # | Category | Status | Services | Individual roles |
-|---:|---|---|---:|---:|
-| 1 | [Technology & Digital](#1-technology-and-digital) | Available | 8 | 5 |
-| 2 | [Marketing & Promotion](#2-marketing-and-promotion) | Available | 11 | 4 |
-| 3 | [Business & Professional Services](#3-business-and-professional-services) | Available | 9 | 8 |
-| 4 | [Education & Training](#4-education-and-training) | Available | 17 | 5 |
-| 5 | [Events & Celebrations](#5-events-and-celebrations) | Available | 11 | 5 |
-| 6 | [Photo, Video, Music & Talent](#6-photo-video-music-and-talent) | Available | 12 | 4 |
-| 7 | [Beauty, Fashion, Styling & Wellness](#7-beauty-fashion-styling-and-wellness) | Available | 10 | 7 |
-| 8 | [Construction & Building](#8-construction-and-building) | Available | 9 | 5 |
-| 9 | [Energy & Water](#9-energy-and-water) | Available | 9 | 4 |
-| 10 | [Transport & Logistics](#10-transport-and-logistics) | Available | 13 | 5 |
-| 11 | [Machinery & Equipment](#11-machinery-and-equipment) | Available | 8 | 4 |
-| 12 | [Agriculture & Agribusiness](#12-agriculture-and-agribusiness) | Available | 6 | 4 |
-| 13 | [Procurement & Sourcing](#13-procurement-and-sourcing) | Available | 9 | 3 |
-| 14 | [Travel & International](#14-travel-and-international) | Available | 11 | 4 |
-| 15 | [Domestic & Household](#15-domestic-and-household) | Inactive (rollout gated) | 8 | 5 |
-| 16 | [Health & Medical](#16-health-and-medical) | Inactive (rollout gated) | 16 | 12 |
-| 17 | [Business & Investment](#17-business-and-investment) | Inactive (rollout gated) | 5 | 2 |
-| 18 | [Traditional & Cultural Services](#18-traditional-and-cultural-services) | Inactive (rollout gated) | 6 | 4 |
-| 19 | [Financial Services](#19-financial-services) | Provider rollout gated | 29 | 0 |
+| # | Category | Database slug | Subcategories | Services | Individual roles |
+|---:|---|---|---:|---:|---:|
+| 1 | Technology | `technology_digital` | 3 | 7 | 5 |
+| 2 | Marketing | `marketing_promotion` | 2 | 10 | 4 |
+| 3 | Business | `professional_services` | 2 | 5 | 8 |
+| 4 | Education | `education_training` | 3 | 17 | 5 |
+| 5 | Events | `events_production` | 3 | 10 | 5 |
+| 6 | Media | `photo_video_music_talent` | 4 | 14 | 4 |
+| 7 | Beauty | `beauty_fashion_styling` | 3 | 10 | 7 |
+| 8 | Construction | `construction_building` | 4 | 10 | 5 |
+| 9 | Energy | `energy_utilities` | 3 | 8 | 4 |
+| 10 | Transport | `transport_logistics` | 5 | 13 | 5 |
+| 11 | Machinery | `machinery_equipment` | 3 | 7 | 4 |
+| 12 | Agriculture | `agriculture_agribusiness` | 3 | 5 | 4 |
+| 13 | Sourcing | `specialized_products` | 2 | 8 | 3 |
+| 14 | Travel | `travel_international` | 3 | 10 | 4 |
+| 15 | Domestic | `domestic_household` | 2 | 7 | 5 |
+| 16 | Health | `health_medical` | 4 | 15 | 12 |
+| 17 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
+| 18 | Finance | `financial_services` | 4 | 39 | 2 |
 
 ## Full catalog
 
-## 1. 💻 Technology & Digital
+## 1. 💻 Technology
 
-**Status:** Available
 **Database slug:** `technology_digital`
 **Description:** Software, websites, IT support and security
 
-### Services
+### Development
 
-#### Build
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Software Development | `software_development` | Available | `Configured by verification rules` |
+| Website Development | `website_development` | Available | `Configured by verification rules` |
+| Mobile App Development | `mobile_app_development` | Available | `Configured by verification rules` |
+| Automation | `automation_services` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Software Development | `software_development` | `software_development` | Available | `Configured by verification rules` |
-| Website Development | `website_development` | `website_development` | Available | `Configured by verification rules` |
-| Mobile App Development | `mobile_app_development` | `mobile_app_development` | Available | `Configured by verification rules` |
-| Automation | `automation_services` | `automation` | Available | `Configured by verification rules` |
+### Support & Networks
 
-#### Support & Infrastructure
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| IT Support | `it_support` | Available | `Configured by verification rules` |
+| Networking | `networking_services` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| IT Support | `it_support` | `it_support` | Available | `Configured by verification rules` |
-| Networking | `networking_services` | `networking` | Available | `Configured by verification rules` |
-| Cybersecurity | `cybersecurity_services` | `cybersecurity` | Available | `Configured by verification rules` |
+### Security
 
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Technology | `other_technology` | `other_technology` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Cybersecurity | `cybersecurity_services` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -136,39 +129,30 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Degree | No |
 | 3+ years leadership | No |
 
-## 2. 📣 Marketing & Promotion
+## 2. 📣 Marketing
 
-**Status:** Available
 **Database slug:** `marketing_promotion`
 **Description:** Advertising, content and influencer work
 
-### Services
+### Campaigns
 
-#### Campaigns
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Digital Marketing | `digital_marketing` | Available | `Configured by verification rules` |
+| Social Media Marketing | `social_media_marketing` | Available | `Configured by verification rules` |
+| Advertising Campaigns | `advertising_campaigns` | Available | `Configured by verification rules` |
+| Brand Promotion | `brand_promotion` | Available | `Configured by verification rules` |
+| Event Promotion | `event_promotion` | Available | `Configured by verification rules` |
+| Affiliate Marketing | `affiliate_marketing` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Digital Marketing | `digital_marketing` | `digital_marketing` | Available | `Configured by verification rules` |
-| Social Media Marketing | `social_media_marketing` | `social_media_marketing` | Available | `Configured by verification rules` |
-| Advertising Campaigns | `advertising_campaigns` | `advertising_campaigns` | Available | `Configured by verification rules` |
-| Brand Promotion | `brand_promotion` | `brand_promotion` | Available | `Configured by verification rules` |
-| Event Promotion | `event_promotion` | `event_promotion` | Available | `Configured by verification rules` |
-| Affiliate Marketing | `affiliate_marketing` | `affiliate_marketing` | Available | `Configured by verification rules` |
+### Content & Reach
 
-#### Content & Reach
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Content Creation | `content_creation` | `content_creation` | Available | `Configured by verification rules` |
-| Influencer Marketing | `influencer_marketing` | `influencer_marketing` | Available | `Configured by verification rules` |
-| Product Reviews | `product_reviews` | `product_reviews` | Available | `Configured by verification rules` |
-| I Have an Audience | `i_have_an_audience` | `i_have_an_audience` | Available | `Configured by verification rules` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Marketing Services | `other_marketing_services` | `other_marketing_services` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Content Creation | `content_creation` | Available | `Configured by verification rules` |
+| Influencer Marketing | `influencer_marketing` | Available | `Configured by verification rules` |
+| Product Reviews | `product_reviews` | Available | `Configured by verification rules` |
+| I Have an Audience | `i_have_an_audience` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -224,42 +208,25 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | PMP / PRINCE2 | No |
 | Led 3+ campaigns | No |
 
-## 3. 💼 Business & Professional Services
+## 3. 💼 Business
 
-**Status:** Available
 **Database slug:** `professional_services`
 **Description:** Consulting, legal, accounting, HR and design
 
-### Services
+### Accounting & Legal
 
-#### Finance & Legal
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Accounting & Tax | `accounting_tax` | Available | `Configured by verification rules` |
+| Legal Services | `legal_services` | Available | `Configured by verification rules` |
+| Company Registration | `company_registration` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Accounting & Tax | `accounting_tax` | `accounting_tax` | Available | `Configured by verification rules` |
-| Legal Services | `legal_services` | `legal_services` | Available | `Configured by verification rules` |
-| Company Registration | `company_registration` | `company_registration` | Available | `Configured by verification rules` |
+### Advisory
 
-#### Advisory
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Business Consulting | `business_consulting` | `business_consulting` | Available | `Configured by verification rules` |
-| HR Services | `hr_services` | `hr_services` | Available | `Configured by verification rules` |
-
-#### Design & Engineering
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Architecture | `architecture_services` | `architecture` | Available | `Configured by verification rules` |
-| Engineering | `engineering_consulting` | `engineering` | Available | `Configured by verification rules` |
-| Driving School / Driver Training | `driving_school_driver_training` | `driving_school_driver_training` | Available | `required_proof` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Professional Services | `other_professional` | `other_professional_services` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Business Consulting | `business_consulting` | Available | `Configured by verification rules` |
+| HR Services | `hr_services` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -368,45 +335,42 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | PMP / PRINCE2 | No |
 | Led 3+ projects | No |
 
-## 4. 🎓 Education & Training
+## 4. 🎓 Education
 
-**Status:** Available
 **Database slug:** `education_training`
 **Description:** Learning, admissions and placements
 
-### Services
+### Learning
 
-#### Learning
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Private Tutoring | `private_tutoring` | Available | `Configured by verification rules` |
+| Online Classes | `online_classes` | Available | `Configured by verification rules` |
+| Exam Preparation | `exam_preparation` | Available | `Configured by verification rules` |
+| Language Training | `language_training` | Available | `Configured by verification rules` |
+| Computer Training | `computer_training` | Available | `Configured by verification rules` |
+| Professional Training | `professional_training` | Available | `Configured by verification rules` |
+| Vocational Training | `vocational_training` | Available | `Configured by verification rules` |
+| Academic Consulting | `academic_consulting` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Private Tutoring | `private_tutoring` | `private_tutoring` | Available | `Configured by verification rules` |
-| Online Classes | `online_classes` | `online_classes` | Available | `Configured by verification rules` |
-| Exam Preparation | `exam_preparation` | `exam_preparation` | Available | `Configured by verification rules` |
-| Language Training | `language_training` | `language_training` | Available | `Configured by verification rules` |
-| Computer Training | `computer_training` | `computer_training` | Available | `Configured by verification rules` |
-| Professional Training | `professional_training` | `professional_training` | Available | `Configured by verification rules` |
-| Vocational Training | `vocational_training` | `vocational_training` | Available | `Configured by verification rules` |
-| Academic Consulting | `academic_consulting` | `academic_consulting` | Available | `Configured by verification rules` |
+### Admissions & Placements
 
-#### Admissions & Placements
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| University Admissions | `university_admissions` | Available | `Configured by verification rules` |
+| Study Abroad Guidance | `study_abroad_guidance` | Available | `Configured by verification rules` |
+| Internship Placement | `internship_placement` | Available | `Configured by verification rules` |
+| Health / Nursing Placements | `health_nursing_placements` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| University Admissions | `university_admissions` | `university_admissions` | Available | `Configured by verification rules` |
-| Study Abroad Guidance | `study_abroad_guidance` | `study_abroad_guidance` | Available | `Configured by verification rules` |
-| Internship Placement | `internship_placement` | `internship_placement` | Available | `Configured by verification rules` |
-| Health / Nursing Placements | `health_nursing_placements` | `health_nursing_placements` | Available | `Configured by verification rules` |
+### Coursework & Projects
 
-#### Coursework & projects
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Final Year Project Support | `final_year_project_support` | `final_year_project_support`; aliases: FYP, capstone, project defence | Available | `optional_proof` |
-| Research Proposal & Dissertation Guidance | `research_dissertation_guidance` | `research_dissertation_guidance`; aliases: thesis, research paper, proposal | Available | `optional_proof` |
-| Data Analysis & Statistics Help | `data_analysis_help` | `data_analysis_help`; aliases: SPSS, statistics, STATA | Available | `open` |
-| Proofreading & Editing | `proofreading_editing` | `proofreading_editing`; aliases: editing | Available | `open` |
-| Coursework Tutoring | `coursework_tutoring` | `coursework_tutoring`; aliases: course work, coursework, assignment help, homework | Available | `open` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Final Year Project Support | `final_year_project_support` | Available | `optional_proof` |
+| Research Proposal & Dissertation Guidance | `research_dissertation_guidance` | Available | `optional_proof` |
+| Data Analysis & Statistics Help | `data_analysis_help` | Available | `open` |
+| Proofreading & Editing | `proofreading_editing` | Available | `open` |
+| Coursework Tutoring | `coursework_tutoring` | Available | `open` |
 
 ### Individual roles
 
@@ -467,8 +431,6 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 **Database slug:** `work_research_mentor`
 **Status:** Available
 **Question:** What do you help with?
-**Verification policy:** `optional_proof`
-**Aliases:** FYP, capstone, thesis, research paper, proposal
 **Kinds:** Final year project · Dissertation or thesis · Research proposal · Data analysis (SPSS, R, Excel, Stata) · Proofreading & editing · Presentation & defence coaching · Software/IT project guidance
 
 | Qualification | Evidence required |
@@ -479,44 +441,35 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Subject specialisation | No |
 | References | No |
 
-## 5. 🎉 Events & Celebrations
+## 5. 🎉 Events
 
-**Status:** Available
 **Database slug:** `events_production`
 **Description:** Weddings, parties, corporate events and the services behind them
 
-### Services
+### Planning & Styling
 
-#### Planning & Styling
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Event Planning | `event_planning` | Available | `Configured by verification rules` |
+| Decoration | `event_decoration` | Available | `Configured by verification rules` |
+| Cakes | `celebration_cakes` | Available | `Configured by verification rules` |
+| Catering | `celebration_catering` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Event Planning | `event_planning` | `event_planning` | Available | `Configured by verification rules` |
-| Decoration | `event_decoration` | `decoration` | Available | `Configured by verification rules` |
-| Cakes | `celebration_cakes` | `cakes` | Available | `Configured by verification rules` |
-| Catering | `celebration_catering` | `catering` | Available | `Configured by verification rules` |
+### Equipment & Venue
 
-#### Equipment & Venue Setup
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Tents | `tent_hire` | Available | `Configured by verification rules` |
+| Event Equipment | `event_equipment` | Available | `Configured by verification rules` |
+| Sound Systems | `sound_systems` | Available | `Configured by verification rules` |
+| Lighting | `lighting_hire` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Tents | `tent_hire` | `tents` | Available | `Configured by verification rules` |
-| Event Equipment | `event_equipment` | `event_equipment` | Available | `Configured by verification rules` |
-| Sound Systems | `sound_systems` | `sound_systems` | Available | `Configured by verification rules` |
-| Lighting | `lighting_hire` | `lighting` | Available | `Configured by verification rules` |
+### Entertainment & Transport
 
-#### Entertainment & Hosting
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| DJs / MCs | `celebration_mc_dj` | `djs_mcs` | Available | `Configured by verification rules` |
-| Event Transport | `event_transport` | `event_transport` | Available | `Configured by verification rules` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Events | `other_events` | `other_events` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| DJs / MCs | `celebration_mc_dj` | Available | `Configured by verification rules` |
+| Event Transport | `event_transport` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -585,40 +538,44 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Managed 5+ events | No |
 | Team leadership | No |
 
-## 6. 🎬 Photo, Video, Music & Talent
+## 6. 🎬 Media
 
-**Status:** Available
 **Database slug:** `photo_video_music_talent`
 **Description:** Creative production and performers for any occasion
 
-### Services
+### Photo & Video
 
-#### Photo & Video
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Photography | `photography_services` | Available | `Configured by verification rules` |
+| Videography | `videography_services` | Available | `Configured by verification rules` |
+| Video Editors | `video_editors` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Photography | `photography_services` | `photography` | Available | `Configured by verification rules` |
-| Videography | `videography_services` | `videography` | Available | `Configured by verification rules` |
-| Video Editors | `video_editors` | `video_editors` | Available | `Configured by verification rules` |
+### Music
 
-#### Music Production
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Recording Studios | `recording_studios` | Available | `Configured by verification rules` |
+| Music Producers | `music_producers` | Available | `Configured by verification rules` |
+| Mixing & Mastering | `mixing_mastering` | Available | `Configured by verification rules` |
+| Songwriters | `songwriters` | Available | `Configured by verification rules` |
+| Singers / Vocalists | `singers_vocalists` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Recording Studios | `recording_studios` | `recording_studios` | Available | `Configured by verification rules` |
-| Music Producers | `music_producers` | `music_producers` | Available | `Configured by verification rules` |
-| Mixing & Mastering | `mixing_mastering` | `mixing_mastering` | Available | `Configured by verification rules` |
-| Songwriters | `songwriters` | `songwriters` | Available | `Configured by verification rules` |
-| Singers / Vocalists | `singers_vocalists` | `singers_vocalists` | Available | `Configured by verification rules` |
+### Performers
 
-#### On-screen & Performers
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Actors / Actresses | `actors_actresses` | Available | `Configured by verification rules` |
+| Dancers | `dancers` | Available | `Configured by verification rules` |
+| Background Extras | `background_extras` | Available | `Configured by verification rules` |
+| Music Video Models | `music_video_models` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Actors / Actresses | `actors_actresses` | `actors_actresses` | Available | `Configured by verification rules` |
-| Dancers | `dancers` | `dancers` | Available | `Configured by verification rules` |
-| Background Extras | `background_extras` | `background_extras` | Available | `Configured by verification rules` |
-| Music Video Models | `music_video_models` | `music_video_models` | Available | `Configured by verification rules` |
+### Art & Design
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Art & Illustration | `art_illustration` | Available | `Configured by verification rules` |
+| Graphic Design | `graphic_design` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -675,38 +632,35 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Budget handling | No |
 | Crew network | No |
 
-## 7. 💄 Beauty, Fashion, Styling & Wellness
+## 7. 💄 Beauty
 
-**Status:** Available
 **Database slug:** `beauty_fashion_styling`
 **Description:** Makeup, hair, styling, clothing, massage, spa, and wellness services
 
-### Services
+### Beauty
 
-#### Beauty
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Makeup Artists | `celebration_makeup` | Available | `Configured by verification rules` |
+| Hair Stylists | `hair_styling` | Available | `Configured by verification rules` |
+| Salons & Barber Shops | `salon_barber_services` | Available | `optional_proof` |
+| Nails & Skincare | `nails_skincare_services` | Available | `optional_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Makeup Artists | `celebration_makeup` | `makeup_artists` | Available | `Configured by verification rules` |
-| Hair Stylists | `hair_styling` | `hair_stylists` | Available | `Configured by verification rules` |
+### Fashion
 
-#### Fashion
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Bridal Styling | `bridal_styling` | Available | `Configured by verification rules` |
+| Stylists | `music_video_stylists` | Available | `Configured by verification rules` |
+| Wedding Dresses / Bridesmaid Outfits | `dresses_bridesmaid_outfits` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Bridal Styling | `bridal_styling` | `bridal_styling` | Available | `Configured by verification rules` |
-| Stylists | `music_video_stylists` | `stylists` | Available | `Configured by verification rules` |
-| Wedding Dresses / Bridesmaid Outfits | `dresses_bridesmaid_outfits` | `wedding_dresses_bridesmaid_outfits` | Available | `Configured by verification rules` |
+### Wellness & Spa
 
-#### Wellness & Spa
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Massage Therapy | `massage_therapy` | `massage_therapy`; aliases: massage, masseuse, masseur, therapeutic body rub | Available | `optional_proof` |
-| Spa Services | `spa_services` | `spa_services`; aliases: wellness, sauna, steam | Available | `optional_proof` |
-| Salons & Barber Shops | `salon_barber_services` | `salon_barber_services`; aliases: salon, barber, barbershop | Available | `optional_proof` |
-| Nails & Skincare | `nails_skincare_services` | `nails_skincare_services`; aliases: manicure, pedicure, skincare | Available | `optional_proof` |
-| Sauna & Steam | `sauna_steam_services` | `sauna_steam_services`; aliases: sauna, steam room | Available | `optional_proof` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Massage Therapy | `massage_therapy` | Available | `optional_proof` |
+| Spa Services | `spa_services` | Available | `optional_proof` |
+| Sauna & Steam | `sauna_steam_services` | Available | `optional_proof` |
 
 ### Individual roles
 
@@ -719,10 +673,10 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 
 | Qualification | Evidence required |
 |---|---|
-| Cosmetology certificate | No |
+| Cosmetology certificate | Yes |
 | Portfolio | No |
 | Own kit | No |
-| Hygiene certification | No |
+| Hygiene certification | Yes |
 
 #### Hair Stylist
 
@@ -733,9 +687,9 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 
 | Qualification | Evidence required |
 |---|---|
-| Cosmetology certificate | No |
+| Cosmetology certificate | Yes |
 | Portfolio | No |
-| Salon licence | No |
+| Salon licence | Yes |
 
 #### Stylist / Designer
 
@@ -767,8 +721,6 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 **Database slug:** `work_massage_therapist`
 **Status:** Available
 **Question:** Which massage?
-**Verification policy:** `optional_proof`
-**Aliases:** masseuse, masseur
 **Kinds:** Relaxation · Deep tissue · Sports · Prenatal · Mobile / at-home
 
 | Qualification | Evidence required |
@@ -783,7 +735,6 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 **Database slug:** `work_spa_therapist`
 **Status:** Available
 **Question:** What treatments?
-**Verification policy:** `optional_proof`
 **Kinds:** Facials · Body treatments · Nails · Waxing
 
 | Qualification | Evidence required |
@@ -797,7 +748,6 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 **Database slug:** `work_spa_manager`
 **Status:** Available
 **Question:** What do you manage?
-**Verification policy:** `optional_proof`
 **Kinds:** Spa · Salon · Wellness centre
 
 | Qualification | Evidence required |
@@ -805,42 +755,40 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Business licence | Yes |
 | Managed 3+ staff | No |
 
-## 8. 🏗️ Construction & Building
+## 8. 🏗️ Construction
 
-**Status:** Available
 **Database slug:** `construction_building`
 **Description:** Contractors, trades and surveying
 
-### Services
+### Contracting
 
-#### Contracting
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Building Contractors | `building_contractors` | Available | `Configured by verification rules` |
+| Roofing | `roofing_services` | Available | `Configured by verification rules` |
+| Excavation | `excavation_works` | Available | `Configured by verification rules` |
+| Concrete | `concrete_works` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Building Contractors | `building_contractors` | `building_contractors` | Available | `Configured by verification rules` |
-| Roofing | `roofing_services` | `roofing` | Available | `Configured by verification rules` |
-| Excavation | `excavation_works` | `excavation` | Available | `Configured by verification rules` |
-| Concrete | `concrete_works` | `concrete` | Available | `Configured by verification rules` |
+### Trades
 
-#### Trades
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Plumbing | `plumbing_services` | Available | `Configured by verification rules` |
+| Electrical Works | `electrical_works` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Plumbing | `plumbing_services` | `plumbing` | Available | `Configured by verification rules` |
-| Electrical Works | `electrical_works` | `electrical_works` | Available | `Configured by verification rules` |
+### Materials & Survey
 
-#### Materials & Survey
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Construction Materials | `construction_materials` | Available | `Configured by verification rules` |
+| Surveying | `surveying_services` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Construction Materials | `construction_materials` | `construction_materials` | Available | `Configured by verification rules` |
-| Surveying | `surveying_services` | `surveying` | Available | `Configured by verification rules` |
+### Design & Engineering
 
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Construction | `other_construction` | `other_construction` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Architecture | `architecture_services` | Available | `Configured by verification rules` |
+| Engineering | `engineering_consulting` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -869,7 +817,7 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 |---|---|
 | PMP / PRINCE2 | No |
 | Degree | No |
-| Delivered 3+ projects | Not specified in JSON |
+| Delivered 3+ projects | No |
 
 #### Foreman / Supervisor
 
@@ -911,37 +859,33 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Degree / diploma | No |
 | Own instruments | No |
 
-## 9. ⚡ Energy & Water
+## 9. ⚡ Energy
 
-**Status:** Available
 **Database slug:** `energy_utilities`
 **Description:** Solar, power backup, boreholes and water systems
 
-### Services
+### Power
 
-#### Power
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Solar Systems | `solar_systems` | Available | `Configured by verification rules` |
+| Batteries | `battery_supply` | Available | `Configured by verification rules` |
+| Backup Power | `backup_power` | Available | `Configured by verification rules` |
+| Generators | `generator_supply` | Available | `Configured by verification rules` |
+| Electrical Installation | `electrical_installation` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Solar Systems | `solar_systems` | `solar_systems` | Available | `Configured by verification rules` |
-| Batteries | `battery_supply` | `batteries` | Available | `Configured by verification rules` |
-| Backup Power | `backup_power` | `backup_power` | Available | `Configured by verification rules` |
-| Generators | `generator_supply` | `generators` | Available | `Configured by verification rules` |
-| Electrical Installation | `electrical_installation` | `electrical_installation` | Available | `Configured by verification rules` |
+### Water
 
-#### Water
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Boreholes | `borehole_drilling` | Available | `Configured by verification rules` |
+| Water Systems | `water_systems` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Boreholes | `borehole_drilling` | `boreholes` | Available | `Configured by verification rules` |
-| Water Systems | `water_systems` | `water_systems` | Available | `Configured by verification rules` |
+### Advisory
 
-#### Advisory
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Energy Consulting | `energy_consulting` | `energy_consulting` | Available | `Configured by verification rules` |
-| Other Energy Services | `other_energy_services` | `other_energy_services` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Energy Consulting | `energy_consulting` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -995,53 +939,50 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Qualification | Evidence required |
 |---|---|
 | PMP / PRINCE2 | No |
-| Delivered 3+ projects | Not specified in JSON |
+| Delivered 3+ projects | No |
 
-## 10. 🚚 Transport & Logistics
+## 10. 🚚 Transport
 
-**Status:** Available
 **Database slug:** `transport_logistics`
 **Description:** Moving, hauling, delivery and cold chain
 
-### Services
+### Freight
 
-#### Freight
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Cargo Transport | `cargo_transport` | Available | `Configured by verification rules` |
+| Bulk Delivery | `bulk_delivery` | Available | `Configured by verification rules` |
+| Heavy Haulage | `heavy_haulage` | Available | `Configured by verification rules` |
+| Agricultural Transport | `agricultural_transport` | Available | `Configured by verification rules` |
+| Cold Chain & Refrigerated | `cold_chain_transport` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Cargo Transport | `cargo_transport` | `cargo_transport` | Available | `Configured by verification rules` |
-| Bulk Delivery | `bulk_delivery` | `bulk_delivery` | Available | `Configured by verification rules` |
-| Heavy Haulage | `heavy_haulage` | `heavy_haulage` | Available | `Configured by verification rules` |
-| Agricultural Transport | `agricultural_transport` | `agricultural_transport` | Available | `Configured by verification rules` |
-| Cold Chain & Refrigerated | `cold_chain_transport` | `cold_chain_refrigerated` | Available | `Configured by verification rules` |
+### Delivery & Moving
 
-#### Delivery & Moving
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Courier | `courier_delivery` | Available | `Configured by verification rules` |
+| Moving Services | `moving_services` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Courier | `courier_delivery` | `courier` | Available | `Configured by verification rules` |
-| Moving Services | `moving_services` | `moving_services` | Available | `Configured by verification rules` |
+### Vehicles
 
-#### Vehicles
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Truck Hire | `truck_hire` | Available | `Configured by verification rules` |
+| Vehicle Transport | `vehicle_transport` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Truck Hire | `truck_hire` | `truck_hire` | Available | `Configured by verification rules` |
-| Vehicle Transport | `vehicle_transport` | `vehicle_transport` | Available | `Configured by verification rules` |
+### Passenger
 
-#### Other
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Chauffeur Services | `chauffeur_services` | Available | `optional_proof` |
+| Personal Driver Hire | `personal_driver_hire` | Available | `optional_proof` |
+| Boda Boda / Motorcycle Taxi | `boda_taxi_services` | Available | `optional_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Logistics | `other_logistics` | `other_logistics` | Available | `Configured by verification rules` |
+### Training
 
-#### Passenger transport
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Chauffeur Services | `chauffeur_services` | `chauffeur_services`; aliases: chauffeur, executive driver | Available | `optional_proof` |
-| Personal Driver Hire | `personal_driver_hire` | `personal_driver_hire`; aliases: personal driver, private driver | Available | `optional_proof` |
-| Boda Boda / Motorcycle Taxi | `boda_taxi_services` | `boda_taxi_services`; aliases: boda, boda boda, motorcycle taxi | Available | `optional_proof` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Driving School / Driver Training | `driving_school_driver_training` | Available | `required_proof` |
 
 ### Individual roles
 
@@ -1104,8 +1045,6 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 **Database slug:** `work_driving_instructor`
 **Status:** Available
 **Question:** What do you teach?
-**Verification policy:** `required_proof`
-**Aliases:** driving lessons, instructor
 **Kinds:** Cars · Motorcycles · Trucks · Defensive driving
 
 | Qualification | Evidence required |
@@ -1114,41 +1053,32 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Valid driving licence | Yes |
 | 2+ years teaching | No |
 
-## 11. 🚜 Machinery & Equipment
+## 11. 🚜 Machinery
 
-**Status:** Available
 **Database slug:** `machinery_equipment`
 **Description:** Heavy machinery and equipment hire, with or without an operator
 
-### Services
+### Earthmoving
 
-#### Earthmoving
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Excavator Hire | `excavator_hire` | Available | `Configured by verification rules` |
+| Loader Hire | `loader_hire` | Available | `Configured by verification rules` |
+| Grader Hire | `grader_hire` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Excavator Hire | `excavator_hire` | `excavator_hire` | Available | `Configured by verification rules` |
-| Loader Hire | `loader_hire` | `loader_hire` | Available | `Configured by verification rules` |
-| Grader Hire | `grader_hire` | `grader_hire` | Available | `Configured by verification rules` |
+### Lifting & Power
 
-#### Lifting & Power
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Crane Hire | `crane_hire` | Available | `Configured by verification rules` |
+| Generator Hire | `generator_hire` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Crane Hire | `crane_hire` | `crane_hire` | Available | `Configured by verification rules` |
-| Generator Hire | `generator_hire` | `generator_hire` | Available | `Configured by verification rules` |
+### Farm & Industrial
 
-#### Farm & Industrial
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Tractor Hire | `tractor_hire` | `tractor_hire` | Available | `Configured by verification rules` |
-| Industrial Equipment | `industrial_equipment` | `industrial_equipment` | Available | `Configured by verification rules` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Machinery | `other_machinery` | `other_machinery` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Tractor Hire | `tractor_hire` | Available | `Configured by verification rules` |
+| Industrial Equipment | `industrial_equipment` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -1206,34 +1136,30 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Team leadership | No |
 | Safety certification | No |
 
-## 12. 🌾 Agriculture & Agribusiness
+## 12. 🌾 Agriculture
 
-**Status:** Available
 **Database slug:** `agriculture_agribusiness`
 **Description:** Farm services, inputs and produce
 
-### Services
+### Farm Operations
 
-#### Farm Operations
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Farm Services | `farm_services` | Available | `Configured by verification rules` |
+| Irrigation | `irrigation_services` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Farm Services | `farm_services` | `farm_services` | Available | `Configured by verification rules` |
-| Irrigation | `irrigation_services` | `irrigation` | Available | `Configured by verification rules` |
+### Inputs & Livestock
 
-#### Inputs & Livestock
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Seeds & Inputs | `seeds_inputs` | Available | `Configured by verification rules` |
+| Livestock Sourcing | `livestock_sourcing` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Seeds & Inputs | `seeds_inputs` | `seeds_inputs` | Available | `Configured by verification rules` |
-| Livestock Sourcing | `livestock_sourcing` | `livestock_sourcing` | Available | `Configured by verification rules` |
+### Market
 
-#### Market
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Produce Buyers | `produce_buyers` | `produce_buyers` | Available | `Configured by verification rules` |
-| Other Agriculture | `other_agriculture` | `other_agriculture` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Produce Buyers | `produce_buyers` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -1288,37 +1214,28 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Pesticide handling certificate | No |
 | Experience 1+ year | No |
 
-## 13. 🔎 Procurement & Sourcing
+## 13. 🔎 Sourcing
 
-**Status:** Available
 **Database slug:** `specialized_products`
 **Description:** Buying, importing and finding hard-to-get products
 
-### Services
+### Sourcing
 
-#### Sourcing
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Bulk Procurement | `bulk_procurement` | Available | `Configured by verification rules` |
+| Equipment Sourcing | `equipment_sourcing` | Available | `Configured by verification rules` |
+| Imported Products | `imported_products` | Available | `Configured by verification rules` |
+| Hard-to-Find Products | `hard_to_find_products` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Bulk Procurement | `bulk_procurement` | `bulk_procurement` | Available | `Configured by verification rules` |
-| Equipment Sourcing | `equipment_sourcing` | `equipment_sourcing` | Available | `Configured by verification rules` |
-| Imported Products | `imported_products` | `imported_products` | Available | `Configured by verification rules` |
-| Hard-to-Find Products | `hard_to_find_products` | `hard_to_find_products` | Available | `Configured by verification rules` |
+### Parts & Supplies
 
-#### Parts & Supplies
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Electronics Procurement | `electronics_procurement` | `electronics_procurement` | Available | `Configured by verification rules` |
-| Industrial Parts | `industrial_parts` | `industrial_parts` | Available | `Configured by verification rules` |
-| Spare Parts | `spare_parts` | `spare_parts` | Available | `Configured by verification rules` |
-| Medical & Lab Supplies | `medical_lab_supplies` | `medical_lab_supplies` | Available | `Configured by verification rules` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Procurement | `other_procurement` | `other_procurement` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Electronics Procurement | `electronics_procurement` | Available | `Configured by verification rules` |
+| Industrial Parts | `industrial_parts` | Available | `Configured by verification rules` |
+| Spare Parts | `spare_parts` | Available | `Configured by verification rules` |
+| Medical & Lab Supplies | `medical_lab_supplies` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -1360,39 +1277,35 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Customs clearing licence | No |
 | Logistics experience | No |
 
-## 14. ✈️ Travel & International
+## 14. ✈️ Travel
 
-**Status:** Available
 **Database slug:** `travel_international`
 **Description:** Bookings, visas, tours and relocation
 
-### Services
+### Bookings
 
-#### Bookings
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Flight Tickets & Bookings | `flight_tickets` | Available | `Configured by verification rules` |
+| Accommodation | `accommodation` | Available | `Configured by verification rules` |
+| Airport Transfers | `airport_transfers` | Available | `Configured by verification rules` |
+| Tour Packages | `tour_packages` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Flight Tickets & Bookings | `flight_tickets` | `flight_tickets_bookings` | Available | `Configured by verification rules` |
-| Accommodation | `accommodation` | `accommodation` | Available | `Configured by verification rules` |
-| Airport Transfers | `airport_transfers` | `airport_transfers` | Available | `Configured by verification rules` |
-| Tour Packages | `tour_packages` | `tour_packages` | Available | `Configured by verification rules` |
+### Documents & Cover
 
-#### Documents & Cover
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Visa Assistance | `visa_assistance` | Available | `Configured by verification rules` |
+| Travel Documentation | `travel_documentation` | Available | `Configured by verification rules` |
+| Travel Insurance | `travel_insurance` | Available | `Configured by verification rules` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Visa Assistance | `visa_assistance` | `visa_assistance` | Available | `Configured by verification rules` |
-| Travel Documentation | `travel_documentation` | `travel_documentation` | Available | `Configured by verification rules` |
-| Travel Insurance | `travel_insurance` | `travel_insurance` | Available | `Configured by verification rules` |
+### Specialised
 
-#### Specialised
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Hajj & Umrah | `hajj_umrah` | `hajj_umrah` | Available | `Configured by verification rules` |
-| International Relocation | `international_relocation` | `international_relocation` | Available | `Configured by verification rules` |
-| Travel Consultation | `travel_consultation` | `travel_consultation` | Available | `Configured by verification rules` |
-| Other Travel Services | `other_travel_services` | `other_travel_services` | Available | `Configured by verification rules` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Hajj & Umrah | `hajj_umrah` | Available | `Configured by verification rules` |
+| International Relocation | `international_relocation` | Available | `Configured by verification rules` |
+| Travel Consultation | `travel_consultation` | Available | `Configured by verification rules` |
 
 ### Individual roles
 
@@ -1447,46 +1360,35 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Tourism diploma / degree | No |
 | Managed 3+ staff | No |
 
-## 15. 🏠 Domestic & Household
+## 15. 🏠 Domestic
 
-**Status:** Inactive (rollout gated)
 **Database slug:** `domestic_household`
 **Description:** House help, childcare, home cooking and care at home
 
-### Services
+### Home Help
 
-#### Home help
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Maids & House Help | `house_help_services` | Available | `optional_proof` |
+| Housekeeping & Cleaning | `housekeeping_services` | Available | `optional_proof` |
+| Laundry & Ironing | `laundry_services` | Available | `open` |
+| Gardening & Compound Care | `gardening_services` | Available | `open` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Maids & House Help | `house_help_services` | `house_help_services`; aliases: maid, house help, housegirl, dada, domestic worker | Inactive (rollout gated) | `optional_proof` |
-| Housekeeping & Cleaning | `housekeeping_services` | `housekeeping_services`; aliases: cleaner, house cleaner | Inactive (rollout gated) | `optional_proof` |
-| Laundry & Ironing | `laundry_services` | `laundry_services`; aliases: laundry, ironing | Inactive (rollout gated) | `open` |
-| Gardening & Compound Care | `gardening_services` | `gardening_services`; aliases: gardener, compound care | Inactive (rollout gated) | `open` |
+### Family
 
-#### Family
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Nannies & Childcare | `childcare_nanny_services` | `childcare_nanny_services`; aliases: nanny, babysitter, childcare | Inactive (rollout gated) | `optional_proof` |
-| Home Cooks | `home_cooking_services` | `home_cooking_services`; aliases: home cook, private cook | Inactive (rollout gated) | `optional_proof` |
-| Elderly Home Care | `elderly_home_care` | `elderly_home_care`; aliases: home carer, elder care | Inactive (rollout gated) | `optional_proof` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Domestic | `other_domestic` | `other_domestic` | Inactive (rollout gated) | `open` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Nannies & Childcare | `childcare_nanny_services` | Available | `optional_proof` |
+| Home Cooks | `home_cooking_services` | Available | `optional_proof` |
+| Elderly Home Care | `elderly_home_care` | Available | `optional_proof` |
 
 ### Individual roles
 
 #### House Help / Maid
 
 **Database slug:** `work_house_help`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What kind of help?
-**Verification policy:** `optional_proof`
-**Aliases:** maid, housegirl, dada, domestic worker
 **Kinds:** Live-in · Live-out · Day work · Part-time · Cleaning only
 
 | Qualification | Evidence required |
@@ -1499,10 +1401,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Nanny / Childcare
 
 **Database slug:** `work_nanny`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** Which ages?
-**Verification policy:** `required_proof`
-**Aliases:** nanny, babysitter
 **Kinds:** Newborn · Toddler · School age · Special needs
 
 | Qualification | Evidence required |
@@ -1516,10 +1416,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Home Cook
 
 **Database slug:** `work_home_cook`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What do you cook?
-**Verification policy:** `optional_proof`
-**Aliases:** cook
 **Kinds:** Family meals · Special diets · Event cooking · Baking
 
 | Qualification | Evidence required |
@@ -1531,10 +1429,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Gardener / Groundskeeper
 
 **Database slug:** `work_gardener`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What work?
-**Verification policy:** `open`
-**Aliases:** gardener
 **Kinds:** Lawn & garden · Landscaping · Compound upkeep
 
 | Qualification | Evidence required |
@@ -1546,10 +1442,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Home Carer
 
 **Database slug:** `work_home_carer`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** Whom do you care for?
-**Verification policy:** `optional_proof`
-**Aliases:** caregiver, home care
 **Kinds:** Elderly · Disabled · Post-surgery
 
 | Qualification | Evidence required |
@@ -1559,64 +1453,53 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | National ID | Yes |
 | References | No |
 
-## 16. ⚕️ Health & Medical
+## 16. ⚕️ Health
 
-**Status:** Inactive (rollout gated)
 **Database slug:** `health_medical`
 **Description:** Nurses, doctors, specialists, clinics and care
 
-### Services
+### Facilities
 
-#### Facilities
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Clinics & Health Centres | `clinic_services` | Available | `required_proof` |
+| Hospitals | `hospital_services` | Available | `required_proof` |
+| Eye Clinics & Opticals | `eye_clinic_optical` | Available | `required_proof` |
+| Dental Clinics | `dental_clinic` | Available | `required_proof` |
+| Diagnostic Labs & Imaging | `diagnostic_lab` | Available | `required_proof` |
+| Pharmacies | `pharmacy_services` | Available | `required_proof` |
+| Physiotherapy Clinics | `physiotherapy_clinic` | Available | `required_proof` |
+| Orthopaedic & Bone Care | `orthopaedic_care` | Available | `required_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Clinics & Health Centres | `clinic_services` | `clinic_services`; aliases: clinic, health centre, dispensary | Inactive (rollout gated) | `required_proof` |
-| Hospitals | `hospital_services` | `hospital_services`; aliases: hospital | Inactive (rollout gated) | `required_proof` |
-| Eye Clinics & Opticals | `eye_clinic_optical` | `eye_clinic_optical`; aliases: optician, optometrist, eye doctor, glasses | Inactive (rollout gated) | `required_proof` |
-| Dental Clinics | `dental_clinic` | `dental_clinic`; aliases: dentist | Inactive (rollout gated) | `required_proof` |
-| Diagnostic Labs & Imaging | `diagnostic_lab` | `diagnostic_lab`; aliases: lab, x-ray, imaging | Inactive (rollout gated) | `required_proof` |
-| Pharmacies | `pharmacy_services` | `pharmacy_services`; aliases: chemist, drug shop | Inactive (rollout gated) | `required_proof` |
-| Physiotherapy Clinics | `physiotherapy_clinic` | `physiotherapy_clinic`; aliases: physio | Inactive (rollout gated) | `required_proof` |
-| Orthopaedic & Bone Care | `orthopaedic_care` | `orthopaedic_care`; aliases: bone doctor, fracture, broken bone, back pain, joint pain, knee, arthritis, x-ray, physio | Inactive (rollout gated) | `required_proof` |
+### Home & Outreach
 
-#### Staffing & home care
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Home Nursing Agencies | `home_nursing_agency` | Available | `required_proof` |
+| Medical Staffing Agencies | `medical_staffing_agency` | Available | `required_proof` |
+| Mobile Health Outreach | `mobile_health_outreach` | Available | `required_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Home Nursing Agencies | `home_nursing_agency` | `home_nursing_agency`; aliases: home nurse | Inactive (rollout gated) | `required_proof` |
-| Medical Staffing Agencies | `medical_staffing_agency` | `medical_staffing_agency` | Inactive (rollout gated) | `required_proof` |
-| Mobile Health Outreach | `mobile_health_outreach` | `mobile_health_outreach`; aliases: home visit | Inactive (rollout gated) | `required_proof` |
+### Reproductive Health
 
-#### Other
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Antenatal & Maternity Care | `maternity_care_services` | Available | `required_proof` |
+| Family Planning & Reproductive Health | `family_planning_services` | Available | `required_proof` |
+| HIV Testing & Counselling | `hiv_testing_services` | Available | `required_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Health Services | `other_health` | `other_health` | Inactive (rollout gated) | `required_proof` |
+### Procedures
 
-#### Procedures
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Circumcision Services | `circumcision_services` | `circumcision_services`; aliases: male circumcision, VMMC, mobile circumcision | Inactive (rollout gated) | `required_proof` |
-
-#### Reproductive health
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Antenatal & Maternity Care | `maternity_care_services` | `maternity_care_services`; aliases: pregnancy, antenatal, ANC, maternity, midwife, prenatal, delivery, post-abortion care | Inactive (rollout gated) | `required_proof` |
-| Family Planning & Reproductive Health | `family_planning_services` | `family_planning_services`; aliases: contraception, family planning | Inactive (rollout gated) | `required_proof` |
-| HIV Testing & Counselling | `hiv_testing_services` | `hiv_testing_services`; aliases: HIV test, HCT, VCT, PrEP, PEP, STI test, sexual health | Inactive (rollout gated) | `required_proof` |
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Circumcision Services | `circumcision_services` | Available | `required_proof` |
 
 ### Individual roles
 
 #### Nurse / Midwife
 
 **Database slug:** `work_nurse`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What nursing?
-**Verification policy:** `required_proof`
-**Aliases:** sister, RN, enrolled nurse
 **Kinds:** General · Theatre · Paediatric · ICU / critical care · Midwifery · Community health · Antenatal & postnatal care · Family planning · HIV testing & counselling
 
 | Qualification | Evidence required |
@@ -1629,10 +1512,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Doctor
 
 **Database slug:** `work_doctor`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What do you practise?
-**Verification policy:** `required_proof`
-**Aliases:** physician, MD, medical officer
 **Kinds:** General practitioner · Surgeon · Emergency · Locum · Circumcision (adult and infant)
 
 | Qualification | Evidence required |
@@ -1645,9 +1526,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Clinical Officer / Clinician
 
 **Database slug:** `work_clinician`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What area?
-**Verification policy:** `required_proof`
 **Kinds:** General clinical · Anaesthesia · Orthopaedic · Ophthalmic · Community · Circumcision (adult and infant)
 
 | Qualification | Evidence required |
@@ -1659,10 +1539,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Medical Specialist
 
 **Database slug:** `work_medical_specialist`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** Which specialty?
-**Verification policy:** `required_proof`
-**Aliases:** oncologist, cancer specialist
 **Kinds:** Oncologist · Cardiologist · Paediatrician · Gynaecologist · Dermatologist · ENT · Neurologist · Orthopaedic surgeon · Urologist · Psychiatrist · Radiologist · Other specialist
 
 | Qualification | Evidence required |
@@ -1675,10 +1553,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Optician / Optometrist
 
 **Database slug:** `work_optometrist`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What do you do?
-**Verification policy:** `required_proof`
-**Aliases:** optician, eye doctor, glasses
 **Kinds:** Eye tests · Contact lenses · Dispensing optician · Low vision
 
 | Qualification | Evidence required |
@@ -1690,9 +1566,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Dentist
 
 **Database slug:** `work_dentist`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What dentistry?
-**Verification policy:** `required_proof`
 **Kinds:** General · Orthodontics · Oral surgery · Paediatric
 
 | Qualification | Evidence required |
@@ -1704,9 +1579,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Pharmacist
 
 **Database slug:** `work_pharmacist`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** Where do you work?
-**Verification policy:** `required_proof`
 **Kinds:** Retail · Hospital · Dispensing · Locum
 
 | Qualification | Evidence required |
@@ -1718,9 +1592,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Lab Technician
 
 **Database slug:** `work_lab_technician`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What lab work?
-**Verification policy:** `required_proof`
 **Kinds:** Medical lab · Radiography · Ultrasound
 
 | Qualification | Evidence required |
@@ -1731,9 +1604,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Physiotherapist
 
 **Database slug:** `work_physiotherapist`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What therapy?
-**Verification policy:** `required_proof`
 **Kinds:** Sports · Neuro · Paediatric · Geriatric · Home visits
 
 | Qualification | Evidence required |
@@ -1745,9 +1617,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Counsellor / Psychologist
 
 **Database slug:** `work_counsellor`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What support?
-**Verification policy:** `required_proof`
 **Kinds:** Individual · Couples & family · Trauma · Child & adolescent
 
 | Qualification | Evidence required |
@@ -1759,9 +1630,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Nursing Assistant / Caregiver
 
 **Database slug:** `work_nursing_assistant`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What care?
-**Verification policy:** `required_proof`
 **Kinds:** Bedside · Home care · Elderly · Post-surgery
 
 | Qualification | Evidence required |
@@ -1773,10 +1643,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### HIV Counsellor / Testing Officer
 
 **Database slug:** `work_hiv_counsellor`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What do you do?
-**Verification policy:** `required_proof`
-**Aliases:** HIV testing counsellor, HCT
 **Kinds:** Testing & counselling · Peer educator · Community outreach
 
 | Qualification | Evidence required |
@@ -1786,38 +1654,147 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Ministry of Health or facility authorisation | Yes |
 | National ID | Yes |
 
-## 17. 💼 Business & Investment
+## 17. 🪘 Cultural
 
-**Status:** Inactive (rollout gated)
-**Database slug:** `business_investment`
-**Description:** Angel investors, mentors and startup support
+**Database slug:** `traditional_cultural`
+**Description:** Traditional ceremonies, prayers, healing and culture
 
-### Services
+### Culture
 
-#### Investor support
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Duwah Services | `duwah_services` | Available | `optional_proof` |
+| Traditional Ceremonies | `traditional_ceremony_services` | Available | `optional_proof` |
+| Traditional Dance & Drumming | `traditional_dance_drumming` | Available | `open` |
+| Traditional Attire & Crafts | `traditional_attire_crafts` | Available | `open` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Angel Investor Networks | `angel_investor_network` | `angel_investor_network`; aliases: angel investor, investor, seed funding, startup funding | Inactive (rollout gated) | `required_proof` |
-| Startup Advisory | `startup_advisory` | `startup_advisory`; aliases: startup mentor | Inactive (rollout gated) | `optional_proof` |
-| Investor Introductions | `investor_introductions` | `investor_introductions`; aliases: investor introduction | Inactive (rollout gated) | `required_proof` |
-| Incubators & Accelerators | `incubator_accelerator` | `incubator_accelerator`; aliases: startup incubator, accelerator | Inactive (rollout gated) | `required_proof` |
+### Healing
 
-#### Other
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Herbal & Traditional Healing | `traditional_healing_herbal` | Available | `required_proof` |
 
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Investment Support | `other_investment` | `other_investment` | Inactive (rollout gated) | `open` |
+### Individual roles
+
+#### Duwah Practitioner
+
+**Database slug:** `work_duwah_practitioner`
+**Status:** Available
+**Question:** What is your practice?
+
+| Qualification | Evidence required |
+|---|---|
+| Community or religious endorsement letter | Yes |
+| References | No |
+| Experience years | No |
+
+#### Ceremony Officiant / Elder
+
+**Database slug:** `work_ceremony_officiant`
+**Status:** Available
+**Question:** Which ceremonies?
+**Kinds:** Introduction & marriage · Naming · Funeral & memorial · Cultural rites
+
+| Qualification | Evidence required |
+|---|---|
+| Endorsement | Yes |
+| References | No |
+
+#### Traditional Performer
+
+**Database slug:** `work_traditional_performer`
+**Status:** Available
+**Question:** What do you perform?
+**Kinds:** Dancer · Drummer · Singer · Storyteller
+
+| Qualification | Evidence required |
+|---|---|
+| Showreel | No |
+| Group membership | No |
+
+#### Traditional Healer / Herbalist
+
+**Database slug:** `work_traditional_healer`
+**Status:** Available
+**Question:** What is your practice?
+**Kinds:** Herbalist · Bone setter · Birth attendant
+
+| Qualification | Evidence required |
+|---|---|
+| Registration with relevant association or local authority | Yes |
+| Referees | No |
+
+## 18. 💰 Finance
+
+**Database slug:** `financial_services`
+**Description:** Loans, Forex, SACCOs, investments, and other financial services.
+
+### Loans
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Personal Loan Services | `personal_loan_services` | Available | `required_proof` |
+| Emergency Loan Services | `emergency_loan_services` | Available | `required_proof` |
+| Salary Loan Services | `salary_loan_services` | Available | `required_proof` |
+| Medical Financing | `medical_financing` | Available | `required_proof` |
+| Business Startup Financing | `business_startup_financing` | Available | `required_proof` |
+| Working Capital Financing | `working_capital_financing` | Available | `required_proof` |
+| Business Expansion Financing | `business_expansion_financing` | Available | `required_proof` |
+| SME Financing | `sme_financing` | Available | `required_proof` |
+| Boda Boda Financing | `boda_boda_financing` | Available | `required_proof` |
+| Car Financing | `car_financing` | Available | `required_proof` |
+| Tuk-tuk Financing | `tuk_tuk_financing` | Available | `required_proof` |
+| Motorcycle Financing | `motorcycle_financing` | Available | `required_proof` |
+| Smartphone Financing | `smartphone_financing` | Available | `required_proof` |
+| Laptop Financing | `laptop_financing` | Available | `required_proof` |
+| Heavy Machinery Financing | `heavy_machinery_financing` | Available | `required_proof` |
+| Equipment Financing | `equipment_financing` | Available | `required_proof` |
+| Agricultural Loans | `agricultural_loan_services` | Available | `required_proof` |
+| Livestock Financing | `livestock_financing` | Available | `required_proof` |
+| Crop Financing | `crop_financing` | Available | `required_proof` |
+| Farm Equipment Financing | `farm_equipment_financing` | Available | `required_proof` |
+| Mortgage Financing | `mortgage_financing` | Available | `required_proof` |
+| Land Financing | `land_financing` | Available | `required_proof` |
+| Property Development Financing | `property_development_financing` | Available | `required_proof` |
+| School Fees Financing | `school_fees_financing` | Available | `required_proof` |
+| University Financing | `university_financing` | Available | `required_proof` |
+| Education Loans | `education_loan_services` | Available | `required_proof` |
+| Travel Financing | `travel_financing` | Available | `required_proof` |
+| Wedding Financing | `wedding_financing` | Available | `required_proof` |
+
+### Forex
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Currency Exchange / Forex Bureau | `forex_currency_exchange` | Available | `required_proof` |
+| Forex Trading Training | `forex_trading_training` | Available | `required_proof` |
+| Money Transfer | `money_transfer` | Available | `required_proof` |
+
+### SACCOs & Cooperatives
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| SACCOs | `sacco_services` | Available | `required_proof` |
+| Village Savings Groups (VSLA) | `vsla_groups` | Available | `required_proof` |
+| Cooperative Societies | `cooperative_societies` | Available | `required_proof` |
+| Group Savings & Chamas | `group_savings_chamas` | Available | `required_proof` |
+
+### Investment Opportunities
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Angel Investor Networks | `angel_investor_network` | Available | `required_proof` |
+| Startup Advisory | `startup_advisory` | Available | `optional_proof` |
+| Investor Introductions | `investor_introductions` | Available | `required_proof` |
+| Incubators & Accelerators | `incubator_accelerator` | Available | `required_proof` |
 
 ### Individual roles
 
 #### Angel Investor
 
 **Database slug:** `work_angel_investor`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** Which sectors?
-**Verification policy:** `required_proof`
-**Aliases:** investor, seed funding
 **Kinds:** Technology · Agriculture · Retail & trade · Health · Energy · Real estate · Creative · General
 
 | Qualification | Evidence required |
@@ -1830,10 +1807,8 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 #### Business Mentor
 
 **Database slug:** `work_business_mentor`
-**Status:** Inactive (rollout gated)
+**Status:** Available
 **Question:** What do you help with?
-**Verification policy:** `optional_proof`
-**Aliases:** startup mentor
 **Kinds:** Startup · SME growth · Export · Agribusiness
 
 | Qualification | Evidence required |
@@ -1841,179 +1816,3 @@ Policies: `open` = a provider profile can be active without proof; `optional_pro
 | Experience 5+ years | No |
 | Case studies | No |
 | Referees | No |
-
-## 18. 🪘 Traditional & Cultural Services
-
-**Status:** Inactive (rollout gated)
-**Database slug:** `traditional_cultural`
-**Description:** Traditional ceremonies, prayers, healing and culture
-
-### Services
-
-#### Culture
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Duwah Services | `duwah_services` | `duwah_services`; aliases: duwa, duwah | Inactive (rollout gated) | `optional_proof` |
-| Traditional Ceremonies | `traditional_ceremony_services` | `traditional_ceremony_services` | Inactive (rollout gated) | `optional_proof` |
-| Traditional Dance & Drumming | `traditional_dance_drumming` | `traditional_dance_drumming` | Inactive (rollout gated) | `open` |
-| Traditional Attire & Crafts | `traditional_attire_crafts` | `traditional_attire_crafts` | Inactive (rollout gated) | `open` |
-
-#### Healing
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Herbal & Traditional Healing | `traditional_healing_herbal` | `traditional_healing_herbal`; aliases: traditional healer, herbalist | Inactive (rollout gated) | `required_proof` |
-
-#### Other
-
-| Service | Database slug | Catalog ID | Status | Verification policy |
-|---|---|---|---|---|
-| Other Traditional | `other_traditional` | `other_traditional` | Inactive (rollout gated) | `open` |
-
-### Individual roles
-
-#### Duwah Practitioner
-
-**Database slug:** `work_duwah_practitioner`
-**Status:** Inactive (rollout gated)
-**Question:** What is your practice?
-**Verification policy:** `optional_proof`
-**Aliases:** duwa, duwah
-**Kinds:** Pending definition / not configured
-
-| Qualification | Evidence required |
-|---|---|
-| Community or religious endorsement letter | Yes |
-| References | No |
-| Experience years | No |
-
-#### Ceremony Officiant / Elder
-
-**Database slug:** `work_ceremony_officiant`
-**Status:** Inactive (rollout gated)
-**Question:** Which ceremonies?
-**Verification policy:** `optional_proof`
-**Kinds:** Introduction & marriage · Naming · Funeral & memorial · Cultural rites
-
-| Qualification | Evidence required |
-|---|---|
-| Endorsement | Yes |
-| References | No |
-
-#### Traditional Performer
-
-**Database slug:** `work_traditional_performer`
-**Status:** Inactive (rollout gated)
-**Question:** What do you perform?
-**Verification policy:** `open`
-**Kinds:** Dancer · Drummer · Singer · Storyteller
-
-| Qualification | Evidence required |
-|---|---|
-| Showreel | No |
-| Group membership | No |
-
-#### Traditional Healer / Herbalist
-
-**Database slug:** `work_traditional_healer`
-**Status:** Inactive (rollout gated)
-**Question:** What is your practice?
-**Verification policy:** `required_proof`
-**Aliases:** traditional healer, herbalist
-**Kinds:** Herbalist · Bone setter · Birth attendant
-
-| Qualification | Evidence required |
-|---|---|
-| Registration with relevant association or local authority | Yes |
-| Referees | No |
-
-## 19. 💰 Financial Services
-
-**Status:** Provider category gated by `capability_profiles_enabled`
-**Database slug:** `financial_services`
-**Description:** Loans and financing you offer
-**Provider identities:** Individual and Company / Organization
-**Verification policy:** All listed capabilities use `required_proof`; unapproved selections remain private drafts and do not appear in borrower discovery.
-
-### Personal Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Personal Loan Services | `personal_loan_services` | `required_proof` |
-| Emergency Loan Services | `emergency_loan_services` | `required_proof` |
-| Salary Loan Services | `salary_loan_services` | `required_proof` |
-| Medical Financing | `medical_financing` | `required_proof` |
-
-### Business Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Business Startup Financing | `business_startup_financing` | `required_proof` |
-| Working Capital Financing | `working_capital_financing` | `required_proof` |
-| Business Expansion Financing | `business_expansion_financing` | `required_proof` |
-| SME Financing | `sme_financing` | `required_proof` |
-
-### Asset Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Boda Boda Financing | `boda_boda_financing` | `required_proof` |
-| Car Financing | `car_financing` | `required_proof` |
-| Tuk-tuk Financing | `tuk_tuk_financing` | `required_proof` |
-| Motorcycle Financing | `motorcycle_financing` | `required_proof` |
-| Smartphone Financing | `smartphone_financing` | `required_proof` |
-| Laptop Financing | `laptop_financing` | `required_proof` |
-| Heavy Machinery Financing | `heavy_machinery_financing` | `required_proof` |
-| Equipment Financing | `equipment_financing` | `required_proof` |
-
-### Agricultural Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Agricultural Loans | `agricultural_loan_services` | `required_proof` |
-| Livestock Financing | `livestock_financing` | `required_proof` |
-| Crop Financing | `crop_financing` | `required_proof` |
-| Farm Equipment Financing | `farm_equipment_financing` | `required_proof` |
-
-### Property Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Mortgage Financing | `mortgage_financing` | `required_proof` |
-| Land Financing | `land_financing` | `required_proof` |
-| Property Development Financing | `property_development_financing` | `required_proof` |
-
-### Education Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| School Fees Financing | `school_fees_financing` | `required_proof` |
-| University Financing | `university_financing` | `required_proof` |
-| Education Loans | `education_loan_services` | `required_proof` |
-
-### Lifestyle Financing
-
-| Service | Database slug | Verification policy |
-|---|---|---|
-| Travel Financing | `travel_financing` | `required_proof` |
-| Wedding Financing | `wedding_financing` | `required_proof` |
-| Other Lifestyle Financing | `other_lifestyle_financing` | `required_proof` |
-
-Individual proof uses the existing identity verification plus supporting information. Company proof uses the existing private company profile and company-document review, including registration and applicable financial authorization or licensing evidence. Company names remain edited in the existing company details step.
-
-## Safety and rollout notes
-
-- **Beauty, Fashion, Styling & Wellness:** Massage and spa listings are therapeutic and wellness services only; sexual services are prohibited.
-- **Domestic & Household:** Inactive pending rollout. Never expose exact home addresses; an ID-checked badge requires admin approval.
-- **Health & Medical:** Inactive pending legal and country licensing review. Do not collect or store HIV results; sensitive Needs must remain private.
-- **Business & Investment:** Inactive pending legal review. Nipanze does not hold funds, provide investment advice, or guarantee returns.
-- **Traditional & Cultural Services:** Inactive pending regulation review. Listings must not claim to cure illness or guarantee outcomes.
-- **Education & Training:** Academic services are guidance, tutoring, mentoring, editing, and analysis only; ghost-writing/submitting work as a student is prohibited.
-
-## Source and implementation notes
-
-- The JSON is the versioned catalog reference. [`sql/patch_catalog_expansion_v3.sql`](./sql/patch_catalog_expansion_v3.sql) seeds the expansion and rollout flags.
-- Legacy catalog IDs are retained; `database_slug` maps every entry to its current canonical database slug.
-- Domestic & Household, Health & Medical, Business & Investment, and Traditional & Cultural Services remain represented but inactive pending rollout/review.
-- This documents repository seed state, not confirmation that a live Supabase database has applied every migration.
