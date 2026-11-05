@@ -1492,6 +1492,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Service | Database slug | Status | Verification policy |
 |---|---|---|---|
 | Circumcision Services | `circumcision_services` | Available | `required_proof` |
+| Mobile Circumcision | `mobile_circumcision_services` | Available | `required_proof` |
 
 ### Individual roles
 
@@ -1541,7 +1542,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 **Database slug:** `work_medical_specialist`
 **Status:** Available
 **Question:** Which specialty?
-**Kinds:** Oncologist · Cardiologist · Paediatrician · Gynaecologist · Dermatologist · ENT · Neurologist · Orthopaedic surgeon · Urologist · Psychiatrist · Radiologist · Other specialist
+**Kinds:** Dermatologist · Orthopedic · Pediatrician · Oncologist · Cardiologist · Gynaecologist · ENT · Neurologist · Urologist · Psychiatrist · Radiologist · Other specialist
 
 | Qualification | Evidence required |
 |---|---|

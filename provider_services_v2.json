@@ -4859,6 +4859,18 @@
                 "mobile circumcision"
               ],
               "database_slug": "circumcision_services"
+            },
+            {
+              "id": "mobile_circumcision_services",
+              "name": "Mobile Circumcision",
+              "is_active": true,
+              "policy": "required_proof",
+              "aliases": [
+                "home visit circumcision",
+                "mobile circumcision provider",
+                "at-home circumcision"
+              ],
+              "database_slug": "mobile_circumcision_services"
             }
           ]
         }
@@ -5052,6 +5064,18 @@
           "kind_question": "Which specialty?",
           "kinds": [
             {
+              "id": "dermatologist",
+              "name": "Dermatologist"
+            },
+            {
+              "id": "orthopaedic_surgeon",
+              "name": "Orthopedic"
+            },
+            {
+              "id": "paediatrician",
+              "name": "Pediatrician"
+            },
+            {
               "id": "oncologist",
               "name": "Oncologist"
             },
@@ -5060,16 +5084,8 @@
               "name": "Cardiologist"
             },
             {
-              "id": "paediatrician",
-              "name": "Paediatrician"
-            },
-            {
               "id": "gynaecologist",
               "name": "Gynaecologist"
-            },
-            {
-              "id": "dermatologist",
-              "name": "Dermatologist"
             },
             {
               "id": "ent",
@@ -5078,10 +5094,6 @@
             {
               "id": "neurologist",
               "name": "Neurologist"
-            },
-            {
-              "id": "orthopaedic_surgeon",
-              "name": "Orthopaedic surgeon"
             },
             {
               "id": "urologist",

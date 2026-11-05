@@ -102,6 +102,15 @@ const _financeUiGroupNames = <String, String>{
   'investment_opportunities': 'Investment Opportunities',
 };
 
+const _directIdentityGateCategorySlugs = <String>{
+  'construction_building',
+  'machinery_equipment',
+  'technology_digital',
+  'professional_services',
+  'marketing_promotion',
+  'health_medical',
+};
+
 String _financeUiGroupSlug(NeedCapability capability) {
   final serviceGroup = capability.serviceGroupSlug?.trim();
   if (const {
@@ -959,7 +968,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           ? 5
           : widget.initialProofRoleSlug != null && _selectedRoles.isNotEmpty
               ? 3
-              : 8;
+              : _directIdentityGateCategorySlugs.contains(cat.slug)
+                  ? 4
+                  : 8;
       final requestedRoleIndex = widget.initialProofRoleSlug == null
           ? -1
           : _selectedRoles.toList().indexOf(widget.initialProofRoleSlug!);
