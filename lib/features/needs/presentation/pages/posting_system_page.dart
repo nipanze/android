@@ -956,9 +956,9 @@ class _AddServiceEdgeButton extends StatelessWidget {
     return AnimatedPositioned(
       duration: duration,
       curve: Curves.easeOut,
-      right: tucked ? -38 : -10,
+      right: tucked ? -22 : -10,
       bottom: 12,
-      width: 44,
+      width: 64,
       height: 44,
       child: Semantics(
         button: true,
