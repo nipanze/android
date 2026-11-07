@@ -272,6 +272,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   }
 
   String get _effectiveLocation {
+    if (_categorySlug == 'travel_international') {
+      return _dynamicControllers['departure_city']?.text.trim() ?? '';
+    }
     if (_location == 'Other') return _customLocationController.text;
     return _location ?? '';
   }
@@ -286,6 +289,200 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _categorySlug = slug;
       _initCategoryControllers();
     });
+  }
+
+  Future<void> _openCategoryDrawer() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedSlug = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.78,
+        minChildSize: 0.45,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          final theme = Theme.of(context);
+          return Material(
+            color: theme.colorScheme.surface,
+            clipBehavior: Clip.antiAlias,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Choose Need Category',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _categories.length,
+                    separatorBuilder: (_, __) => const Divider(
+                      height: 1,
+                      indent: 64,
+                    ),
+                    itemBuilder: (context, index) {
+                      final category = _categories[index];
+                      final isSelected = category.slug == _categorySlug;
+                      return ListTile(
+                        leading: Text(
+                          category.icon,
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                        title: Text(
+                          _categoryLocalizedName(l10n, category.slug),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        trailing: isSelected
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                color: theme.colorScheme.primary,
+                              )
+                            : const Icon(Icons.chevron_right_rounded),
+                        onTap: () => Navigator.pop(sheetContext, category.slug),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+    if (selectedSlug != null && mounted) _selectCategory(selectedSlug);
+  }
+
+  Future<void> _openUrgencyDrawer() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedUrgency = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.48,
+        minChildSize: 0.35,
+        maxChildSize: 0.8,
+        builder: (context, scrollController) {
+          final theme = Theme.of(context);
+          return Material(
+            color: theme.colorScheme.surface,
+            clipBehavior: Clip.antiAlias,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'TimeFrame',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _urgencies.length,
+                    separatorBuilder: (_, __) => const Divider(
+                      height: 1,
+                      indent: 64,
+                    ),
+                    itemBuilder: (context, index) {
+                      final urgency = _urgencies[index];
+                      final isSelected = urgency == _urgency;
+                      return ListTile(
+                        leading: Icon(
+                          urgency == 'Urgent'
+                              ? Icons.priority_high_rounded
+                              : Icons.schedule_rounded,
+                          color: urgency == 'Urgent'
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.primary,
+                        ),
+                        title: Text(
+                          _urgencyLabel(l10n, urgency),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        trailing: isSelected
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                color: theme.colorScheme.primary,
+                              )
+                            : const Icon(Icons.chevron_right_rounded),
+                        onTap: () => Navigator.pop(sheetContext, urgency),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+    if (selectedUrgency != null && mounted) {
+      setState(() => _urgency = selectedUrgency);
+    }
   }
 
   void _applyPreset(NeedFormPreset preset) {
@@ -807,13 +1004,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   }
 
   String _categoryLocalizedName(AppLocalizations l10n, String slug) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final defaultCategory = NeedCategory.findBySlug(slug);
+    if (localeCode.toLowerCase() == 'en' && defaultCategory.name != slug) {
+      return defaultCategory.name;
+    }
     final category = _categories.firstWhere(
       (item) => item.slug == slug,
       orElse: () => NeedCategory.findBySlug(slug),
     );
-    final localizedName = category.localizedName(
-      Localizations.localeOf(context).languageCode,
-    );
+    final localizedName = category.localizedName(localeCode);
     if (localizedName != category.baseName && localizedName != category.name) {
       return localizedName;
     }
@@ -910,11 +1110,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 ).format(_budgetValue()),
               ),
               _previewRow(
-                _countryInfo(authState).regionsLabel,
+                _categorySlug == 'travel_international'
+                    ? 'Departure city'
+                    : _countryInfo(authState).regionsLabel,
                 _effectiveLocation.trim(),
               ),
               _previewRow(
-                l10n.needsUrgencyLabel,
+                'TimeFrame',
                 _urgencyLabel(l10n, _urgency),
               ),
               _previewRow(
@@ -979,15 +1181,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() => _submitting = true);
     try {
       final country = EastAfricaCountries.findByCode(authState.user.country);
-      final categoryObj = _categories.firstWhere(
-        (category) => category.slug == _categorySlug,
-        orElse: () => NeedCategory.findBySlug(_categorySlug),
-      );
       final requestId = await getIt<NeedsRepository>().createRequest(
         title: _titleController.text,
         specification: _specificationController.text,
         categorySlug: _categorySlug,
-        categoryName: categoryObj.name,
+        categoryName: _categoryLocalizedName(l10n, _categorySlug),
         details: _collectDetails(),
         budget: _budgetValue(),
         currency: _currency(authState),
@@ -1113,6 +1311,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
     final countryCode =
         authState is AuthAuthenticated ? authState.user.country : null;
+    final isTravelCategory = _categorySlug == 'travel_international';
     final categoryDescription =
         selectedCategory.descriptionForCountry(countryCode)?.trim();
     final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
@@ -1146,45 +1345,35 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     ),
                     const SizedBox(height: 8),
                   ],
-                  Text(
-                    'Choose Need Category',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('category-$_categorySlug'),
-                    initialValue: _categorySlug,
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        l10n.needsCategoryLabel,
-                        categoryDescription != null &&
-                                categoryDescription.isNotEmpty
-                            ? categoryDescription
-                            : guidance.specificationHelper,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _openCategoryDrawer,
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        label: _fieldLabel(
+                          l10n.needsCategoryLabel,
+                          categoryDescription != null &&
+                                  categoryDescription.isNotEmpty
+                              ? categoryDescription
+                              : guidance.specificationHelper,
+                        ),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: const Icon(Icons.expand_more_rounded),
                       ),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: _categories
-                        .map(
-                          (cat) => DropdownMenuItem(
-                            value: cat.slug,
-                            child: Row(
-                              children: [
-                                Text(cat.icon,
-                                    style: const TextStyle(fontSize: 16)),
-                                const SizedBox(width: 8),
-                                Text(_categoryLocalizedName(l10n, cat.slug)),
-                              ],
+                      child: Row(
+                        children: [
+                          Text(selectedCategory.icon,
+                              style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _categoryLocalizedName(l10n, _categorySlug),
+                              style: theme.textTheme.bodyLarge,
                             ),
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) _selectCategory(value);
-                    },
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -1387,127 +1576,108 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   const SizedBox(height: 4),
                   _buildBudgetShortcuts(currency),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('location-$selectedLocation'),
-                    initialValue: selectedLocation,
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        country.regionsLabel,
-                        'Choose the area where you need the service or delivery.',
-                      ),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: country.regions
-                        .map(
-                          (region) => DropdownMenuItem(
-                            value: region,
-                            child: Text(region),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _location = value ?? country.regions.first;
-                        _locationTouched = true;
-                        if (_location != 'Other') {
-                          _customLocationController.clear();
-                        }
-                      });
-                    },
-                    validator: (value) => value == null || value.isEmpty
-                        ? l10n.needsLocationRequired
-                        : null,
-                  ),
-                  FormSuggestionStrip(
-                    label: 'Recent',
-                    suggestions: _recentValuesAcrossCategories(
-                            (request) => request.location)
-                        .where(country.regions.contains)
-                        .toList(),
-                    onSelected: (value) => setState(() {
-                      _location = value;
-                      _locationTouched = true;
-                      _customLocationController.clear();
-                    }),
-                  ),
-                  if (selectedLocation == 'Other') ...[
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _customLocationController,
-                      textCapitalization: TextCapitalization.words,
+                  if (!isTravelCategory) ...[
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('location-$selectedLocation'),
+                      initialValue: selectedLocation,
                       decoration: InputDecoration(
                         label: _fieldLabel(
-                          l10n.needsCustomLocationLabel,
-                          l10n.needsCustomLocationHint,
+                          country.regionsLabel,
+                          'Choose the area where you need the service or delivery.',
                         ),
-                        hintText: l10n.needsCustomLocationHint,
                         border: const OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (selectedLocation != 'Other') return null;
-                        if ((value ?? '').trim().isEmpty) {
-                          return l10n.needsLocationRequired;
-                        }
-                        return null;
+                      items: country.regions
+                          .map(
+                            (region) => DropdownMenuItem(
+                              value: region,
+                              child: Text(region),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _location = value ?? country.regions.first;
+                          _locationTouched = true;
+                          if (_location != 'Other') {
+                            _customLocationController.clear();
+                          }
+                        });
                       },
+                      validator: (value) => value == null || value.isEmpty
+                          ? l10n.needsLocationRequired
+                          : null,
                     ),
                     FormSuggestionStrip(
                       label: 'Recent',
                       suggestions: _recentValuesAcrossCategories(
-                        (request) => request.location,
-                      )
-                          .where((value) => !country.regions.contains(value))
+                              (request) => request.location)
+                          .where(country.regions.contains)
                           .toList(),
-                      onSelected: (value) => setState(
-                        () => _customLocationController.text = value,
-                      ),
+                      onSelected: (value) => setState(() {
+                        _location = value;
+                        _locationTouched = true;
+                        _customLocationController.clear();
+                      }),
                     ),
+                    if (selectedLocation == 'Other') ...[
+                      const SizedBox(height: 14),
+                      TextFormField(
+                        controller: _customLocationController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(
+                          label: _fieldLabel(
+                            l10n.needsCustomLocationLabel,
+                            l10n.needsCustomLocationHint,
+                          ),
+                          hintText: l10n.needsCustomLocationHint,
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (selectedLocation != 'Other') return null;
+                          if ((value ?? '').trim().isEmpty) {
+                            return l10n.needsLocationRequired;
+                          }
+                          return null;
+                        },
+                      ),
+                      FormSuggestionStrip(
+                        label: 'Recent',
+                        suggestions: _recentValuesAcrossCategories(
+                          (request) => request.location,
+                        )
+                            .where((value) => !country.regions.contains(value))
+                            .toList(),
+                        onSelected: (value) => setState(
+                          () => _customLocationController.text = value,
+                        ),
+                      ),
+                    ],
                   ],
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('urgency-$_urgency'),
-                    initialValue: _urgency,
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        l10n.needsUrgencyLabel,
-                        'Choose when you need providers to respond or complete the work.',
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _openUrgencyDrawer,
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        label: _fieldLabel(
+                          'TimeFrame',
+                          'Choose when you need providers to respond or complete the work.',
+                        ),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: const Icon(Icons.expand_more_rounded),
                       ),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: _urgencies
-                        .map(
-                          (urgency) => DropdownMenuItem(
-                            value: urgency,
-                            child: Text(_urgencyLabel(l10n, urgency)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _urgencyLabel(l10n, _urgency),
+                              style: theme.textTheme.bodyLarge,
+                            ),
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(
-                      () => _urgency = value ?? _urgencies.first,
+                        ],
+                      ),
                     ),
-                  ),
-                  FormSuggestionStrip(
-                    label: 'Recent',
-                    suggestions: _recentValuesAcrossCategories(
-                            (request) => request.urgency)
-                        .where(
-                          _urgencies.contains,
-                        )
-                        .toList(),
-                    onSelected: (value) => setState(() => _urgency = value),
-                  ),
-                  const SizedBox(height: 4),
-                  FormSuggestionStrip(
-                    label: 'Try',
-                    suggestions: _urgencies
-                        .map((value) => _urgencyLabel(l10n, value))
-                        .toList(),
-                    onSelected: (value) => setState(() {
-                      _urgency = _urgencies.firstWhere(
-                        (urgency) => _urgencyLabel(l10n, urgency) == value,
-                        orElse: () => _urgencies.last,
-                      );
-                    }),
                   ),
                   const SizedBox(height: 18),
                   Text(

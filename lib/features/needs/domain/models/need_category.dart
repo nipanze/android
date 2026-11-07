@@ -70,6 +70,9 @@ class NeedCategory {
 
   String localizedName(String? localeCode) {
     final code = localeCode?.toLowerCase();
+    if (slug == 'financial_services' && (code == null || code == 'en')) {
+      return 'Finance';
+    }
     final map = switch (code) {
       'rw' => {
           'professional_services': 'Serivisi z\'Ubucuruzi',
@@ -145,6 +148,10 @@ class NeedCategory {
     'photo_video_talent': 13,
     'music_video': 13,
     'beauty_fashion_styling': 14,
+    'domestic_household': 15,
+    'health_medical': 16,
+    'traditional_cultural': 17,
+    'financial_services': 18,
   };
 
   static List<NeedCategory> sortForDisplay(
@@ -283,6 +290,39 @@ class NeedCategory {
       icon: '💄',
       description: 'Makeup, hair, styling and clothing.',
       sortOrder: 14,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'domestic_household',
+      name: 'Domestic & Household',
+      icon: '🏠',
+      description: 'House help, childcare, home cooking and care at home.',
+      sortOrder: 15,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'health_medical',
+      name: 'Health & Medical',
+      icon: '⚕️',
+      description: 'Health care, medical services and specialist support.',
+      sortOrder: 16,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'traditional_cultural',
+      name: 'Traditional & Cultural Services',
+      icon: '🪘',
+      description: 'Traditional ceremonies, cultural services and healing.',
+      sortOrder: 17,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'financial_services',
+      name: 'Finance',
+      icon: '💰',
+      description:
+          'Loans, forex, savings groups, SACCOs and investment opportunities.',
+      sortOrder: 18,
       isActive: true,
     ),
   ];

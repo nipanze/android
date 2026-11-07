@@ -31,6 +31,13 @@ const _providerCatalogCategorySlugs = <String>{
   'financial_services',
 };
 
+const _providerCategoriesMissingFromNeeds = <String>{
+  'domestic_household',
+  'health_medical',
+  'traditional_cultural',
+  'financial_services',
+};
+
 List<Map<String, dynamic>> deduplicateCatalogSearchResults(
   Iterable<Map<String, dynamic>> results,
 ) {
@@ -88,7 +95,8 @@ class NeedsRepository {
     }
   }
 
-  /// Fetch active categories
+  /// Fetch active Need categories plus Provider Services categories that are
+  /// not yet present in the Needs catalog.
   Future<List<NeedCategory>> getCategories() async {
     try {
       final countryCode = await _getCountryCode();
@@ -96,15 +104,20 @@ class NeedsRepository {
           .from(TableNames.needCategories)
           .select()
           .eq('is_active', true)
-          .neq('slug', 'financial_services')
           .order('sort_order', ascending: true);
 
-      return NeedCategory.sortForDisplay(_dedupeBySlug(
-        (data as List)
-            .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
-            .where((category) => category.slug != 'financial_services')
-            .toList(),
-      ));
+      final loaded = (data as List)
+          .map((e) => NeedCategory.fromMap(e, countryCode: countryCode))
+          .toList();
+      final loadedSlugs = loaded.map((category) => category.slug).toSet();
+      final missingProviderCategories = NeedCategory.defaultCategories
+          .where((category) =>
+              _providerCategoriesMissingFromNeeds.contains(category.slug) &&
+              !loadedSlugs.contains(category.slug))
+          .toList();
+      return NeedCategory.sortForDisplay(
+        _dedupeBySlug([...loaded, ...missingProviderCategories]),
+      );
     } catch (_) {
       return NeedCategory.sortForDisplay(
         _dedupeBySlug(NeedCategory.defaultCategories),
@@ -112,8 +125,7 @@ class NeedsRepository {
     }
   }
 
-  /// Provider picker categories. Financial Services is available here while
-  /// remaining excluded from the Needs flow.
+  /// Fetch categories used by the Provider Services picker.
   Future<List<NeedCategory>> getProviderCategories({
     required bool includeFinancialServices,
   }) async {
@@ -207,7 +219,7 @@ class NeedsRepository {
   /// Fetch capabilities for a category
   Future<List<NeedCapability>> getCapabilities({
     String? categorySlug,
-    bool includeFinancialServices = false,
+    bool includeFinancialServices = true,
   }) async {
     if (categorySlug == 'financial_services' && !includeFinancialServices) {
       return const [];
@@ -270,11 +282,6 @@ class NeedsRepository {
     required String urgency,
     required String country,
   }) async {
-    if (categorySlug == 'financial_services') {
-      throw const ValidationException(
-        'Financial services requests belong in Loans or Forex, not Needs.',
-      );
-    }
     try {
       final data = await _client
           .from(TableNames.needsRequests)

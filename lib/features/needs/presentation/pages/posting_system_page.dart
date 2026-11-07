@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/constants/country_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
 import '../../data/needs_repository.dart';
@@ -26,6 +31,7 @@ class PostingSystemPage extends StatefulWidget {
 
 class _PostingSystemPageState extends State<PostingSystemPage> {
   final _search = TextEditingController();
+  final _pickerScroll = ScrollController();
   final _budget = TextEditingController();
   final _details = TextEditingController();
   final _customLocation = TextEditingController();
@@ -40,12 +46,21 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   bool _allowExit = false;
   bool _locationSelected = false;
   String? _draftId;
+  bool _providerFeatureEnabled = false;
+  bool _providerLimitReached = false;
+  int _providerMaxCapabilities = 30;
+  bool _modalOpen = false;
+  bool _edgeButtonTucked = false;
+  Timer? _scrollIdleTimer;
+  double _lastPickerOffset = 0;
 
   @override
   void initState() {
     super.initState();
     _draftId = widget.draftId;
+    _pickerScroll.addListener(_onPickerScroll);
     _budget.addListener(_refresh);
+    _loadProviderButtonState();
     _loadDrafts();
     NeedDraftExitGuard.register(
       this,
@@ -53,6 +68,73 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
       saveDraft: _savePromptDraft,
     );
     if (widget.draftId != null) _loadPromptDraft();
+  }
+
+  Future<void> _loadProviderButtonState() async {
+    try {
+      final auth = context.read<AuthBloc>().state;
+      final country = auth is AuthAuthenticated ? auth.user.country : null;
+      final providerRepository = getIt<IProviderRepository>();
+      if (!await providerRepository.capabilityProfilesEnabled()) return;
+      if (!mounted) return;
+      setState(() => _providerFeatureEnabled = true);
+      final capabilities = await providerRepository.getProviderCapabilities();
+      final settings = await supabase.Supabase.instance.client
+          .from('system_settings')
+          .select('country, setting_value')
+          .eq('setting_key', 'max_provider_capabilities')
+          .eq('is_public', true);
+      final settingRows = (settings as List).whereType<Map>();
+      final selectedSetting = settingRows.firstWhere(
+        (row) => row['country']?.toString() == country,
+        orElse: () => settingRows.firstWhere(
+          (row) => row['country'] == null,
+          orElse: () => const {},
+        ),
+      );
+      final maxCapabilities =
+          int.tryParse(selectedSetting['setting_value']?.toString() ?? '') ??
+              30;
+      if (!mounted) return;
+      setState(() {
+        _providerMaxCapabilities = maxCapabilities;
+        _providerLimitReached = capabilities.length >= maxCapabilities;
+      });
+    } catch (_) {
+      // Capability features remain unavailable when the flag cannot be read.
+    }
+  }
+
+  void _onPickerScroll() {
+    if (!_pickerScroll.hasClients) return;
+    final offset = _pickerScroll.offset;
+    if (offset > _lastPickerOffset + 3) {
+      _lastPickerOffset = offset;
+      _scrollIdleTimer?.cancel();
+      if (!_edgeButtonTucked) setState(() => _edgeButtonTucked = true);
+      _scrollIdleTimer = Timer(const Duration(milliseconds: 900), () {
+        if (mounted) setState(() => _edgeButtonTucked = false);
+      });
+    } else if (offset < _lastPickerOffset - 3) {
+      _lastPickerOffset = offset;
+      _scrollIdleTimer?.cancel();
+      if (_edgeButtonTucked) setState(() => _edgeButtonTucked = false);
+    }
+  }
+
+  void _openProviderServices() {
+    if (_providerLimitReached) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Maximum limit of $_providerMaxCapabilities provider capabilities reached.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    context.push(AppRoutes.accountServices);
   }
 
   bool get _hasDraftContent =>
@@ -133,6 +215,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
       });
       return;
     }
+    setState(() => _modalOpen = true);
     final choice = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -156,6 +239,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
         ],
       ),
     );
+    if (mounted) setState(() => _modalOpen = false);
     if (!mounted || choice == null || choice == 'stay') return;
     if (choice == 'save') {
       final saved = await _savePromptDraft();
@@ -226,6 +310,10 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
 
   @override
   void dispose() {
+    _scrollIdleTimer?.cancel();
+    _pickerScroll
+      ..removeListener(_onPickerScroll)
+      ..dispose();
     NeedDraftExitGuard.unregister(this);
     _search.dispose();
     _budget.dispose();
@@ -347,7 +435,19 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
               ),
         body: SafeArea(
           child: _step == 0
-              ? _promptPicker(theme)
+              ? Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    _promptPicker(theme),
+                    if (_providerFeatureEnabled &&
+                        !_modalOpen &&
+                        MediaQuery.viewInsetsOf(context).bottom == 0)
+                      _AddServiceEdgeButton(
+                        tucked: _edgeButtonTucked,
+                        onPressed: _openProviderServices,
+                      ),
+                  ],
+                )
               : _permitForm(theme, locations, currency),
         ),
       ),
@@ -355,6 +455,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   }
 
   Widget _promptPicker(ThemeData theme) => ListView(
+        controller: _pickerScroll,
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
         children: [
           Text('What do you need?',
@@ -529,6 +630,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   Future<void> _deleteDraft(String draftId) async {
     final auth = context.read<AuthBloc>().state;
     if (auth is! AuthAuthenticated) return;
+    setState(() => _modalOpen = true);
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -544,6 +646,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
         ],
       ),
     );
+    if (mounted) setState(() => _modalOpen = false);
     if (shouldDelete != true || !mounted) return;
     try {
       await NeedDraftStore.delete(auth.user.id, draftId);
@@ -833,4 +936,90 @@ class _PostingPrompt {
   final String type;
   final String audience;
   final String? category;
+}
+
+class _AddServiceEdgeButton extends StatelessWidget {
+  const _AddServiceEdgeButton({
+    required this.tucked,
+    required this.onPressed,
+  });
+
+  final bool tucked;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final l10n = AppLocalizations.of(context)!;
+    final duration =
+        reduceMotion ? Duration.zero : const Duration(milliseconds: 280);
+    return AnimatedPositioned(
+      duration: duration,
+      curve: Curves.easeOut,
+      right: tucked ? -38 : -10,
+      bottom: 12,
+      width: 44,
+      height: 44,
+      child: Semantics(
+        button: true,
+        label: l10n.addService,
+        onTap: onPressed,
+        child: ExcludeSemantics(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPressed,
+              child: Center(
+                child: Transform.rotate(
+                  angle: -0.15708,
+                  child: Container(
+                    width: 58,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF8B6BFF),
+                          Color(0xFF6D4AFF),
+                          Color(0xFF5937E8),
+                        ],
+                      ),
+                      borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(17),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6D4AFF)
+                              .withValues(alpha: 0.32),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(Icons.add_rounded,
+                            color: Colors.white, size: 23),
+                        Positioned(
+                          top: 6,
+                          right: 10,
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white.withValues(alpha: 0.78),
+                            size: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

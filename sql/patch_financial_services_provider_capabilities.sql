@@ -7,7 +7,7 @@
 begin;
 
 update public.need_categories
-set name = 'Financial Services', icon = '💰',
+set name = 'Finance', icon = '💰',
     description = 'Loans, Forex, SACCOs, investments, and other financial services.',
     sort_order = 19, is_active = true
 where slug = 'financial_services';
@@ -15,7 +15,7 @@ where slug = 'financial_services';
 insert into public.need_categories
   (slug, name, icon, description, sort_order, is_active, provider_verification_required)
 values
-  ('financial_services', 'Financial Services', '💰',
+  ('financial_services', 'Finance', '💰',
    'Loans, Forex, SACCOs, investments, and other financial services.',
    19, true, false)
 on conflict (slug) do update set

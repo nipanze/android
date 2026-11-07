@@ -85,6 +85,14 @@ const _defaultTradeableCurrencies = [
   CurrencyModel(code: 'INR', name: 'Indian Rupee', forexTradingEnabled: true),
 ];
 
+const _ugandaForexLocations = [
+  'Central',
+  'Eastern',
+  'Western',
+  'Northern',
+  'Kampala',
+];
+
 List<String> _settlementPreferencesForCountry(String countryCode) {
   switch (countryCode) {
     case 'KE':
@@ -324,7 +332,6 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _preferredRateController = TextEditingController();
-  final _customDistrictController = TextEditingController();
   final _customSettlementController = TextEditingController();
   String? _currencyHeld;
   String? _currencyNeeded;
@@ -373,13 +380,105 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     return byCode.values.toList();
   }
 
+  List<String> _locationsForCountry(CountryInfo country) {
+    if (country.code == 'UG') return _ugandaForexLocations;
+    final locations =
+        country.regions.where((region) => region != 'Other').take(5).toList();
+    return locations.isEmpty ? [country.regions.first] : locations;
+  }
+
+  Future<void> _openLocationDrawer(List<String> locations) async {
+    final selectedLocation = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return Material(
+          color: theme.colorScheme.surface,
+          clipBehavior: Clip.antiAlias,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Choose Location',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: MaterialLocalizations.of(sheetContext)
+                          .closeButtonTooltip,
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: locations.length,
+                separatorBuilder: (_, __) => const Divider(
+                  height: 1,
+                  indent: 64,
+                ),
+                itemBuilder: (context, index) {
+                  final location = locations[index];
+                  final isSelected = location == (_district ?? locations.first);
+                  return ListTile(
+                    leading: const Icon(Icons.location_on_outlined),
+                    title: Text(
+                      location,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: isSelected
+                        ? Icon(
+                            Icons.check_circle_rounded,
+                            color: theme.colorScheme.primary,
+                          )
+                        : const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.pop(sheetContext, location),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (selectedLocation != null && mounted) {
+      setState(() => _district = selectedLocation);
+    }
+  }
+
   @override
   void dispose() {
     _amountController.removeListener(_refreshButtonState);
     _amountController.dispose();
     _preferredRateController.removeListener(_refreshButtonState);
     _preferredRateController.dispose();
-    _customDistrictController.dispose();
     _customSettlementController.dispose();
     super.dispose();
   }
@@ -431,13 +530,10 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final l10n = AppLocalizations.of(context);
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
-    final fallbackRegion =
-        EastAfricaCountries.findByCode(authState.user.country).regions.first;
-    final district = _district == 'Other'
-        ? _customDistrictController.text.trim().isNotEmpty
-            ? _customDistrictController.text.trim()
-            : 'Other'
-        : (_district ?? fallbackRegion);
+    final countryInfo = EastAfricaCountries.findByCode(authState.user.country);
+    final locations = _locationsForCountry(countryInfo);
+    final location =
+        locations.contains(_district) ? _district! : locations.first;
     if (!authState.user.kycApproved) {
       _showMessage(
         l10n?.kycGateForex ??
@@ -467,7 +563,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
             ),
             _previewItem('Estimated amount received',
                 _receivePreview ?? 'Not available'),
-            _previewItem('Location', district),
+            _previewItem('Location', location),
             _previewItem(
               'Settlement',
               _formattedSettlementPreference(),
@@ -516,7 +612,7 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
         currencyHeld: _currencyHeld!,
         currencyNeeded: _currencyNeeded!,
         amount: _parseAmount(_amountController.text)!,
-        district: district,
+        district: location,
         settlementPreference: settlementPreference,
         settlementMethod: _settlementMethodKey(_settlementPreference),
         settlementDetails: _customSettlementController.text.trim(),
@@ -656,7 +752,9 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
     final selectedSettlement = settlementOptions.contains(_settlementPreference)
         ? _settlementPreference
         : settlementOptions.first;
-    final selectedLocation = _district ?? countryInfo.regions.first;
+    final forexLocations = _locationsForCountry(countryInfo);
+    final selectedLocation =
+        forexLocations.contains(_district) ? _district! : forexLocations.first;
     final isPro = authState is AuthAuthenticated &&
         authState.user.subscriptionPlan == SubscriptionPlan.pro;
 
@@ -720,45 +818,29 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      DropdownButtonFormField<String>(
-                        value: selectedLocation,
-                        decoration: InputDecoration(
-                          labelText: countryInfo.regionsLabel,
-                        ),
-                        items: countryInfo.regions
-                            .map((region) => DropdownMenuItem(
-                                  value: region,
-                                  child: Text(region),
-                                ))
-                            .toList(),
-                        onChanged: (value) => setState(() {
-                          _district = value ?? countryInfo.regions.first;
-                          if (value != 'Other') {
-                            _customDistrictController.clear();
-                          }
-                        }),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Select a location'
-                            : null,
-                      ),
-                      if (selectedLocation == 'Other') ...[
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _customDistrictController,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: InputDecoration(
-                            labelText: 'Enter custom location',
-                            hintText: 'e.g. Jinja, Fort Portal, or local area',
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => _openLocationDrawer(forexLocations),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Location',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.expand_more_rounded),
                           ),
-                          validator: (value) {
-                            if (selectedLocation == 'Other' &&
-                                (value == null || value.trim().isEmpty)) {
-                              return 'Tell us the location';
-                            }
-                            return null;
-                          },
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_outlined, size: 18),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  selectedLocation,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 14),
                       TextFormField(
                         controller: _amountController,
@@ -973,10 +1055,11 @@ class _ForexCreatePageState extends State<ForexCreatePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed:
-                  _submitting || (currencies?.length ?? 0) < 2 || !_isReadyToPublish
-                      ? null
-                      : _submit,
+              onPressed: _submitting ||
+                      (currencies?.length ?? 0) < 2 ||
+                      !_isReadyToPublish
+                  ? null
+                  : _submit,
               child: _submitting
                   ? const SizedBox(
                       width: 18,

@@ -910,6 +910,9 @@ class _ModuleFilterRow extends StatelessWidget {
             final isLoading = capabilitiesState is CapabilitiesInitial ||
                 capabilitiesState is CapabilitiesLoading;
             final loadFailed = capabilitiesState is CapabilitiesError;
+            final capabilityProfilesEnabled =
+                capabilitiesState is CapabilitiesLoaded &&
+                    capabilitiesState.capabilityProfilesEnabled;
             return Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
               child: Row(
@@ -977,13 +980,20 @@ class _ModuleFilterRow extends StatelessWidget {
                                               .setModuleFilter(null),
                                         ),
                                         const SizedBox(width: 6),
-                                        ActionChip(
-                                          label: const Text('Add a service'),
-                                          avatar: const Icon(Icons.add_rounded,
-                                              size: 16),
-                                          onPressed: () => context
-                                              .push(AppRoutes.accountServices),
-                                        ),
+                                        if (capabilityProfilesEnabled)
+                                          _DottedAddServiceChip(
+                                            onTap: () => context.push(
+                                                AppRoutes.accountServices),
+                                          )
+                                        else
+                                          ActionChip(
+                                            label: const Text('Add a service'),
+                                            avatar: const Icon(
+                                                Icons.add_rounded,
+                                                size: 16),
+                                            onPressed: () => context.push(
+                                                AppRoutes.accountServices),
+                                          ),
                                       ]
                                     : [
                                         _FilterPill(
@@ -1030,6 +1040,103 @@ class _ModuleFilterRow extends StatelessWidget {
       },
     );
   }
+}
+
+class _DottedAddServiceChip extends StatelessWidget {
+  const _DottedAddServiceChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    const addServicePurple = Color(0xFF6D4AFF);
+
+    return Semantics(
+      button: true,
+      label: l10n.addService,
+      onTap: onTap,
+      child: ExcludeSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(13),
+            child: SizedBox(
+              height: 28,
+              child: Center(
+                child: CustomPaint(
+                  foregroundPainter:
+                      const _DottedRoundedBorderPainter(
+                        color: addServicePurple,
+                      ),
+                  child: Container(
+                    height: 28,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add_rounded,
+                            size: 17, color: addServicePurple),
+                        const SizedBox(width: 5),
+                        Text(
+                          l10n.addService,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            color: addServicePurple,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DottedRoundedBorderPainter extends CustomPainter {
+  const _DottedRoundedBorderPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final border = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Offset.zero & size,
+          const Radius.circular(12),
+        ).deflate(0.75),
+      );
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    for (final metric in border.computeMetrics()) {
+      for (var start = 0.0; start < metric.length; start += 7) {
+        final end = (start + 3.5).clamp(0.0, metric.length);
+        canvas.drawPath(metric.extractPath(start, end), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DottedRoundedBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 String _providerServiceLabel(ProviderCapability service) {

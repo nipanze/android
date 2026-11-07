@@ -123,7 +123,9 @@ class ProviderCapability {
           : null,
       capabilityName: map['capability_name'] as String?,
       categorySlug: map['category_slug'] as String?,
-      categoryName: map['category_name'] as String?,
+      categoryName: map['category_slug'] == 'financial_services'
+          ? 'Finance'
+          : map['category_name'] as String?,
       categoryIcon: map['category_icon'] as String?,
       status: ProviderCapabilityStatus.fromString(
         _resolvedStatus(map, verificationLevel),

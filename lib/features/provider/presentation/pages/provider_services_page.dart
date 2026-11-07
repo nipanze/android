@@ -5,13 +5,11 @@ import 'dart:async';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
-import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -81,7 +79,6 @@ class _ProviderServicesView extends StatelessWidget {
             ),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () => _showAddSheet(context),
-              icon: const Icon(Icons.add_rounded),
               label: const Text('Add Service'),
             ),
           );
@@ -97,15 +94,6 @@ class _ProviderServicesView extends StatelessWidget {
           appBar: AppBar(
             title: Text(l10n.providerServicesTitle),
             centerTitle: false,
-            actions: [
-              if (loaded.capabilityProfilesEnabled &&
-                  loaded.categoryTypes.containsKey('financial_services'))
-                IconButton(
-                  tooltip: 'Loan products',
-                  onPressed: () => context.push(AppRoutes.loanProducts),
-                  icon: const Icon(Icons.account_balance_outlined),
-                ),
-            ],
           ),
           body: RefreshIndicator(
             onRefresh: () =>
@@ -138,7 +126,6 @@ class _ProviderServicesView extends StatelessWidget {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddSheet(context),
-            icon: const Icon(Icons.add_rounded),
             label: const Text('Add Service'),
           ),
         );
